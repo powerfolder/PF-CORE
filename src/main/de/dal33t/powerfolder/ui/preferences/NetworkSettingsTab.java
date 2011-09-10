@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
@@ -149,13 +150,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
         silentModeThrottle.setValue(smt);
 
-        httpProxyButton = new JButton(
-            Translation.getTranslation("general.proxy_settings"));
-        httpProxyButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new HTTPProxySettingsDialog(getController()).open();
-            }
-        });
+        HttpProxyAction action  = new HttpProxyAction(getController());
+        httpProxyButton = new JButton(action);
 
         severSelector = new ServerSelectorPanel(getController());
 
@@ -351,4 +347,16 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
         return null;
     }
+
+    private static class HttpProxyAction extends BaseAction {
+        private HttpProxyAction(Controller controller) {
+            super("action_proxy", controller);
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            new HTTPProxySettingsDialog(getController()).open();
+        }
+    }
+
 }

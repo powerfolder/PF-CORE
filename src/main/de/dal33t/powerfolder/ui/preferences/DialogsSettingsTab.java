@@ -26,11 +26,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -312,9 +312,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(notificationDisplaySlider, cc.xy(1, 1));
-        JButton preview = new JButton(Translation
-            .getTranslation("preferences.dialog.dialogs.preview"));
-        preview.addActionListener(new MyActionListener());
+        JButton preview = new JButton(new PreviewAction(getController()));
         builder.add(preview, cc.xy(3, 1));
         return builder.getPanel();
     }
@@ -380,7 +378,11 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /**
      * Show a preview of the notification.
      */
-    private class MyActionListener implements ActionListener {
+    private class PreviewAction extends BaseAction {
+        private PreviewAction(Controller controller) {
+            super("action_preview", controller);
+        }
+
         public void actionPerformed(ActionEvent e) {
 
             // Remember current
