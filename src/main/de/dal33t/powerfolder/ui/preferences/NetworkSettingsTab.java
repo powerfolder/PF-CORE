@@ -174,14 +174,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         enableDisableComponents(getController().isLanOnly());
 
         TransferManager tm = getController().getTransferManager();
-        if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.getValueBoolean(getController())) {
-            wanSpeed.setSpeedKBPS(-1, -1);
-        } else {
-            wanSpeed.setSpeedKBPS(tm.getUploadCPSForWAN() / 1024,
-                tm.getDownloadCPSForWAN() / 1024);
-        }
 
-        lanSpeed.setSpeedKBPS(tm.getUploadCPSForLAN() / 1024,
+        wanSpeed.setSpeedKBPS(
+                ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.getValueBoolean(
+                        getController()), tm.getUploadCPSForWAN() / 1024,
+            tm.getDownloadCPSForWAN() / 1024);
+
+        lanSpeed.setSpeedKBPS(false, tm.getUploadCPSForLAN() / 1024,
             tm.getDownloadCPSForLAN() / 1024);
 
         options = new String[]{
@@ -308,15 +307,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         getController().setNetworkingMode(netMode);
         TransferManager tm = getController().getTransferManager();
         ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.setValue(getController(),
-            wanSpeed.isAutodetect());
-        if (wanSpeed.isAutodetect()) {
-            tm.setSelectedUploadCPSForWAN(-1024);
-            tm.setSelectedDownloadCPSForWAN(-1024);
+            wanSpeed.isAutomatic());
+        if (wanSpeed.isAutomatic()) {
+            //Update the automatic rates.
             getController().getThreadPool().execute(
                     tm.getRecalculateAutomaticRate());
         } else {
-            tm.setSelectedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
-            tm.setSelectedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
+            tm.setUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
+            tm.setDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
         }
 
         tm.setUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());

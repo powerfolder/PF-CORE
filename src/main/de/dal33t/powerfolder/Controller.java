@@ -895,17 +895,11 @@ public class Controller extends PFComponent {
         // ============
         // Hourly tasks
         // ============
-        boolean alreadyDetected = ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
-            .getValueBoolean(getController())
-            && ConfigurationEntry.UPLOAD_AUTO_WAN.getValueInt(getController()) > 0;
-        // If already detected wait 10 mins before next test. Otherwise start
-        // instantly.
-        long initialDelay = alreadyDetected ? 600 : 5;
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 performHourly();
             }
-        }, initialDelay, 3600, TimeUnit.SECONDS);
+        }, 60, 3600, TimeUnit.SECONDS);
     }
 
     /**

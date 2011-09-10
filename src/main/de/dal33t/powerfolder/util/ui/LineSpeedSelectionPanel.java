@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.transfer.TransferManager;
 
 import javax.swing.*;
@@ -34,6 +35,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.*;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ExecutionException;
 
@@ -49,9 +51,11 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
 
     private static final int UNLIMITED = 0;
     private static final int AUTO_DETECT = -1;
+    private static final int AUTOMATIC_INDEX = 0;
+
+    private final boolean wan;
 
     private JPanel uiComponent;
-
     private JComboBox speedSelectionBox;
     private JComponent customSpeedPanel;
     private SpinnerNumberModel customUploadSpeedSpinnerModel;
@@ -63,7 +67,6 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
     private final boolean showCustomEntry;
     private JLabel customUploadKbPerSLabel;
     private JLabel customDownloadKbPerSLabel;
-    private final boolean wan;
     private JButton recalculateAutoButton;
 
     /**
@@ -98,7 +101,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
                 new SpinnerNumberModel(0, 0, 999999, 5);
         customDownloadSpeedSpinnerModel =
                 new SpinnerNumberModel(0, 0, 999999, 5);
-        customUploadSpeedText = new JLabel("");
+        customUploadSpeedText = new JLabel();
         customUploadSpeedSpinner =
                 new JSpinner(customUploadSpeedSpinnerModel);
         customDownloadSpeedText = new JLabel("");
@@ -111,9 +114,9 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
                 "general.kbPerS"));
 
         customUploadSpeedSpinnerModel.addChangeListener(new
-                MyChangeListener(customUploadSpeedText, true));
+                MyChangeListener(customUploadSpeedText));
         customDownloadSpeedSpinnerModel.addChangeListener(new
-                MyChangeListener(customDownloadSpeedText, false));
+                MyChangeListener(customDownloadSpeedText));
 
         customSpeedPanel = createCustomSpeedInputFieldPanel();
 
@@ -145,6 +148,8 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
 
     private void configureUpDownComponents() {
         customSpeedPanel.setVisible(showCustomEntry);
+        boolean automaticSelected = wan &&
+                speedSelectionBox.getSelectedIndex() == 0;
         if (((LineSpeed) speedSelectionBox.getSelectedItem()).isEditable()) {
             // Custom line.
             customUploadSpeedSpinner.setVisible(true);
@@ -165,14 +170,38 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
             customUploadSpeedText.setVisible(true);
             customDownloadSpeedText.setVisible(true);
 
-            customUploadSpeedSpinnerModel.setValue(((LineSpeed)
-                    speedSelectionBox.getSelectedItem()).getUploadSpeed());
-            customDownloadSpeedSpinnerModel.setValue(((LineSpeed)
-                    speedSelectionBox.getSelectedItem()).getDownloadSpeed());
+            if (!automaticSelected) {
+                customUploadSpeedSpinnerModel.setValue(((LineSpeed)
+                        speedSelectionBox.getSelectedItem()).getUploadSpeed());
+                customDownloadSpeedSpinnerModel.setValue(((LineSpeed)
+                        speedSelectionBox.getSelectedItem()).getDownloadSpeed());
+
+                // Have to do this manually because the spinners are not
+                // guaranteed to change, and if changing from automatic,
+                // text needs to be updated.
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        long kbPerS = customUploadSpeedSpinnerModel.getNumber()
+                                .longValue();
+                        updateLabel(customUploadSpeedText, kbPerS);
+                        kbPerS = customDownloadSpeedSpinnerModel.getNumber()
+                                .longValue();
+                        updateLabel(customDownloadSpeedText, kbPerS);
+                    }
+                });
+            }
         }
 
-        recalculateAutoButton.setVisible(wan &&
-                speedSelectionBox.getSelectedIndex() == 0);
+        recalculateAutoButton.setVisible(automaticSelected);
+        if (automaticSelected) {
+            TransferManager transferManager = getController().getTransferManager();
+            customUploadSpeedText.setText(
+                    transferManager.getUploadCPSForWAN() / 1024 + " " +
+                            Translation.getTranslation("general.kbPerS"));
+            customDownloadSpeedText.setText(
+                    transferManager.getDownloadCPSForWAN() / 1024 + " " +
+                            Translation.getTranslation("general.kbPerS"));
+        }
     }
 
     private JPanel createSpeedSelectionPanel() {
@@ -305,33 +334,40 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
      * lines might have the same upload limit (like ISDN/DSL) this method
      * currenlty selects the first matching item.
      *
+     * @param autodetect
      * @param uploadSpeed   the upload speed in kb/s, 0 for unlimited
      * @param downloadSpeed the download speed in kb/s, 0 for unlimited
      */
-    public void setSpeedKBPS(long uploadSpeed, long downloadSpeed) {
-        // Find the "best" item to select for the given speed
-        // if none matches, falls thru to "Custom".
-        int count = speedSelectionBox.getItemCount();
-        for (int i = 0; i < count; i++) {
-            LineSpeed ls = (LineSpeed) speedSelectionBox.getItemAt(i);
-            if (ls.getUploadSpeed() == uploadSpeed
-                    && ls.getDownloadSpeed() == downloadSpeed) {
-                speedSelectionBox.setSelectedItem(ls);
-                return;
-            }
-        }
+    public void setSpeedKBPS(boolean autodetect, long uploadSpeed,
+                             long downloadSpeed) {
+        if (autodetect) {
+            speedSelectionBox.setSelectedItem(AUTOMATIC_INDEX);
+        } else {
 
-        // It's not in the list of presets, it looks like a custom.
-        if (showCustomEntry) {
-            speedSelectionBox.setSelectedIndex(count - 1); // Custom is last item.
-            customUploadSpeedSpinner.setValue(uploadSpeed);
-            customDownloadSpeedSpinner.setValue(downloadSpeed);
+            // Find the "best" item to select for the given speed
+            // if none matches, falls thru to "Custom".
+            int count = speedSelectionBox.getItemCount();
+            for (int i = 0; i < count; i++) {
+                LineSpeed lineSpeed = (LineSpeed) speedSelectionBox.getItemAt(i);
+                if (lineSpeed.getUploadSpeed() == uploadSpeed
+                        && lineSpeed.getDownloadSpeed() == downloadSpeed) {
+                    speedSelectionBox.setSelectedItem(lineSpeed);
+                    return;
+                }
+            }
+
+            // It's not in the list of presets, it looks like a custom.
+            if (showCustomEntry) {
+                speedSelectionBox.setSelectedIndex(count - 1); // Custom is last item.
+                customUploadSpeedSpinner.setValue(uploadSpeed);
+                customDownloadSpeedSpinner.setValue(downloadSpeed);
+            }
         }
     }
 
-    public boolean isAutodetect() {
-        return customUploadSpeedSpinnerModel.getNumber().longValue() ==
-                AUTO_DETECT;
+    public boolean isAutomatic() {
+        return wan && speedSelectionBox.getSelectedIndex() ==
+                AUTOMATIC_INDEX;
     }
 
     /**
@@ -362,11 +398,8 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
         customDownloadSpeedText.setEnabled(enabled);
     }
 
-    private static void updateLabel(JLabel label, long kbPerS, long autoKbPerS) {
-        if (kbPerS == -1) {
-            label.setText(autoKbPerS + " " +
-                    Translation.getTranslation("general.kbPerS"));
-        } else if (kbPerS == 0) {
+    private static void updateLabel(JLabel label, long kbPerS) {
+        if (kbPerS == 0) {
             label.setText(Translation.getTranslation("line_speed.unlimited"));
         } else {
             label.setText(kbPerS + " " +
@@ -420,20 +453,15 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
     private class MyChangeListener implements ChangeListener {
 
         private final JLabel label;
-        private final boolean upload;
 
-        private MyChangeListener(JLabel label, boolean upload) {
+        private MyChangeListener(JLabel label) {
             this.label = label;
-            this.upload = upload;
         }
 
         public void stateChanged(ChangeEvent e) {
             SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
             long kbPerS = model.getNumber().longValue();
-            TransferManager transferManager = getController().getTransferManager();
-            updateLabel(label, kbPerS, upload ?
-                    transferManager.getAutoUploadCPSForWAN() / 1000 :
-                    transferManager.getAutoDownloadCPSForWAN() / 1000);
+            updateLabel(label, kbPerS);
         }
     }
 
@@ -451,18 +479,21 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
                     FutureTask<Object> task =
                             transferManager.getRecalculateAutomaticRate();
                     getController().getThreadPool().execute(task);
+                    Cursor cursor = CursorUtils.setWaitCursor(getUiComponent());
                     try {
                         task.get();
                         updateLabel(customUploadSpeedText,
-                                customUploadSpeedSpinnerModel.getNumber().longValue(),
-                                transferManager.getAutoUploadCPSForWAN() / 1000);
+                                transferManager.getUploadCPSForWAN()
+                                        / 1024);
                         updateLabel(customDownloadSpeedText,
-                                customDownloadSpeedSpinnerModel.getNumber().longValue(),
-                                transferManager.getAutoDownloadCPSForWAN() / 1000);
+                                transferManager.getDownloadCPSForWAN()
+                                        / 1024);
                     } catch (InterruptedException ex) {
                         // Don't care
                     } catch (ExecutionException ex) {
                         // Don't care
+                    } finally {
+                        CursorUtils.returnToOriginal(getUiComponent(), cursor);
                     }
                 }
             });

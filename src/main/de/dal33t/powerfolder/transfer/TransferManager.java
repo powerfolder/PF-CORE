@@ -1047,81 +1047,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns the download CPS, unless -ve (auto),
-     * when it returns the actual auto download CPS.
-     *
-     * @return
-     */
-    public long getDownloadCPSForWAN() {
-        long lng = getSelectedDownloadCPSForWAN();
-        if (lng < 0) {
-            return getAutoDownloadCPSForWAN();
-        }
-        return lng;
-    }
-
-    /**
-     * Returns the upload CPS unless -ve (auto),
-     * when it returns the actual auto upload CPS.
-     *
-     * @return
-     */
-    public long getUploadCPSForWAN() {
-        long lng = getSelectedUploadCPSForWAN();
-        if (lng < 0) {
-            return getAutoUploadCPSForWAN();
-        }
-        return lng;
-    }
-
-    /**
-     * Get the auto download CPS as calculated be recalculateAutomaticRate
-     *
-     * @return
-     */
-    public long getAutoDownloadCPSForWAN() {
-        return ConfigurationEntry.DOWNLOAD_AUTO_WAN.getValueInt(
-                getController()) * 1024;
-    }
-
-    /**
-     * Sets the auto download rate.
-     *
-     * @param allowedCPS
-     */
-    public void setAutoDownloadCPSForWAN(long allowedCPS) {
-        ConfigurationEntry.DOWNLOAD_AUTO_WAN.setValue(getController(),
-            String.valueOf(allowedCPS / 1024));
-        updateSpeedLimits();
-    }
-
-    /**
-     * Get the auto upload CPS as calculated be recalculateAutomaticRate
-     *
-     * @return
-     */
-    public long getAutoUploadCPSForWAN() {
-        return ConfigurationEntry.UPLOAD_AUTO_WAN.getValueInt(
-                getController()) * 1024;
-    }
-
-    /**
-     * Sets the auto upload rate.
-     *
-     * @param allowedCPS
-     */
-    public void setAutoUploadCPSForWAN(long allowedCPS) {
-        ConfigurationEntry.UPLOAD_AUTO_WAN.setValue(getController(),
-            String.valueOf(allowedCPS / 1024));
-        updateSpeedLimits();
-    }
-
-    /**
      * Sets the selected upload bandwidth usage in CPS
      * 
      * @param allowedCPS
      */
-    public void setSelectedUploadCPSForWAN(long allowedCPS) {
+    public void setUploadCPSForWAN(long allowedCPS) {
 
         ConfigurationEntry.UPLOAD_LIMIT_WAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
@@ -1129,19 +1059,15 @@ public class TransferManager extends PFComponent {
         updateSpeedLimits();
 
         logInfo("Upload limit: "
-            + Format.formatBytesShort(getSelectedUploadCPSForWAN()) + "/s");
+            + Format.formatBytesShort(getUploadCPSForWAN()) + "/s");
     }
 
     /**
-     * Returns the selected upload WAN rate.
-     * Note that if this returns -ve,
-     * then the true rate needs to be the auto upload rate,
-     * which is in ConfigurationEntry.UPLOAD_AUTO_WAN.
-     * Use getUploadCPSForWAN() to get the true rate.
+     * Returns the upload WAN rate.
      *
      * @return the selected upload rate (internet) in CPS
      */
-    public long getSelectedUploadCPSForWAN() {
+    public long getUploadCPSForWAN() {
         return Integer.parseInt(ConfigurationEntry.UPLOAD_LIMIT_WAN
             .getValue(getController())) * 1024;
     }
@@ -1151,7 +1077,7 @@ public class TransferManager extends PFComponent {
      * 
      * @param allowedCPS
      */
-    public void setSelectedDownloadCPSForWAN(long allowedCPS) {
+    public void setDownloadCPSForWAN(long allowedCPS) {
 
         ConfigurationEntry.DOWNLOAD_LIMIT_WAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
@@ -1159,19 +1085,15 @@ public class TransferManager extends PFComponent {
         updateSpeedLimits();
 
         logInfo("Download limit: "
-            + Format.formatBytesShort(getSelectedDownloadCPSForWAN()) + "/s");
+            + Format.formatBytesShort(getDownloadCPSForWAN()) + "/s");
     }
 
     /**
-     * Returns the selected download WAN rate.
-     * Note that if this returns -ve,
-     * then the true rate needs to be the auto download rate,
-     * which is in ConfigurationEntry.DOWNLOAD_AUTO_WAN.
-     * Use getDOWNloadCPSForWAN() to get the true rate.
+     * Returns the download WAN rate.
      *
      * @return the selected upload rate (internet) in CPS
      */
-    public long getSelectedDownloadCPSForWAN() {
+    public long getDownloadCPSForWAN() {
         return ConfigurationEntry.DOWNLOAD_LIMIT_WAN
             .getValueInt(getController()) * 1024;
     }
@@ -2868,7 +2790,7 @@ public class TransferManager extends PFComponent {
                 }
                 // Get times.
                 Date startDate = new Date();
-                long downloadSize = 1047552;
+                long downloadSize = 1047552; // @todo, why 1023 * 1024 bytes?
                 boolean downloadOk = countActiveDownloads() == 0
                     && testAvailabilityDownload(downloadSize);
                 Date afterDownload = new Date();
@@ -2913,10 +2835,10 @@ public class TransferManager extends PFComponent {
                 }
 
                 if (downloadOk) {
-                    setAutoDownloadCPSForWAN(modifiedDownloadRate);
+                    setDownloadCPSForWAN(modifiedDownloadRate);
                 }
                 if (uploadOk) {
-                    setAutoUploadCPSForWAN(modifiedUploadRate);
+                    setUploadCPSForWAN(modifiedUploadRate);
                 }
                 recalculatingAutomaticRates.set(false);
                 return null;

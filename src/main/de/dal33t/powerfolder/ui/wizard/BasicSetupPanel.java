@@ -43,6 +43,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -122,8 +123,8 @@ public class BasicSetupPanel extends PFWizardPanel {
         }
 
         TransferManager tm = getController().getTransferManager();
-        tm.setSelectedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
-        tm.setSelectedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
+        tm.setUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
+        tm.setDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
         // Set locale
         if (languageChooser.getSelectedItem() instanceof Locale) {
@@ -166,7 +167,9 @@ public class BasicSetupPanel extends PFWizardPanel {
 
         wanLineSpeed = new LineSpeedSelectionPanel(getController(), true, false);
         TransferManager tm = getController().getTransferManager();
-        wanLineSpeed.setSpeedKBPS(tm.getUploadCPSForWAN() / 1024,
+        wanLineSpeed.setSpeedKBPS(
+                ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.getValueBoolean(
+                        getController()), tm.getUploadCPSForWAN() / 1024,
             tm.getDownloadCPSForWAN() / 1024);
 
         networkingModeModel = new ValueHolder();

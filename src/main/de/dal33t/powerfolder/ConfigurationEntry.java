@@ -378,19 +378,9 @@ public enum ConfigurationEntry {
     NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", 1024 * 1024),
     
     /**
-     * #2165 Auto detect speeds
+     * Auto detect WAN speeds
      */
     TRANSFER_LIMIT_AUTODETECT("transfer.limit.autodetect", true),
-
-    /**
-     * The upload automatic limit for WAN (Internet) connections in KB/s
-     */
-    UPLOAD_AUTO_WAN("uploadauto", 0),
-
-    /**
-     * The download automatic limit for WAN (Internet) connections in KB/s
-     */
-    DOWNLOAD_AUTO_WAN("downloadauto", 0),
 
     /**
      * The upload limit for WAN (Internet) connections in KB/s
