@@ -19,7 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.status;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -27,7 +28,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -129,6 +136,8 @@ public class StatusTab extends PFUIComponent {
             new UseOSModelListener());
         getApplicationModel().getLicenseModel().getDaysValidModel()
             .addValueChangeListener(new MyDaysValidListener());
+        getApplicationModel().getLicenseModel().getLicenseKeyModel()
+            .addValueChangeListener(new MyLicenseKeyListener());
     }
 
     /**
@@ -450,7 +459,7 @@ public class StatusTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         ActionLabel newFolderLink = new ActionLabel(getController(),
-                getApplicationModel().getActionModel().getFolderWizardAction());
+            getApplicationModel().getActionModel().getFolderWizardAction());
         newFolderLink.convertToBigLabel();
         JComponent newFolderLinkComponent = newFolderLink.getUIComponent();
 
@@ -459,29 +468,31 @@ public class StatusTab extends PFUIComponent {
         JCheckBox dummyCB = new JCheckBox("x");
         int dummyHeight = (int) dummyCB.getPreferredSize().getHeight();
         newFolderLinkComponent.setMinimumSize(new Dimension(
-                (int) newFolderLinkComponent.getMinimumSize().getWidth(),
-                dummyHeight));
+            (int) newFolderLinkComponent.getMinimumSize().getWidth(),
+            dummyHeight));
         newFolderLinkComponent.setMaximumSize(new Dimension(
-                (int) newFolderLinkComponent.getMaximumSize().getWidth(),
-                dummyHeight));
+            (int) newFolderLinkComponent.getMaximumSize().getWidth(),
+            dummyHeight));
         newFolderLinkComponent.setPreferredSize(new Dimension(
-                (int) newFolderLinkComponent.getPreferredSize().getWidth(),
-                dummyHeight));
+            (int) newFolderLinkComponent.getPreferredSize().getWidth(),
+            dummyHeight));
         builder.add(newFolderLinkComponent, cc.xy(1, 1));
         if (!getController().isBackupOnly()) {
-            ActionLabel searchComputerLink = new ActionLabel(getController(), 
-                    getApplicationModel().getActionModel().getFindComputersAction());
-            JComponent searchComputerLinkComponent = searchComputerLink.getUIComponent();
+            ActionLabel searchComputerLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getFindComputersAction());
+            JComponent searchComputerLinkComponent = searchComputerLink
+                .getUIComponent();
             searchComputerLink.convertToBigLabel();
             searchComputerLinkComponent.setMinimumSize(new Dimension(
-                    (int) searchComputerLinkComponent.getMinimumSize().getWidth(),
-                    dummyHeight));
+                (int) searchComputerLinkComponent.getMinimumSize().getWidth(),
+                dummyHeight));
             searchComputerLinkComponent.setMaximumSize(new Dimension(
-                    (int) searchComputerLinkComponent.getMaximumSize().getWidth(),
-                    dummyHeight));
-            searchComputerLinkComponent.setPreferredSize(new Dimension(
-                    (int) searchComputerLinkComponent.getPreferredSize().getWidth(),
-                    dummyHeight));
+                (int) searchComputerLinkComponent.getMaximumSize().getWidth(),
+                dummyHeight));
+            searchComputerLinkComponent
+                .setPreferredSize(new Dimension(
+                    (int) searchComputerLinkComponent.getPreferredSize()
+                        .getWidth(), dummyHeight));
             builder.add(searchComputerLinkComponent, cc.xy(3, 1));
         }
 
@@ -552,7 +563,7 @@ public class StatusTab extends PFUIComponent {
         onlineStorageAccountLabel.setIcon(null);
         AccountDetails ad = client.getAccountDetails();
         boolean active = false;
-        boolean showBuyNow = !client.isLoggedIn();
+        boolean showBuyNow = ProUtil.isTrial(getController());
         String username = client.getUsername();
         if (username == null || username.trim().length() == 0) {
             onlineStorageAccountLabel.setText(Translation
@@ -616,6 +627,7 @@ public class StatusTab extends PFUIComponent {
                             onlineStorageAccountLabel.setToolTipText("");
                         }
                         active = true;
+                        showBuyNow = !ad.getAccount().isProUser();
                     }
                 } else if (loginSuccess) {
                     onlineStorageAccountLabel.setText(Translation
@@ -663,7 +675,7 @@ public class StatusTab extends PFUIComponent {
             onlineStorageSection.getUIComponent().setVisible(false);
         }
 
-        // Show Buy now link if: Disabled OR >80%
+        // Show Buy now link if: Disabled OR >80% OR isTrial
         updateBuyNowLink(
             Translation.getTranslation("pro.status_tab.upgrade_powerfolder"),
             showBuyNow);
@@ -820,6 +832,12 @@ public class StatusTab extends PFUIComponent {
         }
     }
 
+    private final class MyLicenseKeyListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateLicenseDetails();
+        }
+    }
+    
     private class MyDaysValidListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             updateLicenseDetails();
