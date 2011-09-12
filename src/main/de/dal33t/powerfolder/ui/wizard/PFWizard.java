@@ -172,7 +172,7 @@ public class PFWizard extends PFUIComponent {
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.setup_success"),
-            Translation.getTranslation("wizard.success_join"));
+            Translation.getTranslation("wizard.success_join"), true);
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new TypicalFolderSetupPanel(controller));
