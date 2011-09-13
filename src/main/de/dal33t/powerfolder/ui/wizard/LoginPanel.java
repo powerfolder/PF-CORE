@@ -58,9 +58,10 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
-public class LoginOnlineStoragePanel extends PFWizardPanel {
+@SuppressWarnings("serial")
+public class LoginPanel extends PFWizardPanel {
     private static final Logger LOG = Logger
-        .getLogger(LoginOnlineStoragePanel.class.getName());
+        .getLogger(LoginPanel.class.getName());
 
     private ServerClient client;
     private boolean showUseOS;
@@ -86,7 +87,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      * @param showUseOS
      *            if the checkbox to use Online Storage should be displayed
      */
-    public LoginOnlineStoragePanel(Controller controller,
+    public LoginPanel(Controller controller,
         WizardPanel nextPanel, boolean showUseOS)
     {
         this(controller, controller.getOSClient(), nextPanel, showUseOS);
@@ -101,7 +102,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      * @param showUseOS
      *            if the checkbox to use Online Storage should be displayed
      */
-    public LoginOnlineStoragePanel(Controller controller, ServerClient client,
+    public LoginPanel(Controller controller, ServerClient client,
         WizardPanel nextPanel, boolean showUseOS)
     {
         super(controller);
@@ -193,7 +194,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     /**
      * Initializes all necessary components
      */
-    @SuppressWarnings("serial")
     protected void initComponents() {
         boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
             .getValueBoolean(getController());

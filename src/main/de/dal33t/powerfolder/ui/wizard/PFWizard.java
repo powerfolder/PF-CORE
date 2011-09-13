@@ -91,7 +91,7 @@ public class PFWizard extends PFUIComponent {
         // BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
         WizardPanel nextPanel = WhatToDoPanel.doSyncOption(controller,
             wizard.getWizardContext());
-        wizard.open(new LoginOnlineStoragePanel(controller, nextPanel,
+        wizard.open(new LoginPanel(controller, nextPanel,
             !controller.isBackupOnly()));
     }
 
@@ -202,7 +202,7 @@ public class PFWizard extends PFUIComponent {
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.finish.os_login_title"),
             Translation.getTranslation("wizard.finish.os_login_text"), true);
-        wizard.open(new LoginOnlineStoragePanel(controller, client,
+        wizard.open(new LoginPanel(controller, client,
             nextFinishPanel, false));
     }
 
