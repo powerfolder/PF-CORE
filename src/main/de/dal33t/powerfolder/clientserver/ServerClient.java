@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
 import java.security.PublicKey;
@@ -44,6 +45,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AnonymousAccount;
@@ -258,6 +260,20 @@ public class ServerClient extends PFComponent {
     public Member getServer() {
         return server;
     }
+    
+
+    /**
+     * @param node
+     * @return true if the node is the primary login server for the current
+     *         account. account.
+     */
+    public boolean isServer(ConnectionHandler conHan) {
+        if (server.getInfo().equals(conHan.getMyIdentity().getMemberInfo())) {
+            return true;
+        }
+        return isTempServerNode(server)
+            && server.getReconnectAddress().equals(conHan.getRemoteAddress());
+    }
 
     /**
      * @param node
@@ -268,8 +284,29 @@ public class ServerClient extends PFComponent {
         if (server.equals(node)) {
             return true;
         }
-        return isTempServerNode(server)
-            && server.getReconnectAddress().equals(node.getReconnectAddress());
+        if (isTempServerNode(server)) {
+            if (server.getReconnectAddress().equals(node.getReconnectAddress())) {
+                return true;
+            }
+            // Try check by hostname / port
+            InetSocketAddress nodeSockAddr = node.getReconnectAddress();
+            InetSocketAddress serverSockAddr = server.getReconnectAddress();
+            if (nodeSockAddr == null || serverSockAddr == null) {
+                return false;
+            }
+            InetAddress nodeAddr = nodeSockAddr.getAddress();
+            InetAddress serverAddr = serverSockAddr.getAddress();
+            if (nodeAddr == null || serverAddr == null) {
+                return false;
+            }
+            String nodeHost = NetworkUtil.getHostAddressNoResolve(nodeAddr);
+            String serverHost = NetworkUtil.getHostAddressNoResolve(serverAddr);
+            int nodePort = nodeSockAddr.getPort();
+            int serverPort = serverSockAddr.getPort();
+            return nodeHost.equalsIgnoreCase(serverHost)
+                && nodePort == serverPort;
+        }
+        return false;
     }
 
     /**
