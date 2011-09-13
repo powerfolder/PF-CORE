@@ -45,6 +45,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -170,8 +171,11 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      */
     @SuppressWarnings({"unchecked"})
     public void afterDisplay() {
+        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            .getValueBoolean(getController());
         Map<String, UserDirectory> userDirs = UserDirectories
-            .getUserDirectoriesFiltered(getController());
+            .getUserDirectoriesFiltered(getController(), showAppData);
+
         folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
         folderLocalBaseMap = new HashMap<FolderInfo, File>();
         String folderBasedir = getController().getFolderRepository()
