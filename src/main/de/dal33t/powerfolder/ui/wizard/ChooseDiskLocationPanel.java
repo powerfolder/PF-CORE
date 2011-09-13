@@ -36,8 +36,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -276,8 +276,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     protected void initComponents() {
 
-        userDirectories = UserDirectories
-            .getUserDirectoriesFiltered(getController());
+        userDirectories = UserDirectories.getUserDirectoriesFiltered(
+            getController(), PreferencesEntry.SHOW_ADVANCED_SETTINGS
+                .getValueBoolean(getController()));
 
         FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
