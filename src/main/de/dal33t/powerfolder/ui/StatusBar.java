@@ -59,8 +59,8 @@ import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.notices.RunnableNotice;
-import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
+import de.dal33t.powerfolder.ui.notices.*;
+import de.dal33t.powerfolder.ui.model.NoticesModel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -89,6 +89,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private SyncIconButtonMini syncButton;
     private JLabel portLabel;
     private JLabel networkModeLabel;
+    private JButton newNoticesButton;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
     private JButton openStatsChartButton;
@@ -99,9 +100,15 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private DelayedUpdater syncUpdater;
     private DelayedUpdater connectLabelUpdater;
+    private NoticesModel noticeModel;
 
     protected StatusBar(Controller controller) {
         super(controller);
+        noticeModel = getApplicationModel().getNoticesModel();
+        noticeModel.getAllNoticesCountVM().addValueChangeListener(
+            new MyNoticesListener());
+        noticeModel.getUnreadNoticesCountVM().addValueChangeListener(
+            new MyNoticesListener());
     }
 
     public Component getUIComponent() {
@@ -123,7 +130,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
 
             FormLayout mainLayout = new FormLayout(
-                "1dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
+                "1dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
                     + portArea + debugArea
                     + " pref, 3dlu, pref, 3dlu, pref, 1dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
@@ -136,6 +143,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             mainBuilder.add(sleepButton, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(syncButton, cc.xy(col, 1));
+            col += 2;
+            mainBuilder.add(newNoticesButton, cc.xy(col, 1));
             col += 1;
             mainBuilder.add(networkModeLabel, cc.xy(col, 1));
             col += 1;
@@ -235,7 +244,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             String.valueOf(getController().getConnectionListener().getPort())));
         portLabel.setToolTipText(Translation.getTranslation("status.port.tip"));
 
+        newNoticesButton = new JButtonMini(getApplicationModel().getActionModel()
+                .getViewNoticesAction());
+        newNoticesButton.setText(null);
+
         networkModeLabel = new JLabel("nwm");
+
 
         openStatsChartButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenStatsChartsAction());
@@ -252,7 +266,68 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             Translation.getTranslation("status.chat_pending"));
         pendingMessagesButton.addActionListener(listener);
         showPendingMessages(false);
+        updateNewNoticesText();
     }
+
+    private void updateNewNoticesText() {
+
+        int unread = (Integer) noticeModel.getUnreadNoticesCountVM().getValue();
+
+        newNoticesButton.setVisible(unread != 0);
+
+        if (unread != 0) {
+            // If there are any warnings, set icon as warning, else information.
+            Icon noticesIcon = Icons.getIconById(Icons.INFORMATION);
+            for (Notice notice : getUIController().getApplicationModel()
+                .getNoticesModel().getAllNotices()) {
+                if (notice.getNoticeSeverity() == NoticeSeverity.WARINING) {
+                    noticesIcon = Icons.getIconById(Icons.WARNING);
+                    break;
+                }
+            }
+            newNoticesButton.setIcon(noticesIcon);
+
+            // See if they are all one type
+            Class clazz = null;
+            boolean variety = false;
+            for (Notice notice : noticeModel.getAllNotices()) {
+                if (notice.isRead()) {
+                    // Skip alread read notices.
+                    continue;
+                }
+                if (clazz == null) {
+                    clazz = notice.getClass();
+                } else if (clazz != notice.getClass()) {
+                    variety = true;
+                    break;
+                }
+            }
+
+            // Adjust status text if they are all one variety.
+            String noticesText;
+            if (clazz != null && !variety) {
+                if (clazz == AskForFriendshipEventNotice.class) {
+                    noticesText = Translation
+                        .getTranslation("status_tab.new_friendship_notices");
+                } else if (clazz == WarningNotice.class) {
+                    noticesText = Translation
+                        .getTranslation("status_tab.new_warning_notices");
+                } else if (clazz == InvitationNotice.class) {
+                    noticesText = Translation
+                        .getTranslation("status_tab.new_invitation_notices");
+                } else {
+                    // Default
+                    noticesText = Translation
+                        .getTranslation("status_tab.unread_notices");
+                }
+            } else {
+                noticesText = Translation
+                    .getTranslation("status_tab.unread_notices");
+            }
+            newNoticesButton.setToolTipText(noticesText);
+        }
+    }
+
 
     private void configureConnectionLabels() {
         NodeManagerListener nodeListener = new NodeManagerAdapter() {
@@ -640,4 +715,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 .getTranslation("status_bar.sleep.tips"));
         }
     }
+
+    private class MyNoticesListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateNewNoticesText();
+        }
+    }
+
 }

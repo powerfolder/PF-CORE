@@ -377,13 +377,10 @@ public class StatusTab extends PFUIComponent {
         int unread = (Integer) noticeModel.getUnreadNoticesCountVM().getValue();
         int all = (Integer) noticeModel.getAllNoticesCountVM().getValue();
 
-        NoticesModel noticesModel = getUIController().getApplicationModel()
-            .getNoticesModel();
-
         // See if they are all one type
         Class clazz = null;
         boolean variety = false;
-        for (Notice notice : noticesModel.getAllNotices()) {
+        for (Notice notice : noticeModel.getAllNotices()) {
             if (notice.isRead()) {
                 // Skip alread read notices.
                 continue;
@@ -832,7 +829,7 @@ public class StatusTab extends PFUIComponent {
         }
     }
 
-    private final class MyLicenseKeyListener implements PropertyChangeListener {
+    private class MyLicenseKeyListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             updateLicenseDetails();
         }
