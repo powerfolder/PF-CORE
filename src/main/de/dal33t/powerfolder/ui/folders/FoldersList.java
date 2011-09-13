@@ -240,16 +240,11 @@ public class FoldersList extends PFUIComponent {
         }
         Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
 
+        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            .getValueBoolean(getController());
         for (String key : UserDirectories.getUserDirectoriesFiltered(
-            getController()).keySet())
+            getController(), showAppData).keySet())
         {
-            // #2398
-            if (!PreferencesEntry.SHOW_ADVANCED_SETTINGS
-                .getValueBoolean(getController()) && "APPDATA".equalsIgnoreCase(key))
-            {
-                continue;
-            }
-            
             FolderInfo folderInfo = new FolderInfo(key,
                 '[' + IdGenerator.makeId() + ']');
             ExpandableFolderModel bean = new ExpandableFolderModel(
