@@ -1374,15 +1374,23 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
-                if (targetFolder != null
-                    && (targetFolder.getSyncProfile().isInstantSync() || targetFolder
-                        .getSyncProfile().isPeriodicSync()))
-                {
-                    logFiner("Remote sync command received on " + targetFolder);
-                    getController().setSilentMode(false);
-                    // Now trigger the scan
-                    targetFolder.recommendScanOnNextMaintenance();
-                    getController().getFolderRepository().triggerMaintenance();
+                if (targetFolder != null) {
+                    if (targetFolder.getSyncProfile().isInstantSync()
+                        || targetFolder.getSyncProfile().isPeriodicSync())
+                    {
+                        logFiner("Remote sync command received on "
+                            + targetFolder);
+                        getController().setSilentMode(false);
+                        // Now trigger the scan
+                        targetFolder.recommendScanOnNextMaintenance();
+                        getController().getFolderRepository()
+                            .triggerMaintenance();
+                    }
+                    if (targetFolder.getSyncProfile().isAutodownload()) {
+                        getController().getFolderRepository()
+                            .getFileRequestor()
+                            .triggerFileRequesting(targetedFolderInfo);
+                    }
                 }
                 expectedTime = 50;
 
