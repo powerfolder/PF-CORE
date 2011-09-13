@@ -35,6 +35,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
@@ -150,12 +151,15 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
         }
         Reject.ifNull(folderInfo, "Expecting a single folder info");
         folderTextField.setText(folderInfo.name);
-        Map<String, UserDirectory> userDirectoryMap =
-                UserDirectories.getUserDirectoriesFiltered(getController());
+        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            .getValueBoolean(getController());
+        Map<String, UserDirectory> userDirectoryMap = UserDirectories
+            .getUserDirectoriesFiltered(getController(), showAppData);
         for (String s : userDirectoryMap.keySet()) {
             if (s.equals(folderInfo.name)) {
                 UserDirectory userDirectory = userDirectoryMap.get(s);
-                localFolderField.setText(userDirectory.getDirectory().getAbsolutePath());
+                localFolderField.setText(userDirectory.getDirectory()
+                    .getAbsolutePath());
             }
         }
     }
