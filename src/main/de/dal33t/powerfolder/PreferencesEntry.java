@@ -84,7 +84,7 @@ public enum PreferencesEntry {
     TEST_CONNECTIVITY("test_for_connectivity", true),
 
     /** Warn user if connection is poor. */
-    WARN_POOR_QUALITY("warn.poor.quality", true),
+    WARN_POOR_QUALITY("warn.poor.quality", false),
 
     /**
      * Warn if changing a transfer mode for multiple folders
