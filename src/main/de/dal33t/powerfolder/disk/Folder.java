@@ -115,8 +115,13 @@ import de.dal33t.powerfolder.util.ui.UserDirectories;
  * @version $Revision: 1.114 $
  */
 public class Folder extends PFComponent {
-    public static final String DB_FILENAME = ".PowerFolder.db";
-    public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
+    public static final String DB_FILENAME;
+    public static final String DB_BACKUP_FILENAME;
+    static {
+        DB_FILENAME = System.getProperty("pf.dbfilename", ".PowerFolder.db");
+        DB_BACKUP_FILENAME = DB_FILENAME + ".bak";
+    }
+
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
     public static final String METAFOLDER_MEMBERS = "Members";
 
@@ -2314,6 +2319,8 @@ public class Folder extends PFComponent {
 
         // Fire event
         fireMemberLeft(member);
+        
+        // TODO: Trigger file requestor. Other folders may have files to download.
     }
 
     /**
