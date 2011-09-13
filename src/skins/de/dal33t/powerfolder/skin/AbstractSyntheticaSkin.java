@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.util.Properties;
 
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
+import de.javasoft.util.IVersion;
 
 /**
  * Base class for own skin with synthetica LAF
@@ -66,6 +67,37 @@ public abstract class AbstractSyntheticaSkin implements Skin {
         @Override
         public String getName() {
             return AbstractSyntheticaSkin.this.getName();
+        }
+
+        @Override
+        public IVersion getVersion() {
+            final int major = 1;
+            final int minor = 0;
+            final int revision = 0;
+            final int build = 1;
+            
+            return new IVersion() {
+                public int getMajor() {
+                    return major;
+                }
+
+                public int getMinor() {
+                    return minor;
+                }
+
+                public int getRevision() {
+                    return revision;
+                }
+
+                public int getBuild() {
+                    return build;
+                }
+
+                public String toString() {
+                    return major + "." + minor + "." + revision + " Build "
+                        + build;
+                }
+            };
         }
     }
 }
