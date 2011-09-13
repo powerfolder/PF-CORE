@@ -244,7 +244,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         allBox.setOpaque(false);
         allBox.addActionListener(new MyAllActionListner());
         boxes.add(allBox);
+
+        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            .getValueBoolean(getController());
+
         for (String name : userDirectories.keySet()) {
+            if (!showAppData && "APP DATA".equalsIgnoreCase(name)) {
+                continue;
+            }
             JCheckBox box = new JCheckBox(name);
             box.setOpaque(false);
             box.addActionListener(new MyActionListener());
