@@ -44,7 +44,10 @@ public class Constants {
      * The name of the subdirectory in every folder to store powerfolder
      * relevant files.
      */
-    public static final String POWERFOLDER_SYSTEM_SUBDIR = ".PowerFolder";
+    public static final String POWERFOLDER_SYSTEM_SUBDIR;
+    static {
+        POWERFOLDER_SYSTEM_SUBDIR = System.getProperty("pf.syssubdir", ".PowerFolder");
+    }
 
     /**
      * The name of the 'meta' subdirectory, home of the metaFolder files.
