@@ -67,7 +67,7 @@ public class UserDirectories {
     private static final String USER_DIR_MY_VIDEOS;
     private static final String APPS_DIR_OUTLOOK;
     private static final String APPS_DIR_WINDOWS_MAIL;
-
+    
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
     private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
@@ -160,14 +160,23 @@ public class UserDirectories {
      *         -> target location on disk.
      */
     public static Map<String, UserDirectory> getUserDirectoriesFiltered(
-        Controller controller)
+        Controller controller, boolean includeAppData)
     {
         Map<String, UserDirectory> filteredDirs = new TreeMap<String, UserDirectory>(
             getUserDirectories());
         for (Iterator<UserDirectory> it = filteredDirs.values().iterator(); it
             .hasNext();)
         {
-            File directory = it.next().getDirectory();
+            UserDirectory userDir = it.next();
+
+            // #2398
+            if (!includeAppData
+                && "APP DATA".equalsIgnoreCase(userDir.getTranslatedName()))
+            {
+                it.remove();
+            }
+
+            File directory = userDir.getDirectory();
             // See if any folders already exists for this directory.
             // No reason to show if already subscribed.
             for (Folder folder : controller.getFolderRepository().getFolders())
@@ -232,8 +241,8 @@ public class UserDirectories {
             }
             if (USER_DIR_MY_VIDEOS != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-   foundVideos = addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
-                    "user.dir.my_videos", false, "user.dir.videos");
+                foundVideos = addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
+                    "user.dir.videos", false, "user.dir.videos");
             }
         }
 
@@ -263,6 +272,7 @@ public class UserDirectories {
             if (appDataname != null) {
                 File appData = new File(appDataname);
                 addTargetDirectory(appData, "apps.dir", true);
+                
                 addTargetDirectory(appData, APPS_DIR_FIREFOX,
                     "apps.dir.firefox", false);
                 addTargetDirectory(appData, APPS_DIR_SUNBIRD,
