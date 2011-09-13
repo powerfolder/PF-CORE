@@ -39,7 +39,7 @@ public class FolderPreviewHelper {
     /**
      * The powerfolder directory that preview folders are put in.
      */
-    private static final String DOT_POWER_FOLDER = ".PowerFolder";
+    private static final String DOT_POWER_FOLDER = ".Preview";
 
     /**
      * This helper creates FolderSettings for creation of a preview folder. The
