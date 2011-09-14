@@ -108,6 +108,11 @@ public enum Feature {
      * is 100% sync.
      */
     FOLDER_ATOMIC_COMMIT(false),
+    
+    /**
+     * Remove after #2336
+     */
+    MISSING_OWNER_OBTAIN(true),
 
     /**
      * TRAC #1962 For later use
