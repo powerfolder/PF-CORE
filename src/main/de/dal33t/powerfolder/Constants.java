@@ -236,7 +236,7 @@ public class Constants {
     /**
      * TimeOut for pending UDT connections
      */
-    public static final long TO_UDT_CONNECTION = 60 * 1000;
+    public static final long TO_UDT_CONNECTION = 30 * 1000;
 
     // Transfer settings ******************************************************
 
