@@ -260,7 +260,7 @@ public class ServerClient extends PFComponent {
     public Member getServer() {
         return server;
     }
-    
+
     /**
      * @param node
      * @return true if the node is the primary login server for the current
@@ -270,8 +270,30 @@ public class ServerClient extends PFComponent {
         if (server.getInfo().equals(conHan.getIdentity().getMemberInfo())) {
             return true;
         }
-        return isTempServerNode(server)
-            && server.getReconnectAddress().equals(conHan.getRemoteAddress());
+        if (isTempServerNode(server)) {
+            if (server.getReconnectAddress().equals(conHan.getRemoteAddress()))
+            {
+                return true;
+            }
+            // Try check by hostname / port
+            InetSocketAddress nodeSockAddr = conHan.getRemoteAddress();
+            InetSocketAddress serverSockAddr = server.getReconnectAddress();
+            if (nodeSockAddr == null || serverSockAddr == null) {
+                return false;
+            }
+            InetAddress nodeAddr = nodeSockAddr.getAddress();
+            InetAddress serverAddr = serverSockAddr.getAddress();
+            if (nodeAddr == null || serverAddr == null) {
+                return false;
+            }
+            String nodeHost = NetworkUtil.getHostAddressNoResolve(nodeAddr);
+            String serverHost = NetworkUtil.getHostAddressNoResolve(serverAddr);
+            int nodePort = nodeSockAddr.getPort();
+            int serverPort = serverSockAddr.getPort();
+            return nodeHost.equalsIgnoreCase(serverHost)
+                && nodePort == serverPort;
+        }
+        return false;
     }
 
     /**
