@@ -261,14 +261,13 @@ public class ServerClient extends PFComponent {
         return server;
     }
     
-
     /**
      * @param node
      * @return true if the node is the primary login server for the current
      *         account. account.
      */
     public boolean isServer(ConnectionHandler conHan) {
-        if (server.getInfo().equals(conHan.getMyIdentity().getMemberInfo())) {
+        if (server.getInfo().equals(conHan.getIdentity().getMemberInfo())) {
             return true;
         }
         return isTempServerNode(server)
