@@ -150,12 +150,38 @@ class DirectoryChooser extends BaseDialog {
     }
 
     private void okEvent() {
+
+        // See if the user has just typed in a directory in the text area.
+        if (selectedDirs.size() == 1) {
+            File selectedDir = selectedDirs.get(0);
+            String selectedPath = selectedDir.getAbsolutePath();
+            String enteredPath = pathField.getText();
+            if (!selectedPath.equals(enteredPath)) {
+                File file = new File(enteredPath);
+                if (!file.exists()) {
+                    try {
+                        file.mkdirs();
+                        selectedDirs.clear();
+                        selectedDirs.add(file);
+                        setVisible(false);
+                    } catch (SecurityException e) {
+                        logSevere("Failed to create directory", e);
+                    }
+                }
+            }
+        }
+
         for (File selectedDir : selectedDirs) {
             // Create any virtual folders now.
             if (!selectedDir.exists()) {
-                selectedDir.mkdirs();
+                try {
+                    selectedDir.mkdirs();
+                } catch (SecurityException e) {
+                    logSevere("Failed to create directory", e);
+                }
             }
         }
+
         if (!selectedDirs.isEmpty()) {
             setVisible(false);
         }
