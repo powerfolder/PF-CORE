@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.folders;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -331,6 +332,7 @@ public class FoldersList extends PFUIComponent {
         builder.add(new JSeparator(), cc.xy(6, 1));
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
+        panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         folderListPanel.add(panel);
     }
 

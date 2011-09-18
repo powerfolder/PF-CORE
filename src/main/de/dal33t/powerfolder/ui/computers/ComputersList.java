@@ -20,9 +20,11 @@
 package de.dal33t.powerfolder.ui.computers;
 
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.*;
 
 import javax.swing.*;
 
@@ -334,6 +336,7 @@ public class ComputersList extends PFUIComponent {
         builder.add(new JSeparator(), cc.xy(6, 1));
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
+        panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         computerListPanel.add(panel);
     }
 
