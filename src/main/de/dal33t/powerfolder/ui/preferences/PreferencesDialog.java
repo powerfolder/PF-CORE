@@ -124,17 +124,13 @@ public class PreferencesDialog extends BaseDialog {
         rePack();
     }
 
-    /**
-     * Advanced tab is after DYN DNS. DYN DNS tab shown if not backup only.
-     * 
-     * @return
-     */
-    private int getAdvancedTabIndex() {
-        return DYNDNS_TAB_INDEX + (getController().isBackupOnly() ? 0 : 1);
-    }
-
     private void showAdvancedTab(boolean enable) {
-        showTab(enable, advancedSettingsTab, getAdvancedTabIndex());
+        if (!getController().isBackupOnly()) {
+            showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX);
+        }
+        // Advanced tab is after DYN DNS, if shown.
+        showTab(enable, advancedSettingsTab, DYNDNS_TAB_INDEX +
+                (getController().isBackupOnly() ? 0 : 1));
     }
 
     public JComponent getContent() {
