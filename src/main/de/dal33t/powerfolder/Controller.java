@@ -91,7 +91,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.9.4 - 3.5.23"; // 3.5.23
+    public static final String PROGRAM_VERSION = "4.9.10 - 3.5.29"; // 3.5.29
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -104,8 +104,21 @@ public class Controller extends PFComponent {
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
 
-    /** general wait time for all threads (5000 is a balanced value) */
-    private static final String DEFAULT_CONFIG_FILE = "PowerFolder.config";
+    /** Default config name */
+    public static final String DEFAULT_CONFIG_FILE;
+    static {
+        DEFAULT_CONFIG_FILE = System.getProperty("pf.defconfig",
+            "PowerFolder.config");
+    }
+
+    /**
+     * The directory name the located the misc/config dir in. e.g.
+     * user.home/.PowerFolder
+     */
+    public static final String MISC_DIR_NAME;
+    static {
+        MISC_DIR_NAME = System.getProperty("pf.configdir", "PowerFolder");
+    }
 
     /** The command line entered by the user when starting the program */
     private CommandLine commandLine;
@@ -895,11 +908,17 @@ public class Controller extends PFComponent {
         // ============
         // Hourly tasks
         // ============
+        boolean alreadyDetected = ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
+            .getValueBoolean(getController())
+            && ConfigurationEntry.UPLOAD_LIMIT_WAN.getValueInt(getController()) > 0;
+        // If already detected wait 10 mins before next test. Otherwise start
+        // instantly.
+        long initialDelay = alreadyDetected ? 600 : 5;
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 performHourly();
             }
-        }, 60, 3600, TimeUnit.SECONDS);
+        }, initialDelay, 3600, TimeUnit.SECONDS);
     }
 
     /**
@@ -2060,8 +2079,8 @@ public class Controller extends PFComponent {
      */
     public static File getMiscFilesLocation() {
         File base;
-        File unixConfigDir = new File(System.getProperty("user.home")
-            + "/.PowerFolder");
+        File unixConfigDir = new File(System.getProperty("user.home") + "/."
+            + MISC_DIR_NAME);
         if (OSUtil.isWindowsSystem()
             && Feature.WINDOWS_MISC_DIR_USE_APP_DATA.isEnabled())
         {
@@ -2077,7 +2096,7 @@ public class Controller extends PFComponent {
                 return unixConfigDir;
             }
 
-            File windowsConfigDir = new File(appData, "PowerFolder");
+            File windowsConfigDir = new File(appData, MISC_DIR_NAME);
             base = windowsConfigDir;
 
             // Check if migration is necessary
