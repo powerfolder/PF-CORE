@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -493,7 +494,7 @@ public enum ConfigurationEntry {
         }
     },
 
-    MASS_DELETE_PROTECTION("mass.delete.protection", true) {
+    MASS_DELETE_PROTECTION("mass.delete.protection", false) {
 
         @Override
         public String getValue(Controller controller) {
@@ -685,6 +686,11 @@ public enum ConfigurationEntry {
     FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", 30),
 
     /**
+     * #2405: The delay for syncing after folderWatcher detects a change.
+     */
+    FOLDER_WATCHER_DELAY("folder.watcher.delay.seconds", 1),
+
+    /**
      * The number of seconds between db maintenance scans (1 hour).
      */
     DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 3600),
@@ -817,8 +823,10 @@ public enum ConfigurationEntry {
 
     ConfigurationEntry(String aConfigKey, String theDefaultValue) {
         Reject.ifBlank(aConfigKey, "Config key is blank");
-        Reject.ifTrue(aConfigKey.startsWith("folder."),
-            "Config entries must not start with 'folder.'");
+        Reject.ifTrue(
+            aConfigKey.startsWith(FolderSettings.FOLDER_SETTINGS_PREFIX_V4),
+            "Config entries must not start with '"
+                + FolderSettings.FOLDER_SETTINGS_PREFIX_V4 + "'");
         configKey = aConfigKey;
         if (theDefaultValue != null) {
             defaultValue = theDefaultValue;
