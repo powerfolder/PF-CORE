@@ -204,22 +204,16 @@ public class TransferManager extends PFComponent {
 
         sharedWANOutputHandler = BandwidthLimiter.WAN_OUTPUT_BANDWIDTH_LIMITER;
         sharedWANInputHandler = BandwidthLimiter.WAN_INPUT_BANDWIDTH_LIMITER;
-
+        sharedLANOutputHandler = BandwidthLimiter.LAN_OUTPUT_BANDWIDTH_LIMITER;
+        sharedLANInputHandler = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
+        
         checkConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_WAN, 0);
         checkConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN, 0);
         checkConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_LAN, 0);
         checkConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_LAN, 0);
 
-        // bandwidthProvider.setLimitBPS(sharedWANOutputHandler, maxCps);
-        // set ul limit
-        // setUploadCPSForWAN(getConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_WAN));
-        // setDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN));
-
-        sharedLANOutputHandler = BandwidthLimiter.LAN_OUTPUT_BANDWIDTH_LIMITER;
-        sharedLANInputHandler = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
-
-        // bandwidthProvider.setLimitBPS(sharedLANOutputHandler, maxCps);
-        // set ul limit
+        setUploadCPSForWAN(getConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_WAN));
+        setDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN));
         setUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_LAN));
         setDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_LAN));
 
@@ -777,7 +771,7 @@ public class TransferManager extends PFComponent {
                     executeDownloadScript(fInfo, folder, dlManager);
                 }
             } else {
-                logSevere("Scanning of completed file failed: "
+                logWarning("Scanning of completed file failed: "
                     + fInfo.toDetailString() + " at " + dlManager.getTempFile());
                 dlManager.setBroken(
                     TransferProblem.FILE_CHANGED,
@@ -2826,11 +2820,13 @@ public class TransferManager extends PFComponent {
                     + Format.formatBytesShort(downloadRate) + "/s, Upload "
                     + Format.formatBytesShort(uploadRate) + "/s");
 
-                // @todo what is this for, updated values are not used?
-                if (uploadRate < 10240) {
+                // If the detected rate is too low the connection is possibly
+                // exhausted. Unlimt transfers? or keep the current rate
+                // unchanged?
+                if (uploadRate < 5240) {
                     uploadRate = 0;
                 }
-                if (downloadRate < 102400) {
+                if (downloadRate < 50400) {
                     downloadRate = 0;
                 }
 
