@@ -1007,10 +1007,17 @@ public class NodeManager extends PFComponent {
                 + handler + ", disconnecting").with(handler);
         }
         if (!getNetworkId().equals(remoteIdentity.getMemberInfo().networkId)) {
-            logFine("Remote client not on same network " + handler
-                + ", disconnecting. remote network ID: "
-                + remoteIdentity.getMemberInfo().networkId
-                + ". Expected/Ours: " + getNetworkId());
+            if (getController().getOSClient().isServer(handler)) {
+                logSevere("Server not on same network " + handler
+                    + ", disconnecting. remote network ID: "
+                    + remoteIdentity.getMemberInfo().networkId
+                    + ". Expected/Ours: " + getNetworkId());
+            } else {
+                logFine("Remote client not on same network " + handler
+                    + ", disconnecting. remote network ID: "
+                    + remoteIdentity.getMemberInfo().networkId
+                    + ". Expected/Ours: " + getNetworkId());
+            }
             handler.shutdown();
             throw new ConnectionException("Remote client not on same network "
                 + handler + ", disconnecting. remote network ID: "
