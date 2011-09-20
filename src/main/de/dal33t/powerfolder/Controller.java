@@ -22,11 +22,36 @@ package de.dal33t.powerfolder;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.security.Security;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.ServiceLoader;
+import java.util.StringTokenizer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,11 +63,15 @@ import org.apache.commons.cli.CommandLine;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -64,7 +93,23 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ByteSerializer;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.JavaVersion;
+import de.dal33t.powerfolder.util.NamedThreadFactory;
+import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.PropertiesUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
@@ -74,7 +119,6 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
-import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -91,7 +135,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.9.10 - 3.5.29"; // 3.5.29
+    public static final String PROGRAM_VERSION = "4.9.11"; // 3.5.29
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2478,50 +2522,5 @@ public class Controller extends PFComponent {
                 }
             }
         }, 10000, 10000);
-    }
-
-    /**
-     * Automatically accept an invitation. If not able to, silently return
-     * false.
-     * 
-     * @param invitation
-     * @return true if the invitation was accepted.
-     */
-    public boolean autoAcceptInvitation(Invitation invitation) {
-
-        // Is the local base valid?
-        File suggestedLocalBase = invitation.getSuggestedLocalBase(this);
-        if (suggestedLocalBase == null) {
-            logInfo("Can not autoAccept " + invitation
-                + " because no suggested local base.");
-            return false;
-        } else if (suggestedLocalBase.exists()) {
-            logInfo("Can not autoAccept " + invitation
-                + " because suggested local base already exists.");
-            return false;
-        }
-
-        // Is this invitation from a friend?
-        boolean invitorIsFriend = false;
-        MemberInfo memberInfo = invitation.getInvitor();
-        if (memberInfo != null) {
-            Member node = nodeManager.getNode(memberInfo);
-            if (node != null) {
-                invitorIsFriend = nodeManager.isFriend(node);
-            }
-        }
-        if (!invitorIsFriend) {
-            logInfo("Not autoAccepting " + invitation + " because "
-                + memberInfo + " is not a friend.");
-            return false;
-        }
-
-        logInfo("AutoAccepting " + invitation + " from " + memberInfo + '.');
-
-        FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
-            invitation.getSuggestedSyncProfile(), false,
-            ArchiveMode.FULL_BACKUP, 5);
-        folderRepository.createFolder(invitation.folder, folderSettings);
-        return true;
     }
 }

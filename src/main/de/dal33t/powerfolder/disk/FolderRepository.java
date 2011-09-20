@@ -24,8 +24,21 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -47,6 +60,8 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.FolderPermission;
@@ -283,6 +298,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         if (!folderBaseDir.exists()) {
             folderBaseDir.mkdirs();
+        }
+        if (!folderBaseDir.exists()) {
+            // Take default. FIXME GWDG
         }
         FileUtils.maintainDesktopIni(getController(), folderBaseDir);
 
@@ -1200,6 +1218,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                             known = true;
                             break;
                         }
+                        if (folder.getName().equals(file.getName())) {
+                            known = true;
+                            break;
+                        }
                     }
                     if (!known) {
                         handleNewFolder(file);
@@ -1292,14 +1314,64 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the parent folder for a metaFolder's info.
      */
     public Folder getParentFolder(FolderInfo metaFolderInfo) {
-        // #1548 Speed this up.
-        for (Map.Entry<FolderInfo, Folder> entry : metaFolders.entrySet()) {
-            if (entry.getValue().getInfo().equals(metaFolderInfo)) {
-                // This is the metaFolder - return the corresponding folder.
-                return folders.get(entry.getKey());
+        if (!metaFolderInfo.isMetaFolder()) {
+            return null;
+        }
+        int i = metaFolderInfo.getId().indexOf(Constants.METAFOLDER_ID_PREFIX);
+        String folderId = metaFolderInfo.getId().substring(
+            i + Constants.METAFOLDER_ID_PREFIX.length());
+        return getFolder(folderId);
+    }
+    
+    /**
+     * Automatically accept an invitation. If not able to, silently return
+     * false.
+     * 
+     * @param invitation
+     * @return true if the invitation was accepted.
+     */
+    public boolean autoAcceptInvitation(Invitation invitation) {
+
+        // Don't do it
+        // Is the local base valid?
+        // File suggestedLocalBase = invitation.getSuggestedLocalBase(this);
+        // if (suggestedLocalBase == null) {
+        // logInfo("Can not autoAccept " + invitation
+        // + " because no suggested local base.");
+        // return false;
+        // } else if (suggestedLocalBase.exists()) {
+        // logInfo("Can not autoAccept " + invitation
+        // + " because suggested local base already exists.");
+        // return false;
+        // }
+
+        // Defensive strategy: Place in PowerFolders\...
+        File suggestedLocalBase = FileUtils.createEmptyDirectory(
+            getController().getFolderRepository().getFoldersAbsoluteDir(),
+            invitation.folder.name);
+
+        // Is this invitation from a friend?
+        boolean invitorIsFriend = false;
+        MemberInfo memberInfo = invitation.getInvitor();
+        if (memberInfo != null) {
+            Member node = getController().getNodeManager().getNode(memberInfo);
+            if (node != null) {
+                invitorIsFriend = node.isFriend();
             }
         }
-        return null;
+        if (!invitorIsFriend) {
+            logInfo("Not auto accepting " + invitation + " because "
+                + memberInfo + " is not a friend.");
+            return false;
+        }
+
+        logInfo("AutoAccepting " + invitation + " from " + memberInfo + '.');
+
+        FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
+            invitation.getSuggestedSyncProfile(), false,
+            ArchiveMode.FULL_BACKUP, 5);
+        createFolder(invitation.folder, folderSettings);
+        return true;
     }
 
     // Callbacks from ServerClient on login ***********************************
