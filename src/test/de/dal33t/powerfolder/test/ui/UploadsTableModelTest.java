@@ -27,8 +27,8 @@ import javax.swing.event.TableModelListener;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -208,10 +208,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testDisconnectWhileUpload() {
-        getContollerBart().getTransferManager()
-            .setUploadCPSForLAN(40000);
-        getContollerLisa().getTransferManager()
-            .setSelectedUploadCPSForWAN(40000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(40000);
+        getContollerLisa().getTransferManager().setUploadCPSForWAN(40000);
 
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);

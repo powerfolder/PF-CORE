@@ -871,7 +871,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testRecoverFromMD5Error() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(
             400000);
-        getContollerBart().getTransferManager().setSelectedUploadCPSForWAN(
+        getContollerBart().getTransferManager().setUploadCPSForWAN(
             400000);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
@@ -966,7 +966,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testResumeTransfer() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(
             100000);
-        getContollerBart().getTransferManager().setSelectedUploadCPSForWAN(
+        getContollerBart().getTransferManager().setUploadCPSForWAN(
             100000);
         getContollerBart().getReconnectManager().shutdown();
         getContollerLisa().getReconnectManager().shutdown();
@@ -1196,20 +1196,35 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(2000);
 
         // Check correct event fireing
-        assertEquals(0, bartListener.uploadRequested);
-        assertEquals(0, bartListener.uploadStarted);
-        assertEquals(0, bartListener.uploadCompleted);
-        assertEquals(0, bartListener.uploadAborted);
-        assertEquals(0, bartListener.uploadBroken);
+        assertEquals(
+            "Bart. Uploads requested: " + bartListener.uploadRequested, 0,
+            bartListener.uploadRequested);
+        assertEquals("Bart. Uploads started: " + bartListener.uploadStarted, 0,
+            bartListener.uploadStarted);
+        assertEquals(
+            "Bart. Uploads completed: " + bartListener.uploadCompleted, 0,
+            bartListener.uploadCompleted);
+        assertEquals("Bart. Uploads aborted: " + bartListener.uploadAborted, 0,
+            bartListener.uploadAborted);
+        assertEquals(
+            "Bart. Uploads uploadBroken: " + bartListener.uploadBroken, 0,
+            bartListener.uploadBroken);
 
         // Check correct event fireing
-        assertEquals(1, lisaListener.downloadRequested);
+        assertEquals("Lisa. downloadRequested: "
+            + lisaListener.downloadRequested, 1, lisaListener.downloadRequested);
         // assertEquals(2, tm2Listener.downloadQueued);
-        assertEquals(0, lisaListener.downloadStarted);
-        assertEquals(0, lisaListener.downloadCompleted);
-        assertEquals(1, lisaListener.downloadAborted);
-        assertEquals(0, lisaListener.downloadBroken);
-        assertEquals(0, lisaListener.downloadsCompletedRemoved);
+        assertEquals("Lisa. downloadStarted: " + lisaListener.downloadStarted,
+            0, lisaListener.downloadStarted);
+        assertEquals("Lisa. downloadCompleted: "
+            + lisaListener.downloadCompleted, 0, lisaListener.downloadCompleted);
+        assertEquals("Lisa. downloadAborted: " + lisaListener.downloadAborted,
+            1, lisaListener.downloadAborted);
+        assertEquals("Lisa. downloadBroken: " + lisaListener.downloadBroken, 0,
+            lisaListener.downloadBroken);
+        assertEquals("Lisa. downloadsCompletedRemoved: "
+            + lisaListener.downloadsCompletedRemoved, 0,
+            lisaListener.downloadsCompletedRemoved);
 
         TestHelper.assertIncompleteFilesGone(this);
     }
