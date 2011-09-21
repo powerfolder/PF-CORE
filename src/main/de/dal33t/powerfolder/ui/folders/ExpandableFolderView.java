@@ -1524,7 +1524,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == ExpandableFolderModel.Type.CloudOnly
                         && folderInfo != null)
                     {
-                        PFWizard.openSingletonOnlineStorageJoinWizard(
+                        PFWizard.openOnlineStorageJoinWizard(
                             getController(),
                             Collections.singletonList(folderInfo));
                     }
@@ -1750,7 +1750,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private class PrimaryButtonActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (type == ExpandableFolderModel.Type.CloudOnly) {
-                PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
+                PFWizard.openOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
             } else if (type == ExpandableFolderModel.Type.Local
                 && folder.isPreviewOnly())

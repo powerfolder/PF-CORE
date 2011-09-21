@@ -131,7 +131,7 @@ public class PFWizard extends PFUIComponent {
         wizard.open(new SendInvitationsPanel(controller));
     }
 
-    public static void openSingletonOnlineStorageJoinWizard(
+    public static void openOnlineStorageJoinWizard(
         Controller controller, List<FolderInfo> folderInfoList)
     {
 

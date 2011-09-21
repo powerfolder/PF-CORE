@@ -68,6 +68,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     private Map<FolderInfo, SyncProfile> folderProfileMap;
     private Map<FolderInfo, File> folderLocalBaseMap;
     private JComboBox folderInfoCombo;
+    private JTextField folderInfoField;
     private DefaultComboBoxModel folderInfoComboModel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private boolean changingSelecton;
@@ -121,13 +122,13 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
         builder.addLabel(Translation.getTranslation("general.folder"),
             cc.xy(1, 1));
-        builder.add(folderInfoCombo, cc.xy(3, 1));
 
-        builder
-            .add(
-                new JLabel(
-                    Translation
-                        .getTranslation("wizard.multi_online_storage_setup.local_folder_location")),
+        // folderInfoCombo & folderInfoField share the same slot.
+        builder.add(folderInfoCombo, cc.xy(3, 1));
+        builder.add(folderInfoField, cc.xy(3, 1));
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
         builder.add(localFolderButton, cc.xy(5, 3));
@@ -164,6 +165,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         folderInfoCombo = new JComboBox(folderInfoComboModel);
 
         folderInfoCombo.addItemListener(new MyItemListener());
+        folderInfoField = new JTextField();
+        folderInfoField.setEditable(false);
     }
 
     /**
@@ -183,10 +186,20 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
         List<FolderInfo> folderInfoList = (List<FolderInfo>) getWizardContext()
             .getAttribute(WizardContextAttributes.FOLDER_INFOS);
+
+        // If we have just one folder info, display as text field,
+        // BUT still have the combo, as this is linked to the maps.
+        if (folderInfoList.size() == 1) {
+            folderInfoField.setText(folderInfoList.get(0).getName());
+            folderInfoCombo.setVisible(false);
+        } else {
+            folderInfoField.setVisible(false);
+        }
+
         for (FolderInfo folderInfo : folderInfoList) {
             folderProfileMap.put(folderInfo,
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-            // Suggesr user dir.
+            // Suggest user dir.
             File dirSuggestion;
             if (userDirs.get(folderInfo.name) == null) {
                 dirSuggestion = new File(folderBasedir,
