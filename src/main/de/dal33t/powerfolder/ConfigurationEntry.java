@@ -795,12 +795,17 @@ public enum ConfigurationEntry {
     DEFAULT_TRANSFER_MODE("default.transfer.mode",
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
 
-    /** Whether to automatiaclly accept folder invites. */
+    /** Whether to automatically accept folder invites. */
     AUTO_ACCEPT_INVITE("auto.accept.invite", false),
 
     /**
-     * How many days before an archive file is cleaned up.
-     * Values 1, 7, 31, 365, 2147483647 (== never)
+     * Automatically setup all folders the user has access to.
+     */
+    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", false),
+
+    /**
+     * How many days before an archive file is cleaned up. Values 1, 7, 31, 365,
+     * 2147483647 (== never)
      */
     ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 31),
 
