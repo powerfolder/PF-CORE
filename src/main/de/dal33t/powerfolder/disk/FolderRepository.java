@@ -1346,9 +1346,24 @@ public class FolderRepository extends PFComponent implements Runnable {
         // }
 
         // Defensive strategy: Place in PowerFolders\...
-        File suggestedLocalBase = FileUtils.createEmptyDirectory(
-            getController().getFolderRepository().getFoldersAbsoluteDir(),
-            invitation.folder.name);
+
+        File suggestedLocalBase;
+        if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
+            .getValueBoolean(getController()))
+        {
+            // Moderate strategy. Use existing folders.
+            suggestedLocalBase = new File(getController().getFolderRepository()
+                .getFoldersAbsoluteDir(), invitation.folder.name);
+            if (suggestedLocalBase.exists()) {
+                logWarning("Using existing directory " + suggestedLocalBase
+                    + " for " + invitation.folder);
+            }
+        } else {
+            // Defensive strategy. Find free new empty directory.
+            suggestedLocalBase = FileUtils.createEmptyDirectory(getController()
+                .getFolderRepository().getFoldersAbsoluteDir(),
+                invitation.folder.name);
+        }
 
         // Is this invitation from a friend?
         boolean invitorIsFriend = false;
@@ -1369,7 +1384,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
             invitation.getSuggestedSyncProfile(), false,
-            ArchiveMode.FULL_BACKUP, 5);
+            ArchiveMode.FULL_BACKUP,
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                .getValueInt(getController()));
         createFolder(invitation.folder, folderSettings);
         return true;
     }
@@ -1383,7 +1400,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (getController().getMySelf().isServer()) {
             return;
         }
-
         accountSyncLock.lock();
         try {
             logInfo("Syncing folder setup with account permissions("
@@ -1468,6 +1484,49 @@ public class FolderRepository extends PFComponent implements Runnable {
             it.remove();
             folderInfos.add(foInfo);
         }
+
+        if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
+            .getValueBoolean(getController()))
+        {
+            for (FolderInfo folderInfo : a.getFolders()) {
+                if (hasJoinedFolder(folderInfo)) {
+                    continue;
+                }
+                logInfo("Auto setting up folder " + folderInfo
+                    + " for account " + a.getUsername());
+                
+                SyncProfile profile = SyncProfile.getDefault(getController());
+                
+                File suggestedLocalBase;
+                if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
+                    .getValueBoolean(getController()))
+                {
+                    // Moderate strategy. Use existing folders.
+                    suggestedLocalBase = new File(getController().getFolderRepository()
+                        .getFoldersAbsoluteDir(), folderInfo.name);
+                    if (suggestedLocalBase.exists()) {
+                        logWarning("Using existing directory "
+                            + suggestedLocalBase + " for " + folderInfo);
+                    }
+                } else {
+                    // Defensive strategy. Find free new empty directory.
+                    suggestedLocalBase = FileUtils.createEmptyDirectory(
+                        getController().getFolderRepository()
+                            .getFoldersAbsoluteDir(), folderInfo.name);
+                }
+
+                // Correct local path if in UserDirectories.
+                FolderSettings settings = new FolderSettings(
+                    suggestedLocalBase, profile, false,
+                    ArchiveMode.FULL_BACKUP,
+                    ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                        .getValueInt(getController()));
+                
+                createFolder0(folderInfo, settings, true);
+                folderInfos.add(folderInfo);
+            }
+        }
+
         return folderInfos;
     }
 
