@@ -144,6 +144,22 @@ public class FolderSettings {
     private String configEntryId;
 
     /**
+     * Constructor. Creates a new FolderSettings object. NON preview, NO
+     * download script.
+     * 
+     * @param localBaseDir
+     * @param syncProfile
+     * @param createInvitationFile
+     * @param versions
+     */
+    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+        boolean createInvitationFile, ArchiveMode archiveMode, int versions)
+    {
+        this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
+            false, null, versions, true);
+    }
+
+    /**
      * Constructor. Creates a new FolderSettings object.
      * 
      * @param localBaseDir
@@ -183,7 +199,6 @@ public class FolderSettings {
         boolean previewOnly, String downloadScript, int versions,
         boolean syncPatterns, File commitDir, int syncWarnSeconds)
     {
-
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
         this.localBaseDir = localBaseDir;
@@ -199,22 +214,6 @@ public class FolderSettings {
         // Generate a unique entry id for config file.
         this.configEntryId = new String(Util.encodeHex(Util.md5(IdGenerator
             .makeIdBytes())));
-    }
-
-    /**
-     * Constructor. Creates a new FolderSettings object. NON preview, NO
-     * download script.
-     * 
-     * @param localBaseDir
-     * @param syncProfile
-     * @param createInvitationFile
-     * @param versions
-     */
-    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, ArchiveMode archiveMode, int versions)
-    {
-        this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
-            false, null, versions, true);
     }
 
     // /////////////
