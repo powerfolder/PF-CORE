@@ -19,28 +19,34 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 /**
  * Class to display the forders tab.
@@ -67,21 +73,24 @@ public class FoldersTab extends PFUIComponent {
      */
     public FoldersTab(Controller controller) {
         super(controller);
-        connectingLabel = new JLabel(Translation.getTranslation(
-                "folders_tab.connecting"));
-        notLoggedInLabel = new JLabel(Translation.getTranslation(
-                "folders_tab.not_logged_in"));
+        connectingLabel = new JLabel(
+            Translation.getTranslation("folders_tab.connecting"));
+        notLoggedInLabel = new JLabel(
+            Translation.getTranslation("folders_tab.not_logged_in"));
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction());
-        loginActionLabel.setText(Translation.getTranslation("folders_tab.login"));
-        noFoldersFoundLabel = new JLabel(Translation.getTranslation(
-                "folders_tab.no_folders_found"));
+        loginActionLabel.setText(Translation
+            .getTranslation("folders_tab.login"));
+        noFoldersFoundLabel = new JLabel(
+            Translation.getTranslation("folders_tab.no_folders_found"));
         foldersList = new FoldersList(getController(), this);
-        folderWizardActionLabel = new ActionLabel(getController(), getApplicationModel()
-            .getActionModel().getFolderWizardAction());
-        folderWizardActionLabel.setText(Translation.getTranslation("folders_tab.folder_wizard"));
-        newFolderActionLabel = new ActionLabel(getController(), getApplicationModel()
-            .getActionModel().getNewFolderAction());
-        newFolderActionLabel.setText(Translation.getTranslation("folders_tab.new_folder"));
+        folderWizardActionLabel = new ActionLabel(getController(),
+            getApplicationModel().getActionModel().getFolderWizardAction());
+        folderWizardActionLabel.setText(Translation
+            .getTranslation("folders_tab.folder_wizard"));
+        newFolderActionLabel = new ActionLabel(getController(),
+            getApplicationModel().getActionModel().getNewFolderAction());
+        newFolderActionLabel.setText(Translation
+            .getTranslation("folders_tab.new_folder"));
         client = getApplicationModel().getServerClientModel().getClient();
         client.addListener(new MyServerClientListener());
     }
@@ -106,19 +115,21 @@ public class FoldersTab extends PFUIComponent {
     private void buildUI() {
 
         ActionLabel tellFriendLabel = SimpleComponentFactory
-                .createTellAFriendLabel(getController());
+            .createTellAFriendLabel(getController());
         tellFriendLabel.getUIComponent().setOpaque(false);
         tellFriendLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("3dlu, 6px, 4px, 3dlu"));
 
+        boolean autoSetup = ConfigurationEntry.AUTO_ACCEPT_INVITE
+            .getValueBoolean(getController())
+            || ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
+                .getValueBoolean(getController());
         autoAcceptCB = new JCheckBox(
             Translation.getTranslation("folders_tab.auto_accept.text"));
         autoAcceptCB.setToolTipText(Translation
             .getTranslation("folders_tab.auto_accept.tip"));
         autoAcceptCB.addActionListener(new MyActionListener());
-        autoAcceptCB.setSelected(ConfigurationEntry.AUTO_ACCEPT_INVITE
-            .getValueBoolean(getController())
-            && !getController().isBackupOnly());
+        autoAcceptCB.setSelected(autoSetup && !getController().isBackupOnly());
         autoAcceptCB.setVisible(!getController().isBackupOnly());
 
         // Build ui
@@ -153,10 +164,12 @@ public class FoldersTab extends PFUIComponent {
     }
 
     private void buildEmptyPanel() {
-        FormLayout layoutOuter = new FormLayout("center:pref:grow", "center:pref:grow");
+        FormLayout layoutOuter = new FormLayout("center:pref:grow",
+            "center:pref:grow");
         PanelBuilder builderOuter = new PanelBuilder(layoutOuter);
-        FormLayout layoutInner = new FormLayout("fill:pref:grow, 3dlu, fill:pref:grow, 3dlu, fill:pref:grow",
-                "pref");
+        FormLayout layoutInner = new FormLayout(
+            "fill:pref:grow, 3dlu, fill:pref:grow, 3dlu, fill:pref:grow",
+            "pref");
         PanelBuilder builderInner = new PanelBuilder(layoutInner);
         CellConstraints cc = new CellConstraints();
         builderInner.add(connectingLabel, cc.xy(1, 1));
@@ -182,10 +195,10 @@ public class FoldersTab extends PFUIComponent {
                         noFoldersFoundLabel.setVisible(false);
                         folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
-                    } else if (username == null ||
-                            username.trim().length() == 0 ||
-                            client.isPasswordEmpty() ||
-                            !client.isLoggedIn()) {
+                    } else if (username == null
+                        || username.trim().length() == 0
+                        || client.isPasswordEmpty() || !client.isLoggedIn())
+                    {
                         connectingLabel.setVisible(false);
                         notLoggedInLabel.setVisible(true);
                         loginActionLabel.setVisible(true);
@@ -214,13 +227,13 @@ public class FoldersTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
         ActionLabel folderWizardLink = new ActionLabel(getController(),
-                getApplicationModel().getActionModel().getFolderWizardAction());
+            getApplicationModel().getActionModel().getFolderWizardAction());
         folderWizardLink.convertToBigLabel();
         ActionLabel newFolderLink = new ActionLabel(getController(),
-                getApplicationModel().getActionModel().getNewFolderAction());
+            getApplicationModel().getActionModel().getNewFolderAction());
         newFolderLink.convertToBigLabel();
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu",
-            "pref");
+        FormLayout layout = new FormLayout(
+            "3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -239,8 +252,23 @@ public class FoldersTab extends PFUIComponent {
 
     private void configureAutoAccept() {
         ConfigurationEntry.AUTO_ACCEPT_INVITE.setValue(getController(),
-                autoAcceptCB.isSelected());
+            autoAcceptCB.isSelected());
+        ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),
+            autoAcceptCB.isSelected());
         getController().saveConfig();
+
+        // Re-run setup if selected.
+        if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
+            .getValueBoolean(getController())
+            && getController().getOSClient().isLoggedIn())
+        {
+            getController().schedule(new Runnable() {
+                public void run() {
+                    getController().getFolderRepository().updateFolders(
+                        getController().getOSClient().getAccount());
+                }
+            }, 0);
+        }
     }
 
     public void storeValues() {
