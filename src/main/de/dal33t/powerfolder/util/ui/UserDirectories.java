@@ -174,6 +174,7 @@ public class UserDirectories {
                 && "APP DATA".equalsIgnoreCase(userDir.getTranslatedName()))
             {
                 it.remove();
+                continue;
             }
 
             File directory = userDir.getDirectory();
