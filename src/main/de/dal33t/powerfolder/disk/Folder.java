@@ -3930,8 +3930,10 @@ public class Folder extends PFComponent {
 
             logWarning("Adding transition ignore patterns for My documents folder");
 
-            // Ignore My Pictures, My Music, My Videos, PowerFolders
-            addPattern(Constants.FOLDERS_BASE_DIR_SUBDIR_NAME + '*');
+            // Ignore My Pictures, My Music, My Videos, PowerFolders (basedir)
+            File baseDir = getController().getFolderRepository()
+                .getFoldersAbsoluteDir();
+            addPattern(baseDir.getName() + '*');
 
             if (UserDirectories.getMyDocuments() != null) {
                 int i = UserDirectories.getMyDocuments().length();
