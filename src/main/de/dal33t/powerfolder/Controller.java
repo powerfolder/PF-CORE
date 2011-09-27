@@ -135,7 +135,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.9.11 - 3.5.30"; // 3.5.30
+    public static final String PROGRAM_VERSION = "4.9.12"; // 3.5.30
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -366,15 +366,6 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
 
-        // Shutdown controller on system exit or SIGTERM.
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                if (!isShuttingDown() && !isStarted()) {
-                    shutdown();
-                }
-            }
-        });
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
