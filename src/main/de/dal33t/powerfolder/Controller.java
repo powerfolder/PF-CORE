@@ -2522,7 +2522,8 @@ public class Controller extends PFComponent {
      * @param password
      *            required only for Linux shutdowns.
      */
-    public void syncAndExit() {
+    public void syncAndExit(int secWait) {
+        logInfo("Sync and exit initiated. Begin check in " + secWait + "s");
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         SyncAllFoldersAction.perfomSync(this);
         scheduleAndRepeat(new Runnable() {
@@ -2535,6 +2536,6 @@ public class Controller extends PFComponent {
                     tryToExit(0);
                 }
             }
-        }, 10000, 10000);
+        }, 1000L * secWait, 10000);
     }
 }
