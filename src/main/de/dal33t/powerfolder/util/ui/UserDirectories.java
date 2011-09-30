@@ -42,17 +42,27 @@ public class UserDirectories {
     private static final Map<String, UserDirectory> userDirectories = new TreeMap<String, UserDirectory>();
 
     // Some standard user directory names from various OS.
+    private static final String USER_DIR_DOCUMENTS_DEFAULT = "Documents";
+    private static final String USER_DIR_MUSIC_DEFAULT = "Music";
+    private static final String USER_DIR_PICTURES_DEFAULT = "Pictures";
+    private static final String USER_DIR_VIDEOS_DEFAULT = "Videos";
+    private static final String USER_DIR_FAVORITES_DEFAULT = "Favorites";
+    private static final String USER_DIR_LINKS = "Links";
+    private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
     private static final String USER_DIR_CONTACTS = "Contacts";
     private static final String USER_DIR_DESKTOP = "Desktop";
-    private static final String USER_DIR_DOCUMENTS = "Documents";
+
+    // Vista has issues with these, so instantiate separately
+    private static final String USER_DIR_DOCUMENTS_REPORTED;
+    private static final String USER_DIR_MUSIC_REPORTED;
+    private static final String USER_DIR_PICTURES_REPORTED;
+    private static final String USER_DIR_VIDEOS_REPORTED;
+    private static final String USER_DIR_FAVORITES_REPORTED;
+    private static final String APPS_DIR_OUTLOOK;
+    private static final String APPS_DIR_WINDOWS_MAIL;
+
     // Ubuntu mail client
     private static final String USER_DIR_EVOLUTION = ".evolution";
-    private static final String USER_DIR_FAVORITES = "Favorites";
-    private static final String USER_DIR_LINKS = "Links";
-    private static final String USER_DIR_MUSIC = "Music";
-    private static final String USER_DIR_PICTURES = "Pictures";
-    private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
-    private static final String USER_DIR_VIDEOS = "Videos";
     // Mac additionals
     private static final String USER_DIR_MOVIES = "Movies";
     private static final String USER_DIR_DOWNLOADS = "Downloads";
@@ -60,14 +70,6 @@ public class UserDirectories {
     private static final String USER_DIR_SITES = "Sites";
     private static final String USER_DIR_DROPBOX = "My Dropbox";
 
-    // Vista has issues with these, so instantiate separately
-    private static final String USER_DIR_MY_DOCUMENTS;
-    private static final String USER_DIR_MY_MUSIC;
-    private static final String USER_DIR_MY_PICTURES;
-    private static final String USER_DIR_MY_VIDEOS;
-    private static final String APPS_DIR_OUTLOOK;
-    private static final String APPS_DIR_WINDOWS_MAIL;
-    
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
     private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
@@ -86,14 +88,16 @@ public class UserDirectories {
             } else {
                 APPS_DIR_OUTLOOK = null;
             }
-            USER_DIR_MY_DOCUMENTS = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_PERSONAL, false);
-            USER_DIR_MY_MUSIC = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_MYMUSIC, false);
-            USER_DIR_MY_PICTURES = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_MYPICTURES, false);
-            USER_DIR_MY_VIDEOS = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_MYVIDEO, false);
+            USER_DIR_DOCUMENTS_REPORTED = WinUtils.getInstance()
+                .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false);
+            USER_DIR_MUSIC_REPORTED = WinUtils.getInstance()
+                .getSystemFolderPath(WinUtils.CSIDL_MYMUSIC, false);
+            USER_DIR_PICTURES_REPORTED = WinUtils.getInstance()
+                .getSystemFolderPath(WinUtils.CSIDL_MYPICTURES, false);
+            USER_DIR_VIDEOS_REPORTED = WinUtils.getInstance()
+                .getSystemFolderPath(WinUtils.CSIDL_MYVIDEO, false);
+            USER_DIR_FAVORITES_REPORTED = WinUtils.getInstance()
+                .getSystemFolderPath(WinUtils.CSIDL_FAVORITES, false);
             if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
                 APPS_DIR_WINDOWS_MAIL = WinUtils.getInstance()
                     .getSystemFolderPath(WinUtils.CSIDL_LOCAL_APP_DATA, false)
@@ -105,41 +109,44 @@ public class UserDirectories {
                 APPS_DIR_WINDOWS_MAIL = null;
             }
         } else {
-            USER_DIR_MY_DOCUMENTS = null;
-            USER_DIR_MY_MUSIC = null;
-            USER_DIR_MY_PICTURES = null;
-            USER_DIR_MY_VIDEOS = null;
+            USER_DIR_DOCUMENTS_REPORTED = null;
+            USER_DIR_MUSIC_REPORTED = null;
+            USER_DIR_PICTURES_REPORTED = null;
+            USER_DIR_VIDEOS_REPORTED = null;
+            USER_DIR_FAVORITES_REPORTED = null;
             APPS_DIR_OUTLOOK = null;
             APPS_DIR_WINDOWS_MAIL = null;
         }
     }
 
     /**
-     * @return the "My documents". Only available on Windows XP.
+     * @return the "Documents" or "My documents" directory. Only available on
+     *         Windows.
      */
-    public static String getMyDocuments() {
-        return USER_DIR_MY_DOCUMENTS;
+    public static String getDocumentsReported() {
+        return USER_DIR_DOCUMENTS_REPORTED;
     }
 
     /**
-     * @return the "My music". Only available on Windows XP.
+     * @return the "Musci" or "My music" directory. Only available on Windows.
      */
-    public static String getMyMusic() {
-        return USER_DIR_MY_MUSIC;
+    public static String getMusicReported() {
+        return USER_DIR_MUSIC_REPORTED;
     }
 
     /**
-     * @return the "My videos". Only available on Windows XP.
+     * @return the "Videos" or "My videos" directory. Only available on Windows.
      */
-    public static String getMyVideos() {
-        return USER_DIR_MY_VIDEOS;
+    public static String getVideosReported() {
+        return USER_DIR_VIDEOS_REPORTED;
     }
 
     /**
-     * @return the "My pictures". Only available on Windows XP.
+     * @return the "Pictures" or "My pictures" directory. Only available on
+     *         Windows.
      */
-    public static String getMyPictures() {
-        return USER_DIR_MY_PICTURES;
+    public static String getPicturesReported() {
+        return USER_DIR_PICTURES_REPORTED;
     }
 
     /**
@@ -204,8 +211,6 @@ public class UserDirectories {
 
         addTargetDirectory(userHome, USER_DIR_EVOLUTION, "user.dir.evolution",
             true);
-        addTargetDirectory(userHome, USER_DIR_FAVORITES, "user.dir.favorites",
-            false);
         addTargetDirectory(userHome, USER_DIR_LINKS, "user.dir.links", false);
         addTargetDirectory(userHome, USER_DIR_MOVIES, "user.dir.movies", false);
         addTargetDirectory(userHome, USER_DIR_DOWNLOADS, "user.dir.downloads",
@@ -219,61 +224,73 @@ public class UserDirectories {
         boolean foundMusic = false;
         boolean foundPictures = false;
         boolean foundVideos = false;
+        boolean foundFavorites = false;
         // Hidden by Vista and 7
         if (OSUtil.isWindowsSystem()) {
 
-            if (USER_DIR_MY_DOCUMENTS != null) {
+            if (USER_DIR_DOCUMENTS_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
                 foundDocuments = addTargetDirectory(new File(
-                    USER_DIR_MY_DOCUMENTS), "user.dir.documents", false,
+                    USER_DIR_DOCUMENTS_REPORTED), "user.dir.documents", false,
                     "user.dir.documents");
             }
-
-            if (USER_DIR_MY_MUSIC != null) {
+            if (USER_DIR_MUSIC_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundMusic = addTargetDirectory(new File(USER_DIR_MY_MUSIC),
-                    "user.dir.music", false, "user.dir.music");
+                foundMusic = addTargetDirectory(new File(
+                    USER_DIR_MUSIC_REPORTED), "user.dir.music", false,
+                    "user.dir.music");
             }
-            if (USER_DIR_MY_PICTURES != null) {
+            if (USER_DIR_PICTURES_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
                 foundPictures = addTargetDirectory(new File(
-                    USER_DIR_MY_PICTURES), "user.dir.pictures", false,
+                    USER_DIR_PICTURES_REPORTED), "user.dir.pictures", false,
                     "user.dir.pictures");
             }
-            if (USER_DIR_MY_VIDEOS != null) {
+            if (USER_DIR_VIDEOS_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundVideos = addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
-                    "user.dir.videos", false, "user.dir.videos");
+                foundVideos = addTargetDirectory(new File(
+                    USER_DIR_VIDEOS_REPORTED), "user.dir.videos", false,
+                    "user.dir.videos");
+            }
+            if (USER_DIR_FAVORITES_REPORTED != null) {
+                // #2203 Use same placeholder as on Vista or Win 7
+                foundVideos = addTargetDirectory(new File(
+                    USER_DIR_FAVORITES_REPORTED), "user.dir.favorites", false);
             }
         }
 
         if (!foundDocuments) {
-            addTargetDirectory(userHome, USER_DIR_DOCUMENTS,
+            addTargetDirectory(userHome, USER_DIR_DOCUMENTS_DEFAULT,
                 "user.dir.documents", false);
         }
         if (!foundMusic) {
-            addTargetDirectory(userHome, USER_DIR_MUSIC, "user.dir.music",
-                false);
+            addTargetDirectory(userHome, USER_DIR_MUSIC_DEFAULT,
+                "user.dir.music", false);
         }
         if (!foundPictures) {
-            addTargetDirectory(userHome, USER_DIR_PICTURES,
+            addTargetDirectory(userHome, USER_DIR_PICTURES_DEFAULT,
                 "user.dir.pictures", false);
         }
         if (!foundVideos) {
-            addTargetDirectory(userHome, USER_DIR_VIDEOS, "user.dir.videos",
-                false);
+            addTargetDirectory(userHome, USER_DIR_VIDEOS_DEFAULT,
+                "user.dir.videos", false);
+        }
+        if (!foundFavorites) {
+            addTargetDirectory(userHome, USER_DIR_FAVORITES_DEFAULT,
+                "user.dir.favorites", false);
         }
 
         addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS,
             "user.dir.recent_documents", false);
-        addTargetDirectory(userHome, USER_DIR_VIDEOS, "user.dir.videos", false);
+        addTargetDirectory(userHome, USER_DIR_VIDEOS_DEFAULT,
+            "user.dir.videos", false);
 
         if (OSUtil.isWindowsSystem()) {
             String appDataname = WinUtils.getAppDataCurrentUser();
             if (appDataname != null) {
                 File appData = new File(appDataname);
                 addTargetDirectory(appData, "apps.dir", true);
-                
+
                 addTargetDirectory(appData, APPS_DIR_FIREFOX,
                     "apps.dir.firefox", false);
                 addTargetDirectory(appData, APPS_DIR_SUNBIRD,
@@ -344,10 +361,11 @@ public class UserDirectories {
      * @param allowHidden
      *            allow display of hidden dirs
      */
-    private static void addTargetDirectory(File directory,
+    private static boolean addTargetDirectory(File directory,
         String translationId, boolean allowHidden)
     {
-        addTargetDirectory(directory, translationId, allowHidden, translationId);
+        return addTargetDirectory(directory, translationId, allowHidden,
+            translationId);
     }
 
     /**

@@ -3921,11 +3921,11 @@ public class Folder extends PFComponent {
             addPattern("PowerFolder/logs/*");
         }
         // #2083
-        if (UserDirectories.getMyDocuments() != null
+        if (UserDirectories.getDocumentsReported() != null
             && localBase.getAbsolutePath().equals(
-                UserDirectories.getMyDocuments()))
+                UserDirectories.getDocumentsReported()))
         {
-            logFine("My documents @ " + UserDirectories.getMyDocuments());
+            logFine("My documents @ " + UserDirectories.getDocumentsReported());
             logFine("Folder @ " + localBase.getAbsolutePath());
 
             logWarning("Adding transition ignore patterns for My documents folder");
@@ -3935,25 +3935,25 @@ public class Folder extends PFComponent {
                 .getFoldersAbsoluteDir();
             addPattern(baseDir.getName() + '*');
 
-            if (UserDirectories.getMyDocuments() != null) {
-                int i = UserDirectories.getMyDocuments().length();
-                if (UserDirectories.getMyMusic() != null
-                    && UserDirectories.getMyMusic().startsWith(
-                        UserDirectories.getMyDocuments()))
+            if (UserDirectories.getDocumentsReported() != null) {
+                int i = UserDirectories.getDocumentsReported().length();
+                if (UserDirectories.getMusicReported() != null
+                    && UserDirectories.getMusicReported().startsWith(
+                        UserDirectories.getDocumentsReported()))
                 {
-                    addPattern(UserDirectories.getMyMusic().substring(i + 1) + '*');
+                    addPattern(UserDirectories.getMusicReported().substring(i + 1) + '*');
                 }
-                if (UserDirectories.getMyPictures() != null
-                    && UserDirectories.getMyPictures().startsWith(
-                        UserDirectories.getMyDocuments()))
+                if (UserDirectories.getPicturesReported() != null
+                    && UserDirectories.getPicturesReported().startsWith(
+                        UserDirectories.getDocumentsReported()))
                 {
-                    addPattern(UserDirectories.getMyPictures().substring(i + 1) + '*');
+                    addPattern(UserDirectories.getPicturesReported().substring(i + 1) + '*');
                 }
-                if (UserDirectories.getMyVideos() != null
-                    && UserDirectories.getMyVideos().startsWith(
-                        UserDirectories.getMyDocuments()))
+                if (UserDirectories.getVideosReported() != null
+                    && UserDirectories.getVideosReported().startsWith(
+                        UserDirectories.getDocumentsReported()))
                 {
-                    addPattern(UserDirectories.getMyVideos().substring(i + 1) + '*');
+                    addPattern(UserDirectories.getVideosReported().substring(i + 1) + '*');
                 }
             }
         }
