@@ -216,10 +216,14 @@ public class ServerClient extends PFComponent {
     // Basics *****************************************************************
 
     public void start() {
-        // if (getController().isLanOnly() && !server.isOnLAN()) {
-        // logWarning("Not connecting to server: " + server
-        // + ". Reason: Server not on LAN");
-        // }
+        boolean allowLAN2Internet = ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
+            .getValueBoolean(getController());
+        if (!allowLAN2Internet && getController().isLanOnly()
+            && !server.isOnLAN())
+        {
+            logWarning("Not connecting to server: " + server
+                + ". Reason: Server not on LAN");
+        }
         getController().scheduleAndRepeat(new ServerConnectTask(), 3L * 1000L,
             1000L * 20);
         getController().scheduleAndRepeat(new AutoLoginTask(), 10L * 1000L,
@@ -1213,11 +1217,15 @@ public class ServerClient extends PFComponent {
                 // Don't connect to myself
                 return;
             }
-            // if (getController().isLanOnly() && !server.isOnLAN()) {
-            // logFiner("NOT connecting to server: " + server
-            // + ". Reason: Not on LAN");
-            // return;
-            // }
+            boolean allowLAN2Internet = ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
+                .getValueBoolean(getController());
+            if (!allowLAN2Internet && getController().isLanOnly()
+                && !server.isOnLAN())
+            {
+                logFiner("NOT connecting to server: " + server
+                    + ". Reason: Server not on LAN");
+                return;
+            }
             if (!getController().getNodeManager().isStarted()
                 || !getController().getReconnectManager().isStarted())
             {
