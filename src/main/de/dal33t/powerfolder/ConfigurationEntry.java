@@ -72,6 +72,11 @@ public enum ConfigurationEntry {
      * TRAC #2028
      */
     KILL_RUNNING_INSTANCE("kill.running.instance", false),
+    
+    /**
+     * #2425: Sync and exit after connect to server.
+     */
+    SYNC_AND_EXIT("sync.exit", false),
 
     /**
      * Don't prompt on update. Simply auto-upgrade silently
