@@ -1172,6 +1172,12 @@ public class ServerClient extends PFComponent {
                 logFine(ex);
             }
         }
+        
+        // #2425
+        if (ConfigurationEntry.SYNC_AND_EXIT.getValueBoolean(getController())) {
+            // Check after 60 seconds. Then every 10 secs
+            getController().syncAndExit(60);
+        }
     }
 
     /**
