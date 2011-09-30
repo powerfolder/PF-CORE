@@ -154,7 +154,6 @@ public class FoldersList extends PFUIComponent {
             public void hasPermission(boolean hasPermission) {
                 showTypical = hasPermission;
                 updateFolders();
-                logWarning("HASPERM: " + hasPermission);
             }
         };
     }
