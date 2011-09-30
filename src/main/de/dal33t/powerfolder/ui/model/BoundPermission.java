@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * <p>
  * Does only check permission if
  * {@link ConfigurationEntry#SECURITY_PERMISSIONS_STRICT} is set to true.
+ * Otherwise always calls hasPermission(true)
  * 
  * @author sprajc
  */
