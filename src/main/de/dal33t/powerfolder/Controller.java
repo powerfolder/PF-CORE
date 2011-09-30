@@ -135,7 +135,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.9.12"; // 3.5.30
+    public static final String PROGRAM_VERSION = "4.9.13 - 3.5.32"; // 3.5.32
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2510,6 +2510,29 @@ public class Controller extends PFComponent {
                     } else {
                         log.warning("Shutdown command failed.");
                     }
+                }
+            }
+        }, 10000, 10000);
+    }
+
+    /**
+     * Perform a full sync, then wait for the repo to finish syncing. Then
+     * request system shutdown and exit PF.
+     * 
+     * @param password
+     *            required only for Linux shutdowns.
+     */
+    public void syncAndExit() {
+        final AtomicBoolean oneShot = new AtomicBoolean(true);
+        SyncAllFoldersAction.perfomSync(this);
+        scheduleAndRepeat(new Runnable() {
+            public void run() {
+                if (oneShot.get() && !folderRepository.isSyncing()) {
+                    // Make sure we only try to shutdown once,
+                    // in case the user aborts the shutdown.
+                    oneShot.set(false);
+                    log.info("I'm in sync - exit now. Sync and exit was triggered.");
+                    tryToExit(0);
                 }
             }
         }, 10000, 10000);
