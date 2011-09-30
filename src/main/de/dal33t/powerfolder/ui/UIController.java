@@ -572,7 +572,7 @@ public class UIController extends PFComponent {
                         getController().syncAndShutdown(null);
                     }
                 } else if (COMMAND_SYNC_EXIT.equals(e.getActionCommand())) {
-                    getController().syncAndExit();
+                    getController().syncAndExit(4);
                 } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
