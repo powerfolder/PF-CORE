@@ -307,6 +307,11 @@ public enum ConfigurationEntry {
      */
     SERVER_CONNECT_CHANGE_LOGIN_ALLOWED("server.connect.changelogin.allowed",
         true),
+        
+    /**
+     * #2338: Always connect to server, even in LAN only mode
+     */
+    SERVER_CONNECT_FROM_LAN_TO_INTERNET("server.connect.lan2internet", true),
 
     // General settings *******************************************************
 
