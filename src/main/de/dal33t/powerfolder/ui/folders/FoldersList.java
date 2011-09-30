@@ -58,7 +58,9 @@ import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
@@ -88,6 +90,7 @@ public class FoldersList extends PFUIComponent {
     private JLabel localLabel;
     private JLabel localIcon;
 
+    private boolean showTypical;
     private boolean collapseTypical;
     private JLabel typicalLabel;
     private JLabel typicalIcon;
@@ -98,6 +101,7 @@ public class FoldersList extends PFUIComponent {
 
     private DelayedUpdater transfersUpdater;
     private DelayedUpdater foldersUpdater;
+    private BoundPermission folderCreatePermission;
 
     /**
      * Constructor
@@ -107,6 +111,7 @@ public class FoldersList extends PFUIComponent {
     public FoldersList(Controller controller, FoldersTab foldersTab) {
         super(controller);
         empty = true;
+        showTypical = true;
         this.foldersTab = foldersTab;
         collapseLocal = PreferencesEntry.FOLDER_LOCAL_COLLAPSED.
                 getValueBoolean(getController());
@@ -141,6 +146,17 @@ public class FoldersList extends PFUIComponent {
         buildUI();
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
+
+        folderCreatePermission = new BoundPermission(getController(),
+            FolderCreatePermission.INSTANCE)
+        {
+            @Override
+            public void hasPermission(boolean hasPermission) {
+                showTypical = hasPermission;
+                updateFolders();
+                logWarning("HASPERM: " + hasPermission);
+            }
+        };
     }
 
     /**
@@ -241,21 +257,25 @@ public class FoldersList extends PFUIComponent {
         }
         Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
 
-        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
-            .getValueBoolean(getController());
-        for (String key : UserDirectories.getUserDirectoriesFiltered(
-            getController(), showAppData).keySet())
-        {
-            FolderInfo folderInfo = new FolderInfo(key,
-                '[' + IdGenerator.makeId() + ']');
-            ExpandableFolderModel bean = new ExpandableFolderModel(
-                ExpandableFolderModel.Type.Typical, folderInfo, null, false);
+        if (showTypical) {
+            boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+                .getValueBoolean(getController());
+            for (String key : UserDirectories.getUserDirectoriesFiltered(
+                getController(), showAppData).keySet())
+            {
+                FolderInfo folderInfo = new FolderInfo(key,
+                    '[' + IdGenerator.makeId() + ']');
+                ExpandableFolderModel bean = new ExpandableFolderModel(
+                    ExpandableFolderModel.Type.Typical, folderInfo, null, false);
 
-            if (!localFolders.contains(bean) && !onlineFolders.contains(bean)) {
-                typicalFolders.add(bean);
+                if (!localFolders.contains(bean)
+                    && !onlineFolders.contains(bean))
+                {
+                    typicalFolders.add(bean);
+                }
             }
+            Collections.sort(typicalFolders, FolderBeanComparator.INSTANCE);
         }
-        Collections.sort(typicalFolders, FolderBeanComparator.INSTANCE);
 
         empty = onlineFolders.isEmpty() && typicalFolders.isEmpty() &&
                 localFolders.isEmpty();
@@ -292,7 +312,7 @@ public class FoldersList extends PFUIComponent {
             }
 
             if (PreferencesEntry.SHOW_TYPICAL_FOLDERS
-                .getValueBoolean(getController()))
+                .getValueBoolean(getController()) && showTypical)
             {
                 addSeparator(collapseTypical, typicalIcon, typicalLabel);
 
