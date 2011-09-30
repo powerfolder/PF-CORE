@@ -370,7 +370,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             return false;
         }
 
-        if (!isServer && getController().isLanOnly() && !isOnLAN()) {
+        boolean ignoreLAN2Internet = isServer
+            && ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
+                .getValueBoolean(getController());
+
+        if (!ignoreLAN2Internet && getController().isLanOnly() && !isOnLAN()) {
             return false;
         }
 
@@ -383,8 +387,6 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         Identity id = getIdentity();
         if (id != null) {
-            // log().debug(
-            // "Got ID: " + id + ". pending msgs? " + id.isPendingMessages());
             if (Util.compareVersions("2.0.0", id.getProgramVersion())) {
                 logWarning("Rejecting connection to old program client: " + id
                     + " v" + id.getProgramVersion());
