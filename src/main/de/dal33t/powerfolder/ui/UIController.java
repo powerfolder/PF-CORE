@@ -165,6 +165,7 @@ public class UIController extends PFComponent {
     private static final String COMMAND_SYNCALL = "syncall";
     private static final String COMMAND_EXIT = "exit";
     private static final String COMMAND_SYNC_SHUTDOWN = "sync-shutdown";
+    private static final String COMMAND_SYNC_EXIT = "sync-exit";
     private static final String COMMAND_GOTOHP = "gotohp";
 
     private boolean started;
@@ -570,6 +571,8 @@ public class UIController extends PFComponent {
                     } else {
                         getController().syncAndShutdown(null);
                     }
+                } else if (COMMAND_SYNC_EXIT.equals(e.getActionCommand())) {
+                    getController().syncAndExit();
                 } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -665,7 +668,13 @@ public class UIController extends PFComponent {
             item.addActionListener(systrayActionHandler);
         }
 
-        item = menu.add(new MenuItem(Translation.getTranslation(
+        item = menu.add(new MenuItem(Translation
+            .getTranslation("systray.sync_exit")));
+        item.setActionCommand(COMMAND_SYNC_EXIT);
+        item.addActionListener(systrayActionHandler);
+
+        item = menu
+            .add(new MenuItem(Translation.getTranslation(
                 "systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
