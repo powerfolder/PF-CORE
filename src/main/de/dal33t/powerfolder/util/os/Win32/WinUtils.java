@@ -19,8 +19,10 @@
  */
 package de.dal33t.powerfolder.util.os.Win32;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
@@ -325,4 +327,28 @@ public class WinUtils extends Loggable {
         }
         return null;
     }
+
+    private static final String TASKLIST = "tasklist";
+    private static final String KILL = "taskkill /IM ";
+
+    public static boolean isProcessRunging(String serviceName) throws Exception
+    {
+        Process p = Runtime.getRuntime().exec(TASKLIST);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+            p.getInputStream()));
+        String line;
+        while ((line = reader.readLine()) != null) {
+
+            System.out.println(line);
+            if (line.contains(serviceName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void killProcess(String serviceName) throws Exception {
+        Runtime.getRuntime().exec(KILL + serviceName);
+    }
+
 }
