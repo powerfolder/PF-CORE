@@ -66,10 +66,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox minToSysTrayCB;
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
-    private JComboBox inlineInfoCombo;
+    private JCheckBox infoDockedBox;
     private JCheckBox mainAlwaysOnTopCB;
     private JCheckBox autoExpandCB;
-    private int originalInline;
+    private boolean wasDocked;
     private JCheckBox updateCheck;
     private JCheckBox usePowerFolderLink;
 
@@ -151,18 +151,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             new BufferedValueModel(ulModel, writeTrigger),
             Translation.getTranslation("preferences.dialog.underline_link"));
 
-        DefaultComboBoxModel inlineInfoCBM = new DefaultComboBoxModel();
-        inlineInfoCBM.addElement(Translation
-            .getTranslation("preferences.dialog.information_panel_separate"));
-        inlineInfoCBM.addElement(Translation
-            .getTranslation("preferences.dialog.information_panel_left"));
-        inlineInfoCBM.addElement(Translation
-            .getTranslation("preferences.dialog.information_panel_right"));
-        inlineInfoCombo = new JComboBox(inlineInfoCBM);
+        infoDockedBox = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.information_panel_docked"));
 
-        originalInline = PreferencesEntry.INLINE_INFO_MODE
-            .getValueInt(getController());
-        inlineInfoCombo.setSelectedIndex(originalInline);
+        wasDocked = PreferencesEntry.INLINE_INFO_MODE
+            .getValueInt(getController()) > 0;
+        infoDockedBox.setSelected(wasDocked);
 
         ValueModel onTopModel = new ValueHolder(
             PreferencesEntry.MAIN_ALWAYS_ON_TOP
@@ -303,11 +298,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(
-                new JLabel(Translation
-                    .getTranslation("preferences.dialog.information_panel")),
-                cc.xy(1, row));
-            builder.add(inlineInfoCombo, cc.xy(3, row));
+            builder.add(infoDockedBox, cc.xy(3, row));
 
             row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
@@ -356,7 +347,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
             underlineLinkBox.isSelected());
 
-        if (originalInline != inlineInfoCombo.getSelectedIndex()) {
+        if (wasDocked != infoDockedBox.isSelected()) {
             needsRestart = true;
         }
 
@@ -370,7 +361,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Use inline info
         PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
-            inlineInfoCombo.getSelectedIndex());
+            infoDockedBox.isSelected() ? 2 : 0);
 
         PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
             mainAlwaysOnTopCB.isSelected());
