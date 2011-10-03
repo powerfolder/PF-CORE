@@ -19,13 +19,18 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.awt.event.WindowStateListener;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -47,14 +52,14 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -73,10 +78,6 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  */
 public class MainFrame extends PFUIComponent {
 
-    public static final int INLINE_INFO_FREE = 0;
-    public static final int INLINE_INFO_LEFT = 1;
-    public static final int INLINE_INFO_RIGHT = 2;
-
     public static final int MIN_HEIGHT = 300;
     public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
         .getDefaultValueInt();
@@ -84,7 +85,8 @@ public class MainFrame extends PFUIComponent {
     /**
      * The width of the main tabbed pane when in NORMAL state
      */
-    private int normalWidth;
+    private int mainWidth;
+    private int infoWidth;
 
     private JFrame uiComponent;
     private JLabel logoLabel;
@@ -139,10 +141,10 @@ public class MainFrame extends PFUIComponent {
         builder.add(menuBar, cc.xyw(1, 1, 4));
 
         builder.add(logoLabel, cc.xyw(1, 2, 4));
-        builder.add(inlineInfoLabel, cc.xy(2, 2, CellConstraints.DEFAULT,
-            CellConstraints.BOTTOM));
-        builder.add(inlineInfoCloseButton, cc.xy(4, 2, CellConstraints.DEFAULT,
-            CellConstraints.BOTTOM));
+        builder.add(inlineInfoLabel,
+            cc.xy(2, 2, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
+        builder.add(inlineInfoCloseButton,
+            cc.xy(4, 2, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
 
         builder.add(centralPanel, cc.xyw(1, 4, 4));
         builder.add(statusBar.getUIComponent(), cc.xyw(1, 6, 4));
@@ -155,8 +157,15 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setResizable(true);
 
         final Controller c = getController();
+        int mainY = PreferencesEntry.MAIN_FRAME_Y.getValueInt(c);
+
         int width = PreferencesEntry.MAIN_FRAME_WIDTH.getValueInt(c);
         int height = PreferencesEntry.MAIN_FRAME_HEIGHT.getValueInt(c);
+        if (height <= 0) {
+            // Default height. 2x the default border from bottom away.
+            height = Toolkit.getDefaultToolkit().getScreenSize().height - mainY
+                - 2 * Constants.UI_DEFAULT_SCREEN_BORDER;
+        }
         if (width < MIN_WIDTH) {
             width = MIN_WIDTH;
         }
@@ -164,23 +173,15 @@ public class MainFrame extends PFUIComponent {
             height = MIN_HEIGHT;
         }
         uiComponent.setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
-        uiComponent.setSize(width, height);
-        uiComponent.setPreferredSize(new Dimension(width, height));
+        setWindowSize(width, height);
 
         // Pack elements
         uiComponent.pack();
-        normalWidth = uiComponent.getWidth();
+        mainWidth = uiComponent.getWidth();
+        logWarning("Main/Info width: " + mainWidth + " / ?");
 
         // Initial top-left corner
         int mainX = PreferencesEntry.MAIN_FRAME_X.getValueInt(c);
-        if (mainX == PreferencesEntry.MAIN_FRAME_X.getDefaultValueInt()
-            && INLINE_INFO_LEFT == PreferencesEntry.INLINE_INFO_MODE
-                .getValueInt(getController()))
-        {
-            mainX = Toolkit.getDefaultToolkit().getScreenSize().width - mainX
-                - uiComponent.getWidth();
-        }
-        int mainY = PreferencesEntry.MAIN_FRAME_Y.getValueInt(c);
         uiComponent.setLocation(mainX, mainY);
 
         relocateIfNecessary();
@@ -191,74 +192,26 @@ public class MainFrame extends PFUIComponent {
 
         configureInlineInfo();
 
-        uiComponent.addWindowStateListener(new WindowStateListener() {
-            public void windowStateChanged(WindowEvent e) {
-                if (e.getNewState() == Frame.NORMAL) {
-                    if (shouldShowInfoInline() && isShowingInfoInline()) {
-                        closeInlineInfoPanel();
-                    }
-                }
-                if (e.getNewState() == Frame.MAXIMIZED_BOTH) {
-                    if (shouldShowInfoInline() && !isShowingInfoInline()) {
-                        // Prevent full screen mode without info inline
-                        uiComponent.setExtendedState(Frame.NORMAL);
-                    }
-                }
-            }
-        });
-
         // add window listener, checks if exit is needed on pressing X
-        uiComponent.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                if (OSUtil.isSystraySupported()) {
-                    handleExitFirstRequest();
-                    boolean quitOnX = PreferencesEntry.QUIT_ON_X
-                        .getValueBoolean(c);
-                    if (quitOnX) {
-                        exitProgram();
-                    } else if (!OSUtil.isMacOS()) {
-                        getUIController().hideChildPanels();
-                        uiComponent.setVisible(false);
-                    } else {
-                        uiComponent.setState(Frame.ICONIFIED);
-                    }
-                } else {
-                    // Quit if systray is not Supported by OS.
-                    exitProgram();
-                }
-            }
+        MyWindowListener my = new MyWindowListener(c);
+        uiComponent.addWindowListener(my);
+        uiComponent.addWindowStateListener(my);
 
-            /**
-             * Hide other frames when main frame gets minimized.
-             * 
-             * @param e
-             */
-            public void windowIconified(WindowEvent e) {
-                boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
-                    .getValueBoolean(c) && !OSUtil.isMacOS();
-                if (minToSysTray) {
-                    getUIController().hideChildPanels();
-                    uiComponent.setVisible(false);
-                } else {
-                    super.windowIconified(e);
-                }
+        if (PreferencesEntry.MAIN_FRAME_MAXIMIZED
+            .getValueBoolean(getController()))
+        {
+            if (uiComponent.getRootPane().getUI() instanceof SyntheticaRootPaneUI)
+            {
+                ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
+                    .setMaximizedBounds(uiComponent);
             }
+            uiComponent.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
+    }
 
-            /**
-             * Shuts down the program
-             */
-            private void exitProgram() {
-                uiComponent.setVisible(false);
-                uiComponent.dispose();
-                new Thread("Close PowerFolder Thread") {
-                    @Override
-                    public void run() {
-                        c.tryToExit(0);
-                    }
-                }.start();
-            }
-        });
-
+    private void setWindowSize(int width, int height) {
+        uiComponent.setSize(width, height);
+        uiComponent.setPreferredSize(new Dimension(width, height));
     }
 
     /**
@@ -277,11 +230,11 @@ public class MainFrame extends PFUIComponent {
                     .getTranslation("dialog.ask_for_quit_on_x.Exit_button")};
 
             NeverAskAgainResponse response = DialogFactory.genericDialog(
-                getController(), Translation
-                    .getTranslation("dialog.ask_for_quit_on_x.title"),
+                getController(),
+                Translation.getTranslation("dialog.ask_for_quit_on_x.title"),
                 Translation.getTranslation("dialog.ask_for_quit_on_x.text"),
-                options, 0, GenericDialogType.QUESTION, Translation
-                    .getTranslation("general.neverAskAgain"));
+                options, 0, GenericDialogType.QUESTION,
+                Translation.getTranslation("general.neverAskAgain"));
 
             if (response.getButtonIndex() == 1) { // == Exit
                 PreferencesEntry.QUIT_ON_X.setValue(getController(), true);
@@ -311,16 +264,7 @@ public class MainFrame extends PFUIComponent {
         {
             uiComponent.setAlwaysOnTop(true);
         }
-        uiComponent.addWindowFocusListener(new WindowFocusListener() {
-
-            public void windowGainedFocus(WindowEvent e) {
-                getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
-            }
-
-            public void windowLostFocus(WindowEvent e) {
-                // Nothing to do here.
-            }
-        });
+        uiComponent.addWindowFocusListener(new MyWindowFocusListner());
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
 
         logoLabel = new JLabel();
@@ -337,10 +281,10 @@ public class MainFrame extends PFUIComponent {
 
         updateTitle();
 
-        inlineInfoCloseButton = new JButton3Icons(Icons
-            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL), Icons
-            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER), Icons
-            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
+        inlineInfoCloseButton = new JButton3Icons(
+            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
+            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
+            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         inlineInfoCloseButton.setToolTipText(Translation
             .getTranslation("main_frame.inline_info_close.tip"));
         inlineInfoCloseButton.addActionListener(new MyActionListener());
@@ -429,27 +373,37 @@ public class MainFrame extends PFUIComponent {
         // Store main window preferences
         Controller c = getController();
 
-        if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH)
-        {
-            // PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(c, true);
+        PreferencesEntry.MAIN_FRAME_WIDTH.setValue(c, mainWidth);
+        PreferencesEntry.INFO_WIDTH.setValue(getController(), infoWidth);
+
+        if (isMaximized()) {
+            PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(c, true);
         } else {
-            // PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(c, false);
+            PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(c, false);
 
             PreferencesEntry.MAIN_FRAME_X.setValue(c, uiComponent.getX());
             PreferencesEntry.MAIN_FRAME_Y.setValue(c, uiComponent.getY());
 
             // If info is inline and info is showing, do not store width because
             // info will not show at start up and the frame will be W-I-D-E.
+
             if (uiComponent.getWidth() > 0
-                && (PreferencesEntry.INLINE_INFO_MODE.getValueInt(c) == INLINE_INFO_FREE || inlineInfoPanel == null))
+                && (!shouldShowInfoInline() || !isShowingInfoInline()))
             {
-                PreferencesEntry.MAIN_FRAME_WIDTH.setValue(c, uiComponent
-                    .getWidth());
+                PreferencesEntry.MAIN_FRAME_WIDTH.setValue(c,
+                    uiComponent.getWidth());
             }
+
             if (uiComponent.getHeight() > 0) {
-                PreferencesEntry.MAIN_FRAME_HEIGHT.setValue(c, uiComponent
-                    .getHeight());
+                PreferencesEntry.MAIN_FRAME_HEIGHT.setValue(c,
+                    uiComponent.getHeight());
             }
+
+            if (isShowingInfoInline()) {
+                PreferencesEntry.INFO_WIDTH.setValue(getController(),
+                    inlineInfoPanel.getWidth());
+            }
+
             mainTabbedPane.storeValues();
         }
     }
@@ -554,34 +508,36 @@ public class MainFrame extends PFUIComponent {
             ((SyntheticaRootPaneUI) ui).setMaximizedBounds(uiComponent);
         }
 
-        int inline = PreferencesEntry.INLINE_INFO_MODE
-            .getValueInt(getController());
-        if (!isShowingInfoInline()) {
-            normalWidth = uiComponent.getWidth();
-        } else if (inline == INLINE_INFO_LEFT) {
-            normalWidth = uiComponent.getWidth() - split.getDividerLocation();
-        } else if (inline == INLINE_INFO_RIGHT) {
-            normalWidth = split.getDividerLocation();
+        if (isShowingInfoInline()) {
+            mainWidth = split.getDividerLocation();
+        } else if (!isMaximized()) {
+            mainWidth = uiComponent.getWidth();
+        } else {
+            // Maximized window. Let info take the rest of the right screen.
+            infoWidth = uiComponent.getWidth() - mainWidth;
         }
+        logWarning("Main/Info width: " + mainWidth + " / " + infoWidth);
 
         inlineInfoPanel = panel;
         inlineInfoLabel.setText(title);
 
-        // Always maximize to avoid weird stuff.
-        uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         configureInlineInfo();
     }
 
     private void closeInlineInfoPanel() {
+        if (isShowingInfoInline()) {
+            mainWidth = split.getDividerLocation();
+            infoWidth = inlineInfoPanel.getWidth() + split.getDividerSize() + 8;
+            logWarning("Main/Info width: " + mainWidth + " / " + infoWidth);
+        }
         inlineInfoPanel = null;
         configureInlineInfo();
-        uiComponent.setExtendedState(Frame.NORMAL);
     }
 
     public boolean shouldShowInfoInline() {
         int inline = PreferencesEntry.INLINE_INFO_MODE
             .getValueInt(getController());
-        return inline != INLINE_INFO_FREE;
+        return inline != 0;
     }
 
     public boolean isShowingInfoInline() {
@@ -589,37 +545,41 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureInlineInfo() {
-        int inline = PreferencesEntry.INLINE_INFO_MODE
-            .getValueInt(getController());
+        boolean inline = shouldShowInfoInline();
         boolean displaying = isShowingInfoInline();
-        inlineInfoCloseButton.setVisible(inline != INLINE_INFO_FREE
-            && displaying);
+        inlineInfoCloseButton.setVisible(inline && displaying);
 
-        if (inline != INLINE_INFO_FREE && displaying) {
+        if (inline && displaying) {
             // Make sure the info inline panel does not take the full width
             // and hiding the main tabbed pane
-            inlineInfoPanel.setSize(new Dimension(inlineInfoPanel
-                .getMinimumSize().width, inlineInfoPanel.getHeight()));
+            // inlineInfoPanel.setSize(new Dimension(inlineInfoPanel
+            // .getMinimumSize().width, inlineInfoPanel.getHeight()));
 
             centralPanel.removeAll();
-            if (inline == INLINE_INFO_LEFT) {
-                split.setLeftComponent(inlineInfoPanel);
-                split.setRightComponent(mainTabbedPane.getUIComponent());
-            } else {
-                split.setLeftComponent(mainTabbedPane.getUIComponent());
-                split.setRightComponent(inlineInfoPanel);
+            split.setLeftComponent(mainTabbedPane.getUIComponent());
+            split.setRightComponent(inlineInfoPanel);
+
+            if (infoWidth <= 0) {
+                infoWidth = PreferencesEntry.INFO_WIDTH
+                    .getValueInt(getController());
+                if (infoWidth <= 0) {
+                    infoWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+                    infoWidth -= mainWidth;
+                    infoWidth -= uiComponent.getLocationOnScreen().x;
+                    infoWidth -= Constants.UI_DEFAULT_SCREEN_BORDER;
+                }
             }
 
-            final int dividerLocation;
+            logWarning("Main/Info width: " + mainWidth + " / " + infoWidth);
 
-            if (inline == INLINE_INFO_LEFT) {
-                dividerLocation = uiComponent.getWidth() - normalWidth;
-            } else {
-                dividerLocation = normalWidth;
+            if (!isMaximized()) {
+                int width = adjustWidthToScreen(mainWidth + infoWidth);
+                setWindowSize(width, uiComponent.getSize().height);
             }
 
-            split.setDividerLocation(dividerLocation);
+            final int dividerLocation = mainWidth;
             centralPanel.add(split, BorderLayout.CENTER);
+            split.setDividerLocation(dividerLocation);
 
             // No clue why this have to be done later.
             // However if not this change does not come thru
@@ -639,9 +599,23 @@ public class MainFrame extends PFUIComponent {
                 BorderLayout.CENTER);
             inlineInfoPanel = null;
             inlineInfoLabel.setText("");
+            if (!isMaximized()) {
+                setWindowSize(mainWidth, uiComponent.getSize().height);
+            }
         }
 
         relocateIfNecessary();
+    }
+
+    private int adjustWidthToScreen(int width) {
+        int overScreenPX = width
+            - Toolkit.getDefaultToolkit().getScreenSize().width
+            + uiComponent.getLocationOnScreen().x;
+        if (overScreenPX > 0) {
+            width -= overScreenPX;
+            width -= Constants.UI_DEFAULT_SCREEN_BORDER;
+        }
+        return width;
     }
 
     /**
@@ -681,10 +655,110 @@ public class MainFrame extends PFUIComponent {
     // Inner Classes //
     // ////////////////
 
-    private class MyFolderRepositoryListener implements
-            FolderRepositoryListener {
+    private final class MyWindowFocusListner implements WindowFocusListener {
+        public void windowGainedFocus(WindowEvent e) {
+            getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
+        }
 
-        // If showing the inline panel and the folder has been removed, 
+        public void windowLostFocus(WindowEvent e) {
+            // Nothing to do here.
+        }
+    }
+
+    private final class MyWindowListener extends WindowAdapter {
+        private final Controller c;
+
+        private MyWindowListener(Controller c) {
+            this.c = c;
+        }
+
+        @Override
+        public void windowStateChanged(WindowEvent e) {
+            // / logWarning(e.getOldState() & JFrame.MAXIMIZED_BOTH ==
+            // JFrame.MAXIMIZED_BOTH );
+            boolean wasMaximized = (e.getOldState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
+            boolean nowMaximized = (e.getNewState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
+            if (wasMaximized && !nowMaximized) {
+                logWarning("old: " + e.getOldState() + ", new: " + e.getNewState());
+                if (isShowingInfoInline()) {
+                    // Prevents the following:
+                    // 1) Start with main only
+                    // 2) Maximize window
+                    // 3) Show info inline
+                    // 4) De-maximize
+                    // -> Main window must not return to main width but
+                    // main+info width.
+                    int width = adjustWidthToScreen(uiComponent.getWidth()
+                        + infoWidth);
+                    setWindowSize(width, uiComponent.getSize().height);
+                } else {
+                    // Prevents the following:
+                    // 1) Start with main only
+                    // 2) Show info inline
+                    // 3) Maximize window
+                    // 4) Close info.
+                    // 5) De-maximize
+                    // -> Main window must not return to main+info width but main width only.
+                    setWindowSize(mainWidth, uiComponent.getSize().height);
+                }
+            }
+           
+        }
+
+        public void windowClosing(WindowEvent e) {
+            if (OSUtil.isSystraySupported()) {
+                handleExitFirstRequest();
+                boolean quitOnX = PreferencesEntry.QUIT_ON_X.getValueBoolean(c);
+                if (quitOnX) {
+                    exitProgram();
+                } else if (!OSUtil.isMacOS()) {
+                    getUIController().hideChildPanels();
+                    uiComponent.setVisible(false);
+                } else {
+                    uiComponent.setState(Frame.ICONIFIED);
+                }
+            } else {
+                // Quit if systray is not Supported by OS.
+                exitProgram();
+            }
+        }
+
+        /**
+         * Hide other frames when main frame gets minimized.
+         * 
+         * @param e
+         */
+        public void windowIconified(WindowEvent e) {
+            boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
+                .getValueBoolean(c) && !OSUtil.isMacOS();
+            if (minToSysTray) {
+                getUIController().hideChildPanels();
+                uiComponent.setVisible(false);
+            } else {
+                super.windowIconified(e);
+            }
+        }
+
+        /**
+         * Shuts down the program
+         */
+        private void exitProgram() {
+            uiComponent.setVisible(false);
+            uiComponent.dispose();
+            new Thread("Close PowerFolder Thread") {
+                @Override
+                public void run() {
+                    c.tryToExit(0);
+                }
+            }.start();
+        }
+    }
+
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
+
+        // If showing the inline panel and the folder has been removed,
         // close the inline panel.
         public void folderRemoved(FolderRepositoryEvent e) {
             if (isShowingInfoInline()) {
