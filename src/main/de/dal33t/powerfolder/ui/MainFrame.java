@@ -178,7 +178,7 @@ public class MainFrame extends PFUIComponent {
         // Pack elements
         uiComponent.pack();
         mainWidth = uiComponent.getWidth();
-        logWarning("Main/Info width: " + mainWidth + " / ?");
+        logFine("Main/Info width: " + mainWidth + " / ?");
 
         // Initial top-left corner
         int mainX = PreferencesEntry.MAIN_FRAME_X.getValueInt(c);
@@ -516,7 +516,7 @@ public class MainFrame extends PFUIComponent {
             // Maximized window. Let info take the rest of the right screen.
             infoWidth = uiComponent.getWidth() - mainWidth;
         }
-        logWarning("Main/Info width: " + mainWidth + " / " + infoWidth);
+        logFine("Main/Info width: " + mainWidth + " / " + infoWidth);
 
         inlineInfoPanel = panel;
         inlineInfoLabel.setText(title);
@@ -528,7 +528,7 @@ public class MainFrame extends PFUIComponent {
         if (isShowingInfoInline()) {
             mainWidth = split.getDividerLocation();
             infoWidth = inlineInfoPanel.getWidth() + split.getDividerSize() + 8;
-            logWarning("Main/Info width: " + mainWidth + " / " + infoWidth);
+            logFine("Main/Info width: " + mainWidth + " / " + infoWidth);
         }
         inlineInfoPanel = null;
         configureInlineInfo();
@@ -570,7 +570,7 @@ public class MainFrame extends PFUIComponent {
                 }
             }
 
-            logWarning("Main/Info width: " + mainWidth + " / " + infoWidth);
+            logFine("Main/Info width: " + mainWidth + " / " + infoWidth);
 
             if (!isMaximized()) {
                 int width = adjustWidthToScreen(mainWidth + infoWidth);
@@ -674,12 +674,10 @@ public class MainFrame extends PFUIComponent {
 
         @Override
         public void windowStateChanged(WindowEvent e) {
-            // / logWarning(e.getOldState() & JFrame.MAXIMIZED_BOTH ==
-            // JFrame.MAXIMIZED_BOTH );
             boolean wasMaximized = (e.getOldState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
             boolean nowMaximized = (e.getNewState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
             if (wasMaximized && !nowMaximized) {
-                logWarning("old: " + e.getOldState() + ", new: " + e.getNewState());
+                logFine("old: " + e.getOldState() + ", new: " + e.getNewState());
                 if (isShowingInfoInline()) {
                     // Prevents the following:
                     // 1) Start with main only
