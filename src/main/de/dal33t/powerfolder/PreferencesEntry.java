@@ -34,6 +34,12 @@ import de.dal33t.powerfolder.util.Reject;
  * registry.
  */
 public enum PreferencesEntry {
+    
+    /**
+     * #2427: The last node ID this preferences ran on.
+     */
+    LAST_NODE_ID("last_nodeID_obf",""),
+    
     /**
      * Show offline members
      */
