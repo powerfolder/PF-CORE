@@ -25,7 +25,6 @@ import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.skin.LightSky;
-import de.dal33t.powerfolder.ui.MainFrame;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -123,18 +122,22 @@ public enum PreferencesEntry {
     /** Main frame always on top. */
     MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
     /**
-     * Show the information tab inline with the mainframe 0=free, 1=left,
-     * 2=right
+     * Show the information tab with the mainframe 0=free, 1=docked. info
+     * on the right.
      */
-    INLINE_INFO_MODE("inline.info.mode", MainFrame.INLINE_INFO_RIGHT),
+    INLINE_INFO_MODE("inline.info.mode", 1),
 
     MAIN_FRAME_WIDTH("mainframe4.width", 350),
 
-    MAIN_FRAME_HEIGHT("mainframe4.height", 566),
+    MAIN_FRAME_HEIGHT("mainframe4.height", -1),
+    
+    INFO_WIDTH("infoframe4.width", -1),
 
-    MAIN_FRAME_X("mainframe4.x", 50),
+    MAIN_FRAME_X("mainframe4.x", Constants.UI_DEFAULT_SCREEN_BORDER),
 
-    MAIN_FRAME_Y("mainframe4.y", 50),
+    MAIN_FRAME_Y("mainframe4.y", Constants.UI_DEFAULT_SCREEN_BORDER),
+    
+    MAIN_FRAME_MAXIMIZED("mainframe.maximized", false),
 
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
