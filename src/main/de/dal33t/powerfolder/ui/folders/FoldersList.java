@@ -303,7 +303,7 @@ public class FoldersList extends PFUIComponent {
             }
 
             // Add new folder views.
-            addSeparator(collapseLocal, localIcon, localLabel);
+            addSeparator(collapseLocal, localIcon, localLabel, false);
             if (!collapseLocal) {
                 for (ExpandableFolderModel folderBean : localFolders) {
                     addView(folderBean, expandedFolderInfo);
@@ -313,7 +313,7 @@ public class FoldersList extends PFUIComponent {
             if (PreferencesEntry.SHOW_TYPICAL_FOLDERS
                 .getValueBoolean(getController()) && showTypical)
             {
-                addSeparator(collapseTypical, typicalIcon, typicalLabel);
+                addSeparator(collapseTypical, typicalIcon, typicalLabel, true);
 
                 if (!collapseTypical) {
                     for (ExpandableFolderModel folderBean : typicalFolders) {
@@ -322,7 +322,7 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
-            addSeparator(collapseOnline, onlineIcon, onlineLabel);
+            addSeparator(collapseOnline, onlineIcon, onlineLabel, true);
 
             if (!collapseOnline) {
                 for (ExpandableFolderModel folderBean : onlineFolders) {
@@ -333,7 +333,7 @@ public class FoldersList extends PFUIComponent {
         foldersTab.updateEmptyLabel();
     }
 
-    private void addSeparator(boolean collapsed, JLabel icon, JLabel label) {
+    private void addSeparator(boolean collapsed, JLabel icon, JLabel label, boolean showSeparator) {
         FormLayout layout = new FormLayout(
             "3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu", "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -348,7 +348,9 @@ public class FoldersList extends PFUIComponent {
             .getTranslation("folders_list.collapse_hint"));
         builder.add(icon, cc.xy(2, 1));
         builder.add(label, cc.xy(4, 1));
-        builder.add(new JSeparator(), cc.xy(6, 1));
+        if (showSeparator) {
+            builder.add(new JSeparator(), cc.xy(6, 1));
+        }
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
         panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
