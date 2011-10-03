@@ -814,7 +814,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 permissionsRetrieved = true;
                 rebuild(res, defaultPermission);
             } catch (Exception e) {
-                logWarning(e);
+                logWarning(e.toString());
                 permissionsRetrieved = false;
                 rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
             } finally {
