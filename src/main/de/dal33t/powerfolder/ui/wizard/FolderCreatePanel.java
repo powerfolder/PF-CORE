@@ -63,6 +63,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.ui.UserDirectories;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -359,7 +360,10 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             String filePath = folderSettings.getLocalBaseDir()
                 .getAbsolutePath();
 
-            if (WinUtils.isSupported()) {
+            if (WinUtils.isSupported()
+                && !UserDirectories.getUserDirectories().containsKey(
+                    folderInfo.getName()))
+            {
                 WinUtils winUtils = WinUtils.getInstance();
                 ShellLink shellLink = new ShellLink(null, null, filePath, null);
                 try {
