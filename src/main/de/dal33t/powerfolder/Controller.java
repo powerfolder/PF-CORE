@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
@@ -100,6 +101,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.JavaVersion;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Profiling;
@@ -135,7 +137,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.9.13 - 3.5.32"; // 3.5.32
+    public static final String PROGRAM_VERSION = "4.9.15"; // 3.5.33
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -410,8 +412,9 @@ public class Controller extends PFComponent {
         } else {
             preferences = Preferences.userNodeForPackage(PowerFolder.class)
                 .node(getConfigName());
+            
         }
-
+     
         // initialize logger
         // Enabled verbose mode if in config.
         // This logs to file for analysis.
@@ -446,6 +449,9 @@ public class Controller extends PFComponent {
         // #2179: Load from server. How to handle timeouts?
         ConfigurationLoader.loadAndMergeConfigURL(this);
 
+        // If we have a new config. clear the preferences.
+        clearPreferencesOnConfigSwitch();
+        
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);
 
@@ -630,6 +636,27 @@ public class Controller extends PFComponent {
             } catch (IOException e) {
                 logWarning("Unable to setup auto start: " + e);
             }
+        }
+    }
+
+    private void clearPreferencesOnConfigSwitch() {
+        String lastNodeIdObf = PreferencesEntry.LAST_NODE_ID
+            .getValueString(this);
+        String thisNodeId = ConfigurationEntry.NODE_ID.getValue(this);
+        try {
+            if (StringUtils.isNotBlank(lastNodeIdObf)
+                && !LoginUtil.matches(Util.toCharArray(thisNodeId),
+                    lastNodeIdObf))
+            {
+                int i = 0;
+                for (String key : preferences.keys()) {
+                    preferences.remove(key);
+                    i++;
+                }
+                logWarning("Cleared " + i + " preferences, new config/nodeid found");
+            }
+        } catch (BackingStoreException e1) {
+            logWarning("Unable to clear preferences. " + e1);
         }
     }
 
@@ -1497,6 +1524,9 @@ public class Controller extends PFComponent {
         boolean wasStarted = started;
         started = false;
         startTime = null;
+
+        PreferencesEntry.LAST_NODE_ID.setValue(getController(),
+            LoginUtil.hashAndSalt(getMySelf().getId()));
 
         if (taskManager != null) {
             logFine("Shutting down task manager");
