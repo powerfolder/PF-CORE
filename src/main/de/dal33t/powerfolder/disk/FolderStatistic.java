@@ -481,14 +481,17 @@ public class FolderStatistic extends PFComponent {
             return UNKNOWN_SYNC_STATUS;
         }
 
-        if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
-            .getSyncProfile()))
+        boolean backupShare = SyncProfile.HOST_FILES.equals(folder
+            .getSyncProfile())
+            || SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile());
+        if (!backupShare && folder.getMembersCount() == 2
+            && getController().getOSClient().joinedByCloud(folder))
         {
-            // Average of all folder member sync percentages.
-            return getAverageSyncPercentage();
-        } else if (SyncProfile.HOST_FILES.equals(folder.getSyncProfile())
-            || SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile()))
-        {
+            // Cloud backup
+            backupShare = true;
+        }
+
+        if (backupShare) {
             // In these cases only remote sides matter.
             // Calc maximum sync % of remote sides.
             double maxSync = 0;
@@ -497,6 +500,11 @@ public class FolderStatistic extends PFComponent {
                 maxSync = Math.max(maxSync, memberSync);
             }
             return maxSync;
+        } else if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
+            .getSyncProfile()))
+        {
+            // Average of all folder member sync percentages.
+            return getAverageSyncPercentage();
         }
         // Otherwise, just return the local sync percentage.
         return getLocalSyncPercentage();
