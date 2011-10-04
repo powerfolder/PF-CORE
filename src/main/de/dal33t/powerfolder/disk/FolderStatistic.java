@@ -276,7 +276,7 @@ public class FolderStatistic extends PFComponent {
             if (inSync) {
                 // Remove partial stat for this member / file, if it exists.
                 Map<FileInfo, Long> memberMap = current.getPartialSyncStatMap()
-                    .get(member);
+                    .get(member.getInfo());
                 if (memberMap != null) {
                     Long removedBytes = memberMap.remove(fileInfo);
                     if (removedBytes != null) {
@@ -562,10 +562,10 @@ public class FolderStatistic extends PFComponent {
                 + member.getInfo().nick + ", " + bytesTransferred);
         }
         Map<FileInfo, Long> memberMap = current.getPartialSyncStatMap().get(
-            member);
+            member.getInfo());
         if (memberMap == null) {
             memberMap = Util.createConcurrentHashMap(4);
-            current.getPartialSyncStatMap().put(member, memberMap);
+            current.getPartialSyncStatMap().put(member.getInfo(), memberMap);
         }
         memberMap.put(fileInfo, bytesTransferred);
         if (current != null) {

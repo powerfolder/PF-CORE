@@ -71,7 +71,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     private final Map<MemberInfo, Long> sizesInSync = new HashMap<MemberInfo, Long>();
 
     /** Map of bytes received for a file for a member. */
-    private final Map<Member, Map<FileInfo, Long>> partialSyncStatMap = new ConcurrentHashMap<Member, Map<FileInfo, Long>>();
+    private final Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = new ConcurrentHashMap<MemberInfo, Map<FileInfo, Long>>();
 
     public FolderStatisticInfo(FolderInfo folder) {
         super();
@@ -139,7 +139,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         return sizesInSync;
     }
 
-    public Map<Member, Map<FileInfo, Long>> getPartialSyncStatMap() {
+    public Map<MemberInfo, Map<FileInfo, Long>> getPartialSyncStatMap() {
         return partialSyncStatMap;
     }
 
@@ -177,7 +177,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             double sync = 100.0 * (size + partialTotal) / totalSize;
             if (isFiner()) {
                 logFiner("Sync for member " + memberInfo.nick + ", " + size
-                    + " + " + partialTotal + " / " + totalSize + " = " + sync);
+                    + " + " + partialTotal + " / " + totalSize + " = " + sync + map);
             }
 
             if (Double.compare(sync, 100.0) > 0) {
