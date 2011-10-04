@@ -446,11 +446,11 @@ public class Controller extends PFComponent {
             logWarning("Desktop utility not supported");
         }
 
-        // #2179: Load from server. How to handle timeouts?
-        ConfigurationLoader.loadAndMergeConfigURL(this);
-
         // If we have a new config. clear the preferences.
         clearPreferencesOnConfigSwitch();
+        
+        // #2179: Load from server. How to handle timeouts?
+        ConfigurationLoader.loadAndMergeConfigURL(this);
         
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);
