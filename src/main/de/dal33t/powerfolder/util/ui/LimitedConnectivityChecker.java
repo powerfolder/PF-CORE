@@ -283,6 +283,9 @@ public class LimitedConnectivityChecker {
             public void run() {
                 String wikiLink = Help.getWikiArticleURL(controllerArg,
                     WikiLinks.LIMITED_CONNECTIVITY);
+                if (StringUtils.isBlank(wikiLink)) {
+                    wikiLink = "";
+                }
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                     controllerArg, Translation
                         .getTranslation("limited_connection.title"),
