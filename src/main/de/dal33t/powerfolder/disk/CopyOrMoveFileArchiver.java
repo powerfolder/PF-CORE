@@ -115,13 +115,15 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         if (target.getParentFile().exists() || target.getParentFile().mkdirs())
         {
             // Reset cache
-            size = null;
+            // size = null;
             boolean tryCopy = forceKeepSource;
             if (!tryCopy) {
                 if (!source.renameTo(target)) {
                     log.severe("Failed to rename " + source
                         + ", falling back to copying");
                     tryCopy = true;
+                } else if (size != null) {
+                    size += target.length();
                 }
             }
             if (tryCopy) {
@@ -129,6 +131,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 FileUtils.copyFile(source, target);
                 // Preserve last modification date.
                 target.setLastModified(lastModified);
+                if (size != null) {
+                    size += target.length();
+                }
             }
 
             if (log.isLoggable(Level.FINE)) {
@@ -164,9 +169,13 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             }
             toDelete--;
 
+            long len = f.length();
             if (!f.delete()) {
                 throw new IOException("Could not delete old version: " + f);
             } else {
+                if (size != null) {
+                    size -= len;
+                }
                 if (log.isLoggable(Level.FINE)) {
                     log.fine("checkArchivedFile: Deleted archived file " + f);
                 }
