@@ -200,7 +200,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             ValueModel pflModel = new ValueHolder(
-                ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController()));
+                ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController())
+                    || WinUtils.isPFLinks(getController()));
             usePowerFolderLink = BasicComponentFactory.createCheckBox(
                 new BufferedValueModel(pflModel, writeTrigger),
                 Translation.getTranslation("preferences.dialog.show_pf_link"));
@@ -353,10 +354,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         if (usePowerFolderLink != null) {
             boolean newValue = usePowerFolderLink.isSelected();
-            configureFavorite(newValue);
+            configureLinksPlances(newValue);
             // PowerFolder favorite
-            ConfigurationEntry.USE_PF_LINK.setValue(getController(),
-                Boolean.toString(usePowerFolderLink.isSelected()));
+            // ConfigurationEntry.USE_PF_LINK.setValue(getController(),
+            // Boolean.toString(usePowerFolderLink.isSelected()));
         }
 
         // Use inline info
@@ -390,10 +391,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         }
     }
 
-    private void configureFavorite(boolean newValue) {
+    private void configureLinksPlances(boolean newValue) {
         if (WinUtils.isSupported()) {
             try {
-                WinUtils.getInstance().setPFFavorite(newValue, getController());
+                WinUtils.getInstance().setPFLinks(newValue, getController());
             } catch (IOException e) {
                 logSevere(e);
             }
