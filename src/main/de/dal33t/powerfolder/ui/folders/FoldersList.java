@@ -111,12 +111,13 @@ public class FoldersList extends PFUIComponent {
     public FoldersList(Controller controller, FoldersTab foldersTab) {
         super(controller);
         empty = true;
-        showTypical = true;
+        showTypical = PreferencesEntry.SHOW_TYPICAL_FOLDERS
+            .getValueBoolean(getController());
         this.foldersTab = foldersTab;
-        collapseLocal = PreferencesEntry.FOLDER_LOCAL_COLLAPSED.
-                getValueBoolean(getController());
-        collapseTypical = PreferencesEntry.FOLDER_TYPICAL_COLLAPSED.
-                getValueBoolean(getController());
+        collapseLocal = PreferencesEntry.FOLDER_LOCAL_COLLAPSED
+            .getValueBoolean(getController());
+        collapseTypical = PreferencesEntry.FOLDER_TYPICAL_COLLAPSED
+            .getValueBoolean(getController());
         collapseOnline = PreferencesEntry.FOLDER_ONLINE_COLLAPSED.
                 getValueBoolean(getController());
         transfersUpdater = new DelayedUpdater(getController());
@@ -152,7 +153,9 @@ public class FoldersList extends PFUIComponent {
         {
             @Override
             public void hasPermission(boolean hasPermission) {
-                showTypical = hasPermission;
+                showTypical = hasPermission
+                    && PreferencesEntry.SHOW_TYPICAL_FOLDERS
+                        .getValueBoolean(getController());
                 updateFolders();
             }
         };
@@ -245,24 +248,24 @@ public class FoldersList extends PFUIComponent {
             localFolders.add(bean);
         }
         Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
-
+       
         for (FolderInfo folderInfo : client.getAccountFolders()) {
             ExpandableFolderModel bean = new ExpandableFolderModel(
-                    ExpandableFolderModel.Type.CloudOnly, folderInfo, null,
-                    true);
-            if (!localFolders.contains(bean)) {
-                onlineFolders.add(bean);
+                ExpandableFolderModel.Type.CloudOnly, folderInfo, null, true);
+            if (localFolders.contains(bean)) {
+                continue;
             }
+            onlineFolders.add(bean);
         }
         Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
-
+        
         if (showTypical) {
             boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
                 .getValueBoolean(getController());
-            for (String key : UserDirectories.getUserDirectoriesFiltered(
+            for (String name : UserDirectories.getUserDirectoriesFiltered(
                 getController(), showAppData).keySet())
             {
-                FolderInfo folderInfo = new FolderInfo(key,
+                FolderInfo folderInfo = new FolderInfo(name,
                     '[' + IdGenerator.makeId() + ']');
                 ExpandableFolderModel bean = new ExpandableFolderModel(
                     ExpandableFolderModel.Type.Typical, folderInfo, null, false);
@@ -275,6 +278,8 @@ public class FoldersList extends PFUIComponent {
             }
             Collections.sort(typicalFolders, FolderBeanComparator.INSTANCE);
         }
+        
+        
 
         empty = onlineFolders.isEmpty() && typicalFolders.isEmpty() &&
                 localFolders.isEmpty();
@@ -310,9 +315,7 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
-            if (PreferencesEntry.SHOW_TYPICAL_FOLDERS
-                .getValueBoolean(getController()) && showTypical)
-            {
+            if (showTypical) {
                 addSeparator(collapseTypical, typicalIcon, typicalLabel, true);
 
                 if (!collapseTypical) {
