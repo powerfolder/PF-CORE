@@ -1005,9 +1005,6 @@ public class ServerClient extends PFComponent {
         accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
     }
 
-    /**
-     * TODO Support saving password with md5/salt
-     */
     private void saveLastKnowLogin() {
         if (StringUtils.isNotBlank(username)) {
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
@@ -1030,6 +1027,9 @@ public class ServerClient extends PFComponent {
         if (isRememberPassword() && StringUtils.isNotBlank(passwordObf)) {
             ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
                 getController(), passwordObf);
+        } else {
+            ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                .removeValue(getController());
         }
 
         // Store new username/pw
