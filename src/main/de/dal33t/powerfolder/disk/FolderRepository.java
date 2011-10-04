@@ -309,7 +309,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController());
         if (useFavLink && WinUtils.isSupported()) {
             try {
-                WinUtils.getInstance().setPFFavorite(true, getController());
+                WinUtils.getInstance().setPFLinks(true, getController());
+                ConfigurationEntry.USE_PF_LINK.setValue(getController(), false);
             } catch (IOException e) {
                 logSevere(e);
             }
@@ -317,6 +318,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (useFavLink && MacUtils.isSupported()) {
             try {
                 MacUtils.getInstance().setPFPlaces(true, getController());
+                ConfigurationEntry.USE_PF_LINK.setValue(getController(), false);
             } catch (IOException e) {
                 logSevere(e);
             }
