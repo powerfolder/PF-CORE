@@ -146,7 +146,7 @@ public class WinUtils extends Loggable {
      * @param controller
      * @throws IOException
      */
-    public void setPFFavorite(boolean setup, Controller controller)
+    public void setPFLinks(boolean setup, Controller controller)
         throws IOException
     {
         String userHome = System.getProperty("user.home");
@@ -165,6 +165,21 @@ public class WinUtils extends Loggable {
         } else {
             shortCut.delete();
         }
+    }
+
+    public static boolean isPFLinks(Controller controller) {
+        if (!OSUtil.isWindowsSystem()) {
+            return false;
+        }
+        String userHome = System.getProperty("user.home");
+        File linksDir = new File(userHome, "Links");
+        if (!linksDir.exists()) {
+            return false;
+        }
+        File baseDir = new File(controller.getFolderRepository()
+            .getFoldersBasedir());
+        File shortCut = new File(linksDir, baseDir.getName() + ".lnk");
+        return shortCut.exists();
     }
 
     public void setPFStartup(boolean setup, Controller controller)
