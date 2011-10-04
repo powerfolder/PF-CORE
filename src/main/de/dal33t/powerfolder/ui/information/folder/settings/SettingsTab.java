@@ -1369,7 +1369,7 @@ public class SettingsTab extends PFUIComponent {
 
                 }
             } catch (Exception e) {
-                logSevere(e);
+                logWarning(e.toString());
                 return null;
             } finally {
                 updateingOnlineArchiveMode = false;
