@@ -155,7 +155,7 @@ public class DirectoryFilter extends FilterModel {
     public void setFileFilterMode(int fileFilterMode) {
         refilter.set(true);
         this.fileFilterMode = fileFilterMode;
-        logInfo("Set filter mode to " + fileFilterMode);
+        logFine("Set filter mode to " + fileFilterMode);
         queueFilterEvent();
     }
 
@@ -163,7 +163,7 @@ public class DirectoryFilter extends FilterModel {
      * Called from the FilterModel when text search field changed.
      */
     public void scheduleFiltering() {
-        logInfo("Set search field to " + getSearchFieldVM());
+        logFine("Set search field to " + getSearchFieldVM());
         queueFilterEvent();
     }
 
