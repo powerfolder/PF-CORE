@@ -100,7 +100,7 @@ public class TransferManager extends PFComponent {
      */
     public static final int OLD_MAX_CHUNK_SIZE = 32 * 1024;
     public static final int OLD_MAX_REQUESTS_QUEUED = 20;
-    public static final long PARTIAL_TRANSFER_DELAY = 10000; // Ten seconds
+    public static final long PARTIAL_TRANSFER_DELAY = 3000; // Ten seconds
     public static final long ONE_DAY = 24L * 3600 * 1000; // One day in ms
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat(
