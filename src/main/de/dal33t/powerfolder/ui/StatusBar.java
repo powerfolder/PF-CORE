@@ -45,22 +45,28 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
+import de.dal33t.powerfolder.ui.model.NoticesModel;
+import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
+import de.dal33t.powerfolder.ui.notices.RunnableNotice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.notices.*;
-import de.dal33t.powerfolder.ui.model.NoticesModel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -69,11 +75,11 @@ import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
 
 /**
  * The status bar on the lower side of the main window.
@@ -328,28 +334,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
     }
 
-
     private void configureConnectionLabels() {
-        NodeManagerListener nodeListener = new NodeManagerAdapter() {
-            public void nodeConnected(NodeManagerEvent e) {
-                updateConnectionLabels();
-            }
-
-            public void nodeDisconnected(NodeManagerEvent e) {
-                updateConnectionLabels();
-            }
-
-            public void startStop(NodeManagerEvent e) {
-                updateConnectionLabels();
-            }
-
-            public boolean fireInEventDispatchThread() {
-                return true;
-            }
-        };
-
         // Add behavior
-        getController().getNodeManager().addNodeManagerListener(nodeListener);
+        getController().getNodeManager().addNodeManagerListener(
+            new MyNodeListener());
+        getController().getOSClient().addListener(new MyServerClientListener());
 
         updateConnectionLabels();
     }
@@ -467,6 +456,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 onlineStateInfo.setIcon(connectionQualityIcon);
                 onlineStateInfo.setToolTipText(connectionQualityText);
             }
+            if (!getController().getOSClient().isLoggedIn()) {
+                onlineStateInfo.setToolTipText(Translation
+                    .getTranslation("online_label.not_loggedin"));
+                onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));        
+            }
         } else {
             // Connecting
             String text = Translation.getTranslation("online_label.connecting");
@@ -576,6 +570,47 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 syncButton.spin(anySynchronizing);
             }
         });
+    }
+    
+    private final class MyNodeListener extends NodeManagerAdapter {
+        public void nodeConnected(NodeManagerEvent e) {
+            updateConnectionLabels();
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            updateConnectionLabels();
+        }
+
+        public void startStop(NodeManagerEvent e) {
+            updateConnectionLabels();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    };
+
+    private final class MyServerClientListener implements ServerClientListener {
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+        }
+
+        public void serverConnected(ServerClientEvent event) { 
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+        }
+
+        public void login(ServerClientEvent event) {
+            updateConnectionLabels();
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateConnectionLabels();
+        }
     }
 
     private class MyFolderRepositoryListener implements
