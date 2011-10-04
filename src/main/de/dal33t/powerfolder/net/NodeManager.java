@@ -137,16 +137,12 @@ public class NodeManager extends PFComponent {
             // Take nick from command line
             nick = controller.getCommandLine().getOptionValue("n");
         }
-        String idKey = "PowerFolder.nodeId";
         // check for manual id
         String id = ConfigurationEntry.NODE_ID.getValue(getController());
         if (id == null) {
-            id = getController().getPreferences().get(idKey, null);
-            if (id == null) {
-                id = IdGenerator.makeId();
-                // store ID
-                logInfo("Generated new ID for '" + nick + "': " + id);
-            }
+            id = IdGenerator.makeId();
+            // store ID
+            logInfo("Generated new ID for '" + nick + "': " + id);
             ConfigurationEntry.NODE_ID.setValue(getController(), id);
         }
         String networkId = ConfigurationEntry.NETWORK_ID
