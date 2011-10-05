@@ -642,6 +642,11 @@ public class Base64 {
         }
     }
 
+    public static String encode4URL(String input) {
+        return encodeBytes(input.getBytes(Convert.UTF8), URL_SAFE
+            | DONT_BREAK_LINES);
+    }
+
     /**
      * Encodes a byte array into Base64 notation. Does not GZip-compress data.
      * 
