@@ -45,6 +45,11 @@ public class Identity extends Message {
 
     /** Flag which indicates that encryption is supported. */
     private boolean supportsEncryption;
+    
+    /**
+     * #2366: For server only. Since v3.5.13
+     */
+    private boolean supportsQuickLogin = true;
 
     /**
      * flag to indicate a tunneled connection.
@@ -181,6 +186,10 @@ public class Identity extends Message {
 
     public boolean isSupportingFileHistoryRequests() {
         return supportingFileHistoryRequests;
+    }
+    
+    public boolean isSupportsQuickLogin() {
+        return supportsQuickLogin;
     }
 
     /**

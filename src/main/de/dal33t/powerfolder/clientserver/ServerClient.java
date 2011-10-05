@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
@@ -99,6 +100,11 @@ public class ServerClient extends PFComponent {
      * Update the config with new HOST/ID infos if retrieved from server.
      */
     private boolean updateConfig;
+
+    /**
+     * #2366: Quick login during handshake supported
+     */
+    private boolean supportsQuickLogin;
 
     /**
      * Log that is kept to synchronize calls to login
@@ -164,6 +170,7 @@ public class ServerClient extends PFComponent {
     {
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
+        this.supportsQuickLogin = true;
 
         // Custom server
         String theName = !StringUtils.isBlank(name) ? name : Translation
@@ -310,7 +317,8 @@ public class ServerClient extends PFComponent {
             return true;
         }
         if (isTempServerNode(server)) {
-            if (server.getReconnectAddress().equals(node.getReconnectAddress())) {
+            if (server.getReconnectAddress().equals(node.getReconnectAddress()))
+            {
                 return true;
             }
             // Try check by hostname / port
@@ -1147,12 +1155,22 @@ public class ServerClient extends PFComponent {
     public String toString() {
         return "ServerClient to " + (server != null ? server : "n/a");
     }
-    
-   
 
     // Inner classes **********************************************************
 
     public void serverConnected(Member newNode) {
+        ConnectionHandler conHan = newNode.getPeer();
+        Identity id = conHan != null ? conHan.getIdentity() : null;
+        supportsQuickLogin = id != null && id.isSupportsQuickLogin();
+        if (supportsQuickLogin) {
+            logFine("Quick login at server supported");
+            serverConnected0(newNode);
+        } else {
+            logFine("Quick login at server NOT supported. Using regular login");
+        }
+    }
+
+    private void serverConnected0(Member newNode) {
         // Our server member instance is a temporary one. Lets get real.
         if (isTempServerNode(server)) {
             // Got connect to server! Take his ID and name.
@@ -1173,14 +1191,13 @@ public class ServerClient extends PFComponent {
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
                 login(username, passwordObf);
-                getController().schedule(new HostingServerRetriever(),
-                    200L);
+                getController().schedule(new HostingServerRetriever(), 200L);
             } catch (RemoteCallException ex) {
                 logWarning("Unable to login. " + ex);
                 logFine(ex);
             }
         }
-        
+
         // #2425
         if (ConfigurationEntry.SYNC_AND_EXIT.getValueBoolean(getController())) {
             // Check after 60 seconds. Then every 10 secs
@@ -1198,12 +1215,14 @@ public class ServerClient extends PFComponent {
     private class MyNodeManagerListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
             // #2366: Checked from via serverConnected(Member)
-            if (ServerClient.this == getController().getOSClient()) {
+            if (ServerClient.this == getController().getOSClient()
+                && supportsQuickLogin)
+            {
                 return;
             }
             // For JUnit tests only;
             if (isServer(e.getNode())) {
-                serverConnected(e.getNode());
+                serverConnected0(e.getNode());
             }
         }
 
