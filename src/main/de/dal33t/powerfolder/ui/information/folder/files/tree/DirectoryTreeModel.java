@@ -47,12 +47,12 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                 (DirectoryTreeNodeUserObject) ((DefaultMutableTreeNode) getRoot())
                         .getUserObject();
         if (rootUO != null && rootUO.getDisplayName().equals(
-                model.getRootFolder().getName())) {
+                model.getRootFolderName())) {
             updateTree(model.getFilteredDirectory(), (DefaultMutableTreeNode) getRoot());
         } else {
             // New tree. Node is the folder.
             DirectoryTreeNodeUserObject newRootUO =
-                    new DirectoryTreeNodeUserObject(model.getRootFolder().getName(),
+                    new DirectoryTreeNodeUserObject(model.getRootFolderName(),
                             "", model.hasFilesDeep());
             DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(newRootUO);
             setRoot(newRoot);

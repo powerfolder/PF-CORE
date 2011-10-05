@@ -317,7 +317,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void adviseOfFilteringBegin() {
     }
 
-    public void adviseOfFilteringEnd() {
+    public void invalidate() {
+        statsPanel.setStats(0, 0, 0);
     }
 
     /**

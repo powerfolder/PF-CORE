@@ -115,7 +115,8 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
     public void adviseOfFilteringBegin() {
     }
 
-    public void adviseOfFilteringEnd() {
+    public void invalidate() {
+        directoryTreeModel.setRoot(new DefaultMutableTreeNode());
     }
 
     /**

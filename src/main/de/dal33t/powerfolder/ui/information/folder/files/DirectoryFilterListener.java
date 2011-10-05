@@ -29,10 +29,7 @@ public interface DirectoryFilterListener {
      */
     void adviseOfFilteringBegin();
 
-    /**
-     * Advice that a filter processes has completed.
-     */
-    void adviseOfFilteringEnd();
-
     void adviseOfChange(FilteredDirectoryEvent event);
+
+    void invalidate();
 }

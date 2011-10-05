@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 
 import java.util.List;
@@ -33,19 +32,19 @@ import java.util.ArrayList;
  */
 public class FilteredDirectoryModel {
 
-    private final Folder rootFolder;
+    private final String rootFolderName;
+    private String directoryRelativeName;
     private final List<FileInfo> fileInfos = new ArrayList<FileInfo>();
     private final FilteredDirectory filteredDirectory;
-    private String directoryRelativeName;
 
-    public FilteredDirectoryModel(Folder rootFolder, String directoryRelativeName) {
-        this.rootFolder = rootFolder;
+    public FilteredDirectoryModel(String rootFolderName, String directoryRelativeName) {
+        this.rootFolderName = rootFolderName;
         this.directoryRelativeName = directoryRelativeName;
-        filteredDirectory = new FilteredDirectory(rootFolder.getName(), "", false);
+        filteredDirectory = new FilteredDirectory(rootFolderName, "", false);
     }
 
-    public Folder getRootFolder() {
-        return rootFolder;
+    public String getRootFolderName() {
+        return rootFolderName;
     }
 
     public void setDirectoryRelativeName(String directoryRelativeName) {

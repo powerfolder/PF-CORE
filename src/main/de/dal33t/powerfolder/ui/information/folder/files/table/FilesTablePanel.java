@@ -221,6 +221,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         // directory.
         FilteredDirectoryModel filteredDirectoryModel = event.getModel();
         tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
+        emptyLabel.setText(Translation
+            .getTranslation("files_table_panel.no_files_available"));
     }
 
     public void adviseOfFilteringBegin() {
@@ -228,9 +230,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             .getTranslation("files_table_panel.finding_files"));
     }
 
-    public void adviseOfFilteringEnd() {
-        emptyLabel.setText(Translation
-            .getTranslation("files_table_panel.no_files_available"));
+    public void invalidate() {
+        tableModel.setFilteredDirectoryModel(new FilteredDirectoryModel("",""));
     }
 
     /**
