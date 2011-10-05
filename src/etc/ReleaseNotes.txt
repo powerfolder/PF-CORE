@@ -1,29 +1,68 @@
-PowerFolder Version 4.5.0 - http://www.powerfolder.com
+PowerFolder Version 5.0 - http://www.powerfolder.com
 
 = New features =
- * Sync and shutdown. Right click the PowerFolder tray icon to start it.
-
+ * Greatly simplified first setup. In a nutshell:
+ * PowerFolder has now less wizards, better defaults, and is easier to setup.
+ * Auto detection of Internet connection speed.
+ * Improved conflict handling:
+ * A warning icon is shown in case of a file conflict and
+   both conflicting file changes will be saved in the folder.
+   http://www.powerfolder.com/wiki/Conflict_handling
+ * Typical folders such as Documents, Photos, etc. pp. show up in the List of
+   folders as recommended and can be setup with a single click.
+ * Cloud/Available folders can now be mounted as drive via WebDAV:
+   http://www.powerfolder.com/wiki/WebDAV
+ * Cloud/Available folders can now be opened with a single click in web browser.
+ * Directories created in the main PowerFolders directory automatically
+   appear in the folders list and get synced, shared or backed up.
+ * Auto setup folders: If checked all folders of the user get synced to the computer.
+ * Auto setup folders will also automatically accept invitations received from friends.
+ * File archive can now clean up itself by date:
+   http://www.powerfolder.com/wiki/File_Archive
+ * Sync and exit added to system tray menu. PowerFolder will quit after it is synced.
+ * Files can now be excluded from sync by right-click on the up- and downloadds panel.
+ * Added option to backup "AppData" directory (Advanced settings).
+ 
 = Improvements =
- * Mass delete detection warnings are now preserved on restart.
-   http://www.powerfolder.com/wiki/Mass_delete_protection
- * Folders tab now shows the local target directory for each folder.
- * Several internal security improvements.
- * Simplified downloads/uploads cleanup slider.
- * Removed several unclear warnings dialogs.
- * Default excluded "ithmb" files (iPod Photo temporary files).
- * Parallel uploads to other computers is not longer limited to 10.
- * Several internal changes in preparation of PowerFolder Server 2.2:
-   http://www.powerfolder.com/wiki/Server_Overview
+ * On Mac we added an auto-start option (on user login).
+ * On Mac a link in Places to all PowerFolders gets created.
+ * Fully compatible with the latest Mac OS X (Lion).
+ * PowerFolder is now fully compatible with Java 7.
+ * Less advertisements in the free editon of PowerFolder.
+ * Window resizing and min-/maximizing code rewritten. Should be more "normal" now.
+ * Folder members which don't know each other (non friends) will connect faster.
+ * Added solution to "Unsynchronized folder" problem: Shows files that are not synced.
+ * Dynamic scan time regulation: Folders with many files get scanned less often
+   to save I/O and CPU resources. Folders with less files get scanned more often.
+ * Delta sync in LAN is now enabled by default.
+ * Login from clients with large number of files is much quicker now.
+ * Windows installer patches Windows WebDAV implementation.
+ * Directory chooser in general: Accepts direct text input of path.
+ * Wizard: Custom directory chooser support multi directory select.
+ * Tray icon: Shows info on connect and login status.
+ * Server only: Invite user wizard now also works with LDAP/AD usernames,
+   which are not email addresses.
+ * Mass deletion protection disabled by default.
+ * All sending transfer modes use instant sync now be default:
+   http://www.powerfolder.com/wiki/Transfer_Modes
+ * Server only: Logging in as server admin on the client shows a warning.
+ * Installer EXE works on 64 and 32bit Windows. Removed the "32" in the filename.
+ * 64 bit: Installs in "C:\Program Files" instead of "C:\Program Files (x64)".
+ * Connects to server for login also in LAN only mode:
+   http://www.powerfolder.com/wiki/LAN-Only_networking_mode
+ * Many more minor improvements and enhancements.
  
 = Bugfixes =
- * Fixed connection bug with more than 500.000 files on a single folder.
- * Ignore patterns are not longer reset when changing the local directory.
-   http://www.powerfolder.com/wiki/Excluding_Files_from_Synchronization
- * File browser filter setting "Unsynchronized files" does not longer show
-   files, that are excluded from sync.
- * File browser correctly updates view when restoring whole subdirectories.
- * Warning about not unsynchronized folders now shows the correct number of days.
- * Fixed a problem when filename starts with "/" (slash).
+ * Mac version now correctly saves preferences again.
+ * Fixed odd min/maximizing behavior on Mac systems.
+ * Unchecking "Remember password" now works.
+ * Fixed bug, that prevented PowerFolder from closing on Windows shutdown.
+ * Fixed bug, that causes the transfer rate drop to 0 KB/s.
+ * Fixed bug, that prevented the log files from rotating daily.
+ * Folder problems tab: Corrected cleanup and selecting behavior.
+ * Server only: Users with no create permission cannot longer open the wizard:
+   http://www.powerfolder.com/wiki/Extended_Security_Control
+ * Many more minor bugfixes.
 
 
 Please give us feedback and request improvements:
@@ -51,6 +90,35 @@ Email      : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.5.0
+-------------
+
+= New features =
+ * Sync and shutdown. Right click the PowerFolder tray icon to start it.
+
+= Improvements =
+ * Mass delete detection warnings are now preserved on restart.
+   http://www.powerfolder.com/wiki/Mass_delete_protection
+ * Folders tab now shows the local target directory for each folder.
+ * Several internal security improvements.
+ * Simplified downloads/uploads cleanup slider.
+ * Removed several unclear warnings dialogs.
+ * Default excluded "ithmb" files (iPod Photo temporary files).
+ * Parallel uploads to other computers is not longer limited to 10.
+ * Several internal changes in preparation of PowerFolder Server 2.2:
+   http://www.powerfolder.com/wiki/Server_Overview
+ 
+= Bugfixes =
+ * Fixed connection bug with more than 500.000 files on a single folder.
+ * Ignore patterns are not longer reset when changing the local directory.
+   http://www.powerfolder.com/wiki/Excluding_Files_from_Synchronization
+ * File browser filter setting "Unsynchronized files" does not longer show
+   files, that are excluded from sync.
+ * File browser correctly updates view when restoring whole subdirectories.
+ * Warning about not unsynchronized folders now shows the correct number of days.
+ * Fixed a problem when filename starts with "/" (slash).
+
 
 Version 4.4.2
 -------------
