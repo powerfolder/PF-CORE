@@ -232,6 +232,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     public void invalidate() {
         tableModel.setFilteredDirectoryModel(new FilteredDirectoryModel("",""));
+        emptyLabel.setText(Translation
+            .getTranslation("files_table_panel.finding_files"));
     }
 
     /**
