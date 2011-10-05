@@ -124,20 +124,6 @@ public class StatusTab extends PFUIComponent {
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
         noticeModel = getApplicationModel().getNoticesModel();
-        noticeModel.getAllNoticesCountVM().addValueChangeListener(
-            new MyNoticesListener());
-        noticeModel.getUnreadNoticesCountVM().addValueChangeListener(
-            new MyNoticesListener());
-        getApplicationModel().getFolderRepositoryModel()
-            .addOverallFolderStatListener(new MyOverallFolderStatListener());
-        controller.getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
-        getApplicationModel().getUseOSModel().addValueChangeListener(
-            new UseOSModelListener());
-        getApplicationModel().getLicenseModel().getDaysValidModel()
-            .addValueChangeListener(new MyDaysValidListener());
-        getApplicationModel().getLicenseModel().getLicenseKeyModel()
-            .addValueChangeListener(new MyLicenseKeyListener());
     }
 
     /**
@@ -281,6 +267,21 @@ public class StatusTab extends PFUIComponent {
      * Register any listeners.
      */
     private void registerListeners() {
+        noticeModel.getAllNoticesCountVM().addValueChangeListener(
+            new MyNoticesListener());
+        noticeModel.getUnreadNoticesCountVM().addValueChangeListener(
+            new MyNoticesListener());
+        getApplicationModel().getFolderRepositoryModel()
+            .addOverallFolderStatListener(new MyOverallFolderStatListener());
+        getController().getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
+        getApplicationModel().getUseOSModel().addValueChangeListener(
+            new UseOSModelListener());
+        getApplicationModel().getLicenseModel().getDaysValidModel()
+            .addValueChangeListener(new MyDaysValidListener());
+        getApplicationModel().getLicenseModel().getLicenseKeyModel()
+            .addValueChangeListener(new MyLicenseKeyListener());
+
         downloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 updateTransferText();
@@ -291,9 +292,13 @@ public class StatusTab extends PFUIComponent {
                 updateTransferText();
             }
         });
+        client.addListener(new MyServerClientListener());
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-        client.addListener(new MyServerClientListener());
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            folder.addFolderListener(folderListener);
+        }
     }
 
     /**
@@ -777,13 +782,11 @@ public class StatusTab extends PFUIComponent {
         public void folderCreated(FolderRepositoryEvent e) {
             e.getFolder().addFolderListener(folderListener);
             updateFoldersText();
-            logFine("Added to folder listeners: " + e.getFolder().getName());
         }
 
         public void folderRemoved(FolderRepositoryEvent e) {
             e.getFolder().removeFolderListener(folderListener);
             updateFoldersText();
-            logFine("Removed from folder listeners: " + e.getFolder().getName());
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
@@ -834,7 +837,7 @@ public class StatusTab extends PFUIComponent {
             updateLicenseDetails();
         }
     }
-    
+
     private class MyDaysValidListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             updateLicenseDetails();
