@@ -29,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -39,9 +40,9 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.information.debug.DebugInformationCard;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
-import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
 import de.dal33t.powerfolder.ui.information.notices.NoticesInformationCard;
 import de.dal33t.powerfolder.ui.information.stats.StatsInformationCard;
+import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
@@ -89,15 +90,17 @@ public class InformationFrame extends PFUIComponent {
         Preferences prefs = getController().getPreferences();
 
         int y = prefs.getInt("infoframe4.y", mainFrame.getY());
-        int x = prefs.getInt("infoframe4.x", mainFrame.getX()
-            + mainFrame.getWidth() + 20);
+        int x = prefs.getInt("infoframe4.x",
+            mainFrame.getX() + mainFrame.getWidth()
+                + Constants.UI_DEFAULT_SCREEN_BORDER / 2);
         uiComponent.setLocation(x, y);
 
         // Pack elements
         uiComponent.pack();
 
         int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int width = prefs.getInt("infoframe4.width", screenWidth - x - 20);
+        int width = prefs.getInt("infoframe4.width", screenWidth - x
+            - Constants.UI_DEFAULT_SCREEN_BORDER);
         int height = prefs.getInt("infoframe4.height", mainFrame.getHeight());
         if (width < 50) {
             width = 50;
