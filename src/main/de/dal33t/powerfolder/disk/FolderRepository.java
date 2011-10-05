@@ -86,6 +86,8 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.UserDirectories;
+import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -1334,19 +1336,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public boolean autoAcceptInvitation(Invitation invitation) {
 
-        // Don't do it
-        // Is the local base valid?
-        // File suggestedLocalBase = invitation.getSuggestedLocalBase(this);
-        // if (suggestedLocalBase == null) {
-        // logInfo("Can not autoAccept " + invitation
-        // + " because no suggested local base.");
-        // return false;
-        // } else if (suggestedLocalBase.exists()) {
-        // logInfo("Can not autoAccept " + invitation
-        // + " because suggested local base already exists.");
-        // return false;
-        // }
-
         // Defensive strategy: Place in PowerFolders\...
 
         File suggestedLocalBase;
@@ -1494,13 +1483,25 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (hasJoinedFolder(folderInfo)) {
                     continue;
                 }
-                logInfo("Auto setting up folder " + folderInfo
-                    + " for account " + a.getUsername());
-                
                 SyncProfile profile = SyncProfile.getDefault(getController());
-                
-                File suggestedLocalBase;
-                if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
+                File suggestedLocalBase = new File(getController()
+                    .getFolderRepository().getFoldersAbsoluteDir(),
+                    folderInfo.name);
+                if (removedFolderDirectories.contains(suggestedLocalBase)) {
+                    continue;
+                }
+
+                UserDirectory userDir = UserDirectories.getUserDirectories()
+                    .get(folderInfo.name);
+
+                if (userDir != null) {
+                    if (removedFolderDirectories.contains(userDir
+                        .getDirectory()))
+                    {
+                        continue;
+                    }
+                    suggestedLocalBase = userDir.getDirectory();
+                } else if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
                     .getValueBoolean(getController()))
                 {
                     // Moderate strategy. Use existing folders.
@@ -1516,6 +1517,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                         getController().getFolderRepository()
                             .getFoldersAbsoluteDir(), folderInfo.name);
                 }
+
+                logInfo("Auto setting up folder " + folderInfo
+                    + " for account " + a.getUsername() + " @ "
+                    + suggestedLocalBase);
 
                 // Correct local path if in UserDirectories.
                 FolderSettings settings = new FolderSettings(
