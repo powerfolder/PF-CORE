@@ -21,7 +21,9 @@ package de.dal33t.powerfolder.ui.folders;
 
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -47,6 +49,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -67,14 +70,16 @@ import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.message.FolderList;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
@@ -306,14 +311,22 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private synchronized boolean folderInCloud() {
-        // Cache 60s.
+        // Cache 5 mins.
         if (lastFetch == null
             || lastFetch.before(new Date(
-                System.currentTimeMillis() - 1000L * 60 * 5)))
+                System.currentTimeMillis() - 1000L * 300)))
         {
-            folderInCloud = serverClient.getFolderService().hasJoined(
-                folderInfo);
-            lastFetch = new Date();
+            folderInCloud = false;
+            Member server = serverClient.getServer();
+            FolderList fList = server.getLastFolderList();
+            ConnectionHandler conHan = server.getPeer();
+            if (conHan != null && fList != null) {
+                folderInCloud = fList.contains(folderInfo,
+                    conHan.getMyMagicId());
+                // folderInCloud = serverClient.getFolderService().hasJoined(
+                // folderInfo);
+                lastFetch = new Date();
+            }
         }
         return folderInCloud;
     }
@@ -975,8 +988,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updateIconAndOS() {
-        boolean osComponentVisible = PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()) && !getController().isBackupOnly();
+        boolean osComponentVisible = getController().getOSClient()
+            .isBackupByDefault() && !getController().isBackupOnly();
         if (type == ExpandableFolderModel.Type.Local) {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
@@ -996,7 +1009,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getTranslation("exp_folder_view.folder_local_text"));
             }
         } else if (type == ExpandableFolderModel.Type.Typical) {
-            primaryButton.setIcon(Icons.getIconById(Icons.SETTINGS));
+            primaryButton.setIcon(Icons.getIconById(Icons.TYPICAL_FOLDER));
             primaryButton.setToolTipText(Translation
                 .getTranslation("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
@@ -1516,7 +1529,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 } else {
                     expand();
                     if (type == ExpandableFolderModel.Type.Local
-                        && getController().getUIController().isShowingFolder())
+                        && getUIController().isShowingFolder())
                     {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
@@ -1524,8 +1537,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == ExpandableFolderModel.Type.CloudOnly
                         && folderInfo != null)
                     {
-                        PFWizard.openOnlineStorageJoinWizard(
-                            getController(),
+                        PFWizard.openOnlineStorageJoinWizard(getController(),
                             Collections.singletonList(folderInfo));
                     }
                     if (type == ExpandableFolderModel.Type.Typical) {
