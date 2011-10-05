@@ -1204,7 +1204,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         String baseDirName = getFoldersBasedir();
         File baseDir = new File(baseDirName);
-        if (baseDir.exists() && baseDir.canRead()) {
+        if (baseDir.exists() && baseDir.canRead() && !baseDir.isHidden()) {
             File[] files = baseDir.listFiles();
             for (File file : files) {
                 // Don't autocreate if it has been removed previously.
