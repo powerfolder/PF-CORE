@@ -296,9 +296,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         builder.add(createCustomButtons(), cc.xyw(1, row, 7));
         row += 2;
 
-        if (!getController().isLanOnly()
-            && PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController())
+        if (getController().getOSClient().isBackupByDefault()
             && !getController().isBackupOnly())
         {
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
@@ -391,9 +389,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         customDirectoryComp.setVisible(false);
 
         // Online Storage integration
-        boolean backupByOS = !getController().isLanOnly()
-            && PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController())
+        boolean backupByOS = getController().getOSClient().isBackupByDefault()
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(

@@ -95,14 +95,13 @@ public class NewFolderAction extends BaseAction {
                     Translation.getTranslation("wizard.pfwizard.folder_title"));
 
                 wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-                        successPanel);
+                    successPanel);
                 wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-                        false);
+                    false);
                 wizard.getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
-                        true);
+                    getController().getOSClient().isBackupByDefault());
 
-                List<FolderCreateItem> folderCreateItems =
-                        new ArrayList<FolderCreateItem>();
+                List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
                 FolderCreateItem item = new FolderCreateItem(file);
                 item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
                 item.setFolderInfo(fi);

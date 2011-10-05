@@ -160,14 +160,17 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.online_storage.text"));
         useOnlineStorageCB.setToolTipText(Translation
             .getTranslation("preferences.dialog.online_storage.tip"));
-        useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()));
-
+      
         wanSpeed = new LineSpeedSelectionPanel(getController(), true, true);
 
         lanSpeed = new LineSpeedSelectionPanel(getController(), false, true);
 
         enableDisableComponents(getController().isLanOnly());
+        
+        logWarning("USE OS: " + PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController()));
+        useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController()));
 
         TransferManager tm = getController().getTransferManager();
 
@@ -291,12 +294,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the network settings.
      */
     public void save() {
-
-        if (PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()) ^ useOnlineStorageCB.isSelected())
-        {
-            needsRestart = true;
-        }
 
         NetworkingMode netMode = NetworkingMode.values()[networkingMode
             .getSelectedIndex()];

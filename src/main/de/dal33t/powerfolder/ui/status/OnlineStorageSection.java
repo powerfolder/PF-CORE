@@ -88,8 +88,7 @@ public class OnlineStorageSection extends PFUIComponent {
         usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
 
-        boolean showOS = PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController());
+        boolean showOS = getController().getOSClient().isBackupByDefault();
         // Don't show if not using it
         usagePB.setVisible(showOS);
         usageLabel.getUIComponent().setVisible(showOS);

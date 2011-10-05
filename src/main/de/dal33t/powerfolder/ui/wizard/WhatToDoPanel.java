@@ -298,11 +298,12 @@ public class WhatToDoPanel extends PFWizardPanel {
         wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Select backup by OS
-        wizardContext.setAttribute(BACKUP_ONLINE_STOARGE, true);
+        wizardContext.setAttribute(BACKUP_ONLINE_STOARGE, controller
+            .getOSClient().isBackupByDefault());
 
         // Setup choose disk location panel
-        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
-            .getTranslation("wizard.what_to_do.sync_pcs.select"));
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
+            Translation.getTranslation("wizard.what_to_do.sync_pcs.select"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,

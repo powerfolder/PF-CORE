@@ -485,6 +485,14 @@ public class ServerClient extends PFComponent {
         return getWebURL() + "/activate";
     }
 
+    /**
+     * @return if all new folders should be backed up by the server/cloud.
+     */
+    public boolean isBackupByDefault() {
+        return PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController()) || getController().isBackupOnly();
+    }
+
     // Login ******************************************************************
 
     /**

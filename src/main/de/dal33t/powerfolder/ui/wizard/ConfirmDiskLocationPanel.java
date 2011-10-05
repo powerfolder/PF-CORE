@@ -104,10 +104,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         row += 2;
         builder.add(folderSizeLabel, cc.xyw(1, row, 5));
 
-        if (!getController().isLanOnly()
-            && PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController()))
-        {
+        if (getController().getOSClient().isBackupByDefault()) {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 5));
         }
@@ -132,9 +129,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         folderSizeLabel = new JLabel();
 
         // Online Storage integration
-        boolean backupByOS = !getController().isLanOnly()
-            && PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController())
+        boolean backupByOS = getController().getOSClient().isBackupByDefault()
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(

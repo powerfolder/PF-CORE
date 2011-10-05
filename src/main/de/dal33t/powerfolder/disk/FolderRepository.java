@@ -1261,9 +1261,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .getValueInt(controller));
             Folder folder = createFolder(fi, fs);
 
-            if (PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController()))
-            {
+            if (client.isBackupByDefault()) {
                 if (client.isConnected() && client.isLoggedIn()) {
                     boolean joined = client.joinedByCloud(folder);
                     if (!joined) {

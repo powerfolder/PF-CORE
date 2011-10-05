@@ -167,7 +167,8 @@ public class PFWizard extends PFUIComponent {
             WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         wizard.getWizardContext().setAttribute(
-            WizardContextAttributes.BACKUP_ONLINE_STOARGE, true);
+            WizardContextAttributes.BACKUP_ONLINE_STOARGE,
+            controller.getOSClient().isBackupByDefault());
 
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
@@ -230,7 +231,8 @@ public class PFWizard extends PFUIComponent {
         PFWizard wizard = new PFWizard(controller,
             Translation.getTranslation("wizard.pfwizard.folder_title"));
         wizard.getWizardContext().setAttribute(
-            WizardContextAttributes.BACKUP_ONLINE_STOARGE, true);
+            WizardContextAttributes.BACKUP_ONLINE_STOARGE,
+            controller.getOSClient().isBackupByDefault());
         wizard.open(new ConfirmDiskLocationPanel(controller, directory));
     }
 

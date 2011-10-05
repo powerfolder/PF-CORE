@@ -172,12 +172,11 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         syncProfileSelectorPanel.setSyncProfile(syncProfile, false);
 
         // Cloud space
-        useCloudCB = new JCheckBox(Translation.getTranslation(
-                "wizard.folder_auto_create.cloud_space"));
+        useCloudCB = new JCheckBox(
+            Translation.getTranslation("wizard.folder_auto_create.cloud_space"));
         useCloudCB.setOpaque(false);
-        useCloudCB.setSelected(
-                PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
-            getController()));
+        useCloudCB.setSelected(getController().getOSClient()
+            .isBackupByDefault());
 
         // Cloud space
         inviteCB = new JCheckBox(Translation.getTranslation(
