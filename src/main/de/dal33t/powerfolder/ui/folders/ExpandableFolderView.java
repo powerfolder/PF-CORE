@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -86,6 +87,7 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -115,6 +117,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private ActionLabel upperSyncLink;
     private JButtonMini upperOpenFilesButton;
     private JButtonMini upperMountWebDavButton;
+    private JButtonMini upperOpenWebViewButton;
     private JButtonMini upperInviteButton;
 
     private ResizingJLabel nameLabel;
@@ -169,6 +172,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private BackupOnlineStorageAction backupOnlineStorageAction;
     private StopOnlineStorageAction stopOnlineStorageAction;
     private WebdavAction webdavAction;
+    private WebViewAction webViewAction;
 
     // Performance stuff
     private DelayedUpdater syncUpdater;
@@ -291,14 +295,15 @@ public class ExpandableFolderView extends PFUIComponent implements
             && type == ExpandableFolderModel.Type.CloudOnly;
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
-                if (OSUtil.isWindowsSystem()) {
-                    if (serverClient.isConnected() && folderInCloud()) {
-                        upperMountWebDavButton.setVisible(showCloudOnlyButtons);
-                    } else {
-                        upperMountWebDavButton.setVisible(false);
-                    }
+                if (serverClient.isConnected() && isInCloud()
+                    && serverClient.hasWebURL())
+                {
+                    upperMountWebDavButton.setVisible(showCloudOnlyButtons
+                        && OSUtil.isWindowsSystem());
+                    upperOpenWebViewButton.setVisible(showCloudOnlyButtons);
                 } else {
                     upperMountWebDavButton.setVisible(false);
+                    upperOpenWebViewButton.setVisible(false);
                 }
                 return null;
             }
@@ -306,7 +311,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         worker.execute();
     }
 
-    private synchronized boolean folderInCloud() {
+    private synchronized boolean isInCloud() {
         if (!serverClient.isConnected()) {
             return false;
         }
@@ -359,8 +364,9 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperBuilder.add(upperSyncLink.getUIComponent(), cc.xy(7, 1));
         upperBuilder.add(upperInviteButton, cc.xy(9, 1));
+        upperBuilder.add(upperMountWebDavButton, cc.xy(9, 1));
         upperBuilder.add(upperOpenFilesButton, cc.xy(11, 1));
-        upperBuilder.add(upperMountWebDavButton, cc.xy(11, 1));
+        upperBuilder.add(upperOpenWebViewButton, cc.xy(11, 1));
         upperBuilder.add(problemButton, cc.xy(13, 1));
 
         upperPanel = upperBuilder.getPanel();
@@ -376,6 +382,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperInviteButton.addMouseListener(moa);
         upperOpenFilesButton.addMouseListener(moa);
         upperMountWebDavButton.addMouseListener(moa);
+        upperOpenWebViewButton.addMouseListener(moa);
 
         // Build lower detials with line border.
         FormLayout lowerLayout;
@@ -528,7 +535,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         syncFolderAction = new MySyncFolderAction(getController());
 
         webdavAction = new WebdavAction(getController());
-
+        webViewAction = new WebViewAction(getController());
+        
         expanded = new AtomicBoolean();
         mouseOver = new AtomicBoolean();
 
@@ -542,6 +550,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
         upperOpenFilesButton = new JButtonMini(openFilesInformationAction);
         upperMountWebDavButton = new JButtonMini(webdavAction);
+        upperOpenWebViewButton = new JButtonMini(webViewAction);
 
         inviteButton = new JButtonMini(inviteAction);
         upperInviteButton = new JButtonMini(inviteAction);
@@ -568,6 +577,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperInviteButton.setVisible(false);
         upperOpenFilesButton.setVisible(false);
         upperMountWebDavButton.setVisible(false);
+        upperOpenWebViewButton.setVisible(false);
 
         filesLabel = new ActionLabel(getController(),
             openFilesInformationAction);
@@ -857,7 +867,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 filesAvailableLabelText = "";
             }
         } else {
-
             syncPercentText = Translation.getTranslation(
                 "exp_folder_view.synchronized", "?");
             upperSyncPercent = "?";
@@ -1077,8 +1086,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
         if (type == ExpandableFolderModel.Type.CloudOnly) {
             if (OSUtil.isWindowsSystem()) {
-                if (serverClient.isConnected() && folderInCloud()) {
+                if (serverClient.isConnected() && isInCloud()
+                    && serverClient.hasWebURL())
+                {
                     contextMenu.add(webdavAction);
+                    contextMenu.add(webViewAction);
                 }
             }
         }
@@ -1724,6 +1736,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class BackupOnlineStorageAction extends BaseAction {
         private BackupOnlineStorageAction(Controller controller) {
             super("action_backup_online_storage", controller);
@@ -1737,6 +1750,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class StopOnlineStorageAction extends BaseAction {
         private StopOnlineStorageAction(Controller controller) {
             super("action_stop_online_storage", controller);
@@ -1771,6 +1785,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class WebdavAction extends BaseAction {
         private WebdavAction(Controller controller) {
             super("action_webdav", controller);
@@ -1778,6 +1793,27 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             createWebdavConnection();
+        }
+    }
+
+    @SuppressWarnings("serial")
+    private class WebViewAction extends BaseAction {
+
+        private WebViewAction(Controller controller) {
+            super("action_webview", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ServerClient client = getController().getOSClient();
+            if (client.hasWebURL()) {
+                try {
+                    String folderURL = client
+                        .getFolderURLWithCredentials(folderInfo);
+                    BrowserLauncher.openURL(folderURL);
+                } catch (IOException e1) {
+                    logSevere(e1);
+                }
+            }
         }
     }
 
