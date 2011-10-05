@@ -111,7 +111,6 @@ public class NoticesModel extends PFUIComponent {
         }
         return null;
     }
-
     /**
      * This handles a notice object. If it is a notification, show in a
      * notification handler. If it is actionable, add to the app model notices.
@@ -120,6 +119,17 @@ public class NoticesModel extends PFUIComponent {
      *            the Notice to handle
      */
     public void handleNotice(Notice notice) {
+        handleNotice(notice, false);
+    }
+
+    /**
+     * This handles a notice object. If it is a notification, show in a
+     * notification handler. If it is actionable, add to the app model notices.
+     * 
+     * @param notice
+     *            the Notice to handle
+     */
+    public void handleNotice(Notice notice, boolean suppressPopup) {
         if (!getUIController().isStarted() || getController().isShuttingDown()
             || notices.contains(notice))
         {
@@ -131,7 +141,7 @@ public class NoticesModel extends PFUIComponent {
             .getValue()
             && notice.isNotification()
             && !notice.isRead()
-            && !PFWizard.isWizardOpen())
+            && !PFWizard.isWizardOpen() && !suppressPopup)
         {
             NoticeHandler noticeHandler = new NoticeHandler(getController(),
                 notice);
