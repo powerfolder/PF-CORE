@@ -426,6 +426,40 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * @param foInfo
+     * @return the direct URL to the folder
+     */
+    public String getFolderURL(FolderInfo foInfo) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL() + "/files/" + Base64.encode4URL(foInfo.id);
+    }
+
+    /**
+     * @param foInfo
+     * @return the direct URL to the folder including login if necessary
+     */
+    public String getFolderURLWithCredentials(FolderInfo foInfo) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        String folderURI = getFolderURL(foInfo);
+        folderURI = folderURI.replace(getWebURL(), "");
+        String loginURL = getController().getOSClient()
+            .getLoginURLWithCredentials();
+        if (loginURL.contains("?")) {
+            loginURL += "&";
+        } else {
+            loginURL += "?";
+        }
+        loginURL += Constants.LOGIN_PARAM_ORIGINAL_URI;
+        loginURL += "=";
+        loginURL += folderURI;
+        return loginURL;
+    }
+
+    /**
      * Convenience method for getting login URL with preset username if possible
      * 
      * @return the registration URL for this server.
@@ -861,7 +895,7 @@ public class ServerClient extends PFComponent {
         }
         return false;
     }
-    
+
     /**
      * @param folder
      *            the folder to check.
