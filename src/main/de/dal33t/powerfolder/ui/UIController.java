@@ -651,9 +651,9 @@ public class UIController extends PFComponent {
         item.setActionCommand(COMMAND_SYNCALL);
         item.addActionListener(systrayActionHandler);
 
-        final MenuItem opentUI = new MenuItem(Translation
-            .getTranslation("systray.show"));
-        if (!OSUtil.isMacOS()) {            
+        final MenuItem opentUI = new MenuItem(
+            Translation.getTranslation("systray.show"));
+        if (!OSUtil.isMacOS()) {
             menu.add(opentUI);
         }
         opentUI.setActionCommand(COMMAND_OPENUI);
@@ -662,8 +662,8 @@ public class UIController extends PFComponent {
         menu.addSeparator();
 
         if (SystemUtil.isShutdownSupported()) {
-            item = menu.add(new MenuItem(Translation.getTranslation(
-                    "systray.sync_shutdown")));
+            item = menu.add(new MenuItem(Translation
+                .getTranslation("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
         }
@@ -674,14 +674,12 @@ public class UIController extends PFComponent {
         item.addActionListener(systrayActionHandler);
 
         item = menu
-            .add(new MenuItem(Translation.getTranslation(
-                "systray.exit")));
+            .add(new MenuItem(Translation.getTranslation("systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
         if (trayIcon != null) {
-            trayIcon.addActionListener(
-                    new ActionListener() {
+            trayIcon.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     mainFrame.getUIComponent().setVisible(true);
                     mainFrame.getUIComponent().setState(Frame.NORMAL);
@@ -1051,7 +1049,7 @@ public class UIController extends PFComponent {
 
         // Want to be aware when the scan completes.
         applicationModel.getFolderRepositoryModel().addInterestedFolderInfo(
-                folder.getInfo());
+            folder.getInfo());
 
         if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
         {
@@ -1173,7 +1171,8 @@ public class UIController extends PFComponent {
 
             // Close systray
             if (OSUtil.isSystraySupported() && trayIconManager != null) {
-                SystemTray.getSystemTray().remove(trayIconManager.getTrayIcon());
+                SystemTray.getSystemTray()
+                    .remove(trayIconManager.getTrayIcon());
             }
         }
 
@@ -1191,7 +1190,22 @@ public class UIController extends PFComponent {
      * @return true if the information frame is showing a folder.
      */
     public boolean isShowingFolder() {
-        return informationFrame.isShowingFolder();
+        return isShowingInfo() && informationFrame.isShowingFolder();
+    }
+
+    /**
+     * @return true if the info panel is displayed currently (either inline or
+     *         floating)
+     */
+    public boolean isShowingInfo() {
+        if (mainFrame.shouldShowInfoInline()) {
+            return mainFrame.isShowingInfoInline();
+        } else {
+            JFrame frame = informationFrame.getUIComponent();
+            return frame.isVisible()
+                && (frame.getExtendedState() & Frame.ICONIFIED) != Frame.ICONIFIED;
+        }
+
     }
 
     /**
@@ -1278,7 +1292,8 @@ public class UIController extends PFComponent {
     }
 
     private void notifyComponent(JComponent content, Window owner,
-        int secondsToDisplay) {
+        int secondsToDisplay)
+    {
         Slider slider = new Slider(content, owner, secondsToDisplay,
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
                 .getValueInt(getController()), getController().isNotifyLeft());
@@ -1286,17 +1301,18 @@ public class UIController extends PFComponent {
     }
 
     private void handleFolderAutoCreate(FolderAutoCreateEvent event) {
-        if (PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.getValueBoolean(
-                getController())) {
+        if (PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS
+            .getValueBoolean(getController()))
+        {
             applicationModel.getNoticesModel().handleNotice(
                 new FolderAutoCreateNotice(event.getFolderInfo()));
         }
     }
 
     /**
-     * Scan results have been created after the user requested folder sync.
-     * So give the user some feedback.
-     *
+     * Scan results have been created after the user requested folder sync. So
+     * give the user some feedback.
+     * 
      * @param scanResult
      */
     public void scanResultCreated(ScanResult scanResult) {
@@ -1308,42 +1324,43 @@ public class UIController extends PFComponent {
         int changedSize = scanResult.getChangedFiles().size();
         int deletedSize = scanResult.getDeletedFiles().size();
         StringBuilder sb = new StringBuilder();
-        sb.append(Translation.getTranslation("uicontroller.sync_info.start") +
-                "\n\n" + '(');
+        sb.append(Translation.getTranslation("uicontroller.sync_info.start")
+            + "\n\n" + '(');
         boolean addComma = false;
         if (newSize > 0) {
             sb.append(Translation.getTranslation("uicontroller.sync_info.new",
-                    String.valueOf(newSize)));
+                String.valueOf(newSize)));
             addComma = true;
         }
         if (changedSize > 0) {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(Translation.getTranslation("uicontroller.sync_info.changed",
-                    String.valueOf(changedSize)));
+            sb.append(Translation.getTranslation(
+                "uicontroller.sync_info.changed", String.valueOf(changedSize)));
             addComma = true;
         }
         if (deletedSize > 0) {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(Translation.getTranslation("uicontroller.sync_info.deleted",
-                    String.valueOf(deletedSize)));
+            sb.append(Translation.getTranslation(
+                "uicontroller.sync_info.deleted", String.valueOf(deletedSize)));
         }
         if (newSize == 0 && changedSize == 0 && deletedSize == 0) {
-            sb.append(Translation.getTranslation(
-                    "uicontroller.sync_info.no_changes_detected"));
+            sb.append(Translation
+                .getTranslation("uicontroller.sync_info.no_changes_detected"));
         }
         sb.append(')');
         if (newSize > 0 || changedSize > 0) {
             sb.append("\n\n");
-            sb.append(Translation.getTranslation("uicontroller.sync_info.transfer",
-                    String.valueOf(newSize + changedSize)));
+            sb.append(Translation.getTranslation(
+                "uicontroller.sync_info.transfer",
+                String.valueOf(newSize + changedSize)));
         }
         DialogFactory.genericDialog(getController(),
-                Translation.getTranslation("uicontroller.sync_info.title"),
-                sb.toString(), GenericDialogType.INFO);
+            Translation.getTranslation("uicontroller.sync_info.title"),
+            sb.toString(), GenericDialogType.INFO);
     }
 
     // ////////////////
@@ -1524,7 +1541,8 @@ public class UIController extends PFComponent {
         }
     }
 
-    private class MyFolderAutoCreateListener implements FolderAutoCreateListener
+    private class MyFolderAutoCreateListener implements
+        FolderAutoCreateListener
     {
 
         public boolean fireInEventDispatchThread() {
