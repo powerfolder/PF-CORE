@@ -49,7 +49,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -70,8 +69,6 @@ import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.FolderList;
-import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.Permission;
@@ -294,8 +291,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             && type == ExpandableFolderModel.Type.CloudOnly;
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
-                if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem())
-                {
+                if (OSUtil.isWindowsSystem()) {
                     if (serverClient.isConnected() && folderInCloud()) {
                         upperMountWebDavButton.setVisible(showCloudOnlyButtons);
                     } else {
@@ -311,22 +307,16 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private synchronized boolean folderInCloud() {
+        if (!serverClient.isConnected()) {
+            return false;
+        }
         // Cache 5 mins.
         if (lastFetch == null
             || lastFetch.before(new Date(
                 System.currentTimeMillis() - 1000L * 300)))
         {
-            folderInCloud = false;
-            Member server = serverClient.getServer();
-            FolderList fList = server.getLastFolderList();
-            ConnectionHandler conHan = server.getPeer();
-            if (conHan != null && fList != null) {
-                folderInCloud = fList.contains(folderInfo,
-                    conHan.getMyMagicId());
-                // folderInCloud = serverClient.getFolderService().hasJoined(
-                // folderInfo);
-                lastFetch = new Date();
-            }
+            folderInCloud = serverClient.joinedByCloud(folderInfo);
+            lastFetch = new Date();
         }
         return folderInCloud;
     }
@@ -1086,7 +1076,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
         if (type == ExpandableFolderModel.Type.CloudOnly) {
-            if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
+            if (OSUtil.isWindowsSystem()) {
                 if (serverClient.isConnected() && folderInCloud()) {
                     contextMenu.add(webdavAction);
                 }
@@ -1166,9 +1156,10 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             public Object construct() throws Throwable {
                 try {
+                    String webDAVURL = serverClient.getWebURL() + "/webdav/"
+                        + folderInfo.getName();
                     Process process = Runtime.getRuntime().exec(
-                        "net use * \"" + serverClient.getWebURL() + "/webdav/"
-                            + folderInfo.getName() + "\" /User:"
+                        "net use * \"" + webDAVURL + "\" /User:"
                             + serverClient.getUsername() + ' '
                             + serverClient.getPasswordClearText());
                     byte[] out = StreamUtils.readIntoByteArray(process

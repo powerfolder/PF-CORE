@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -859,6 +860,26 @@ public class ServerClient extends PFComponent {
             }
         }
         return false;
+    }
+    
+    /**
+     * @param folder
+     *            the folder to check.
+     * @return true if the cloud has joined the folder.
+     */
+    public boolean joinedByCloud(FolderInfo foInfo) {
+        Folder folder = foInfo.getFolder(getController());
+        if (folder != null) {
+            return joinedByCloud(folder);
+        }
+        boolean folderInCloud = false;
+        FolderList fList = server.getLastFolderList();
+        ConnectionHandler conHan = server.getPeer();
+        if (conHan != null && fList != null) {
+            folderInCloud = fList.contains(foInfo, conHan.getMyMagicId());
+        }
+        // TODO: #2435
+        return folderInCloud;
     }
 
     /**

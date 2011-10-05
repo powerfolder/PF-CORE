@@ -194,6 +194,14 @@ public interface FolderService {
     boolean hasJoined(FolderInfo foInfo);
 
     /**
+     * The web DAV URL of a folder.
+     *
+     * @param foInfo
+     * @return
+     */
+    String getWebDAVURL(FolderInfo foInfo);
+
+    /**
      * Bulk get of archive and local folders size.
      * 
      * @param foInfos
