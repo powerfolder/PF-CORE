@@ -481,17 +481,24 @@ public class FolderStatistic extends PFComponent {
             return UNKNOWN_SYNC_STATUS;
         }
 
+        boolean twoSides = folder.getMembersCount() == 2;
         boolean backupShare = SyncProfile.HOST_FILES.equals(folder
             .getSyncProfile())
             || SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile());
-        if (!backupShare && folder.getMembersCount() == 2
-            && getController().getOSClient().joinedByCloud(folder))
-        {
-            // Cloud backup
-            backupShare = true;
-        }
 
-        if (backupShare) {
+        if (twoSides) {
+            // In these cases only remote sides matter.
+            // Calc maximum sync % of remote sides.
+            double minSync = getLocalSyncPercentage();
+            for (Member member : folder.getConnectedMembers()) {
+                double memberSync = getSyncPercentage(member);
+                if (memberSync < 0) {
+                    continue;
+                }
+                minSync = Math.min(minSync, memberSync);
+            }
+            return minSync;
+        } else if (backupShare) {
             // In these cases only remote sides matter.
             // Calc maximum sync % of remote sides.
             double maxSync = 0;
