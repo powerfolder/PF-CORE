@@ -33,6 +33,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
@@ -140,10 +141,12 @@ public class OnlineStorageComponent extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             if (joined) {
-                if (getController().getOSClient().hasWebURL()) {
+                ServerClient client = getController().getOSClient();
+                if (client.hasWebURL()) {
                     try {
-                        BrowserLauncher.openURL(getController().getOSClient()
-                            .getLoginURLWithCredentials());
+                        String folderURL = client
+                            .getFolderURLWithCredentials(folder.getInfo());
+                        BrowserLauncher.openURL(folderURL);
                     } catch (IOException e1) {
                         logSevere(e1);
                     }
