@@ -13,6 +13,7 @@ PowerFolder Version 5.0 - http://www.powerfolder.com
  * Cloud/Available folders can now be mounted as drive via WebDAV:
    http://www.powerfolder.com/wiki/WebDAV
  * Cloud/Available folders can now be opened with a single click in web browser.
+ * Added three new skins: Black Eye, Classy and Simple 2D.
  * Directories created in the main PowerFolders directory automatically
    appear in the folders list and get synced, shared or backed up.
  * Auto setup folders: If checked all folders of the user get synced to the computer.
