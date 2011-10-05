@@ -2160,6 +2160,11 @@ public class Folder extends PFComponent {
             if (members.containsKey(memberCanidate)) {
                 continue;
             }
+            if (!getController().getNodeManager().getNetworkId()
+                .equals(memberInfo.networkId))
+            {
+                continue;
+            }
             join0(memberInfo);
             logInfo("Discovered new Member " + memberInfo);
         }
