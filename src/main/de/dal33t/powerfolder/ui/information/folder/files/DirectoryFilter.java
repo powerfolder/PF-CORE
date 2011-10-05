@@ -241,12 +241,6 @@ public class DirectoryFilter extends FilterModel {
 
         synchronized (refilter) {
 
-            try {
-                Thread.sleep(5000);
-            } catch (Exception e) {
-
-            }
-
             // If the folder changed or there is no previous mode or refilter is indicated, do a full filter.
             if (previousFilteredDirectoryModel == null || refilter.getAndSet(false)) {
 
