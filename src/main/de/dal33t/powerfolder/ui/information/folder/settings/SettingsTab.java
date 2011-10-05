@@ -55,7 +55,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -298,8 +297,10 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(createConfigurePanel(), cc.xy(4, row));
 
-        row += 2;
-        builder.add(createPreviewPanel(), cc.xy(4, row));
+        // Disabled. Not used anymore.
+        createPreviewPanel();
+        // row += 2;
+        // builder.add(createPreviewPanel(), cc.xy(4, row));
 
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
