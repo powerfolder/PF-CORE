@@ -74,18 +74,18 @@ public class NetUtilTest extends TestCase {
         assertEquals("188.40.135.118", NetworkUtil.getHostAddressNoResolve(addr
             .getAddress()));
         // Do reverse lookup
-        assertEquals("os005.node.powerfolder.com", addr.getAddress()
+        assertEquals("os005.powerfolder.com", addr.getAddress()
             .getHostName());
-        assertEquals("os005.node.powerfolder.com/188.40.135.118", addr
+        assertEquals("os005.powerfolder.com/188.40.135.118", addr
             .getAddress().toString());
-        assertEquals("os005.node.powerfolder.com", NetworkUtil
+        assertEquals("os005.powerfolder.com", NetworkUtil
             .getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
-        assertEquals("os005.node.powerfolder.com", addr.getHostName());
-        assertEquals("os005.node.powerfolder.com", addr.getAddress()
+        assertEquals("os005.powerfolder.com", addr.getHostName());
+        assertEquals("os005.powerfolder.com", addr.getAddress()
             .getHostName());
         assertEquals("188.40.135.118", addr.getAddress().getHostAddress());
-        assertEquals("os005.node.powerfolder.com", addr.getAddress()
+        assertEquals("os005.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
         addr = new InetSocketAddress("188.40.135.117", 1337);
@@ -93,18 +93,18 @@ public class NetUtilTest extends TestCase {
         assertEquals("188.40.135.117", NetworkUtil.getHostAddressNoResolve(addr
             .getAddress()));
         // Do reverse lookup
-        assertEquals("os004.node.powerfolder.com", addr.getAddress()
+        assertEquals("os004.powerfolder.com", addr.getAddress()
             .getHostName());
-        assertEquals("os004.node.powerfolder.com/188.40.135.117", addr
+        assertEquals("os004.powerfolder.com/188.40.135.117", addr
             .getAddress().toString());
-        assertEquals("os004.node.powerfolder.com", NetworkUtil
+        assertEquals("os004.powerfolder.com", NetworkUtil
             .getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
-        assertEquals("os004.node.powerfolder.com", addr.getHostName());
-        assertEquals("os004.node.powerfolder.com", addr.getAddress()
+        assertEquals("os004.powerfolder.com", addr.getHostName());
+        assertEquals("os004.powerfolder.com", addr.getAddress()
             .getHostName());
         assertEquals("188.40.135.117", addr.getAddress().getHostAddress());
-        assertEquals("os004.node.powerfolder.com", addr.getAddress()
+        assertEquals("os004.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
         addr = new InetSocketAddress("188.40.129.57", 1337);
@@ -112,18 +112,18 @@ public class NetUtilTest extends TestCase {
         assertEquals("188.40.129.57", NetworkUtil.getHostAddressNoResolve(addr
             .getAddress()));
         // Do reverse lookup
-        assertEquals("os003.node.powerfolder.com", addr.getAddress()
+        assertEquals("os003.powerfolder.com", addr.getAddress()
             .getHostName());
-        assertEquals("os003.node.powerfolder.com/188.40.129.57", addr
+        assertEquals("os003.powerfolder.com/188.40.129.57", addr
             .getAddress().toString());
-        assertEquals("os003.node.powerfolder.com", NetworkUtil
+        assertEquals("os003.powerfolder.com", NetworkUtil
             .getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
-        assertEquals("os003.node.powerfolder.com", addr.getHostName());
-        assertEquals("os003.node.powerfolder.com", addr.getAddress()
+        assertEquals("os003.powerfolder.com", addr.getHostName());
+        assertEquals("os003.powerfolder.com", addr.getAddress()
             .getHostName());
         assertEquals("188.40.129.57", addr.getAddress().getHostAddress());
-        assertEquals("os003.node.powerfolder.com", addr.getAddress()
+        assertEquals("os003.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
     }
