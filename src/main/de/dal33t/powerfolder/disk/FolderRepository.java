@@ -962,7 +962,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Fire event
         fireFolderRemoved(folder);
 
-        logInfo("Folder removed");
+        logInfo(folder + " removed");
     }
 
     private void addToRemovedFolderDirectories(Folder folder) {
