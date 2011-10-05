@@ -19,13 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.*;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -38,8 +44,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
@@ -167,8 +173,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         enableDisableComponents(getController().isLanOnly());
         
-        logWarning("USE OS: " + PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()));
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
             .getValueBoolean(getController()));
 
