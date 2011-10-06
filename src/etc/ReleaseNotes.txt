@@ -29,7 +29,7 @@ PowerFolder Version 5.0 - http://www.powerfolder.com
  * On Mac a link in Places to all PowerFolders gets created.
  * Fully compatible with the latest Mac OS X (Lion).
  * PowerFolder is now fully compatible with Java 7.
- * Less advertisements in the free editon of PowerFolder.
+ * Less advertisements in the free edition of PowerFolder.
  * Window resizing and min-/maximizing code rewritten. Should be more "normal" now.
  * Folder members which don't know each other (non friends) will connect faster.
  * Added solution to "Unsynchronized folder" problem: Shows files that are not synced.
@@ -39,13 +39,13 @@ PowerFolder Version 5.0 - http://www.powerfolder.com
  * Login from clients with large number of files is much quicker now.
  * Windows installer patches Windows WebDAV implementation.
  * Directory chooser in general: Accepts direct text input of path.
- * Wizard: Custom directory chooser support multi directory select.
+ * Wizard: Custom directory chooser supports multi directory select.
  * Tray icon: Shows info on connect and login status.
+ * Mass deletion protection disabled by default.
+ * All sending transfer modes use instant sync now by default:
+   http://www.powerfolder.com/wiki/Transfer_Modes
  * Server only: Invite user wizard now also works with LDAP/AD usernames,
    which are not email addresses.
- * Mass deletion protection disabled by default.
- * All sending transfer modes use instant sync now be default:
-   http://www.powerfolder.com/wiki/Transfer_Modes
  * Server only: Logging in as server admin on the client shows a warning.
  * Installer EXE works on 64 and 32bit Windows. Removed the "32" in the filename.
  * 64 bit: Installs in "C:\Program Files" instead of "C:\Program Files (x64)".
@@ -54,7 +54,7 @@ PowerFolder Version 5.0 - http://www.powerfolder.com
  * Many more minor improvements and enhancements.
  
 = Bugfixes =
- * Mac version now correctly saves preferences again.
+ * Mac version now correctly saves preferences.
  * Fixed odd min/maximizing behavior on Mac systems.
  * Unchecking "Remember password" now works.
  * Fixed bug, that prevented PowerFolder from closing on Windows shutdown.
