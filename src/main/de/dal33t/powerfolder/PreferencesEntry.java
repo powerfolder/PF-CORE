@@ -164,7 +164,7 @@ public enum PreferencesEntry {
 
     FOLDER_LOCAL_COLLAPSED("folder.local.collapsed", false),
 
-    FOLDER_TYPICAL_COLLAPSED("folder.typical.collapsed", true),
+    FOLDER_TYPICAL_COLLAPSED("folder.typical.collapsed", false),
     
     FOLDER_ONLINE_COLLAPSED("folder.online.collapsed", false);
 
