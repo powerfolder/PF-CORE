@@ -150,6 +150,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         underlineLinkBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(ulModel, writeTrigger),
             Translation.getTranslation("preferences.dialog.underline_link"));
+        underlineLinkBox.setVisible(false);
 
         infoDockedBox = new JCheckBox(
             Translation
@@ -176,6 +177,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         autoExpandCB = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(aeModel, writeTrigger),
             Translation.getTranslation("preferences.dialog.auto_expand"));
+        autoExpandCB.setVisible(false);
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
