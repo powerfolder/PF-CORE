@@ -61,6 +61,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
     private String title;
     private String text;
     private WizardPanel nextPanel;
+    private boolean canFinish;
 
     public SwingWorkerPanel(Controller controller, Runnable task, String title,
         String text, WizardPanel nextPanel)
@@ -70,6 +71,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
         this.text = text;
         this.nextPanel = nextPanel;
         this.task = task;
+        this.canFinish = false;
     }
 
     public void setTask(Runnable task) {
@@ -78,7 +80,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
 
     @Override
     public boolean canFinish() {
-        return false;
+        return canFinish;
     }
 
     @Override
@@ -147,6 +149,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
         statusLabel.setText(" ");
         problemLabel.setText(problem.replace("de.dal33t.powerfolder.", ""));
         problemLabel.setVisible(true);
+        canFinish = true;
         updateButtons();
         updateTitle();
     }
