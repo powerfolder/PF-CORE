@@ -111,6 +111,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Object scanTrigger = new Object();
     private boolean triggered;
     private final AtomicBoolean skipNewFolderSearch = new AtomicBoolean();
+    private File foldersBasedir;
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
@@ -290,21 +291,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      * for each folder name.
      */
     public void init() {
+        
+        initFoldersBasedir();
 
         processV4Format();
-
-        // Set the folders base with a desktop ini.
-        File folderBaseDir = new File(getFoldersBasedir());
-        if (!folderBaseDir.exists() && !folderBaseDir.mkdirs()) {
-            logWarning("Unable to create folders base dir: " + folderBaseDir);
-        }
-        if (!folderBaseDir.exists()) {
-            folderBaseDir.mkdirs();
-        }
-        if (!folderBaseDir.exists()) {
-            // Take default. FIXME GWDG
-        }
-        FileUtils.maintainDesktopIni(getController(), folderBaseDir);
 
         // Maintain link
         boolean useFavLink = ConfigurationEntry.USE_PF_LINK
@@ -325,6 +315,58 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logSevere(e);
             }
         }
+    }
+    
+    private void initFoldersBasedir() {
+        String baseDir;
+        String cmdBaseDir = getController().getCommandLine() != null
+            ? getController().getCommandLine().getOptionValue("b")
+            : null;
+        if (StringUtils.isNotBlank(cmdBaseDir)) {
+            baseDir = cmdBaseDir;
+        } else {
+            baseDir = ConfigurationEntry.FOLDER_BASEDIR
+                .getValue(getController());
+        }
+
+        // Set the folders base with a desktop ini.
+        foldersBasedir = new File(baseDir);
+        if (!foldersBasedir.exists()) {
+            if (foldersBasedir.mkdirs()) {
+                logInfo("Created base path for folders: " + foldersBasedir);
+            } else {
+                logWarning("Unable to create base path for folders: "
+                    + foldersBasedir);
+            }
+        }
+
+        boolean ok = foldersBasedir.exists() && foldersBasedir.canRead()
+            && foldersBasedir.isDirectory();
+
+        if (!ok) {
+            foldersBasedir = new File(
+                ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
+            if (!foldersBasedir.exists()) {
+                if (foldersBasedir.mkdirs()) {
+                    logInfo("Created base path for folders: " + foldersBasedir);
+                } else {
+                    logWarning("Unable to create base path for folders: "
+                        + foldersBasedir);
+                }
+            }
+        }
+
+        ok = foldersBasedir.exists() && foldersBasedir.canRead()
+            && foldersBasedir.isDirectory();
+
+        if (ok) {
+            logInfo("Using base path for folders: " + foldersBasedir);
+        } else {
+            logWarning("Unable to access base path for folders: "
+                + foldersBasedir);
+        }
+
+        FileUtils.maintainDesktopIni(getController(), foldersBasedir);
     }
 
     /**
@@ -518,21 +560,31 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the default basedir for all folders. basedir is just suggested
      */
     public String getFoldersBasedir() {
-        String cmdBaseDir = getController().getCommandLine() != null
-            ? getController().getCommandLine().getOptionValue("b")
-            : null;
-        if (StringUtils.isNotBlank(cmdBaseDir)) {
-            return cmdBaseDir;
-        } else {
-            return ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
-        }
+        return getFoldersAbsoluteDir() != null ? getFoldersAbsoluteDir()
+            .getAbsolutePath() : null;
     }
 
     /**
      * @return the default basedir for all folders. basedir is just suggested
      */
     public File getFoldersAbsoluteDir() {
-        return new File(getFoldersBasedir()).getAbsoluteFile();
+        if (foldersBasedir == null) {
+            initFoldersBasedir();
+        }
+        return foldersBasedir;
+    }
+
+    /**
+     * Sets the new base path
+     * @param path
+     */
+    public void setFoldersBasedir(String path) {
+        if (path == null) {
+            ConfigurationEntry.FOLDER_BASEDIR.removeValue(getController());
+            return;
+        }
+        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), path);
+        initFoldersBasedir();
     }
 
     /**
@@ -1324,7 +1376,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             i + Constants.METAFOLDER_ID_PREFIX.length());
         return getFolder(folderId);
     }
-    
+
     /**
      * Automatically accept an invitation. If not able to, silently return
      * false.
@@ -1383,7 +1435,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Callbacks from ServerClient on login ***********************************
 
     private ReentrantLock accountSyncLock = new ReentrantLock();
-    
+
     public void updateFolders(Account a) {
         Reject.ifNull(a, "Account");
         if (getController().getMySelf().isServer()) {
@@ -1503,8 +1555,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .getValueBoolean(getController()))
                 {
                     // Moderate strategy. Use existing folders.
-                    suggestedLocalBase = new File(getController().getFolderRepository()
-                        .getFoldersAbsoluteDir(), folderInfo.name);
+                    suggestedLocalBase = new File(getController()
+                        .getFolderRepository().getFoldersAbsoluteDir(),
+                        folderInfo.name);
                     if (suggestedLocalBase.exists()) {
                         logWarning("Using existing directory "
                             + suggestedLocalBase + " for " + folderInfo);
@@ -1526,7 +1579,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     ArchiveMode.FULL_BACKUP,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                         .getValueInt(getController()));
-                
+
                 createFolder0(folderInfo, settings, true);
                 folderInfos.add(folderInfo);
             }
