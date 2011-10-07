@@ -456,15 +456,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         // Set folder base
-        String oldFolderBase =
-                ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        String oldFolderBase = getController().getFolderRepository()
+            .getFoldersBasedir();
         String newFolderbase = (String) locationModel.getValue();
-        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(),
-                newFolderbase);
+        getController().getFolderRepository().setFoldersBasedir(newFolderbase);
         if (!StringUtils.isEqual(oldFolderBase, newFolderbase)) {
             getController().getUIController().configureDesktopShortcut(true);
         }
-        
+
         // set bu only
         if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValue(getController())
             .equals(String.valueOf(backupOnlyClientBox.isSelected())))
