@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.notices.*;
-import de.dal33t.powerfolder.ui.notification.NoticeHandler;
+import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
 import de.dal33t.powerfolder.ui.wizard.*;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -119,17 +119,17 @@ public class NoticesModel extends PFUIComponent {
      *            the Notice to handle
      */
     public void handleNotice(Notice notice) {
-        handleNotice(notice, false);
+        handleSystemNotice(notice, false);
     }
 
     /**
-     * This handles a notice object. If it is a notification, show in a
+     * This handles a system notice object. If it is a notification, show in a
      * notification handler. If it is actionable, add to the app model notices.
      * 
      * @param notice
      *            the Notice to handle
      */
-    public void handleNotice(Notice notice, boolean suppressPopup) {
+    public void handleSystemNotice(Notice notice, boolean suppressPopup) {
         if (!getUIController().isStarted() || getController().isShuttingDown()
             || notices.contains(notice))
         {
@@ -143,7 +143,7 @@ public class NoticesModel extends PFUIComponent {
             && !notice.isRead()
             && !PFWizard.isWizardOpen() && !suppressPopup)
         {
-            NoticeHandler noticeHandler = new NoticeHandler(getController(),
+            SystemNotificationHandler noticeHandler = new SystemNotificationHandler(getController(),
                 notice);
             noticeHandler.show();
         }

@@ -122,7 +122,7 @@ import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
-import de.dal33t.powerfolder.ui.notification.NotificationHandler;
+import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -1266,7 +1266,7 @@ public class UIController extends PFComponent {
      * @param message
      */
     public void previewMessage(String title, String message) {
-        NotificationHandler notificationHandler = new NotificationHandler(
+        ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
             getController(), title, message, false);
         notificationHandler.show();
     }
@@ -1284,7 +1284,7 @@ public class UIController extends PFComponent {
             if ((Boolean) applicationModel.getChatNotificationsValueModel()
                 .getValue())
             {
-                NotificationHandler notificationHandler = new NotificationHandler(
+                ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
                     getController(), title, message, true);
                 notificationHandler.show();
             }

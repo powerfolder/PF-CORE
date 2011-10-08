@@ -33,8 +33,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.Controller;
 
 /**
@@ -57,16 +55,16 @@ public class NotificationForm extends JPanel {
      * @param acceptAction
      * @param cancelOptionLabel
      * @param cancelAction
+     * @param chat chat, not system
      */
     NotificationForm(Controller controller, String titleText, String messageText,
         String acceptOptionLabel, Action acceptAction,
         String cancelOptionLabel, Action cancelAction, boolean showButtons,
-        boolean chat, boolean system) {
+        boolean chat) {
         this.controller = controller;
         setLayout(new BorderLayout());
         JPanel panel = createPanel(titleText, messageText, acceptOptionLabel,
-            acceptAction, cancelOptionLabel, cancelAction, showButtons, chat,
-                system);
+            acceptAction, cancelOptionLabel, cancelAction, showButtons, chat);
         add(panel, BorderLayout.CENTER);
         setBorder(new LineBorder(Color.lightGray, 1));
     }
@@ -77,7 +75,7 @@ public class NotificationForm extends JPanel {
     private JPanel createPanel(String titleText, String msgText,
         String acceptOptionLabel, Action acceptAction,
         String cancelOptionLabel, Action cancelAction, boolean showButtons,
-        boolean showNeverAskForChat, boolean showNeverAskForSystem)
+        boolean chat)
     {
         JPanel panel = new JPanel();
         panel.setBackground(Color.WHITE);
@@ -114,12 +112,12 @@ public class NotificationForm extends JPanel {
         }
 
         if (showButtons) {
-            if (showNeverAskForChat) {
+            if (chat) {
                 neverShowChatCB = new JCheckBox(Translation.getTranslation(
                         "notification_form.never_show_chat_notifications"));
                 neverShowChatCB.addActionListener(new MyActionListener());
                 panel.add(neverShowChatCB, cc.xywh(2, 6, internalWidth, 1));
-            } else if (showNeverAskForSystem)  {
+            } else {
                 neverShowSystemCB = new JCheckBox(Translation.getTranslation(
                         "notification_form.never_show_system_notifications"));
                 neverShowSystemCB.addActionListener(new MyActionListener());

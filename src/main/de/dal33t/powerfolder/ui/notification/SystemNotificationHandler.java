@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: NotificationHandler.java 12455 2010-05-27 10:44:35Z harry $
  */
 package de.dal33t.powerfolder.ui.notification;
 
@@ -31,50 +31,29 @@ import javax.swing.JWindow;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * This class handles the display of notification messages. These are displayed
+ * This class handles the display of system notification messages. These are displayed
  * when powerFolder is minimized, giving the user a chance to 'Accept' the
  * message and perform an action.
  */
-public class NotificationHandler extends PFComponent {
+public class SystemNotificationHandler extends PFComponent {
 
-    /** The notification title */
-    private final String title;
-
-    /** The notification message */
-    private final String message;
-
-    /** The label for the Accept button */
-    private final String acceptOptionLabel;
-
-    /** The optional label for the cancel button */
-    private final String cancelOptionLabel;
-
-    private final boolean showButtons;
+    private final Notice notice;
 
     /**
      * Constructor. Shows a message with an okay button.
      * 
      * @param controller
-     * @param title
-     * @param message
-     * @param showButtons
-     *          show the Accept or Cancel button
+     * @param notice
      */
-    public NotificationHandler(Controller controller, String title,
-        String message, boolean showButtons)
-    {
+    public SystemNotificationHandler(Controller controller, Notice notice) {
         super(controller);
-        Reject.ifNull(title, "Title must not be null");
-        Reject.ifNull(message, "Message must not be null");
-        this.title = title;
-        this.message = message;
-        acceptOptionLabel = Translation.getTranslation("general.ok");
-        cancelOptionLabel = null;
-        this.showButtons = showButtons;
+        Reject.ifNull(notice, "Notice must not be null");
+        this.notice = notice;
     }
 
     /**
@@ -93,19 +72,38 @@ public class NotificationHandler extends PFComponent {
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
+                if (notice.isActionable()) {
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().activateNotice(notice);
+                }
             }
         };
 
         Action cancelAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
+                getController().getUIController().getApplicationModel()
+                    .getNoticesModel().markRead(notice);
             }
         };
 
+        String acceptOptionLabel;
+        String cancelOptionLabel;
+
+        if (notice.isActionable()) {
+            acceptOptionLabel = Translation
+                .getTranslation("notification_handler.display.text");
+            cancelOptionLabel = Translation
+                .getTranslation("notification_handler.ignore.text");
+        } else {
+            acceptOptionLabel = Translation.getTranslation("general.ok");
+            cancelOptionLabel = null;
+        }
+
         // Show it.
         NotificationForm notificationForm = new NotificationForm(getController(),
-                title, message, acceptOptionLabel, acceptAction,
-                cancelOptionLabel, cancelAction, showButtons, true, false);
+                notice.getTitle(), notice.getSummary(), acceptOptionLabel,
+                acceptAction, cancelOptionLabel, cancelAction, true, false);
         contentPane.add(notificationForm, BorderLayout.CENTER);
         dialog.pack();
         slider.show();
