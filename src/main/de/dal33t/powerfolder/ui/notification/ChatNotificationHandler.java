@@ -72,8 +72,8 @@ public class ChatNotificationHandler extends PFComponent {
         Reject.ifNull(message, "Message must not be null");
         this.title = title;
         this.message = message;
-        acceptOptionLabel = Translation.getTranslation("general.ok");
-        cancelOptionLabel = null;
+        acceptOptionLabel = Translation.getTranslation("chat_notification_handler.reply");
+        cancelOptionLabel = Translation.getTranslation("chat_notification_handler.ignore");
         this.showButtons = showButtons;
     }
 
@@ -93,12 +93,14 @@ public class ChatNotificationHandler extends PFComponent {
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
+                // @todo - Also display chat window.
             }
         };
 
         Action cancelAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
+                // @todo - Also clear flashing of systray icon.
             }
         };
 

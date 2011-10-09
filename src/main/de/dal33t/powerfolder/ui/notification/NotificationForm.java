@@ -189,7 +189,8 @@ public class NotificationForm extends JPanel {
                 controller.getUIController().getApplicationModel()
                         .getChatNotificationsValueModel().setValue(
                         !neverShowChatNotificationCB.isSelected());
-                displayChatMessageCB.setEnabled(!neverShowChatNotificationCB.isSelected());
+                displayChatMessageCB.setEnabled(
+                        !neverShowChatNotificationCB.isSelected());
             } else if (e.getSource() == neverShowSystemNotificationCB) {
                 controller.getUIController().getApplicationModel()
                         .getSystemNotificationsValueModel().setValue(
