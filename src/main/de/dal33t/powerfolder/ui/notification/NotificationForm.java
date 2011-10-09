@@ -42,8 +42,10 @@ import de.dal33t.powerfolder.Controller;
 public class NotificationForm extends JPanel {
 
     private final Controller controller;
-    private JCheckBox neverShowChatCB;
-    private JCheckBox neverShowSystemCB;
+    private JCheckBox neverShowChatNotificationCB;
+    private JCheckBox displayChatMessageCB;
+    private JCheckBox neverShowSystemNotificationCB;
+    private final String messageText;
 
     /**
      * Constructor. Displays a panel with title and message. Also accept and
@@ -62,8 +64,10 @@ public class NotificationForm extends JPanel {
         String cancelOptionLabel, Action cancelAction, boolean showButtons,
         boolean chat) {
         this.controller = controller;
+        this.messageText = messageText.length() > 200 ?
+                messageText.substring(0, 200) + "..." : messageText;
         setLayout(new BorderLayout());
-        JPanel panel = createPanel(titleText, messageText, acceptOptionLabel,
+        JPanel panel = createPanel(titleText, acceptOptionLabel,
             acceptAction, cancelOptionLabel, cancelAction, showButtons, chat);
         add(panel, BorderLayout.CENTER);
         setBorder(new LineBorder(Color.lightGray, 1));
@@ -72,7 +76,7 @@ public class NotificationForm extends JPanel {
     /**
      * Create the UI for notification form
      */
-    private JPanel createPanel(String titleText, String msgText,
+    private JPanel createPanel(String titleText,
         String acceptOptionLabel, Action acceptAction,
         String cancelOptionLabel, Action cancelAction, boolean showButtons,
         boolean chat)
@@ -89,45 +93,63 @@ public class NotificationForm extends JPanel {
         if (cancelOptionLabel == null) {
             formLayout = new FormLayout(
                 "3dlu, 50dlu, 50dlu:grow, 50dlu, 3dlu",
-                "3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu");
+                    "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, pref, 3dlu, pref, 3dlu");
+                    //     head        msg         hr          cb    cb          btn
             internalWidth = 3;
             panel.setLayout(formLayout);
             if (showButtons) {
-                panel.add(button, cc.xy(3, 8));
+                panel.add(button, cc.xy(3, 11));
             }
         } else {
             formLayout = new FormLayout(
                 "3dlu, 20dlu, 50dlu:grow, 10dlu, 50dlu:grow, 20dlu, 3dlu",
-                "3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, pref, 3dlu, pref, 3dlu");
+                //     head        msg         hr          cb    cb          btn
             internalWidth = 5;
             panel.setLayout(formLayout);
-            panel.add(button, cc.xy(3, 8));
+            panel.add(button, cc.xy(3, 11));
 
             if (showButtons) {
                 button = new JButton();
                 button.setAction(cancelAction);
                 button.setText(cancelOptionLabel);
-                panel.add(button, cc.xy(5, 8));
+                panel.add(button, cc.xy(5, 11));
             }
         }
+
+        panel.add(new JSeparator(), cc.xyw(2, 6, internalWidth));
+
+        boolean showChatMessage = (Boolean) controller.getUIController()
+                .getApplicationModel().getShowChatMessageValueModel()
+                .getValue();
 
         if (showButtons) {
             if (chat) {
-                neverShowChatCB = new JCheckBox(Translation.getTranslation(
+                neverShowChatNotificationCB = new JCheckBox(Translation.getTranslation(
                         "notification_form.never_show_chat_notifications"));
-                neverShowChatCB.addActionListener(new MyActionListener());
-                panel.add(neverShowChatCB, cc.xywh(2, 6, internalWidth, 1));
+                neverShowChatNotificationCB.addActionListener(new MyActionListener());
+                panel.add(neverShowChatNotificationCB, cc.xyw(2, 8, internalWidth));
+
+                displayChatMessageCB = new JCheckBox(Translation.getTranslation(
+                        "notification_form.display_chat_messages"));
+                displayChatMessageCB.setSelected(showChatMessage);
+                displayChatMessageCB.addActionListener(new MyActionListener());
+                panel.add(displayChatMessageCB, cc.xyw(2, 9, internalWidth));
             } else {
-                neverShowSystemCB = new JCheckBox(Translation.getTranslation(
+                neverShowSystemNotificationCB = new JCheckBox(Translation.getTranslation(
                         "notification_form.never_show_system_notifications"));
-                neverShowSystemCB.addActionListener(new MyActionListener());
-                panel.add(neverShowSystemCB, cc.xywh(2, 6, internalWidth, 1));
+                neverShowSystemNotificationCB.addActionListener(new MyActionListener());
+                panel.add(neverShowSystemNotificationCB, cc.xyw(2, 8, internalWidth));
             }
         }
 
-        panel.add(createHeaderPanel(titleText), cc.xywh(2, 2, internalWidth, 1));
+        panel.add(createHeaderPanel(titleText), cc.xyw(2, 2, internalWidth));
 
-        JTextArea textArea = new JTextArea(msgText);
+        boolean showMessage = !chat || showChatMessage;
+        String message = showMessage ? messageText :
+                Translation.getTranslation("chat.notification.message");
+        JTextArea textArea = new JTextArea();
+        textArea.setText(message);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         panel.add(textArea, new CellConstraints(2, 4, internalWidth, 1,
@@ -163,14 +185,19 @@ public class NotificationForm extends JPanel {
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == neverShowChatCB) {
+            if (e.getSource() == neverShowChatNotificationCB) {
                 controller.getUIController().getApplicationModel()
                         .getChatNotificationsValueModel().setValue(
-                        !neverShowChatCB.isSelected());
-            } else if(e.getSource() == neverShowSystemCB) {
+                        !neverShowChatNotificationCB.isSelected());
+                displayChatMessageCB.setEnabled(!neverShowChatNotificationCB.isSelected());
+            } else if (e.getSource() == neverShowSystemNotificationCB) {
                 controller.getUIController().getApplicationModel()
                         .getSystemNotificationsValueModel().setValue(
-                        !neverShowSystemCB.isSelected());
+                        !neverShowSystemNotificationCB.isSelected());
+            } else if (e.getSource() == displayChatMessageCB) {
+                controller.getUIController().getApplicationModel()
+                        .getShowChatMessageValueModel().setValue(
+                        displayChatMessageCB.isSelected());
             }
         }
     }

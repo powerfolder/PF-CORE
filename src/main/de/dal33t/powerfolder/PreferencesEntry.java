@@ -72,6 +72,12 @@ public enum PreferencesEntry {
     SHOW_CHAT_NOTIFICATIONS("show.chat.notifications", true),
 
     /**
+     * Whether to show the actual chat notification message when minimized,
+     * or just 'You have received a chat message.'.
+     */
+    SHOW_CHAT_MESAGE("show.chat.message", true),
+
+    /**
      * Whether to show system notifications when minimized.
      */
     SHOW_SYSTEM_NOTIFICATIONS("show.system.notifications", true),

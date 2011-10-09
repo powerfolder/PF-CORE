@@ -52,6 +52,7 @@ public class ApplicationModel extends PFUIComponent {
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private ValueModel chatNotificationsValueModel;
+    private ValueModel showChatMessageValueModel;
     private ValueModel systemNotificationsValueModel;
     private ValueModel useOSModel;
     private LicenseModel licenseModel;
@@ -83,6 +84,17 @@ public class ApplicationModel extends PFUIComponent {
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     PreferencesEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
+                        controller, (Boolean) evt.getNewValue());
+                    controller.saveConfig();
+                }
+            });
+        showChatMessageValueModel = new ValueHolder(
+            PreferencesEntry.SHOW_CHAT_MESAGE
+                .getValueBoolean(controller));
+        showChatMessageValueModel
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    PreferencesEntry.SHOW_CHAT_MESAGE.setValue(
                         controller, (Boolean) evt.getNewValue());
                     controller.saveConfig();
                 }
@@ -143,6 +155,10 @@ public class ApplicationModel extends PFUIComponent {
         return chatNotificationsValueModel;
     }
 
+    public ValueModel getShowChatMessageValueModel() {
+        return showChatMessageValueModel;
+    }
+
     public ValueModel getSystemNotificationsValueModel() {
         return systemNotificationsValueModel;
     }
@@ -164,7 +180,7 @@ public class ApplicationModel extends PFUIComponent {
             }
             getController().getUIController().showChatNotification(
                 Translation.getTranslation("chat.notification.title"),
-                Translation.getTranslation("chat.notification.message"));
+                event.getMessage());
         }
 
         public void chatAdvice(ChatAdviceEvent event) {

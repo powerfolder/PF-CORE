@@ -32,15 +32,17 @@ import de.dal33t.powerfolder.util.Translation;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     /** Show chat notifications */
     private JCheckBox showChatNotificationBox;
+
+    /** Show chat message */
+    private JCheckBox showChatMessageBox;
 
     /** Show system notifications */
     private JCheckBox showSystemNotificationBox;
@@ -115,26 +117,24 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.show_chat_notifications"));
         showChatNotificationBox.setSelected((Boolean) applicationModel
             .getChatNotificationsValueModel().getValue());
-        applicationModel.getChatNotificationsValueModel()
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    showChatNotificationBox.setSelected((Boolean) evt
-                        .getNewValue());
-                }
-            });
 
+        // Show chat messages
+        showChatMessageBox = new JCheckBox(Translation
+            .getTranslation("preferences.dialog.show_chat_messages"));
+        showChatMessageBox.setSelected((Boolean) applicationModel
+            .getShowChatMessageValueModel().getValue());
+        showChatMessageBox.setEnabled(showChatNotificationBox.isSelected());
+        showChatNotificationBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showChatMessageBox.setEnabled(showChatNotificationBox.isSelected());
+            }
+        });
+        
         // Show system notifications when minimized
         showSystemNotificationBox = new JCheckBox(Translation
             .getTranslation("preferences.dialog.show_system_notifications"));
         showSystemNotificationBox.setSelected((Boolean) applicationModel
             .getSystemNotificationsValueModel().getValue());
-        applicationModel.getSystemNotificationsValueModel()
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    showSystemNotificationBox.setSelected((Boolean) evt
-                        .getNewValue());
-                }
-            });
 
         // Show system notifications when minimized
         showAutoCreatedFoldersBox = new JCheckBox(Translation
@@ -236,7 +236,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -278,6 +278,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(showChatNotificationBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(showChatMessageBox, cc.xy(3, row));
 
             row += 2;
             builder.add(showSystemNotificationBox, cc.xy(3, row));

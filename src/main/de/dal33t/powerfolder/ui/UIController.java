@@ -80,6 +80,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -602,36 +603,64 @@ public class UIController extends PFComponent {
         menu.add(notificationsMenu);
         notificationsMenu.addActionListener(systrayActionHandler);
 
+        final CheckboxMenuItem chatMessageMenuItem = new CheckboxMenuItem(
+            Translation.getTranslation("systray.notifications.chat.messages"));
+
         final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(
             Translation.getTranslation("systray.notifications.chat"));
         notificationsMenu.add(chatMenuItem);
-        chatMenuItem.setState((Boolean) applicationModel
-            .getChatNotificationsValueModel().getValue());
+        final ValueModel chatNotificationsValueModel =
+                applicationModel.getChatNotificationsValueModel();
+        boolean selected = (Boolean) chatNotificationsValueModel.getValue();
+        chatMenuItem.setState(selected);
+        chatMessageMenuItem.setEnabled(selected);
         chatMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                applicationModel.getChatNotificationsValueModel().setValue(
+                chatNotificationsValueModel.setValue(
                     chatMenuItem.getState());
             }
         });
-        applicationModel.getChatNotificationsValueModel()
-            .addValueChangeListener(new PropertyChangeListener() {
+        chatNotificationsValueModel.addValueChangeListener(
+                new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    chatMenuItem.setState((Boolean) evt.getNewValue());
+                    boolean selected2 = (Boolean) evt.getNewValue();
+                    chatMenuItem.setState(selected2);
+                    chatMessageMenuItem.setEnabled(selected2);
                 }
             });
+
+        notificationsMenu.add(chatMessageMenuItem);
+        final ValueModel showChatMessageValueModel =
+                applicationModel.getShowChatMessageValueModel();
+        chatMessageMenuItem.setState(
+                (Boolean) showChatMessageValueModel.getValue());
+        chatMessageMenuItem.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                showChatMessageValueModel.setValue(
+                    chatMessageMenuItem.getState());
+            }
+        });
+        showChatMessageValueModel
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    chatMessageMenuItem.setState((Boolean) evt.getNewValue());
+                }
+            });
+
+        notificationsMenu.addSeparator();
 
         final CheckboxMenuItem systemMenuItem = new CheckboxMenuItem(
             Translation.getTranslation("systray.notifications.system"));
         notificationsMenu.add(systemMenuItem);
-        systemMenuItem.setState((Boolean) applicationModel
-            .getSystemNotificationsValueModel().getValue());
+        final ValueModel systemNotificationsValueModel = applicationModel.getSystemNotificationsValueModel();
+        systemMenuItem.setState((Boolean) systemNotificationsValueModel.getValue());
         systemMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                applicationModel.getSystemNotificationsValueModel().setValue(
+                systemNotificationsValueModel.setValue(
                     systemMenuItem.getState());
             }
         });
-        applicationModel.getSystemNotificationsValueModel()
+        systemNotificationsValueModel
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     systemMenuItem.setState((Boolean) evt.getNewValue());
