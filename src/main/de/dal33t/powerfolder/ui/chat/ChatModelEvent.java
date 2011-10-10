@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.chat;
 import java.util.EventObject;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Event that indicates a chat event occurred.
@@ -30,6 +31,7 @@ public class ChatModelEvent extends EventObject {
 
     private static final long serialVersionUID = 1L;
     private boolean statusFlag;
+    private MemberInfo memberInfo;
     private String message = "";
     private boolean createdLocally;
 
@@ -41,8 +43,10 @@ public class ChatModelEvent extends EventObject {
      * @param message
      * @param statusFlag
      */
-    ChatModelEvent(Member fromMember, String message, boolean statusFlag, boolean createdLocally) {
+    ChatModelEvent(Member fromMember, String message, boolean statusFlag,
+                   boolean createdLocally) {
         super(fromMember);
+        memberInfo = fromMember.getInfo();
         this.message = message;
         this.statusFlag = statusFlag;
         this.createdLocally = createdLocally;
@@ -64,6 +68,10 @@ public class ChatModelEvent extends EventObject {
 
     public boolean isCreatedLocally() {
         return createdLocally;
+    }
+
+    public MemberInfo getMemberInfo() {
+        return memberInfo;
     }
 
     public String toString() {

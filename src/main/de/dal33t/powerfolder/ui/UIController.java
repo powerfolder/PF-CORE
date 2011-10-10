@@ -1296,7 +1296,7 @@ public class UIController extends PFComponent {
      */
     public void previewMessage(String title, String message) {
         ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
-            getController(), title, message, false);
+            getController(), null, title, message, false);
         notificationHandler.show();
     }
 
@@ -1308,13 +1308,13 @@ public class UIController extends PFComponent {
      * @param message
      *            the message to popup
      */
-    public void showChatNotification(String title, String message) {
+    public void showChatNotification(MemberInfo memberInfo, String title, String message) {
         if (started && !getController().isShuttingDown()) {
             if ((Boolean) applicationModel.getChatNotificationsValueModel()
                 .getValue())
             {
                 ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
-                    getController(), title, message, true);
+                    getController(), memberInfo, title, message, true);
                 notificationHandler.show();
             }
         }

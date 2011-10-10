@@ -179,8 +179,9 @@ public class ApplicationModel extends PFUIComponent {
                 return;
             }
             getController().getUIController().showChatNotification(
-                Translation.getTranslation("chat.notification.title"),
-                event.getMessage());
+                    event.getMemberInfo(),
+                    Translation.getTranslation("chat.notification.title"),
+                    event.getMessage());
         }
 
         public void chatAdvice(ChatAdviceEvent event) {

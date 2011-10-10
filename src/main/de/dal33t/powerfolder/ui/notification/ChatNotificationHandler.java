@@ -31,6 +31,7 @@ import javax.swing.JWindow;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -55,6 +56,8 @@ public class ChatNotificationHandler extends PFComponent {
 
     private final boolean showButtons;
 
+    private final MemberInfo memberInfo;
+
     /**
      * Constructor. Shows a message with an okay button.
      * 
@@ -64,13 +67,15 @@ public class ChatNotificationHandler extends PFComponent {
      * @param showButtons
      *          show the Accept or Cancel button
      */
-    public ChatNotificationHandler(Controller controller, String title,
-        String message, boolean showButtons)
+    public ChatNotificationHandler(Controller controller, MemberInfo memberInfo,
+                                   String title, String message,
+                                   boolean showButtons)
     {
         super(controller);
         Reject.ifNull(title, "Title must not be null");
         Reject.ifNull(message, "Message must not be null");
         this.title = title;
+        this.memberInfo = memberInfo;
         this.message = message;
         acceptOptionLabel = Translation.getTranslation("chat_notification_handler.reply");
         cancelOptionLabel = Translation.getTranslation("chat_notification_handler.ignore");
@@ -93,7 +98,9 @@ public class ChatNotificationHandler extends PFComponent {
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
-                // @todo - Also display chat window.
+                getController().getUIController().getMainFrame().getUIComponent()
+                        .setVisible(true);
+                getController().getUIController().openChat(memberInfo);
             }
         };
 
