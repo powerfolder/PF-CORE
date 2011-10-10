@@ -631,7 +631,7 @@ public class UIController extends PFComponent {
 
         notificationsMenu.add(chatMessageMenuItem);
         final ValueModel showChatMessageValueModel =
-                applicationModel.getShowChatMessageValueModel();
+                applicationModel.getDisplayChatMessageValueModel();
         chatMessageMenuItem.setState(
                 (Boolean) showChatMessageValueModel.getValue());
         chatMessageMenuItem.addItemListener(new ItemListener() {
@@ -1308,13 +1308,15 @@ public class UIController extends PFComponent {
      * @param message
      *            the message to popup
      */
-    public void showChatNotification(MemberInfo memberInfo, String title, String message) {
+    public void showChatNotification(MemberInfo memberInfo, String title, 
+                                     String message) {
         if (started && !getController().isShuttingDown()) {
             if ((Boolean) applicationModel.getChatNotificationsValueModel()
                 .getValue())
             {
-                ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
-                    getController(), memberInfo, title, message, true);
+                ChatNotificationHandler notificationHandler =
+                        new ChatNotificationHandler(getController(),
+                                memberInfo, title, message, true);
                 notificationHandler.show();
             }
         }

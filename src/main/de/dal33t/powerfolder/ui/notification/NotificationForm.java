@@ -120,7 +120,7 @@ public class NotificationForm extends JPanel {
         panel.add(new JSeparator(), cc.xyw(2, 6, internalWidth));
 
         boolean showChatMessage = (Boolean) controller.getUIController()
-                .getApplicationModel().getShowChatMessageValueModel()
+                .getApplicationModel().getDisplayChatMessageValueModel()
                 .getValue();
 
         if (showButtons) {
@@ -197,7 +197,7 @@ public class NotificationForm extends JPanel {
                         !neverShowSystemNotificationCB.isSelected());
             } else if (e.getSource() == displayChatMessageCB) {
                 controller.getUIController().getApplicationModel()
-                        .getShowChatMessageValueModel().setValue(
+                        .getDisplayChatMessageValueModel().setValue(
                         displayChatMessageCB.isSelected());
             }
         }

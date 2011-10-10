@@ -122,7 +122,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         showChatMessageBox = new JCheckBox(Translation
             .getTranslation("preferences.dialog.show_chat_messages"));
         showChatMessageBox.setSelected((Boolean) applicationModel
-            .getShowChatMessageValueModel().getValue());
+            .getDisplayChatMessageValueModel().getValue());
         showChatMessageBox.setEnabled(showChatNotificationBox.isSelected());
         showChatNotificationBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
