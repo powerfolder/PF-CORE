@@ -1392,6 +1392,12 @@ public class UIController extends PFComponent {
             sb.toString(), GenericDialogType.INFO);
     }
 
+    public void clearBlink() {
+        if (trayIconManager != null) {
+            trayIconManager.clearBlink();
+        }
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////

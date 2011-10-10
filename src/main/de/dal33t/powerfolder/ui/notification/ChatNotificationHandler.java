@@ -100,7 +100,7 @@ public class ChatNotificationHandler extends PFComponent {
         Action cancelAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
-                // @todo - Also clear flashing of systray icon.
+                getController().getUIController().clearBlink();
             }
         };
 

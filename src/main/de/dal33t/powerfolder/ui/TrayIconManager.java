@@ -349,6 +349,10 @@ public class TrayIconManager extends PFComponent {
         }
     }
 
+    public void clearBlink() {
+        blink = false;
+    }
+
     /**
      * Listens for chat messages.
      */
