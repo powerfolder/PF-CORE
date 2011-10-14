@@ -739,9 +739,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         char lastChar = fileName.charAt(fileName.length() - 1);
-        if (lastChar == ' ') {
-            throw new IllegalStateException("Filename ends with space: "
-                + fileName);
+        if (OSUtil.isWindowsSystem()) {
+            if (lastChar == ' ') {
+                throw new IllegalStateException("Filename ends with space: "
+                    + fileName);
+            }
         }
         if (lastChar == '/' || lastChar == '\\') {
             throw new IllegalStateException("Filename ends with slash: "
