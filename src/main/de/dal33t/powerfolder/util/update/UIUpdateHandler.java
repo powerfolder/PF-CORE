@@ -82,7 +82,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                 return;
             }
             DownloadUpdateDialog dlDiag = new DownloadUpdateDialog(
-                getController());
+                getController(), event.getNewReleaseVersion());
             dlDiag.openInEDT();
             boolean success = event.getUpdater().downloadAndUpdate(releaseURL,
                 dlDiag.getStreamCallback(), updateSilently) != null;
@@ -104,7 +104,6 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                     });
                 } catch (InterruptedException ex) {
                     logFiner(ex);
-                    return;
                 }
             }
         } else if (option == gotoHomepage) {

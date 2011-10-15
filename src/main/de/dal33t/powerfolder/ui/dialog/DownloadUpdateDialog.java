@@ -53,14 +53,17 @@ public class DownloadUpdateDialog extends PFUIComponent {
 
     private boolean canceled;
 
+    private final String version;
+
     /**
      * Initialize
      * 
      * @param controller
      */
-    public DownloadUpdateDialog(Controller controller) {
+    public DownloadUpdateDialog(Controller controller, String version) {
         super(controller);
         canceled = false;
+        this.version = version;
         streamCallback = new MyStreamCallback();
     }
 
@@ -74,7 +77,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
             .getTranslation("dialog.update.updating"), false);
 
         uiComponent.setResizable(false);
-        uiComponent.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        uiComponent.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         uiComponent.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
                 canceled = true;
@@ -106,10 +109,8 @@ public class DownloadUpdateDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         // Add components
-        builder
-            .addLabel(
-                Translation.getTranslation("dialog.update.updating.text"), cc
-                    .xywh(1, 1, 4, 1));
+        builder.addLabel(Translation.getTranslation(
+                "dialog.update.updating.text", version), cc.xywh(1, 1, 4, 1));
         builder.add(processBar, cc.xywh(2, 3, 2, 1));
         builder.add(buttonBar, cc.xywh(2, 5, 2, 1));
 
