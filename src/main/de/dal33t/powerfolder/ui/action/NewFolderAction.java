@@ -63,24 +63,10 @@ public class NewFolderAction extends BaseAction {
                 List<File> files = DialogFactory.chooseDirectory(
                         getUIController(),
                         folderRepository.getFoldersBasedir(),
-                        false);
-                if (files == null || files.size() != 1) {
+                        true);
+                if (files == null || files.isEmpty()) {
                     return;
                 }
-                File file  = files.get(0);
-
-                // Has user already got this folder?
-                for (Folder folder : folderRepository.getFolders()) {
-                    if (folder.getBaseDirectoryInfo().getDiskFile(
-                            folderRepository).equals(file)) {
-                        return;
-                    }
-                }
-
-                // FolderInfo
-                String name = FileUtils.getSuggestedFolderName(file);
-                String folderId = '[' + IdGenerator.makeId() + ']';
-                FolderInfo fi = new FolderInfo(name, folderId);
 
                 // Setup sucess panel of this wizard path
                 FolderCreatePanel createPanel = new FolderCreatePanel(
@@ -102,14 +88,37 @@ public class NewFolderAction extends BaseAction {
                     getController().getOSClient().isBackupByDefault());
 
                 List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
-                FolderCreateItem item = new FolderCreateItem(file);
-                item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-                item.setFolderInfo(fi);
-                item.setArchiveHistory(
-                        ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
-                                getController()));
-                item.setArchiveMode(ArchiveMode.FULL_BACKUP);
-                folderCreateItems.add(item);
+
+                outer:
+                for (File file : files) {
+                    // Has user already got this folder?
+                    for (Folder folder : folderRepository.getFolders()) {
+                        if (folder.getBaseDirectoryInfo().getDiskFile(
+                                folderRepository).equals(file)) {
+                            continue outer;
+                        }
+                    }
+
+                    // FolderInfo
+                    String name = FileUtils.getSuggestedFolderName(file);
+                    String folderId = '[' + IdGenerator.makeId() + ']';
+                    FolderInfo fi = new FolderInfo(name, folderId);
+
+                    FolderCreateItem item = new FolderCreateItem(file);
+                    item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+                    item.setFolderInfo(fi);
+                    item.setArchiveHistory(
+                            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
+                                    getController()));
+                    item.setArchiveMode(ArchiveMode.FULL_BACKUP);
+                    folderCreateItems.add(item);
+
+                }
+
+                if (folderCreateItems.isEmpty()) {
+                    return;
+                }
+
                 wizard.getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
                         folderCreateItems);
                 wizard.open(createPanel);
