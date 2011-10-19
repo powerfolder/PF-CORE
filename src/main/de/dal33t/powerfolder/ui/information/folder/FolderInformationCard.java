@@ -344,7 +344,7 @@ public class FolderInformationCard extends InformationCard {
      * @return
      */
     private int getProblemsTabIndex() {
-        return getController().isBackupOnly() ? 2 : 3;
+        return getController().isBackupOnly() ? 1 : 3;
     }
 
     private class MyProblemListener implements ProblemListener {
