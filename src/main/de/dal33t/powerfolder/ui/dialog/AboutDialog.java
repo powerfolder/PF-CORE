@@ -194,18 +194,26 @@ public class AboutDialog extends PFUIComponent {
             }
         });
 
-        homeLink = new LinkLabel(getController(), Translation
-            .getTranslation("about_dialog.home_page"),
+        homeLink = new LinkLabel(getController(),
+            Translation.getTranslation("about_dialog.home_page"),
             ConfigurationEntry.PROVIDER_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize(homeLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
-        docLink = new LinkLabel(getController(), Translation
-            .getTranslation("about_dialog.documentation"),
-            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
+        String docLinkStr = ConfigurationEntry.PROVIDER_WIKI_URL
+            .getValue(getController());
+        if (StringUtils.isBlank(docLinkStr)) {
+            docLinkStr = ConfigurationEntry.PROVIDER_QUICKSTART_URL
+                .getValue(getController());
+        }
+        docLink = new LinkLabel(getController(),
+            Translation.getTranslation("about_dialog.documentation"),
+            docLinkStr);
+        docLink.setVisible(StringUtils.isNotBlank(docLinkStr));
+
         SimpleComponentFactory.setFontSize(docLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
-        supportLink = new LinkLabel(getController(), Translation
-            .getTranslation("about_dialog.support"),
+        supportLink = new LinkLabel(getController(),
+            Translation.getTranslation("about_dialog.support"),
             ConfigurationEntry.PROVIDER_SUPPORT_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize(supportLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
