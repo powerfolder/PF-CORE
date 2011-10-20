@@ -634,12 +634,12 @@ public class FileUtils {
                 File powerFolderFile = new File(herePath, exeName);
                 if (!powerFolderFile.exists()) {
                     // Try harder
-                    powerFolderFile = new File(WinUtils
-                        .getProgramInstallationPath(), exeName);
+                    powerFolderFile = new File(
+                        WinUtils.getProgramInstallationPath(), exeName);
 
                     if (!powerFolderFile.exists()) {
-                        powerFolderFile = new File(WinUtils
-                            .getProgramInstallationPath(), exeName);
+                        powerFolderFile = new File(
+                            WinUtils.getProgramInstallationPath(), exeName);
 
                         log.warning("Could not find "
                             + powerFolderFile.getName() + " at "
@@ -860,10 +860,11 @@ public class FileUtils {
         Reject.ifNull(baseDir, "Base dir is null");
         Reject.ifBlank(rawName, "Raw name is null");
 
-        File candidate = new File(baseDir, rawName);
+        String canName = FileUtils.removeInvalidFilenameChars(rawName);
+        File candidate = new File(baseDir, canName);
         int suffix = 2;
         while (candidate.exists()) {
-            candidate = new File(baseDir, rawName + " (" + suffix + ')');
+            candidate = new File(baseDir, canName + " (" + suffix + ')');
             suffix++;
             if (suffix > 1000) {
                 throw new IllegalStateException(
