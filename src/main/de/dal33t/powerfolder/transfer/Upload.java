@@ -59,9 +59,7 @@ public class Upload extends Transfer {
 
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
-
     protected transient RandomAccessFile raf;
-
     private String debugState;
 
     /**
@@ -164,15 +162,6 @@ public class Upload extends Transfer {
         }
     }
 
-    public void cancelPartRequest(RequestPart pr) {
-        Reject.ifNull(pr, "Message is null");
-
-        synchronized (pendingRequests) {
-            pendingRequests.remove(pr);
-            pendingRequests.notifyAll();
-        }
-    }
-
     /**
      * Starts the upload in a own thread using the give transfer manager
      */
@@ -225,7 +214,7 @@ public class Upload extends Transfer {
                         throw new TransferException(e);
                     }
                     debugState = "Waiting for requests";
-                    if (waitForRequests()) {
+                    if (waitForRequests(Constants.UPLOAD_REQUEST_TIMEOUT)) {
                         if (isFiner()) {
                             logFiner("Checking for parts request.");
                         }
@@ -238,7 +227,7 @@ public class Upload extends Transfer {
                             debugState = "Waiting for remote matching";
                             state.setState(TransferState.REMOTEMATCHING);
                             logFiner("Waiting for initial part requests!");
-                            waitForRequests();
+                            waitForRequests(Constants.UPLOAD_REMOTEHASHING_PART_REQUEST_TIMEOUT);
                         }
                         debugState = "Starting to send parts";
                         if (isFine()) {
@@ -313,8 +302,8 @@ public class Upload extends Transfer {
             return false;
         }
         final FileInfo fi = r.getFile();
-        checkLastModificationDate(fi, fi.getDiskFile(getController()
-            .getFolderRepository()));
+        checkLastModificationDate(fi,
+            fi.getDiskFile(getController().getFolderRepository()));
         FilePartsRecord fpr;
         try {
             state.setState(TransferState.FILEHASHING);
@@ -358,12 +347,12 @@ public class Upload extends Transfer {
         }
         state.setState(TransferState.UPLOADING);
         RequestPart pr = null;
-        long waitTime = Constants.UPLOAD_FIRST_PART_REQUEST_TIMEOUT;
+        long waitTime = Constants.UPLOAD_REMOTEHASHING_PART_REQUEST_TIMEOUT;
         synchronized (pendingRequests) {
             while (pendingRequests.isEmpty() && !isBroken() && !isAborted()) {
                 try {
                     pendingRequests.wait(waitTime);
-                    waitTime = Constants.UPLOAD_FOLLOWING_PART_REQUEST_TIMEOUT;
+                    waitTime = Constants.UPLOAD_REQUEST_TIMEOUT;
                 } catch (InterruptedException e) {
                     logWarning("Interrupted on " + this + ". " + e);
                     logFiner(e);
@@ -438,7 +427,7 @@ public class Upload extends Transfer {
         return true;
     }
 
-    protected boolean waitForRequests() {
+    protected boolean waitForRequests(long requestTimeoutMS) {
         if (isBroken() || aborted) {
             return false;
         }
@@ -447,10 +436,7 @@ public class Upload extends Transfer {
                 return true;
             }
             try {
-                while (pendingRequests.isEmpty() && !isBroken() && !isAborted())
-                {
-                    pendingRequests.wait(100);
-                }
+                pendingRequests.wait(requestTimeoutMS);
             } catch (InterruptedException e) {
                 logFine("InterruptedException. " + e);
             }
