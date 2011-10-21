@@ -272,18 +272,18 @@ public class Constants {
     public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 3L * 60 * 1000;
 
     /**
-     * The upload timeout of the first part request. After the time of
-     * inactivity the upload is assumed to be timed out. This value is very
-     * large since delta sync allows for quite alot of time to pass before
-     * requesting. (time it takes to hash)
-     */
-    public static final long UPLOAD_FIRST_PART_REQUEST_TIMEOUT = 5L * 60 * 60 * 1000;
-
-    /**
-     * The upload timeout of following part request. After the time of
+     * The upload timeout for request if not remote hashing. After the time of
      * inactivity the upload is assumed to be timed out.
      */
-    public static final long UPLOAD_FOLLOWING_PART_REQUEST_TIMEOUT = 1L * 60 * 1000;
+    public static final long UPLOAD_REQUEST_TIMEOUT = 3L * 60 * 1000;
+
+    /**
+     * The upload timeout during remote hashing. After the time of inactivity
+     * the upload is assumed to be timed out. This value is very large since
+     * delta sync allows for quite alot of time to pass before requesting. (time
+     * it takes to hash)
+     */
+    public static final long UPLOAD_REMOTEHASHING_PART_REQUEST_TIMEOUT = 5L * 60 * 60 * 1000;
 
     // ConnectionHandler constants ********************************************
 
