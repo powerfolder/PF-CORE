@@ -88,6 +88,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
+    public static final String PROPERTYNAME_LANGUAGE = "language";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
     public static final String PROPERTYNAME_LAST_LOGIN_DATE = "lastLoginDate";
@@ -107,6 +108,7 @@ public class Account implements Serializable {
     @Column(nullable = false, unique = true)
     private String username;
     private String password;
+    private String language;
     private Date registerDate;
     private Date lastLoginDate;
     @ManyToOne
@@ -350,6 +352,24 @@ public class Account implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /** setLanguage
+     * Set account language
+     * @return Selected language
+     */
+
+    public String getLanguage() {
+        return this.language;
+    }
+
+    /** setLanguage
+     * Set account language
+     * @param lang New language
+     */
+
+    public void setLanguage(String lang) {
+        this.language = lang;
     }
 
     public Date getRegisterDate() {
