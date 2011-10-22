@@ -315,6 +315,14 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
+            addSeparator(collapseOnline, onlineIcon, onlineLabel, true);
+
+            if (!collapseOnline) {
+                for (ExpandableFolderModel folderBean : onlineFolders) {
+                    addView(folderBean, expandedFolderInfo);
+                }
+            }
+
             if (showTypical) {
                 addSeparator(collapseTypical, typicalIcon, typicalLabel, true);
 
@@ -325,13 +333,6 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
-            addSeparator(collapseOnline, onlineIcon, onlineLabel, true);
-
-            if (!collapseOnline) {
-                for (ExpandableFolderModel folderBean : onlineFolders) {
-                    addView(folderBean, expandedFolderInfo);
-                }
-            }
         }
         foldersTab.updateEmptyLabel();
     }
