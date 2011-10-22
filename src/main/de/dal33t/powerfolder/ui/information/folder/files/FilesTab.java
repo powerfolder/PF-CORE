@@ -188,7 +188,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             folder.getInfo(), ""));
         tablePanel.setFolder(folder);
         tablePanel.sortLatestDate();
-        flatViewCB.setSelected(true);
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
