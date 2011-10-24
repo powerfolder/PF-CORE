@@ -27,7 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Factory to create {@link FileInfo} and {@link DirectoryInfo} objects.
@@ -233,26 +235,85 @@ public final class FileInfoFactory {
         return new FileInfo(name, size, modby, modDate, version, false, foInfo);
     }
 
-    @Deprecated
-    public static FileInfo updatedVersion(FileInfo original, int newVersion) {
-        Reject.ifNull(original, "Original FileInfo is null");
-        Reject.ifTrue(original.isLookupInstance(),
-            "Cannot update template FileInfo!");
-        Reject.ifTrue(
-            original instanceof DirectoryInfo,
-            "Possible problem. Unable to perform on dirInfo:"
-                + original.toDetailString());
-        return new FileInfo(original.getRelativeName(), original.getSize(),
-            original.getModifiedBy(), original.getModifiedDate(), newVersion,
-            original.isDeleted(), original.getFolderInfo());
-    }
-
     public static DirectoryInfo createBaseDirectoryInfo(FolderInfo foInfo) {
         return new DirectoryInfo(foInfo, "");
     }
 
+    private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",
+        "<", ":", ">"};
+
+    /**
+     * #2480: Encodes illegal characters in filenames for windows such as: |, :, <, >,
+     * 
+     * @param relativeFilename
+     *            containing the illegal chars, e.g. "My|File.txt"
+     * @return
+     */
+    public static String encodeIllegalChars(String relativeFilename) {
+        if (!OSUtil.isWindowsSystem()) {
+            return relativeFilename;
+        }
+        String output = relativeFilename;
+        for (String illChar : ILLEGAL_WINDOWS_CHARS) {
+            if (output.contains(illChar)) {
+                String replacement = Base64.encodeString(illChar);
+                replacement = replacement.replace("=", "");
+                replacement = "$%" + replacement + "%$";
+                output = output.replace(illChar, replacement);
+            }
+        }
+        char lastChar = output.charAt(output.length() - 1);
+        if (lastChar == ' ' || lastChar == '.') {
+            String replacement = Base64.encodeString(String.valueOf(output
+                .charAt(output.length() - 1)));
+            replacement = replacement.replace("=", "");
+            replacement = "$%" + replacement + "%$";
+            output = output.substring(0, output.length() - 1);
+            output += replacement;
+        }
+        if (output.contains(" /")) {
+            String replacement = Base64.encodeString(" ");
+            replacement = replacement.replace("=", "");
+            replacement = "$%" + replacement + "%$";
+            output = output.replace(" /", replacement + "/");
+        }
+        if (output.contains("./")) {
+            String replacement = Base64.encodeString(".");
+            replacement = replacement.replace("=", "");
+            replacement = "$%" + replacement + "%$";
+            output = output.replace("./", replacement + "/");
+        }
+        // Spaces at start and end
+        return output;
+    }
+    
+    /**
+     * #2480: Decodes illegal characters in filenames for windows such as: |, :, <, >,
+     * 
+     * @param relativeFilename
+     *            containing the legal chars, e.g. "My$%fA%$File.txt"
+     * @return
+     */
+    public static String decodeIllegalChars(String relativeFilename) {
+        if (!OSUtil.isWindowsSystem()) {
+            return relativeFilename;
+        }
+        String output = relativeFilename;
+        int start = 0;
+        while ((start = output.indexOf("$%", start)) >= 0) {
+            int end = output.indexOf("%$", start);
+            if (end < 0) {
+                break;
+            }
+            String encoded = output.substring(start + 2, end);
+            String decoded = Base64.decodeString(encoded + "==");
+            output = output.substring(0, start) + decoded + output.substring(end + 2);
+        }
+        return output;
+    }
+
     protected static String buildFileName(File baseDirectory, File file) {
-        String fn = file.getName();
+        String fn = decodeIllegalChars(file.getName());
         if (fn.endsWith("/")) {
             fn = fn.substring(0, fn.length() - 1);
         }
@@ -264,7 +325,7 @@ public final class FileInfoFactory {
                     "Local file seems not to be in a subdir of the local powerfolder copy. Basedir: "
                         + baseDirectory + ", file: " + file);
             }
-            fn = parent.getName() + '/' + fn;
+            fn = decodeIllegalChars(parent.getName()) + '/' + fn;
             parent = parent.getParentFile();
         }
         if (fn.endsWith("/")) {
