@@ -251,8 +251,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     private File getArchiveTarget(FileInfo fileInfo) {
-        return new File(archiveDirectory, fileInfo.getRelativeName() + "_K_"
-            + fileInfo.getVersion());
+        return new File(archiveDirectory,
+            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName())
+                + "_K_" + fileInfo.getVersion());
     }
 
     private String getFileInfoName(File fileInArchive) {
@@ -260,7 +261,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     private static String buildFileName(File baseDirectory, File file) {
-        String fn = file.getName();
+        String fn = FileInfoFactory.decodeIllegalChars(file.getName());
         int i = fn.lastIndexOf("_K_");
         if (i >= 0) {
             fn = fn.substring(0, i);
@@ -272,7 +273,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 throw new IllegalArgumentException(
                     "Local file seems not to be in a subdir of the local powerfolder copy");
             }
-            fn = parent.getName() + '/' + fn;
+            fn = FileInfoFactory.decodeIllegalChars(parent.getName()) + '/'
+                + fn;
             parent = parent.getParentFile();
         }
         return fn;
@@ -317,7 +319,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
         File subdirectory = FileUtils.buildFileFromRelativeName(
-            archiveDirectory, fileInfo.getRelativeName()).getParentFile();
+            archiveDirectory,
+            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
+            .getParentFile();
         if (!subdirectory.exists()) {
             return false;
         }
@@ -325,7 +329,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         if (files == null || files.length == 0) {
             return false;
         }
-        String fn = fileInfo.getFilenameOnly();
+        String fn = FileInfoFactory.encodeIllegalChars(fileInfo
+            .getFilenameOnly());
         for (String fileName : files) {
             if (fileName.startsWith(fn)) {
                 return true;
@@ -338,14 +343,16 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
         File subdirectory = FileUtils.buildFileFromRelativeName(
-            archiveDirectory, fileInfo.getRelativeName()).getParentFile();
+            archiveDirectory,
+            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
+            .getParentFile();
         if (!subdirectory.exists()) {
             return Collections.emptyList();
         }
 
         File target = getArchiveTarget(fileInfo);
         File[] archivedFiles = getArchivedFiles(target.getParentFile(),
-            fileInfo.getFilenameOnly());
+            FileInfoFactory.encodeIllegalChars(fileInfo.getFilenameOnly()));
         if (archivedFiles == null || archivedFiles.length == 0) {
             return Collections.emptyList();
         }
@@ -418,13 +425,14 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     /**
      * Delete archives older that a specified number of days.
-     *
-     * @param cleanupDate Age in days of archive files to delete.
+     * 
+     * @param cleanupDate
+     *            Age in days of archive files to delete.
      */
     public void cleanupOldArchiveFiles(Date cleanupDate) {
-        log.info("Cleaning up " + archiveDirectory + " for files older than " +
-                cleanupDate);
-        
+        log.info("Cleaning up " + archiveDirectory + " for files older than "
+            + cleanupDate);
+
         cleanupOldArchiveFiles(archiveDirectory, cleanupDate);
     }
 
@@ -435,7 +443,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             }
         } else {
             Date age = new Date(file.lastModified());
-            if(age.before(cleanupDate)) {
+            if (age.before(cleanupDate)) {
                 log.info("Deleting old archive file " + file + " (" + age + ')');
                 try {
                     file.delete();
