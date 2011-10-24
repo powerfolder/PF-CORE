@@ -193,7 +193,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (diskFile == null) {
             throw new NullPointerException("diskFile is null");
         }
-        String diskFileName = diskFile.getName();
+        String diskFileName = FileInfoFactory.decodeIllegalChars(diskFile
+            .getName());
         boolean nameMatch = fileName.endsWith(diskFileName);
 
         if (!nameMatch && IGNORE_CASE) {
@@ -494,9 +495,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         Folder folder = getFolder(repo);
         if (folder == null) {
             if (log.isLoggable(Level.FINER)) {
-                log
-                    .finer("Unable to determine newest version. Folder not joined "
-                        + folderInfo);
+                log.finer("Unable to determine newest version. Folder not joined "
+                    + folderInfo);
             }
             return null;
             // throw new IllegalStateException(
@@ -528,9 +528,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         Folder folder = getFolder(repo);
         if (folder == null) {
-            log
-                .warning("Unable to determine newest version. Folder not joined "
-                    + folderInfo);
+            log.warning("Unable to determine newest version. Folder not joined "
+                + folderInfo);
             return null;
         }
         FileInfo newestVersion = null;
@@ -739,12 +738,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         char lastChar = fileName.charAt(fileName.length() - 1);
-        if (OSUtil.isWindowsSystem()) {
-            if (lastChar == ' ') {
-                throw new IllegalStateException("Filename ends with space: "
-                    + fileName);
-            }
-        }
         if (lastChar == '/' || lastChar == '\\') {
             throw new IllegalStateException("Filename ends with slash: "
                 + fileName);
