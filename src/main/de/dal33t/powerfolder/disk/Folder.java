@@ -3829,7 +3829,8 @@ public class Folder extends PFComponent {
      *         exist!! check before use
      */
     public File getDiskFile(FileInfo fInfo) {
-        return new File(localBase, fInfo.getRelativeName());
+        return new File(localBase, FileInfoFactory.encodeIllegalChars(fInfo
+            .getRelativeName()));
     }
 
     /**
