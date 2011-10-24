@@ -60,6 +60,15 @@ public class FilenameProblemHelper {
     /**
      * See if there are any problems.
      * 
+     * @param fInfo
+     * @return
+     */
+    public static boolean hasProblems(FileInfo fInfo) {
+        return hasProblems(fInfo.getFilenameOnly());
+    }
+    /**
+     * See if there are any problems.
+     * 
      * @param filename
      * @return
      */
