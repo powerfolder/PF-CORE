@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -63,6 +64,65 @@ public class FileTransferTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
+    }
+
+    /**
+     * #2480: Filename imcompatibilties between Mac client and Windows server
+     * 
+     * @throws IOException
+     */
+    public void testSpecialChars() throws IOException {
+        // |, ?, ", *, <, :, >
+        String filename = "  subdir1|/  %%::::          ./  |||:::*?<>  . ";
+        File f = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+            FileInfoFactory.encodeIllegalChars(filename));
+        assertTrue(f.toString(), f.exists());
+        scanFolder(getFolderAtBart());
+        assertEquals(getFolderAtBart().getKnownFiles().toString(), 1,
+            getFolderAtBart().getKnownFiles().size());
+        FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
+        assertEquals(filename, fInfo.getRelativeName());
+        // Give them time to copy
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return 1 == getContollerLisa().getTransferManager()
+                    .countCompletedDownloads();
+            }
+        });
+        FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
+            .next();
+        assertEquals(filename, fInfoLisa.getRelativeName());
+        assertEquals(fInfo, fInfoLisa);
+
+        File fLisa = fInfoLisa.getDiskFile(getContollerLisa()
+            .getFolderRepository());
+        assertTrue(
+            fInfoLisa + " @ " + fLisa.toString() + ". EXPECED: "
+                + FileInfoFactory.encodeIllegalChars(filename),
+            fLisa.getAbsolutePath().replace("\\", "/")
+                .endsWith(FileInfoFactory.encodeIllegalChars(filename)));
+
+        // Test update
+        TestHelper.changeFile(fLisa);
+        scanFolder(getFolderAtLisa());
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return 1 == getContollerBart().getTransferManager()
+                    .countCompletedDownloads();
+            }
+        });
+        assertEquals(getFolderAtBart().getKnownFiles().toString(), 1,
+            getFolderAtBart().getKnownFiles().size());
+        fInfo = getFolderAtBart().getKnownFiles().iterator().next();
+        assertEquals(filename, fInfo.getRelativeName());
+
+        // Test restore from archive
+        assertTrue(getFolderAtBart().getFileArchiver().hasArchivedFileInfo(
+            fInfo));
+        FileInfo aFInfo = getFolderAtBart().getFileArchiver()
+            .getArchivedFilesInfos(fInfo).get(0);
+        assertTrue(getFolderAtBart().getFileArchiver().restore(aFInfo,
+            aFInfo.getDiskFile(getContollerBart().getFolderRepository())));
     }
 
     public void testFileCopyCert8() throws IOException {
@@ -869,10 +929,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #1904
      */
     public void testRecoverFromMD5Error() {
-        getContollerBart().getTransferManager().setUploadCPSForLAN(
-            400000);
-        getContollerBart().getTransferManager().setUploadCPSForWAN(
-            400000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(400000);
+        getContollerBart().getTransferManager().setUploadCPSForWAN(400000);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
         // testfile
@@ -964,10 +1022,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #415
      */
     public void testResumeTransfer() {
-        getContollerBart().getTransferManager().setUploadCPSForLAN(
-            100000);
-        getContollerBart().getTransferManager().setUploadCPSForWAN(
-            100000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(100000);
+        getContollerBart().getTransferManager().setUploadCPSForWAN(100000);
         getContollerBart().getReconnectManager().shutdown();
         getContollerLisa().getReconnectManager().shutdown();
         assertFalse(getContollerBart().getReconnectManager().isStarted());
@@ -1522,10 +1578,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
-        getContollerBart().getTransferManager().setUploadCPSForLAN(
-            1000000);
-        getContollerLisa().getTransferManager().setUploadCPSForLAN(
-            1000000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(1000000);
+        getContollerLisa().getTransferManager().setUploadCPSForLAN(1000000);
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
