@@ -1237,7 +1237,8 @@ public class ServerClient extends PFComponent {
                 setServerInConfig(server.getInfo());
                 getController().saveConfig();
             }
-            logFine("Got connect to server: " + server);
+            logInfo("Got connect to server: " + server + " nodeid: "
+                + server.getId());
         }
 
         listenerSupport.serverConnected(new ServerClientEvent(
