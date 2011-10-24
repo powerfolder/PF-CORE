@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,16 +32,15 @@ import java.util.concurrent.Semaphore;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
-import de.dal33t.powerfolder.disk.problem.DuplicateFilenameProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Disk Scanner for a folder. It compares the curent database of files agains
@@ -349,37 +347,20 @@ public class FolderScanner extends PFComponent {
      * @param files
      */
     private void tryFindProblemsInCurrentScan() {
-        Map<String, FileInfo> lowerCaseNames = new HashMap<String, FileInfo>();
-
-        tryToFindProblemsInCurrentScan(currentScanResult.getChangedFiles(),
-            lowerCaseNames);
-        tryToFindProblemsInCurrentScan(currentScanResult.getRestoredFiles(),
-            lowerCaseNames);
-        tryToFindProblemsInCurrentScan(currentScanResult.getNewFiles(),
-            lowerCaseNames);
+        if (!PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController()))
+        {
+            return;
+        }
+        tryToFindProblemsInCurrentScan(currentScanResult.getChangedFiles());
+        tryToFindProblemsInCurrentScan(currentScanResult.getRestoredFiles());
+        tryToFindProblemsInCurrentScan(currentScanResult.getNewFiles());
     }
 
-    private void tryToFindProblemsInCurrentScan(Collection<FileInfo> files,
-        Map<String, FileInfo> lowerCaseNames)
+    private void tryToFindProblemsInCurrentScan(Collection<FileInfo> files)
     {
         for (FileInfo fileInfo : files) {
             List<Problem> problemList = null;
-
-            // #836
-            if (!OSUtil.isWindowsSystem()) {
-                if (lowerCaseNames.containsKey(fileInfo
-                    .getLowerCaseFilenameOnly()))
-                {
-                    Problem problem = new DuplicateFilenameProblem(fileInfo);
-                    problemList = new ArrayList<Problem>();
-                    problemList.add(problem);
-                } else {
-                    lowerCaseNames.put(fileInfo.getLowerCaseFilenameOnly(),
-                        fileInfo);
-                }
-            }
-
-            if (FilenameProblemHelper.hasProblems(fileInfo.getFilenameOnly())) {
+            if (FilenameProblemHelper.hasProblems(fileInfo)) {
                 if (problemList == null) {
                     problemList = new ArrayList<Problem>();
                 }
@@ -530,7 +511,7 @@ public class FolderScanner extends PFComponent {
         } else {
             filename = currentDirName + '/' + fileToScan.getName();
         }
-        return scanDiskItem(fileToScan, filename, false);
+        return scanDiskItem(fileToScan, FileInfoFactory.decodeIllegalChars(filename), false);
     }
 
     /**
@@ -552,7 +533,7 @@ public class FolderScanner extends PFComponent {
             logFiner("Scanning subdir " + dirToScan + " / " + currentDirName);
         }
         currentScanResult.incrementTotalFilesCount();
-        return scanDiskItem(dirToScan, currentDirName, true);
+        return scanDiskItem(dirToScan, FileInfoFactory.decodeIllegalChars(currentDirName), true);
     }
 
     /**
