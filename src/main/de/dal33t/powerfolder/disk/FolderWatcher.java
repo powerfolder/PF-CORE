@@ -279,6 +279,7 @@ public class FolderWatcher extends PFComponent {
             if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
             }
+            name = FileInfoFactory.decodeIllegalChars(name);
             if (dirtyFiles.containsKey(name)) {
                 // Skipping already dirty file
                 return;
