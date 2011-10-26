@@ -740,12 +740,12 @@ public class TransferManager extends PFComponent {
         }
     }
 
-    void setCompleted(DownloadManager dlManager) {
+    void setCompleted(final DownloadManager dlManager) {
         assert dlManager.isDone();
 
-        FileInfo fInfo = dlManager.getFileInfo();
+        final FileInfo fInfo = dlManager.getFileInfo();
         // Inform other folder member of added file
-        Folder folder = fInfo.getFolder(getController().getFolderRepository());
+        final Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder != null) {
             // scan in new downloaded file
             // TODO React on failed scan?
@@ -768,7 +768,12 @@ public class TransferManager extends PFComponent {
 
             if (folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
                 if (StringUtils.isNotBlank(folder.getDownloadScript())) {
-                    executeDownloadScript(fInfo, folder, dlManager);
+                    Runnable scriptRunner = new Runnable() {
+                        public void run() {
+                            executeDownloadScript(fInfo, folder, dlManager);
+                        }
+                    };
+                    doWork(scriptRunner);
                 }
             } else {
                 logWarning("Scanning of completed file failed: "
@@ -807,6 +812,7 @@ public class TransferManager extends PFComponent {
         }
     }
 
+    private ReentrantLock scriptLock = new ReentrantLock();
     /**
      * #1538
      * <p>
@@ -842,6 +848,7 @@ public class TransferManager extends PFComponent {
         command = command.replace("$sources", sourcesStr);
 
         try {
+            scriptLock.lock();
             logInfo("Begin executing command: " + command);
             final Process p = Runtime.getRuntime().exec(command);
             // Auto-kill after 20 seconds
@@ -866,6 +873,8 @@ public class TransferManager extends PFComponent {
             logSevere("Abnormal termination of script after download. '"
                 + folder.getDownloadScript() + "' file: " + dlFile
                 + ", command: " + command + ". " + e, e);
+        } finally {
+            scriptLock.unlock();
         }
     }
 
