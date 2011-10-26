@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.os.Win32;
 
 import java.io.BufferedReader;
@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -59,30 +61,42 @@ public class FirewallUtil {
      * 
      * @param port
      *            the port to open
-     * @param protocol the protocol. "TCP" or "UDP".
+     * @param protocol
+     *            the protocol. "TCP" or "UDP".
      * @throws IOException
      *             in case of a problem
      */
     public static void openport(int port, String protocol) throws IOException {
         Process netsh;
-        BufferedReader nin = null;
         PrintWriter nout = null;
 
         netsh = Runtime.getRuntime().exec("netsh");
         try {
-            nin = new BufferedReader(new InputStreamReader(netsh
-                .getInputStream()));
+            String appname = Translation
+                .getTranslation("general.application.name");
             nout = new PrintWriter(netsh.getOutputStream(), true);
-            nout
-                .println("firewall add portopening protocol="
-                    + protocol.toUpperCase() + " port=" + port + " name=\""
-                    + Translation.getTranslation("general.application.name")
-                    + "\"");
-            String reply = nin.readLine();
-            if (reply == null || !reply.equalsIgnoreCase("netsh>Ok.")) {
+
+            // Source: http://support.microsoft.com/kb/947709/en-us
+            String preWin7cl = "firewall add portopening protocol="
+                + protocol.toUpperCase() + " port=" + port + " name=\""
+                + appname + "\"";
+            System.err.println(preWin7cl);
+            String win7cl = "advfirewall firewall add rule name=\"" + appname
+                + " (" + port + "/" + protocol.toUpperCase()
+                + ")\" dir=in action=allow protocol=" + protocol.toUpperCase()
+                + " localport=" + port;
+            // System.err.println(win7cl);
+
+            // Requires elevated rights: nout.println(win7cl);
+            nout.println(preWin7cl);
+            nout.println("exit");
+
+            byte[] bOut = StreamUtils.readIntoByteArray(netsh.getInputStream());
+            String reply = new String(bOut, Convert.UTF8);
+            System.out.println(reply);
+            if (reply == null || !reply.toUpperCase().contains("OK")) {
                 throw new IOException(reply);
             }
-            nout.println("bye");
             try {
                 int res = netsh.waitFor();
                 if (res != 0)
@@ -91,9 +105,6 @@ public class FirewallUtil {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
         } finally {
-            if (nin != null) {
-                nin.close();
-            }
             if (nout != null) {
                 nout.close();
             }
@@ -124,19 +135,21 @@ public class FirewallUtil {
      */
     public static void closeport(int port, String protocol) throws IOException {
         Process netsh;
-        BufferedReader nin = null;
         PrintWriter nout = null;
 
         netsh = Runtime.getRuntime().exec("netsh");
         try {
-            nin = new BufferedReader(new InputStreamReader(netsh.getInputStream()));
             nout = new PrintWriter(netsh.getOutputStream(), true);
-            nout.println("firewall delete portopening protocol=" + protocol+ " port=" + port);
-            String reply = nin.readLine();
-            if (reply == null || !reply.equalsIgnoreCase("netsh>Ok.")) {
+            nout.println("firewall delete portopening protocol=" + protocol
+                + " port=" + port);
+            nout.println("bye");
+
+            byte[] bOut = StreamUtils.readIntoByteArray(netsh.getInputStream());
+            String reply = new String(bOut, Convert.UTF8);
+
+            if (reply == null || !reply.toUpperCase().contains("OK")) {
                 throw new IOException(reply);
             }
-            nout.println("bye");
             try {
                 int res = netsh.waitFor();
                 if (res != 0)
@@ -145,9 +158,6 @@ public class FirewallUtil {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
         } finally {
-            if (nin != null) {
-                nin.close();
-            }
             if (nout != null) {
                 nout.close();
             }
