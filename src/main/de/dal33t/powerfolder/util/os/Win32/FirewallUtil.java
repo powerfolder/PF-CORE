@@ -19,9 +19,7 @@
  */
 package de.dal33t.powerfolder.util.os.Win32;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import de.dal33t.powerfolder.util.Convert;
@@ -80,12 +78,10 @@ public class FirewallUtil {
             String preWin7cl = "firewall add portopening protocol="
                 + protocol.toUpperCase() + " port=" + port + " name=\""
                 + appname + "\"";
-            System.err.println(preWin7cl);
             String win7cl = "advfirewall firewall add rule name=\"" + appname
                 + " (" + port + "/" + protocol.toUpperCase()
                 + ")\" dir=in action=allow protocol=" + protocol.toUpperCase()
                 + " localport=" + port;
-            // System.err.println(win7cl);
 
             // Requires elevated rights: nout.println(win7cl);
             nout.println(preWin7cl);
@@ -93,7 +89,6 @@ public class FirewallUtil {
 
             byte[] bOut = StreamUtils.readIntoByteArray(netsh.getInputStream());
             String reply = new String(bOut, Convert.UTF8);
-            System.out.println(reply);
             if (reply == null || !reply.toUpperCase().contains("OK")) {
                 throw new IOException(reply);
             }
