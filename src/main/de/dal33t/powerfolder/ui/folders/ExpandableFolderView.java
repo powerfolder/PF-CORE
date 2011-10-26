@@ -115,10 +115,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private final AtomicBoolean showing100Sync = new AtomicBoolean();
 
     private ActionLabel upperSyncLink;
-    private JButtonMini upperOpenFilesButton;
     private JButtonMini upperMountWebDavButton;
     private JButtonMini upperOpenWebViewButton;
-    private JButtonMini upperInviteButton;
 
     private ResizingJLabel nameLabel;
     private JButtonMini openSettingsInformationButton;
@@ -285,11 +283,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncLink.getUIComponent().setVisible(
             type == ExpandableFolderModel.Type.Local
                 && (mouseOver.get() || !showing100Sync.get()));
-        boolean showLocalButtons = mouseOver.get()
-            && type == ExpandableFolderModel.Type.Local;
-        upperInviteButton.setVisible(showLocalButtons
-            && !getController().isBackupOnly());
-        upperOpenFilesButton.setVisible(showLocalButtons);
 
         final boolean showCloudOnlyButtons = mouseOver.get()
             && type == ExpandableFolderModel.Type.CloudOnly;
@@ -363,9 +356,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         filesAvailableLabel.getUIComponent().addMouseListener(moa);
 
         upperBuilder.add(upperSyncLink.getUIComponent(), cc.xy(7, 1));
-        upperBuilder.add(upperInviteButton, cc.xy(9, 1));
         upperBuilder.add(upperMountWebDavButton, cc.xy(9, 1));
-        upperBuilder.add(upperOpenFilesButton, cc.xy(11, 1));
         upperBuilder.add(upperOpenWebViewButton, cc.xy(11, 1));
         upperBuilder.add(problemButton, cc.xy(13, 1));
 
@@ -379,8 +370,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperPanel.addMouseListener(moa);
         upperPanel.addMouseListener(mca);
         upperSyncLink.getUIComponent().addMouseListener(moa);
-        upperInviteButton.addMouseListener(moa);
-        upperOpenFilesButton.addMouseListener(moa);
         upperMountWebDavButton.addMouseListener(moa);
         upperOpenWebViewButton.addMouseListener(moa);
 
@@ -548,12 +537,10 @@ public class ExpandableFolderView extends PFUIComponent implements
             openSettingsInformationAction);
 
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
-        upperOpenFilesButton = new JButtonMini(openFilesInformationAction);
         upperMountWebDavButton = new JButtonMini(webdavAction);
         upperOpenWebViewButton = new JButtonMini(webViewAction);
 
         inviteButton = new JButtonMini(inviteAction);
-        upperInviteButton = new JButtonMini(inviteAction);
 
         problemButton = new JButtonMini(myProblemAction);
         upperSyncFolderButton = new SyncIconButtonMini(getController());
@@ -574,8 +561,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncLink.setText("");
 
         upperSyncLink.getUIComponent().setVisible(!showing100Sync.get());
-        upperInviteButton.setVisible(false);
-        upperOpenFilesButton.setVisible(false);
         upperMountWebDavButton.setVisible(false);
         upperOpenWebViewButton.setVisible(false);
 
