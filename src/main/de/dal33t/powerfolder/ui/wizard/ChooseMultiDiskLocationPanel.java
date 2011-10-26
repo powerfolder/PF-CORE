@@ -159,7 +159,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 .getApplicationModel().getLicenseModel().getGbAllowedModel()
                 .getValue();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
             return -1;
         }
     }
