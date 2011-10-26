@@ -262,14 +262,17 @@ public final class FileInfoFactory {
                 output = output.replace(illChar, replacement);
             }
         }
-        char lastChar = output.charAt(output.length() - 1);
-        if (lastChar == ' ' || lastChar == '.') {
-            String replacement = Base64.encodeString(String.valueOf(output
-                .charAt(output.length() - 1)));
-            replacement = replacement.replace("=", "");
-            replacement = "$%" + replacement + "%$";
-            output = output.substring(0, output.length() - 1);
-            output += replacement;
+        if (output.length() > 1) {
+            char lastChar = output.charAt(output.length() - 1);
+
+            if (lastChar == ' ' || lastChar == '.') {
+                String replacement = Base64.encodeString(String.valueOf(output
+                    .charAt(output.length() - 1)));
+                replacement = replacement.replace("=", "");
+                replacement = "$%" + replacement + "%$";
+                output = output.substring(0, output.length() - 1);
+                output += replacement;
+            }
         }
         if (output.contains(" /")) {
             String replacement = Base64.encodeString(" ");
