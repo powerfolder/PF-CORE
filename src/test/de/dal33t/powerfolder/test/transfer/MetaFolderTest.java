@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -54,14 +56,19 @@ public class MetaFolderTest extends TwoControllerTestCase {
         assertEquals(2, bartMeta.getMembersCount());
         assertEquals(2, lisaMeta.getMembersCount());
 
+        final int nCount = lisaMeta.getKnownItemCount();
         final File bartFile = TestHelper.createRandomFile(bartMeta
             .getLocalBase());
         scanFolder(bartMeta);
+        final FileInfo fInfo = FileInfoFactory.lookupInstance(bartMeta,
+            bartFile);
+
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return lisaMeta.getKnownItemCount() == 1
+                return lisaMeta.getKnownItemCount() == nCount + 1
                     && getContollerBart().getTransferManager()
-                        .getCompletedUploadsCollection().size() == 0;
+                        .getCompletedUploadsCollection().size() == 0
+                    && lisaMeta.hasFile(fInfo);
             }
 
             public String message() {
@@ -81,13 +88,16 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
         scanFolder(bartMeta);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                return lisaMeta.getKnownFiles().iterator().next().isDeleted();
+                return fInfo.getLocalFileInfo(
+                    getContollerLisa().getFolderRepository()).isDeleted();
             }
 
             public String message() {
-                return "Lisa did not delete meta data file: " + bartFile;
+                return "Lisa did not delete meta data file: "
+                    + fInfo.getLocalFileInfo(getContollerLisa()
+                        .getFolderRepository());
             }
         });
 
