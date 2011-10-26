@@ -307,8 +307,13 @@ public class Folder extends PFComponent {
             localBase = new File(getController().getFolderRepository()
                 .getFoldersAbsoluteDir(), folderSettings.getLocalBaseDir()
                 .getPath());
-            logWarning("Original: " + folderSettings.getLocalBaseDir());
-            logWarning("Choosen relative path: " + localBase);
+            logWarning("Original path: " + folderSettings.getLocalBaseDir()
+                + ". Choosen relative path: " + localBase);
+            if (folderSettings.getLocalBaseDir().exists()
+                && !localBase.exists())
+            {
+                localBase.mkdirs();
+            }
         }
         if (folderSettings.getCommitDir() != null) {
             if (folderSettings.getCommitDir().isAbsolute()) {
