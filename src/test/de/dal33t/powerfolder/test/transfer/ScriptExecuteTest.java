@@ -165,6 +165,29 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         System.out.println(content);
     }
 
+    public void testExecuteBrokenScript() throws IOException {
+        getFolderAtLisa().setDownloadScript(createBrokenScript());
+        assertEquals(0, outputFile.length());
+        File f = TestHelper.createRandomFile(new File(getFolderAtBart()
+            .getLocalBase(), "subdir1"));
+        scanFolder(getFolderAtBart());
+        FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
+        assertFileMatch(f, fInfo, getContollerBart());
+
+        TestHelper.waitForCondition(3, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countCompletedDownloads() == 1;
+            }
+
+            public String message() {
+                return "Lisa did not complete the download in time: "
+                    + getContollerLisa().getTransferManager()
+                        .countCompletedDownloads();
+            }
+        });
+    }
+
     private String createTestScript() throws IOException {
         testScript = File.createTempFile("script", ".bat");
         outputFile = File.createTempFile("output", ".txt");
@@ -179,6 +202,30 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
                 + params;
         } else {
             content = ("echo $* >>\"" + outputFile.getAbsolutePath() + '"')
+                .getBytes();
+            cmdLine = "sh " + testScript.getAbsolutePath() + ' ' + params;
+        }
+        FileUtils.copyFromStreamToFile(new ByteArrayInputStream(content),
+            testScript);
+
+        return cmdLine;
+
+    }
+
+    private String createBrokenScript() throws IOException {
+        testScript = File.createTempFile("script", ".bat");
+        outputFile = File.createTempFile("output", ".txt");
+        byte[] content;
+        String cmdLine;
+        String params = "$file $path $folderpath $sources";
+
+        if (OSUtil.isWindowsSystem()) {
+            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.getAbsolutePath() + "\npause")
+                .getBytes();
+            cmdLine = "cmd /C start " + testScript.getAbsolutePath() + ' '
+                + params;
+        } else {
+            content = ("echo $* >>\"" + outputFile.getAbsolutePath() + "\"\nread -p \"Press any key ...\"")
                 .getBytes();
             cmdLine = "sh " + testScript.getAbsolutePath() + ' ' + params;
         }
