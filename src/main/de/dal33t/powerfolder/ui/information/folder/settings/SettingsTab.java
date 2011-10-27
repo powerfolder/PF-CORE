@@ -56,6 +56,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -305,7 +306,9 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
 
-        if (getController().isVerbose()) {
+        if (PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            .getValueBoolean(getController()))
+        {
             row += 2;
             builder.add(createMaintainPanel(), cc.xy(4, row));
         }
