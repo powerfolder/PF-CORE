@@ -221,8 +221,37 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         // directory.
         FilteredDirectoryModel filteredDirectoryModel = event.getModel();
         tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
-        emptyLabel.setText(Translation
-            .getTranslation("files_table_panel.no_files_available"));
+        switch (event.getFileFilterMode()) {
+            case DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING :
+                emptyLabel.setText(Translation
+                    .getTranslation("files_table_panel.no_files_available.local_and_incoming"));
+                break;
+            case DirectoryFilter.FILE_FILTER_MODE_LOCAL_ONLY :
+                emptyLabel.setText(Translation
+                    .getTranslation("files_table_panel.no_files_available.local_only"));
+                break;
+            case DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY :
+                emptyLabel.setText(Translation
+                    .getTranslation("files_table_panel.no_files_available.incoming_only"));
+                break;
+            case DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY :
+                emptyLabel.setText(Translation
+                    .getTranslation("files_table_panel.no_files_available.new_only"));
+                break;
+            case DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS :
+                emptyLabel.setText(Translation
+                    .getTranslation("files_table_panel.no_files_available.deleted_previous"));
+                break;
+            case DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED :
+                emptyLabel.setText(Translation
+                    .getTranslation("files_table_panel.no_files_available.unsynchronized"));
+                break;
+            default:
+                // Generic message.
+                emptyLabel.setText(Translation
+                    .getTranslation("files_table_panel.no_files_available"));
+                break;
+        }
     }
 
     public void adviseOfFilteringBegin() {

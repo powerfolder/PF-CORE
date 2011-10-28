@@ -287,7 +287,8 @@ public class DirectoryFilter extends FilterModel {
 
         FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
                 .getDeletedCount().get(), result.getIncomingCount().get(), result
-                .getLocalCount().get(), filteredDirectoryModel, changed);
+                .getLocalCount().get(), filteredDirectoryModel, changed,
+                fileFilterMode);
         for (DirectoryFilterListener listener : listeners) {
             listener.adviseOfChange(event);
         }
