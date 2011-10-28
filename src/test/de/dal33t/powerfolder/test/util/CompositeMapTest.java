@@ -22,7 +22,7 @@ public class CompositeMapTest extends TestCase {
         new Modifier(map2).start();
         new Modifier(map3).start();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10000; i++) {
             for (String key : composite.keySet()) {
                 String value = composite.get(key);
                 if (!key.equals(value)) {
