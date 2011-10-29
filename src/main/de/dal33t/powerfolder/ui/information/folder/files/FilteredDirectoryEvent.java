@@ -30,16 +30,18 @@ public class FilteredDirectoryEvent {
     private long localFiles;
     private boolean folderChanged;
     private int fileFilterMode;
+    private boolean defaultFilter;
 
     public FilteredDirectoryEvent(long deletedFiles, long incomingFiles,
         long localFiles, FilteredDirectoryModel model, boolean folderChanged,
-        int fileFilterMode) {
+        int fileFilterMode, boolean defaultFilter) {
         this.deletedFiles = deletedFiles;
         this.incomingFiles = incomingFiles;
         this.localFiles = localFiles;
         this.model = model;
         this.folderChanged = folderChanged;
         this.fileFilterMode = fileFilterMode;
+        this.defaultFilter = defaultFilter;
     }
 
     public long getDeletedFiles() {
@@ -64,5 +66,9 @@ public class FilteredDirectoryEvent {
 
     public int getFileFilterMode() {
         return fileFilterMode;
+    }
+
+    public boolean isDefaultFilter() {
+        return defaultFilter;
     }
 }

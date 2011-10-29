@@ -285,10 +285,14 @@ public class DirectoryFilter extends FilterModel {
         boolean changed = !folder.getName().equals(lastFolderName.getValue());
         lastFolderName.setValue(folder.getName());
 
+        boolean defaultFilder =
+                fileFilterMode == FILE_FILTER_MODE_LOCAL_AND_INCOMING &&
+                        !isFlatMode() && StringUtils.isBlank(textFilter);
+
         FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
                 .getDeletedCount().get(), result.getIncomingCount().get(), result
                 .getLocalCount().get(), filteredDirectoryModel, changed,
-                fileFilterMode);
+                fileFilterMode, defaultFilder);
         for (DirectoryFilterListener listener : listeners) {
             listener.adviseOfChange(event);
         }

@@ -27,16 +27,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
 
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -66,6 +57,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.*;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -93,7 +85,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private RestoreArchiveAction restoreArchiveAction;
     private JPopupMenu fileMenu;
     private JScrollPane tableScroller;
+    private JPanel emptyPanel;
     private JLabel emptyLabel;
+    private ActionLabel emptyResetLink;
     private FilesTab parent;
 
     public FilesTablePanel(Controller controller, FilesTab parent) {
@@ -143,17 +137,21 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         tableScroller = new JScrollPane(table);
         emptyLabel = new JLabel(Translation
-            .getTranslation("files_table_panel.no_files_available"),
-            SwingConstants.CENTER);
+            .getTranslation("files_table_panel.no_files_available"));
         emptyLabel.setEnabled(false);
+
+        emptyResetLink = new ActionLabel(getController(),
+                new MyResetAction(getController()));    
 
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tableScroller);
         UIUtil.removeBorder(tableScroller);
 
-        // tableScroller and emptyLabel occupy the same slot
+        buildEmptyPanel();
+
+        // tableScroller and emptyPanel occupy the same slot
         builder.add(tableScroller, cc.xy(1, 1));
-        builder.add(emptyLabel, cc.xy(1, 1));
+        builder.add(emptyPanel, cc.xy(1, 1));
 
         builder.add(detailsPanel, cc.xy(1, 3));
 
@@ -161,6 +159,28 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         uiComponent = builder.getPanel();
         updateEmptyLabel();
+    }
+
+    private void buildEmptyPanel() {
+        FormLayout outerLayout = new FormLayout(
+                "pref:grow, center:pref, pref:grow",
+            "pref:grow, center:pref, pref:grow");
+        DefaultFormBuilder outerBuilder = new DefaultFormBuilder(outerLayout);
+
+        CellConstraints cc = new CellConstraints();
+
+        FormLayout innerLayout = new FormLayout("pref:grow, center:pref, pref:grow",
+            "pref, 3dlu, pref");
+        DefaultFormBuilder innerBuilder = new DefaultFormBuilder(innerLayout);
+
+        innerBuilder.add(emptyLabel, cc.xy(2, 1));
+        innerBuilder.add(emptyResetLink.getUIComponent(), cc.xy(2, 3));
+
+        JPanel innerPanel = innerBuilder.getPanel();
+
+        outerBuilder.add(innerPanel, cc.xy(2, 2));
+
+        emptyPanel = outerBuilder.getPanel();
     }
 
     /**
@@ -252,17 +272,20 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     .getTranslation("files_table_panel.no_files_available"));
                 break;
         }
+        emptyResetLink.setVisible(!event.isDefaultFilter());
     }
 
     public void adviseOfFilteringBegin() {
         emptyLabel.setText(Translation
             .getTranslation("files_table_panel.finding_files"));
+        emptyResetLink.setVisible(false);
     }
 
     public void invalidate() {
         tableModel.setFilteredDirectoryModel(new FilteredDirectoryModel("",""));
         emptyLabel.setText(Translation
             .getTranslation("files_table_panel.finding_files"));
+        emptyResetLink.setVisible(false);
     }
 
     /**
@@ -384,8 +407,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         if (tableScroller != null) {
             tableScroller.setVisible(tableModel.getRowCount() != 0);
         }
-        if (emptyLabel != null) {
-            emptyLabel.setVisible(tableModel.getRowCount() == 0);
+        if (emptyPanel != null) {
+            emptyPanel.setVisible(tableModel.getRowCount() == 0);
         }
 
     }
@@ -778,6 +801,17 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private class SelectAllAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             table.selectAll();
+        }
+    }
+
+    private class MyResetAction extends BaseAction {
+
+        MyResetAction(Controller controller) {
+            super("action.reset_filters", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // @todo
         }
     }
 
