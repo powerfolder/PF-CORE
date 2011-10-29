@@ -120,6 +120,11 @@ public class FileFilterTextField extends PFComponent {
         return panel;
     }
 
+    public void reset() {
+        textField.setText("");
+        externalSearchTextValueModel.setValue("");
+    }
+
     private void initComponents() {
         // true = editable
         textField = BasicComponentFactory.createTextField(localValueModel,

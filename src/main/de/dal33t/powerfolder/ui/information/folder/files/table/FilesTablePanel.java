@@ -141,7 +141,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         emptyLabel.setEnabled(false);
 
         emptyResetLink = new ActionLabel(getController(),
-                new MyResetAction(getController()));    
+                new MyResetFiltersAction(getController()));
 
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tableScroller);
@@ -804,14 +804,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
     }
 
-    private class MyResetAction extends BaseAction {
+    private class MyResetFiltersAction extends BaseAction {
 
-        MyResetAction(Controller controller) {
+        MyResetFiltersAction(Controller controller) {
             super("action.reset_filters", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
-            // @todo
+            parent.resetFilters();
         }
     }
 

@@ -371,6 +371,13 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
     }
 
+    public void resetFilters() {
+        filterTextField.reset();
+        flatViewCB.setSelected(false);
+        filterSelectionComboBox.setSelectedIndex(
+                DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
