@@ -80,6 +80,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -291,7 +292,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * for each folder name.
      */
     public void init() {
-        
+
         initFoldersBasedir();
 
         processV4Format();
@@ -316,7 +317,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-    
+
     private void initFoldersBasedir() {
         String baseDir;
         String cmdBaseDir = getController().getCommandLine() != null
@@ -329,20 +330,27 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getValue(getController());
         }
 
-        // Set the folders base with a desktop ini.
-        foldersBasedir = new File(baseDir);
-        if (!foldersBasedir.exists()) {
-            if (foldersBasedir.mkdirs()) {
-                logInfo("Created base path for folders: " + foldersBasedir);
-            } else {
-                logWarning("Unable to create base path for folders: "
-                    + foldersBasedir);
+        // Check if this a windows network drive.
+        boolean winNetworkDrive = baseDir != null && baseDir.contains(":\\")
+            && baseDir.charAt(1) == ':';
+        boolean ok = false;
+
+        if ((OSUtil.isWindowsSystem() && winNetworkDrive) || (!winNetworkDrive))
+        {
+            foldersBasedir = new File(baseDir);
+            if (!foldersBasedir.exists()) {
+                if (foldersBasedir.mkdirs()) {
+                    logInfo("Created base path for folders: " + foldersBasedir);
+                } else {
+                    logWarning("Unable to create base path for folders: "
+                        + foldersBasedir);
+                }
             }
+            ok = foldersBasedir.exists() && foldersBasedir.canRead()
+                && foldersBasedir.isDirectory();
         }
 
-        boolean ok = foldersBasedir.exists() && foldersBasedir.canRead()
-            && foldersBasedir.isDirectory();
-
+        // Use default as fallback
         if (!ok) {
             foldersBasedir = new File(
                 ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
@@ -576,6 +584,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Sets the new base path
+     * 
      * @param path
      */
     public void setFoldersBasedir(String path) {
