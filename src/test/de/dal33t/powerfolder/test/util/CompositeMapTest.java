@@ -16,7 +16,8 @@ public class CompositeMapTest extends TestCase {
         Map<String, String> map1 = new ConcurrentHashMap<String, String>();
         Map<String, String> map2 = new ConcurrentHashMap<String, String>();
         Map<String, String> map3 = new ConcurrentHashMap<String, String>();
-        Map<String, String> composite = new CompositeMap(map1, map2, map3);
+        Map<String, String> composite = new CompositeMap<String, String>(map1,
+            map2, map3);
 
         new Modifier(map1).start();
         new Modifier(map2).start();
