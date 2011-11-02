@@ -43,7 +43,7 @@ public class PowerFolderPro extends AbstractDistribution {
     public void init(Controller controller) {
         super.init(controller);
 
-        loadPreConfigFromClasspath(getController(), true);
+        loadPreConfigFromClasspath(getController(), null);
 
         // Switch to non-basic skin
         String skinName = PreferencesEntry.SKIN_NAME.getValueString(controller);
