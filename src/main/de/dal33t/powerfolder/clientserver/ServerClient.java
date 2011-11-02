@@ -468,6 +468,11 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
+        if (!ConfigurationEntry.SERVER_RECOVER_PASSWORD_ENABLED
+            .getValueBoolean(getController()))
+        {
+            return null;
+        }
         String url = getWebURL() + Constants.LOGIN_URI;
         if (StringUtils.isNotBlank(getUsername())) {
             url = LoginUtil.decorateURL(url, getUsername(), (char[]) null);
