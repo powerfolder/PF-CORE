@@ -236,13 +236,24 @@ public class LoginUtil {
      * @return
      */
     public static String getUsernameLabel(Controller controller) {
+        return getUsernameText(controller) + ":";
+    }
+
+    /**
+     * #2401: Texts: "Email" should not be shown if using AD username, e.g. on
+     * login
+     * 
+     * @param controller
+     * @return
+     */
+    public static String getUsernameText(Controller controller) {
         if (controller != null
             && ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
                 .getValueBoolean(controller))
         {
-            return Translation.getTranslation("general.email") + ":";
+            return Translation.getTranslation("general.email");
         } else {
-            return Translation.getTranslation("general.username") + ":";
+            return Translation.getTranslation("general.username");
         }
     }
 
