@@ -291,6 +291,17 @@ public enum ConfigurationEntry {
     SERVER_REGISTER_ENABLED("server.register.enabled", true),
 
     /**
+     * If "Password recovery" should be enabled. If not the server automatically
+     * sets this. (Should be yes if not LDAP).
+     */
+    SERVER_RECOVER_PASSWORD_ENABLED("server.recover.password.enabled", true),
+
+    /**
+     * If the login/usernames are Email addresses.
+     */
+    SERVER_USERNAME_IS_EMAIL("server.username.isemail", true),
+
+    /**
      * Username for connection
      */
     SERVER_CONNECT_USERNAME("server.connect.username"),
