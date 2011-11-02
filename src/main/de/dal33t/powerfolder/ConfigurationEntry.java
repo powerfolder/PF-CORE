@@ -297,9 +297,9 @@ public enum ConfigurationEntry {
     SERVER_RECOVER_PASSWORD_ENABLED("server.recover.password.enabled", true),
 
     /**
-     * If the login/usernames are Email addresses.
+     * #2401: If the login/usernames are Email addresses.
      */
-    SERVER_USERNAME_IS_EMAIL("server.username.isemail", true),
+    SERVER_USERNAME_IS_EMAIL("server.username.isemail", false),
 
     /**
      * Username for connection
