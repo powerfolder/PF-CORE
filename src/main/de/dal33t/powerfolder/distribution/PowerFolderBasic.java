@@ -36,7 +36,7 @@ public class PowerFolderBasic extends AbstractDistribution {
     public void init(Controller controller) {
         super.init(controller);
 
-        loadPreConfigFromClasspath(getController(), true);
+        loadPreConfigFromClasspath(getController(), null);
 
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
