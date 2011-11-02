@@ -210,14 +210,12 @@ public class LoginPanel extends PFWizardPanel {
         serverInfoLabel.setText(client.getServerString());
         serverInfoLabel.setEnabled(changeLoginAllowed);
 
-        // FIXME Use separate account stores for different servers?
-        usernameLabel = new JLabel(
-            Translation.getTranslation("wizard.webservice.username"));
+        usernameLabel = new JLabel(LoginUtil.getUsernameLabel(getController()));
         usernameField = new JTextField();
         usernameField.addKeyListener(new MyKeyListener());
         usernameField.setEditable(changeLoginAllowed);
         passwordLabel = new JLabel(
-            Translation.getTranslation("wizard.webservice.password"));
+            Translation.getTranslation("general.password") + ":");
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
 
