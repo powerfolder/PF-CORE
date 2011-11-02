@@ -29,7 +29,9 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Utility class for login helpers
@@ -223,6 +225,24 @@ public class LoginUtil {
         }
         for (int i = 0; i < password.length; i++) {
             password[i] = (char) (Math.random() * 256);
+        }
+    }
+
+    /**
+     * #2401: Texts: "Email" should not be shown if using AD username, e.g. on
+     * login
+     * 
+     * @param controller
+     * @return
+     */
+    public static String getUsernameLabel(Controller controller) {
+        if (controller != null
+            && ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+                .getValueBoolean(controller))
+        {
+            return Translation.getTranslation("general.email") + ":";
+        } else {
+            return Translation.getTranslation("general.username") + ":";
         }
     }
 
