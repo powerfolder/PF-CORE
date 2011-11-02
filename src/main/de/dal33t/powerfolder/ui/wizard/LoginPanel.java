@@ -162,16 +162,19 @@ public class LoginPanel extends PFWizardPanel {
         builder.add(passwordLabel, cc.xy(1, row));
         builder.add(passwordField, cc.xy(3, row));
         builder.add(workingBar, cc.xyw(1, row, 3));
-        LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
-            Translation.getTranslation("wizard.webservice.recover_password"),
-            client.getRecoverPasswordURL());
-        recoverPasswordLabel.convertToBigLabel();
-        builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
-        row += 2;
 
+        if (StringUtils.isNotBlank(client.getRecoverPasswordURL())) {
+            LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
+                Translation
+                    .getTranslation("wizard.webservice.recover_password"),
+                client.getRecoverPasswordURL());
+            recoverPasswordLabel.convertToBigLabel();
+            builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
+        }
+
+        row += 2;
         builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
         row += 2;
-
         builder.add(serverLabel, cc.xy(1, row));
         builder.add(serverInfoLabel.getUIComponent(), cc.xyw(3, row, 2));
         row += 2;
