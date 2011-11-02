@@ -151,8 +151,6 @@ public class FileRequestor extends PFComponent {
         if (!folder.hasOwnDatabase()) {
             return;
         }
-
-        // TODO: Detect conflicts. Raise problem.
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false,
             Constants.MAX_DLS_FROM_LAN_MEMBER * 2);
         retrieveNewestVersions(folder, incomingFiles, autoDownload);
