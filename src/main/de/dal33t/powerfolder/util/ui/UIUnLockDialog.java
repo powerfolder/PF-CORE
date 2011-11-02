@@ -137,13 +137,13 @@ public class UIUnLockDialog extends PFUIComponent {
                 builder.add(serverInfoLabel.getUIComponent(), cc.xy(3, row));
             }
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("uilock.dialog.username"), cc.xy(1, row));
+            builder.addLabel(LoginUtil.getUsernameLabel(getController()),
+                cc.xy(1, row));
             builder.add(usernameField, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("uilock.dialog.password"), cc.xy(1, row));
+                .getTranslation("general.password") + ":", cc.xy(1, row));
             builder.add(passwordField, cc.xy(3, row));
 
             row += 2;
