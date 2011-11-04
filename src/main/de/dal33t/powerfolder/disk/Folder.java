@@ -2165,9 +2165,7 @@ public class Folder extends PFComponent {
             if (members.containsKey(memberCanidate)) {
                 continue;
             }
-            if (!getController().getNodeManager().getNetworkId()
-                .equals(memberInfo.networkId))
-            {
+            if (!memberInfo.isOnSameNetwork(getController())) {
                 continue;
             }
             join0(memberInfo);
