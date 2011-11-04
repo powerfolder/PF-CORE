@@ -1002,7 +1002,7 @@ public class NodeManager extends PFComponent {
             throw new ConnectionException("Loopback connection detected to "
                 + handler + ", disconnecting").with(handler);
         }
-        if (!getNetworkId().equals(remoteIdentity.getMemberInfo().networkId)) {
+        if (!remoteIdentity.getMemberInfo().isOnSameNetwork(getController())) {
             if (getController().getOSClient().isServer(handler)) {
                 logSevere("Server not on same network " + handler
                     + ", disconnecting. remote network ID: "
