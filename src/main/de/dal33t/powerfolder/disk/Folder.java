@@ -758,9 +758,20 @@ public class Folder extends PFComponent {
             targetFile.getParentFile().mkdirs();
         }
         if (!targetFile.getParentFile().isDirectory()) {
-            logSevere("Unable to scan downloaded file. Parent dir is not a directory: "
-                + targetFile + ". " + fInfo.toDetailString());
-            return false;
+            boolean ok = false;
+            // Hack to solve the rarely occurring 0 byte directory files
+            if (targetFile.getParentFile().isFile()
+                && targetFile.getParentFile().length() == 0)
+            {
+                if (targetFile.getParentFile().delete()) {
+                    ok = targetFile.getParentFile().mkdirs();
+                }
+            }
+            if (!ok) {
+                logSevere("Unable to scan downloaded file. Parent dir is not a directory: "
+                    + targetFile + ". " + fInfo.toDetailString());
+                return false;
+            }
         }
 
         // Prepare last modification date of tempfile.
