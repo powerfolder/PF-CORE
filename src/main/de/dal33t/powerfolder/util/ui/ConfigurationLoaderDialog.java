@@ -197,7 +197,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             addServerURL(ConfigurationEntry.PROVIDER_URL
                 .getValue(getController()));
         }
-        addServerURL(ConfigurationEntry.PROVIDER_URL.getDefaultValue());
+        // addServerURL(ConfigurationEntry.PROVIDER_URL.getDefaultValue());
 
         addressBox = new JComboBox(serviceProviderUrls);
         addressBox.setEditable(true);
@@ -316,6 +316,18 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 ConfigurationEntry.CONFIG_URL.setValue(getController(), input);
                 getController().saveConfig();
                 preConfig = ConfigurationLoader.loadPreConfiguration(input);
+
+                if (preConfig != null && !containsServerWeb(preConfig)) {
+                    String finalURL = Util.removeLastSlashFromURI(input);
+                    if (!finalURL.startsWith("http")) {
+                        finalURL = "http://" + finalURL;
+                    }
+                    logWarning("Server web URL not found in client config. Using fallback: "
+                        + finalURL);
+                    preConfig.put(
+                        ConfigurationEntry.SERVER_WEB_URL.getConfigKey(),
+                        finalURL);
+                }
             } catch (IOException e) {
                 logWarning("Unable to load config from " + input + ": " + e);
                 if (StringUtils.isNotBlank(input)) {
@@ -414,6 +426,11 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
         private boolean containsServerHost(Properties props) {
             return props.containsKey(ConfigurationEntry.SERVER_HOST
+                .getConfigKey());
+        }
+
+        private boolean containsServerWeb(Properties props) {
+            return props.containsKey(ConfigurationEntry.SERVER_WEB_URL
                 .getConfigKey());
         }
 
