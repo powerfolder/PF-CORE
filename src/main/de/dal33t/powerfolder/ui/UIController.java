@@ -76,11 +76,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -93,7 +93,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
@@ -111,7 +110,6 @@ import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
@@ -609,19 +607,18 @@ public class UIController extends PFComponent {
         final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(
             Translation.getTranslation("systray.notifications.chat"));
         notificationsMenu.add(chatMenuItem);
-        final ValueModel chatNotificationsValueModel =
-                applicationModel.getChatNotificationsValueModel();
+        final ValueModel chatNotificationsValueModel = applicationModel
+            .getChatNotificationsValueModel();
         boolean selected = (Boolean) chatNotificationsValueModel.getValue();
         chatMenuItem.setState(selected);
         chatMessageMenuItem.setEnabled(selected);
         chatMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                chatNotificationsValueModel.setValue(
-                    chatMenuItem.getState());
+                chatNotificationsValueModel.setValue(chatMenuItem.getState());
             }
         });
-        chatNotificationsValueModel.addValueChangeListener(
-                new PropertyChangeListener() {
+        chatNotificationsValueModel
+            .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     boolean selected2 = (Boolean) evt.getNewValue();
                     chatMenuItem.setState(selected2);
@@ -630,14 +627,14 @@ public class UIController extends PFComponent {
             });
 
         notificationsMenu.add(chatMessageMenuItem);
-        final ValueModel showChatMessageValueModel =
-                applicationModel.getDisplayChatMessageValueModel();
-        chatMessageMenuItem.setState(
-                (Boolean) showChatMessageValueModel.getValue());
+        final ValueModel showChatMessageValueModel = applicationModel
+            .getDisplayChatMessageValueModel();
+        chatMessageMenuItem.setState((Boolean) showChatMessageValueModel
+            .getValue());
         chatMessageMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                showChatMessageValueModel.setValue(
-                    chatMessageMenuItem.getState());
+                showChatMessageValueModel.setValue(chatMessageMenuItem
+                    .getState());
             }
         });
         showChatMessageValueModel
@@ -652,12 +649,14 @@ public class UIController extends PFComponent {
         final CheckboxMenuItem systemMenuItem = new CheckboxMenuItem(
             Translation.getTranslation("systray.notifications.system"));
         notificationsMenu.add(systemMenuItem);
-        final ValueModel systemNotificationsValueModel = applicationModel.getSystemNotificationsValueModel();
-        systemMenuItem.setState((Boolean) systemNotificationsValueModel.getValue());
+        final ValueModel systemNotificationsValueModel = applicationModel
+            .getSystemNotificationsValueModel();
+        systemMenuItem.setState((Boolean) systemNotificationsValueModel
+            .getValue());
         systemMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                systemNotificationsValueModel.setValue(
-                    systemMenuItem.getState());
+                systemNotificationsValueModel.setValue(systemMenuItem
+                    .getState());
             }
         });
         systemNotificationsValueModel
@@ -1073,36 +1072,6 @@ public class UIController extends PFComponent {
         systemMonitorFrame.getUIComponent().setVisible(false);
     }
 
-    // TODO Move to ApplicationModel
-    public void syncFolder(Folder folder) {
-
-        // Want to be aware when the scan completes.
-        applicationModel.getFolderRepositoryModel().addInterestedFolderInfo(
-            folder.getInfo());
-
-        if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
-        {
-            // Ask for more sync options on that folder if on project sync
-            new SyncFolderPanel(getController(), folder).open();
-        } else {
-
-            getController().setSilentMode(false);
-
-            // Let other nodes scan now!
-            folder.broadcastScanCommand();
-
-            // Recommend scan on this. User request, so recommend with true.
-            folder.recommendScanOnNextMaintenance(true);
-
-            // Now trigger the scan
-            getController().getFolderRepository().triggerMaintenance();
-
-            // Trigger file requesting.
-            getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting(folder.getInfo());
-        }
-    }
-
     /**
      * Handles single file transfer requests. Displays dialog to send offer to
      * member.
@@ -1308,15 +1277,15 @@ public class UIController extends PFComponent {
      * @param message
      *            the message to popup
      */
-    public void showChatNotification(MemberInfo memberInfo, String title, 
-                                     String message) {
+    public void showChatNotification(MemberInfo memberInfo, String title,
+        String message)
+    {
         if (started && !getController().isShuttingDown()) {
             if ((Boolean) applicationModel.getChatNotificationsValueModel()
                 .getValue())
             {
-                ChatNotificationHandler notificationHandler =
-                        new ChatNotificationHandler(getController(),
-                                memberInfo, title, message, true);
+                ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
+                    getController(), memberInfo, title, message, true);
                 notificationHandler.show();
             }
         }
