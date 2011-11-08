@@ -137,7 +137,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             FormLayout mainLayout = new FormLayout(
                 "1dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
-                    + portArea + debugArea
+                    + portArea
+                    + debugArea
                     + " pref, 3dlu, pref, 3dlu, pref, 1dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
@@ -250,12 +251,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             String.valueOf(getController().getConnectionListener().getPort())));
         portLabel.setToolTipText(Translation.getTranslation("status.port.tip"));
 
-        newNoticesButton = new JButtonMini(getApplicationModel().getActionModel()
-                .getViewNoticesAction());
+        newNoticesButton = new JButtonMini(getApplicationModel()
+            .getActionModel().getViewNoticesAction());
         newNoticesButton.setText(null);
 
         networkModeLabel = new JLabel("nwm");
-
 
         openStatsChartButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenStatsChartsAction());
@@ -285,7 +285,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // If there are any warnings, set icon as warning, else information.
             Icon noticesIcon = Icons.getIconById(Icons.INFORMATION);
             for (Notice notice : getUIController().getApplicationModel()
-                .getNoticesModel().getAllNotices()) {
+                .getNoticesModel().getAllNotices())
+            {
                 if (notice.getNoticeSeverity() == NoticeSeverity.WARINING) {
                     noticesIcon = Icons.getIconById(Icons.WARNING);
                     break;
@@ -442,13 +443,17 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 // No connection quality indication yet - just show connected.
                 String text = Translation.getTranslation("online_label.online");
                 if (controller.isLanOnly()) {
-                    text += " (" + Translation.getTranslation(
-                            "general.network_mode.lan_only") + ')';
+                    text += " ("
+                        + Translation
+                            .getTranslation("general.network_mode.lan_only")
+                        + ')';
                 } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE
                     && !getController().isBackupOnly())
                 {
-                    text += " (" + Translation.getTranslation(
-                            "general.network_mode.server_only") + ')';
+                    text += " ("
+                        + Translation
+                            .getTranslation("general.network_mode.server_only")
+                        + ')';
                 }
                 onlineStateInfo.setToolTipText(text);
                 onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
@@ -459,7 +464,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (!getController().getOSClient().isLoggedIn()) {
                 onlineStateInfo.setToolTipText(Translation
                     .getTranslation("online_label.not_loggedin"));
-                onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));        
+                onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));
             }
         } else {
             // Connecting
@@ -571,7 +576,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         });
     }
-    
+
     private final class MyNodeListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
             updateConnectionLabels();
@@ -598,7 +603,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         public void serverDisconnected(ServerClientEvent event) {
         }
 
-        public void serverConnected(ServerClientEvent event) { 
+        public void serverConnected(ServerClientEvent event) {
         }
 
         public void nodeServerStatusChanged(ServerClientEvent event) {
@@ -723,7 +728,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (folder.isPreviewOnly()) {
                 continue;
             }
-            getController().getUIController().syncFolder(folder);
+            getApplicationModel().syncFolder(folder);
         }
     }
 
