@@ -25,17 +25,22 @@ import java.beans.PropertyChangeListener;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.security.AdminPermission;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.action.ActionModel;
-import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.ui.chat.ChatModelListener;
-import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModelListener;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Contains all core models for the application.
@@ -89,13 +94,12 @@ public class ApplicationModel extends PFUIComponent {
                 }
             });
         displayChatMessageValueModel = new ValueHolder(
-            PreferencesEntry.SHOW_CHAT_MESAGE
-                .getValueBoolean(controller));
+            PreferencesEntry.SHOW_CHAT_MESAGE.getValueBoolean(controller));
         displayChatMessageValueModel
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    PreferencesEntry.SHOW_CHAT_MESAGE.setValue(
-                        controller, (Boolean) evt.getNewValue());
+                    PreferencesEntry.SHOW_CHAT_MESAGE.setValue(controller,
+                        (Boolean) evt.getNewValue());
                     controller.saveConfig();
                 }
             });
@@ -123,6 +127,40 @@ public class ApplicationModel extends PFUIComponent {
     public void initialize() {
         transferManagerModel.initialize();
         getController().getOSClient().addListener(new MyServerClientListener());
+    }
+
+    // Logic ******************************************************************
+
+    public void syncFolder(Folder folder) {
+        // Want to be aware when the scan completes.
+        folderRepositoryModel.addInterestedFolderInfo(folder.getInfo());
+
+        if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
+        {
+            // Ask for more sync options on that folder if on project sync
+            new SyncFolderPanel(getController(), folder).open();
+        } else {
+
+            getController().setSilentMode(false);
+
+            // Let other nodes scan now!
+            folder.broadcastScanCommand();
+
+            // Recommend scan on this. User request, so recommend with true.
+            folder.recommendScanOnNextMaintenance(true);
+
+            // Now trigger the scan
+            getController().getFolderRepository().triggerMaintenance();
+
+            // Trigger file requesting.
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(folder.getInfo());
+        }
+
+        Folder metaFolder = getController().getFolderRepository()
+            .getMetaFolderForParent(folder.getInfo());
+        metaFolder.scanLocalFiles(true);
+        metaFolder.syncRemoteDeletedFiles(true);
     }
 
     // Exposing ***************************************************************
@@ -179,14 +217,12 @@ public class ApplicationModel extends PFUIComponent {
                 return;
             }
             getController().getUIController().showChatNotification(
-                    event.getMemberInfo(),
-                    (Boolean) displayChatMessageValueModel.getValue()
-                            ? Translation.getTranslation(
-                                    "chat.notification.title_long",
-                                    event.getMemberInfo().getNick())
-                            : Translation.getTranslation(
-                                    "chat.notification.title"),
-                    event.getMessage());
+                event.getMemberInfo(),
+                (Boolean) displayChatMessageValueModel.getValue() ? Translation
+                    .getTranslation("chat.notification.title_long", event
+                        .getMemberInfo().getNick()) : Translation
+                    .getTranslation("chat.notification.title"),
+                event.getMessage());
         }
 
         public void chatAdvice(ChatAdviceEvent event) {
@@ -197,7 +233,7 @@ public class ApplicationModel extends PFUIComponent {
             return true;
         }
     }
-    
+
     private class MyServerClientListener implements ServerClientListener {
 
         public boolean fireInEventDispatchThread() {
@@ -210,8 +246,10 @@ public class ApplicationModel extends PFUIComponent {
             {
                 WarningNotice notice = new WarningNotice(
                     Translation.getTranslation("warning_notice.title"),
-                    Translation.getTranslation("warning_notice.admin_login.summary"),
-                    Translation.getTranslation("warning_notice.admin_login.message"));
+                    Translation
+                        .getTranslation("warning_notice.admin_login.summary"),
+                    Translation
+                        .getTranslation("warning_notice.admin_login.message"));
                 noticesModel.handleNotice(notice);
             }
         }
@@ -227,7 +265,7 @@ public class ApplicationModel extends PFUIComponent {
 
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
-        
+
     }
 
     public NoticesModel getNoticesModel() {
