@@ -1631,7 +1631,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }
                 });
             } else {
-                getController().getUIController().syncFolder(folder);
+                getApplicationModel().syncFolder(folder);
             }
         }
     }
