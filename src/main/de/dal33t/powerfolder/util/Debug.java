@@ -116,11 +116,10 @@ public class Debug {
         Reject.ifNull(fileInfos, "Files are null");
         File filelistsDir = new File(LoggingManager.getDebugDir(), "filelists");
         filelistsDir.mkdirs();
-        File logFile = new File(filelistsDir, FileUtils
-            .removeInvalidFilenameChars(folderName)
-            + File.separator
-            + FileUtils.removeInvalidFilenameChars(memberName)
-            + ".list.txt");
+        File logFile = new File(filelistsDir,
+            FileUtils.removeInvalidFilenameChars(folderName) + File.separator
+                + FileUtils.removeInvalidFilenameChars(memberName)
+                + ".list.txt");
         return writeFileListCSV(logFile, fileInfos, header);
     }
 
@@ -329,8 +328,7 @@ public class Debug {
                     + Format.formatDecimal(tm.getUploadCounter()
                         .calculateCurrentKBS())
                     + " Kbytes/s, "
-                    + Format
-                        .formatDecimal(tm.getUploadCPSForWAN() / 1024)
+                    + Format.formatDecimal(tm.getUploadCPSForWAN() / 1024)
                     + " Kbyte/s allowed, "
                     + Format.formatBytes(tm.getUploadCounter()
                         .getBytesTransferred()) + " bytes total):");
@@ -350,8 +348,10 @@ public class Debug {
                 }
 
                 // all members
-                Member[] knownMembers = c.getNodeManager()
-                    .getNodesAsCollection().toArray(
+                Member[] knownMembers = c
+                    .getNodeManager()
+                    .getNodesAsCollection()
+                    .toArray(
                         new Member[c.getNodeManager().getNodesAsCollection()
                             .size()]);
                 // Sort
@@ -527,8 +527,9 @@ public class Debug {
         b.append(", ID: XXX-erased-XXX");
         b.append(", files: " + f.getKnownItemCount() + ", size: "
             + Format.formatBytes(f.getStatistic().getLocalSize())
-            + ", members: " + f.getMembersCount() + ", sync: "
-            + f.getSyncProfile().getName());
+            + ", members: " + f.getMembersCount() + ", mode: "
+            + f.getSyncProfile().getName() + ", sync: "
+            + Format.formatPercent(+f.getStatistic().getLocalSyncPercentage()));
     }
 
     /**
@@ -631,9 +632,8 @@ public class Debug {
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 new File(LoggingManager.getDebugDir(), fileName)));
-            fOut
-                .write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
-                    .getBytes());
+            fOut.write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
+                .getBytes());
             synchronized (nodes) {
                 for (Member node : nodes) {
                     fOut.write(toCSVLine(node).getBytes());
@@ -656,9 +656,8 @@ public class Debug {
     public static void writeStatistics(Controller controller) {
         OutputStream fOut = null;
         try {
-            File file = new File(LoggingManager.getDebugDir(), controller
-                .getConfigName()
-                + ".netstat.csv");
+            File file = new File(LoggingManager.getDebugDir(),
+                controller.getConfigName() + ".netstat.csv");
             file.getParentFile().mkdirs();
             fOut = new BufferedOutputStream(new FileOutputStream(file, true));
             Date now = new Date();
@@ -669,9 +668,7 @@ public class Debug {
                 + '\n';
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
-            log
-                .log(Level.WARNING, "Unable to write network statistics file",
-                    e);
+            log.log(Level.WARNING, "Unable to write network statistics file", e);
             // Ignore
         } finally {
             try {
