@@ -129,6 +129,9 @@ public class OnlineStorageSection extends PFUIComponent {
         MouseAdapter loginMouseAdapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                if (!getController().getOSClient().supportsWebLogin()) {
+                    return;
+                }
                 try {
                     BrowserLauncher.openURL(getController().getOSClient()
                         .getLoginURLWithCredentials());
