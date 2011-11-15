@@ -236,6 +236,18 @@ public enum ConfigurationEntry {
      * established
      */
     SERVER_CONFIG_UPDATE("server.config.update", true),
+    
+    // Server WEB settings ****************************************************
+    
+    /**
+     * #2448: Option to disable Web access
+     */
+    WEB_LOGIN_ALLOWED("web.login.allowed", true),
+
+    /**
+     * If WebDAV should be enabled.
+     */
+    WEB_DAV_ENABLED("web.dav.enabled", true),
 
     // Config META information ************************************************
 
