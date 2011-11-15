@@ -619,9 +619,14 @@ public class ServerClient extends PFComponent {
     /**
      * Log out of online storage.
      */
-    public void logoff() {
+    public void logout() {
         username = null;
         passwordObf = null;
+        try {
+            securityService.logout();
+        } catch (Exception e) {
+            logWarning("Unable to logout. " + e);
+        }
         saveLastKnowLogin();
         setAnonAccount();
         fireLogin(accountDetails);
