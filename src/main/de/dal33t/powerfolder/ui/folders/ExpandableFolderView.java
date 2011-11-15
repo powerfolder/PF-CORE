@@ -1070,13 +1070,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
         if (type == ExpandableFolderModel.Type.CloudOnly) {
-            if (OSUtil.isWindowsSystem()) {
-                if (serverClient.isConnected() && isInCloud()
-                    && serverClient.hasWebURL())
-                {
+            if (serverClient.isConnected() && isInCloud()
+                && serverClient.hasWebURL())
+            {
+                if (OSUtil.isWindowsSystem()) {
                     contextMenu.add(webdavAction);
-                    contextMenu.add(webViewAction);
                 }
+                contextMenu.add(webViewAction);
             }
         }
         return contextMenu;
