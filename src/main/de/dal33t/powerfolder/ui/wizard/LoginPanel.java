@@ -163,7 +163,7 @@ public class LoginPanel extends PFWizardPanel {
         builder.add(passwordField, cc.xy(3, row));
         builder.add(workingBar, cc.xyw(1, row, 3));
 
-        if (StringUtils.isNotBlank(client.getRecoverPasswordURL())) {
+        if (client.supportsRecoverPassword()) {
             LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
                 Translation
                     .getTranslation("wizard.webservice.recover_password"),
