@@ -142,7 +142,7 @@ public class OnlineStorageComponent extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             if (joined) {
                 ServerClient client = getController().getOSClient();
-                if (client.hasWebURL()) {
+                if (client.supportsWebLogin()) {
                     try {
                         String folderURL = client
                             .getFolderURLWithCredentials(folder.getInfo());
