@@ -130,7 +130,7 @@ public class SecurityManagerClient extends PFComponent implements
                 hasPermission = null;
             }
             if (hasPermission == null) {
-                if (client.isConnected()) {
+                if (client.isConnected() && client.isLoggedIn()) {
                     synchronized (requestPermissionLock) {
                         // Re-check cache
                         PermissionsCacheSegment secondCheck = permissionsCacheAccounts
@@ -231,7 +231,9 @@ public class SecurityManagerClient extends PFComponent implements
 
     private boolean hasPermissionDisconnected(Permission permission) {
         boolean noConnectPossible = getController().isLanOnly()
-            && !client.getServer().isOnLAN();
+            && !client.getServer().isOnLAN()
+            && !ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
+                .getValueBoolean(getController());
         if (noConnectPossible) {
             // Server is not on LAN, but running in LAN only mode. Allow all
             // since we will never connect at all
