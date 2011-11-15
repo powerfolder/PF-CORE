@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
@@ -404,11 +405,37 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * @return true if client supports register on registerURL.
+     * #2488
+     * 
+     * @return true if web DAV is available at the server.
      */
-    public boolean supportsWebRegistration() {
-        return ConfigurationEntry.SERVER_REGISTER_ENABLED
+    public boolean supportsWebDAV() {
+        if (!hasWebURL()) {
+            return false;
+        }
+        return ConfigurationEntry.WEB_DAV_ENABLED
             .getValueBoolean(getController());
+    }
+
+    /**
+     * #2488
+     * 
+     * @return true if web login as regular user is allowed at the server.
+     */
+    public boolean supportsWebLogin() {
+        if (!hasWebURL()) {
+            return false;
+        }
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+            .getValueBoolean(getController()))
+        {
+            return true;
+        }
+        if (accountDetails == null) {
+            return false;
+        }
+        return accountDetails.getAccount().hasPermission(
+            AdminPermission.INSTANCE);
     }
 
     /**
@@ -441,7 +468,7 @@ public class ServerClient extends PFComponent {
      * @return the direct URL to the folder including login if necessary
      */
     public String getFolderURLWithCredentials(FolderInfo foInfo) {
-        if (!hasWebURL()) {
+        if (!supportsWebLogin()) {
             return null;
         }
         String folderURI = getFolderURL(foInfo);
@@ -457,6 +484,13 @@ public class ServerClient extends PFComponent {
         loginURL += "=";
         loginURL += folderURI;
         return loginURL;
+    }
+
+    /**
+     * @return if password recovery is supported
+     */
+    public boolean supportsRecoverPassword() {
+        return StringUtils.isNotBlank(getRecoverPasswordURL());
     }
 
     /**
@@ -480,6 +514,14 @@ public class ServerClient extends PFComponent {
         return url;
     }
 
+    /**
+     * @return true if client supports register on registerURL.
+     */
+    public boolean supportsWebRegistration() {
+        return ConfigurationEntry.SERVER_REGISTER_ENABLED
+            .getValueBoolean(getController());
+    }
+    
     /**
      * Convenience method for getting register URL
      * 
