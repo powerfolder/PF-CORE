@@ -68,6 +68,11 @@ public interface SecurityService {
      * @return true if a user is logged in currently = has open session.
      */
     boolean isLoggedIn();
+    
+    /**
+     * Logs out.
+     */
+    void logout();
 
     // Nodes information retrieval ********************************************
 
