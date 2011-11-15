@@ -288,12 +288,12 @@ public class ExpandableFolderView extends PFUIComponent implements
             && type == ExpandableFolderModel.Type.CloudOnly;
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
-                if (serverClient.isConnected() && isInCloud()
-                    && serverClient.hasWebURL())
-                {
+                if (isInCloud()) {
                     upperMountWebDavButton.setVisible(showCloudOnlyButtons
+                        && serverClient.supportsWebDAV()
                         && OSUtil.isWindowsSystem());
-                    upperOpenWebViewButton.setVisible(showCloudOnlyButtons);
+                    upperOpenWebViewButton.setVisible(showCloudOnlyButtons
+                        && serverClient.supportsWebLogin());
                 } else {
                     upperMountWebDavButton.setVisible(false);
                     upperOpenWebViewButton.setVisible(false);
@@ -1070,13 +1070,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
         if (type == ExpandableFolderModel.Type.CloudOnly) {
-            if (serverClient.isConnected() && isInCloud()
-                && serverClient.hasWebURL())
-            {
-                if (OSUtil.isWindowsSystem()) {
+            if (isInCloud()) {
+                if (serverClient.supportsWebDAV() && OSUtil.isWindowsSystem()) {
                     contextMenu.add(webdavAction);
                 }
-                contextMenu.add(webViewAction);
+                if (serverClient.supportsWebLogin()) {
+                    contextMenu.add(webViewAction);
+                }
             }
         }
         return contextMenu;
@@ -1790,7 +1790,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             ServerClient client = getController().getOSClient();
-            if (client.hasWebURL()) {
+            if (client.supportsWebLogin()) {
                 try {
                     String folderURL = client
                         .getFolderURLWithCredentials(folderInfo);
