@@ -59,6 +59,11 @@ public interface SecurityManager {
      * @deprecated Use {@link #authenticate(String, char[])}
      */
     Account authenticate(String username, String passwordMD5, String salt);
+    
+    /**
+     * Logs out and clears the current session.
+     */
+    void logout();
 
     // Core callbacks *********************************************************
 
