@@ -98,6 +98,11 @@ public class SecurityManagerClient extends PFComponent implements
             "Authentication with md5 encoded password not supported at client for "
                 + username);
     }
+    
+
+    public void logout() {
+        client.logout();
+    }
 
     private final Object requestPermissionLock = new Object();
 
