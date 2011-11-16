@@ -34,6 +34,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 import de.dal33t.powerfolder.util.MemoryMonitor;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 
@@ -122,8 +123,8 @@ public class PowerFolder {
             {
                 public void uncaughtException(Thread t, Throwable e) {
                     e.printStackTrace();
-                    log.log(Level.SEVERE, "Exception in " + t + ": "
-                        + e.toString(), e);
+                    log.log(Level.SEVERE,
+                        "Exception in " + t + ": " + e.toString(), e);
                 }
             });
 
@@ -152,15 +153,27 @@ public class PowerFolder {
             formatter.printHelp("PowerFolder", COMMAND_LINE_OPTIONS);
             return;
         }
+        
+        int rconPort = Integer.valueOf(ConfigurationEntry.NET_RCON_PORT
+            .getDefaultValue());
+        String portStr = commandLine.getOptionValue("k");
+        if (StringUtils.isNotBlank(portStr)) {
+            try {
+                rconPort = Integer.valueOf(portStr.trim());
+            } catch (Exception e) {
+                log.warning("Unable to parse rcon port: " + portStr + ". " + e);
+            }
+        }
 
         boolean runningInstanceFound = RemoteCommandManager
-            .hasRunningInstance();
+            .hasRunningInstance(rconPort);
 
         if (commandLine.hasOption("k")) {
             if (runningInstanceFound) {
                 System.out.println("Stopping PowerFolder");
                 // Send quit command
-                RemoteCommandManager.sendCommand(RemoteCommandManager.QUIT);
+                RemoteCommandManager.sendCommand(rconPort,
+                    RemoteCommandManager.QUIT);
             } else {
                 System.err.println("PowerFolder not running");
             }
