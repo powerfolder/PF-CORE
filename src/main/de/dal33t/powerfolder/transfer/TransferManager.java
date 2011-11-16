@@ -1714,9 +1714,6 @@ public class TransferManager extends PFComponent {
             }
 
             List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
-            // ap<>
-            // Map<Member, Integer> downloadCountList =
-            // countNodesActiveAndQueuedDownloads();
 
             Collection<Member> bestSources = null;
             for (Member source : sources) {
@@ -1892,7 +1889,7 @@ public class TransferManager extends PFComponent {
      * @return the list of members, where the file is available
      */
     public List<Member> getSourcesFor(FileInfo fInfo) {
-        return getSourcesFor0(fInfo, false);
+        return getSourcesFor0(fInfo, false, true);
     }
 
     /**
@@ -1930,7 +1927,7 @@ public class TransferManager extends PFComponent {
     }
 
     private List<Member> getSourcesWithFreeUploadCapacity(FileInfo fInfo) {
-        return getSourcesFor0(fInfo, true);
+        return getSourcesFor0(fInfo, true, true);
     }
 
     /**
@@ -1943,10 +1940,11 @@ public class TransferManager extends PFComponent {
      * @param withUploadCapacityOnly
      *            if only those sources should be considered, that have free
      *            upload capacity.
+     * @param onlyIdenticalVersion return sources that have identical file versions.
      * @return the list of members, where the file is available
      */
     private List<Member> getSourcesFor0(FileInfo fInfo,
-        boolean withUploadCapacityOnly)
+        boolean withUploadCapacityOnly, boolean onlyIdenticalVersion)
     {
         Reject.ifNull(fInfo, "File is null");
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
@@ -1960,10 +1958,16 @@ public class TransferManager extends PFComponent {
         List<Member> sources = null;
         // List<Member> sources = new ArrayList<Member>(nodes.size());
         for (Member node : folder.getMembersAsCollection()) {
+            FileInfo fRemoteInfo = node.getFile(fInfo);
             if (node.isCompletelyConnected() && !node.isMySelf()
-                && node.hasFile(fInfo))
+                && fRemoteInfo != null)
             {
                 if (withUploadCapacityOnly && !hasUploadCapacity(node)) {
+                    continue;
+                }
+                if (onlyIdenticalVersion
+                    && fInfo.getVersion() != fRemoteInfo.getVersion())
+                {
                     continue;
                 }
 
