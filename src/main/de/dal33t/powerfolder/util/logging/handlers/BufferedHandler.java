@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import de.dal33t.powerfolder.util.Reject;
@@ -75,17 +76,23 @@ public class BufferedHandler extends Handler {
 
     // API ********************************************************************
 
-    public List<String> getFormattedLogLines(int nSize, Formatter formatter) {
+    public List<String> getFormattedLogLines(int nSize, Formatter formatter,
+        Level level)
+    {
         synchronized (logRecords) {
             List<String> lines = new ArrayList<String>(logRecords.size());
             int nLines = Math.min(nSize, logRecords.size());
             for (int i = 0; i < nLines; i++) {
                 LogRecord record = logRecords.get(i);
+                if (level != null
+                    && record.getLevel().intValue() < level.intValue())
+                {
+                    continue;
+                }
                 String formattedMessage = formatter.format(record);
                 lines.add(formattedMessage);
             }
             return lines;
         }
     }
-
 }
