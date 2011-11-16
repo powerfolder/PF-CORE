@@ -400,11 +400,7 @@ public class Folder extends PFComponent {
         }
         if (hasOwnDatabase) {
             // Write filelist
-            if (LoggingManager.isLogToFile()
-                && Feature.DEBUG_WRITE_FILELIST_CSV.isEnabled())
-            {
-                writeFilelist();
-            }
+            writeFilelist(getController().getMySelf());
         }
 
         // Register persister
@@ -2845,6 +2841,9 @@ public class Folder extends PFComponent {
         if (syncProfile.isSyncDeletion() && from.isCompletelyConnected()) {
             syncRemoteDeletedFiles(Collections.singleton(from), false);
         }
+        
+        // Logging
+        writeFilelist(from);
 
         fireRemoteContentsChanged(from, newList);
     }
@@ -3229,28 +3228,24 @@ public class Folder extends PFComponent {
         if (LoggingManager.isLogToFile()
             && Feature.DEBUG_WRITE_FILELIST_CSV.isEnabled())
         {
-            writeFilelist();
-
             // And members' filelists.
             for (Member member : members.keySet()) {
-                if (!member.isMySelf()) {
-                    Collection<FileInfo> memberFiles = getFilesAsCollection(member);
-                    if (memberFiles != null) {
-                        Debug.writeFileListCSV(getName(), member.getNick(),
-                            memberFiles, "FileList of folder " + getName()
-                                + ", member " + member.getNick() + ':');
-                    }
-                }
+                writeFilelist(member);
             }
         }
         dirty = false;
     }
 
-    private void writeFilelist() {
+    private void writeFilelist(Member member) {
+        if (!LoggingManager.isLogToFile()
+            || Feature.DEBUG_WRITE_FILELIST_CSV.isDisabled())
+        {
+            return;
+        }
         // Write filelist to disk
-        Debug.writeFileListCSV(getName(),
-            getController().getMySelf().getNick(), dao.findAllFiles(null),
-            "FileList of folder " + getName() + ", member " + this + ':');
+        Debug.writeFileListCSV(getName(), member.getNick(),
+            dao.findAllFiles(member.getId()), "FileList of folder " + getName()
+                + ", member " + member + ':');
     }
 
     /*
