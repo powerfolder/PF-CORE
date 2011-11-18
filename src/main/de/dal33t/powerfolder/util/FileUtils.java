@@ -1021,6 +1021,10 @@ public class FileUtils {
         if (filePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR)) {
             return false;
         }
+        
+        if (filePath.endsWith("Icon\r")) {
+            return false;
+        }
 
         int firstSystemDir = filePath
             .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
