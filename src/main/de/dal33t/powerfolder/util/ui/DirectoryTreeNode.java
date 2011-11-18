@@ -47,19 +47,30 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
     private Controller controller;
 
     /**
+     * For volumes, this is FileSystemView.getSystemDisplayName(f)
+     * http://java.dzone.com/news/getting-file-system-details-ja
+     */
+    private String enhancedVolumeText;
+
+    /**
      * Constructor.
-     * 
+     *
+     * @param controller
+     * @param enhancedVolumeText for volumes, pass in the FileSystemView
+     * getSystemDisplayName
      * @param directory
      * @param volume
+     * @param real
      */
-    DirectoryTreeNode(Controller controller, File directory, boolean volume,
-                      boolean real) {
+    DirectoryTreeNode(Controller controller, String enhancedVolumeText,
+                      File directory, boolean volume, boolean real) {
         super(directory);
         this.controller = controller;
         this.volume = volume;
         this.real = real;
         if (volume) {
             add(new DefaultMutableTreeNode());
+            this.enhancedVolumeText = enhancedVolumeText;
         } else if (directory != null && directory.isDirectory()
             && directory.canRead() && !directory.isHidden())
         {
@@ -123,7 +134,7 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
                     if (!realDirectory ||
                             f2.isDirectory() && !f2.isHidden() && f2.canRead()) {
                         DirectoryTreeNode dtn2 = new DirectoryTreeNode(controller,
-                                f2, false, realDirectory);
+                                null, f2, false, realDirectory);
                         add(dtn2);
                     }
                 }
@@ -169,4 +180,7 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
         this.icon = icon;
     }
 
+    public String getEnhancedVolumeText() {
+        return enhancedVolumeText;
+    }
 }

@@ -24,9 +24,11 @@ import java.io.File;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Class to render a directory tree node. Shows an open or closed directory icon
@@ -50,7 +52,12 @@ class DirectoryTreeCellRenderer extends DefaultTreeCellRenderer {
             File directory = (File) dtn.getUserObject();
             if (directory != null) {
                 if (dtn.isVolume()) {
-                    setText(directory.getAbsolutePath());
+                    String text = dtn.getEnhancedVolumeText();
+                    if (StringUtils.isEmpty(text)) {
+                        // In case there was no enhanced volume text available.
+                        text = directory.getAbsolutePath();
+                    }
+                    setText(text);
                 } else {
                     setText(directory.getName());
                 }

@@ -37,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -211,12 +212,14 @@ class DirectoryChooser extends BaseDialog {
         if (isFine()) {
             logFine("Roots length " + fs.length);
         }
+        FileSystemView fsv = FileSystemView.getFileSystemView();
         for (File f : fs) {
             if (isFine()) {
                 logFine("Root " + f);
             }
 
-            DirectoryTreeNode treeNode = new DirectoryTreeNode(getController(), f, true, true);
+            DirectoryTreeNode treeNode = new DirectoryTreeNode(getController(),
+                    fsv.getSystemDisplayName(f), f, true, true);
             ((DefaultMutableTreeNode) tree.getModel().getRoot()).add(treeNode);
         }
 
@@ -323,7 +326,7 @@ class DirectoryChooser extends BaseDialog {
                                 // shows.
                                 DirectoryTreeNode parentNode = (DirectoryTreeNode) parentComponent;
                                 model.insertNodeInto(new DirectoryTreeNode(
-                                        getController(), f, false, true),
+                                        getController(), null, f, false, true),
                                         parentNode, parentNode.getChildCount());
 
                                 // Find new folder in parent.
