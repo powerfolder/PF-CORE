@@ -240,10 +240,11 @@ public final class FileInfoFactory {
     }
 
     private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",
-        "<", ":", ">"};
+        "<", ":", ">", "\r"};
 
     /**
-     * #2480: Encodes illegal characters in filenames for windows such as: |, :, <, >,
+     * #2480: Encodes illegal characters in filenames for windows such as: |, :,
+     * <, >,
      * 
      * @param relativeFilename
      *            containing the illegal chars, e.g. "My|File.txt"
@@ -264,7 +265,6 @@ public final class FileInfoFactory {
         }
         if (output.length() > 1) {
             char lastChar = output.charAt(output.length() - 1);
-
             if (lastChar == ' ' || lastChar == '.') {
                 String replacement = Base64.encodeString(String.valueOf(output
                     .charAt(output.length() - 1)));
