@@ -59,7 +59,6 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
@@ -125,6 +124,7 @@ import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.compactmode.CompactModeFrame;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -150,8 +150,6 @@ import de.dal33t.powerfolder.util.update.UpdaterHandler;
  */
 public class UIController extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(UIController.class
-        .getName());
     private static final long FIVE_GIG = 5L << 30;
 
     public static final int MAIN_FRAME_ID = 0;
@@ -171,6 +169,7 @@ public class UIController extends PFComponent {
     private SplashScreen splash;
     private TrayIconManager trayIconManager;
     private MainFrame mainFrame;
+    private CompactModeFrame compactModeFrame;
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
     private ChatFrame chatFrame;
@@ -282,6 +281,8 @@ public class UIController extends PFComponent {
 
         // create the Frame
         mainFrame = new MainFrame(getController());
+
+        compactModeFrame = new CompactModeFrame(getController());
 
         // create the models
         getController().getFolderRepository().addFolderRepositoryListener(
@@ -583,7 +584,7 @@ public class UIController extends PFComponent {
                         BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
                             .getValue(getController()));
                     } catch (IOException e1) {
-                        log.log(Level.WARNING,
+                        logWarning(
                             "Unable to goto PowerFolder homepage", e1);
                     }
                 }
@@ -1367,6 +1368,16 @@ public class UIController extends PFComponent {
         if (trayIconManager != null) {
             trayIconManager.clearBlink();
         }
+    }
+
+    public void doCompactMode() {
+
+        // 1. Hide the normal UI.
+        hideChildPanels();
+        mainFrame.getUIComponent().setVisible(false);
+
+        // 2. Show the compact UI.
+        compactModeFrame.getUIComponent().setVisible(true);
     }
 
     // ////////////////

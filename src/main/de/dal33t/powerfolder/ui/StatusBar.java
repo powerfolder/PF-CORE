@@ -186,8 +186,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         syncUpdater = new DelayedUpdater(getController(), 1000L);
         connectLabelUpdater = new DelayedUpdater(getController());
 
+        MyActionListener listener = new MyActionListener();
+
         compactModeButton = new JButtonMini(Icons.getIconById(Icons.COMAPCT),
                 Translation.getTranslation("status_bar.compact.tips"));
+        compactModeButton.addActionListener(listener);
 
         onlineStateInfo = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
 
@@ -222,7 +225,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         sleepButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
             Translation.getTranslation("status_bar.sleep.tips"));
-        MyActionListener listener = new MyActionListener();
         sleepButton.addActionListener(listener);
 
         getController().addPropertyChangeListener(
@@ -718,9 +720,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (e.getSource() == sleepButton) {
                 getController().setSilentMode(!getController().isSilentMode());
             } else if (e.getSource() == pendingMessagesButton) {
-                getController().getUIController().openChat(null);
+                getUIController().openChat(null);
             } else if (e.getSource() == syncButton) {
                 syncAllFolders();
+            } else if (e.getSource() == compactModeButton) {
+                getUIController().doCompactMode();
             }
         }
     }
