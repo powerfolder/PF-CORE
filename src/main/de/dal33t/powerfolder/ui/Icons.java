@@ -82,6 +82,9 @@ public class Icons {
     public static final String FILTER_TEXT_FIELD_GLASS = "filter_text_field_glass.icon";
     public static final String FILTER_TEXT_FIELD_GLASS_ARROW = "filter_text_field_glass_arrow.icon";
 
+    public static final String COMAPCT = "compact.icon";
+    public static final String UNCOMACT = "uncompact.icon";
+
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";
     public static final String DEBUG = "bug.icon";

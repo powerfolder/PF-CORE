@@ -117,7 +117,12 @@ public enum Feature {
     /**
      * TRAC #1962 For later use
      */
-    REGION_SELECTOR(false);
+    REGION_SELECTOR(false),
+
+    /**
+     * TRAC #2506
+     */
+    COMPACT_MODE(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

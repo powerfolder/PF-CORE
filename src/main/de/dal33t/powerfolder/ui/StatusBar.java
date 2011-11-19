@@ -40,11 +40,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
@@ -90,6 +86,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class StatusBar extends PFUIComponent implements UIPanel {
 
     private JComponent comp;
+    private JButton compactModeButton;
     private JButton onlineStateInfo;
     private JButton sleepButton;
     private SyncIconButtonMini syncButton;
@@ -139,7 +136,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 "1dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
                     + portArea
                     + debugArea
-                    + " pref, 3dlu, pref, 3dlu, pref, 1dlu", "pref");
+                    + " pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
             CellConstraints cc = new CellConstraints();
@@ -170,6 +167,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             mainBuilder.add(openPreferencesButton, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(openAboutBoxButton, cc.xy(col, 1));
+            if (Feature.COMPACT_MODE.isEnabled()) {
+                col += 2;
+                mainBuilder.add(compactModeButton, cc.xy(col, 1));
+            }
 
             comp = mainBuilder.getPanel();
             comp.setOpaque(false);
@@ -184,6 +185,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private void initComponents() {
         syncUpdater = new DelayedUpdater(getController(), 1000L);
         connectLabelUpdater = new DelayedUpdater(getController());
+
+        compactModeButton = new JButtonMini(Icons.getIconById(Icons.COMAPCT),
+                Translation.getTranslation("status_bar.compact.tips"));
 
         onlineStateInfo = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
 
