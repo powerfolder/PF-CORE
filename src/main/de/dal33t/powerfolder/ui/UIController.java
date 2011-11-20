@@ -124,7 +124,6 @@ import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.compactmode.CompactModeFrame;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -169,7 +168,6 @@ public class UIController extends PFComponent {
     private SplashScreen splash;
     private TrayIconManager trayIconManager;
     private MainFrame mainFrame;
-    private CompactModeFrame compactModeFrame;
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
     private ChatFrame chatFrame;
@@ -281,8 +279,6 @@ public class UIController extends PFComponent {
 
         // create the Frame
         mainFrame = new MainFrame(getController());
-
-        compactModeFrame = new CompactModeFrame(getController());
 
         // create the models
         getController().getFolderRepository().addFolderRepositoryListener(
@@ -1370,14 +1366,8 @@ public class UIController extends PFComponent {
         }
     }
 
-    public void doCompactMode() {
-
-        // 1. Hide the normal UI.
-        hideChildPanels();
-        mainFrame.getUIComponent().setVisible(false);
-
-        // 2. Show the compact UI.
-        compactModeFrame.getUIComponent().setVisible(true);
+    public void reconfigureForCompactMode(boolean compactMode) {
+        mainFrame.reconfigureForCompactMode(compactMode);
     }
 
     // ////////////////

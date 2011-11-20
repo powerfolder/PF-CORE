@@ -583,7 +583,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         });
     }
 
-    private final class MyNodeListener extends NodeManagerAdapter {
+    private class MyNodeListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
             updateConnectionLabels();
         }
@@ -599,9 +599,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         public boolean fireInEventDispatchThread() {
             return true;
         }
-    };
+    }
 
-    private final class MyServerClientListener implements ServerClientListener {
+    private class MyServerClientListener implements ServerClientListener {
         public boolean fireInEventDispatchThread() {
             return true;
         }
@@ -724,7 +724,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             } else if (e.getSource() == syncButton) {
                 syncAllFolders();
             } else if (e.getSource() == compactModeButton) {
-                getUIController().doCompactMode();
+                getUIController().reconfigureForCompactMode(true);
             }
         }
     }

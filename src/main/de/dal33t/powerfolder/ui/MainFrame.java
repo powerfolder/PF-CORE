@@ -33,17 +33,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
@@ -59,8 +51,8 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -96,15 +88,11 @@ public class MainFrame extends PFUIComponent {
     private JLabel inlineInfoLabel;
     private JButton inlineInfoCloseButton;
     private JSplitPane split;
+    private final AtomicBoolean compactModeActive = new AtomicBoolean();
+    private JButton uncompactModeButton;
 
     /**
-     * The menu bar that handles F5 for sync, etc. This is not visible in the
-     * GUI.
-     */
-    private JMenuBar menuBar;
-
-    /**
-     * The status bar on the lower side of the screen.
+     * The status bar on the lower edge of the main frame.
      */
     private StatusBar statusBar;
 
@@ -119,44 +107,53 @@ public class MainFrame extends PFUIComponent {
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
 
-        // Need to do this NOW because everything must be built before anything
-        // affects it, like tab icons.
-        buildUI();
+        initComponents();
+        configureUiUncompact();
     }
 
-    /**
-     * Builds the UI
-     */
-    private void buildUI() {
-        initComponents();
+    private void configureUiCompact() {
 
-        FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "0dlu, pref, 1dlu, fill:0:grow, 1dlu, pref");
-        // menu head body footer
+        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
+            "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
 
         CellConstraints cc = new CellConstraints();
 
-        builder.add(menuBar, cc.xyw(1, 1, 4));
-
-        builder.add(logoLabel, cc.xyw(1, 2, 4));
-        builder.add(inlineInfoLabel,
-            cc.xy(2, 2, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
-        builder.add(inlineInfoCloseButton,
-            cc.xy(4, 2, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
-
-        builder.add(centralPanel, cc.xyw(1, 4, 4));
-        builder.add(statusBar.getUIComponent(), cc.xyw(1, 6, 4));
-
-        split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        split.setOneTouchExpandable(false);
-
+        builder.add(new JLabel(Translation.getTranslation("general.application.name")), cc.xy(1, 1));
+        builder.add(uncompactModeButton, cc.xy(3, 1));
+        uiComponent.getContentPane().removeAll();
+        uiComponent.setMinimumSize(new Dimension(20, 20));
         uiComponent.getContentPane().add(builder.getPanel());
-        uiComponent.setBackground(Color.white);
+        uiComponent.setExtendedState(Frame.NORMAL);
+        uiComponent.pack();
+        uiComponent.setResizable(false);
+        relocateIfNecessary();
+    }
+
+    private void configureUiUncompact() {
+
+        FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
+            "pref, 1dlu, fill:0:grow, 1dlu, pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
+
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(logoLabel, cc.xyw(1, 1, 4));
+        builder.add(inlineInfoLabel,
+            cc.xy(2, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
+        builder.add(inlineInfoCloseButton,
+            cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
+
+        builder.add(centralPanel, cc.xyw(1, 3, 4));
+        builder.add(statusBar.getUIComponent(), cc.xyw(1, 5, 4));
+
+        uiComponent.getContentPane().removeAll();
+        uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setResizable(true);
 
-        final Controller c = getController();
+        Controller c = getController();
         int mainY = PreferencesEntry.MAIN_FRAME_Y.getValueInt(c);
 
         int width = PreferencesEntry.MAIN_FRAME_WIDTH.getValueInt(c);
@@ -173,7 +170,7 @@ public class MainFrame extends PFUIComponent {
             height = MIN_HEIGHT;
         }
         uiComponent.setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
-        setWindowSize(width, height);
+        uiComponent.setSize(width, height);
 
         // Pack elements
         uiComponent.pack();
@@ -186,32 +183,17 @@ public class MainFrame extends PFUIComponent {
 
         relocateIfNecessary();
 
-        // everything is decided in window listener
-        uiComponent
-            .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
         configureInlineInfo();
 
-        // add window listener, checks if exit is needed on pressing X
-        MyWindowListener my = new MyWindowListener(c);
-        uiComponent.addWindowListener(my);
-        uiComponent.addWindowStateListener(my);
-
-        if (PreferencesEntry.MAIN_FRAME_MAXIMIZED
-            .getValueBoolean(getController()))
-        {
-            if (uiComponent.getRootPane().getUI() instanceof SyntheticaRootPaneUI)
-            {
+        if (PreferencesEntry.MAIN_FRAME_MAXIMIZED.getValueBoolean(
+                getController())) {
+            if (uiComponent.getRootPane().getUI() instanceof
+                    SyntheticaRootPaneUI) {
                 ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
                     .setMaximizedBounds(uiComponent);
             }
-            uiComponent.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
-    }
-
-    private void setWindowSize(int width, int height) {
-        uiComponent.setSize(width, height);
-        uiComponent.setPreferredSize(new Dimension(width, height));
     }
 
     /**
@@ -266,12 +248,29 @@ public class MainFrame extends PFUIComponent {
         }
         uiComponent.addWindowFocusListener(new MyWindowFocusListner());
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
+        uiComponent.setBackground(Color.white);
+
+        MyActionListener myActionListener = new MyActionListener();
+
+        uncompactModeButton = new JButtonMini(Icons.getIconById(Icons.UNCOMACT),
+                Translation.getTranslation("main_frame.uncompact.tips"));
+        uncompactModeButton.addActionListener(myActionListener);
+
+        // add window listener, checks if exit is needed on pressing X
+        MyWindowListener myWindowListener = new MyWindowListener(getController());
+        uiComponent.addWindowListener(myWindowListener);
+        uiComponent.addWindowStateListener(myWindowListener);
+
+        split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        split.setOneTouchExpandable(false);
+
+        // everything is decided in window listener
+        uiComponent.setDefaultCloseOperation(
+                WindowConstants.DO_NOTHING_ON_CLOSE);
 
         logoLabel = new JLabel();
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
-
-        createMenuBar();
 
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
@@ -287,21 +286,10 @@ public class MainFrame extends PFUIComponent {
             Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         inlineInfoCloseButton.setToolTipText(Translation
             .getTranslation("main_frame.inline_info_close.tip"));
-        inlineInfoCloseButton.addActionListener(new MyActionListener());
+        inlineInfoCloseButton.addActionListener(myActionListener);
         inlineInfoCloseButton.setContentAreaFilled(false);
 
         inlineInfoLabel = new JLabel();
-    }
-
-    /**
-     * Menu is not visible, it just holds the SyncAll action, so it reacts to
-     * key press.
-     */
-    private void createMenuBar() {
-        menuBar = new JMenuBar();
-        JMenuItem syncAllMenuItem = new JMenuItem(new SyncAllFoldersAction(
-            getController()));
-        menuBar.add(syncAllMenuItem);
     }
 
     /**
@@ -574,7 +562,7 @@ public class MainFrame extends PFUIComponent {
 
             if (!isMaximized()) {
                 int width = adjustWidthToScreen(mainWidth + infoWidth);
-                setWindowSize(width, uiComponent.getSize().height);
+                uiComponent.setSize(width, uiComponent.getSize().height);
             }
 
             final int dividerLocation = mainWidth;
@@ -600,7 +588,7 @@ public class MainFrame extends PFUIComponent {
             inlineInfoPanel = null;
             inlineInfoLabel.setText("");
             if (!isMaximized()) {
-                setWindowSize(mainWidth, uiComponent.getSize().height);
+                uiComponent.setSize(mainWidth, uiComponent.getSize().height);
             }
         }
 
@@ -651,11 +639,25 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    public void reconfigureForCompactMode(final boolean compactMode) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (compactModeActive.getAndSet(compactMode) != compactMode) {
+                    if (compactMode) {
+                        configureUiCompact();
+                    } else {
+                        configureUiUncompact();
+                    }
+                }
+            }
+        });
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
 
-    private final class MyWindowFocusListner implements WindowFocusListener {
+    private class MyWindowFocusListner implements WindowFocusListener {
         public void windowGainedFocus(WindowEvent e) {
             getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
         }
@@ -665,7 +667,7 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private final class MyWindowListener extends WindowAdapter {
+    private class MyWindowListener extends WindowAdapter {
         private final Controller c;
 
         private MyWindowListener(Controller c) {
@@ -674,8 +676,8 @@ public class MainFrame extends PFUIComponent {
 
         @Override
         public void windowStateChanged(WindowEvent e) {
-            boolean wasMaximized = (e.getOldState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
-            boolean nowMaximized = (e.getNewState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
+            boolean wasMaximized = (e.getOldState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
+            boolean nowMaximized = (e.getNewState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
             if (wasMaximized && !nowMaximized) {
                 logFine("old: " + e.getOldState() + ", new: " + e.getNewState());
                 if (isShowingInfoInline()) {
@@ -688,7 +690,7 @@ public class MainFrame extends PFUIComponent {
                     // main+info width.
                     int width = adjustWidthToScreen(uiComponent.getWidth()
                         + infoWidth);
-                    setWindowSize(width, uiComponent.getSize().height);
+                    uiComponent.setSize(width, uiComponent.getSize().height);
                 } else {
                     // Prevents the following:
                     // 1) Start with main only
@@ -697,7 +699,7 @@ public class MainFrame extends PFUIComponent {
                     // 4) Close info.
                     // 5) De-maximize
                     // -> Main window must not return to main+info width but main width only.
-                    setWindowSize(mainWidth, uiComponent.getSize().height);
+                    uiComponent.setSize(mainWidth, uiComponent.getSize().height);
                 }
             }
            
@@ -786,6 +788,8 @@ public class MainFrame extends PFUIComponent {
             Object source = e.getSource();
             if (source == inlineInfoCloseButton) {
                 closeInlineInfoPanel();
+            } else if (source == uncompactModeButton) {
+                getUIController().reconfigureForCompactMode(false);
             }
         }
     }
