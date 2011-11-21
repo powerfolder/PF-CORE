@@ -154,6 +154,16 @@ public class Account implements Serializable {
     private List<String> licenseKeyFileList;
 
     /**
+     * The maximum number of devices to automatically re-license if required
+     */
+    private int autoRenewDevices;
+
+    /**
+     * Don't auto re-license after that date.
+     */
+    private Date autoRenewTill;
+
+    /**
      * The default-synced folder of the user. May be null.
      * <p>
      * TRAC #991.
@@ -494,6 +504,28 @@ public class Account implements Serializable {
 
     public List<String> getLicenseKeyFiles() {
         return licenseKeyFileList;
+    }
+
+    public int getAutoRenewDevices() {
+        return autoRenewDevices;
+    }
+
+
+    public Date getAutoRenewTill() {
+        return autoRenewTill;
+    }
+
+    public void setAutoRenew(int autoRenewDevices, Date autoRenewTill) {
+        this.autoRenewDevices = autoRenewDevices;
+        this.autoRenewTill = autoRenewTill;
+    }
+
+    public boolean willAutoRenew() {
+        boolean licAutoRenew = autoRenewTill != null
+            && autoRenewTill.before(new Date());
+        licAutoRenew = licAutoRenew || autoRenewTill == null;
+        licAutoRenew = licAutoRenew && autoRenewDevices > 0;
+        return licAutoRenew;
     }
 
     /**
