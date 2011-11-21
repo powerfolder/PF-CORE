@@ -104,7 +104,8 @@ public class LicenseInfoSection extends PFUIComponent {
     }
 
     void setDaysValid(int days) {
-        boolean aboutToExpire = days != -1 && days < 30;
+        boolean aboutToExpire = days != -1 && days < 30
+            && !getController().getOSClient().getAccount().willAutoRenew();
         boolean disabled = !getController().getNodeManager().isStarted();
 
         if (disabled) {
@@ -144,7 +145,9 @@ public class LicenseInfoSection extends PFUIComponent {
         public void mouseClicked(MouseEvent e) {
             if (getApplicationModel().getLicenseModel().getActivationAction() != null)
             {
-                getApplicationModel().getLicenseModel().getActivationAction()
+                getApplicationModel()
+                    .getLicenseModel()
+                    .getActivationAction()
                     .actionPerformed(
                         new ActionEvent(e.getSource(), 0, "clicked"));
             }
