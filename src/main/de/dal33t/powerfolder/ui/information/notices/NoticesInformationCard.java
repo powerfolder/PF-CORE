@@ -26,12 +26,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -55,11 +50,21 @@ public class NoticesInformationCard extends InformationCard {
     private NoticesTableModel noticesTableModel;
     private NoticesTable noticesTable;
     private Action activateAction;
+    private JPopupMenu actionsMenu;
 
     public NoticesInformationCard(Controller controller) {
         super(controller);
-        this.model = controller.getUIController().getApplicationModel()
+        model = controller.getUIController().getApplicationModel()
             .getNoticesModel();
+    }
+
+    /**
+     * Builds the popup menus
+     */
+    private void buildPopupMenus() {
+        actionsMenu = new JPopupMenu();
+        actionsMenu.add(activateAction);
+        actionsMenu.add(new CleanupNoticesAction(getController()));
     }
 
     public Image getCardImage() {
@@ -120,6 +125,7 @@ public class NoticesInformationCard extends InformationCard {
         builder.addSeparator(null, cc.xyw(1, 4, 3));
         builder.add(pane, cc.xy(2, 6));
         uiComponent = builder.getPanel();
+        buildPopupMenus();
     }
 
     /**
@@ -237,7 +243,7 @@ public class NoticesInformationCard extends InformationCard {
         }
 
         private void showContextMenu(MouseEvent evt) {
-            // @todo ???
+            actionsMenu.show(evt.getComponent(), evt.getX(), evt.getY());
         }
     }
 }
