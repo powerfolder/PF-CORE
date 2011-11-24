@@ -137,7 +137,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.0.24"; // 3.5.51
+    public static final String PROGRAM_VERSION = "5.0.25"; // 3.5.52
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -412,9 +412,9 @@ public class Controller extends PFComponent {
         } else {
             preferences = Preferences.userNodeForPackage(PowerFolder.class)
                 .node(getConfigName());
-            
+
         }
-     
+
         // initialize logger
         // Enabled verbose mode if in config.
         // This logs to file for analysis.
@@ -448,10 +448,10 @@ public class Controller extends PFComponent {
 
         // If we have a new config. clear the preferences.
         clearPreferencesOnConfigSwitch();
-        
+
         // #2179: Load from server. How to handle timeouts?
         ConfigurationLoader.loadAndMergeConfigURL(this);
-        
+
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);
 
@@ -653,7 +653,8 @@ public class Controller extends PFComponent {
                     preferences.remove(key);
                     i++;
                 }
-                logWarning("Cleared " + i + " preferences, new config/nodeid found");
+                logWarning("Cleared " + i
+                    + " preferences, new config/nodeid found");
             }
         } catch (BackingStoreException e1) {
             logWarning("Unable to clear preferences. " + e1);
@@ -988,9 +989,10 @@ public class Controller extends PFComponent {
      */
     private void performHourly() {
         if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
-            .getValueBoolean(getController())) {
-            FutureTask<Object> recalculateRunnable =
-                    transferManager.getRecalculateAutomaticRate();
+            .getValueBoolean(getController()))
+        {
+            FutureTask<Object> recalculateRunnable = transferManager
+                .getRecalculateAutomaticRate();
             threadPool.execute(recalculateRunnable);
         }
     }
@@ -1565,7 +1567,7 @@ public class Controller extends PFComponent {
                 try {
                     closer.join(12000);
                 } catch (InterruptedException e) {
-                    logSevere("Closing of listener port failed: " + e);
+                    logFine("Closing of listener port failed: " + e);
                 }
             }
         }
