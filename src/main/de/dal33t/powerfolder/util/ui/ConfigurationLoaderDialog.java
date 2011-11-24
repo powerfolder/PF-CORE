@@ -313,48 +313,46 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             Properties preConfig = null;
             String input = (String) addressBox.getSelectedItem();
             try {
-                ConfigurationEntry.CONFIG_URL.setValue(getController(), input);
-                getController().saveConfig();
-                preConfig = ConfigurationLoader.loadPreConfiguration(input);
-
-                if (preConfig != null && !containsServerWeb(preConfig)) {
-                    String finalURL = Util.removeLastSlashFromURI(input);
-                    if (!finalURL.startsWith("http")) {
-                        finalURL = "http://" + finalURL;
-                    }
-                    logWarning("Server web URL not found in client config. Using fallback: "
-                        + finalURL);
-                    preConfig.put(
-                        ConfigurationEntry.SERVER_WEB_URL.getConfigKey(),
-                        finalURL);
-                }
+                preConfig = loadFromInput(input);
             } catch (IOException e) {
                 logWarning("Unable to load config from " + input + ": " + e);
                 if (StringUtils.isNotBlank(input)) {
-                    // Try to connect via TCP directly
-                    Socket socket = new Socket();
                     try {
-                        InetSocketAddress addr = Util
-                            .parseConnectionString(input);
-                        socket = new Socket();
-                        socket.connect(addr, Constants.SOCKET_CONNECT_TIMEOUT);
-                        if (socket.isConnected()) {
-                            logInfo("Got direct TCP connect to server " + input);
-                            ConfigurationEntry.SERVER_HOST.setValue(
-                                getController(), input);
-                            ConfigurationEntry.SERVER_NODEID
-                                .removeValue(getController());
-                            preConfig = new Properties();
-                            preConfig.put(
-                                ConfigurationEntry.SERVER_HOST.getConfigKey(),
-                                input);
-                        }
-                    } catch (Exception e2) {
-                        logInfo("Not direct TCP connect possible to " + input);
-                    } finally {
+                        // Try harder with default port of web portal
+                        preConfig = loadFromInput(input + ":8080");
+                    } catch (IOException e2) {
+                        // Try even harder to connect via TCP directly
+                        Socket socket = new Socket();
                         try {
-                            socket.close();
+                            InetSocketAddress addr = Util
+                                .parseConnectionString(input);
+                            socket = new Socket();
+                            socket.connect(addr,
+                                Constants.SOCKET_CONNECT_TIMEOUT);
+                            if (socket.isConnected()) {
+                                logInfo("Got direct TCP connect to server "
+                                    + input);
+                                ConfigurationEntry.SERVER_HOST.setValue(
+                                    getController(), input);
+                                ConfigurationEntry.SERVER_NODEID
+                                    .removeValue(getController());
+                                ConfigurationEntry.SERVER_WEB_URL
+                                    .removeValue(getController());
+                                preConfig = new Properties();
+                                preConfig.put(ConfigurationEntry.SERVER_HOST
+                                    .getConfigKey(), input);
+                                preConfig.put(ConfigurationEntry.SERVER_WEB_URL
+                                    .getConfigKey(), "http://" + input
+                                    + ":8080");
+                            }
                         } catch (Exception e3) {
+                            logInfo("Not direct TCP connect possible to "
+                                + input + ". " + e3);
+                        } finally {
+                            try {
+                                socket.close();
+                            } catch (Exception e3) {
+                            }
                         }
                     }
                 }
@@ -367,6 +365,24 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                     .getConfig(), getController().getPreferences(), true);
                 // Seems to be valid, store.
                 getController().saveConfig();
+            }
+            return preConfig;
+        }
+
+        private Properties loadFromInput(String input) throws IOException {
+            Properties preConfig;
+            ConfigurationEntry.CONFIG_URL.setValue(getController(), input);
+            getController().saveConfig();
+            preConfig = ConfigurationLoader.loadPreConfiguration(input);
+            if (preConfig != null && !containsServerWeb(preConfig)) {
+                String finalURL = Util.removeLastSlashFromURI(input);
+                if (!finalURL.startsWith("http")) {
+                    finalURL = "http://" + finalURL;
+                }
+                logWarning("Server web URL not found in client config. Using fallback: "
+                    + finalURL);
+                preConfig.put(ConfigurationEntry.SERVER_WEB_URL.getConfigKey(),
+                    finalURL);
             }
             return preConfig;
         }
