@@ -2387,10 +2387,26 @@ public class Controller extends PFComponent {
 
         // Is this a friend already?
         Member member = event.getMemberInfo().getNode(this, false);
-        if (member != null && member.isFriend()) {
-            log.fine("Ignoring ask for friendship from "
-                + event.getMemberInfo().getNick() + ". Already friend.");
-            return;
+        if (member != null) {
+            if (member.isFriend()) {
+                log.fine("Ignoring ask for friendship from "
+                    + event.getMemberInfo().getNick() + ". Already friend.");
+                return;
+            }
+            if (member.isServer()) {
+                log.fine("Ignoring ask for friendship from "
+                    + event.getMemberInfo().getNick() + ". is a server.");
+                return;
+            }
+            // Hack alert(tm):
+            String lnick = member.getNick().toLowerCase();
+            boolean isPowerFolderCloud = lnick.contains("powerfolder")
+                && lnick.contains("cloud");
+            if (isPowerFolderCloud) {
+                log.fine("Ignoring ask for friendship from "
+                    + event.getMemberInfo().getNick() + ". is a pf server.");
+                return;
+            }
         }
 
         for (AskForFriendshipListener listener : askForFriendshipListeners) {
