@@ -80,19 +80,21 @@ public class TellFriendPanel extends PFWizardPanel {
     @SuppressWarnings("serial")
     protected void initComponents() {
         String fbLink = SocialNetwork.FACEBOOK.shareLink(getController()
-            .getOSClient().getRegisterURLReferral());
+            .getOSClient().getRegisterURLReferral(), null);
         fbLabel = new LinkLabel(getController(), "", fbLink);
         fbLabel.setIcon(Icons.getIconById(Icons.FACEBOOK_BUTTON));
 
         String twitterLink = SocialNetwork.TWITTER.shareLink(getController()
-            .getOSClient().getRegisterURLReferral());
+            .getOSClient().getRegisterURLReferral(), null);
         twitterLabel = new LinkLabel(getController(), "", twitterLink);
         twitterLabel.setIcon(Icons.getIconById(Icons.TWITTER_BUTTON));
 
         String linkedInLink = SocialNetwork.LINKEDIN.shareLink(getController()
-            .getOSClient().getRegisterURLReferral());
+            .getOSClient().getRegisterURLReferral(), null);
         linkedInLabel = new LinkLabel(getController(), "", linkedInLink);
         linkedInLabel.setIcon(Icons.getIconById(Icons.LINKEDIN_BUTTON));
+        
+        // TODO Yammer
 
         emailLabel = new ActionLabel(getController(), new AbstractAction("") {
             public void actionPerformed(ActionEvent e) {
