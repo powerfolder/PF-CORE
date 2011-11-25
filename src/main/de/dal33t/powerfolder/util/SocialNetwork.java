@@ -38,19 +38,29 @@ public enum SocialNetwork {
      * To share a link on Twitter
      */
     TWITTER(
-        "http://twitter.com/?status=Share, send and sync your files online with PowerFolder: $ORIGINAL_URL$", true),
+        "http://twitter.com/?status=Share, send and sync your files online with PowerFolder: $ORIGINAL_URL$",
+        true),
 
     /**
      * Same for Linkedin.com
      */
     LINKEDIN(
-        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send, share and sync files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder", true),
+        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send, share and sync files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder",
+        true),
+
+    /**
+     * Y!
+     */
+    YAMMER(
+        "https://www.yammer.com/home/bookmarklet?t=$TITLE$&u=$ORIGINAL_URL$",
+        false),
 
     /**
      * Good old email
      */
     EMAIL(
-        "mailto:to@email.com?SUBJECT=Share, send and sync your files online with PowerFolder&BODY=Share, send and sync your files online with PowerFolder: %20$ORIGINAL_URL$", false);
+        "mailto:to@email.com?SUBJECT=Share, send and sync your files online with PowerFolder&BODY=Share, send and sync your files online with PowerFolder: %20$ORIGINAL_URL$",
+        false);
 
     private String template;
     private boolean replaceSpace;
@@ -60,10 +70,16 @@ public enum SocialNetwork {
         this.replaceSpace = replaceSpace;
     }
 
-    public String shareLink(String shareURL) {
+    public String shareLink(String shareURL, String title) {
         try {
-            String link = template.replace("$ORIGINAL_URL$", URLEncoder.encode(
-                shareURL, "UTF-8"));
+            String link = template.replace("$ORIGINAL_URL$",
+                URLEncoder.encode(shareURL, "UTF-8"));
+            if (StringUtils.isNotBlank(title)) {
+                link = link.replace("$TITLE$",
+                    URLEncoder.encode(title, "UTF-8"));
+            } else {
+                link = link.replace("$TITLE$", "");
+            }
             if (replaceSpace) {
                 link = link.replace(" ", "%20");
             }
