@@ -90,9 +90,59 @@ public class BufferedHandler extends Handler {
                     continue;
                 }
                 String formattedMessage = formatter.format(record);
+                formattedMessage = buildLinks(formattedMessage);
                 lines.add(formattedMessage);
             }
             return lines;
         }
+    }
+
+    private String buildLinks(String formattedMessage) {
+        String orig = formattedMessage;
+        int x = 0;
+        int t = 0;
+        while (x >= 0) {
+            x = formattedMessage.toLowerCase().indexOf("http", x + 1);
+            t++;
+            if (t > 100) {
+                // Something is wrong here.
+                return orig;
+            }
+            if (x >= 0) {
+                int sx = formattedMessage.indexOf(" ", x);
+                if (sx < x) {
+                    sx = formattedMessage.indexOf(",", x);
+                }
+                if (sx < x) {
+                    sx = formattedMessage.indexOf("'", x);
+                }
+                if (sx < x) {
+                    sx = formattedMessage.indexOf("\n", x);
+                }
+                if (sx < 0) {
+                    sx = formattedMessage.length();
+                }
+                if (x > 0 && sx > x) {
+                    sx = sx - 1;
+                    String url = formattedMessage.substring(x, sx);
+                    System.err.println("FOUND URL (" + x + " to " + sx + "): "
+                        + url);
+                    System.out.println("IN: " + formattedMessage);
+                    int len = formattedMessage.length();
+                    formattedMessage = formattedMessage.substring(0, x)
+                        + "<a target='_blank' href='"
+                        + url
+                        + "'>"
+                        + url
+                        + "</a>"
+                        + formattedMessage.substring(sx,
+                            formattedMessage.length());
+
+                    len = formattedMessage.length() - len;
+                    x += len;
+                }
+            }
+        }
+        return formattedMessage;
     }
 }
