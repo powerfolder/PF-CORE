@@ -641,9 +641,8 @@ public class FileUtils {
                         powerFolderFile = new File(
                             WinUtils.getProgramInstallationPath(), exeName);
 
-                        log.warning("Could not find "
-                            + powerFolderFile.getName() + " at "
-                            + powerFolderFile.getAbsolutePath());
+                        log.info("Could not find " + powerFolderFile.getName()
+                            + " at " + powerFolderFile.getAbsolutePath());
                         return;
                     }
                 }
