@@ -311,7 +311,7 @@ public enum ConfigurationEntry {
     /**
      * #2401: If the login/usernames are Email addresses.
      */
-    SERVER_USERNAME_IS_EMAIL("server.username.isemail", false),
+    SERVER_USERNAME_IS_EMAIL("server.username.isemail", true),
 
     /**
      * Username for connection
