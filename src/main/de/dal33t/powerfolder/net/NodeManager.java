@@ -1368,7 +1368,7 @@ public class NodeManager extends PFComponent {
             NodeList nodeList = new NodeList();
             nodeList.load(nodesFile);
 
-            logInfo("Loaded " + nodeList.getNodeList().size() + " nodes from "
+            logFine("Loaded " + nodeList.getNodeList().size() + " nodes from "
                 + nodesFile.getAbsolutePath());
             queueNewNodes(nodeList.getNodeList().toArray(
                 new MemberInfo[nodeList.getNodeList().size()]));
