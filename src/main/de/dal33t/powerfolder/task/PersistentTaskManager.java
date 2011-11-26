@@ -82,7 +82,7 @@ public class PersistentTaskManager extends PFComponent {
         pendingTasks = new Vector<PersistentTask>();
         File taskfile = getTaskFile();
         if (taskfile.exists()) {
-            logInfo("Loading taskfile");
+            logFine("Loading taskfile: " + taskfile);
             ObjectInputStream oin = null;
             try {
                 oin = new ObjectInputStream(new FileInputStream(taskfile));
