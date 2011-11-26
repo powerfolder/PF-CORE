@@ -125,9 +125,6 @@ public class BufferedHandler extends Handler {
                 if (x > 0 && sx > x) {
                     sx = sx - 1;
                     String url = formattedMessage.substring(x, sx);
-                    System.err.println("FOUND URL (" + x + " to " + sx + "): "
-                        + url);
-                    System.out.println("IN: " + formattedMessage);
                     int len = formattedMessage.length();
                     formattedMessage = formattedMessage.substring(0, x)
                         + "<a target='_blank' href='"
