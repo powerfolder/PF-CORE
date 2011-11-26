@@ -84,6 +84,14 @@ public class ProUtil {
     }
 
     /**
+     * @return true if the server version is running.
+     */
+    public static final boolean isRunningServerVersion() {
+        return Util.class.getClassLoader().getResourceAsStream(
+            "de/dal33t/powerfolder/ConfigurationServerEntry.class") != null;
+    }
+
+    /**
      * @param controller
      * @return true if running a trial or non-registered version.
      */
