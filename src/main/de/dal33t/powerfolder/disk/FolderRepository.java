@@ -891,8 +891,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Fire event
         fireFolderCreated(folder);
 
-        logInfo("Joined folder " + folderInfo.name + ", local copy at '"
-            + folderSettings.getLocalBaseDir() + '\'');
+        logInfo("Setup folder " + folderInfo.name + " at "
+            + folderSettings.getLocalBaseDir());
 
         removeFromRemovedFolderDirectories(folder);
 
