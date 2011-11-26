@@ -130,7 +130,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
         logInfo("Listening for incoming connections on port "
             + serverSocket.getLocalPort()
-            + (myDyndns != null ? ", own dyndns address: " + myDyndns : ""));
+            + (myDyndns != null ? ", own address: " + myDyndns : ""));
         // Force correct port setting
         port = serverSocket.getLocalPort();
     }
@@ -240,7 +240,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                         CANNOT_RESOLVE, myDyndns.getHostName());
                 }
 
-                logWarning("Unable to resolve own dyndns address '" + newDns
+                logWarning("Unable to resolve own address '" + newDns
                     + "'");
                 myDyndns = null;
                 return CANNOT_RESOLVE;
@@ -285,8 +285,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 if (!checkOK) {
                     getController().getDynDnsManager().close();
 
-                    logWarning("Own dyndns address " + newDns
-                        + " does not match any of the local network intergaces");
+                    logWarning("Own address " + newDns
+                        + " does not match any of the local network interfaces");
                     return VALIDATION_FAILED;
                 }
 
@@ -307,7 +307,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 if (!dyndnsMatchesExternalIP && !dyndnsMatchesLastUpdatedIP) {
                     // getController().getDynDnsManager().showWarningMsg(
                     // VALIDATION_FAILED, myDyndns.getHostName());
-                    logWarning("Own dyndns address " + newDns
+                    logWarning("Own address " + newDns
                         + " does not match the external IP of this host");
                     return VALIDATION_FAILED;
                 }
