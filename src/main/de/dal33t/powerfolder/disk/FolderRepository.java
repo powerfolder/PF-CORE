@@ -873,7 +873,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             metaFolder.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
             metaFolder.recommendScanOnNextMaintenance(true);
         }
-        logInfo("Created metaFolder " + metaFolderInfo.name
+        logFine("Created metaFolder " + metaFolderInfo.name
             + ", local copy at '" + metaFolderSettings.getLocalBaseDir() + '\'');
 
         // Synchronize folder memberships
