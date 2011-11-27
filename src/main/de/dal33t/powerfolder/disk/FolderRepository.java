@@ -1324,7 +1324,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             FolderSettings fs = new FolderSettings(file,
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
                 ArchiveMode.FULL_BACKUP,
-                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                     .getValueInt(controller));
             Folder folder = createFolder(fi, fs);
 
@@ -1441,7 +1441,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
             invitation.getSuggestedSyncProfile(), false,
             ArchiveMode.FULL_BACKUP,
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
         createFolder(invitation.folder, folderSettings);
         return true;
@@ -1592,7 +1592,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 FolderSettings settings = new FolderSettings(
                     suggestedLocalBase, profile, false,
                     ArchiveMode.FULL_BACKUP,
-                    ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                    ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()));
 
                 createFolder0(folderInfo, settings, true);
@@ -1645,7 +1645,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Delete any file archives over a specified age.
      */
     public void cleanupOldArchiveFiles() {
-        int period = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS
+        int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
         if (period == Integer.MAX_VALUE || period <= 0) { // cleanup := never
             return;
