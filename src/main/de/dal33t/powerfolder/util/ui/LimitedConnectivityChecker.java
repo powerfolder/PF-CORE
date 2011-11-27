@@ -168,10 +168,10 @@ public class LimitedConnectivityChecker {
             controller.setLimitedConnectivity(nowLimited);
 
             if (nowLimited) {
-                log.warning("Limited connectivity detected ("
-                    + checker.getHost() + ':' + checker.getPort() + ')');
+                log.warning("Unable to connect from the Internet to "
+                    + checker.getHost() + ':' + checker.getPort());
             } else {
-                log.info("Connectivity is good (not limited)");
+                log.info("Connectivity is good");
             }
 
             setSupernodeState(nowLimited);
