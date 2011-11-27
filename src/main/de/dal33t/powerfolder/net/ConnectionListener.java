@@ -214,10 +214,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
         } else {
             if (myDyndns != null && myDyndns.getHostName().equals(newDns)) {
                 // Not restetting supernode state
-                logWarning("Not resetting supernode state");
+                logFine("Not resetting supernode state");
                 return OK;
             }
-            logInfo("Resetting supernode state");
+            logFine("Resetting supernode state");
         }
 
         // Reset my setting
