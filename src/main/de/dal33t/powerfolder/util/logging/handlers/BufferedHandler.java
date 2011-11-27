@@ -75,6 +75,10 @@ public class BufferedHandler extends Handler {
     }
 
     // API ********************************************************************
+    
+    public void clear() {
+        logRecords.clear();
+    }
 
     public List<String> getFormattedLogLines(int nSize, Formatter formatter,
         Level level)

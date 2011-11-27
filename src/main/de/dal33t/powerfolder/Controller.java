@@ -432,7 +432,6 @@ public class Controller extends PFComponent {
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
-        logInfo("PowerFolder v" + PROGRAM_VERSION);
         logFine("OS: " + System.getProperty("os.name") + " (" + arch + ')');
         logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
@@ -460,7 +459,8 @@ public class Controller extends PFComponent {
 
         // Initialize branding/preconfiguration of the client
         initDistribution();
-        logInfo("Build time: " + getBuildTime());
+        logFine("Build time: " + getBuildTime());
+        logInfo("PowerFolder v" + PROGRAM_VERSION);
 
         Debug.writeSystemProperties();
 
@@ -780,6 +780,8 @@ public class Controller extends PFComponent {
         // Enable debug reports.
         debugReports = ConfigurationEntry.DEBUG_REPORTS
             .getValueBoolean(getController());
+        
+        LoggingManager.clearBuffer();
     }
 
     /**

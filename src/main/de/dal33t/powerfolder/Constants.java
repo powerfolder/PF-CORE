@@ -184,7 +184,7 @@ public class Constants {
      * the number of seconds (aprox) of delay till the connection is tested and
      * a warning may be displayed.
      */
-    public static final long LIMITED_CONNECTIVITY_CHECK_DELAY = 180;
+    public static final long LIMITED_CONNECTIVITY_CHECK_DELAY = 1;
 
     /**
      * The delay before checking for unsynchronized folders

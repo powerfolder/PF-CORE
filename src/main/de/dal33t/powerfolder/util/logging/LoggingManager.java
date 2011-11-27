@@ -107,7 +107,7 @@ public class LoggingManager {
                 .startsWith("com.mchange"))
                 && record.getLevel().intValue() > Level.FINE.intValue())
             {
-                if (record.getLevel() == Level.INFO) {                    
+                if (record.getLevel() == Level.INFO) {
                     record.setLevel(Level.FINE);
                 }
                 return true;
@@ -212,6 +212,12 @@ public class LoggingManager {
         bufferedHandler.setLevel(level);
 
         setMinimumBaseLoggingLevel();
+    }
+
+    public static void clearBuffer() {
+        if (bufferedHandler != null) {
+            bufferedHandler.clear();
+        }
     }
 
     /**
