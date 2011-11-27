@@ -211,7 +211,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     syncProfile, saveLocalInvite,
                     ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
                         .getValue(getController())), previewFolder, null,
-                    ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                    ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()), true);
                 configurations.put(folderInfo, folderSettings);
             }
