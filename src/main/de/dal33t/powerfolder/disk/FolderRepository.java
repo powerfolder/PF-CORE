@@ -496,6 +496,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         }
+        logInfo("Loaded " + getFoldersCount() + " folders");
     }
 
     /**
@@ -891,8 +892,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Fire event
         fireFolderCreated(folder);
 
-        logInfo("Setup folder " + folderInfo.name + " at "
-            + folderSettings.getLocalBaseDir());
+        if (saveConfig) {
+            logInfo("Setup folder " + folderInfo.name + " at "
+                + folderSettings.getLocalBaseDir());
+        } else {
+            logFine("Setup folder " + folderInfo.name + " at "
+                + folderSettings.getLocalBaseDir());
+        }
 
         removeFromRemovedFolderDirectories(folder);
 
