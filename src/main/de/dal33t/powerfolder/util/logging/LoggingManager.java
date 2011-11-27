@@ -107,6 +107,9 @@ public class LoggingManager {
                 .startsWith("com.mchange"))
                 && record.getLevel().intValue() > Level.FINE.intValue())
             {
+                if (record.getLevel() == Level.INFO) {                    
+                    record.setLevel(Level.FINE);
+                }
                 return true;
             }
             return loggerName.startsWith("de.dal33t")
