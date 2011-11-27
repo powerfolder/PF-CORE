@@ -337,7 +337,7 @@ public class FolderSettings {
     }
 
     public static FolderSettings load(Controller c, String entryId) {
-        int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+        int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
             .getValueInt(c);
         return load(c.getConfig(), entryId, defaultVersions, true);
     }
