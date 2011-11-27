@@ -175,7 +175,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         archiveModeSelectorPanel.setArchiveMode(ArchiveMode
             .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
                 .getValue(getController())),
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
         PropertyChangeListener listener = new MyPropertyChangeListener();
         modeModel.addValueChangeListener(listener);
