@@ -235,37 +235,31 @@ public class WinUtils extends Loggable {
     }
 
     /**
-     * It returns the default location when windows installs programs.
-     * 
-     * @return the path
-     */
-    public static File getProgramsPath() {
-        String envEntry = OSUtil.is64BitPlatform()
-            ? "ProgramFiles(x86)"
-            : "PROGRAMFILES";
-        String programFiles = System.getenv(envEntry);
-        if (StringUtils.isBlank(programFiles)) {
-            return null;
-        }
-        return new File(programFiles);
-    }
-
-    /**
      * It returns the default location where the PowerFolder installer installs
      * the program.
      * 
      * @return the path on a Windows installation or null if unable to resolve.
      */
     public static File getProgramInstallationPath() {
-        String envEntry = OSUtil.is64BitPlatform()
-            ? "ProgramFiles(x86)"
-            : "PROGRAMFILES";
-        String programFiles = System.getenv(envEntry);
+        String programFiles = System.getenv("PROGRAMFILES");
         if (StringUtils.isBlank(programFiles)) {
-            LOG.severe("Unable to update Windows installation of PowerFolder. Program files directory not found");
+            LOG.warning("Unable find installation path. Program files directory not found");
             return null;
         }
-        return new File(programFiles + "/PowerFolder.com/PowerFolder");
+        File f = new File(programFiles + "/PowerFolder.com/PowerFolder");
+        if (f.exists()) {
+            return f;
+        }
+        // Try harder
+        try {
+            f = new File("").getCanonicalFile();
+            if (f.exists()) {
+                return f;
+            }
+        } catch (IOException e) {
+        }
+        LOG.warning("Unable find installation path. Program files directory not found");
+        return null;
     }
 
     /**
