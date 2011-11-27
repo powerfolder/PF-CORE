@@ -113,6 +113,12 @@ public class BufferedHandler extends Handler {
                 return orig;
             }
             if (x >= 0) {
+                if (formattedMessage.charAt(x - 1) == '\''
+                    || formattedMessage.charAt(x - 1) == '"')
+                {
+                    x++;
+                    continue;
+                }
                 int sx = formattedMessage.indexOf(" ", x);
                 if (sx < x) {
                     sx = formattedMessage.indexOf(",", x);
