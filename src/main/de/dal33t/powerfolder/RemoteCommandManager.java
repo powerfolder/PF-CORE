@@ -252,7 +252,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     public void run() {
-        log.info("Listening for remote commands on port "
+        log.fine("Listening for remote commands on port "
             + serverSocket.getLocalPort());
         while (!Thread.currentThread().isInterrupted()) {
             Socket socket;
