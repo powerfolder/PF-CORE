@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.41 $
  */
 public class ConnectionListener extends PFComponent implements Runnable {
-    // 
+    //
     // constants
     //
     public static final int DEFAULT_PORT = 1337;
@@ -123,7 +123,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             }
             serverSocket = new ServerSocket(port,
                 Constants.MAX_INCOMING_CONNECTIONS, bAddress);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ConnectionException(Translation.getTranslation(
                 "dialog.unable_to_open_port", port + ""), e);
         }
@@ -230,20 +230,23 @@ public class ConnectionListener extends PFComponent implements Runnable {
             // parses the string in case it contains http://
             newDns = parseString(newDns).trim();
 
-            myDyndns = new InetSocketAddress(newDns, port);
+            try {
+                myDyndns = new InetSocketAddress(newDns, port);
+                if (myDyndns.isUnresolved()) {
+                    if (validate) {
+                        getController().getDynDnsManager().close();
+                        getController().getDynDnsManager().showWarningMsg(
+                            CANNOT_RESOLVE, myDyndns.getHostName());
+                    }
 
-            if (myDyndns.isUnresolved()) {
-
-                if (validate) {
-                    getController().getDynDnsManager().close();
-                    getController().getDynDnsManager().showWarningMsg(
-                        CANNOT_RESOLVE, myDyndns.getHostName());
+                    logWarning("Unable to resolve own address '" + newDns + "'");
+                    myDyndns = null;
+                    return CANNOT_RESOLVE;
                 }
-
-                logWarning("Unable to resolve own address '" + newDns
-                    + "'");
+            } catch (Exception e) {
+                logWarning("Unable to get hostname: " + newDns + ":" + port
+                    + ". " + e);
                 myDyndns = null;
-                return CANNOT_RESOLVE;
             }
 
             if (validate) {
