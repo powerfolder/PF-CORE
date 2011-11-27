@@ -220,7 +220,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         archiveModeSelectorPanel.setArchiveMode(ArchiveMode
             .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
                 .getValue(getController())),
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
 
         archiveCleanupCombo = new JComboBox();
@@ -234,7 +234,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.archive_cleanup_year")); // 365
         archiveCleanupCombo.addItem(Translation
             .getTranslation("preferences.dialog.archive_cleanup_never")); // 2147483647
-        int cleanup = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS
+        int cleanup = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
         switch (cleanup) {
             case 1 :
@@ -251,6 +251,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 archiveCleanupCombo.setSelectedIndex(3);
                 break;
             case Integer.MAX_VALUE :
+                archiveCleanupCombo.setSelectedIndex(4);
+                break;
+            case 0 :
                 archiveCleanupCombo.setSelectedIndex(4);
                 break;
         }
@@ -449,25 +452,25 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         int index = archiveCleanupCombo.getSelectedIndex();
         switch (index) {
             case 0 : // 1 day
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.setValue(
                     getController(), 1);
                 break;
             case 1 : // 1 week
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.setValue(
                     getController(), 7);
                 break;
             case 2 : // 1 month
             default :
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.setValue(
                     getController(), 31);
                 break;
             case 3 : // 1 year
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.setValue(
                     getController(), 365);
                 break;
             case 4 : // never
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
-                    getController(), Integer.MAX_VALUE);
+                ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.setValue(
+                    getController(), 0);
                 break;
         }
 
@@ -488,7 +491,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         try {
             ConfigurationEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
                 ((ArchiveMode) modeModel.getValue()).name());
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.setValue(
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.setValue(
                 getController(), versionModel.getValue().toString());
         } catch (Exception e) {
             logWarning("Unable to store archive settings: " + e);
