@@ -72,7 +72,7 @@ public enum ConfigurationEntry {
      * TRAC #2028
      */
     KILL_RUNNING_INSTANCE("kill.running.instance", false),
-    
+
     /**
      * #2425: Sync and exit after connect to server.
      */
@@ -236,9 +236,9 @@ public enum ConfigurationEntry {
      * established
      */
     SERVER_CONFIG_UPDATE("server.config.update", true),
-    
+
     // Server WEB settings ****************************************************
-    
+
     /**
      * #2448: Option to disable Web access
      */
@@ -335,7 +335,7 @@ public enum ConfigurationEntry {
      */
     SERVER_CONNECT_CHANGE_LOGIN_ALLOWED("server.connect.changelogin.allowed",
         true),
-        
+
     /**
      * #2338: Always connect to server, even in LAN only mode
      */
@@ -410,7 +410,7 @@ public enum ConfigurationEntry {
      * The TCP/IP socket buffer size limit for UDT connections in LAN.
      */
     NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", 1024 * 1024),
-    
+
     /**
      * Auto detect WAN speeds
      */
@@ -816,11 +816,17 @@ public enum ConfigurationEntry {
     /** Online storage only client. */
     BACKUP_ONLY_CLIENT("backup.only.client", false),
 
-    /** The number of file versions to use when creating a new folder. */
-    DEFAULT_ARCHIVE_VERIONS("default.archive.versions", 5),
-
     /** The archive mode to use when creating a new folder. */
     DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name()),
+
+    /** The number of file versions to use when creating a new folder. */
+    DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 5),
+
+    /**
+     * How many days before an archive file is cleaned up. Values 1, 7, 31, 365,
+     * 0 (== never)
+     */
+    DEFAULT_ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 0),
 
     /**
      * #2132: This transfer mode will be recommend by default.
@@ -836,16 +842,9 @@ public enum ConfigurationEntry {
      */
     AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", false),
 
-    /**
-     * How many days before an archive file is cleaned up. Values 1, 7, 31, 365,
-     * 2147483647 (== never)
-     */
-    ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 31),
-
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
 
     REMOVED_FOLDER_FILES("removed.folder.files", "");
-
 
     // Methods/Constructors ***************************************************
 
