@@ -108,7 +108,7 @@ public class NewFolderAction extends BaseAction {
                     item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
                     item.setFolderInfo(fi);
                     item.setArchiveHistory(
-                            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
+                            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(
                                     getController()));
                     item.setArchiveMode(ArchiveMode.FULL_BACKUP);
                     folderCreateItems.add(item);
