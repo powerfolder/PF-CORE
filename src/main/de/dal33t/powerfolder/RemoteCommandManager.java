@@ -541,7 +541,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 createInvitationFile,
                 ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
                     .getValue(getController())), false, dlScript,
-                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                     .getValueInt(getController()), true);
             repo.createFolder(foInfo, settings);
             if (backupByServer) {
