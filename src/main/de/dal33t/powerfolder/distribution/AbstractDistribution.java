@@ -43,6 +43,9 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 public abstract class AbstractDistribution extends Loggable implements
     Distribution
 {
+    private static final String[] POWERFOLDER_DISTRIBUTIONS = {
+        PowerFolderPro.class.getName(), PowerFolderBasic.class.getName(),
+        "de.dal33t.powerfolder.distribution.PowerFolderGeneric"};
     private static final String DEFAULT_CONFIG_FILENAME = "Default.config";
 
     private Controller controller;
@@ -96,6 +99,18 @@ public abstract class AbstractDistribution extends Loggable implements
             return true;
         }
         return false;
+    }
+
+    /**
+     * @return true if this client is a branded client (non PowerFolder)
+     */
+    public boolean isBrandedClient() {
+        for (String className : POWERFOLDER_DISTRIBUTIONS) {
+            if (className.equals(getClass().getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -184,7 +199,8 @@ public abstract class AbstractDistribution extends Loggable implements
      * C:\Users\sprajc\myDir.
      * 
      * @param c
-     * @param myDir e.g. "MySierraCloud"
+     * @param myDir
+     *            e.g. "MySierraCloud"
      */
     protected static final void setFoldersBaseDirName(Controller c, String myDir)
     {

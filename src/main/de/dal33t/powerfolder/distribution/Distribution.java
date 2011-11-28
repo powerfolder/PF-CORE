@@ -51,6 +51,11 @@ public interface Distribution {
     void init(Controller controller);
 
     /**
+     * @return true if this client is a branded client (non PowerFolder)
+     */
+    public boolean isBrandedClient();
+
+    /**
      * @return true if the credentials in the about box should be shown.
      */
     boolean showCredentials();
