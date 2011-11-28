@@ -136,7 +136,7 @@ public class LoginPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("40dlu, 3dlu, 80dlu, 40dlu, pref",
+        FormLayout layout = new FormLayout("50dlu, 3dlu, 80dlu, 40dlu, pref",
             "15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, pref, 20dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
