@@ -521,7 +521,7 @@ public class ServerClient extends PFComponent {
         return ConfigurationEntry.SERVER_REGISTER_ENABLED
             .getValueBoolean(getController());
     }
-    
+
     /**
      * Convenience method for getting register URL
      * 
@@ -1219,6 +1219,9 @@ public class ServerClient extends PFComponent {
     // General ****************************************************************
 
     public boolean showServerInfo() {
+        if (getController().getDistribution().isBrandedClient()) {
+            return false;
+        }
         boolean pfCom = AbstractDistribution
             .isPowerFolderServer(getController());
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
