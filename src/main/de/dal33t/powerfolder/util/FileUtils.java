@@ -842,6 +842,44 @@ public class FileUtils {
     }
 
     /**
+     * #2467: Encode URL in filename by substituting illegal chars with legal
+     * one.
+     * 
+     * @param url
+     * @return
+     */
+    public static String encodeURLinFilename(String url) {
+        url = url.replace("//", "=");
+        url = url.replace(":", ";");
+        return "$s$" + url + "$";
+    }
+
+    /**
+     * #2467: Decode URL from filename by substituting chars back.
+     * 
+     * @param filename
+     * @return the url
+     */
+    public static String decodeURLFromFilename(String filename) {
+        if (!filename.contains("$")) {
+            return null;
+        }
+
+        int start = filename.indexOf("$");
+        int endType = filename.indexOf("$", start + 1);
+        int endURL = filename.indexOf("$", endType + 1);
+        if (start < 0 || endType < 0 || endURL < 0) {
+            return null;
+        }
+
+        String url = filename.substring(endType + 1, endURL);
+
+        url = url.replace("=", "//");
+        url = url.replace(";", ":");
+        return url;
+    }
+
+    /**
      * Searches and takes care that this directory is new and not yet existing.
      * If dir already exists with the same raw name it appends (1), (2), and so
      * on until it finds an non-existing sub directory. DOES NOT try to remove
@@ -1020,7 +1058,7 @@ public class FileUtils {
         if (filePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR)) {
             return false;
         }
-        
+
         if (filePath.endsWith("Icon\r")) {
             return false;
         }
