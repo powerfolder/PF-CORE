@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +44,7 @@ import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
  * @version $Revision$
  */
 public class ConfigurationLoader {
+    private static final String INITIAL_STARTUP_CONFIG_FILENAME = "initial_startup.config";
     public static final String DEFAULT_CONFIG_FILENAME = "Default.config";
     private static final String DEFAULT_PROPERTIES_URI = "/client_deployment/"
         + DEFAULT_CONFIG_FILENAME;
@@ -145,6 +148,56 @@ public class ConfigurationLoader {
             LOG.log(Level.SEVERE, "Unable to reload configuration: " + clr
                 + ". " + e, e);
         }
+    }
+
+    /**
+     * #2467: Set server URL via command line option in installer
+     * 
+     * @param controller
+     * @return
+     */
+    public static boolean loadAndMergeFromInstaller(Controller controller) {
+        String tempStr = System.getProperty("java.io.tmpdir");
+        File initFile = new File(new File(tempStr),
+            INITIAL_STARTUP_CONFIG_FILENAME);
+        if (!initFile.exists()) {
+            return false;
+        }
+        FileInputStream in = null;
+        String url = "";
+        boolean delete = false;
+        try {
+            in = new FileInputStream(initFile);
+            byte[] buf = StreamUtils.readIntoByteArray(in);
+            String contents = new String(buf, Convert.UTF8);
+            url = FileUtils.decodeURLFromFilename(contents);
+            if (StringUtils.isBlank(url)) {
+                return false;
+            }
+            Properties preConfig = loadPreConfiguration(url);
+            if (preConfig == null) {
+                return false;
+            }
+            int i = merge(preConfig, controller);
+            LOG.info("Merged " + i + " configs from initial startup file");
+            delete = true;
+            return true;
+        } catch (Exception e) {
+            LOG.warning("Unable to read configuration " + initFile + " / "
+                + url + ". " + e);
+            return false;
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
+            }
+            if (delete && !initFile.delete()) {
+                LOG.fine("Unable to deleted file " + initFile);
+            }
+        }
+
     }
 
     /**
@@ -259,6 +312,19 @@ public class ConfigurationLoader {
             } catch (Exception e) {
             }
         }
+    }
+
+    public static int merge(Properties preConfig, Controller controller) {
+        boolean overWrite = overwriteConfigEntries(preConfig);
+        if (dropFolderSettings(preConfig)) {
+            Set<String> entryIds = FolderSettings.loadEntryIds(controller
+                .getConfig());
+            for (String entryId : entryIds) {
+                FolderSettings.removeEntries(controller.getConfig(), entryId);
+            }
+        }
+        return merge(preConfig, controller.getConfig(),
+            controller.getPreferences(), overWrite);
     }
 
     /**
