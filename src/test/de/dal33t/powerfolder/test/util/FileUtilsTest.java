@@ -31,6 +31,14 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class FileUtilsTest extends TestCase {
 
+    public void testURLEncoding() {
+        String filename = "PowerFolder.exe";
+        String url = "https://www.my-server.com:8822";
+        filename = "PowerFolder" + FileUtils.encodeURLinFilename(url) + ".exe";
+        String actual = FileUtils.decodeURLFromFilename(filename);
+        assertEquals(url, actual);
+    }
+
     public void testZipFile() throws IOException {
         byte[] b = new byte[1024 * 1024 * 3];
         for (int i = 0; i < 1024 * 100; i++) {
@@ -429,8 +437,8 @@ public class FileUtilsTest extends TestCase {
                     currentSubDir = currentSubDir.getParentFile();
                 } else if (Math.random() > 0.95) {
                     // Go one directory up
-                    File subDirCanidate = new File(currentSubDir, TestHelper
-                        .createRandomFilename());
+                    File subDirCanidate = new File(currentSubDir,
+                        TestHelper.createRandomFilename());
                     // System.err.println("Moving down to "
                     // + currentSubDir.getAbsoluteFile());
                     if (!subDirCanidate.isFile()) {
