@@ -137,7 +137,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.0.25"; // 3.5.52
+    public static final String PROGRAM_VERSION = "5.0.25 - 3.5.53"; // 3.5.53
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -450,6 +450,7 @@ public class Controller extends PFComponent {
 
         // #2179: Load from server. How to handle timeouts?
         ConfigurationLoader.loadAndMergeConfigURL(this);
+        ConfigurationLoader.loadAndMergeFromInstaller(this);
 
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);
