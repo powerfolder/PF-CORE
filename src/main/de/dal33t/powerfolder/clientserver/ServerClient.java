@@ -986,34 +986,40 @@ public class ServerClient extends PFComponent {
         }
         Runnable retriever = new Runnable() {
             public void run() {
-                if (!isConnected()) {
-                    return;
-                }
-                Collection<FolderInfo> infos = getController()
-                    .getFolderRepository().getJoinedFolderInfos();
-                FolderInfo[] folders = infos.toArray(new FolderInfo[infos
-                    .size()]);
-                Collection<MemberInfo> servers = getFolderService()
-                    .getHostingServers(folders);
-                logFine("Got " + servers.size() + " servers for our "
-                    + folders.length + " folders: " + servers);
-                for (MemberInfo serverMInfo : servers) {
-                    Member hostingServer = serverMInfo.getNode(getController(),
-                        true);
-                    hostingServer.setServer(true);
-                    listenerSupport
-                        .nodeServerStatusChanged(new ServerClientEvent(
-                            ServerClient.this, hostingServer));
+                try {
 
-                    if (hostingServer.isConnected()
-                        || hostingServer.isConnecting()
-                        || hostingServer.equals(server))
-                    {
-                        // Already connected / reconnecting
-                        continue;
+                    if (!isConnected()) {
+                        return;
                     }
-                    // Connect now
-                    hostingServer.markForImmediateConnect();
+                    Collection<FolderInfo> infos = getController()
+                        .getFolderRepository().getJoinedFolderInfos();
+                    FolderInfo[] folders = infos.toArray(new FolderInfo[infos
+                        .size()]);
+                    Collection<MemberInfo> servers = getFolderService()
+                        .getHostingServers(folders);
+                    logFine("Got " + servers.size() + " servers for our "
+                        + folders.length + " folders: " + servers);
+                    for (MemberInfo serverMInfo : servers) {
+                        Member hostingServer = serverMInfo.getNode(
+                            getController(), true);
+                        hostingServer.setServer(true);
+                        listenerSupport
+                            .nodeServerStatusChanged(new ServerClientEvent(
+                                ServerClient.this, hostingServer));
+
+                        if (hostingServer.isConnected()
+                            || hostingServer.isConnecting()
+                            || hostingServer.equals(server))
+                        {
+                            // Already connected / reconnecting
+                            continue;
+                        }
+                        // Connect now
+                        hostingServer.markForImmediateConnect();
+                    }
+                } catch (Exception e) {
+                    logWarning("Unable to retrieve hosting servers of folders."
+                        + e);
                 }
             }
         };
