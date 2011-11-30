@@ -583,6 +583,22 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         });
     }
 
+    private void updateSilentMode() {
+        if (getController().isSilentMode()) {
+            sleepButton.setIcon(Icons.getIconById(Icons.RUN));
+            sleepButton.setToolTipText(Translation
+                .getTranslation("status_bar.no_sleep.tips"));
+        } else {
+            sleepButton.setIcon(Icons.getIconById(Icons.PAUSE));
+            sleepButton.setToolTipText(Translation
+                .getTranslation("status_bar.sleep.tips"));
+        }
+    }
+
+    // ////////////////
+    // Inner Classes //
+    // ////////////////
+
     private class MyNodeListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
             updateConnectionLabels();
@@ -749,18 +765,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     updateSilentMode();
                 }
             });
-        }
-    }
-
-    private void updateSilentMode() {
-        if (getController().isSilentMode()) {
-            sleepButton.setIcon(Icons.getIconById(Icons.RUN));
-            sleepButton.setToolTipText(Translation
-                .getTranslation("status_bar.no_sleep.tips"));
-        } else {
-            sleepButton.setIcon(Icons.getIconById(Icons.PAUSE));
-            sleepButton.setToolTipText(Translation
-                .getTranslation("status_bar.sleep.tips"));
         }
     }
 

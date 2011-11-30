@@ -34,6 +34,8 @@ import java.awt.event.WindowFocusListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -90,6 +92,8 @@ public class MainFrame extends PFUIComponent {
     private JSplitPane split;
     private final AtomicBoolean compactModeActive = new AtomicBoolean();
     private JButton uncompactModeButton;
+    private JLabel pauseResumeLabel;
+    private JButton pauseResumeButton;
 
     /**
      * The status bar on the lower edge of the main frame.
@@ -114,16 +118,24 @@ public class MainFrame extends PFUIComponent {
     private void configureUiCompact() {
 
         FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
-            "pref");
+            "pref, 3dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
 
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(Translation.getTranslation("general.application.name")), cc.xy(1, 1));
-        builder.add(uncompactModeButton, cc.xy(3, 1));
+        int row = 1;
+
+        builder.add(pauseResumeLabel, cc.xy(1, row));
+        builder.add(pauseResumeButton, cc.xy(3, row));
+
+        row += 2;
+
+        builder.add(new JLabel(Translation.getTranslation("main_frame.uncompact.text")), cc.xy(1, row));
+        builder.add(uncompactModeButton, cc.xy(3, row));
+
         uiComponent.getContentPane().removeAll();
-        uiComponent.setMinimumSize(new Dimension(20, 20));
+        uiComponent.setMinimumSize(new Dimension(40, 40));
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setExtendedState(Frame.NORMAL);
         uiComponent.pack();
@@ -256,6 +268,12 @@ public class MainFrame extends PFUIComponent {
                 Translation.getTranslation("main_frame.uncompact.tips"));
         uncompactModeButton.addActionListener(myActionListener);
 
+        pauseResumeButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
+                Translation.getTranslation("main_frame.pause.tips"));
+        pauseResumeButton.addActionListener(myActionListener);
+
+        pauseResumeLabel = new JLabel(Translation.getTranslation("main_frame.pause.text"));
+
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener(getController());
         uiComponent.addWindowListener(myWindowListener);
@@ -290,6 +308,11 @@ public class MainFrame extends PFUIComponent {
         inlineInfoCloseButton.setContentAreaFilled(false);
 
         inlineInfoLabel = new JLabel();
+
+        getController().addPropertyChangeListener(
+            Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
+        updateSilentMode();
+        
     }
 
     /**
@@ -783,6 +806,26 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private void updateSilentMode() {
+        if (getController().isSilentMode()) {
+            pauseResumeButton.setIcon(Icons.getIconById(Icons.RUN));
+            pauseResumeButton.setToolTipText(Translation.getTranslation(
+                    "main_frame.resume.tips"));
+            pauseResumeLabel.setText(Translation.getTranslation(
+                    "main_frame.resume.text"));
+        } else {
+            pauseResumeButton.setIcon(Icons.getIconById(Icons.PAUSE));
+            pauseResumeButton.setToolTipText(Translation.getTranslation(
+                    "main_frame.pause.tips"));
+            pauseResumeLabel.setText(Translation.getTranslation(
+                    "main_frame.pause.text"));
+        }
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
@@ -790,7 +833,21 @@ public class MainFrame extends PFUIComponent {
                 closeInlineInfoPanel();
             } else if (source == uncompactModeButton) {
                 getUIController().reconfigureForCompactMode(false);
+            } else if (source == pauseResumeButton) {
+                getController().setSilentMode(!getController().isSilentMode());
             }
+        }
+    }
+
+    private class MyValueChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            // Move into EDT. Property change event might be called from
+            // anywhere, not just from EDT.
+            UIUtil.invokeLaterInEDT(new Runnable() {
+                public void run() {
+                    updateSilentMode();
+                }
+            });
         }
     }
 }
