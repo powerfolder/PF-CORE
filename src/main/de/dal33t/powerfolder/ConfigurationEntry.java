@@ -707,7 +707,7 @@ public enum ConfigurationEntry {
 
     /**
      * The number of seconds to wait to recalc a {@link FolderStatistic} when a
-     * change to the folder happend. Applies to large folders only, that host
+     * change to the folder happened. Applies to large folders only, that host
      * more files than {@link FolderStatistic#MAX_ITEMS}
      */
     FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 30),
@@ -716,7 +716,7 @@ public enum ConfigurationEntry {
      * The maximum time powerfolder keeps the folder database dirty in memory
      * before writing it to disk in seconds.
      */
-    FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", 30),
+    FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", 60),
 
     /**
      * #2405: The delay for syncing after folderWatcher detects a change.
