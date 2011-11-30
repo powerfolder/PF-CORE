@@ -273,8 +273,8 @@ public class WinUtils extends Loggable {
             appDataname = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_APP_DATA, false);
         }
-        if (StringUtils.isBlank(appDataname)) {
-            LOG.warning("Unable to find APPDATA (current user) directory");
+        if (StringUtils.isBlank(appDataname) && OSUtil.isWindowsSystem()) {
+            LOG.severe("Unable to find APPDATA (current user) directory");
         }
         return appDataname;
     }
