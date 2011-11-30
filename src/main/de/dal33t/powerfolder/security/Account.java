@@ -215,7 +215,13 @@ public class Account implements Serializable {
                 continue;
             }
             if (p instanceof FolderPermission) {
-                revokeAllFolderPermission(((FolderPermission) p).getFolder());
+                FolderInfo foInfo = ((FolderPermission) p).getFolder();
+                revokeAllFolderPermission(foInfo);
+                if (foInfo.isMetaFolder()) {
+                    LOG.severe(this + ": Not allowed to grant permissions "
+                        + foInfo);
+                    continue;
+                }
             }
             permissions.add(p);
         }
