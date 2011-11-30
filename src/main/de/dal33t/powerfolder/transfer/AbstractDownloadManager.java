@@ -309,8 +309,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setTransferState(TransferState.VERIFYING);
         // logFine("Verifying file hash for " + this);
         try {
+            FilePartsRecord thisRemotePartRecord = remotePartRecord;
             byte[] tempFileHash = null;
-            if (remotePartRecord != null) {
+            if (thisRemotePartRecord != null) {
                 tempFileHash = FileUtils.digest(getTempFile(),
                     MessageDigest.getInstance("MD5"), new ProgressListener() {
                         public void progressReached(double percentageReached) {
@@ -322,15 +323,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             // If we don't have a record, no hashing was performed and the file
             // is assumed to be "valid"
             if (tempFileHash == null
-                || Arrays
-                    .equals(remotePartRecord.getFileDigest(), tempFileHash))
+                || Arrays.equals(thisRemotePartRecord.getFileDigest(),
+                    tempFileHash))
             {
                 return true;
             }
             logWarning("Checksum test FAILED on " + fileInfo.toDetailString()
                 + ". MD5 found: " + Base64.encodeBytes(tempFileHash)
                 + " expected: "
-                + Base64.encodeBytes(remotePartRecord.getFileDigest()));
+                + Base64.encodeBytes(thisRemotePartRecord.getFileDigest()));
             counter = new TransferCounter(0, fileInfo.getSize());
             // filePartsState.setPartState(Range.getRangeByLength(0,
             // filePartsState.getFileLength()), PartState.NEEDED);
