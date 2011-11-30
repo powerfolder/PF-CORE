@@ -67,12 +67,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -142,9 +137,9 @@ public class Controller extends PFComponent {
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
+     * @todo replace these with CoreListeners.
      */
     public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
-    public static final String PROPERTY_SILENT_MODE = "silentMode";
     public static final String PROPERTY_LIMITED_CONNECTIVITY = "limitedConnectivity";
 
     /** general wait time for all threads (5000 is a balanced value) */
@@ -304,6 +299,8 @@ public class Controller extends PFComponent {
      */
     private boolean limitedConnectivity;
 
+    private SilentModeListener silentModeListenerSupport;
+
     private Controller() {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
@@ -314,6 +311,9 @@ public class Controller extends PFComponent {
         askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
+        silentModeListenerSupport = ListenerSupportFactory
+            .createListenerSupport(SilentModeListener.class);
+
     }
 
     /**
@@ -1321,7 +1321,7 @@ public class Controller extends PFComponent {
      */
     public void setSilentMode(boolean newSilentMode) {
         boolean oldValue = silentMode;
-        this.silentMode = newSilentMode;
+        silentMode = newSilentMode;
         if (newSilentMode) {
             folderRepository.getFolderScanner().abortScan();
         }
@@ -1329,7 +1329,7 @@ public class Controller extends PFComponent {
             transferManager.updateSpeedLimits();
         }
         preferences.putBoolean("silentMode", newSilentMode);
-        firePropertyChange(PROPERTY_SILENT_MODE, oldValue, newSilentMode);
+        silentModeListenerSupport.setSilentMode(new SilentModeEvent(newSilentMode));
     }
 
     /**
@@ -1391,6 +1391,18 @@ public class Controller extends PFComponent {
         }
         return networkingMode;
     }
+
+    public void addSilentModeListener(SilentModeListener listener) {
+        ListenerSupportFactory.addListener(silentModeListenerSupport,
+                listener);
+    }
+
+    public void removeSilentModeListener(SilentModeListener listener)
+    {
+        ListenerSupportFactory.removeListener(silentModeListenerSupport,
+                listener);
+    }
+
 
     public void setNetworkingMode(NetworkingMode newMode) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {

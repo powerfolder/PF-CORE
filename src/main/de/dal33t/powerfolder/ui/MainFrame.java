@@ -34,8 +34,6 @@ import java.awt.event.WindowFocusListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -53,6 +51,8 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.SilentModeListener;
+import de.dal33t.powerfolder.event.SilentModeEvent;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -131,11 +131,12 @@ public class MainFrame extends PFUIComponent {
 
         row += 2;
 
-        builder.add(new JLabel(Translation.getTranslation("main_frame.uncompact.text")), cc.xy(1, row));
+        builder.add(new JLabel(Translation.getTranslation(
+                "main_frame.uncompact.text")), cc.xy(1, row));
         builder.add(uncompactModeButton, cc.xy(3, row));
 
         uiComponent.getContentPane().removeAll();
-        uiComponent.setMinimumSize(new Dimension(40, 40));
+        uiComponent.setMinimumSize(new Dimension(20, 20));
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setExtendedState(Frame.NORMAL);
         uiComponent.pack();
@@ -309,8 +310,7 @@ public class MainFrame extends PFUIComponent {
 
         inlineInfoLabel = new JLabel();
 
-        getController().addPropertyChangeListener(
-            Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
+        getController().addSilentModeListener(new MySilentModeListener());
         updateSilentMode();
         
     }
@@ -839,15 +839,13 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyValueChangeListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            // Move into EDT. Property change event might be called from
-            // anywhere, not just from EDT.
-            UIUtil.invokeLaterInEDT(new Runnable() {
-                public void run() {
-                    updateSilentMode();
-                }
-            });
+    private class MySilentModeListener implements SilentModeListener {
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void setSilentMode(SilentModeEvent event) {
+            updateSilentMode();
         }
     }
 }

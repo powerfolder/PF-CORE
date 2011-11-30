@@ -44,12 +44,7 @@ import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.ConnectionQuality;
@@ -227,8 +222,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             Translation.getTranslation("status_bar.sleep.tips"));
         sleepButton.addActionListener(listener);
 
-        getController().addPropertyChangeListener(
-            Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
+        getController().addSilentModeListener(new MySilentModeListener());
         updateSilentMode();
 
         // Behavior when the limited connecvitiy gets checked
@@ -772,6 +766,17 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         public void propertyChange(PropertyChangeEvent evt) {
             updateNewNoticesText();
+        }
+    }
+
+
+    private class MySilentModeListener implements SilentModeListener {
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void setSilentMode(SilentModeEvent event) {
+            updateSilentMode();
         }
     }
 
