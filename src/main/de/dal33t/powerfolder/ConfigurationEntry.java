@@ -331,6 +331,12 @@ public enum ConfigurationEntry {
         false),
 
     /**
+     * #2518
+     */
+    SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED(
+        "server.connect.rememberpassword.allowed", true),
+
+    /**
      * #2229: Disallow change of login
      */
     SERVER_CONNECT_CHANGE_LOGIN_ALLOWED("server.connect.changelogin.allowed",
