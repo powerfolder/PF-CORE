@@ -60,8 +60,8 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
-    private static final Logger LOG = Logger
-        .getLogger(LoginPanel.class.getName());
+    private static final Logger LOG = Logger.getLogger(LoginPanel.class
+        .getName());
 
     private ServerClient client;
     private boolean showUseOS;
@@ -87,8 +87,8 @@ public class LoginPanel extends PFWizardPanel {
      * @param showUseOS
      *            if the checkbox to use Online Storage should be displayed
      */
-    public LoginPanel(Controller controller,
-        WizardPanel nextPanel, boolean showUseOS)
+    public LoginPanel(Controller controller, WizardPanel nextPanel,
+        boolean showUseOS)
     {
         this(controller, controller.getOSClient(), nextPanel, showUseOS);
     }
@@ -200,6 +200,8 @@ public class LoginPanel extends PFWizardPanel {
     protected void initComponents() {
         boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
             .getValueBoolean(getController());
+        boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
+            .getValueBoolean(getController());
         serverLabel = new JLabel(Translation.getTranslation("general.server"));
         serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
         {
@@ -241,7 +243,8 @@ public class LoginPanel extends PFWizardPanel {
                 Translation
                     .getTranslation("wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
-        rememberPasswordBox.setEnabled(changeLoginAllowed);
+        rememberPasswordBox.setVisible(changeLoginAllowed
+            && rememberPasswordAllowed);
 
         useOSBox = BasicComponentFactory.createCheckBox(
             new BooleanNotConverter(getController().getUIController()
@@ -261,15 +264,20 @@ public class LoginPanel extends PFWizardPanel {
     }
 
     private void updateOnlineStatus() {
-        boolean enabled = client.isConnected();
-        usernameLabel.setVisible(enabled);
-        usernameField.setVisible(enabled);
-        passwordLabel.setVisible(enabled);
-        passwordField.setVisible(enabled);
+        boolean connected = client.isConnected();
+        boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+            .getValueBoolean(getController());
+        boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
+            .getValueBoolean(getController());
+        usernameLabel.setVisible(connected);
+        usernameField.setVisible(connected);
+        passwordLabel.setVisible(connected);
+        passwordField.setVisible(connected);
         // loginButton.setVisible(enabled);
-        rememberPasswordBox.setVisible(enabled);
-        connectingLabel.setVisible(!enabled);
-        workingBar.setVisible(!enabled);
+        rememberPasswordBox.setVisible(connected && changeLoginAllowed
+            && rememberPasswordAllowed);
+        connectingLabel.setVisible(!connected);
+        workingBar.setVisible(!connected);
 
         if (getController().getOSClient().showServerInfo()) {
             serverLabel.setVisible(true);
@@ -280,7 +288,7 @@ public class LoginPanel extends PFWizardPanel {
             serverInfoLabel.getUIComponent().setVisible(false);
         }
 
-        if (enabled) {
+        if (connected) {
             usernameLabel.requestFocus();
         }
         updateButtons();
@@ -320,10 +328,10 @@ public class LoginPanel extends PFWizardPanel {
             passwordField.setText(client.getPasswordClearText());
             updateOnlineStatus();
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
-        
+
         public void serverDisconnected(ServerClientEvent event) {
             updateOnlineStatus();
         }
