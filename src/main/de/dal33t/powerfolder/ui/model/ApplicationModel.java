@@ -28,6 +28,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
@@ -40,6 +41,7 @@ import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -258,6 +260,10 @@ public class ApplicationModel extends PFUIComponent {
         }
 
         public void serverConnected(ServerClientEvent event) {
+            ServerClient client = event.getClient();
+            if (client.isPasswordEmpty() && !client.isLoggedIn()) {
+                PFWizard.openLoginWizard(getController(), client);
+            }
         }
 
         public void serverDisconnected(ServerClientEvent event) {
