@@ -157,11 +157,16 @@ public class ConfigurationLoader {
      * @return
      */
     public static boolean loadAndMergeFromInstaller(Controller controller) {
-        String tempStr = System.getProperty("java.io.tmpdir");
-        File initFile = new File(new File(tempStr),
-            INITIAL_STARTUP_CONFIG_FILENAME);
+        String windir = System.getenv("WINDIR");
+        File tempDir = new File(new File(windir), "TEMP");
+        File initFile = new File(tempDir, INITIAL_STARTUP_CONFIG_FILENAME);
         if (!initFile.exists()) {
-            return false;
+            String tempStr = System.getProperty("java.io.tmpdir");
+            initFile = new File(new File(tempStr),
+                INITIAL_STARTUP_CONFIG_FILENAME);
+            if (!initFile.exists()) {
+                return false;
+            }
         }
         FileInputStream in = null;
         String url = "";
@@ -179,7 +184,11 @@ public class ConfigurationLoader {
                 return false;
             }
             int i = merge(preConfig, controller);
-            LOG.info("Merged " + i + " configs from initial startup file");
+            LOG.info("Startup " + i + " with server " + url);
+            if (i > 0) {
+                ConfigurationEntry.CONFIG_URL.setValue(controller, url);
+                controller.saveConfig();
+            }
             delete = true;
             return true;
         } catch (Exception e) {
