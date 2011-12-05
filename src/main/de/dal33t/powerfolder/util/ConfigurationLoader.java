@@ -159,7 +159,7 @@ public class ConfigurationLoader {
     public static boolean loadAndMergeFromInstaller(Controller controller) {
         File initFile = null;
         String windir = System.getenv("WINDIR");
-        if (!StringUtils.isNotBlank(windir)) {
+        if (StringUtils.isNotBlank(windir)) {
             File tempDir = new File(new File(windir), "TEMP");
             initFile = new File(tempDir, INITIAL_STARTUP_CONFIG_FILENAME);
         }
