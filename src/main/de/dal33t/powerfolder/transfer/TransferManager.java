@@ -1876,22 +1876,7 @@ public class TransferManager extends PFComponent {
         }
     }
 
-    // TODO Does all this "sources" management really belong to the
-    // TransferManager?
-
-    /**
-     * Finds the sources for the file. Returns only sources which are connected
-     * The members are sorted in order of best source.
-     * <p>
-     * WARNING: Versions of files are ingnored
-     * 
-     * @param fInfo
-     * @return the list of members, where the file is available
-     */
-    public List<Member> getSourcesFor(FileInfo fInfo) {
-        return getSourcesFor0(fInfo, false, true);
-    }
-
+  
     /**
      * Returns only sources which are connected and have "exactly" the given
      * FileInfo version.
@@ -1924,6 +1909,35 @@ public class TransferManager extends PFComponent {
             sources = Collections.emptyList();
         }
         return sources;
+    }
+    
+    // TODO Does all this "sources" management really belong to the
+    // TransferManager?
+
+    /**
+     * Finds the sources for the file. Returns only sources which are connected
+     * The members are sorted in order of best source.
+     * <p>
+     * WARNING: The result contains only sources having the same file versions.
+     * 
+     * @param fInfo
+     * @return the list of members, where the file is available
+     */
+    public List<Member> getSourcesFor(FileInfo fInfo) {
+        return getSourcesFor0(fInfo, false, true);
+    }
+    
+    /**
+     * Finds the sources for the file. Returns only sources which are connected
+     * The members are sorted in order of best source.
+     * <p>
+     * WARNING: Result contains sources with any file versions.
+     * 
+     * @param fInfo
+     * @return the list of members, where the file is available
+     */
+    public List<Member> getSourcesForAnyVersion(FileInfo fInfo) {
+        return getSourcesFor0(fInfo, false, false);
     }
 
     private List<Member> getSourcesWithFreeUploadCapacity(FileInfo fInfo) {

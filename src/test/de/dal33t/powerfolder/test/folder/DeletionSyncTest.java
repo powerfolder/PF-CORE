@@ -48,10 +48,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     protected void setUp() throws Exception {
         System.out.println("DeletionSyncTest.setUp()");
         super.setUp();
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
-            Integer.MAX_VALUE);
-        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
-            Integer.MAX_VALUE);
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerBart(), Integer.MAX_VALUE);
+        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerBart(), Integer.MAX_VALUE);
         connectBartAndLisa();
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
@@ -143,10 +143,11 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertTrue("" + getFolderAtBart().getFilesAsCollection(lisaAtBart),
             lisaAtBart.hasFile(testfInfoBart));
         assertTrue(lisaAtBart.isCompletelyConnected());
-        List<Member> sources = getContollerBart().getTransferManager()
-            .getSourcesFor(testfInfoBart);
+        Collection<Member> sources = getContollerBart().getTransferManager()
+            .getSourcesForAnyVersion(testfInfoBart);
         assertNotNull(sources);
-        assertEquals(1, sources.size());
+        assertEquals("No sources found for " + testfInfoBart.toDetailString(),
+            1, sources.size());
         // assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
         // .getRelativeFile(testfInfoBart).getVersion());
 
@@ -409,8 +410,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 List<FileInfo> versions = archiver
                     .getArchivedFilesInfos(fileAtLisa);
                 FileInfo inArchive = versions.get(0);
-                assertEquals(fileAtLisa.getRelativeName(), inArchive
-                    .getRelativeName());
+                assertEquals(fileAtLisa.getRelativeName(),
+                    inArchive.getRelativeName());
                 archiver.restore(versions.get(0), fileAtLisa
                     .getDiskFile(getContollerLisa().getFolderRepository()));
             }
@@ -422,13 +423,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         for (FileInfo fileAtLisa : getFolderAtLisa().getKnownFiles()) {
             assertFalse(fileAtLisa.isDeleted());
             assertEquals(2, fileAtLisa.getVersion());
-            assertEquals(getContollerLisa().getMySelf().getInfo(), fileAtLisa
-                .getModifiedBy());
+            assertEquals(getContollerLisa().getMySelf().getInfo(),
+                fileAtLisa.getModifiedBy());
             File file = getFolderAtLisa().getDiskFile(fileAtLisa);
             assertTrue(file.exists());
             assertEquals(fileAtLisa.getSize(), file.length());
-            assertEquals(fileAtLisa.getModifiedDate().getTime(), file
-                .lastModified());
+            assertEquals(fileAtLisa.getModifiedDate().getTime(),
+                file.lastModified());
         }
 
         TestHelper.waitForCondition(2, new ConditionWithMessage() {
@@ -600,8 +601,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         assertTrue(fBart.delete());
         scanFolder(getFolderAtBart());
-        TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
-            .getName(), new byte[0]);
+        TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
+            fBart.getName(), new byte[0]);
         scanFolder(getFolderAtBart());
         assertTrue(fBart.delete());
         scanFolder(getFolderAtBart());
@@ -627,7 +628,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertEquals(2, getFolderAtLisa().getKnownItemCount());
         }
 
-        TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
-            .getName(), new byte[0]);
+        TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
+            fBart.getName(), new byte[0]);
     }
 }
