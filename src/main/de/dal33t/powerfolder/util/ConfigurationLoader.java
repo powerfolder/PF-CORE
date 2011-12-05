@@ -157,10 +157,13 @@ public class ConfigurationLoader {
      * @return
      */
     public static boolean loadAndMergeFromInstaller(Controller controller) {
+        File initFile = null;
         String windir = System.getenv("WINDIR");
-        File tempDir = new File(new File(windir), "TEMP");
-        File initFile = new File(tempDir, INITIAL_STARTUP_CONFIG_FILENAME);
-        if (!initFile.exists()) {
+        if (!StringUtils.isNotBlank(windir)) {
+            File tempDir = new File(new File(windir), "TEMP");
+            initFile = new File(tempDir, INITIAL_STARTUP_CONFIG_FILENAME);
+        }
+        if (initFile == null || !initFile.exists()) {
             String tempStr = System.getProperty("java.io.tmpdir");
             initFile = new File(new File(tempStr),
                 INITIAL_STARTUP_CONFIG_FILENAME);
