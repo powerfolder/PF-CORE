@@ -184,7 +184,8 @@ public class MainFrame extends PFUIComponent {
         }
         uiComponent.setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
         uiComponent.setSize(width, height);
-
+        setWindowSize(width, height);
+        
         // Pack elements
         uiComponent.pack();
         mainWidth = uiComponent.getWidth();
@@ -207,6 +208,13 @@ public class MainFrame extends PFUIComponent {
             }
             uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
+    }
+
+    
+
+    private void setWindowSize(int width, int height) {
+        uiComponent.setSize(width, height);
+        uiComponent.setPreferredSize(new Dimension(width, height));
     }
 
     /**
