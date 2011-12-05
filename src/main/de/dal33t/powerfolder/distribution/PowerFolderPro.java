@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.skin.LightSky;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 
 public class PowerFolderPro extends AbstractDistribution {
@@ -50,6 +51,9 @@ public class PowerFolderPro extends AbstractDistribution {
         if (skinName.equals(SnowlandBasic.NAME)) {
             PreferencesEntry.SKIN_NAME.setValue(controller, LightSky.NAME);
         }
+
+        // #2467: Get server URL from the installer
+        ConfigurationLoader.loadAndMergeFromInstaller(controller);
 
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
             .getValueBoolean(getController());
