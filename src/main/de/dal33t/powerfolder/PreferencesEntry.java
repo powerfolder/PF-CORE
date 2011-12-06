@@ -92,7 +92,7 @@ public enum PreferencesEntry {
      * the pref that holds a boolean value if the connection should be tested
      * and a warning displayed if limited connectivty is given.
      */
-    TEST_CONNECTIVITY("test_for_connectivity", true),
+    TEST_CONNECTIVITY("test_for_connectivity", false),
 
     /** Warn user if connection is poor. */
     WARN_POOR_QUALITY("warn.poor.quality", false),
