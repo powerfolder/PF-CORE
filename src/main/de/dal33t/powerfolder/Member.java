@@ -2087,7 +2087,12 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return the list folders in common.
      */
     private List<Folder> getFoldersRequestedToJoin() {
-        String magicId = getPeer().getMyMagicId();
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer == null) {
+            logWarning("Node disconnected while getting folders");
+            return Collections.emptyList();
+        }
+        String magicId = thisPeer.getMyMagicId();
         // TODO Think about a better way
         FolderList fList = getLastFolderList();
         if (fList == null) {
