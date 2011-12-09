@@ -389,6 +389,11 @@ public enum ConfigurationEntry {
      * The TCP port for the {@link RemoteCommandManager}
      */
     NET_RCON_PORT("net.rcon.port", 1338),
+    
+    /**
+     * If broadcast on LAN
+     */
+    NET_BROADCAST("net.broadcast", true),
 
     /**
      * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT

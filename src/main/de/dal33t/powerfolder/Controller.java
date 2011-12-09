@@ -67,7 +67,15 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.SilentModeEvent;
+import de.dal33t.powerfolder.event.SilentModeListener;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -132,11 +140,12 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.1.2"; // 4.0.4
+    public static final String PROGRAM_VERSION = "5.1.2"; // 4.0.7
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
+     * 
      * @todo replace these with CoreListeners.
      */
     public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
@@ -781,7 +790,7 @@ public class Controller extends PFComponent {
         // Enable debug reports.
         debugReports = ConfigurationEntry.DEBUG_REPORTS
             .getValueBoolean(getController());
-        
+
         LoggingManager.clearBuffer();
     }
 
@@ -1000,23 +1009,18 @@ public class Controller extends PFComponent {
         }
     }
 
-    /**
-     * creates and starts the Broadcast manager, will not be created if config
-     * property disablebroadcasts=true
-     */
     private void openBroadcastManager() {
-        // TODO Make ConfigurationEntry!
-        if (Boolean.valueOf(config.getProperty("disablebroadcasts"))) {
-            logWarning("Auto-local subnet connection disabled");
-        } else {
+        if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(getController())) {
             try {
                 broadcastManager = new BroadcastMananger(this);
                 broadcastManager.start();
             } catch (ConnectionException e) {
-                logSevere("Unable to open broadcast manager, you wont automatically join pf-network on local net: "
+                logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
                     + e.getMessage());
                 logSevere("ConnectionException", e);
             }
+        } else {
+            logWarning("Auto client discovery in LAN via broadcast disabled");
         }
     }
 
@@ -1329,7 +1333,8 @@ public class Controller extends PFComponent {
             transferManager.updateSpeedLimits();
         }
         preferences.putBoolean("silentMode", newSilentMode);
-        silentModeListenerSupport.setSilentMode(new SilentModeEvent(newSilentMode));
+        silentModeListenerSupport.setSilentMode(new SilentModeEvent(
+            newSilentMode));
     }
 
     /**
@@ -1393,16 +1398,13 @@ public class Controller extends PFComponent {
     }
 
     public void addSilentModeListener(SilentModeListener listener) {
-        ListenerSupportFactory.addListener(silentModeListenerSupport,
-                listener);
+        ListenerSupportFactory.addListener(silentModeListenerSupport, listener);
     }
 
-    public void removeSilentModeListener(SilentModeListener listener)
-    {
+    public void removeSilentModeListener(SilentModeListener listener) {
         ListenerSupportFactory.removeListener(silentModeListenerSupport,
-                listener);
+            listener);
     }
-
 
     public void setNetworkingMode(NetworkingMode newMode) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
