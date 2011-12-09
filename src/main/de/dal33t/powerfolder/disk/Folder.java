@@ -3619,7 +3619,7 @@ public class Folder extends PFComponent {
             logFiner("No Incoming files");
         } else {
             if (isFine()) {
-                logFine(incomingCount != null ? "" : "Aprox. "
+                logFine((incomingCount != null ? "" : "Aprox. ")
                     + incomingFiles.size() + " incoming files");
             }
         }
