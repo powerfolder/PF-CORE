@@ -49,6 +49,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.SilentModeListener;
@@ -94,6 +97,9 @@ public class MainFrame extends PFUIComponent {
     private JButton uncompactModeButton;
     private JLabel pauseResumeLabel;
     private JButton pauseResumeButton;
+    private JLabel logInOutLabel;
+    private JButton logInOutButton;
+    private ServerClient client;
 
     /**
      * The status bar on the lower edge of the main frame.
@@ -118,7 +124,7 @@ public class MainFrame extends PFUIComponent {
     private void configureUiCompact() {
 
         FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
-            "pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
 
@@ -128,6 +134,11 @@ public class MainFrame extends PFUIComponent {
 
         builder.add(pauseResumeLabel, cc.xy(1, row));
         builder.add(pauseResumeButton, cc.xy(3, row));
+
+        row += 2;
+
+        builder.add(logInOutLabel, cc.xy(1, row));
+        builder.add(logInOutButton, cc.xy(3, row));
 
         row += 2;
 
@@ -283,6 +294,12 @@ public class MainFrame extends PFUIComponent {
 
         pauseResumeLabel = new JLabel(Translation.getTranslation("main_frame.pause.text"));
 
+        logInOutButton = new JButtonMini(Icons.getIconById(Icons.LOGIN),
+                Translation.getTranslation("main_frame.log_in.tip"));
+        logInOutButton.addActionListener(myActionListener);
+
+        logInOutLabel = new JLabel(Translation.getTranslation("main_frame.log_in.text"));
+
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener(getController());
         uiComponent.addWindowListener(myWindowListener);
@@ -320,7 +337,8 @@ public class MainFrame extends PFUIComponent {
 
         getController().addSilentModeListener(new MySilentModeListener());
         updateSilentMode();
-        
+        client = getApplicationModel().getServerClientModel().getClient();
+        client.addListener(new MyServerClientListener());
     }
 
     /**
@@ -830,6 +848,14 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private void updateLoginLogout(ServerClientEvent event) {
+        if (client.isLoggedIn()) {
+            logInOutLabel.setText(Translation.getTranslation("main_frame.log_out.text"));
+        } else {
+            logInOutLabel.setText(Translation.getTranslation("main_frame.log_in.text"));
+        }
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
@@ -856,4 +882,32 @@ public class MainFrame extends PFUIComponent {
             updateSilentMode();
         }
     }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateLoginLogout(event);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void login(ServerClientEvent event) {
+            updateLoginLogout(event);
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateLoginLogout(event);
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateLoginLogout(event);
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateLoginLogout(event);
+        }
+    }
+    
 }
