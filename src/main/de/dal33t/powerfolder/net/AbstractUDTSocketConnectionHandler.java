@@ -734,9 +734,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             // Check if the remote address is one of this machine's
             // interfaces.
             try {
-                omitBandwidthLimit = NetworkUtil
-                    .getAllLocalNetworkAddressesCached().containsKey(
-                        socket.getRemoteAddress().getAddress());
+                omitBandwidthLimit = NetworkUtil.isFromThisComputer(socket
+                    .getRemoteAddress().getAddress());
             } catch (SocketException e) {
                 logSevere("Omitting bandwidth", e);
             }
