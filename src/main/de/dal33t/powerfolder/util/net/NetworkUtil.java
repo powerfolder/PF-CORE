@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
@@ -53,7 +54,7 @@ public class NetworkUtil {
     private static final long CACHE_TIMEOUT = 30 * 1000;
 
     private static long LAST_CHACHE_UPDATE = 0;
-    private static Map<InetAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
+    private static Map<InterfaceAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
 
     private static InetAddress NULL_IP;
     static {
@@ -166,8 +167,23 @@ public class NetworkUtil {
             LOG.warning("Inet6 not supported yet: " + addr);
         }
         try {
-            return addr.isLoopbackAddress() || addr.isSiteLocalAddress()
-                || getAllLocalNetworkAddressesCached().containsKey(addr);
+            boolean local = addr.isLoopbackAddress()
+                || isFromThisComputer(addr);
+            if (local) {
+                return true;
+            }
+            // Try harder. Test all interface IP networks
+            for (InterfaceAddress ia : getAllLocalNetworkAddressesCached()
+                .keySet())
+            {
+                if (!(ia.getAddress() instanceof Inet4Address)) {
+                    continue;
+                }
+                if (isOnInterfaceSubnet(ia, addr)) {
+                    return true;
+                }
+            }
+            return false;
         } catch (SocketException e) {
             return false;
         }
@@ -180,22 +196,76 @@ public class NetworkUtil {
      * @return all local network addresses
      * @throws SocketException
      */
-    public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddresses()
+    public static final Map<InterfaceAddress, NetworkInterface> getAllLocalNetworkAddresses()
         throws SocketException
     {
-        Map<InetAddress, NetworkInterface> res = new HashMap<InetAddress, NetworkInterface>();
+        Map<InterfaceAddress, NetworkInterface> res = new HashMap<InterfaceAddress, NetworkInterface>();
 
         for (Enumeration<NetworkInterface> eni = NetworkInterface
             .getNetworkInterfaces(); eni.hasMoreElements();)
         {
             NetworkInterface ni = eni.nextElement();
-            for (Enumeration<InetAddress> eia = ni.getInetAddresses(); eia
-                .hasMoreElements();)
-            {
-                res.put(eia.nextElement(), ni);
+            for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
+                res.put(ia, ni);
             }
         }
         return res;
+    }
+
+    public static boolean isOnInterfaceSubnet(InterfaceAddress ia,
+        InetAddress addr)
+    {
+        Reject.ifNull(addr, "Address");
+        Reject.ifNull(ia, "InterfaceAddress");
+
+        if (!(ia.getAddress() instanceof Inet4Address)
+            || !(addr instanceof Inet4Address))
+        {
+            // TODO How?
+            return false;
+        }
+        byte[] bAddr = ia.getAddress().getAddress();
+        int iAddr = (bAddr[0] << 24) + (bAddr[1] << 16) + (bAddr[2] << 8)
+            + bAddr[3];
+        int iMask = 0;
+        int nplen = ia.getNetworkPrefixLength();
+        if (nplen > 32)
+            if (ia.getAddress().isSiteLocalAddress()) {
+                // UGLY HACK because of:
+                // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                // Simply assume a C-class network on site local addresses.
+                nplen = 24;
+            } else {
+                // Cannot handle
+                return false;
+            }
+        for (int i = 0; i < nplen; i++) {
+            int mod = 1 << (31 - i);
+            iMask += mod;
+        }
+        long subnetAddr = iAddr & iMask;
+
+        byte[] btAddress = addr.getAddress();
+        long blAddr = (btAddress[0] << 24) + (btAddress[1] << 16)
+            + (btAddress[2] << 8) + btAddress[3];
+        long tsubnetAddr = blAddr & iMask;
+        // On same subnet!
+        return tsubnetAddr == subnetAddr;
+    }
+
+    public static boolean isFromThisComputer(InetAddress addr)
+        throws SocketException
+    {
+        if (addr == null) {
+            return false;
+        }
+        for (InterfaceAddress ia : getAllLocalNetworkAddressesCached().keySet())
+        {
+            if (ia.getAddress().equals(addr)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -206,7 +276,7 @@ public class NetworkUtil {
      * @return the cached list al all network addresses
      * @throws SocketException
      */
-    public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddressesCached()
+    public static final Map<InterfaceAddress, NetworkInterface> getAllLocalNetworkAddressesCached()
         throws SocketException
     {
         boolean cacheInvalid = LOCAL_NETWORK_ADDRESSES_CACHE == null
@@ -262,9 +332,7 @@ public class NetworkUtil {
                 return str[1];
             }
         } catch (Exception e) {
-            LOG
-                .warning("Unable to resolve hostname/ip from " + addr + ". "
-                    + e);
+            LOG.warning("Unable to resolve hostname/ip from " + addr + ". " + e);
         }
         // Fallback
         return addr.getHostAddress();
