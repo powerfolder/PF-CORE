@@ -48,12 +48,36 @@ public class NetUtilTest extends TestCase {
         for (InterfaceAddress ia : NetworkUtil
             .getAllLocalNetworkAddressesCached().keySet())
         {
+            if (!(ia.getAddress() instanceof Inet4Address)) {
+                continue;
+            }
             if (ia.getAddress().isSiteLocalAddress()) {
                 byte[] bAddrs = ia.getAddress().getAddress();
+                if (bAddrs[3] != -88) {
+                    bAddrs[3] = -88;
+                } else {
+                    bAddrs[3] = -99;
+                }
+                lanAddresses.add(Inet4Address.getByAddress(bAddrs));
+
+                bAddrs = ia.getAddress().getAddress();
                 if (bAddrs[3] != 44) {
                     bAddrs[3] = 44;
                 } else {
                     bAddrs[3] = 45;
+                }
+                lanAddresses.add(Inet4Address.getByAddress(bAddrs));
+            } else if (ia.getAddress().isLinkLocalAddress()) {
+                byte[] bAddrs = ia.getAddress().getAddress();
+                if (bAddrs[3] != -88) {
+                    bAddrs[3] = -88;
+                } else {
+                    bAddrs[3] = -99;
+                }
+                if (bAddrs[2] != -66) {
+                    bAddrs[2] = -66;
+                } else {
+                    bAddrs[2] = -55;
                 }
                 lanAddresses.add(Inet4Address.getByAddress(bAddrs));
             }
@@ -62,6 +86,7 @@ public class NetUtilTest extends TestCase {
         Set<InetAddress> inetAddresses = new HashSet<InetAddress>();
         inetAddresses.add(Inet4Address.getByName("188.40.205.177"));
         inetAddresses.add(Inet4Address.getByName("184.72.127.2"));
+        inetAddresses.add(Inet4Address.getByName("192.168.255.1"));
 
         // Now we should have at least 2 test LAN addresses and 2 inet
         // addresses.
@@ -76,7 +101,8 @@ public class NetUtilTest extends TestCase {
                 .hasNext();)
             {
                 InetAddress address = it.next();
-                assertTrue(NetworkUtil.isOnLanOrLoopback(address));
+                assertTrue("Address should be on lan: " + address,
+                    NetworkUtil.isOnLanOrLoopback(address));
                 if (NetworkUtil.isOnInterfaceSubnet(ia, address)) {
                     it.remove();
                 }

@@ -226,7 +226,7 @@ public class NetworkUtil {
         }
         byte[] bAddr = ia.getAddress().getAddress();
         int iAddr = (bAddr[0] << 24) + (bAddr[1] << 16) + (bAddr[2] << 8)
-            + bAddr[3];
+            + ((int) bAddr[3] & 0xFF);
         int iMask = 0;
         int nplen = ia.getNetworkPrefixLength();
         if (nplen > 32)
@@ -235,6 +235,12 @@ public class NetworkUtil {
                 // http://bugs.sun.com/view_bug.do?bug_id=6707289
                 // Simply assume a C-class network on site local addresses.
                 nplen = 24;
+            } else if (ia.getAddress().isLinkLocalAddress()) {
+                // UGLY HACK because of:
+                // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                // Simply assume a B-class network on link local addresses.
+                // http://en.wikipedia.org/wiki/Link-local_address
+                nplen = 16;
             } else {
                 // Cannot handle
                 return false;
@@ -243,12 +249,29 @@ public class NetworkUtil {
             int mod = 1 << (31 - i);
             iMask += mod;
         }
-        long subnetAddr = iAddr & iMask;
+        int subnetAddr = iAddr & iMask;
 
         byte[] btAddress = addr.getAddress();
-        long blAddr = (btAddress[0] << 24) + (btAddress[1] << 16)
-            + (btAddress[2] << 8) + btAddress[3];
-        long tsubnetAddr = blAddr & iMask;
+        int itAddr = (btAddress[0] << 24) + (btAddress[1] << 16)
+            + (btAddress[2] << 8) + ((int) btAddress[3] & 0xFF);
+        int tsubnetAddr = itAddr & iMask;
+        // 192.168.0.100
+        // 10111111
+        // 10101000
+        // 00000000
+        // 01100100
+        
+        // 10111111
+        // 10100111
+        // 11111111
+        // 10101000
+        
+        
+        // 10101000: 168
+        // 11111101: 253
+        // 1010110101010000
+        // 1010100011111110
+        // 0000110000101100
         // On same subnet!
         return tsubnetAddr == subnetAddr;
     }
@@ -258,6 +281,9 @@ public class NetworkUtil {
     {
         if (addr == null) {
             return false;
+        }
+        if (addr.isLoopbackAddress() || addr.isLinkLocalAddress()) {
+            return true;
         }
         for (InterfaceAddress ia : getAllLocalNetworkAddressesCached().keySet())
         {
