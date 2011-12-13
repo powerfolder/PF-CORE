@@ -255,23 +255,6 @@ public class NetworkUtil {
         int itAddr = (btAddress[0] << 24) + (btAddress[1] << 16)
             + (btAddress[2] << 8) + ((int) btAddress[3] & 0xFF);
         int tsubnetAddr = itAddr & iMask;
-        // 192.168.0.100
-        // 10111111
-        // 10101000
-        // 00000000
-        // 01100100
-        
-        // 10111111
-        // 10100111
-        // 11111111
-        // 10101000
-        
-        
-        // 10101000: 168
-        // 11111101: 253
-        // 1010110101010000
-        // 1010100011111110
-        // 0000110000101100
         // On same subnet!
         return tsubnetAddr == subnetAddr;
     }
