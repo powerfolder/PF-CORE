@@ -741,9 +741,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             // Check if the remote address is one of this machine's
             // interfaces.
             try {
-                omitBandwidthLimit = NetworkUtil
-                    .getAllLocalNetworkAddressesCached().containsKey(
-                        socket.getInetAddress());
+                omitBandwidthLimit = NetworkUtil.isFromThisComputer(socket
+                    .getInetAddress());
             } catch (SocketException e) {
                 logSevere("Omitting bandwidth", e);
             }
