@@ -100,6 +100,15 @@ public class UDTSocketConnectionManager extends PFComponent {
                 "Unable to open relayed connection to " + destination
                     + ". No relay found!");
         }
+        if (relay.getInfo().equals(destination)) {
+            throw new ConnectionException(
+                "Unable to open relayed connection to relay " + destination);
+        }
+        if (!relay.isCompletelyConnected()) {
+            throw new ConnectionException(
+                "Unable to open relayed connection to " + destination
+                    + ". Relay " + relay.getNick() + " not connected.");
+        }
         PortSlot slot = selectPortFor(destination);
         if (slot == null) {
             throw new ConnectionException("UDT port selection failed!");
@@ -143,6 +152,9 @@ public class UDTSocketConnectionManager extends PFComponent {
                     "Interrupted while connecting to " + destination, e);
             }
         } catch (ConnectionException e) {
+            // Always remove the entry
+            replies.remove(destination);
+
             // If we failed, release the slot
             releaseSlot(slot.port);
 
