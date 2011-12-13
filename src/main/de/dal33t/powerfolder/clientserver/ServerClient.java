@@ -641,12 +641,15 @@ public class ServerClient extends PFComponent {
             }
         }
 
-        if (StringUtils.isBlank(un)
-            && ConfigurationEntry.SERVER_CONNECT_NO_PASSWORD_ALLOWED
-                .getValueBoolean(getController()))
+        if (ConfigurationEntry.SERVER_CONNECT_NO_PASSWORD_ALLOWED
+            .getValueBoolean(getController()))
         {
-            un = System.getProperty("user.name");
-            pw = Util.toCharArray(ProUtil.rtrvePwssd(getController(), un));
+            if (StringUtils.isBlank(un)) {
+                un = System.getProperty("user.name");
+            }
+            if (pw == null || pw.length == 0) {
+                pw = Util.toCharArray(ProUtil.rtrvePwssd(getController(), un));
+            }
         }
 
         if (!StringUtils.isBlank(un)) {
