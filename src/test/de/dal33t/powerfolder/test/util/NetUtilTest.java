@@ -22,14 +22,78 @@ package de.dal33t.powerfolder.test.util;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 public class NetUtilTest extends TestCase {
+
+    /**
+     * #1403
+     * 
+     * @throws UnknownHostException
+     * @throws SocketException
+     */
+    public void testSubnet() throws SocketException, UnknownHostException {
+        Set<InetAddress> lanAddresses = new HashSet<InetAddress>();
+        lanAddresses.add(Inet4Address.getByName("127.0.0.1"));
+        for (InterfaceAddress ia : NetworkUtil
+            .getAllLocalNetworkAddressesCached().keySet())
+        {
+            if (ia.getAddress().isSiteLocalAddress()) {
+                byte[] bAddrs = ia.getAddress().getAddress();
+                if (bAddrs[3] != 44) {
+                    bAddrs[3] = 44;
+                } else {
+                    bAddrs[3] = 45;
+                }
+                lanAddresses.add(Inet4Address.getByAddress(bAddrs));
+            }
+        }
+
+        Set<InetAddress> inetAddresses = new HashSet<InetAddress>();
+        inetAddresses.add(Inet4Address.getByName("188.40.205.177"));
+        inetAddresses.add(Inet4Address.getByName("184.72.127.2"));
+
+        // Now we should have at least 2 test LAN addresses and 2 inet
+        // addresses.
+
+        for (InterfaceAddress ia : NetworkUtil
+            .getAllLocalNetworkAddressesCached().keySet())
+        {
+            if (!(ia.getAddress() instanceof Inet4Address)) {
+                continue;
+            }
+            for (Iterator<InetAddress> it = lanAddresses.iterator(); it
+                .hasNext();)
+            {
+                InetAddress address = it.next();
+                assertTrue(NetworkUtil.isOnLanOrLoopback(address));
+                if (NetworkUtil.isOnInterfaceSubnet(ia, address)) {
+                    it.remove();
+                }
+            }
+            for (InetAddress address : inetAddresses) {
+                assertFalse(NetworkUtil.isOnLanOrLoopback(address));
+                if (NetworkUtil.isOnInterfaceSubnet(ia, address)) {
+                    fail("Internet address " + address
+                        + " should not be on LAN!" + ia);
+                }
+            }
+        }
+        assertTrue("LAN address not found on local adapter subnet: "
+            + lanAddresses, lanAddresses.isEmpty());
+
+    }
+
     public void testAddressRanges() throws UnknownHostException {
         AddressRange ar = new AddressRange(
             (Inet4Address) InetAddress.getByName("0.0.0.110"),
