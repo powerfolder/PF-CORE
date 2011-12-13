@@ -77,6 +77,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.MemberInfoInternalizer;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -101,7 +102,7 @@ public class NodeManager extends PFComponent {
 
     private Map<String, Member> knownNodes;
     private Map<String, Member> friends;
-    private List<Member> connectedNodes;
+    private Map<String, Member> connectedNodes;
     private List<AddressRange> lanRanges;
 
     private Member mySelf;
@@ -155,9 +156,9 @@ public class NodeManager extends PFComponent {
         logInfo("I am '" + mySelf.getNick() + "'");
 
         // Use concurrent hashmap
-        knownNodes = new ConcurrentHashMap<String, Member>();
-        friends = new ConcurrentHashMap<String, Member>();
-        connectedNodes = new CopyOnWriteArrayList<Member>();
+        knownNodes = Util.createConcurrentHashMap();
+        friends = Util.createConcurrentHashMap();
+        connectedNodes = Util.createConcurrentHashMap();
 
         // The nodes, that went online in the meantime
         nodesWentOnline = Collections
@@ -246,7 +247,7 @@ public class NodeManager extends PFComponent {
 
         logFine("Shutting down nodes");
 
-        Collection<Member> conNode = new ArrayList<Member>(connectedNodes);
+        Collection<Member> conNode = new ArrayList<Member>(connectedNodes.values());
         logFine("Shutting down connected nodes (" + conNode.size() + ")");
         ExecutorService shutdownThreadPool = Executors.newFixedThreadPool(Math
             .max(1, conNode.size() / 5));
@@ -365,7 +366,7 @@ public class NodeManager extends PFComponent {
      */
     public int countConnectedSupernodes() {
         int nSupernodes = 0;
-        for (Member node : connectedNodes) {
+        for (Member node : connectedNodes.values()) {
             if (node.isSupernode()) {
                 nSupernodes++;
             }
@@ -495,7 +496,7 @@ public class NodeManager extends PFComponent {
      * @return a unmodifiable version of the internal list of connected nodes.
      */
     public Collection<Member> getConnectedNodes() {
-        return Collections.unmodifiableCollection(connectedNodes);
+        return Collections.unmodifiableCollection(connectedNodes.values());
     }
 
     /**
@@ -684,7 +685,7 @@ public class NodeManager extends PFComponent {
         boolean nodeConnected = node.isCompletelyConnected();
         if (nodeConnected) {
             // Add to online nodes
-            connectedNodes.add(node);
+            connectedNodes.put(node.getId(), node);
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
 
@@ -706,7 +707,7 @@ public class NodeManager extends PFComponent {
             }
         } else {
             // Remove from list
-            connectedNodes.remove(node);
+            connectedNodes.remove(node.getId());
             nodesWentOnline.remove(node.getInfo());
 
             getController().getTransferManager().breakTransfers(node);
