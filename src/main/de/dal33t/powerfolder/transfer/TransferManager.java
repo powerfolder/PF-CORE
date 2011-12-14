@@ -346,12 +346,19 @@ public class TransferManager extends PFComponent {
 
         }
         for (DownloadManager completedDownload : completedDownloads.values()) {
+            int n = 0;
             long numberOfDays = calcDays(completedDownload.getCompletedDate());
             if (numberOfDays >= trueDownloadCleanupFrequency) {
-                logInfo("Auto-cleaning up download '"
-                    + completedDownload.getFileInfo().getRelativeName()
-                    + "' (days=" + numberOfDays + ')');
+                if (isFiner()) {
+                    logFiner("Auto-cleaning up download '"
+                        + completedDownload.getFileInfo().getRelativeName()
+                        + "' (days=" + numberOfDays + ')');
+                }
                 clearCompletedDownload(completedDownload);
+                n++;
+            }
+            if (n > 0) {
+                logFine("Cleaned up " + n + " completed downloads");
             }
         }
     }
