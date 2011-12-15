@@ -54,6 +54,7 @@ public class OnlineStorageSubscription implements Serializable {
     private long storageSize;
     
     @SuppressWarnings("unused")
+    @Transient
     private boolean trial = false;
 
     private Date validFrom;
