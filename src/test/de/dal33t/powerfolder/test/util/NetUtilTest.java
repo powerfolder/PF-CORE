@@ -108,7 +108,8 @@ public class NetUtilTest extends TestCase {
                 }
             }
             for (InetAddress address : inetAddresses) {
-                assertFalse(NetworkUtil.isOnLanOrLoopback(address));
+                assertFalse("Address should NOT be on lan: " + address,
+                    NetworkUtil.isOnLanOrLoopback(address));
                 if (NetworkUtil.isOnInterfaceSubnet(ia, address)) {
                     fail("Internet address " + address
                         + " should not be on LAN!" + ia);
