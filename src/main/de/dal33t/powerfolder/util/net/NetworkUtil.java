@@ -241,13 +241,27 @@ public class NetworkUtil {
                 // Simply assume a B-class network on link local addresses.
                 // http://en.wikipedia.org/wiki/Link-local_address
                 nplen = 16;
+            } else if (ia.getAddress().isLoopbackAddress()) {
+                // UGLY HACK because of:
+                // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                // Simply assume a A-class network on local addresses
+                // (127.0.0.1)
+                nplen = 8;
             } else {
                 // Cannot handle
                 return false;
             }
         } else if (nplen <= 0) {
-            // WTF!
-            return false;
+            if (ia.getAddress().isLoopbackAddress()) {
+                // UGLY HACK because of:
+                // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                // Simply assume a A-class network on local addresses
+                // (127.0.0.1)
+                nplen = 8;
+            } else {
+                // Cannot handle
+                return false;
+            }
         }
         for (int i = 0; i < nplen; i++) {
             int mod = 1 << (31 - i);
