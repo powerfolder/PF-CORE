@@ -175,8 +175,7 @@ public class TransferManager extends PFComponent {
 
     private BandwidthStatsRecorder statsRecorder;
 
-    private final AtomicBoolean recalculatingAutomaticRates =
-            new AtomicBoolean();
+    private final AtomicBoolean recalculatingAutomaticRates = new AtomicBoolean();
 
     public TransferManager(Controller controller) {
         super(controller);
@@ -206,7 +205,7 @@ public class TransferManager extends PFComponent {
         sharedWANInputHandler = BandwidthLimiter.WAN_INPUT_BANDWIDTH_LIMITER;
         sharedLANOutputHandler = BandwidthLimiter.LAN_OUTPUT_BANDWIDTH_LIMITER;
         sharedLANInputHandler = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
-        
+
         checkConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_WAN, 0);
         checkConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN, 0);
         checkConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_LAN, 0);
@@ -271,8 +270,8 @@ public class TransferManager extends PFComponent {
             + uploadCounter.getBytesTransferred();
         long overhead = total - payload;
         logInfo("Total: " + Format.formatBytes(total) + ", Payload: "
-            + Format.formatBytes(payload) + ". Overhead: "
-            + overhead * 100 / payload + '%');
+            + Format.formatBytes(payload) + ". Overhead: " + overhead * 100
+            / payload + '%');
     }
 
     /**
@@ -345,8 +344,8 @@ public class TransferManager extends PFComponent {
             trueDownloadCleanupFrequency = Integer.MAX_VALUE;
 
         }
+        int n = 0;
         for (DownloadManager completedDownload : completedDownloads.values()) {
-            int n = 0;
             long numberOfDays = calcDays(completedDownload.getCompletedDate());
             if (numberOfDays >= trueDownloadCleanupFrequency) {
                 if (isFiner()) {
@@ -357,9 +356,9 @@ public class TransferManager extends PFComponent {
                 clearCompletedDownload(completedDownload);
                 n++;
             }
-            if (n > 0) {
-                logFine("Cleaned up " + n + " completed downloads");
-            }
+        }
+        if (n > 0) {
+            logFine("Cleaned up " + n + " completed downloads");
         }
     }
 
@@ -752,7 +751,8 @@ public class TransferManager extends PFComponent {
 
         final FileInfo fInfo = dlManager.getFileInfo();
         // Inform other folder member of added file
-        final Folder folder = fInfo.getFolder(getController().getFolderRepository());
+        final Folder folder = fInfo.getFolder(getController()
+            .getFolderRepository());
         if (folder != null) {
             // scan in new downloaded file
             // TODO React on failed scan?
@@ -820,6 +820,7 @@ public class TransferManager extends PFComponent {
     }
 
     private ReentrantLock scriptLock = new ReentrantLock();
+
     /**
      * #1538
      * <p>
@@ -1074,7 +1075,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Returns the upload WAN rate.
-     *
+     * 
      * @return the selected upload rate (internet) in CPS
      */
     public long getUploadCPSForWAN() {
@@ -1100,7 +1101,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Returns the download WAN rate.
-     *
+     * 
      * @return the selected upload rate (internet) in CPS
      */
     public long getDownloadCPSForWAN() {
@@ -1138,7 +1139,7 @@ public class TransferManager extends PFComponent {
      */
     public void setDownloadCPSForLAN(long allowedCPS) {
 
-         ConfigurationEntry.DOWNLOAD_LIMIT_LAN.setValue(getController(),
+        ConfigurationEntry.DOWNLOAD_LIMIT_LAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
@@ -1554,7 +1555,7 @@ public class TransferManager extends PFComponent {
                     } else {
                         logFine("No further sources, removing " + man);
                         man.setBroken(TransferProblem.BROKEN_DOWNLOAD,
-                                "Out of sources for download");
+                            "Out of sources for download");
                     }
                 }
             }
@@ -1883,7 +1884,6 @@ public class TransferManager extends PFComponent {
         }
     }
 
-  
     /**
      * Returns only sources which are connected and have "exactly" the given
      * FileInfo version.
@@ -1917,7 +1917,7 @@ public class TransferManager extends PFComponent {
         }
         return sources;
     }
-    
+
     // TODO Does all this "sources" management really belong to the
     // TransferManager?
 
@@ -1933,7 +1933,7 @@ public class TransferManager extends PFComponent {
     public List<Member> getSourcesFor(FileInfo fInfo) {
         return getSourcesFor0(fInfo, false, true);
     }
-    
+
     /**
      * Finds the sources for the file. Returns only sources which are connected
      * The members are sorted in order of best source.
@@ -1961,7 +1961,8 @@ public class TransferManager extends PFComponent {
      * @param withUploadCapacityOnly
      *            if only those sources should be considered, that have free
      *            upload capacity.
-     * @param onlyIdenticalVersion return sources that have identical file versions.
+     * @param onlyIdenticalVersion
+     *            return sources that have identical file versions.
      * @return the list of members, where the file is available
      */
     private List<Member> getSourcesFor0(FileInfo fInfo,
@@ -2473,7 +2474,7 @@ public class TransferManager extends PFComponent {
                 download.init(this);
                 if (download.isCompleted()) {
                     List<DownloadManager> dlms = tempMap
-                            .get(download.getFile());
+                        .get(download.getFile());
                     if (dlms == null) {
                         dlms = new ArrayList<DownloadManager>(1);
                         tempMap.put(download.getFile(), dlms);
@@ -2482,7 +2483,8 @@ public class TransferManager extends PFComponent {
                     DownloadManager man = null;
                     for (DownloadManager dlm : dlms) {
                         if (dlm.getFileInfo().isVersionDateAndSizeIdentical(
-                                download.getFile())) {
+                            download.getFile()))
+                        {
                             man = dlm;
                             break;
                         }
@@ -2490,12 +2492,12 @@ public class TransferManager extends PFComponent {
 
                     if (man == null) {
                         man = downloadManagerFactory.createDownloadManager(
-                                getController(), download.getFile(),
-                                download.isRequestedAutomatic());
+                            getController(), download.getFile(),
+                            download.isRequestedAutomatic());
                         man.init(true);
                         completedDownloads.put(
-                                new FileInfoKey(man.getFileInfo(),
-                                        Type.VERSION_DATE_SIZE), man);
+                            new FileInfoKey(man.getFileInfo(),
+                                Type.VERSION_DATE_SIZE), man);
                         // For faster loading
                         dlms.add(man);
                     }
@@ -2829,14 +2831,18 @@ public class TransferManager extends PFComponent {
                 Date afterUpload = new Date();
 
                 // Calculate time differences.
-                long downloadTime = afterDownload.getTime() - startDate.getTime();
-                long uploadTime = afterUpload.getTime() - afterDownload.getTime();
-                // logWarning("Test availability download time " + downloadTime);
+                long downloadTime = afterDownload.getTime()
+                    - startDate.getTime();
+                long uploadTime = afterUpload.getTime()
+                    - afterDownload.getTime();
+                // logWarning("Test availability download time " +
+                // downloadTime);
                 // logWarning("Test availability upload time " + uploadTime);
                 // Calculate rates in KiB/s.
                 long downloadRate = downloadTime > 0 ? downloadSize * 1000
                     / downloadTime : 0;
-                long uploadRate = uploadTime > 0 ? uploadSize * 1000 / uploadTime : 0;
+                long uploadRate = uploadTime > 0 ? uploadSize * 1000
+                    / uploadTime : 0;
                 if (downloadOk) {
                     logFine("Test availability download rate "
                         + Format.formatBytesShort(downloadRate) + "/s");
@@ -2846,7 +2852,8 @@ public class TransferManager extends PFComponent {
                         + Format.formatBytesShort(uploadRate) + "/s");
                 }
                 // Update bandwidth provider with 90% of new rates.
-                // By experience: Measured rates usually lower than actual speed.
+                // By experience: Measured rates usually lower than actual
+                // speed.
                 long modifiedDownloadRate = 90 * downloadRate / 100;
                 long modifiedUploadRate = 90 * uploadRate / 100;
 
@@ -3000,9 +3007,8 @@ public class TransferManager extends PFComponent {
         }
 
         logInfo((download ? "Download" : "Upload") + " completed: "
-            + Format.formatDecimal(fInfo.getSize()) + " bytes in "
-            + took / 1000 + "s (" + cpsStr + " KByte/s): " + fInfo
-            + memberInfo);
+            + Format.formatDecimal(fInfo.getSize()) + " bytes in " + took
+            / 1000 + "s (" + cpsStr + " KByte/s): " + fInfo + memberInfo);
     }
 
     // Event/Listening code ***************************************************
