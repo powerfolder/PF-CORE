@@ -98,6 +98,7 @@ public class MainFrame extends PFUIComponent {
     private JButton pauseResumeButton;
     private JLabel logInOutLabel;
     private JButton logInOutButton;
+    private JButton openWebInterfaceButton;
 
     /**
      * The status bar on the lower edge of the main frame.
@@ -122,7 +123,7 @@ public class MainFrame extends PFUIComponent {
     private void configureUiCompact() {
 
         FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
-            "pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
 
@@ -130,13 +131,19 @@ public class MainFrame extends PFUIComponent {
 
         int row = 1;
 
-        builder.add(pauseResumeLabel, cc.xy(1, row));
-        builder.add(pauseResumeButton, cc.xy(3, row));
+        builder.add(logInOutLabel, cc.xy(1, row));
+        builder.add(logInOutButton, cc.xy(3, row));
 
         row += 2;
 
-        builder.add(logInOutLabel, cc.xy(1, row));
-        builder.add(logInOutButton, cc.xy(3, row));
+        builder.add(new JLabel(Translation.getTranslation(
+                "main_frame.open_web_interface.text")), cc.xy(1, row));
+        builder.add(openWebInterfaceButton, cc.xy(3, row));
+
+        row += 2;
+
+        builder.add(pauseResumeLabel, cc.xy(1, row));
+        builder.add(pauseResumeButton, cc.xy(3, row));
 
         row += 2;
 
@@ -295,6 +302,10 @@ public class MainFrame extends PFUIComponent {
         logInOutButton = new JButtonMini(Icons.getIconById(Icons.LOGIN),
                 Translation.getTranslation("main_frame.log_in.tip"));
         logInOutButton.addActionListener(myActionListener);
+
+        openWebInterfaceButton = new JButtonMini(Icons.getIconById(Icons.ONLINE_FOLDER),
+                Translation.getTranslation("main_frame.open_web_interface.tip"));
+        openWebInterfaceButton.addActionListener(myActionListener);
 
         logInOutLabel = new JLabel(Translation.getTranslation("main_frame.log_in.text"));
 
