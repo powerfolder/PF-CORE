@@ -44,11 +44,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -58,6 +54,7 @@ import de.dal33t.powerfolder.event.SilentModeListener;
 import de.dal33t.powerfolder.event.SilentModeEvent;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -94,12 +91,13 @@ public class MainFrame extends PFUIComponent {
     private JButton inlineInfoCloseButton;
     private JSplitPane split;
     private final AtomicBoolean compactModeActive = new AtomicBoolean();
+    private ServerClient client;
+
     private JButton uncompactModeButton;
     private JLabel pauseResumeLabel;
     private JButton pauseResumeButton;
     private JLabel logInOutLabel;
     private JButton logInOutButton;
-    private ServerClient client;
 
     /**
      * The status bar on the lower edge of the main frame.
@@ -869,6 +867,13 @@ public class MainFrame extends PFUIComponent {
                 getUIController().reconfigureForCompactMode(false);
             } else if (source == pauseResumeButton) {
                 getController().setSilentMode(!getController().isSilentMode());
+            } else if (source == logInOutButton) {
+                boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                    .getValueBoolean(getController());
+                if (changeLoginAllowed) {
+                    PFWizard.openLoginWizard(getController(),
+                        getController().getOSClient());
+                }
             }
         }
     }
