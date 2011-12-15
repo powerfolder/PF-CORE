@@ -52,11 +52,6 @@ public class OnlineStorageSubscription implements Serializable {
     public static final String PROPERTY_DISABLED_EXPIRATION_DATE = "disabledExpirationDate";
 
     private long storageSize;
-    
-    @SuppressWarnings("unused")
-    @Transient
-    private transient boolean trial = false;
-
     private Date validFrom;
     private Date validTill;
 
