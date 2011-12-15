@@ -229,7 +229,7 @@ public class NetworkUtil {
             + ((int) bAddr[3] & 0xFF);
         int iMask = 0;
         int nplen = ia.getNetworkPrefixLength();
-        if (nplen > 32)
+        if (nplen > 32) {
             if (ia.getAddress().isSiteLocalAddress()) {
                 // UGLY HACK because of:
                 // http://bugs.sun.com/view_bug.do?bug_id=6707289
@@ -245,6 +245,10 @@ public class NetworkUtil {
                 // Cannot handle
                 return false;
             }
+        } else if (nplen <= 0) {
+            // WTF!
+            return false;
+        }
         for (int i = 0; i < nplen; i++) {
             int mod = 1 << (31 - i);
             iMask += mod;
