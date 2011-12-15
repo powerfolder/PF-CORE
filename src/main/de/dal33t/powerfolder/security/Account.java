@@ -376,8 +376,9 @@ public class Account implements Serializable {
         return LoginUtil.matches(pwCandidate, password);
     }
 
-    /** setLanguage
-     * Set account language
+    /**
+     * setLanguage Set account language
+     * 
      * @return Selected language
      */
 
@@ -385,9 +386,11 @@ public class Account implements Serializable {
         return this.language;
     }
 
-    /** setLanguage
-     * Set account language
-     * @param lang New language
+    /**
+     * setLanguage Set account language
+     * 
+     * @param lang
+     *            New language
      */
 
     public void setLanguage(String lang) {
@@ -412,14 +415,6 @@ public class Account implements Serializable {
 
     public void setOSSubscription(OnlineStorageSubscription osSubscription) {
         this.osSubscription = osSubscription;
-    }
-
-    public boolean isProUser() {
-        return proUser;
-    }
-
-    public void setProUser(boolean proUser) {
-        this.proUser = proUser;
     }
 
     public String getNotes() {
@@ -516,14 +511,20 @@ public class Account implements Serializable {
         return autoRenewDevices;
     }
 
-
     public Date getAutoRenewTill() {
         return autoRenewTill;
     }
 
-    public void setAutoRenew(int autoRenewDevices, Date autoRenewTill) {
+    public boolean isProUser() {
+        return proUser;
+    }
+
+    public void setAutoRenew(int autoRenewDevices, Date autoRenewTill,
+        boolean proUser)
+    {
         this.autoRenewDevices = autoRenewDevices;
         this.autoRenewTill = autoRenewTill;
+        this.proUser = proUser;
     }
 
     public boolean willAutoRenew() {
