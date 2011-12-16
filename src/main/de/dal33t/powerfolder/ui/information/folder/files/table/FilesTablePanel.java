@@ -726,6 +726,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         fileInfo.getRelativeName());
                 }
             }
+            getController().getTransferManager()
+                .checkActiveTranfersForExcludes();
         }
     }
 
@@ -758,6 +760,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         fileInfo.getRelativeName());
                 }
             }
+            // Trigger resync
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(tableModel.getFolder().getInfo());
         }
     }
 

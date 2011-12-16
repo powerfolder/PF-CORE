@@ -508,7 +508,6 @@ public class SettingsTab extends PFUIComponent {
                 .getPatterns())
             {
                 if (patternMatch.isMatch(blackListPattern)) {
-
                     // Confirm that the user wants to remove this.
                     int result = DialogFactory.genericDialog(getController(),
                         Translation.getTranslation("remove_pattern.title"),
@@ -517,8 +516,7 @@ public class SettingsTab extends PFUIComponent {
                     // Default is remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
-                        folder.removePattern(
-                            blackListPattern);
+                        folder.removePattern(blackListPattern);
                     } else if (result == 2) { // Cancel
                         // Abort for all other patterns.
                         break;
@@ -526,6 +524,10 @@ public class SettingsTab extends PFUIComponent {
                 }
             }
         }
+
+        // Trigger resync
+        getController().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting(folder.getInfo());
     }
 
     public void showAddPane(String initialPatterns) {
@@ -544,6 +546,8 @@ public class SettingsTab extends PFUIComponent {
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
             if (!StringUtils.isBlank(patternResult)) {
                 folder.addPattern(patternResult);
+                getController().getTransferManager()
+                    .checkActiveTranfersForExcludes();
             }
 
         } else {
@@ -1207,9 +1211,13 @@ public class SettingsTab extends PFUIComponent {
                 // the text to edit:
                 selectionModel.getSelection());
             if (!StringUtils.isBlank(pattern)) {
-                folder.removePattern(
-                    (String) selectionModel.getSelection());
+                folder.removePattern((String) selectionModel.getSelection());
                 folder.addPattern(pattern);
+                getController().getTransferManager()
+                    .checkActiveTranfersForExcludes();
+                // Trigger resync
+                getController().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting(folder.getInfo());
             }
             patternsList.getSelectionModel().clearSelection();
         }
@@ -1246,6 +1254,9 @@ public class SettingsTab extends PFUIComponent {
             for (Object object : selectionModel.getSelections()) {
                 String selection = (String) object;
                 folder.removePattern(selection);
+                // Trigger resync
+                getController().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting(folder.getInfo());
             }
             patternsList.getSelectionModel().clearSelection();
         }

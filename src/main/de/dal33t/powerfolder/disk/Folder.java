@@ -2733,8 +2733,12 @@ public class Folder extends PFComponent {
         }
 
         File syncPatternsFile = metaFolder.getDiskFile(fileInfo);
-        logFine("Reading syncPatterns " + syncPatternsFile);
+        logInfo("Reading syncPatterns " + syncPatternsFile);
         diskItemFilter.loadPatternsFrom(syncPatternsFile, true);
+        // Trigger resync
+        getController().getTransferManager().checkActiveTranfersForExcludes();
+        getController().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting(currentInfo);
     }
 
     public DirectoryInfo getBaseDirectoryInfo() {

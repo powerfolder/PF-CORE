@@ -433,12 +433,14 @@ public class DownloadsInformationCard extends InformationCard implements
             for (DownloadManager manager : tablePanel.getSelectedRows()) {
                 if (manager != null) {
                     FileInfo fileInfo = manager.getFileInfo();
-                    Folder folder = getController().getFolderRepository().getFolder(
-                            fileInfo.getFolderInfo());
+                    Folder folder = getController().getFolderRepository()
+                        .getFolder(fileInfo.getFolderInfo());
                     folder.addPattern(fileInfo.getRelativeName());
                     if (manager.isStarted()) {
                         manager.abort();
                     }
+                    getController().getTransferManager()
+                        .checkActiveTranfersForExcludes();
                 }
             }
         }

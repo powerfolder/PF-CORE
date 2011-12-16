@@ -417,6 +417,8 @@ public class UploadsInformationCard extends InformationCard implements
                     if (upload.isStarted()) {
                         upload.abort();
                     }
+                    getController().getTransferManager()
+                        .checkActiveTranfersForExcludes();
                 }
             }
         }
