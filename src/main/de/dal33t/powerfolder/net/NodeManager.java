@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -247,7 +247,8 @@ public class NodeManager extends PFComponent {
 
         logFine("Shutting down nodes");
 
-        Collection<Member> conNode = new ArrayList<Member>(connectedNodes.values());
+        Collection<Member> conNode = new ArrayList<Member>(
+            connectedNodes.values());
         logFine("Shutting down connected nodes (" + conNode.size() + ")");
         ExecutorService shutdownThreadPool = Executors.newFixedThreadPool(Math
             .max(1, conNode.size() / 5));
@@ -379,8 +380,7 @@ public class NodeManager extends PFComponent {
      */
     public boolean maxConnectionsReached() {
         // Assume unlimited upload
-        if (getController().getTransferManager().getUploadCPSForWAN() <= 0)
-        {
+        if (getController().getTransferManager().getUploadCPSForWAN() <= 0) {
             // Unlimited upload
             return false;
         }
@@ -429,13 +429,43 @@ public class NodeManager extends PFComponent {
 
     /**
      * Returns true if the IP of the given member is within one of the
-     * configured ranges Those are setup in advanced settings "LANlist".
+     * configured ranges Those are setup in advanced settings "LANlist". ONLY if
+     * any of my own IP is on the LAN list aswell.
      * 
      * @param adr
      *            the internet addedss
      * @return true if the member's ip is within one of the ranges
      */
     private boolean isNodeOnConfiguredLan(InetAddress adr) {
+        boolean iamOnLANlist = false;
+        try {
+            for (InterfaceAddress ia : NetworkUtil
+                .getAllLocalNetworkAddressesCached().keySet())
+            {
+                if (ia.getAddress() instanceof Inet4Address
+                    && isNodeOnConfiguredLan0(ia.getAddress()))
+                {
+                    iamOnLANlist = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            logWarning("Unable to get LAN/Adapter configuration. " + e);
+            // Fallback / Old behavior
+            iamOnLANlist = true;
+        }
+        if (!iamOnLANlist) {
+            return false;
+        }
+        for (AddressRange ar : lanRanges) {
+            if (ar.contains((Inet4Address) adr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNodeOnConfiguredLan0(InetAddress adr) {
         for (AddressRange ar : lanRanges) {
             if (ar.contains((Inet4Address) adr)) {
                 return true;
@@ -754,8 +784,8 @@ public class NodeManager extends PFComponent {
     public void receivedRequestNodeList(RequestNodeList request, Member from) {
         List<MemberInfo> list;
         list = request.filter(knownNodes.values());
-        from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list, from
-            .getProtocolVersion() >= 107));
+        from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list,
+            from.getProtocolVersion() >= 107));
     }
 
     public void receivedSearchNodeRequest(final SearchNodeRequest request,
