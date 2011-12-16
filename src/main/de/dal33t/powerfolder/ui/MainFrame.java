@@ -75,6 +75,7 @@ public class MainFrame extends PFUIComponent {
     public static final int MIN_HEIGHT = 300;
     public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
         .getDefaultValueInt();
+    public static final int MIN_INFO_WIDTH = 500;
 
     /**
      * The width of the main tabbed pane when in NORMAL state
@@ -274,7 +275,9 @@ public class MainFrame extends PFUIComponent {
      */
     private void initComponents() {
         logFine("Screen resolution: "
-            + Toolkit.getDefaultToolkit().getScreenSize());
+            + Toolkit.getDefaultToolkit().getScreenSize()
+            + " / Width over all monitors: "
+            + UIUtil.getScreenWidthAllMonitors());
 
         uiComponent = new JFrame();
         if (uiComponent.isAlwaysOnTopSupported()
@@ -615,11 +618,20 @@ public class MainFrame extends PFUIComponent {
                     infoWidth -= Constants.UI_DEFAULT_SCREEN_BORDER;
                 }
             }
+            
+
+            // #2440:
+            if (infoWidth < MIN_INFO_WIDTH) {
+                infoWidth = MIN_INFO_WIDTH;
+            }
 
             logFine("Main/Info width: " + mainWidth + " / " + infoWidth);
 
             if (!isMaximized()) {
                 int width = adjustWidthToScreen(mainWidth + infoWidth);
+                if (width - mainWidth < MIN_INFO_WIDTH) {
+                    width = mainWidth + MIN_INFO_WIDTH;
+                }
                 uiComponent.setSize(width, uiComponent.getSize().height);
             }
 
@@ -654,9 +666,13 @@ public class MainFrame extends PFUIComponent {
     }
 
     private int adjustWidthToScreen(int width) {
-        int overScreenPX = width
-            - Toolkit.getDefaultToolkit().getScreenSize().width
+        // int overScreenPX = width
+        // - Toolkit.getDefaultToolkit().getScreenSize().width
+        // + uiComponent.getLocationOnScreen().x;
+
+        int overScreenPX = width - UIUtil.getScreenWidthAllMonitors()
             + uiComponent.getLocationOnScreen().x;
+
         if (overScreenPX > 0) {
             width -= overScreenPX;
             width -= Constants.UI_DEFAULT_SCREEN_BORDER;
