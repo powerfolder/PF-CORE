@@ -22,6 +22,9 @@ package de.dal33t.powerfolder.util.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -35,12 +38,19 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+
+import org.jfree.util.Log;
 
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
@@ -106,7 +116,8 @@ public class UIUtil {
     }
 
     public static void setFontSize(JLabel label, int fontSize) {
-        SimpleComponentFactory.setFont(label, fontSize, label.getFont().getStyle());
+        SimpleComponentFactory.setFont(label, fontSize, label.getFont()
+            .getStyle());
     }
 
     public static void setFontStyle(JLabel label, int style) {
@@ -136,8 +147,8 @@ public class UIUtil {
                     throw (RuntimeException) e.getCause();
                 }
                 throw new RuntimeException(
-                    "Exception while executing in event dispatcher thread", e
-                        .getCause());
+                    "Exception while executing in event dispatcher thread",
+                    e.getCause());
             }
         }
     }
@@ -388,5 +399,27 @@ public class UIUtil {
         // logSevere(e);
         // }
 
+    }
+
+    /**
+     * #2440
+     * 
+     * @return the screen width of all screens summarized.
+     */
+    public static int getScreenWidthAllMonitors() {
+        try {
+            int width = 0;
+            GraphicsEnvironment ge = GraphicsEnvironment
+                .getLocalGraphicsEnvironment();
+            GraphicsDevice[] gs = ge.getScreenDevices();
+            for (GraphicsDevice curGs : gs) {
+                DisplayMode mode = curGs.getDisplayMode();
+                width += mode.getWidth();
+            }
+            return width;
+        } catch (Exception e) {
+            Log.warn("Unable to get screen configuration. " + e);
+            return Toolkit.getDefaultToolkit().getScreenSize().width;
+        }
     }
 }
