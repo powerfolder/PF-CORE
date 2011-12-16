@@ -135,14 +135,12 @@ public class DiskItemFilter {
 
                 if (allTheSame) {
                     // No change at all.
-                    log
-                        .fine("Received a pattern file identical to own, so ignoring it.");
+                    log.fine("Received a pattern file identical to own, so ignoring it.");
                     return;
                 }
 
                 // Something changed. Redo the patterns.
-                log
-                    .fine("Received a pattern file different to own, so loading it.");
+                log.fine("Received a pattern file different to own, so loading it.");
                 for (Pattern oldPattern : patterns) {
                     patterns.remove(oldPattern);
                     listenerSupport.patternRemoved(new PatternChangedEvent(
@@ -225,7 +223,7 @@ public class DiskItemFilter {
      * 
      * @param patternText
      */
-    public void addPattern(String patternText) {
+    void addPattern(String patternText) {
         addPattern0(createPattern(patternText));
     }
 
@@ -245,12 +243,12 @@ public class DiskItemFilter {
             listenerSupport.patternAdded(new PatternChangedEvent(this, pattern
                 .getPatternText(), true));
         } catch (PatternSyntaxException e) {
-            log.log(Level.SEVERE, "Problem adding pattern "
-                + pattern.getPatternText(), e);
+            log.log(Level.SEVERE,
+                "Problem adding pattern " + pattern.getPatternText(), e);
         }
     }
 
-    public void removeAllPatterns() {
+    void removeAllPatterns() {
         for (Pattern pattern : patterns) {
             patterns.remove(pattern);
             dirty = true;
@@ -264,7 +262,7 @@ public class DiskItemFilter {
      * 
      * @param patternText
      */
-    public void removePattern(String patternText) {
+    void removePattern(String patternText) {
         Pattern targetPattern = createPattern(patternText);
         for (Pattern pattern : patterns) {
             if (pattern.equals(targetPattern)) {

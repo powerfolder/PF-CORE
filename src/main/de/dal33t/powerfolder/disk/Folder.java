@@ -647,8 +647,17 @@ public class Folder extends PFComponent {
      * 
      * @param pattern
      */
-    private void addPattern(String pattern) {
+    public void addPattern(String pattern) {
         diskItemFilter.addPattern(pattern);
+    }
+
+    /**
+     * Convenience method to remove a pattern.
+     * 
+     * @param pattern
+     */
+    public void removePattern(String pattern) {
+        diskItemFilter.removePattern(pattern);
     }
 
     /**
