@@ -363,6 +363,16 @@ public abstract class Transfer extends Loggable implements Serializable {
             return true;
         }
 
+        // Not done here, may cause too much CPU.
+        // #2532: Done in TransferManager.checkActiveTranfersForExcludes();
+//        Folder folder = getFile().getFolder(
+//            getController().getFolderRepository());
+//        if (folder != null) {
+//            if (folder.getDiskItemFilter().isExcluded(getFile())) {
+//                return true;
+//            }
+//        }
+
         return false;
     }
 
