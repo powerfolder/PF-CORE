@@ -1057,7 +1057,7 @@ public class Controller extends PFComponent {
      * #2526
      */
     private void backupConfigAssets() {
-        File backupDir = new File(Controller.getMiscFilesLocation(), "backup/"
+        File backupDir = new File(Controller.getMiscFilesLocation(), "backups/"
             + Format.formatDateCanonical(new Date()));
         if (!backupDir.exists()) {
             backupDir.mkdirs();
