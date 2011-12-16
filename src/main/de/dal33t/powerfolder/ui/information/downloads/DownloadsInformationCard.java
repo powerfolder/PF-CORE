@@ -435,7 +435,7 @@ public class DownloadsInformationCard extends InformationCard implements
                     FileInfo fileInfo = manager.getFileInfo();
                     Folder folder = getController().getFolderRepository().getFolder(
                             fileInfo.getFolderInfo());
-                    folder.getDiskItemFilter().addPattern(fileInfo.getRelativeName());
+                    folder.addPattern(fileInfo.getRelativeName());
                     if (manager.isStarted()) {
                         manager.abort();
                     }
