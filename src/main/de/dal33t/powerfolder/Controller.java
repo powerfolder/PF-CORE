@@ -140,7 +140,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.5.1"; // 4.0.9
+    public static final String PROGRAM_VERSION = "5.5.1 - 4.0.14"; // 4.0.14
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -1035,12 +1035,13 @@ public class Controller extends PFComponent {
         log.fine("Performing housekeeping " + midnightRun);
         Date now = new Date();
         if (midnightRun) {
-
             // Reconfigure log file after midnight.
             logFine("Reconfiguring logs for new day: " + now);
             initLogger();
             LoggingManager.resetFileLogging();
             logFine("Reconfigured logs for new day: " + now);
+
+            backupConfigAssets();
         }
 
         // Prune stats.
@@ -1049,6 +1050,43 @@ public class Controller extends PFComponent {
         // Cleanup old archives.
         if (midnightRun) {
             folderRepository.cleanupOldArchiveFiles();
+        }
+    }
+
+    /**
+     * #2526
+     */
+    private void backupConfigAssets() {
+        File backupDir = new File(Controller.getMiscFilesLocation(), "backup/"
+            + Format.formatDateCanonical(new Date()));
+        if (!backupDir.exists()) {
+            backupDir.mkdirs();
+        }
+        File configFile = getConfigFile();
+        File configBackup = new File(backupDir, configFile.getName());
+        try {
+            FileUtils.copyFile(configFile, configBackup);
+        } catch (IOException e) {
+            logWarning("Unable to backup file " + configFile + ". " + e);
+        }
+        File myKeyFile = new File(Controller.getMiscFilesLocation(),
+            getController().getConfigName() + ".mykey");
+        File mykeyBackup = new File(backupDir, myKeyFile.getName());
+        if (myKeyFile.exists()) {
+            try {
+                FileUtils.copyFile(myKeyFile, mykeyBackup);
+            } catch (IOException e) {
+                logWarning("Unable to backup file " + myKeyFile + ". " + e);
+            }
+        }
+        File dbFile = new File(Controller.getMiscFilesLocation(),"Accounts.h2.db");
+        File dbBackup = new File(backupDir, dbFile.getName());
+        if (dbFile.exists()) {
+            try {
+                FileUtils.copyFile(dbFile, dbBackup);
+            } catch (IOException e) {
+                logWarning("Unable to backup file " + dbFile + ". " + e);
+            }
         }
     }
 
@@ -1650,6 +1688,7 @@ public class Controller extends PFComponent {
         logInfo("Shutting down done");
 
         LoggingManager.closeFileLogging();
+        backupConfigAssets();
     }
 
     public ScheduledExecutorService getThreadPool() {
