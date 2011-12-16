@@ -104,8 +104,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             new MyListSelectionListener());
         table.addMouseListener(new TableMouseListener());
 
-        table.registerKeyboardAction(new SelectAllAction(), KeyStroke
-            .getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+        table.registerKeyboardAction(new SelectAllAction(),
+            KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
             JComponent.WHEN_FOCUSED);
 
     }
@@ -136,12 +136,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         CellConstraints cc = new CellConstraints();
 
         tableScroller = new JScrollPane(table);
-        emptyLabel = new JLabel(Translation
-            .getTranslation("files_table_panel.no_files_available"));
+        emptyLabel = new JLabel(
+            Translation.getTranslation("files_table_panel.no_files_available"));
         emptyLabel.setEnabled(false);
 
         emptyResetLink = new ActionLabel(getController(),
-                new MyResetFiltersAction(getController()));
+            new MyResetFiltersAction(getController()));
 
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tableScroller);
@@ -163,14 +163,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     private void buildEmptyPanel() {
         FormLayout outerLayout = new FormLayout(
-                "pref:grow, center:pref, pref:grow",
+            "pref:grow, center:pref, pref:grow",
             "pref:grow, center:pref, pref:grow");
         DefaultFormBuilder outerBuilder = new DefaultFormBuilder(outerLayout);
 
         CellConstraints cc = new CellConstraints();
 
-        FormLayout innerLayout = new FormLayout("pref:grow, center:pref, pref:grow",
-            "pref, 3dlu, pref");
+        FormLayout innerLayout = new FormLayout(
+            "pref:grow, center:pref, pref:grow", "pref, 3dlu, pref");
         DefaultFormBuilder innerBuilder = new DefaultFormBuilder(innerLayout);
 
         innerBuilder.add(emptyLabel, cc.xy(2, 1));
@@ -243,30 +243,36 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
         switch (event.getFileFilterMode()) {
             case DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING :
-                emptyLabel.setText(Translation
-                    .getTranslation("files_table_panel.no_files_available.local_and_incoming"));
+                emptyLabel
+                    .setText(Translation
+                        .getTranslation("files_table_panel.no_files_available.local_and_incoming"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_LOCAL_ONLY :
-                emptyLabel.setText(Translation
-                    .getTranslation("files_table_panel.no_files_available.local_only"));
+                emptyLabel
+                    .setText(Translation
+                        .getTranslation("files_table_panel.no_files_available.local_only"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY :
-                emptyLabel.setText(Translation
-                    .getTranslation("files_table_panel.no_files_available.incoming_only"));
+                emptyLabel
+                    .setText(Translation
+                        .getTranslation("files_table_panel.no_files_available.incoming_only"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY :
-                emptyLabel.setText(Translation
-                    .getTranslation("files_table_panel.no_files_available.new_only"));
+                emptyLabel
+                    .setText(Translation
+                        .getTranslation("files_table_panel.no_files_available.new_only"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS :
-                emptyLabel.setText(Translation
-                    .getTranslation("files_table_panel.no_files_available.deleted_previous"));
+                emptyLabel
+                    .setText(Translation
+                        .getTranslation("files_table_panel.no_files_available.deleted_previous"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED :
-                emptyLabel.setText(Translation
-                    .getTranslation("files_table_panel.no_files_available.unsynchronized"));
+                emptyLabel
+                    .setText(Translation
+                        .getTranslation("files_table_panel.no_files_available.unsynchronized"));
                 break;
-            default:
+            default :
                 // Generic message.
                 emptyLabel.setText(Translation
                     .getTranslation("files_table_panel.no_files_available"));
@@ -282,7 +288,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     public void invalidate() {
-        tableModel.setFilteredDirectoryModel(new FilteredDirectoryModel("",""));
+        tableModel
+            .setFilteredDirectoryModel(new FilteredDirectoryModel("", ""));
         emptyLabel.setText(Translation
             .getTranslation("files_table_panel.finding_files"));
         emptyResetLink.setVisible(false);
@@ -435,8 +442,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         downloadFileAction.getName());
                     downloadFileAction.actionPerformed(ae);
                 } else if (openFileAction.isEnabled()) {
-                    ActionEvent ae = new ActionEvent(this, 0, openFileAction
-                        .getName());
+                    ActionEvent ae = new ActionEvent(this, 0,
+                        openFileAction.getName());
                     openFileAction.actionPerformed(ae);
                 }
             }
@@ -472,7 +479,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     /**
      * Try to download everything within this directory.
-     *
+     * 
      * @param directoryInfo
      */
     private void downloadDirectory(DirectoryInfo directoryInfo) {
@@ -483,12 +490,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         criteria.setRecursive(true);
         criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
         criteria.addConnectedAndMyself(folder);
-        Collection<FileInfo> infoCollection =
-                folder.getDAO().findFiles(criteria);
+        Collection<FileInfo> infoCollection = folder.getDAO().findFiles(
+            criteria);
         for (FileInfo fileInfo : infoCollection) {
             if (!fileInfo.isDownloading(getController())) {
-                getController().getTransferManager()
-                        .downloadNewestVersion(fileInfo);
+                getController().getTransferManager().downloadNewestVersion(
+                    fileInfo);
             }
         }
     }
@@ -516,7 +523,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         } else if (diskItem instanceof FileInfo) {
                             FileInfo fileInfo = (FileInfo) diskItem;
                             FolderRepository repo = getController()
-                                    .getFolderRepository();
+                                .getFolderRepository();
                             Folder folder = fileInfo.getFolder(repo);
                             if (folder == null) {
                                 return null;
@@ -525,7 +532,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                                 return null;
                             }
                             getController().getTransferManager()
-                                    .downloadNewestVersion(fileInfo);
+                                .downloadNewestVersion(fileInfo);
                         }
                     }
                     return null;
@@ -602,11 +609,13 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     FolderRepository repo = getController()
                         .getFolderRepository();
                     if (fileInfo.diskFileExists(getController())
-                            && !fileInfo.isNewerAvailable(repo)) {
+                        && !fileInfo.isNewerAvailable(repo))
+                    {
                         downloadState = false;
-                    } else if (!fileInfo.isDeleted() &&
-                            !fileInfo.isExpected(repo) &&
-                            !fileInfo.isNewerAvailable(repo)) {
+                    } else if (!fileInfo.isDeleted()
+                        && !fileInfo.isExpected(repo)
+                        && !fileInfo.isNewerAvailable(repo))
+                    {
                         downloadState = false;
                     }
 
@@ -709,11 +718,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             for (DiskItem diskItem : getSelectedRows()) {
                 if (diskItem != null && diskItem instanceof DirectoryInfo) {
                     DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
-                    tableModel.getFolder().getDiskItemFilter().addPattern(
+                    tableModel.getFolder().addPattern(
                         directoryInfo.getRelativeName() + "/*");
                 } else if (diskItem != null && diskItem instanceof FileInfo) {
                     FileInfo fileInfo = (FileInfo) diskItem;
-                    tableModel.getFolder().getDiskItemFilter().addPattern(
+                    tableModel.getFolder().addPattern(
                         fileInfo.getRelativeName());
                 }
             }
@@ -741,11 +750,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             for (DiskItem diskItem : getSelectedRows()) {
                 if (diskItem != null && diskItem instanceof DirectoryInfo) {
                     DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
-                    tableModel.getFolder().getDiskItemFilter().removePattern(
+                    tableModel.getFolder().removePattern(
                         directoryInfo.getRelativeName() + "/*");
                 } else if (diskItem != null && diskItem instanceof FileInfo) {
                     FileInfo fileInfo = (FileInfo) diskItem;
-                    tableModel.getFolder().getDiskItemFilter().removePattern(
+                    tableModel.getFolder().removePattern(
                         fileInfo.getRelativeName());
                 }
             }

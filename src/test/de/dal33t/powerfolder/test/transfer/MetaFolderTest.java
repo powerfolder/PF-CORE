@@ -177,7 +177,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
     public void testMetaFolderSyncPatterns() {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         Folder bartFolder = getFolderAtBart();
-        bartFolder.getDiskItemFilter().addPattern("test");
+        bartFolder.addPattern("test");
 
         Folder lisaFolder = getFolderAtLisa();
         int initialSize = lisaFolder.getDiskItemFilter().getPatterns().size();

@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test.folder.dao;
+package de.dal33t.powerfolder.disk;
 
 import java.util.logging.Level;
 

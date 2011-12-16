@@ -517,7 +517,7 @@ public class SettingsTab extends PFUIComponent {
                     // Default is remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
-                        folder.getDiskItemFilter().removePattern(
+                        folder.removePattern(
                             blackListPattern);
                     } else if (result == 2) { // Cancel
                         // Abort for all other patterns.
@@ -543,7 +543,7 @@ public class SettingsTab extends PFUIComponent {
                 getUIController().getActiveFrame(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
             if (!StringUtils.isBlank(patternResult)) {
-                folder.getDiskItemFilter().addPattern(patternResult);
+                folder.addPattern(patternResult);
             }
 
         } else {
@@ -571,7 +571,7 @@ public class SettingsTab extends PFUIComponent {
                 GenericDialogType.QUESTION);
             if (result == 0) {
                 for (String pattern : patternArray) {
-                    folder.getDiskItemFilter().addPattern(pattern);
+                    folder.addPattern(pattern);
                 }
             }
         }
@@ -784,7 +784,7 @@ public class SettingsTab extends PFUIComponent {
             // Restore patterns if content not moved.
             if (!moveContent && patterns != null) {
                 for (String pattern : patterns) {
-                    folder.getDiskItemFilter().addPattern(pattern);
+                    folder.addPattern(pattern);
                 }
             }
 
@@ -1150,12 +1150,12 @@ public class SettingsTab extends PFUIComponent {
             enableConfigOSAction();
             loadOnlineArchiveMode();
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
             enableConfigOSAction();
             loadOnlineArchiveMode();
         }
-        
+
         public boolean fireInEventDispatchThread() {
             return true;
         }
@@ -1207,9 +1207,9 @@ public class SettingsTab extends PFUIComponent {
                 // the text to edit:
                 selectionModel.getSelection());
             if (!StringUtils.isBlank(pattern)) {
-                folder.getDiskItemFilter().removePattern(
+                folder.removePattern(
                     (String) selectionModel.getSelection());
-                folder.getDiskItemFilter().addPattern(pattern);
+                folder.addPattern(pattern);
             }
             patternsList.getSelectionModel().clearSelection();
         }
@@ -1245,7 +1245,7 @@ public class SettingsTab extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             for (Object object : selectionModel.getSelections()) {
                 String selection = (String) object;
-                folder.getDiskItemFilter().removePattern(selection);
+                folder.removePattern(selection);
             }
             patternsList.getSelectionModel().clearSelection();
         }

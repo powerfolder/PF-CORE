@@ -19,31 +19,48 @@
  */
 package de.dal33t.powerfolder.ui.information.uploads;
 
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.util.TimerTask;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.TimerTask;
 
 /**
  * Information card for a folder. Includes files, members and settings tabs.
@@ -114,8 +131,9 @@ public class UploadsInformationCard extends InformationCard implements
      */
     private void initialize() {
         cleanupLabel = new JLabel();
-        cleanupLabel.setToolTipText(Translation.getTranslation(
-                "uploads_information_card.auto_cleanup.frequency_tip"));
+        cleanupLabel
+            .setToolTipText(Translation
+                .getTranslation("uploads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(),
             clearCompletedUploadsAction, addIgnoreAction);
@@ -188,9 +206,9 @@ public class UploadsInformationCard extends InformationCard implements
             getController());
         addIgnoreAction = new AddIgnoreAction(getController());
 
-        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES        
+        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES
         Integer x = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController());
+            .getValueInt(getController());
         if (x > 4) {
             x = 4;
         }
@@ -205,8 +223,9 @@ public class UploadsInformationCard extends InformationCard implements
         cleanupSlider.setPaintTicks(true);
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
-        cleanupSlider.setToolTipText(Translation.getTranslation(
-                "uploads_information_card.auto_cleanup.frequency_tip"));
+        cleanupSlider
+            .setToolTipText(Translation
+                .getTranslation("uploads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
@@ -271,10 +290,10 @@ public class UploadsInformationCard extends InformationCard implements
      * Update actions and details.
      */
     private void update0() {
-        clearCompletedUploadsAction.setEnabled(getUIController()
-                .getTransferManagerModel().getUploadsTableModel().getRowCount()
-                > 0);
-        addIgnoreAction.setEnabled(tablePanel.getSelectedRows().length > 0);                
+        clearCompletedUploadsAction
+            .setEnabled(getUIController().getTransferManagerModel()
+                .getUploadsTableModel().getRowCount() > 0);
+        addIgnoreAction.setEnabled(tablePanel.getSelectedRows().length > 0);
 
         fileDetailsPanel.setFileInfo(tablePanel.getSelectdFile());
         fileVersionsPanel.setFileInfo(tablePanel.getSelectdFile());
@@ -285,16 +304,18 @@ public class UploadsInformationCard extends InformationCard implements
             getController(), String.valueOf(cleanupSlider.getValue()));
         getController().saveConfig();
         if (cleanupSlider.getValue() == 0) {
-            cleanupLabel.setText(Translation.getTranslation(
-                    "uploads_information_card.auto_cleanup.immediate"));
+            cleanupLabel
+                .setText(Translation
+                    .getTranslation("uploads_information_card.auto_cleanup.immediate"));
         } else if (cleanupSlider.getValue() >= 4) {
-            cleanupLabel.setText(Translation.getTranslation(
-                    "uploads_information_card.auto_cleanup.never"));
+            cleanupLabel.setText(Translation
+                .getTranslation("uploads_information_card.auto_cleanup.never"));
         } else {
-            int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider.getValue()];
+            int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider
+                .getValue()];
             cleanupLabel.setText(Translation.getTranslation(
                 "uploads_information_card.auto_cleanup.days",
-                    String.valueOf(trueCleanupDays)));
+                String.valueOf(trueCleanupDays)));
         }
     }
 
@@ -306,8 +327,8 @@ public class UploadsInformationCard extends InformationCard implements
 
         int completedUploadCount = tablePanel.countCompletedUploadCount();
         completedUploadCountLabel.setText(Translation.getTranslation(
-            "status.completed_upload_count", String
-                .valueOf(completedUploadCount)));
+            "status.completed_upload_count",
+            String.valueOf(completedUploadCount)));
 
         double kbs = getController().getTransferManager().getUploadCounter()
             .calculateCurrentKBS();
@@ -390,9 +411,9 @@ public class UploadsInformationCard extends InformationCard implements
             for (Upload upload : tablePanel.getSelectedRows()) {
                 if (upload != null) {
                     FileInfo fileInfo = upload.getFile();
-                    Folder folder = getController().getFolderRepository().getFolder(
-                            fileInfo.getFolderInfo());
-                    folder.getDiskItemFilter().addPattern(fileInfo.getRelativeName());
+                    Folder folder = getController().getFolderRepository()
+                        .getFolder(fileInfo.getFolderInfo());
+                    folder.addPattern(fileInfo.getRelativeName());
                     if (upload.isStarted()) {
                         upload.abort();
                     }

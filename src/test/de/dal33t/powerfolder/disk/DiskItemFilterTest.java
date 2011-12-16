@@ -17,7 +17,7 @@
  *
  * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
  */
-package de.dal33t.powerfolder.test.folder;
+package de.dal33t.powerfolder.disk;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.disk.DiskItemFilter;

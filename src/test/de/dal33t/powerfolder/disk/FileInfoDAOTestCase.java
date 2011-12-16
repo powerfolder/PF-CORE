@@ -17,7 +17,7 @@
  *
  * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
  */
-package de.dal33t.powerfolder.test.folder.dao;
+package de.dal33t.powerfolder.disk;
 
 import java.util.ArrayList;
 import java.util.Collection;
