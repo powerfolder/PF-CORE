@@ -1189,15 +1189,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 String result = (String) get();
                 if (result != null) {
                     if (result.startsWith("Y")) {
-                        DialogFactory
-                            .genericDialog(
-                                getController(),
-                                Translation
-                                    .getTranslation("exp_folder_view.webdav_success_title"),
-                                Translation.getTranslation(
-                                    "exp_folder_view.webdav_success_text",
-                                    result.substring(1)),
-                                GenericDialogType.INFO);
                         String[] parts = result.substring(1).split("\\s");
                         for (String part : parts) {
                             if (part.length() == 2 && part.charAt(1) == ':') {
