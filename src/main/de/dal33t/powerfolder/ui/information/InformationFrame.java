@@ -41,7 +41,6 @@ import de.dal33t.powerfolder.ui.information.debug.DebugInformationCard;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
 import de.dal33t.powerfolder.ui.information.notices.NoticesInformationCard;
-import de.dal33t.powerfolder.ui.information.stats.StatsInformationCard;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
@@ -57,7 +56,7 @@ public class InformationFrame extends PFUIComponent {
     private UploadsInformationCard uploadsInformationCard;
     private DebugInformationCard debugInformationCard;
     private NoticesInformationCard noticesCard;
-    private StatsInformationCard statsCard;
+    //private StatsInformationCard statsCard;
 
     private boolean showingFolder;
 
@@ -304,11 +303,11 @@ public class InformationFrame extends PFUIComponent {
         showingFolder = false;
     }
 
-    public void displayStats() {
-        buildStatsCard();
-        displayCard(statsCard);
-        showingFolder = false;
-    }
+//    public void displayStats() {
+//        buildStatsCard();
+//        displayCard(statsCard);
+//        showingFolder = false;
+//    }
 
     /**
      * Displays a card with tile and icon.
@@ -368,14 +367,14 @@ public class InformationFrame extends PFUIComponent {
         }
     }
 
-    /**
-     * Builds the local StatsCard if required.
-     */
-    private void buildStatsCard() {
-        if (statsCard == null) {
-            statsCard = new StatsInformationCard(getController());
-        }
-    }
+//    /**
+//     * Builds the local StatsCard if required.
+//     */
+//    private void buildStatsCard() {
+//        if (statsCard == null) {
+//            statsCard = new StatsInformationCard(getController());
+//        }
+//    }
 
     /**
      * Fires when a folder is removed. Hide this if showing the folder.
