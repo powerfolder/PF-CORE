@@ -37,7 +37,7 @@ public class ActionModel extends PFComponent {
     private NewFolderAction newFolderAction;
     private FindComputersAction findComputersAction;
     private OpenPreferencesAction openPreferencesAction;
-    private OpenStatsChartsAction openStatsChartsAction;
+   // private OpenStatsChartsAction openStatsChartsAction;
     private OpenAboutBoxAction openAboutBoxAction;
     private ConnectAction connectAction;
     private OpenDownloadsInformationAction openDownloadsInformationAction;
@@ -77,12 +77,12 @@ public class ActionModel extends PFComponent {
         return openPreferencesAction;
     }
 
-    public OpenStatsChartsAction getOpenStatsChartsAction() {
-        if (openStatsChartsAction == null) {
-            openStatsChartsAction = new OpenStatsChartsAction(getController());
-        }
-        return openStatsChartsAction;
-    }
+//    public OpenStatsChartsAction getOpenStatsChartsAction() {
+//        if (openStatsChartsAction == null) {
+//            openStatsChartsAction = new OpenStatsChartsAction(getController());
+//        }
+//        return openStatsChartsAction;
+//    }
 
     public OpenDownloadsInformationAction getOpenDownloadsInformationAction() {
         if (openDownloadsInformationAction == null) {
