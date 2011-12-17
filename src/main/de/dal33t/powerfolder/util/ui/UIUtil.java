@@ -50,8 +50,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.jfree.util.Log;
-
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
@@ -418,7 +416,7 @@ public class UIUtil {
             }
             return width;
         } catch (Exception e) {
-            Log.warn("Unable to get screen configuration. " + e);
+            log.warning("Unable to get screen configuration. " + e);
             return Toolkit.getDefaultToolkit().getScreenSize().width;
         }
     }
