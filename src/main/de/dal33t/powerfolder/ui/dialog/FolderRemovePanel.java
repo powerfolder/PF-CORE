@@ -77,10 +77,10 @@ public class FolderRemovePanel extends BaseDialog {
         super(controller, true);
         Reject.ifNull(foInfo, "FolderInfo");
         this.foInfo = foInfo;
-        this.folder = foInfo.getFolder(getController());
-        this.onlineFolder = getController().getOSClient().getAccount()
+        folder = foInfo.getFolder(getController());
+        onlineFolder = getController().getOSClient().getAccount()
             .hasReadPermissions(foInfo);
-        this.localFolder = folder != null;
+        localFolder = folder != null;
     }
 
     // UI Building ************************************************************
@@ -91,18 +91,20 @@ public class FolderRemovePanel extends BaseDialog {
     private void initComponents() {
         // Create folder leave dialog message
         boolean syncFlag = folder != null && folder.isTransferring();
-        String folerLeaveText;
+        String folderLeaveText;
+        String removeKey = onlineFolder && !localFolder  ?
+                "folder_remove.dialog.online_text" :
+                "folder_remove.dialog.text";
         if (syncFlag) {
-            folerLeaveText = Translation.getTranslation(
-                "folder_remove.dialog.text", foInfo.name)
-                + '\n'
+            folderLeaveText = Translation.getTranslation(
+                removeKey, foInfo.name) + '\n'
                 + Translation
                     .getTranslation("folder_remove.dialog.sync_warning");
         } else {
-            folerLeaveText = Translation.getTranslation(
-                "folder_remove.dialog.text", foInfo.name);
+            folderLeaveText = Translation.getTranslation(removeKey,
+                    foInfo.name);
         }
-        messageLabel = new JLabel(folerLeaveText);
+        messageLabel = new JLabel(folderLeaveText);
 
         removeFromLocalBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.remove_from_local"));
@@ -163,17 +165,46 @@ public class FolderRemovePanel extends BaseDialog {
     }
 
     protected JComponent getContent() {
+
         initComponents();
 
-        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout;
+
+        // ----- | ------ | ---------------------- | ---------------- |
+        // local | online | remove/delete local cb | remove server cb |
+        // ----- | ------ | ---------------------- | ---------------- |
+        //   Y   |   Y    |           Y            |       Y          |
+        //   Y   |   N    |           Y            |       N          |
+        //   N   |   Y    |           N            |       N          |
+        //   N   |   N    |           ?            |       ?          |
+        // ----- | ------ | ---------------------- | ---------------- |
+
+        // Remove unnecessary gaps if cbs not visible.
+        if (localFolder) {
+            if (onlineFolder) {
+                // Local and online cbs
+                layout = new FormLayout("pref:grow, 3dlu, pref:grow",
+                    "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            } else {
+                // Local two cbs only
+                layout = new FormLayout("pref:grow, 3dlu, pref:grow",
+                    "pref, 3dlu, pref, 3dlu, pref");
+            }
+        } else {
+            // Just online. Don't need the online cb; obvious.
+            layout = new FormLayout("pref:grow, 3dlu, pref:grow",
+                "pref");
+        }
+
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
 
-        builder.add(messageLabel, cc.xyw(1, 1, 3));
+        int row = 1;
 
-        int row = 3;
+        builder.add(messageLabel, cc.xyw(1, row, 3));
+
+        row += 2;
 
         if (localFolder) {
             builder.add(removeFromLocalBox, cc.xyw(1, row, 3));
@@ -183,7 +214,8 @@ public class FolderRemovePanel extends BaseDialog {
             row += 2;
         }
 
-        if (onlineFolder) {
+        // Don't need to show this if just online.
+        if (onlineFolder && localFolder) {
             builder.add(removeFromServerBox, cc.xyw(1, row, 3));
             row += 2;
         }
@@ -202,14 +234,18 @@ public class FolderRemovePanel extends BaseDialog {
     }
 
     private void configureComponents() {
-        deleteSystemSubFolderBox.setEnabled(removeFromLocalBox.isSelected());
-        removeButton.setEnabled(removeFromLocalBox.isSelected());
-        if (!removeFromLocalBox.isSelected()) {
-            deleteSystemSubFolderBox.setSelected(false);
+
+        if (!localFolder && !onlineFolder) {
+            // Should never be.
+            removeButton.setEnabled(false);
         }
 
         removeButton.setEnabled(removeFromLocalBox.isSelected()
             || removeFromServerBox.isSelected());
+
+        if (!removeFromLocalBox.isSelected()) {
+            deleteSystemSubFolderBox.setSelected(false);
+        }
     }
 
     private void confirmedFolderLeave(final boolean removeLocal,
@@ -225,9 +261,9 @@ public class FolderRemovePanel extends BaseDialog {
             .getFolderRepository();
 
         if (removeLocal) {
-            Folder folder = foInfo.getFolder(getController());
-            if (folder != null) {
-                folderRepository.removeFolder(folder, deleteSystemSubFolder);
+            Folder f = foInfo.getFolder(getController());
+            if (f != null) {
+                folderRepository.removeFolder(f, deleteSystemSubFolder);
             }
         }
 
@@ -254,9 +290,9 @@ public class FolderRemovePanel extends BaseDialog {
         }
     }
 
-    // /////////////////
+    // ////////////////
     // Inner Classes //
-    // /////////////////
+    // ////////////////
 
     private class ConvertActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
