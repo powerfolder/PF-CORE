@@ -234,7 +234,9 @@ public class UIController extends PFComponent {
 
         informationFrame = new InformationFrame(getController());
         chatFrame = new ChatFrame(getController());
-        systemMonitorFrame = new SystemMonitorFrame(getController());
+        if (Feature.SYSTEM_MONITOR.isEnabled()) {
+            systemMonitorFrame = new SystemMonitorFrame(getController());
+        }
         started = false;
     }
 
@@ -580,8 +582,7 @@ public class UIController extends PFComponent {
                         BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
                             .getValue(getController()));
                     } catch (IOException e1) {
-                        logWarning(
-                            "Unable to goto PowerFolder homepage", e1);
+                        logWarning("Unable to goto PowerFolder homepage", e1);
                     }
                 }
             }
@@ -904,8 +905,10 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     public void displaySystemMonitorWindow() {
-        UIUtil.putOnScreen(systemMonitorFrame.getUIComponent());
-        systemMonitorFrame.getUIComponent().setVisible(true);
+        if (systemMonitorFrame != null) {
+            UIUtil.putOnScreen(systemMonitorFrame.getUIComponent());
+            systemMonitorFrame.getUIComponent().setVisible(true);
+        }
     }
 
     /**
@@ -1055,10 +1058,10 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
-    public void openStatsCard() {
-        informationFrame.displayStats();
-        displayInformationWindow();
-    }
+    // public void openStatsCard() {
+    // informationFrame.displayStats();
+    // displayInformationWindow();
+    // }
 
     /**
      * Call when non-quitOnX close called. Hides child frames.
@@ -1066,7 +1069,9 @@ public class UIController extends PFComponent {
     public void hideChildPanels() {
         informationFrame.getUIComponent().setVisible(false);
         chatFrame.getUIComponent().setVisible(false);
-        systemMonitorFrame.getUIComponent().setVisible(false);
+        if (systemMonitorFrame != null) {
+            systemMonitorFrame.getUIComponent().setVisible(false);
+        }
     }
 
     /**
@@ -1156,9 +1161,11 @@ public class UIController extends PFComponent {
             chatFrame.getUIComponent().setVisible(false);
             chatFrame.getUIComponent().dispose();
 
-            systemMonitorFrame.storeValues();
-            systemMonitorFrame.getUIComponent().setVisible(false);
-            systemMonitorFrame.getUIComponent().dispose();
+            if (systemMonitorFrame != null) {
+                systemMonitorFrame.storeValues();
+                systemMonitorFrame.getUIComponent().setVisible(false);
+                systemMonitorFrame.getUIComponent().dispose();
+            }
 
             mainFrame.storeValues();
             mainFrame.getUIComponent().setVisible(false);
