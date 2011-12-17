@@ -57,6 +57,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -184,8 +185,8 @@ public class AboutDialog extends PFUIComponent {
         systemMonitorAction = new SystemMonitorAction();
         pacmanPanel = new PacmanPanel();
 
-        logoLabel = new RippleLabel(getController(), Icons
-            .getImageById(Icons.ABOUT_ANIMATION));
+        logoLabel = new RippleLabel(getController(),
+            Icons.getImageById(Icons.ABOUT_ANIMATION));
         logoLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
@@ -222,20 +223,20 @@ public class AboutDialog extends PFUIComponent {
             .getLicenseKeyModel().getValue();
         String license = licKey != null ? Translation.getTranslation(
             "about_dialog.power_folder.license", licKey.toString()) : "";
-        powerFolder = createTextBox(Translation
-            .getTranslation("general.application.name"), Translation
-            .getTranslation("about_dialog.power_folder.text",
+        powerFolder = createTextBox(
+            Translation.getTranslation("general.application.name"),
+            Translation.getTranslation("about_dialog.power_folder.text",
                 Controller.PROGRAM_VERSION)
-            + '\n'
-            + Translation.getTranslation(
-                "about_dialog.power_folder.build_date", buildDate)
-            + '\n'
-            + Translation.getTranslation(
-                "about_dialog.power_folder.build_time", buildTime)
-            + '\n'
-            + Translation.getTranslation(
-                "about_dialog.power_folder.distribution", getController()
-                    .getDistribution().getName()) + '\n' + license);
+                + '\n'
+                + Translation.getTranslation(
+                    "about_dialog.power_folder.build_date", buildDate)
+                + '\n'
+                + Translation.getTranslation(
+                    "about_dialog.power_folder.build_time", buildTime)
+                + '\n'
+                + Translation.getTranslation(
+                    "about_dialog.power_folder.distribution", getController()
+                        .getDistribution().getName()) + '\n' + license);
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -249,32 +250,36 @@ public class AboutDialog extends PFUIComponent {
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
-        system = createTextBox(Translation
-            .getTranslation("about_dialog.your_system.title"), Translation
-            .getTranslation("about_dialog.your_system.java_version",
+        system = createTextBox(
+            Translation.getTranslation("about_dialog.your_system.title"),
+            Translation.getTranslation("about_dialog.your_system.java_version",
                 JavaVersion.systemVersion().toString())
-            + '\n'
-            + Translation.getTranslation("about_dialog.your_system.os", System
-                .getProperty("os.name"))
-            + " ("
-            + arch
-            + ')'
-            + '\n'
-            + Translation.getTranslation("about_dialog.your_system.screen",
-                String.valueOf(dim.width), String.valueOf(dim.height))
-            + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.max",
-                String.valueOf(Runtime.getRuntime().maxMemory() / 1024 / 1024))
-            + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.used",
-                String
-                    .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
-            + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.datasize",
-                Format.formatBytesShort(calculateTotalLocalSharedSize()))
-            + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.dbsize",
-                String.valueOf(dbSize)));
+                + '\n'
+                + Translation.getTranslation("about_dialog.your_system.os",
+                    System.getProperty("os.name"))
+                + " ("
+                + arch
+                + ')'
+                + '\n'
+                + Translation.getTranslation("about_dialog.your_system.screen",
+                    String.valueOf(dim.width), String.valueOf(dim.height))
+                + '\n'
+                + Translation.getTranslation(
+                    "about_dialog.power_folder.max",
+                    String
+                        .valueOf(Runtime.getRuntime().maxMemory() / 1024 / 1024))
+                + '\n'
+                + Translation.getTranslation(
+                    "about_dialog.power_folder.used",
+                    String
+                        .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
+                + '\n'
+                + Translation.getTranslation(
+                    "about_dialog.power_folder.datasize",
+                    Format.formatBytesShort(calculateTotalLocalSharedSize()))
+                + '\n'
+                + Translation.getTranslation(
+                    "about_dialog.power_folder.dbsize", String.valueOf(dbSize)));
 
         team = createTextBox(
             Translation.getTranslation("about_dialog.team"),
@@ -287,10 +292,10 @@ public class AboutDialog extends PFUIComponent {
         contributers.setVisible(getController().getDistribution()
             .showCredentials());
 
-        translators = createTextBox(Translation
-            .getTranslation("about_dialog.translators"), "Bayan El Ameen\n"
-            + "Cecilia Saltori\n" + "Javier Isassi\n" + "Keblo\n"
-            + "Olle Wikstrom\n" + "Zhang Jia\n ");
+        translators = createTextBox(
+            Translation.getTranslation("about_dialog.translators"),
+            "Bayan El Ameen\n" + "Cecilia Saltori\n" + "Javier Isassi\n"
+                + "Keblo\n" + "Olle Wikstrom\n" + "Zhang Jia\n ");
         translators.setVisible(getController().getDistribution()
             .showCredentials());
     }
@@ -334,12 +339,20 @@ public class AboutDialog extends PFUIComponent {
         createSystemMonitorButton();
         createActivateButton();
         createOKButton();
-        focusList = new Component[]{okButton, checkForUpdatesButton,
-            systemMonitorButton};
-        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(activateButton,
-            checkForUpdatesButton, systemMonitorButton, okButton);
-        buttons.setOpaque(false);
 
+        JPanel buttons;
+        if (Feature.SYSTEM_MONITOR.isEnabled()) {
+            focusList = new Component[]{okButton, checkForUpdatesButton,
+                systemMonitorButton};
+            buttons = ButtonBarFactory.buildRightAlignedBar(activateButton,
+                checkForUpdatesButton, systemMonitorButton, okButton);
+        } else {
+            focusList = new Component[]{okButton, checkForUpdatesButton};
+            buttons = ButtonBarFactory.buildRightAlignedBar(activateButton,
+                checkForUpdatesButton, okButton);
+        }
+        buttons.setOpaque(false);
+        
         builder.add(pacmanPanel, cc.xy(1, 1));
         builder.add(buttons, cc.xy(3, 1));
         JPanel jPanel = builder.getPanel();
@@ -354,15 +367,15 @@ public class AboutDialog extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(TextLinesPanelBuilder.createTextPanel(Translation
-            .getTranslation("about_dialog.app_description"), HEADER_FONT_SIZE),
-            cc.xy(1, 1));
+        builder.add(TextLinesPanelBuilder.createTextPanel(
+            Translation.getTranslation("about_dialog.app_description"),
+            HEADER_FONT_SIZE), cc.xy(1, 1));
         builder.add(homeLink.getUIComponent(), cc.xy(1, 3));
         builder.add(docLink.getUIComponent(), cc.xy(1, 5));
         builder.add(supportLink.getUIComponent(), cc.xy(1, 7));
 
-        TitledBorder titledBorder = new TitledBorder(Translation
-            .getTranslation("about_dialog.general_information"));
+        TitledBorder titledBorder = new TitledBorder(
+            Translation.getTranslation("about_dialog.general_information"));
         titledBorder.setTitleColor(Color.BLACK);
         builder.setBorder(new CompoundBorder(titledBorder, new EmptyBorder(2,
             2, 2, 2)));
@@ -425,12 +438,12 @@ public class AboutDialog extends PFUIComponent {
     }
 
     private JButton createActivateButton() {
-        activateButton = new JButton(Translation
-            .getTranslation("about_dialog.activate.text"));
+        activateButton = new JButton(
+            Translation.getTranslation("about_dialog.activate.text"));
         activateButton.setToolTipText(Translation
             .getTranslation("about_dialog.activate.tips"));
-        activateButton.setMnemonic(Translation.getTranslation(
-            "about_dialog.activate.key").trim().charAt(0));
+        activateButton.setMnemonic(Translation
+            .getTranslation("about_dialog.activate.key").trim().charAt(0));
         if (getApplicationModel().getLicenseModel().getActivationAction() != null)
         {
             activateButton.addActionListener(getApplicationModel()
@@ -457,12 +470,14 @@ public class AboutDialog extends PFUIComponent {
      * @return The Button
      */
     private JButton createSystemMonitorButton() {
-        systemMonitorButton = new JButton(Translation
-            .getTranslation("about_dialog.system_monitor.text"));
+        systemMonitorButton = new JButton(
+            Translation.getTranslation("about_dialog.system_monitor.text"));
         systemMonitorButton.setToolTipText(Translation
             .getTranslation("about_dialog.system_monitor.tips"));
-        systemMonitorButton.setMnemonic(Translation.getTranslation(
-            "about_dialog.system_monitor.key").trim().charAt(0));
+        systemMonitorButton
+            .setMnemonic(Translation
+                .getTranslation("about_dialog.system_monitor.key").trim()
+                .charAt(0));
         systemMonitorButton.addActionListener(systemMonitorAction);
         systemMonitorButton.setBackground(Color.WHITE);
         return systemMonitorButton;
@@ -473,12 +488,13 @@ public class AboutDialog extends PFUIComponent {
      * invoke the manual updatechecker.
      */
     private void createCheckForUpdatesButton() {
-        checkForUpdatesButton = new JButton(Translation
-            .getTranslation("about_dialog.check_for_updates.text"));
+        checkForUpdatesButton = new JButton(
+            Translation.getTranslation("about_dialog.check_for_updates.text"));
         checkForUpdatesButton.setToolTipText(Translation
             .getTranslation("about_dialog.check_for_updates.tips"));
-        checkForUpdatesButton.setMnemonic(Translation.getTranslation(
-            "about_dialog.check_for_updates.key").trim().charAt(0));
+        checkForUpdatesButton.setMnemonic(Translation
+            .getTranslation("about_dialog.check_for_updates.key").trim()
+            .charAt(0));
         checkForUpdatesButton.addActionListener(updateAction);
         checkForUpdatesButton.setBackground(Color.WHITE);
     }
