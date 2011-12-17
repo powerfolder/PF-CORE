@@ -2667,7 +2667,7 @@ public class TransferManager extends PFComponent {
                 if (folder.getDiskItemFilter().isExcluded(fInfo)) {
                     logInfo("Aborting download, file is now excluded from sync: "
                         + fInfo);
-                    dlManager.abortAndCleanup();
+                    breakTransfers(fInfo);
                 }
             }
         }
@@ -2680,7 +2680,7 @@ public class TransferManager extends PFComponent {
                 if (folder.getDiskItemFilter().isExcluded(fInfo)) {
                     logInfo("Aborting upload, file is now excluded from sync: "
                         + fInfo);
-                    upload.abort();
+                    breakTransfers(fInfo);
                 }
             }
         }
