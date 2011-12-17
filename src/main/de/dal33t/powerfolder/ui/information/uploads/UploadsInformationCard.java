@@ -414,9 +414,6 @@ public class UploadsInformationCard extends InformationCard implements
                     Folder folder = getController().getFolderRepository()
                         .getFolder(fileInfo.getFolderInfo());
                     folder.addPattern(fileInfo.getRelativeName());
-                    if (upload.isStarted()) {
-                        upload.abort();
-                    }
                     getController().getTransferManager()
                         .checkActiveTranfersForExcludes();
                 }
