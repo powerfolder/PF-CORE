@@ -122,7 +122,12 @@ public enum Feature {
     /**
      * TRAC #2506
      */
-    COMPACT_MODE(false);
+    COMPACT_MODE(false),
+    
+    /**
+     * #2533 By default disabled to save memory. Otherwise swingx.jar would be required.
+     */
+    SYSTEM_MONITOR(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
