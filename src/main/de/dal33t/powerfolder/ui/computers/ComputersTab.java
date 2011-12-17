@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -103,7 +104,7 @@ public class ComputersTab extends PFUIComponent {
         builder.add(emptyLabel, cc.xy(1, 6));
         builder.add(scrollPane, cc.xy(1, 6));
 
-        uiComponent = builder.getPanel();
+        uiComponent = GradientPanel.create(builder.getPanel());
 
         updateEmptyLabel();
     }
