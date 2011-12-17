@@ -90,7 +90,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton newNoticesButton;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
-    private JButton openStatsChartButton;
+    //private JButton openStatsChartButton;
     private JButton openDebugButton;
     private JButton pendingMessagesButton;
     private boolean shownQualityWarningToday;
@@ -157,7 +157,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 mainBuilder.add(openDebugButton, cc.xy(col, 1));
                 col += 2;
             }
-            mainBuilder.add(openStatsChartButton, cc.xy(col, 1));
+//            mainBuilder.add(openStatsChartButton, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(openPreferencesButton, cc.xy(col, 1));
             col += 2;
@@ -257,9 +257,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         networkModeLabel = new JLabel("nwm");
 
-        openStatsChartButton = new JButtonMini(getApplicationModel()
-            .getActionModel().getOpenStatsChartsAction());
-        openStatsChartButton.setVisible(getController().isVerbose());
+//        openStatsChartButton = new JButtonMini(getApplicationModel()
+//            .getActionModel().getOpenStatsChartsAction());
+//        openStatsChartButton.setVisible(getController().isVerbose());
         openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
         openAboutBoxButton = new JButtonMini(getApplicationModel()
