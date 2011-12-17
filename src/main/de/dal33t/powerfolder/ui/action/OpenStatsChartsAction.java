@@ -36,6 +36,6 @@ public class OpenStatsChartsAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        getController().getUIController().openStatsCard();
+       // getController().getUIController().openStatsCard();
     }
 }
