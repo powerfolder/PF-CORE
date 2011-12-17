@@ -112,8 +112,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     // Methods for BaseDialog *************************************************
 
     public String getTitle() {
-        return Translation.getTranslation("preview_folder_remove.dialog.title",
-            folder.getInfo().name);
+        return Translation.getTranslation("preview_folder_remove.dialog.title");
     }
 
     protected Icon getIcon() {

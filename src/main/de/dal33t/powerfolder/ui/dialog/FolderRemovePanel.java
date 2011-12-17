@@ -156,8 +156,7 @@ public class FolderRemovePanel extends BaseDialog {
     // Methods for BaseDialog *************************************************
 
     public String getTitle() {
-        return Translation.getTranslation("folder_remove.dialog.title",
-            foInfo.name);
+        return Translation.getTranslation("folder_remove.dialog.title");
     }
 
     protected Icon getIcon() {
