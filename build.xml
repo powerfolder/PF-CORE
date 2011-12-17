@@ -102,16 +102,18 @@ For creation of the installer:
 			<include name="ejb3-persistence.jar" />
       		<include name="hibernate3-stripped.jar" />
 
-      		<include name="jfreechart/jfreechart-1.0.13.jar" />
-      		<include name="jfreechart/jcommon-1.0.16.jar" />
+      		<!--<include name="jfreechart/jfreechart-1.0.13.jar" />
+      		<include name="jfreechart/jcommon-1.0.16.jar" />-->
 
 			<include name="synthetica/commons-logging-1.1.jar" />
-			<include name="synthetica/swingx.jar" />
+			<!--<include name="synthetica/swingx.jar" />-->
 			<include name="synthetica/synthetica.jar" />
 			<include name="synthetica/syntheticaAddons.jar" />
 			<include name="synthetica/syntheticaBlackMoon.jar" />
 			<include name="synthetica/syntheticaBlackStar.jar" />
+			<!-- Text not readable:
 			<include name="synthetica/syntheticaBlackEye.jar" />
+			-->
 			<include name="synthetica/syntheticaBlueIce.jar" />
 			<include name="synthetica/syntheticaBlueMoon.jar" />
 			<include name="synthetica/syntheticaBlueSteel.jar" />

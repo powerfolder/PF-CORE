@@ -23,7 +23,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/forms-1.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/validation-2.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/binding-2.0.6.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/swingx.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/synthetica.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaAddons.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlackMoon.jar"/>
@@ -40,9 +39,7 @@
 	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="src/distribution/PowerFolderBasic"/>
 	<classpathentry kind="lib" path="lib/jfreechart/jcommon-1.0.16.jar"/>
-	<classpathentry kind="lib" path="lib/jfreechart/jfreechart-1.0.13.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate3-stripped.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlackEye.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/syntheticaClassy.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/syntheticaSimple2D.jar"/>
 	<classpathentry kind="output" path="bin"/>
