@@ -595,7 +595,10 @@ public class SettingsTab extends PFUIComponent {
             .getUIController(), originalDirectory, false);
         if (!files.isEmpty()) {
             File newDirectory = files.get(0);
-            if (FileUtils.isSubdirectory(originalDirectory, newDirectory)) {
+            boolean accessible = folder.checkIfDeviceDisconnected();
+            if (accessible
+                && FileUtils.isSubdirectory(originalDirectory, newDirectory))
+            {
                 DialogFactory.genericDialog(getController(),
                     Translation.getTranslation("settings_tab.subdir.title"),
                     Translation.getTranslation("settings_tab.subdir.text"),
