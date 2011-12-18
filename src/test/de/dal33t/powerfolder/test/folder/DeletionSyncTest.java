@@ -511,11 +511,17 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() >= 1
                     && getFolderAtBart().getFilesAsCollection(lisaAtBart)
                         .size() >= 1;
+            }
+
+            public String message() {
+                return "Files at lisa: " + getFolderAtLisa().getKnownFiles()
+                    + " Bart thinks: "
+                    + getFolderAtBart().getFilesAsCollection(lisaAtBart);
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next()
@@ -524,9 +530,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Now delete the file @ lisa.
         final File testFileLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next().getDiskFile(getContollerLisa().getFolderRepository());
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return testFileLisa.delete();
+            }
+
+            public String message() {
+                return "Unable to delete testfile at lisa: " + testFileLisa;
             }
         });
         scanFolder(getFolderAtLisa());
