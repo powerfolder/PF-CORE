@@ -764,7 +764,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
-        assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
+        assertEquals("getFolderAtBart().getKnownItemCount(): "
+            + getFolderAtBart().getKnownItemCount(), nFiles, getFolderAtBart()
+            .getKnownItemCount());
 
         // Wait for copy
         TestHelper.waitForCondition(200, new ConditionWithMessage() {
@@ -787,12 +789,15 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(100);
 
         // No active downloads?!
-        assertEquals(getContollerLisa().getTransferManager()
-            .getActiveDownloads().toString(), 0, getContollerLisa()
-            .getTransferManager().countActiveDownloads());
+        assertEquals("Lisa.countActiveDownloads: "
+            + getContollerLisa().getTransferManager().getActiveDownloads()
+                .toString(), 0, getContollerLisa().getTransferManager()
+            .countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+        assertEquals("Lisa downloadsCompletedRemoved "
+            + lisasListener.downloadsCompletedRemoved, nFiles,
+            lisasListener.downloadsCompletedRemoved);
 
         TestHelper.assertIncompleteFilesGone(this);
     }
