@@ -39,6 +39,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -531,7 +533,7 @@ public class UIController extends PFComponent {
         ActionListener systrayActionHandler = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (COMMAND_OPENUI.equals(e.getActionCommand())) {
-                    mainFrame.getUIComponent().setVisible(true);
+                    mainFrame.toFront();
                 } else if (COMMAND_HIDEUI.equals(e.getActionCommand())) {
                     mainFrame.getUIComponent().setVisible(false);
                 } else if (COMMAND_EXIT.equals(e.getActionCommand())) {
@@ -667,10 +669,8 @@ public class UIController extends PFComponent {
         sysTrayFoldersMenu = new Menu(
             Translation.getTranslation("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
-        if (OSUtil.isMacOS() || OSUtil.isWindowsSystem()) {
-            menu.add(sysTrayFoldersMenu);
-            menu.addSeparator();
-        }
+        menu.add(sysTrayFoldersMenu);
+        menu.addSeparator();
 
         item = menu.add(new MenuItem(Translation
             .getTranslation("systray.sync_all")));
@@ -679,9 +679,7 @@ public class UIController extends PFComponent {
 
         final MenuItem opentUI = new MenuItem(
             Translation.getTranslation("systray.show"));
-        if (!OSUtil.isMacOS()) {
-            menu.add(opentUI);
-        }
+        menu.add(opentUI);
         opentUI.setActionCommand(COMMAND_OPENUI);
         opentUI.addActionListener(systrayActionHandler);
 
@@ -707,8 +705,7 @@ public class UIController extends PFComponent {
         if (trayIcon != null) {
             trayIcon.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    mainFrame.getUIComponent().setVisible(true);
-                    mainFrame.getUIComponent().setState(Frame.NORMAL);
+                    mainFrame.toFront();
                 }
             });
         }
@@ -731,7 +728,14 @@ public class UIController extends PFComponent {
             public void componentHidden(ComponentEvent arg0) {
                 opentUI.setLabel(Translation.getTranslation("systray.show"));
                 opentUI.setActionCommand(COMMAND_OPENUI);
+            }
+        });
 
+        mainFrame.getUIComponent().addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowIconified(WindowEvent e) {
+                opentUI.setLabel(Translation.getTranslation("systray.show"));
+                opentUI.setActionCommand(COMMAND_OPENUI);
             }
         });
 

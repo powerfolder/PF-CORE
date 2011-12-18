@@ -482,19 +482,6 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Restore application from its minimized state
-     */
-    public void deiconify() {
-        // Popup whole application
-        uiComponent.setVisible(true);
-        int state = uiComponent.getExtendedState();
-        // Clear the iconified bit
-        state &= ~Frame.ICONIFIED;
-        // Deiconify the frame
-        uiComponent.setExtendedState(state);
-    }
-
-    /**
      * Set the Icon for the sttus tab.
      * 
      * @param statusIcon
@@ -796,11 +783,9 @@ public class MainFrame extends PFUIComponent {
                 boolean quitOnX = PreferencesEntry.QUIT_ON_X.getValueBoolean(c);
                 if (quitOnX) {
                     exitProgram();
-                } else if (!OSUtil.isMacOS()) {
+                } else {
                     getUIController().hideChildPanels();
                     uiComponent.setVisible(false);
-                } else {
-                    uiComponent.setState(Frame.ICONIFIED);
                 }
             } else {
                 // Quit if systray is not Supported by OS.
@@ -815,7 +800,7 @@ public class MainFrame extends PFUIComponent {
          */
         public void windowIconified(WindowEvent e) {
             boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
-                .getValueBoolean(c) && !OSUtil.isMacOS();
+                .getValueBoolean(c);
             if (minToSysTray) {
                 getUIController().hideChildPanels();
                 uiComponent.setVisible(false);
