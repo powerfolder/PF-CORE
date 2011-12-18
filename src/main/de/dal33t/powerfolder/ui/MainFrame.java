@@ -714,6 +714,10 @@ public class MainFrame extends PFUIComponent {
         });
     }
 
+    /**
+     * Source:
+     * http://stackoverflow.com/questions/309023/howto-bring-a-java-window-to-the-front
+     */
     public void toFront() {
         uiComponent.setVisible(true);
         int state = uiComponent.getExtendedState();
