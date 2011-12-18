@@ -2343,7 +2343,7 @@ public class Folder extends PFComponent {
 
         // Fire event
         fireMemberLeft(member);
-        
+        updateMetaFolderMembers();
         // TODO: Trigger file requestor. Other folders may have files to download.
     }
 
