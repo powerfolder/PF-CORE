@@ -63,6 +63,7 @@ import de.dal33t.powerfolder.message.KnownNodesExt;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.MessageProducer;
+import de.dal33t.powerfolder.message.Ping;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
@@ -1087,14 +1088,17 @@ public class NodeManager extends PFComponent {
                     rejectCause = "Duplicate connection detected to "
                         + member.getNick() + " ("
                         + member.getReconnectAddress() + ")";
-                    // Not accept node
-                    acceptHandler = false;
-                    // SKIP: Causes problems in LAN environment
-                    // } else if (member.isReconnecting()) {
-                    // rejectCause = "Already reconnecting";
-                    // logWarning("Not accepting, already connecting to :"
-                    // + member);
-                    // acceptHandler = false;
+                    // Ping connection
+                    try {
+                        member.sendMessage(new Ping());
+                        // Not accept node. Old peer is fine.
+                        acceptHandler = false;
+                    } catch (Exception e) {
+                        logWarning("Old connection to " + member.getNick()
+                            + " dropped. reconnecting");
+                        member.shutdown();
+                        acceptHandler = true;
+                    }
                 } else {
                     // Otherwise accept. (our member = disco)
                     acceptHandler = true;
