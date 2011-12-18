@@ -514,7 +514,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
 
             public String message() {
-                return "lisa dl req: " + lisasListener.downloadRequested
+                return "lisa: " + lisasListener.downloadRequested
                     + ", lisa dl comp: " + lisasListener.downloadCompleted
                     + ", bart ul comp: " + bartsListener.uploadCompleted
                     + " should be " + nFiles;
@@ -522,35 +522,32 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Check correct event fireing
-        assertEquals("Bart uploadAborted: " + bartsListener.uploadAborted, 0,
+        assertEquals("Bart uploadAborted: " + bartsListener, 0,
             bartsListener.uploadAborted);
-        assertEquals("Bart uploadBroken: " + bartsListener.uploadBroken, 0,
+        assertEquals("Bart uploadBroken: " + bartsListener, 0,
             bartsListener.uploadBroken);
-        assertEquals("Bart uploadRequested: " + bartsListener.uploadRequested,
-            nFiles, bartsListener.uploadRequested);
-        assertEquals("Bart uploadStarted: " + bartsListener.uploadStarted,
-            nFiles, bartsListener.uploadStarted);
-        assertEquals("Bart uploadCompleted: " + bartsListener.uploadCompleted,
-            nFiles, bartsListener.uploadCompleted);
+        assertEquals("Bart uploadRequested: " + bartsListener, nFiles,
+            bartsListener.uploadRequested);
+        assertEquals("Bart uploadStarted: " + bartsListener, nFiles,
+            bartsListener.uploadStarted);
+        assertEquals("Bart uploadCompleted: " + bartsListener, nFiles,
+            bartsListener.uploadCompleted);
 
         // Check correct event fireing
-        assertEquals("Lisa downloadRequested "
-            + lisasListener.downloadRequested, nFiles,
+        assertEquals("Lisa downloadRequested " + lisasListener, nFiles,
             lisasListener.downloadRequested);
         // We can't rely on that all downloads have been queued.
         // Might be started fast! So now queued message is sent
         // assertEquals(nFiles, lisasListener.downloadQueued);
-        assertEquals("Lisa downloadStarted " + lisasListener.downloadStarted,
-            nFiles, lisasListener.downloadStarted);
-        assertEquals("Lisa downloadCompleted "
-            + lisasListener.downloadCompleted, nFiles,
+        assertEquals("Lisa downloadStarted " + lisasListener, nFiles,
+            lisasListener.downloadStarted);
+        assertEquals("Lisa downloadCompleted " + lisasListener, nFiles,
             lisasListener.downloadCompleted);
-        assertEquals("Lisa downloadAborted " + lisasListener.downloadAborted,
-            0, lisasListener.downloadAborted);
-        assertEquals("Lisa downloadBroken " + lisasListener.downloadBroken, 0,
+        assertEquals("Lisa downloadAborted " + lisasListener, 0,
+            lisasListener.downloadAborted);
+        assertEquals("Lisa downloadBroken " + lisasListener, 0,
             lisasListener.downloadBroken);
-        assertEquals("Lisa downloadsCompletedRemoved "
-            + lisasListener.downloadsCompletedRemoved, 0,
+        assertEquals("Lisa downloadsCompletedRemoved " + lisasListener, 0,
             lisasListener.downloadsCompletedRemoved);
 
         // Test ;)
@@ -568,8 +565,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             0, getContollerLisa().getTransferManager().countActiveDownloads());
 
         clearCompletedDownloadsAtLisa();
-        assertEquals("Lisa downloadsCompletedRemoved "
-            + lisasListener.downloadsCompletedRemoved, nFiles,
+        assertEquals("Lisa downloadsCompletedRemoved " + lisasListener, nFiles,
             lisasListener.downloadsCompletedRemoved);
 
         TestHelper.assertIncompleteFilesGone(this);
@@ -1868,6 +1864,22 @@ public class FileTransferTest extends TwoControllerTestCase {
         {
             uploadsCompletedRemoved++;
             lastEvent = event;
+        }
+
+        @Override
+        public String toString() {
+            return "[pendingDownloadEnqued=" + pendingDownloadEnqued
+                + ", downloadRequested=" + downloadRequested
+                + ", downloadQueued=" + downloadQueued + ", downloadStarted="
+                + downloadStarted + ", downloadBroken=" + downloadBroken
+                + ", downloadAborted=" + downloadAborted
+                + ", downloadCompleted=" + downloadCompleted
+                + ", downloadsCompletedRemoved=" + downloadsCompletedRemoved
+                + ", uploadRequested=" + uploadRequested + ", uploadStarted="
+                + uploadStarted + ", uploadBroken=" + uploadBroken
+                + ", uploadAborted=" + uploadAborted + ", uploadCompleted="
+                + uploadCompleted + ", uploadsCompletedRemoved="
+                + uploadsCompletedRemoved + "]";
         }
 
     }
