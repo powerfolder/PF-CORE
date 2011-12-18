@@ -210,8 +210,14 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertEquals(1, fInfoAtBart.getVersion());
         assertEquals(1, fInfoAtLisa.getVersion());
 
-        assertTrue(fInfoAtLisa.isNewerThan(fInfoAtBart));
-        assertFalse(fInfoAtLisa.getSize() == fInfoAtBart.getSize());
+        assertTrue(
+            "File @ lisa is not newer than on bart. Lisa: "
+                + fInfoAtLisa.toDetailString() + ". Bart: "
+                + fInfoAtBart.toDetailString(),
+            fInfoAtLisa.isNewerThan(fInfoAtBart));
+        assertFalse("File size mismatch. Lisa: " + fInfoAtLisa.toDetailString()
+            + ". Bart: " + fInfoAtBart.toDetailString(),
+            fInfoAtLisa.getSize() == fInfoAtBart.getSize());
         // Now we have a conflict: SAME file version, but different modification
         // dates and sizes. In this scenario LISAs file wins
 
@@ -226,7 +232,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getProblems().size());
         assertEquals(0, getFolderAtLisa().getProblems().size());
         Problem p = getFolderAtBart().getProblems().iterator().next();
-        assertTrue(p instanceof FileConflictProblem);
+        assertTrue("No conflicts detected: " + getFolderAtBart().getProblems(),
+            p instanceof FileConflictProblem);
         FileConflictProblem cp = (FileConflictProblem) p;
         assertEquals(fInfoAtLisa, cp.getFileInfo());
 
@@ -271,7 +278,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
         p = getFolderAtLisa().getProblems().iterator().next();
-        assertTrue(p instanceof FileConflictProblem);
+        assertTrue("No conflicts detected: " + getFolderAtLisa().getProblems(),
+            p instanceof FileConflictProblem);
         cp = (FileConflictProblem) p;
         assertEquals(fInfoAtLisa, cp.getFileInfo());
     }
