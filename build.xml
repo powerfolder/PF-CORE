@@ -178,6 +178,7 @@ For creation of the installer:
 		<copy todir="${build.dir}">
 			<fileset dir="${skins.src.dir}">
 				<exclude name="**/*.java" />
+				<exclude name="**/*humbs.db" />
 			</fileset>
 		</copy>
 	</target>
