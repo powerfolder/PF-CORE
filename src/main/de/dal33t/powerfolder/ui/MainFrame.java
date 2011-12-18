@@ -727,6 +727,17 @@ public class MainFrame extends PFUIComponent {
         });
     }
 
+    public void toFront() {
+        uiComponent.setVisible(true);
+        int state = uiComponent.getExtendedState();
+        state &= ~JFrame.ICONIFIED;
+        uiComponent.setExtendedState(state);
+        uiComponent.setAlwaysOnTop(true);
+        uiComponent.toFront();
+        uiComponent.requestFocus();
+        uiComponent.setAlwaysOnTop(false);
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
