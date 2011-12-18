@@ -1424,7 +1424,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else if (downloadRecentlyCompleted(dlQueued.file)) {
                     logWarning("Remote side queued non-existant download: "
                         + dlQueued.file);
-                    sendMessageAsynchron(new AbortDownload(dlQueued.file));
+                   // sendMessageAsynchron(new AbortDownload(dlQueued.file));
                 }
                 expectedTime = 100;
 
