@@ -1438,12 +1438,13 @@ public class FileTransferTest extends TwoControllerTestCase {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
+                    && bartListener.downloadStarted >= 2
                     && lisaListener.downloadAborted == 0
                     && lisaListener.downloadBroken == 0
                     && bartListener.uploadRequested >= 2
+                    && bartListener.uploadStarted >= 2
                     && bartListener.uploadAborted == 0
                     && bartListener.uploadBroken == 0
-                    && bartListener.uploadStarted >= 2
                     && bartListener.uploadCompleted >= 2;
             }
 
