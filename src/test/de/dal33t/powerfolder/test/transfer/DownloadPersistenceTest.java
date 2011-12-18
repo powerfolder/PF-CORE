@@ -66,8 +66,8 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         {
             assertTrue(dlManager.getTempFile() == null);
             assertTrue("Got state on completed download: "
-                + dlManager.getState().getState().toString(), dlManager
-                .isCompleted());
+                + dlManager.getState().getState().toString(),
+                dlManager.isCompleted());
         }
 
         startControllerLisa();
@@ -85,8 +85,10 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             assertEquals(0, f.getVersion());
         }
 
-        assertEquals(nFiles, getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection().size());
+        assertEquals("Invalid number of completed downloads: "
+            + getContollerLisa().getTransferManager()
+                .getCompletedDownloadsCollection(), nFiles, getContollerLisa()
+            .getTransferManager().getCompletedDownloadsCollection().size());
 
         for (DownloadManager dlManager : getContollerLisa()
             .getTransferManager().getCompletedDownloadsCollection())
@@ -121,15 +123,17 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
 
         scanFolder(getFolderAtBart());
         for (FileInfo fInfo : getFolderAtBart().getKnownFiles()) {
-            assertFileMatch(fInfo.getDiskFile(getContollerBart()
-                .getFolderRepository()), fInfo, getContollerBart());
+            assertFileMatch(
+                fInfo.getDiskFile(getContollerBart().getFolderRepository()),
+                fInfo, getContollerBart());
             assertEquals(1, fInfo.getVersion());
             assertTrue(fInfo.getSize() > 0);
         }
         scanFolder(getFolderAtLisa());
         for (FileInfo fInfo : getFolderAtLisa().getKnownFiles()) {
-            assertFileMatch(fInfo.getDiskFile(getContollerLisa()
-                .getFolderRepository()), fInfo, getContollerLisa());
+            assertFileMatch(
+                fInfo.getDiskFile(getContollerLisa().getFolderRepository()),
+                fInfo, getContollerLisa());
             assertEquals(1, fInfo.getVersion());
             assertTrue(fInfo.getSize() > 0);
         }
