@@ -59,7 +59,6 @@ public class ApplicationModel extends PFUIComponent {
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private ValueModel chatNotificationsValueModel;
-    private ValueModel displayChatMessageValueModel;
     private ValueModel systemNotificationsValueModel;
     private ValueModel useOSModel;
     private LicenseModel licenseModel;
@@ -92,16 +91,6 @@ public class ApplicationModel extends PFUIComponent {
                 public void propertyChange(PropertyChangeEvent evt) {
                     PreferencesEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
                         controller, (Boolean) evt.getNewValue());
-                    controller.saveConfig();
-                }
-            });
-        displayChatMessageValueModel = new ValueHolder(
-            PreferencesEntry.SHOW_CHAT_MESAGE.getValueBoolean(controller));
-        displayChatMessageValueModel
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    PreferencesEntry.SHOW_CHAT_MESAGE.setValue(controller,
-                        (Boolean) evt.getNewValue());
                     controller.saveConfig();
                 }
             });
@@ -195,10 +184,6 @@ public class ApplicationModel extends PFUIComponent {
         return chatNotificationsValueModel;
     }
 
-    public ValueModel getDisplayChatMessageValueModel() {
-        return displayChatMessageValueModel;
-    }
-
     public ValueModel getSystemNotificationsValueModel() {
         return systemNotificationsValueModel;
     }
@@ -220,10 +205,8 @@ public class ApplicationModel extends PFUIComponent {
             }
             getController().getUIController().showChatNotification(
                 event.getMemberInfo(),
-                (Boolean) displayChatMessageValueModel.getValue() ? Translation
-                    .getTranslation("chat.notification.title_long", event
-                        .getMemberInfo().getNick()) : Translation
-                    .getTranslation("chat.notification.title"),
+                Translation.getTranslation("chat.notification.title_long", 
+                        event.getMemberInfo().getNick()),
                 event.getMessage());
         }
 

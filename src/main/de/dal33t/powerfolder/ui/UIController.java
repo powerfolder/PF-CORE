@@ -601,9 +601,6 @@ public class UIController extends PFComponent {
         menu.add(notificationsMenu);
         notificationsMenu.addActionListener(systrayActionHandler);
 
-        final CheckboxMenuItem chatMessageMenuItem = new CheckboxMenuItem(
-            Translation.getTranslation("systray.notifications.chat.messages"));
-
         final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(
             Translation.getTranslation("systray.notifications.chat"));
         notificationsMenu.add(chatMenuItem);
@@ -611,7 +608,6 @@ public class UIController extends PFComponent {
             .getChatNotificationsValueModel();
         boolean selected = (Boolean) chatNotificationsValueModel.getValue();
         chatMenuItem.setState(selected);
-        chatMessageMenuItem.setEnabled(selected);
         chatMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 chatNotificationsValueModel.setValue(chatMenuItem.getState());
@@ -622,29 +618,8 @@ public class UIController extends PFComponent {
                 public void propertyChange(PropertyChangeEvent evt) {
                     boolean selected2 = (Boolean) evt.getNewValue();
                     chatMenuItem.setState(selected2);
-                    chatMessageMenuItem.setEnabled(selected2);
                 }
             });
-
-        notificationsMenu.add(chatMessageMenuItem);
-        final ValueModel showChatMessageValueModel = applicationModel
-            .getDisplayChatMessageValueModel();
-        chatMessageMenuItem.setState((Boolean) showChatMessageValueModel
-            .getValue());
-        chatMessageMenuItem.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                showChatMessageValueModel.setValue(chatMessageMenuItem
-                    .getState());
-            }
-        });
-        showChatMessageValueModel
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    chatMessageMenuItem.setState((Boolean) evt.getNewValue());
-                }
-            });
-
-        notificationsMenu.addSeparator();
 
         final CheckboxMenuItem systemMenuItem = new CheckboxMenuItem(
             Translation.getTranslation("systray.notifications.system"));

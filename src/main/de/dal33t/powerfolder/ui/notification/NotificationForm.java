@@ -43,7 +43,6 @@ public class NotificationForm extends JPanel {
 
     private final Controller controller;
     private JCheckBox neverShowChatNotificationCB;
-    private JCheckBox displayChatMessageCB;
     private JCheckBox neverShowSystemNotificationCB;
     private final String messageText;
 
@@ -119,22 +118,12 @@ public class NotificationForm extends JPanel {
 
         panel.add(new JSeparator(), cc.xyw(2, 6, internalWidth));
 
-        boolean showChatMessage = (Boolean) controller.getUIController()
-                .getApplicationModel().getDisplayChatMessageValueModel()
-                .getValue();
-
         if (showButtons) {
             if (chat) {
                 neverShowChatNotificationCB = new JCheckBox(Translation.getTranslation(
                         "notification_form.never_show_chat_notifications"));
                 neverShowChatNotificationCB.addActionListener(new MyActionListener());
                 panel.add(neverShowChatNotificationCB, cc.xyw(2, 8, internalWidth));
-
-                displayChatMessageCB = new JCheckBox(Translation.getTranslation(
-                        "notification_form.display_chat_messages"));
-                displayChatMessageCB.setSelected(showChatMessage);
-                displayChatMessageCB.addActionListener(new MyActionListener());
-                panel.add(displayChatMessageCB, cc.xyw(2, 9, internalWidth));
             } else {
                 neverShowSystemNotificationCB = new JCheckBox(Translation.getTranslation(
                         "notification_form.never_show_system_notifications"));
@@ -145,11 +134,8 @@ public class NotificationForm extends JPanel {
 
         panel.add(createHeaderPanel(titleText), cc.xyw(2, 2, internalWidth));
 
-        boolean showMessage = !chat || showChatMessage;
-        String message = showMessage ? messageText :
-                Translation.getTranslation("chat.notification.message");
         JTextArea textArea = new JTextArea();
-        textArea.setText(message);
+        textArea.setText(messageText);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         panel.add(textArea, new CellConstraints(2, 4, internalWidth, 1,
@@ -189,16 +175,10 @@ public class NotificationForm extends JPanel {
                 controller.getUIController().getApplicationModel()
                         .getChatNotificationsValueModel().setValue(
                         !neverShowChatNotificationCB.isSelected());
-                displayChatMessageCB.setEnabled(
-                        !neverShowChatNotificationCB.isSelected());
             } else if (e.getSource() == neverShowSystemNotificationCB) {
                 controller.getUIController().getApplicationModel()
                         .getSystemNotificationsValueModel().setValue(
                         !neverShowSystemNotificationCB.isSelected());
-            } else if (e.getSource() == displayChatMessageCB) {
-                controller.getUIController().getApplicationModel()
-                        .getDisplayChatMessageValueModel().setValue(
-                        displayChatMessageCB.isSelected());
             }
         }
     }
