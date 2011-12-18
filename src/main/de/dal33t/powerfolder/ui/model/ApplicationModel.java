@@ -134,6 +134,10 @@ public class ApplicationModel extends PFUIComponent {
 
             getController().setSilentMode(false);
 
+            Folder metaFolder = getController().getFolderRepository()
+                .getMetaFolderForParent(folder.getInfo());
+            metaFolder.scanLocalFiles(true);
+
             // Let other nodes scan now!
             folder.broadcastScanCommand();
 
