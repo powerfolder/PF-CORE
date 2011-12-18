@@ -1421,10 +1421,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                     .getActiveDownload(this, dlQueued.file);
                 if (dl != null) {
                     dl.setQueued(dlQueued.file);
-                } else if (downloadRecentlyCompleted(dlQueued.file)) {
+                } else if (!downloadRecentlyCompleted(dlQueued.file)) {
                     logWarning("Remote side queued non-existant download: "
                         + dlQueued.file);
-                   // sendMessageAsynchron(new AbortDownload(dlQueued.file));
+                   sendMessageAsynchron(new AbortDownload(dlQueued.file));
                 }
                 expectedTime = 100;
 
@@ -2421,6 +2421,12 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     private boolean downloadRecentlyCompleted(FileInfo fInfo) {
         Reject.ifNull(fInfo, "FileInfo is null");
+        // Can't tell. So maybe yes!
+        if (ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+            .getValueInt(getController()) == 0)
+        {
+            return true;
+        }
         Download dl = getController().getTransferManager()
             .getCompletedDownload(this, fInfo);
         if (dl != null) {
