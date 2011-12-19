@@ -134,10 +134,6 @@ public class ApplicationModel extends PFUIComponent {
 
             getController().setSilentMode(false);
 
-            Folder metaFolder = getController().getFolderRepository()
-                .getMetaFolderForParent(folder.getInfo());
-            metaFolder.scanLocalFiles(true);
-
             // Let other nodes scan now!
             folder.broadcastScanCommand();
 
@@ -156,6 +152,9 @@ public class ApplicationModel extends PFUIComponent {
             .getMetaFolderForParent(folder.getInfo());
         metaFolder.scanLocalFiles(true);
         metaFolder.syncRemoteDeletedFiles(true);
+        metaFolder.getStatistic().scheduleCalculate();
+
+        folder.getStatistic().scheduleCalculate();
     }
 
     // Exposing ***************************************************************
@@ -209,9 +208,8 @@ public class ApplicationModel extends PFUIComponent {
             }
             getController().getUIController().showChatNotification(
                 event.getMemberInfo(),
-                Translation.getTranslation("chat.notification.title_long", 
-                        event.getMemberInfo().getNick()),
-                event.getMessage());
+                Translation.getTranslation("chat.notification.title_long",
+                    event.getMemberInfo().getNick()), event.getMessage());
         }
 
         public void chatAdvice(ChatAdviceEvent event) {
