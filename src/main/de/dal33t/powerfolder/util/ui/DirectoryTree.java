@@ -30,7 +30,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.awt.*;
+
+import org.apache.commons.logging.Log;
 
 /**
  * Class to render a tree of file system directories.
@@ -39,6 +43,8 @@ import java.awt.*;
  * be accessed through DirectoryChooser.
  */
 class DirectoryTree extends JTree {
+
+    private static final Logger log = Logger.getLogger(DirectoryTree.class.getName());
 
     /**
      * List of online folder names. Display with a different icon in the tree
@@ -57,24 +63,25 @@ class DirectoryTree extends JTree {
     }
 
     /**
-     * Expands a path to the initially supplied diredctory.
+     * Expands a path to the initially supplied directory.
      *
      * @param file
      */
     public void initializePath(File file) {
         if (file == null) {
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "No file supplied.");
+            }
+            doDefault();
             return;
         }
 
-        // If the file is dud, show the roots,
-        // so the user does not see a blank tree.
+        // If the file is dud.
         if (!file.exists()) {
-            TreeNode node = (TreeNode) getModel().getRoot();
-            if (node instanceof DefaultMutableTreeNode) {
-                TreeNode[] path = {node};
-                TreePath tp = new TreePath(path);
-                expandPath(tp);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "File does not exist : " + file.getAbsolutePath());
             }
+            doDefault();
             return;
         }
 
@@ -94,6 +101,7 @@ class DirectoryTree extends JTree {
 
             // Expand recursivly through each path element.
             boolean first = true;
+            long depth = 0;
             while (st.hasMoreTokens()) {
 
                 if ((OSUtil.isLinux() || OSUtil.isMacOS()) && first) {
@@ -111,8 +119,19 @@ class DirectoryTree extends JTree {
                 if (!f.exists() || !f.canRead() || !f.isDirectory()
                     || f.isHidden() && !first)
                 {
-
                     // Abort if cannot access file at any level.
+                    if (first) {
+                        // Interesting. Why can we not access the root of an element?
+                        if (log.isLoggable(Level.FINE)) {
+                            String why = "Cannot access the base of " +
+                                    file.getAbsolutePath() + " because" +
+                                    (f.exists() ? "" : " (file does not exist)") +
+                                    (f.canRead() ? "" : " (file cannot be read)") +
+                                    (f.isDirectory() ? "" : " (file is not a directory)");
+                            log.log(Level.FINE, why.trim());
+                        }
+                    }
+                    doDefault();
                     return;
                 }
 
@@ -153,11 +172,40 @@ class DirectoryTree extends JTree {
 
                     // Lost the thread.
                     // Perhaps file system changed since last time?
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "Failed to navigate the tree depth "
+                                + depth + " for " +
+                                file.getAbsolutePath());
+                    }
+                    doDefault();
                     return;
                 }
+                depth++;
             }
         } finally {
             CursorUtils.returnToOriginal(this, c);
+        }
+    }
+
+    /**
+     * Can't display the idean path, so just show the roots, so the user does
+     * not see a blank tree.
+     */
+    private void doDefault() {
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Doing the default tree expansion.");
+        }
+        TreeNode node = (TreeNode) getModel().getRoot();
+        if (node instanceof DefaultMutableTreeNode) {
+            TreeNode[] path = {node};
+            TreePath tp = new TreePath(path);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "Expanding default root tree path...");
+            }
+            expandPath(tp);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "Expanded default root tree path.");
+            }
         }
     }
 
