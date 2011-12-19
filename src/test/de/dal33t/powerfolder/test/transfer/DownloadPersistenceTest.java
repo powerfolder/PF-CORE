@@ -6,7 +6,6 @@ import java.io.IOException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -75,7 +74,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
 
         for (FileInfo f : getFolderAtLisa().getKnownFiles()) {
             assertEquals(0, f.getVersion());

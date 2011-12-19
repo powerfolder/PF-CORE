@@ -65,7 +65,7 @@ public class RecycleTest extends ControllerTestCase {
         File file = getFolder().getDiskFile(fileInfo);
         assertFalse(archiver.hasArchivedFileInfo(fileInfo));
 
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
         getFolder().removeFilesLocal(fileInfo);
         fileInfo = getFolder().getKnownFiles().iterator().next();
         assertFalse(file.exists());

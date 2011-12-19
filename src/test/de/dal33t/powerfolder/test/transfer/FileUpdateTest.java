@@ -267,7 +267,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getFolderRepository());
         assertEquals(4, fInfoAtBart.getVersion());
 
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
         TestHelper.changeFile(fileAtLisa);
         scanFolder(getFolderAtLisa());
         fInfoAtLisa = fInfoAtLisa.getLocalFileInfo(getContollerLisa()

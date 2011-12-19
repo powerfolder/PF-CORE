@@ -150,7 +150,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
                 }
             }
         });
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
 
         assertTrue(outputFile.length() > 0);
         FileInputStream in = new FileInputStream(outputFile);

@@ -586,7 +586,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
         scanFolder(getFolderAtBart());
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
@@ -1331,7 +1331,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.changeFile(testFile);
 
         // Database not in sync!
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
 
         // Check correct event fireing
         assertEquals(

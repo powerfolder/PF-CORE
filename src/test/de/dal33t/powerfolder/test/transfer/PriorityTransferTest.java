@@ -125,7 +125,7 @@ public class PriorityTransferTest extends TwoControllerTestCase {
 
         // Wait a fixed amount of time so if something fails
         // above it'll be thrown by assertIsSatisfied below.
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
 
         mockery.assertIsSatisfied();
     }

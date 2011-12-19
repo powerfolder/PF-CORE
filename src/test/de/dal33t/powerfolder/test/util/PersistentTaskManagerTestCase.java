@@ -88,7 +88,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         Invitation inv = new Invitation(getFolderAtBart().getInfo(),
             getContollerBart().getMySelf().getInfo());
         InvitationUtil.invitationToNode(getContollerBart(), inv, lisaAtBart);
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
         // Should have one more task now.
         assertEquals(1 + bartInitialTasks, getContollerBart().getTaskManager().activeTaskCount());
 
@@ -110,7 +110,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
         mock.assertIsSatisfied();
     }
 }
