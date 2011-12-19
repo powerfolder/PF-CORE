@@ -490,6 +490,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getInfo());
 
+        disconnectBartAndLisa();
+        
         // Create a file with version = 1
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
@@ -508,6 +510,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .iterator().next(), getContollerBart());
         assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
             .getVersion());
+        
+        connectBartAndLisa();
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
