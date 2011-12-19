@@ -181,7 +181,8 @@ public abstract class TwoControllerTestCase extends TestCase {
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         TestHelper.addStartedController(controllerLisa);
         waitForStart(controllerLisa);
-        assertNotNull(controllerLisa.getConnectionListener());
+        assertNotNull("Connection listener of lisa is null",
+            controllerLisa.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controllerLisa);
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerLisa,
             false);
