@@ -1762,6 +1762,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
         public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
+        public List<FileInfo> metaFiles = new ArrayList<FileInfo>();
         private final boolean failOnSecondRequest;
 
         public MyTransferManagerListener(boolean failOnSecondRequest) {
@@ -1784,30 +1785,54 @@ public class FileTransferTest extends TwoControllerTestCase {
                 }
             }
             downloadsRequested.add(event.getFile());
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void downloadQueued(TransferManagerEvent event) {
             downloadQueued++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void downloadStarted(TransferManagerEvent event) {
             downloadStarted++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void downloadAborted(TransferManagerEvent event) {
             downloadAborted++;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void downloadBroken(TransferManagerEvent event) {
             downloadBroken++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void downloadCompleted(TransferManagerEvent event) {
             downloadCompleted++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void completedDownloadRemoved(
@@ -1815,6 +1840,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         {
             downloadsCompletedRemoved++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void pendingDownloadEnqueud(
@@ -1822,6 +1851,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         {
             pendingDownloadEnqued++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void uploadRequested(TransferManagerEvent event) {
@@ -1833,30 +1866,46 @@ public class FileTransferTest extends TwoControllerTestCase {
                     + event.getFile().toDetailString());
             }
             uploadsRequested.add(event.getFile());
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void uploadStarted(TransferManagerEvent event) {
             uploadStarted++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void uploadAborted(TransferManagerEvent event) {
             uploadAborted++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void uploadBroken(TransferManagerEvent event) {
             uploadAborted++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void uploadCompleted(TransferManagerEvent event) {
             uploadCompleted++;
             lastEvent = event;
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return false;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
         }
 
         public synchronized void completedUploadRemoved(
@@ -1864,6 +1913,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         {
             uploadsCompletedRemoved++;
             lastEvent = event;
+            // Meta-folder movements.
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                metaFiles.add(event.getFile());
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
         }
 
         @Override
@@ -1879,7 +1936,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                 + uploadStarted + ", uploadBroken=" + uploadBroken
                 + ", uploadAborted=" + uploadAborted + ", uploadCompleted="
                 + uploadCompleted + ", uploadsCompletedRemoved="
-                + uploadsCompletedRemoved + "]";
+                + uploadsCompletedRemoved + ", metafiles=" + metaFiles + "]";
         }
 
     }
