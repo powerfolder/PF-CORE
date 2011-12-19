@@ -275,7 +275,7 @@ public enum ConfigurationEntry {
     /**
      * #2248 Automatically assign client to server by IP address
      */
-    CONFIG_ASSIGN_IP_LIST("config.assign.iplist", "192.168.0.1-192.168.255.255"),
+    CONFIG_ASSIGN_IP_LIST("config.assign.iplist"),
 
     // Update settings ********************************************************
 
