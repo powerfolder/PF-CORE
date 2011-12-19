@@ -34,8 +34,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.awt.*;
 
-import org.apache.commons.logging.Log;
-
 /**
  * Class to render a tree of file system directories.
  *
