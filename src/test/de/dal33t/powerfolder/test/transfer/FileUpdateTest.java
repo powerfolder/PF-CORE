@@ -195,9 +195,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         disconnectBartAndLisa();
 
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
         TestHelper.changeFile(fileAtBart);
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(2500);
         TestHelper.changeFile(fileAtLisa);
 
         scanFolder(getFolderAtBart());
@@ -209,7 +209,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .next();
         assertEquals(1, fInfoAtBart.getVersion());
         assertEquals(1, fInfoAtLisa.getVersion());
-
+        assertFalse("Date of conflicting file same", fInfoAtBart
+            .getModifiedDate().equals(fInfoAtLisa.getModifiedDate()));
+        assertTrue("Date of conflicting file problem", fInfoAtBart
+            .getModifiedDate().getTime() < fInfoAtLisa.getModifiedDate()
+            .getTime());
         assertTrue(
             "File @ lisa is not newer than on bart. Lisa: "
                 + fInfoAtLisa.toDetailString() + ". Bart: "
@@ -218,6 +222,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertFalse("File size mismatch. Lisa: " + fInfoAtLisa.toDetailString()
             + ". Bart: " + fInfoAtBart.toDetailString(),
             fInfoAtLisa.getSize() == fInfoAtBart.getSize());
+
         // Now we have a conflict: SAME file version, but different modification
         // dates and sizes. In this scenario LISAs file wins
 
