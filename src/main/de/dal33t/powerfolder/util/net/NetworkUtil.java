@@ -184,7 +184,8 @@ public class NetworkUtil {
                 }
             }
             return false;
-        } catch (SocketException e) {
+        } catch (Exception e) {
+            LOG.warning("Unable to check network setup: " + e);
             return false;
         }
     }
@@ -218,79 +219,92 @@ public class NetworkUtil {
         Reject.ifNull(addr, "Address");
         Reject.ifNull(ia, "InterfaceAddress");
 
-        if (!(ia.getAddress() instanceof Inet4Address)
-            || !(addr instanceof Inet4Address))
-        {
-            // TODO How?
+        try {
+            if (!(ia.getAddress() instanceof Inet4Address)
+                || !(addr instanceof Inet4Address))
+            {
+                // TODO How?
+                return false;
+            }
+            byte[] bAddr = ia.getAddress().getAddress();
+            int iAddr = (bAddr[0] << 24) + (bAddr[1] << 16) + (bAddr[2] << 8)
+                + ((int) bAddr[3] & 0xFF);
+            int iMask = 0;
+            int nplen = ia.getNetworkPrefixLength();
+            if (nplen > 32) {
+                if (ia.getAddress().isSiteLocalAddress()) {
+                    // UGLY HACK because of:
+                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                    // Simply assume a C-class network on site local addresses.
+                    nplen = 24;
+                } else if (ia.getAddress().isLinkLocalAddress()) {
+                    // UGLY HACK because of:
+                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                    // Simply assume a B-class network on link local addresses.
+                    // http://en.wikipedia.org/wiki/Link-local_address
+                    nplen = 16;
+                } else if (ia.getAddress().isLoopbackAddress()) {
+                    // UGLY HACK because of:
+                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                    // Simply assume a A-class network on local addresses
+                    // (127.0.0.1)
+                    nplen = 8;
+                } else {
+                    // Cannot handle
+                    return false;
+                }
+            } else if (nplen <= 0) {
+                if (ia.getAddress().isLoopbackAddress()) {
+                    // UGLY HACK because of:
+                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
+                    // Simply assume a A-class network on local addresses
+                    // (127.0.0.1)
+                    nplen = 8;
+                } else {
+                    // Cannot handle
+                    return false;
+                }
+            }
+            for (int i = 0; i < nplen; i++) {
+                int mod = 1 << (31 - i);
+                iMask += mod;
+            }
+            int subnetAddr = iAddr & iMask;
+
+            byte[] btAddress = addr.getAddress();
+            int itAddr = (btAddress[0] << 24) + (btAddress[1] << 16)
+                + (btAddress[2] << 8) + ((int) btAddress[3] & 0xFF);
+            int tsubnetAddr = itAddr & iMask;
+            // On same subnet!
+            return tsubnetAddr == subnetAddr;
+        } catch (Exception e) {
+            LOG.severe("Prolbem while checking subnet mask. " + e);
             return false;
         }
-        byte[] bAddr = ia.getAddress().getAddress();
-        int iAddr = (bAddr[0] << 24) + (bAddr[1] << 16) + (bAddr[2] << 8)
-            + ((int) bAddr[3] & 0xFF);
-        int iMask = 0;
-        int nplen = ia.getNetworkPrefixLength();
-        if (nplen > 32) {
-            if (ia.getAddress().isSiteLocalAddress()) {
-                // UGLY HACK because of:
-                // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                // Simply assume a C-class network on site local addresses.
-                nplen = 24;
-            } else if (ia.getAddress().isLinkLocalAddress()) {
-                // UGLY HACK because of:
-                // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                // Simply assume a B-class network on link local addresses.
-                // http://en.wikipedia.org/wiki/Link-local_address
-                nplen = 16;
-            } else if (ia.getAddress().isLoopbackAddress()) {
-                // UGLY HACK because of:
-                // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                // Simply assume a A-class network on local addresses
-                // (127.0.0.1)
-                nplen = 8;
-            } else {
-                // Cannot handle
-                return false;
-            }
-        } else if (nplen <= 0) {
-            if (ia.getAddress().isLoopbackAddress()) {
-                // UGLY HACK because of:
-                // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                // Simply assume a A-class network on local addresses
-                // (127.0.0.1)
-                nplen = 8;
-            } else {
-                // Cannot handle
-                return false;
-            }
-        }
-        for (int i = 0; i < nplen; i++) {
-            int mod = 1 << (31 - i);
-            iMask += mod;
-        }
-        int subnetAddr = iAddr & iMask;
-
-        byte[] btAddress = addr.getAddress();
-        int itAddr = (btAddress[0] << 24) + (btAddress[1] << 16)
-            + (btAddress[2] << 8) + ((int) btAddress[3] & 0xFF);
-        int tsubnetAddr = itAddr & iMask;
-        // On same subnet!
-        return tsubnetAddr == subnetAddr;
     }
 
     public static boolean isFromThisComputer(InetAddress addr)
         throws SocketException
     {
-        if (addr == null) {
-            return false;
-        }
-        if (addr.isLoopbackAddress() || addr.isLinkLocalAddress()) {
-            return true;
-        }
-        for (InterfaceAddress ia : getAllLocalNetworkAddressesCached().keySet())
-        {
-            if (ia.getAddress().equals(addr)) {
+        try {
+            if (addr == null) {
+                return false;
+            }
+            if (addr.isLoopbackAddress() || addr.isLinkLocalAddress()) {
                 return true;
             }
+            for (InterfaceAddress ia : getAllLocalNetworkAddressesCached()
+                .keySet())
+            {
+                if (ia == null || ia.getAddress() == null) {
+                    continue;
+                }
+                if (ia.getAddress().equals(addr)) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            LOG.severe("Unable to get network setup. " + e);
         }
         return false;
     }
