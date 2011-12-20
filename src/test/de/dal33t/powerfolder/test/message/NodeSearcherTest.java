@@ -164,6 +164,14 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.cancelSearch();
         assertTrue(searchResultModel.isEmpty());
     }
+    
+    public void testMixedSearchMultiple() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            testMixedSearch();
+            tearDown();
+            setUp();
+        }
+    }
 
     /**
      * Both cases with multiple search results.

@@ -249,8 +249,10 @@ public class NodeSearcher extends PFComponent {
 
             while (!stopSearching) {
                 while (!canidatesFromSupernodes.isEmpty()) {
-                    Member node = canidatesFromSupernodes.remove();
-                    if (checkMember(node) && node.matches(pattern)) {
+                    Member node = canidatesFromSupernodes.poll();
+                    if (node != null && checkMember(node)
+                        && node.matches(pattern))
+                    {
                         searchResultListModel.add(node);
                     }
                 }
