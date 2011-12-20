@@ -1430,11 +1430,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(binfo.inSyncWithDisk(fbart));
         connectBartAndLisa();
 
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
-                    && bartListener.downloadStarted >= 2
+                    && lisaListener.downloadStarted >= 2
                     && lisaListener.downloadAborted == 0
                     && lisaListener.downloadBroken == 0
                     && bartListener.uploadRequested >= 2
@@ -1445,16 +1445,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
 
             public String message() {
-                return "lisa: completed dl= " + lisaListener.downloadCompleted
-                    + ", req dl= " + lisaListener.downloadRequested
-                    + ", srtd dl= " + lisaListener.downloadStarted
-                    + ", brkn dl= " + lisaListener.downloadBroken
-                    + ", abrt dl= " + lisaListener.downloadAborted
-                    + "; bart: req ul= " + bartListener.uploadRequested
-                    + ", srtd ul= " + bartListener.uploadStarted
-                    + ", cmpld ul= " + bartListener.uploadCompleted
-                    + ", brkn ul= " + bartListener.uploadBroken + ", abrt ul="
-                    + bartListener.uploadAborted;
+                return "lisa: " + lisaListener + " bart: " + bartListener;
             }
         });
 
