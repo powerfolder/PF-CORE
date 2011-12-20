@@ -171,7 +171,9 @@ public class NodeSearcher extends PFComponent {
 
         public void nodeAdded(NodeManagerEvent e) {
             synchronized (searchThread) {
-                canidatesFromSupernodes.add(e.getNode());
+                synchronized (canidatesFromSupernodes) {
+                    canidatesFromSupernodes.add(e.getNode());
+                }
                 searchThread.notifyAll();
             }
         }
@@ -180,7 +182,9 @@ public class NodeSearcher extends PFComponent {
             // if connected and hiding of offline is enabled the should popup in
             // search result
             synchronized (searchThread) {
-                canidatesFromSupernodes.add(e.getNode());
+                synchronized (canidatesFromSupernodes) {
+                    canidatesFromSupernodes.add(e.getNode());
+                }
                 searchThread.notifyAll();
             }
         }
@@ -197,7 +201,9 @@ public class NodeSearcher extends PFComponent {
         public void friendRemoved(NodeManagerEvent e) {
             // if friend status removed it should popup in search result (rare)
             synchronized (searchThread) {
-                canidatesFromSupernodes.add(e.getNode());
+                synchronized (canidatesFromSupernodes) {
+                    canidatesFromSupernodes.add(e.getNode());
+                }
                 searchThread.notifyAll();
             }
         }
@@ -249,7 +255,10 @@ public class NodeSearcher extends PFComponent {
 
             while (!stopSearching) {
                 while (!canidatesFromSupernodes.isEmpty()) {
-                    Member node = canidatesFromSupernodes.poll();
+                    Member node;
+                    synchronized (canidatesFromSupernodes) {
+                        node = canidatesFromSupernodes.poll();
+                    }
                     if (node != null && checkMember(node)
                         && node.matches(pattern))
                     {
