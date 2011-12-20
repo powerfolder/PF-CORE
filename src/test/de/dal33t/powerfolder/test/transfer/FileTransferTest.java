@@ -379,9 +379,19 @@ public class FileTransferTest extends TwoControllerTestCase {
             getFolderAtLisa().getLocalBase().list().length);
 
         // No active downloads?
-        assertEquals("Lisa.countActiveDownloads: "
-            + getContollerLisa().getTransferManager().countActiveDownloads(),
-            0, getContollerLisa().getTransferManager().countActiveDownloads());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() == 0;
+            }
+
+            public String message() {
+                return "Lisa.countActiveDownloads: "
+                    + getContollerLisa().getTransferManager()
+                        .countActiveDownloads();
+            }
+        });
 
         clearCompletedDownloadsAtLisa();
         // give time for event firering
