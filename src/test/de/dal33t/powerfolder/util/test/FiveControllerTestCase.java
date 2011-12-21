@@ -227,7 +227,6 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         TestHelper.waitMilliSeconds(100);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_MAGGIE, getContollerMaggie(),
             profile);
-        TestHelper.waitMilliSeconds(100);
         if (checkMemberships) {
             try {
                 // Give them time to join

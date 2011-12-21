@@ -26,9 +26,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import junit.framework.TestCase;
@@ -72,8 +72,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("user.home", new File("build/test/home")
-            .getCanonicalPath());
+        System.setProperty("user.home",
+            new File("build/test/home").getCanonicalPath());
         Loggable.setLogNickPrefix(true);
         super.setUp();
 
@@ -110,8 +110,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
-        // add a pause to make sure files can be cleaned before next test.
-        TestHelper.waitMilliSeconds(500);
         mctFolder = null;
     }
 
@@ -215,8 +213,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
 
-        if (cont1.getNodeManager().getConnectedNodes().contains(
-            cont2.getMySelf()))
+        if (cont1.getNodeManager().getConnectedNodes()
+            .contains(cont2.getMySelf()))
         {
             System.out
                 .println("NOT connecting, Controllers already connected: "
@@ -250,8 +248,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
                         && member1atCon2.isCompletelyConnected();
                     boolean nodeManagersOK = cont1.getNodeManager()
                         .getConnectedNodes().contains(member2atCon1)
-                        && cont2.getNodeManager().getConnectedNodes().contains(
-                            member1atCon2);
+                        && cont2.getNodeManager().getConnectedNodes()
+                            .contains(member1atCon2);
                     return connected && nodeManagersOK;
                 }
 
@@ -477,8 +475,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
         for (String id : controllers.keySet()) {
             final Controller controller = controllers.get(id);
             controller.shutdown();
-            // Give them time to shut down
-            TestHelper.waitMilliSeconds(200);
             int i = 0;
             while (controller.isShuttingDown()) {
                 i++;
@@ -492,8 +488,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
             // add a pause to make sure files can be cleaned before next
             // test.
             TestHelper.waitMilliSeconds(500);
-            assertFalse("Shutdown of controller(" + id + ") failed", controller
-                .isShuttingDown());
+            assertFalse("Shutdown of controller(" + id + ") failed",
+                controller.isShuttingDown());
             assertFalse("Shutdown of controller(" + id + ")  failed",
                 controller.isStarted());
         }

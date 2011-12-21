@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
@@ -70,7 +69,6 @@ public abstract class ControllerTestCase extends TestCase {
         TestHelper.cleanTestDir();
 
         // Copy fresh configs
-
         // Start controllers
         System.out.println("Starting controller...");
         controller = Controller.createController();
@@ -82,9 +80,6 @@ public abstract class ControllerTestCase extends TestCase {
 
         controller.startConfig("ControllerBart");
         waitForStart(controller);
-        // Wait for initial maintenance
-        // triggerAndWaitForInitialMaitenenace(controller);
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controller, false);
 
         System.out.println("Controller started");
     }
@@ -94,8 +89,6 @@ public abstract class ControllerTestCase extends TestCase {
         super.tearDown();
         controller.shutdown();
 
-        // Give them time to shut down
-        Thread.sleep(1000);
         int i = 0;
         while (controller.isShuttingDown()) {
             i++;
@@ -145,7 +138,6 @@ public abstract class ControllerTestCase extends TestCase {
             .toString());
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile,
             archiveMode);
-        System.out.println(folder.getLocalBase());
     }
 
     /**

@@ -28,7 +28,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -171,9 +170,6 @@ public abstract class TwoControllerTestCase extends TestCase {
         TestHelper.addStartedController(controllerBart);
         waitForStart(controllerBart);
         assertNotNull(controllerBart.getConnectionListener());
-        // triggerAndWaitForInitialMaitenenace(controllerBart);
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerBart,
-            false);
     }
 
     protected void startControllerLisa() {
@@ -183,9 +179,6 @@ public abstract class TwoControllerTestCase extends TestCase {
         waitForStart(controllerLisa);
         assertNotNull("Connection listener of lisa is null",
             controllerLisa.getConnectionListener());
-        // triggerAndWaitForInitialMaitenenace(controllerLisa);
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerLisa,
-            false);
     }
 
     /**
@@ -300,9 +293,6 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         // Bart should be supernode
         assertTrue(controllerBart.getMySelf().isSupernode());
-
-        // For whatever.....
-        TestHelper.waitMilliSeconds(500);
     }
 
     /**
@@ -320,9 +310,6 @@ public abstract class TwoControllerTestCase extends TestCase {
                 return !bartAtLisa.isConnected() && !lisaAtBart.isConnected();
             }
         });
-        // Wait to make sure all affected threads (ConnectionHandler) have
-        // finished theier work.
-        TestHelper.waitMilliSeconds(500);
         System.out.println("Both Controllers disconnected");
     }
 
@@ -336,8 +323,6 @@ public abstract class TwoControllerTestCase extends TestCase {
             TestHelper.removeStartedController(controllerLisa);
         }
 
-        // Give them time to shut down
-        Thread.sleep(200);
         int i = 0;
         while (controllerBart.isShuttingDown()) {
             i++;
@@ -358,9 +343,6 @@ public abstract class TwoControllerTestCase extends TestCase {
         }
         assertFalse(controllerBart.isStarted());
         assertFalse(controllerLisa.isStarted());
-
-        // add a pause to make sure files can be cleaned before next test.
-        TestHelper.waitMilliSeconds(500);
     }
 
     /**
@@ -537,7 +519,8 @@ public abstract class TwoControllerTestCase extends TestCase {
         Controller controller)
     {
         boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
-        boolean sizeMatch = fInfo.isDeleted() || diskFile.length() == fInfo.getSize();
+        boolean sizeMatch = fInfo.isDeleted()
+            || diskFile.length() == fInfo.getSize();
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
         boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
