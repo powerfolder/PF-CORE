@@ -43,6 +43,14 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    public void testOverwriteToRecycleAndRestoreMultiple() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            testOverwriteToRecycleAndRestore();
+            tearDown();
+            setUp();
+        }
+    }
+
     /**
      * Test the overwrite of file (due to sync) results in copy of old one in
      * RecycleBin. After that the file is restored.
@@ -71,6 +79,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         assertTrue(fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart));
         assertEquals(testFileBart.length(), testFileLisa.length());
 
+        TestHelper.waitMilliSeconds(2500);
         // overwrite file at Bart
         TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
             testFileBart.getName(), new byte[]{6, 5, 6, 7});
@@ -106,8 +115,8 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
             .get(0);
 
         // Restore
-        archiveAtLisa.restore(infoAtLisa, infoAtLisa
-            .getDiskFile(getContollerLisa().getFolderRepository()));
+        archiveAtLisa.restore(infoAtLisa,
+            infoAtLisa.getDiskFile(getContollerLisa().getFolderRepository()));
 
         scanFolder(getFolderAtLisa());
         // File should be still in archive
