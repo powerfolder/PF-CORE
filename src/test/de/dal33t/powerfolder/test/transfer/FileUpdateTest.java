@@ -293,10 +293,18 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         connectBartAndLisa();
         // The old copy should have been distributed.
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+
             public boolean reached() {
                 return getFolderAtBart().getKnownItemCount() == 3
                     && getFolderAtLisa().getKnownItemCount() == 3;
+            }
+
+            public String message() {
+                return "Bart.getKnownItemCount: "
+                    + getFolderAtBart().getKnownItemCount()
+                    + ". Lisa.Bart.getKnownItemCount: "
+                    + getFolderAtLisa().getKnownItemCount();
             }
         });
         p = getFolderAtLisa().getProblems().iterator().next();
