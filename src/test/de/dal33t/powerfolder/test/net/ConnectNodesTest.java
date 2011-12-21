@@ -210,7 +210,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         // RECONNECT should happen!
         // Both are friends so connect!
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public String message() {
                 return "Lisa has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
