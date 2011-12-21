@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -187,9 +188,13 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         final File fileAtLisa = getFolderAtBart().getKnownFiles().iterator()
             .next().getDiskFile(getContollerLisa().getFolderRepository());
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
                 return fileAtLisa.exists();
+            }
+
+            public String message() {
+                return "File at lisa does not exists: " + fileAtLisa;
             }
         });
 
@@ -228,9 +233,14 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         connectBartAndLisa();
         // Let them sync.
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
                 return fileAtLisa.length() == fileAtBart.length();
+            }
+
+            public String message() {
+                return "Lisa file.length: " + fileAtLisa.length()
+                    + ". Bart file.length: " + fileAtBart.length();
             }
         });
         // Now Bart should have detected an conflict.
@@ -243,10 +253,17 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertEquals(fInfoAtLisa, cp.getFileInfo());
 
         // The old copy should have been distributed.
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtBart().getKnownItemCount() == 2
                     && getFolderAtLisa().getKnownItemCount() == 2;
+            }
+
+            public String message() {
+                return "Bart.getKnownItemCount: "
+                    + getFolderAtBart().getKnownItemCount()
+                    + ". Lisa.Bart.getKnownItemCount: "
+                    + getFolderAtLisa().getKnownItemCount();
             }
         });
 
