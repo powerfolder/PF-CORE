@@ -137,8 +137,10 @@ public class MainFrame extends PFUIComponent {
 
         row += 2;
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "main_frame.open_web_interface.text")), cc.xy(1, row));
+        builder.add(
+            new JLabel(Translation
+                .getTranslation("main_frame.open_web_interface.text")), cc.xy(
+                1, row));
         builder.add(openWebInterfaceButton, cc.xy(3, row));
 
         row += 2;
@@ -148,8 +150,11 @@ public class MainFrame extends PFUIComponent {
 
         row += 2;
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "main_frame.uncompact.text")), cc.xy(1, row));
+        builder
+            .add(
+                new JLabel(Translation
+                    .getTranslation("main_frame.uncompact.text")), cc
+                    .xy(1, row));
         builder.add(uncompactModeButton, cc.xy(3, row));
 
         uiComponent.getContentPane().removeAll();
@@ -202,7 +207,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
         uiComponent.setSize(width, height);
         setWindowSize(width, height);
-        
+
         // Pack elements
         uiComponent.pack();
         mainWidth = uiComponent.getWidth();
@@ -216,18 +221,17 @@ public class MainFrame extends PFUIComponent {
 
         configureInlineInfo();
 
-        if (PreferencesEntry.MAIN_FRAME_MAXIMIZED.getValueBoolean(
-                getController())) {
-            if (uiComponent.getRootPane().getUI() instanceof
-                    SyntheticaRootPaneUI) {
+        if (PreferencesEntry.MAIN_FRAME_MAXIMIZED
+            .getValueBoolean(getController()))
+        {
+            if (uiComponent.getRootPane().getUI() instanceof SyntheticaRootPaneUI)
+            {
                 ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
                     .setMaximizedBounds(uiComponent);
             }
             uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
     }
-
-    
 
     private void setWindowSize(int width, int height) {
         uiComponent.setSize(width, height);
@@ -292,28 +296,33 @@ public class MainFrame extends PFUIComponent {
 
         MyActionListener myActionListener = new MyActionListener();
 
-        uncompactModeButton = new JButtonMini(Icons.getIconById(Icons.UNCOMACT),
-                Translation.getTranslation("main_frame.uncompact.tips"));
+        uncompactModeButton = new JButtonMini(
+            Icons.getIconById(Icons.UNCOMACT),
+            Translation.getTranslation("main_frame.uncompact.tips"));
         uncompactModeButton.addActionListener(myActionListener);
 
         pauseResumeButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
-                Translation.getTranslation("main_frame.pause.tips"));
+            Translation.getTranslation("main_frame.pause.tips"));
         pauseResumeButton.addActionListener(myActionListener);
 
-        pauseResumeLabel = new JLabel(Translation.getTranslation("main_frame.pause.text"));
+        pauseResumeLabel = new JLabel(
+            Translation.getTranslation("main_frame.pause.text"));
 
         logInOutButton = new JButtonMini(Icons.getIconById(Icons.LOGIN),
-                Translation.getTranslation("main_frame.log_in.tip"));
+            Translation.getTranslation("main_frame.log_in.tip"));
         logInOutButton.addActionListener(myActionListener);
 
-        openWebInterfaceButton = new JButtonMini(Icons.getIconById(Icons.ONLINE_FOLDER),
-                Translation.getTranslation("main_frame.open_web_interface.tip"));
+        openWebInterfaceButton = new JButtonMini(
+            Icons.getIconById(Icons.ONLINE_FOLDER),
+            Translation.getTranslation("main_frame.open_web_interface.tip"));
         openWebInterfaceButton.addActionListener(myActionListener);
 
-        logInOutLabel = new JLabel(Translation.getTranslation("main_frame.log_in.text"));
+        logInOutLabel = new JLabel(
+            Translation.getTranslation("main_frame.log_in.text"));
 
         // add window listener, checks if exit is needed on pressing X
-        MyWindowListener myWindowListener = new MyWindowListener(getController());
+        MyWindowListener myWindowListener = new MyWindowListener(
+            getController());
         uiComponent.addWindowListener(myWindowListener);
         uiComponent.addWindowStateListener(myWindowListener);
 
@@ -321,8 +330,8 @@ public class MainFrame extends PFUIComponent {
         split.setOneTouchExpandable(false);
 
         // everything is decided in window listener
-        uiComponent.setDefaultCloseOperation(
-                WindowConstants.DO_NOTHING_ON_CLOSE);
+        uiComponent
+            .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         logoLabel = new JLabel();
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
@@ -364,21 +373,15 @@ public class MainFrame extends PFUIComponent {
         if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
             appName = "PowerFolder";
         }
-        String initial = appName + " v" + Controller.PROGRAM_VERSION;
-        if (getController().isVerbose()) {
-            // Append in front of programm name in verbose mode
-            title.append(getController().getMySelf().getNick() + " | "
-                + initial);
-        } else {
-            // Otherwise append nick at end
-            title.append(initial + " | "
-                + getController().getMySelf().getNick());
-        }
+        title.append(appName);
 
-        if (getController().isVerbose()
-            && getController().getBuildTime() != null)
-        {
-            title.append(" | build: " + getController().getBuildTime());
+        if (getController().isVerbose()) {
+            // Append in front of program name in verbose mode
+            title.append(" v" + Controller.PROGRAM_VERSION);
+            if (getController().getBuildTime() != null) {
+                title.append(" | build: " + getController().getBuildTime());
+            }
+            title.append(" | " + getController().getMySelf().getNick());
         }
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
@@ -605,7 +608,6 @@ public class MainFrame extends PFUIComponent {
                     infoWidth -= Constants.UI_DEFAULT_SCREEN_BORDER;
                 }
             }
-            
 
             // #2440:
             if (infoWidth < MIN_INFO_WIDTH) {
@@ -716,7 +718,8 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Source:
-     * http://stackoverflow.com/questions/309023/howto-bring-a-java-window-to-the-front
+     * http://stackoverflow.com/questions/309023/howto-bring-a-java-window
+     * -to-the-front
      */
     public void toFront() {
         uiComponent.setVisible(true);
@@ -774,11 +777,13 @@ public class MainFrame extends PFUIComponent {
                     // 3) Maximize window
                     // 4) Close info.
                     // 5) De-maximize
-                    // -> Main window must not return to main+info width but main width only.
-                    uiComponent.setSize(mainWidth, uiComponent.getSize().height);
+                    // -> Main window must not return to main+info width but
+                    // main width only.
+                    uiComponent
+                        .setSize(mainWidth, uiComponent.getSize().height);
                 }
             }
-           
+
         }
 
         public void windowClosing(WindowEvent e) {
@@ -860,24 +865,26 @@ public class MainFrame extends PFUIComponent {
     private void updateSilentMode() {
         if (getController().isSilentMode()) {
             pauseResumeButton.setIcon(Icons.getIconById(Icons.RUN));
-            pauseResumeButton.setToolTipText(Translation.getTranslation(
-                    "main_frame.resume.tips"));
-            pauseResumeLabel.setText(Translation.getTranslation(
-                    "main_frame.resume.text"));
+            pauseResumeButton.setToolTipText(Translation
+                .getTranslation("main_frame.resume.tips"));
+            pauseResumeLabel.setText(Translation
+                .getTranslation("main_frame.resume.text"));
         } else {
             pauseResumeButton.setIcon(Icons.getIconById(Icons.PAUSE));
-            pauseResumeButton.setToolTipText(Translation.getTranslation(
-                    "main_frame.pause.tips"));
-            pauseResumeLabel.setText(Translation.getTranslation(
-                    "main_frame.pause.text"));
+            pauseResumeButton.setToolTipText(Translation
+                .getTranslation("main_frame.pause.tips"));
+            pauseResumeLabel.setText(Translation
+                .getTranslation("main_frame.pause.text"));
         }
     }
 
     private void updateLoginLogout(ServerClientEvent event) {
         if (client.isLoggedIn()) {
-            logInOutLabel.setText(Translation.getTranslation("main_frame.log_out.text"));
+            logInOutLabel.setText(Translation
+                .getTranslation("main_frame.log_out.text"));
         } else {
-            logInOutLabel.setText(Translation.getTranslation("main_frame.log_in.text"));
+            logInOutLabel.setText(Translation
+                .getTranslation("main_frame.log_in.text"));
         }
     }
 
@@ -898,8 +905,8 @@ public class MainFrame extends PFUIComponent {
                 boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
                     .getValueBoolean(getController());
                 if (changeLoginAllowed) {
-                    PFWizard.openLoginWizard(getController(),
-                        getController().getOSClient());
+                    PFWizard.openLoginWizard(getController(), getController()
+                        .getOSClient());
                 }
             }
         }
@@ -941,5 +948,5 @@ public class MainFrame extends PFUIComponent {
             updateLoginLogout(event);
         }
     }
-    
+
 }
