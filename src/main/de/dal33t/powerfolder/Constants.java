@@ -288,7 +288,7 @@ public class Constants {
     /**
      * 100KB file minimum size for DELTA sync.
      */
-    public static final long MIN_SIZE_FOR_DELTA_SYNC = 100 * 1024;
+    public static final long DELTA_SYNC_MIN_FILESIZE = 50 * 1024;
 
     // ConnectionHandler constants ********************************************
 

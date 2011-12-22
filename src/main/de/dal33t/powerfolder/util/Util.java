@@ -223,7 +223,7 @@ public class Util {
 
     public static boolean useDeltaSync(Controller c, Download d) {
         Validate.notNull(c);
-        if (d.getFile().getSize() < Constants.MIN_SIZE_FOR_DELTA_SYNC) {
+        if (d.getFile().getSize() < Constants.DELTA_SYNC_MIN_FILESIZE) {
             return false;
         }
         return allowDeltaSync(c, d.getPartner().isOnLAN());
