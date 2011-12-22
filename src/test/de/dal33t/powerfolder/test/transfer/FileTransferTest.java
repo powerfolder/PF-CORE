@@ -1061,9 +1061,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
-        TestHelper.changeFile(testFile, 30 * 1024 * 1024);
-        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
+        TestHelper.changeFile(testFile, 50 * 1024 * 1024);
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
@@ -1116,13 +1114,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() > 0;
-            }
-        });
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() == 0;
+                    .countCompletedDownloads() > 1;
             }
         });
 
@@ -1141,8 +1133,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         long bytesDownloaded = getContollerLisa().getTransferManager()
             .getDownloadCounter().getBytesTransferred();
-        System.err.println("Downloaded: " + bytesDownloaded);
-        System.err.println("Filelength: " + fileBart.length());
     }
 
     /**
@@ -1164,11 +1154,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
         // testfile
-        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 30 * 1024 * 1024);
         testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
-        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -1706,10 +1694,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
             4 * 1024 * 1024);
-        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(10, new Condition() {
