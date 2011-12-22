@@ -304,7 +304,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 return "Bart.getKnownItemCount: "
                     + getFolderAtBart().getKnownItemCount()
                     + ". Lisa.Bart.getKnownItemCount: "
-                    + getFolderAtLisa().getKnownItemCount();
+                    + getFolderAtLisa().getKnownItemCount()
+                    + " Problems at lisa: " + getFolderAtLisa().getProblems();
             }
         });
         p = getFolderAtLisa().getProblems().iterator().next();
