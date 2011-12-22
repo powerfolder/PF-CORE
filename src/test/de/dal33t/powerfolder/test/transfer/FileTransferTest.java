@@ -1130,8 +1130,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
         File fileLisa = fLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
-        assertEquals(1, fBart.getVersion());
-        assertEquals(1, fLisa.getVersion());
+        assertEquals("File version at bart not 1: " + fBart.toDetailString(),
+            1, fBart.getVersion());
+        assertEquals("File version at lisa not 1: " + fBart.toDetailString(),
+            1, fLisa.getVersion());
         assertTrue("File content mismatch: " + fileBart + " and " + fileLisa,
             TestHelper.compareFiles(fileBart, fileLisa));
 
