@@ -225,6 +225,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Give EDT time
         TestHelper.waitForEmptyEDT();
 
+        // Problem can occur: Transfer completes too quick. Uploads table model
+        // is then empty!
         assertEquals(1, bartModel.getRowCount());
         // Requested and Started
         assertEquals(2, bartModelListener.events.size());
