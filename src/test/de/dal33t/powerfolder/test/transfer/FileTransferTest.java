@@ -1055,9 +1055,14 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getLocalBase());
         testFile.setLastModified(System.currentTimeMillis() - 6000);
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() == 1;
+            }
+
+            public String message() {
+                return "getFolderAtLisa().getKnownItemCount(): "
+                    + getFolderAtLisa().getKnownItemCount();
             }
         });
 
@@ -1065,10 +1070,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() > 0;
+            }
+
+            public String message() {
+                return "getContollerLisa.countActiveDownloads(): "
+                    + getContollerLisa().getTransferManager()
+                        .countActiveDownloads();
             }
         });
 
@@ -1111,10 +1122,16 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         getContollerLisa().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() > 1;
+            }
+
+            public String message() {
+                return "getContollerLisa.countCompletedDownloads(): "
+                    + getContollerLisa().getTransferManager()
+                        .countCompletedDownloads();
             }
         });
 
