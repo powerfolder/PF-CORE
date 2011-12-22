@@ -1061,7 +1061,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.changeFile(testFile, 3 * 1024 * 1024);
+        TestHelper.changeFile(testFile, 30 * 1024 * 1024);
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
@@ -1098,8 +1098,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Reconnect /Resume transfer
         connectBartAndLisa();
 
-        assertTrue("Tempfile does exist although MD5_ERROR has been observed:"
-            + tempFile, !tempFile.exists());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return !tempFile.exists();
+            }
+
+            public String message() {
+                return "Tempfile does exist although MD5_ERROR has been observed:"
+                    + tempFile;
+            }
+        });
 
         getContollerLisa().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
