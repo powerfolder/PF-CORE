@@ -264,7 +264,6 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         public void tableChanged(TableModelEvent e) {
             System.err.println("Got event: " + e.getType() + " row: "
                 + e.getFirstRow() + "-" + e.getLastRow());
-            new RuntimeException().printStackTrace();
             events.add(e);
         }
     }
