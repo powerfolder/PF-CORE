@@ -1706,8 +1706,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
             4 * 1024 * 1024);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(10, new Condition() {
