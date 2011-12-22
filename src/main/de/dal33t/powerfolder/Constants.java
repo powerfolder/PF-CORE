@@ -285,6 +285,11 @@ public class Constants {
      */
     public static final long UPLOAD_REMOTEHASHING_PART_REQUEST_TIMEOUT = 5L * 60 * 60 * 1000;
 
+    /**
+     * 100KB file minimum size for DELTA sync.
+     */
+    public static final long MIN_SIZE_FOR_DELTA_SYNC = 100 * 1024;
+
     // ConnectionHandler constants ********************************************
 
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
