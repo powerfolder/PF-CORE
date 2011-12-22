@@ -192,8 +192,8 @@ public class TestHelper {
             }
         });
 
-        assertIncompleteFilesGone(testCase.getFolderAtBart(), testCase
-            .getFolderAtLisa());
+        assertIncompleteFilesGone(testCase.getFolderAtBart(),
+            testCase.getFolderAtLisa());
     }
 
     public static File getTestDir() {
@@ -312,8 +312,7 @@ public class TestHelper {
             if (System.currentTimeMillis() > start + ((long) secondsTimeout)
                 * 1000)
             {
-                String msg = "Timeout(" + secondsTimeout + ") on "
-                    + condition;
+                String msg = "Timeout(" + secondsTimeout + ") on " + condition;
                 if (condition instanceof ConditionWithMessage) {
                     msg = ((ConditionWithMessage) condition).message() + " | "
                         + msg;
@@ -339,7 +338,6 @@ public class TestHelper {
         } catch (InvocationTargetException e) {
             throw new RuntimeException("Error while waiting for EDT", e);
         }
-        waitMilliSeconds(500);
     }
 
     /**

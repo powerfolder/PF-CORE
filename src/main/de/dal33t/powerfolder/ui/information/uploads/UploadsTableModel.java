@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.information.uploads;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -388,8 +389,11 @@ public class UploadsTableModel extends PFComponent implements TableModel,
                 }
             }
         };
-
-        UIUtil.invokeLaterInEDT(runner);
+        if (EventQueue.isDispatchThread()) {
+            runner.run();
+        } else {
+            UIUtil.invokeLaterInEDT(runner);
+        }
     }
 
     public int getSortColumn() {
@@ -457,7 +461,8 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     }
 
     public int getSelectedRowCount() {
-        return 0;  //To change body of created methods use File | Settings | File Templates.
+        return 0; // To change body of created methods use File | Settings |
+                  // File Templates.
     }
 
     // ////////////////

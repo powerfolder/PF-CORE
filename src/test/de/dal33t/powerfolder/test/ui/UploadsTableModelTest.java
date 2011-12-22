@@ -58,10 +58,11 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         bartModel = new UploadsTableModel(new TransferManagerModel(
             getContollerBart().getTransferManager()));
         bartModel.addTableModelListener(bartModelListener);
+        bartModel.setPeriodicUpdate(false);
 
         // Instant cleanup
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
-            Integer.MAX_VALUE);
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerBart(), Integer.MAX_VALUE);
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
             getContollerBart(), "0");
 
@@ -96,8 +97,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
      * true. Setting to FALSE stops completed uploads being removed.
      */
     public void testSingleFileUploadNoAutoCleanup() {
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
-            Integer.MAX_VALUE);
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerBart(), Integer.MAX_VALUE);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
@@ -211,7 +212,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getContollerBart().getTransferManager().setUploadCPSForLAN(40000);
         getContollerLisa().getTransferManager().setUploadCPSForWAN(40000);
 
-        // Create a 10 megs file
+        // Create a 30 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);
         scanFolder(getFolderAtBart());
 
@@ -263,6 +264,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         public void tableChanged(TableModelEvent e) {
             System.err.println("Got event: " + e.getType() + " row: "
                 + e.getFirstRow() + "-" + e.getLastRow());
+            new RuntimeException().printStackTrace();
             events.add(e);
         }
     }
