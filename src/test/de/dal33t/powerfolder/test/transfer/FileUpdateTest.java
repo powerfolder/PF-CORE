@@ -271,13 +271,13 @@ public class FileUpdateTest extends TwoControllerTestCase {
         disconnectBartAndLisa();
         getFolderAtBart().removeProblem(cp);
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(2500);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(2500);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(2500);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
         fInfoAtBart = fInfoAtBart.getLocalFileInfo(getContollerBart()
