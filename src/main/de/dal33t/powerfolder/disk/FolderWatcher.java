@@ -205,6 +205,9 @@ public class FolderWatcher extends PFComponent {
             if (dirtyFiles.isEmpty()) {
                 return;
             }
+            if (ignoreAll) {
+                return;
+            }
             FileInfo dirtyFile = null;
             try {
                 List<FileInfo> fileInfos = new LinkedList<FileInfo>();
@@ -216,7 +219,10 @@ public class FolderWatcher extends PFComponent {
                 }
                 for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
                     dirtyFile = entry.getValue();
-                    if (ignoreAll || ignoreFiles.containsKey(dirtyFile)) {
+                    if (ignoreAll) {
+                        return;
+                    }
+                    if (ignoreFiles.containsKey(dirtyFile)) {
                         // Ignore.
                         continue;
                     }
@@ -275,6 +281,9 @@ public class FolderWatcher extends PFComponent {
             if (!FileUtils.isScannable(name, folder.getInfo())) {
                 return;
             }
+            if (ignoreAll) {
+                return;
+            }
             // For linux
             if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
@@ -286,7 +295,7 @@ public class FolderWatcher extends PFComponent {
             }
             try {
                 FileInfo lookup = lookupInstance(rootPath, name);
-                if (ignoreAll || ignoreFiles.containsKey(lookup)) {
+                if (ignoreFiles.containsKey(lookup)) {
                     // Skipping ignored file
                     return;
                 }
