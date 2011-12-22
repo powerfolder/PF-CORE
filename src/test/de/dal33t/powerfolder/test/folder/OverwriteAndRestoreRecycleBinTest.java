@@ -43,7 +43,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
-    public void testOverwriteToRecycleAndRestoreMultiple() throws Exception {
+    public void xtestOverwriteToRecycleAndRestoreMultiple() throws Exception {
         for (int i = 0; i < 100; i++) {
             testOverwriteToRecycleAndRestore();
             tearDown();
