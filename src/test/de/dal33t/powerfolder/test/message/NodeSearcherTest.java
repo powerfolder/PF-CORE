@@ -183,7 +183,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "r",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitMilliSeconds(2000);
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
         // baRt, homeR and maRge, ned flendeRs, Online StoRage
