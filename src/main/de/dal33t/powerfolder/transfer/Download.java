@@ -158,7 +158,7 @@ public class Download extends Transfer {
      * Requests a FPR from the remote side.
      */
     void requestFilePartsRecord() {
-        assert Util.useDeltaSync(getController(), getPartner()) : "Requesting FilePartsRecord from a client that doesn't support that!";
+        assert Util.useDeltaSync(getController(), this) : "Requesting FilePartsRecord from a client that doesn't support that!";
         requestCheckState();
 
         getPartner().sendMessagesAsynchron(

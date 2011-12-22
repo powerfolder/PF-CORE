@@ -953,8 +953,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         String msg = "PROTOCOL ERROR caused by " + cause + ": " + operation
             + " not allowed in state " + state;
-        msg += " use DS: "
-            + Util.useDeltaSync(getController(), cause.getPartner())
+        msg += " use DS: " + Util.useDeltaSync(getController(), cause)
             + " use Swarm: "
             + Util.useSwarming(getController(), cause.getPartner());
         logWarning(msg);
@@ -979,8 +978,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 break;
             case WAITING_FOR_UPLOAD_READY :
                 if (isNeedingFilePartsRecord()
-                    && Util
-                        .useDeltaSync(getController(), download.getPartner()))
+                    && Util.useDeltaSync(getController(), download))
                 {
                     setState(InternalState.WAITING_FOR_FILEPARTSRECORD);
                     requestFilePartsRecord(download);

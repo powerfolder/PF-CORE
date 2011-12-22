@@ -179,7 +179,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
         for (Download d : downloads.values()) {
             if (d.isStarted() && !d.isBroken()
-                && Util.useDeltaSync(getController(), d.getPartner()))
+                && Util.useDeltaSync(getController(), d))
             {
                 download = d;
                 break;
@@ -189,8 +189,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     protected void requestFilePartsRecord(Download download) {
-        assert download == null
-            || Util.useDeltaSync(getController(), download.getPartner());
+        assert download == null || Util.useDeltaSync(getController(), download);
 
         if (pendingPartRecordFrom != null) {
             // logFine("Pending FPR from: " + pendingPartRecordFrom);
@@ -210,7 +209,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         // logFine("Selected FPR source: " + download);
 
         if (download != null) {
-            assert Util.useDeltaSync(getController(), download.getPartner());
+            assert Util.useDeltaSync(getController(), download);
             if (isFine()) {
                 logFine("Requesting Filepartsrecord from " + download);
             }

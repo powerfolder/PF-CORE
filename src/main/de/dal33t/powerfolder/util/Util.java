@@ -40,12 +40,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -219,9 +221,12 @@ public class Util {
             && allowSwarming(c, other.isOnLAN());
     }
 
-    public static boolean useDeltaSync(Controller c, Member other) {
+    public static boolean useDeltaSync(Controller c, Download d) {
         Validate.notNull(c);
-        return allowDeltaSync(c, other.isOnLAN());
+        if (d.getFile().getSize() < Constants.MIN_SIZE_FOR_DELTA_SYNC) {
+            return false;
+        }
+        return allowDeltaSync(c, d.getPartner().isOnLAN());
     }
 
     /**
@@ -326,8 +331,8 @@ public class Util {
         }
         LOG.finer("Creating desktop shortcut to "
             + shortcutTarget.getAbsolutePath());
-        ShellLink link = new ShellLink(null, shortcutName, shortcutTarget
-            .getAbsolutePath(), null);
+        ShellLink link = new ShellLink(null, shortcutName,
+            shortcutTarget.getAbsolutePath(), null);
 
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");
@@ -453,8 +458,8 @@ public class Util {
             if (Character.isLetterOrDigit(aBin & 0xff)) {
                 b.append((char) (aBin & 0xff));
             } else {
-                b.append('%').append(DIGITS[aBin >> 4]).append(
-                    DIGITS[aBin & 0xf]);
+                b.append('%').append(DIGITS[aBin >> 4])
+                    .append(DIGITS[aBin & 0xf]);
             }
         }
         return b.toString();
@@ -644,8 +649,8 @@ public class Util {
         int addStart1 = versionStr1.indexOf(' ');
         if (addStart1 >= 0) {
             // Get addition text "x.x.x additionaltext"
-            addition1 = versionStr1.substring(addStart1 + 1, versionStr1
-                .length());
+            addition1 = versionStr1.substring(addStart1 + 1,
+                versionStr1.length());
             versionStr1 = versionStr1.substring(0, addStart1);
         }
 
@@ -671,8 +676,8 @@ public class Util {
         int addStart2 = versionStr2.indexOf(' ');
         if (addStart2 >= 0) {
             // Get addition text "x.x.x additionaltext"
-            addition2 = versionStr2.substring(addStart2 + 1, versionStr2
-                .length());
+            addition2 = versionStr2.substring(addStart2 + 1,
+                versionStr2.length());
             versionStr2 = versionStr2.substring(0, addStart2);
         }
 
