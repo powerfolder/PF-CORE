@@ -253,36 +253,45 @@ public class NodeSearcher extends PFComponent {
             getController().getNodeManager().broadcastMessageLANNodes(msg,
                 Constants.N_LAN_NODES_TO_CONTACT_FOR_NODE_SEARCH);
 
-            while (!stopSearching) {
-                while (!canidatesFromSupernodes.isEmpty()) {
-                    Member node;
-                    synchronized (canidatesFromSupernodes) {
-                        node = canidatesFromSupernodes.poll();
+            try {
+
+                while (!stopSearching) {
+                    while (!canidatesFromSupernodes.isEmpty()) {
+                        Member node;
+                        synchronized (canidatesFromSupernodes) {
+                            node = canidatesFromSupernodes.poll();
+                        }
+                        if (node != null && checkMember(node)
+                            && node.matches(pattern))
+                        {
+                            searchResultListModel.add(node);
+                        }
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
                     }
-                    if (node != null && checkMember(node)
-                        && node.matches(pattern))
-                    {
-                        searchResultListModel.add(node);
+
+                    fetchAccountInfos(searchResultListModel);
+
+                    synchronized (searchThread) {
+                        try {
+                            searchThread.wait();
+                        } catch (InterruptedException e) {
+                            logFine("Search was interrupted", e);
+                            break;
+                        }
                     }
                 }
-
-                fetchAccountInfos(searchResultListModel);
-
+            } finally {
+                getController().getNodeManager().removeNodeManagerListener(
+                    nodeListener);
+                getController().getNodeManager().removeNodeFilter(
+                    nodeSearchFilter);
                 synchronized (searchThread) {
-                    try {
-                        searchThread.wait();
-                    } catch (InterruptedException e) {
-                        logFine("Search was interrupted", e);
-                        break;
-                    }
+                    searchThread.notifyAll();
                 }
-            }
-
-            getController().getNodeManager().removeNodeManagerListener(
-                nodeListener);
-            getController().getNodeManager().removeNodeFilter(nodeSearchFilter);
-            synchronized (searchThread) {
-                searchThread.notifyAll();
             }
         }
 

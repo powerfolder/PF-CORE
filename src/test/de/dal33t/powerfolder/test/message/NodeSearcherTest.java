@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -66,8 +67,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         MemberInfo homer = new MemberInfo("Homer", IdGenerator.makeId(), null);
         homer.lastConnectTime = new Date();
         homer.setConnectAddress(new InetSocketAddress("127.0.0.1", 234));
-        MemberInfo flenders = new MemberInfo("Ned Flenders", IdGenerator
-            .makeId(), null);
+        MemberInfo flenders = new MemberInfo("Ned Flenders",
+            IdGenerator.makeId(), null);
         flenders.lastConnectTime = new Date();
         flenders.setConnectAddress(new InetSocketAddress("127.0.0.1", 2314));
         MemberInfo moe = new MemberInfo("Moe", IdGenerator.makeId(), null);
@@ -164,7 +165,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.cancelSearch();
         assertTrue(searchResultModel.isEmpty());
     }
-    
+
     public void testMixedSearchMultiple() throws Exception {
         for (int i = 0; i < 100; i++) {
             testMixedSearch();
@@ -177,13 +178,21 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      * Both cases with multiple search results.
      */
     public void testMixedSearch() {
-        List<Member> searchResultModel = new ArrayList<Member>();
+        final List<Member> searchResultModel = new ArrayList<Member>();
 
         // Search for "r"
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "r",
             searchResultModel, true, false);
         searcher.start();
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return searchResultModel.size() == 5;
+            }
+
+            public String message() {
+                return searchResultModel.toString();
+            }
+        });
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
         // baRt, homeR and maRge, ned flendeRs, Online StoRage
