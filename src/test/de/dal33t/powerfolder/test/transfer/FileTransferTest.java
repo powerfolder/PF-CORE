@@ -1042,6 +1042,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
     }
 
+    public void testRecoverFromMD5ErrorMultipe() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testRecoverFromMD5Error();
+            tearDown();
+            setUp();
+        }
+    }
     /**
      * TRAC #1904
      */
@@ -1124,6 +1131,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             .triggerFileRequesting();
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
+                getContollerLisa().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting();
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() > 1;
             }
