@@ -292,11 +292,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getFolderRepository());
         assertEquals(2, fInfoAtLisa.getVersion());
 
-        boolean conflict = fInfoAtBart.getVersion() == fInfoAtLisa.getVersion()
-            && fInfoAtLisa.isNewerThan(fInfoAtBart);
-        conflict |= fInfoAtBart.getVersion() <= fInfoAtLisa.getVersion()
+        boolean conflict = fInfoAtLisa.getVersion() == fInfoAtBart.getVersion()
+            && fInfoAtBart.isNewerThan(fInfoAtLisa);
+        conflict |= fInfoAtLisa.getVersion() <= fInfoAtBart.getVersion()
             && DateUtil.isNewerFileDateCrossPlattform(
-                fInfoAtBart.getModifiedDate(), fInfoAtLisa.getModifiedDate());
+                fInfoAtLisa.getModifiedDate(), fInfoAtBart.getModifiedDate());
         assertTrue("Barts: " + fInfoAtBart.toDetailString() + " Lisas: "
             + fInfoAtLisa.toDetailString(), conflict);
 
