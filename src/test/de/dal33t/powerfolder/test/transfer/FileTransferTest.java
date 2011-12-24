@@ -1049,6 +1049,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             setUp();
         }
     }
+
     /**
      * TRAC #1904
      */
@@ -1132,7 +1133,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 getContollerLisa().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting();
+                    .triggerFileRequesting();
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() > 1;
             }
@@ -1656,9 +1657,18 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Break connection
         disconnectBartAndLisa();
 
-        // Lisa should have 1 pending download
-        assertEquals(1, getContollerLisa().getTransferManager()
-            .getPendingDownloads().size());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .getPendingDownloads().size() >= 1;
+            }
+
+            public String message() {
+                return "Pending downloads at lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .getPendingDownloads().size();
+            }
+        });
 
         // Shutdown and restart lisa
         getContollerLisa().shutdown();
