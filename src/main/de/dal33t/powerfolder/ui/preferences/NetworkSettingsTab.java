@@ -220,9 +220,17 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            FormLayout layout = new FormLayout(
-                "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            FormLayout layout;
+            if (getController().isBackupOnly()) {
+                layout = new FormLayout(
+                        "right:pref, 3dlu, 140dlu, pref:grow",
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            } else {
+                // Extra pref for useOnlineStorageCB.
+                layout = new FormLayout(
+                        "right:pref, 3dlu, 140dlu, pref:grow",
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            }
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -235,20 +243,20 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(networkingMode, cc.xy(3, row));
 
             row += 2;
-            builder.add(pairPanel(relayedConnectionBox, udtConnectionBox),
-                cc.xyw(3, row, 2));
+            builder.add(relayedConnectionBox, cc.xy(3, row));
 
-            if (getController().isBackupOnly()) {
+            row += 2;
+            builder.add(udtConnectionBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(
+                ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
+                cc.xy(3, row));
+
+            if (!getController().isBackupOnly()) {
                 row += 2;
-                builder.add(
-                    ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
+                builder.add(useOnlineStorageCB,
                     cc.xy(3, row));
-            } else {
-                row += 2;
-                builder.add(
-                    pairPanel(useOnlineStorageCB,
-                        ButtonBarFactory.buildLeftAlignedBar(httpProxyButton)),
-                    cc.xyw(3, row, 2));
             }
 
             row += 2;
