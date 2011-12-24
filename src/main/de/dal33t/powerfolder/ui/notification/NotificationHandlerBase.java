@@ -50,13 +50,13 @@ public abstract class NotificationHandlerBase extends PFComponent {
      * Constructor
      *
      * @param controller
-     * @param chat different checkboxesget displayed depending on
+     * @param chat different checkboxes get displayed depending on
      * whether it is chat or not.
      */
     protected NotificationHandlerBase(Controller controller, boolean chat) {
         super(controller);
-        dialog = new JWindow();
         this.chat = chat;
+        dialog = new JWindow();
         slider = new Slider((JComponent) dialog.getContentPane(),
             PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
