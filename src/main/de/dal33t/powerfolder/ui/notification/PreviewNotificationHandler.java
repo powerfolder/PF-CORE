@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.Controller;
 public class PreviewNotificationHandler extends NotificationHandlerBase {
 
     /**
-     * Constructor. Shows a message with an okay button.
+     * Constructor.
      *
      * @param controller
      * @param title
