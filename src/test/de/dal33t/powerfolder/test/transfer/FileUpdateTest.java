@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -291,12 +292,20 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getFolderRepository());
         assertEquals(2, fInfoAtLisa.getVersion());
 
+        boolean conflict = fInfoAtBart.getVersion() == fInfoAtLisa.getVersion()
+            && fInfoAtLisa.isNewerThan(fInfoAtBart);
+        conflict |= fInfoAtBart.getVersion() <= fInfoAtLisa.getVersion()
+            && DateUtil.isNewerFileDateCrossPlattform(
+                fInfoAtBart.getModifiedDate(), fInfoAtLisa.getModifiedDate());
+        assertTrue("Barts: " + fInfoAtBart.toDetailString() + " Lisas: "
+            + fInfoAtLisa.toDetailString(), conflict);
+
         connectBartAndLisa();
         // The old copy should have been distributed.
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
 
             public boolean reached() {
-                // Hack: #2557 
+                // Hack: #2557
                 getContollerBart().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting();
                 getContollerLisa().getFolderRepository().getFileRequestor()
