@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * This class handles the display of notification messages.
  */
-public class NotificationHandlerBase extends PFComponent {
+public abstract class NotificationHandlerBase extends PFComponent {
 
     private String title;
     private String messageText;
@@ -44,10 +44,19 @@ public class NotificationHandlerBase extends PFComponent {
 
     private final JWindow dialog;
     private final Slider slider;
+    private final boolean chat;
 
-    public NotificationHandlerBase(Controller controller) {
+    /**
+     * Constructor
+     *
+     * @param controller
+     * @param chat different checkboxesget displayed depending on
+     * whether it is chat or not.
+     */
+    protected NotificationHandlerBase(Controller controller, boolean chat) {
         super(controller);
         dialog = new JWindow();
+        this.chat = chat;
         slider = new Slider((JComponent) dialog.getContentPane(),
             PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
@@ -62,7 +71,7 @@ public class NotificationHandlerBase extends PFComponent {
         Reject.ifNull(messageText, "MessageText must not be null");
         NotificationForm notificationForm = new NotificationForm(getController(),
                 title, messageText, acceptOptionLabel,
-                acceptAction, cancelOptionLabel, cancelAction, false);
+                acceptAction, cancelOptionLabel, cancelAction, chat);
         dialog.getContentPane().add(notificationForm, BorderLayout.CENTER);
         dialog.pack();
         slider.show();

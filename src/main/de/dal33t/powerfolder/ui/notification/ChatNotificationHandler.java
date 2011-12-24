@@ -44,7 +44,7 @@ public class ChatNotificationHandler extends NotificationHandlerBase {
     public ChatNotificationHandler(Controller controller,
                                    final MemberInfo memberInfo,
                                    String title, String messageText) {
-        super(controller);
+        super(controller, true);
         setTitle(title);
         setMessageText(messageText);
         setAcceptOptionLabel(Translation.getTranslation("chat_notification_handler.reply"));
