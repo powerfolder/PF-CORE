@@ -1774,6 +1774,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(11, new ConditionWithMessage() {
             public boolean reached() {
+                // #2557
+                getContollerLisa().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting();
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() == 1;
             }
