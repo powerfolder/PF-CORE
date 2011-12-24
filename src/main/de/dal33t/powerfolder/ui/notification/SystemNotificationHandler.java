@@ -19,18 +19,11 @@
  */
 package de.dal33t.powerfolder.ui.notification;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JWindow;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -40,9 +33,7 @@ import de.dal33t.powerfolder.util.Translation;
  * when powerFolder is minimized, giving the user a chance to 'Accept' the
  * message and perform an action.
  */
-public class SystemNotificationHandler extends PFComponent {
-
-    private final Notice notice;
+public class SystemNotificationHandler extends NotificationHandlerBase {
 
     /**
      * Constructor. Shows a message with an okay button.
@@ -50,63 +41,38 @@ public class SystemNotificationHandler extends PFComponent {
      * @param controller
      * @param notice
      */
-    public SystemNotificationHandler(Controller controller, Notice notice) {
+    public SystemNotificationHandler(Controller controller,
+                                     final Notice notice) {
         super(controller);
         Reject.ifNull(notice, "Notice must not be null");
-        this.notice = notice;
-    }
-
-    /**
-     * Show the message using Slider
-     */
-    @SuppressWarnings("serial")
-    public void show() {
-        JWindow dialog = new JWindow();
-        Container contentPane = dialog.getContentPane();
-        contentPane.setLayout(new BorderLayout());
-        final Slider slider = new Slider((JComponent) contentPane,
-            PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
-            PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                .getValueInt(getController()), getController().isNotifyLeft());
-
-        Action acceptAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                slider.close();
-                if (notice.isActionable()) {
+        setTitle(notice.getTitle());
+        setMessageText(notice.getSummary());
+        if (notice.isActionable()) {
+            setAcceptAction(new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    sliderClose();
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().activateNotice(notice);
                 }
-            }
-        };
-
-        Action cancelAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                slider.close();
-                getController().getUIController().getApplicationModel()
-                    .getNoticesModel().markRead(notice);
-            }
-        };
-
-        String acceptOptionLabel;
-        String cancelOptionLabel;
-
-        if (notice.isActionable()) {
-            acceptOptionLabel = Translation
-                .getTranslation("notification_handler.display.text");
-            cancelOptionLabel = Translation
-                .getTranslation("notification_handler.ignore.text");
+            });
+            setAcceptOptionLabel(Translation
+                .getTranslation("notification_handler.display.text"));
+            setCancelOptionLabel(Translation
+                .getTranslation("notification_handler.ignore.text"));
+            setCancelAction(new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    sliderClose();
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().markRead(notice);
+                }
+            });
         } else {
-            acceptOptionLabel = Translation.getTranslation("general.ok");
-            cancelOptionLabel = null;
+            setAcceptOptionLabel(Translation.getTranslation("general.ok"));
+            setAcceptAction(new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    sliderClose();
+                }
+            });
         }
-
-        // Show it.
-        NotificationForm notificationForm = new NotificationForm(getController(),
-                notice.getTitle(), notice.getSummary(), acceptOptionLabel,
-                acceptAction, cancelOptionLabel, cancelAction, true, false);
-        contentPane.add(notificationForm, BorderLayout.CENTER);
-        dialog.pack();
-        slider.show();
     }
-
 }

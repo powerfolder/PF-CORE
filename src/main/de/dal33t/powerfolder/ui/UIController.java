@@ -124,6 +124,7 @@ import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
+import de.dal33t.powerfolder.ui.notification.PreviewNotificationHandler;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -1240,15 +1241,15 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Only use this for preview from the DialogSettingsTab. It by-passes all
-     * the usual safty checks.
-     * 
+     * Only use this for preview from the DialogSettingsTab.
+     *
      * @param title
      * @param message
      */
     public void previewMessage(String title, String message) {
-        ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
-            getController(), null, title, message, false);
+        PreviewNotificationHandler notificationHandler =
+                new PreviewNotificationHandler(getController(), title,
+                        message);
         notificationHandler.show();
     }
 
@@ -1268,7 +1269,7 @@ public class UIController extends PFComponent {
                 .getValue())
             {
                 ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
-                    getController(), memberInfo, title, message, true);
+                    getController(), memberInfo, title, message);
                 notificationHandler.show();
             }
         }

@@ -49,25 +49,27 @@ public class NotificationForm extends JPanel {
     /**
      * Constructor. Displays a panel with title and message. Also accept and
      * optional cancel button.
-     * 
+     *
+     * @param controller
      * @param titleText
      * @param messageText
      * @param acceptOptionLabel
      * @param acceptAction
      * @param cancelOptionLabel
      * @param cancelAction
-     * @param chat chat, not system
+     * @param chat
      */
     NotificationForm(Controller controller, String titleText, String messageText,
-        String acceptOptionLabel, Action acceptAction,
-        String cancelOptionLabel, Action cancelAction, boolean showButtons,
-        boolean chat) {
+                     String acceptOptionLabel, Action acceptAction,
+                     String cancelOptionLabel, Action cancelAction,
+                     boolean chat) {
         this.controller = controller;
+        // Trim message to 200 chars max.
         this.messageText = messageText.length() > 200 ?
                 messageText.substring(0, 200) + "..." : messageText;
         setLayout(new BorderLayout());
         JPanel panel = createPanel(titleText, acceptOptionLabel,
-            acceptAction, cancelOptionLabel, cancelAction, showButtons, chat);
+                acceptAction, cancelOptionLabel, cancelAction, chat);
         add(panel, BorderLayout.CENTER);
         setBorder(new LineBorder(Color.lightGray, 1));
     }
@@ -76,49 +78,61 @@ public class NotificationForm extends JPanel {
      * Create the UI for notification form
      */
     private JPanel createPanel(String titleText,
-        String acceptOptionLabel, Action acceptAction,
-        String cancelOptionLabel, Action cancelAction, boolean showButtons,
-        boolean chat)
-    {
+                               String acceptOptionLabel, Action acceptAction,
+                               String cancelOptionLabel, Action cancelAction,
+                               boolean chat) {
+
         JPanel panel = new JPanel();
         panel.setBackground(Color.WHITE);
         CellConstraints cc = new CellConstraints();
 
-        JButton button = new JButton();
-        button.setAction(acceptAction);
-        button.setText(acceptOptionLabel);
         FormLayout formLayout;
         int internalWidth;
-        if (cancelOptionLabel == null) {
+        if (acceptOptionLabel == null && cancelOptionLabel == null) {
+            // No buttons
             formLayout = new FormLayout(
-                "3dlu, 50dlu, 50dlu:grow, 50dlu, 3dlu",
-                    "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, pref, 3dlu, pref, 3dlu");
-                    //     head        msg         hr          cb    cb          btn
-            internalWidth = 3;
-            panel.setLayout(formLayout);
-            if (showButtons) {
-                panel.add(button, cc.xy(3, 11));
-            }
-        } else {
+                //     content
+                "3dlu, 150dlu:grow, 3dlu",
+                    "3dlu, pref, 6dlu, pref, 3dlu");
+                    //     head        msg
+            internalWidth = 1;
+        } else if (acceptOptionLabel != null && cancelOptionLabel != null) {
+            // Two buttons
             formLayout = new FormLayout(
+                //            button             button
                 "3dlu, 20dlu, 50dlu:grow, 10dlu, 50dlu:grow, 20dlu, 3dlu",
-                "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, pref, 3dlu, pref, 3dlu");
-                //     head        msg         hr          cb    cb          btn
+                    "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                    //     head        msg         hr          cb          btn
             internalWidth = 5;
-            panel.setLayout(formLayout);
-            panel.add(button, cc.xy(3, 11));
-
-            if (showButtons) {
-                button = new JButton();
-                button.setAction(cancelAction);
-                button.setText(cancelOptionLabel);
-                panel.add(button, cc.xy(5, 11));
-            }
+        } else {
+            // One button
+            formLayout = new FormLayout(
+                //            button
+                "3dlu, 50dlu, 50dlu:grow, 50dlu, 3dlu",
+                    "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                    //     head        msg         hr          cb          btn
+            internalWidth = 3;
         }
+        panel.setLayout(formLayout);
 
-        panel.add(new JSeparator(), cc.xyw(2, 6, internalWidth));
+        // Heading
+        panel.add(createHeaderPanel(titleText), cc.xyw(2, 2, internalWidth));
 
-        if (showButtons) {
+        // Message
+        JTextArea textArea = new JTextArea();
+        textArea.setText(messageText);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        panel.add(textArea, new CellConstraints(2, 4, internalWidth, 1,
+            CellConstraints.DEFAULT, CellConstraints.TOP));
+
+        // If there are no buttons, don't show anything else.
+        if (acceptOptionLabel != null || cancelOptionLabel != null) {
+
+            // Separator
+            panel.add(new JSeparator(), cc.xyw(2, 6, internalWidth));
+
+            // Check boxes
             if (chat) {
                 neverShowChatNotificationCB = new JCheckBox(Translation.getTranslation(
                         "notification_form.never_show_chat_notifications"));
@@ -130,16 +144,36 @@ public class NotificationForm extends JPanel {
                 neverShowSystemNotificationCB.addActionListener(new MyActionListener());
                 panel.add(neverShowSystemNotificationCB, cc.xyw(2, 8, internalWidth));
             }
+
+            // Buttons
+            if (acceptOptionLabel != null && cancelOptionLabel != null) {
+                // Two buttons
+                JButton acceptButton = new JButton();
+                acceptButton.setAction(acceptAction);
+                acceptButton.setText(acceptOptionLabel);
+                panel.add(acceptButton, cc.xy(3, 10));
+
+                JButton cancelButton = new JButton();
+                cancelButton.setAction(cancelAction);
+                cancelButton.setText(cancelOptionLabel);
+                panel.add(cancelButton, cc.xy(5, 10));
+            } else {
+                // Single button (accept or cancel)
+                if (acceptOptionLabel != null) {
+                    // Accept
+                    JButton acceptButton = new JButton();
+                    acceptButton.setAction(acceptAction);
+                    acceptButton.setText(acceptOptionLabel);
+                    panel.add(acceptButton, cc.xy(3, 10));
+                } else {
+                    // Cancel
+                    JButton cancelButton = new JButton();
+                    cancelButton.setAction(cancelAction);
+                    cancelButton.setText(cancelOptionLabel);
+                    panel.add(cancelButton, cc.xy(3, 10));
+                }
+            }
         }
-
-        panel.add(createHeaderPanel(titleText), cc.xyw(2, 2, internalWidth));
-
-        JTextArea textArea = new JTextArea();
-        textArea.setText(messageText);
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        panel.add(textArea, new CellConstraints(2, 4, internalWidth, 1,
-            CellConstraints.DEFAULT, CellConstraints.TOP));
 
         return panel;
     }
