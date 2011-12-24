@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: NotificationHandler.java 12455 2010-05-27 10:44:35Z harry $
+ * $Id: NotificationHandlerBase.java 12455 2010-05-27 10:44:35Z harry $
  */
 package de.dal33t.powerfolder.ui.notification;
 

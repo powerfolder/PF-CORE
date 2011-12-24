@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.Translation;
 public class SystemNotificationHandler extends NotificationHandlerBase {
 
     /**
-     * Constructor. Shows a message with an okay button.
+     * Constructor. Shows a system message.
      * 
      * @param controller
      * @param notice
