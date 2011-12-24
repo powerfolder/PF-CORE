@@ -27,7 +27,8 @@ public class CompositeMapTest extends TestCase {
             for (String key : composite.keySet()) {
                 String value = composite.get(key);
                 if (!key.equals(value)) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Key: " + key + " Value: "
+                        + value);
                 }
                 if (LOCK.tryAcquire()) {
                     return;
