@@ -296,6 +296,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
 
             public boolean reached() {
+                // Hack: #2557 
+                getContollerBart().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting();
+                getContollerLisa().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting();
                 return getFolderAtBart().getKnownItemCount() == 3
                     && getFolderAtLisa().getKnownItemCount() == 3;
             }
