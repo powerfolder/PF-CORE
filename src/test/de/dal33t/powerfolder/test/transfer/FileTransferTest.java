@@ -1157,9 +1157,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             1, fLisa.getVersion());
         assertTrue("File content mismatch: " + fileBart + " and " + fileLisa,
             TestHelper.compareFiles(fileBart, fileLisa));
-
-        long bytesDownloaded = getContollerLisa().getTransferManager()
-            .getDownloadCounter().getBytesTransferred();
     }
 
     /**
