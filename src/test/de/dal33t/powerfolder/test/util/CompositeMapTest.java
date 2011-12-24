@@ -50,7 +50,6 @@ public class CompositeMapTest extends TestCase {
             try {
                 LOCK.acquire();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             for (int i = 0; i < 100000; i++) {
