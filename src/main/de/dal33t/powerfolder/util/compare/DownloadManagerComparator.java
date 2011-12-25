@@ -32,6 +32,7 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
     public static final int BY_SIZE = 3;
     public static final int BY_FOLDER = 4;
     public static final int BY_MEMBER = 5;
+    public static final int BY_COMPLETED_DATE = 6;
 
     private int sortBy;
 
@@ -43,11 +44,11 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
 
         switch (sortBy) {
             case BY_EXT :
-                return o1.getFileInfo().getExtension().compareTo(
-                    o2.getFileInfo().getExtension());
+                return o1.getFileInfo().getExtension()
+                    .compareTo(o2.getFileInfo().getExtension());
             case BY_FILE_NAME :
-                return o1.getFileInfo().getFilenameOnly().compareToIgnoreCase(
-                    o2.getFileInfo().getFilenameOnly());
+                return o1.getFileInfo().getFilenameOnly()
+                    .compareToIgnoreCase(o2.getFileInfo().getFilenameOnly());
             case BY_PROGRESS :
                 int comp = o1.getState().compareTo(o2.getState());
                 if (comp == 0 && o1.getCompletedDate() != null
@@ -74,13 +75,20 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
                 } else if (o1.getSources().size() == 1
                     && o2.getSources().size() == 1)
                 {
-                    return o1.getSources().iterator().next().getPartner()
-                        .getNick().compareTo(
+                    return o1
+                        .getSources()
+                        .iterator()
+                        .next()
+                        .getPartner()
+                        .getNick()
+                        .compareTo(
                             o2.getSources().iterator().next().getPartner()
                                 .getNick());
                 } else {
                     return o1.getSources().size();
                 }
+            case BY_COMPLETED_DATE :
+                return o1.getCompletedDate().compareTo(o2.getCompletedDate());
         }
         return 0;
     }
