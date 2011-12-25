@@ -46,7 +46,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -73,6 +78,7 @@ import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
 import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
+import de.dal33t.powerfolder.util.Filter;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
@@ -2359,6 +2365,26 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * @param filter
+     * @return modifiable, filtered list of completed downloads (not sorted)
+     */
+    public List<DownloadManager> getCompletedDownloadsCollection(
+        Filter<DownloadManager> filter)
+    {
+        Reject.ifNull(filter, "Filter");
+        if (completedDownloads.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<DownloadManager> dms = new ArrayList<DownloadManager>();
+        for (DownloadManager dm : completedDownloads.values()) {
+            if (filter.accept(dm)) {
+                dms.add(dm);
+            }
+        }
+        return dms;
+    }
+
+    /**
      * @param fInfo
      * @return true if the file was recently downloaded (in the list of
      *         completed downloads);
@@ -2984,8 +3010,7 @@ public class TransferManager extends PFComponent {
             URLConnection connection = url.openConnection();
             reader = new BufferedReader(new InputStreamReader(
                 connection.getInputStream()));
-            String inputLine;
-            while ((inputLine = reader.readLine()) != null) {
+            while (reader.readLine() != null) {
             }
             return true;
         } catch (Exception e) {
