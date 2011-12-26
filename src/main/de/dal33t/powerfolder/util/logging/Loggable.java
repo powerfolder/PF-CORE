@@ -258,7 +258,7 @@ public abstract class Loggable {
      * @param level
      * @return
      */
-    private boolean isLog(Level level) {
+    protected boolean isLog(Level level) {
         if (log == null) {
             log = Logger.getLogger(getLoggerName());
         }
@@ -272,7 +272,7 @@ public abstract class Loggable {
      * @param message
      * @param t
      */
-    private void logIt(Level level, String message, Throwable t) {
+    protected void logIt(Level level, String message, Throwable t) {
         if (log == null) {
             log = Logger.getLogger(getLoggerName());
         }
