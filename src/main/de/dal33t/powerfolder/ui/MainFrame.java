@@ -150,10 +150,9 @@ public class MainFrame extends PFUIComponent {
 
         row += 2;
 
-        builder.add(
-            new JLabel(Translation
-                .getTranslation("main_frame.open_web_interface.text")), cc.xy(
-                1, row));
+        builder.add(new JLabel(Translation.getTranslation(
+                "main_frame.open_web_interface.text")),
+                cc.xy(1, row));
         builder.add(openWebInterfaceButton, cc.xy(3, row));
 
         row += 2;
@@ -163,11 +162,9 @@ public class MainFrame extends PFUIComponent {
 
         row += 2;
 
-        builder
-            .add(
-                new JLabel(Translation
-                    .getTranslation("main_frame.uncompact.text")), cc
-                    .xy(1, row));
+        builder.add(new JLabel(
+                Translation.getTranslation("main_frame.uncompact.text")),
+                cc.xy(1, row));
         builder.add(uncompactModeButton, cc.xy(3, row));
 
         uiComponent.getContentPane().removeAll();
@@ -217,9 +214,7 @@ public class MainFrame extends PFUIComponent {
         if (height < MIN_HEIGHT) {
             height = MIN_HEIGHT;
         }
-        uiComponent.setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
-        uiComponent.setSize(width, height);
-        setWindowSize(width, height);
+        uiComponent.setMinimumSize(new Dimension(width, height));
 
         // Pack elements
         uiComponent.pack();
@@ -244,11 +239,6 @@ public class MainFrame extends PFUIComponent {
             }
             uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         }
-    }
-
-    private void setWindowSize(int width, int height) {
-        uiComponent.setSize(width, height);
-        uiComponent.setPreferredSize(new Dimension(width, height));
     }
 
     /**
