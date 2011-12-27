@@ -259,7 +259,7 @@ public class StatusTab extends PFUIComponent {
             syncDate = getApplicationModel().getFolderRepositoryModel()
                 .getLastSyncDate();
         }
-        displaySyncStats(syncDate, syncing, !getController().getNodeManager()
+        displaySyncStats(syncDate, syncing, getController().getNodeManager()
             .isStarted());
     }
 
@@ -686,19 +686,20 @@ public class StatusTab extends PFUIComponent {
     }
 
     private void displaySyncStats(Date syncDate, boolean syncing,
-        boolean disabled)
-    {
+        boolean started) {
+        
         if (isFiner()) {
-            logFiner("Sync status: syncing? " + syncing + ", date: " + syncDate);
+            logFiner("Sync status: syncing? " + syncing + ", date: " +
+                    syncDate);
         }
         if (synchronizationStatusLabel != null) {
             String syncStatsText;
-            if (disabled) {
-                // Not running
+            if (!started) {
+                // Not started
                 syncStatsText = Translation
                     .getTranslation("status_tab.not_running");
-            } else if (getController().getFolderRepository().getFoldersCount() == 0)
-            {
+            } else if (getController().getFolderRepository().getFoldersCount()
+                    == 0) {
                 // No folders
                 syncStatsText = Translation
                     .getTranslation("status_tab.no_folders");
