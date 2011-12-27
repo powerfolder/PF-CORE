@@ -34,6 +34,7 @@ import java.awt.event.WindowFocusListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -57,6 +58,7 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -908,6 +910,14 @@ public class MainFrame extends PFUIComponent {
                     PFWizard.openLoginWizard(getController(), getController()
                         .getOSClient());
                 }
+            } else if (source == openWebInterfaceButton) {
+                try {
+                    BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
+                        .getValue(getController()));
+                } catch (IOException e1) {
+                    logWarning("Unable to goto PowerFolder homepage", e1);
+                }
+
             }
         }
     }
