@@ -88,6 +88,13 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
                     return o1.getSources().size();
                 }
             case BY_COMPLETED_DATE :
+                if (o1.getCompletedDate() == null) {
+                    if (o2.getCompletedDate() == null) {
+                        return 0;
+                    } else {
+                        return -1;
+                    }
+                }
                 return o1.getCompletedDate().compareTo(o2.getCompletedDate());
         }
         return 0;
