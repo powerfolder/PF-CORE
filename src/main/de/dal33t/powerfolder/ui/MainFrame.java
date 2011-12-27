@@ -33,6 +33,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.IOException;
 
@@ -96,6 +97,8 @@ public class MainFrame extends PFUIComponent {
     private final AtomicBoolean compactModeActive = new AtomicBoolean();
     private ServerClient client;
 
+    private JLabel statusLabel;
+    private JLabel statusIcon;
     private JButton uncompactModeButton;
     private JLabel pauseResumeLabel;
     private JButton pauseResumeButton;
@@ -121,18 +124,26 @@ public class MainFrame extends PFUIComponent {
 
         initComponents();
         configureUiUncompact();
+
+        getController().scheduleAndRepeat(new MyTimerTask(), 5000, 5000);
+
     }
 
     private void configureUiCompact() {
 
         FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
 
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
+
+        builder.add(statusLabel, cc.xy(1, row));
+        builder.add(statusIcon, cc.xy(3, row));
+
+        row += 2;
 
         builder.add(logInOutLabel, cc.xy(1, row));
         builder.add(logInOutButton, cc.xy(3, row));
@@ -297,6 +308,9 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setBackground(Color.white);
 
         MyActionListener myActionListener = new MyActionListener();
+
+        statusLabel = new JLabel(Translation.getTranslation("main_frame.status.unsure"));
+        statusIcon = new JLabel(Icons.getIconById(Icons.CHECKED));
 
         uncompactModeButton = new JButtonMini(
             Icons.getIconById(Icons.UNCOMACT),
@@ -890,6 +904,50 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private void updateSyncStats() {
+        boolean syncing = getApplicationModel().getFolderRepositoryModel()
+            .wasSyncingAtDate();
+        Date syncDate;
+        if (syncing) {
+            syncDate = getApplicationModel().getFolderRepositoryModel()
+                .getEtaSyncDate();
+        } else {
+            syncDate = getApplicationModel().getFolderRepositoryModel()
+                .getLastSyncDate();
+        }
+        String syncStatsText;
+        String iconKey;
+        if (!getController().getNodeManager().isStarted()) {
+            syncStatsText = Translation
+                .getTranslation("main_frame.status.not_running");
+            iconKey = Icons.NODE_DISCONNECTED;
+        } else if (getController().getFolderRepository().getFoldersCount()
+                == 0) {
+            // No folders
+            syncStatsText = Translation
+                .getTranslation("main_frame.status.no_folders");
+            iconKey = Icons.QUESTION;
+        } else if (syncDate == null && !syncing) { // Never synced
+            syncStatsText = Translation
+                .getTranslation("main_frame.status.never_synced");
+            iconKey = Icons.QUESTION;
+        } else {
+            if (syncing) {
+                long aniIndex = System.currentTimeMillis() / 1000 % 3;
+                syncStatsText = Translation
+                    .getTranslation("main_frame.status.synchronizing." + aniIndex);
+
+                iconKey = Icons.SYNC_ANIMATION[0];
+            } else {
+                syncStatsText = Translation
+                    .getTranslation("main_frame.status.in_sync");
+                iconKey = Icons.CHECKED;
+            }
+        }
+        statusLabel.setText(syncStatsText);
+        statusIcon.setIcon(Icons.getIconById(iconKey));
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
@@ -956,6 +1014,14 @@ public class MainFrame extends PFUIComponent {
 
         public void serverDisconnected(ServerClientEvent event) {
             updateLoginLogout(event);
+        }
+    }
+
+    private class MyTimerTask extends TimerTask {
+
+        public void run() {
+            // Update general sync stats
+            updateSyncStats();
         }
     }
 
