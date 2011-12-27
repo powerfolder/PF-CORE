@@ -352,7 +352,7 @@ public class AboutDialog extends PFUIComponent {
                 checkForUpdatesButton, okButton);
         }
         buttons.setOpaque(false);
-        
+
         builder.add(pacmanPanel, cc.xy(1, 1));
         builder.add(buttons, cc.xy(3, 1));
         JPanel jPanel = builder.getPanel();
@@ -562,7 +562,7 @@ public class AboutDialog extends PFUIComponent {
 
             file.close();
         } catch (Exception e) {
-            logSevere("Build date/time works only from jar.");
+            logInfo("Build date/time works only from jar.");
             buildTime = "n/a";
             buildDate = "n/a";
         }
