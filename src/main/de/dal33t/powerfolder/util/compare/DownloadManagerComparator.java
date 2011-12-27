@@ -95,6 +95,9 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
                         return -1;
                     }
                 }
+                if (o2.getCompletedDate() == null) {
+                    return 1;
+                }
                 return o1.getCompletedDate().compareTo(o2.getCompletedDate());
         }
         return 0;
