@@ -201,9 +201,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         disconnectBartAndLisa();
 
-        TestHelper.waitMilliSeconds(4500);
+        TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtBart);
-        TestHelper.waitMilliSeconds(4500);
+        TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtLisa);
 
         scanFolder(getFolderAtBart());
@@ -272,20 +272,20 @@ public class FileUpdateTest extends TwoControllerTestCase {
         disconnectBartAndLisa();
         getFolderAtBart().removeProblem(cp);
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
         fInfoAtBart = fInfoAtBart.getLocalFileInfo(getContollerBart()
             .getFolderRepository());
         assertEquals(4, fInfoAtBart.getVersion());
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtLisa);
         scanFolder(getFolderAtLisa());
         fInfoAtLisa = fInfoAtLisa.getLocalFileInfo(getContollerLisa()
