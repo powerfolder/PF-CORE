@@ -292,6 +292,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 logWarning("Problems parsing remote command from " + socket
                     + ". " + e);
                 logFiner(e);
+            } finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                    }
+                }
             }
         }
     }
@@ -348,6 +355,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             logInfo("Opening file: " + file);
             FileUtils.openFile(file);
         }
+        
+        w.flush();
+        w.close();
     }
 
     /**
