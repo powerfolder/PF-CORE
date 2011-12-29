@@ -32,10 +32,12 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +50,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -57,6 +61,7 @@ import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -294,15 +299,55 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     private void processWebRequest(String line, OutputStream out)
         throws IOException
     {
+        // System.err.println(line);
         out = new BufferedOutputStream(out);
         Writer w = new OutputStreamWriter(out, Convert.UTF8);
         w.write("HTTP/1.1 200 OK\n");
         // w.write("Transfer-Encoding: chunked\n");
-        w.write("Content-Type: text/html; charset=utf-8\n");
-        w.write("\n");
-        // w.write("500\n");
-        w.write("NODEID:" + getController().getMySelf().getId() + "\n");
-        w.close();
+
+        if (line.contains("/info")) {
+            w.write("Content-Type: text/javascript; charset=utf-8\n");
+            w.write("\n");
+            w.write("_jqjsp(\"");
+
+            // JSON Start
+            w.write("{");
+            w.write("'nodeId':'"
+                + getController().getMySelf().getId().replace("'", "\\'") + "'");
+            w.write(",");
+            w.write("'nodeName':'"
+                + getController().getMySelf().getNick().replace("'", "\\'")
+                + "'");
+            w.write("}");
+            // JSON End
+
+            w.write("\");");
+            w.close();
+        } else if (line.contains("/open/")) {
+            // TODO Error handling
+            int start = line.indexOf("/open/");
+            int end = line.indexOf(" HTTP");
+            String addr = line.substring(start + 6, end);
+            int fIdEnd = addr.indexOf("/");
+            String fId64 = addr.substring(0, fIdEnd);
+            String folderId = Base64.decodeString(fId64);
+            Folder folder = getController().getFolderRepository().getFolder(
+                folderId);
+            String relativeName = addr.substring(fIdEnd + 1, addr.length());
+            try {
+                relativeName = URLDecoder.decode(relativeName, "UTF-8");
+                relativeName = relativeName.replace("%20", " ");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("Encoding UTF-8 not found", e);
+            }
+
+            FileInfo lookupFile = FileInfoFactory.lookupInstance(
+                folder.getInfo(), relativeName);
+            File file = lookupFile.getDiskFile(getController()
+                .getFolderRepository());
+            logInfo("Opening file: " + file);
+            FileUtils.openFile(file);
+        }
     }
 
     /**
