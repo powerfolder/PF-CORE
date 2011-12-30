@@ -868,7 +868,8 @@ public class Folder extends PFComponent {
         FileInfo oldLocalFileInfo)
     {
         boolean conflict = oldLocalFileInfo.getVersion() == fInfo.getVersion()
-            && fInfo.isNewerThan(oldLocalFileInfo);
+            && fInfo.isNewerThan(oldLocalFileInfo)
+            && (oldLocalFileInfo.getVersion() + fInfo.getVersion() != 0);
         conflict |= oldLocalFileInfo.getVersion() <= fInfo.getVersion()
             && DateUtil.isNewerFileDateCrossPlattform(
                 oldLocalFileInfo.getModifiedDate(), fInfo.getModifiedDate());
@@ -877,34 +878,35 @@ public class Folder extends PFComponent {
                 + ". old: " + oldLocalFileInfo.toDetailString());
             // Really basic raw conflict detection.
             addProblem(new FileConflictProblem(fInfo));
-            String fn = fInfo.getFilenameOnly();
-            String extraInfo = "_";
-            extraInfo += oldLocalFileInfo.getModifiedBy().getNick();
-            extraInfo += "_";
-            extraInfo += oldLocalFileInfo.getVersion();
-            if (fn.contains(".")) {
-                int i = fn.lastIndexOf('.');
-                fn = fn.substring(0, i) + extraInfo
-                    + fn.substring(i, fn.length());
-            } else {
-                fn += extraInfo;
-            }
-            File oldCopy = new File(targetFile.getParentFile(),
-                FileUtils.removeInvalidFilenameChars(fn));
-            FileInfo oldCopyFInfo = FileInfoFactory.lookupInstance(this,
-                oldCopy);
-            watcher.addIgnoreFile(oldCopyFInfo);
-            try {
-                FileUtils.copyFile(targetFile, oldCopy);
-                logInfo("Saved copy of conflicting file to " + oldCopy);
-                return scanChangedFile(oldCopyFInfo);
-            } catch (Exception e) {
-                logWarning("Unable to save old copy on conflict file to "
-                    + oldCopy + ": " + e);
-            } finally {
-                watcher.removeIgnoreFile(oldCopyFInfo);
-
-            }
+            
+            // String fn = fInfo.getFilenameOnly();
+            // String extraInfo = "_";
+            // extraInfo += oldLocalFileInfo.getModifiedBy().getNick();
+            // extraInfo += "_";
+            // extraInfo += oldLocalFileInfo.getVersion();
+            // if (fn.contains(".")) {
+            // int i = fn.lastIndexOf('.');
+            // fn = fn.substring(0, i) + extraInfo
+            // + fn.substring(i, fn.length());
+            // } else {
+            // fn += extraInfo;
+            // }
+            // File oldCopy = new File(targetFile.getParentFile(),
+            // FileUtils.removeInvalidFilenameChars(fn));
+            // FileInfo oldCopyFInfo = FileInfoFactory.lookupInstance(this,
+            // oldCopy);
+            // watcher.addIgnoreFile(oldCopyFInfo);
+            // try {
+            // FileUtils.copyFile(targetFile, oldCopy);
+            // logInfo("Saved copy of conflicting file to " + oldCopy);
+            // return scanChangedFile(oldCopyFInfo);
+            // } catch (Exception e) {
+            // logWarning("Unable to save old copy on conflict file to "
+            // + oldCopy + ": " + e);
+            // } finally {
+            // watcher.removeIgnoreFile(oldCopyFInfo);
+            //
+            // }
         }
         return null;
     }
@@ -2343,8 +2345,9 @@ public class Folder extends PFComponent {
 
         // Fire event
         fireMemberLeft(member);
-        //updateMetaFolderMembers();
-        // TODO: Trigger file requestor. Other folders may have files to download.
+        // updateMetaFolderMembers();
+        // TODO: Trigger file requestor. Other folders may have files to
+        // download.
     }
 
     /**
@@ -2854,7 +2857,7 @@ public class Folder extends PFComponent {
         if (syncProfile.isSyncDeletion() && from.isCompletelyConnected()) {
             syncRemoteDeletedFiles(Collections.singleton(from), false);
         }
-        
+
         // Logging
         writeFilelist(from);
 
@@ -3969,19 +3972,22 @@ public class Folder extends PFComponent {
                     && UserDirectories.getMusicReported().startsWith(
                         UserDirectories.getDocumentsReported()))
                 {
-                    addPattern(UserDirectories.getMusicReported().substring(i + 1) + '*');
+                    addPattern(UserDirectories.getMusicReported().substring(
+                        i + 1) + '*');
                 }
                 if (UserDirectories.getPicturesReported() != null
                     && UserDirectories.getPicturesReported().startsWith(
                         UserDirectories.getDocumentsReported()))
                 {
-                    addPattern(UserDirectories.getPicturesReported().substring(i + 1) + '*');
+                    addPattern(UserDirectories.getPicturesReported().substring(
+                        i + 1) + '*');
                 }
                 if (UserDirectories.getVideosReported() != null
                     && UserDirectories.getVideosReported().startsWith(
                         UserDirectories.getDocumentsReported()))
                 {
-                    addPattern(UserDirectories.getVideosReported().substring(i + 1) + '*');
+                    addPattern(UserDirectories.getVideosReported().substring(
+                        i + 1) + '*');
                 }
             }
         }
