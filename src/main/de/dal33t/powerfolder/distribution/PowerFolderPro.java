@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.net.RelayFinder;
+import de.dal33t.powerfolder.skin.BlueGlobe;
 import de.dal33t.powerfolder.skin.LightSky;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
@@ -49,7 +50,7 @@ public class PowerFolderPro extends AbstractDistribution {
         // Switch to non-basic skin
         String skinName = PreferencesEntry.SKIN_NAME.getValueString(controller);
         if (skinName.equals(SnowlandBasic.NAME)) {
-            PreferencesEntry.SKIN_NAME.setValue(controller, LightSky.NAME);
+            PreferencesEntry.SKIN_NAME.setValue(controller, BlueGlobe.NAME);
         }
 
         // #2467: Get server URL from the installer
@@ -61,7 +62,7 @@ public class PowerFolderPro extends AbstractDistribution {
             && controller.isUIEnabled())
         {
             try {
-                LookAndFeelSupport.setLookAndFeel(new LightSky()
+                LookAndFeelSupport.setLookAndFeel(new BlueGlobe()
                     .getLookAndFeel());
             } catch (Exception e) {
                 logSevere("Failed to set look and feel", e);
