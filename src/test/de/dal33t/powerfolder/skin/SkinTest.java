@@ -41,7 +41,7 @@ public class SkinTest extends TestCase {
         assertEquals(18, skins.size());
     }
 
-    public void checkIcons() {
+    public void testIcons() {
         ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
         for (Iterator<Skin> it = skinLoader.iterator(); it.hasNext();) {
             Skin skin = it.next();
@@ -71,7 +71,6 @@ public class SkinTest extends TestCase {
                     } else {
                         System.err.println("NOT FOUND: " + key + "=" + value);
                     }
-
                 }
             }
         }
