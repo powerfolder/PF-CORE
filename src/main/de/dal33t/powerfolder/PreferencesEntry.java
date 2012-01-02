@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.skin.BlueGlobe;
 import de.dal33t.powerfolder.skin.LightSky;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
@@ -117,7 +118,7 @@ public enum PreferencesEntry {
     NOTIFICATION_TRANSLUCENT("notification.translucent", 0),
 
     /** Skin name. */
-    SKIN_NAME("skin.name", LightSky.NAME),
+    SKIN_NAME("skin.name", BlueGlobe.NAME),
 
     /** Minimize to system tray */
     MIN_TO_SYS_TRAY("min.to.sys.tray", false),
