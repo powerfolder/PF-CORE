@@ -40,7 +40,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,8 +59,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
-import de.dal33t.powerfolder.skin.LightSky;
-import de.dal33t.powerfolder.skin.Snowland;
+import de.dal33t.powerfolder.skin.BlueGlobe;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.OverlayedIcon;
@@ -128,10 +131,6 @@ public class Icons {
     // Directories in navigation tree
     public static final String DIRECTORY = "directory.icon";
     public static final String DIRECTORY_OPEN = "directory_open.icon";
-    public static final String DIRECTORY_GRAY = "directory_gray.icon";
-    public static final String DIRECTORY_OPEN_GRAY = "directory_open_gray.icon";
-    public static final String DIRECTORY_RED = "directory_red.icon";
-    public static final String DIRECTORY_OPEN_RED = "directory_open_red.icon";
 
     // Node icons
     public static final String NODE_MYSELF = "node_myself.icon";
@@ -185,13 +184,6 @@ public class Icons {
     // Wizard pictos from the quick info panels
     public static final String LOGO128X128 = "picto_logo_128.icon";
     public static final String LOGO400UI = "power_folder_logo_400_ui.icon";
-    public static final String USER_PICTO = "user_picto.icon";
-    public static final String UPLOAD_PICTO = "upload_picto.icon";
-    public static final String DOWNLOAD_PICTO = "download_picto.icon";
-    public static final String MYFOLDERS_PICTO = "my_folders_picto.icon";
-    public static final String FOLDER_PICTO = "folder_picto.icon";
-    public static final String WEBSERVICE_QUICK_INFO_PICTO = "web_service_quick_info.icon";
-    public static final String PRO_LOGO = "pro_logo.icon";
     public static final String SMALL_LOGO = "powerfolder_32.icon";
     public static final String SPLASH = "splash.icon";
 
@@ -231,8 +223,8 @@ public class Icons {
     /** Map of Extension - Icon */
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
-    // Lightsky is our default.
-    private static final String DEFAULT_PROPERTIES_FILENAME = LightSky.ICON_PROPERTIES_FILENAME;
+    // BlueGlobe is our default.
+    private static final String DEFAULT_PROPERTIES_FILENAME = BlueGlobe.ICON_PROPERTIES_FILENAME;
 
     private static Properties iconProperties;
 
