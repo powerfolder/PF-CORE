@@ -56,7 +56,7 @@ public class FreeLimitationDialog extends BaseDialog {
 
     @Override
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.PRO_LOGO);
+        return Icons.getIconById(Icons.SMALL_LOGO);
     }
 
     @Override
