@@ -140,7 +140,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.5.5"; // 4.0.15
+    public static final String PROGRAM_VERSION = "5.5.7 - 4.0.22"; // 4.0.22
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -633,7 +633,7 @@ public class Controller extends PFComponent {
         if (Feature.OS_CLIENT.isEnabled()) {
             osClient.start();
         } else {
-            logWarning("Not starting Online Storage (reconnection), "
+            logWarning("Not starting server (reconnection), "
                 + "feature disable");
         }
 
@@ -1079,7 +1079,8 @@ public class Controller extends PFComponent {
                 logWarning("Unable to backup file " + myKeyFile + ". " + e);
             }
         }
-        File dbFile = new File(Controller.getMiscFilesLocation(),"Accounts.h2.db");
+        File dbFile = new File(Controller.getMiscFilesLocation(),
+            "Accounts.h2.db");
         File dbBackup = new File(backupDir, dbFile.getName());
         if (dbFile.exists()) {
             try {
