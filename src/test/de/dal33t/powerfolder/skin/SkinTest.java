@@ -66,9 +66,13 @@ public class SkinTest extends TestCase {
                     if (!availableIconKeys.contains(key)
                         && !key.startsWith("action"))
                     {
+                        fail("Skin: " + skin.getName() + ": Not longer used: "
+                            + key + "=" + value);
                         System.err.println("Not longer used: " + key + "="
                             + value);
                     } else {
+                        fail("Skin: " + skin.getName() + ": NOT FOUND: " + key
+                            + "=" + value);
                         System.err.println("NOT FOUND: " + key + "=" + value);
                     }
                 }
