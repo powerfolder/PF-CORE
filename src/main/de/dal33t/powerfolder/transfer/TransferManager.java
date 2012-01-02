@@ -2560,9 +2560,9 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Stores all pending downloads to disk
+     * Stores all downloads to disk
      */
-    private void storeDownloads() {
+    public void storeDownloads() {
         // Store pending downloads
         try {
             // Collect all download infos
