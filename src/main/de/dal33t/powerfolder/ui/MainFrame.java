@@ -89,7 +89,7 @@ public class MainFrame extends PFUIComponent {
     private JLabel accountLabel;
     private JProgressBar usagePB;
     private ActionLabel openWebInterfaceLabel;
-    private JLabel pauseResumeLabel;
+    private ActionLabel pauseResumeLabel;
     private JLabel configLabel;
     private JLabel compactLogoLabel;
 
@@ -178,7 +178,7 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(openWebInterfaceLabel.getUIComponent(), cc.xy(1, 1));
-        builder.add(pauseResumeLabel, cc.xy(1, 2));
+        builder.add(pauseResumeLabel.getUIComponent(), cc.xy(1, 2));
         builder.add(configLabel, cc.xy(1, 3));
 
         return builder.getPanel();
@@ -350,9 +350,9 @@ public class MainFrame extends PFUIComponent {
         compactLogoLabel.addMouseListener(listener);
 
         openWebInterfaceLabel = new ActionLabel(getController(),
-                new MyOpenWebInterface(getController()));
-        pauseResumeLabel = new JLabel(
-            Translation.getTranslation("main_frame.pause.text"));
+                new MyOpenWebInterfaceAction(getController()));
+        pauseResumeLabel = new ActionLabel(getController(),
+                new MyPauseResumeAction(getController()));
         configLabel = new JLabel("config");
 
 
@@ -392,7 +392,7 @@ public class MainFrame extends PFUIComponent {
         inlineInfoLabel = new JLabel();
 
         getController().addSilentModeListener(new MySilentModeListener());
-        updateSilentMode();
+        configurePauseResumeLink();
     }
 
     /**
@@ -894,13 +894,13 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private void updateSilentMode() {
+    private void configurePauseResumeLink() {
         if (getController().isSilentMode()) {
-            pauseResumeLabel.setText(Translation
-                .getTranslation("main_frame.resume.text"));
+            pauseResumeLabel.setText(Translation.getTranslation("action_resume_sync.name"));
+            pauseResumeLabel.setToolTipText(Translation.getTranslation("action_resume_sync.description"));
         } else {
-            pauseResumeLabel.setText(Translation
-                .getTranslation("main_frame.pause.text"));
+            pauseResumeLabel.setText(Translation.getTranslation("action_pause_sync.name"));
+            pauseResumeLabel.setToolTipText(Translation.getTranslation("action_pause_sync.description"));
         }
     }
 
@@ -915,8 +915,6 @@ public class MainFrame extends PFUIComponent {
                 closeInlineInfoPanel();
             } else if (source == uncompactModeButton) {
                 getUIController().reconfigureForCompactMode(false);
-            } else if (source == pauseResumeLabel) {
-                getController().setSilentMode(!getController().isSilentMode());
             } else if (source == closeButton) {
                 doCloseOperation();
             }
@@ -924,12 +922,13 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class MySilentModeListener implements SilentModeListener {
+
         public boolean fireInEventDispatchThread() {
             return true;
         }
 
         public void setSilentMode(SilentModeEvent event) {
-            updateSilentMode();
+            configurePauseResumeLink();
         }
     }
 
@@ -1001,9 +1000,9 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyOpenWebInterface extends BaseAction {
+    private class MyOpenWebInterfaceAction extends BaseAction {
 
-        private MyOpenWebInterface(Controller controller) {
+        private MyOpenWebInterfaceAction(Controller controller) {
             super("action_open_web_interface", controller);
         }
 
@@ -1017,4 +1016,14 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private static class MyPauseResumeAction extends BaseAction {
+
+        private MyPauseResumeAction(Controller controller) {
+            super("action_pause_sync", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().setSilentMode(!getController().isSilentMode());
+        }
+    }
 }

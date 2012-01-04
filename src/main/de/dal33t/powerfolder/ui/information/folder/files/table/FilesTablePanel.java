@@ -821,7 +821,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private class MyResetFiltersAction extends BaseAction {
 
         MyResetFiltersAction(Controller controller) {
-            super("action.reset_filters", controller);
+            super("action_reset_filters", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
