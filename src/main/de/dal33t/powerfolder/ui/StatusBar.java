@@ -183,7 +183,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         MyActionListener listener = new MyActionListener();
 
-        compactModeButton = new JButtonMini(Icons.getIconById(Icons.COMAPCT),
+        compactModeButton = new JButtonMini(Icons.getIconById(Icons.COMPACT),
                 Translation.getTranslation("status_bar.compact.tips"));
         compactModeButton.addActionListener(listener);
 
