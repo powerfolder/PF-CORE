@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -90,7 +91,7 @@ public class MainFrame extends PFUIComponent {
     private JProgressBar usagePB;
     private ActionLabel openWebInterfaceLabel;
     private ActionLabel pauseResumeLabel;
-    private JLabel configLabel;
+    private ActionLabel configurationLabel;
     private JLabel compactLogoLabel;
 
     /**
@@ -179,7 +180,7 @@ public class MainFrame extends PFUIComponent {
 
         builder.add(openWebInterfaceLabel.getUIComponent(), cc.xy(1, 1));
         builder.add(pauseResumeLabel.getUIComponent(), cc.xy(1, 2));
-        builder.add(configLabel, cc.xy(1, 3));
+        builder.add(configurationLabel.getUIComponent(), cc.xy(1, 3));
 
         return builder.getPanel();
     }
@@ -345,16 +346,16 @@ public class MainFrame extends PFUIComponent {
         closeButton.addActionListener(myActionListener);
 
         compactLogoLabel = new JLabel(Icons.getIconById(Icons.LOGO400UI));
-        MyMouseMotionListener listener = new MyMouseMotionListener();
-        compactLogoLabel.addMouseMotionListener(listener);
-        compactLogoLabel.addMouseListener(listener);
+        MyHybridMouseListener hybridMouseListener = new MyHybridMouseListener();
+        compactLogoLabel.addMouseMotionListener(hybridMouseListener);
+        compactLogoLabel.addMouseListener(hybridMouseListener);
 
         openWebInterfaceLabel = new ActionLabel(getController(),
                 new MyOpenWebInterfaceAction(getController()));
         pauseResumeLabel = new ActionLabel(getController(),
                 new MyPauseResumeAction(getController()));
-        configLabel = new JLabel("config");
-
+        configurationLabel = new ActionLabel(getController(),
+                new OpenPreferencesAction(getController()));
 
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener();
@@ -935,7 +936,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * Mouse(Motion)Listener to handle dragging in compact mode.
      */
-    private class MyMouseMotionListener implements MouseListener,
+    private class MyHybridMouseListener implements MouseListener,
             MouseMotionListener {
 
         private int originalMouseXOnScreen;
