@@ -131,6 +131,11 @@ public class MainFrame extends PFUIComponent {
 
     private void configureUiCompact() {
 
+        // Hide the title pane in compact mode.
+        uiComponent.getRootPane().putClientProperty(
+                "Synthetica.titlePane.enabled", Boolean.FALSE);
+        uiComponent.getRootPane().updateUI();
+
         FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
@@ -177,6 +182,11 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureUiUncompact() {
+
+        // Display the title pane in uncompact mode.
+        uiComponent.getRootPane().putClientProperty(
+                "Synthetica.titlePane.enabled", Boolean.TRUE);
+        uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
             "pref, 1dlu, fill:0:grow, 1dlu, pref");
