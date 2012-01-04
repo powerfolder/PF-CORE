@@ -41,6 +41,8 @@ import de.dal33t.powerfolder.event.SilentModeListener;
 import de.dal33t.powerfolder.event.SilentModeEvent;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -52,7 +54,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
- * Powerfoldes gui mainframe
+ * Powerfolder gui mainframe
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.44 $
@@ -84,10 +86,9 @@ public class MainFrame extends PFUIComponent {
     private JButton closeButton;
     private JLabel syncTextLabel;
     private JLabel syncDateLabel;
-    private JLabel syncIconLabel;
     private JLabel accountLabel;
     private JProgressBar usagePB;
-    private JLabel openWebInterfaceLabel;
+    private ActionLabel openWebInterfaceLabel;
     private JLabel pauseResumeLabel;
     private JLabel configLabel;
     private JLabel compactLogoLabel;
@@ -157,16 +158,15 @@ public class MainFrame extends PFUIComponent {
     }
 
     private Component createLowerLeftCompactSection() {
-        FormLayout layout = new FormLayout("100dlu, pref",
+        FormLayout layout = new FormLayout("100dlu",
             "pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(syncTextLabel, cc.xy(1, 1));
         builder.add(syncDateLabel, cc.xy(1, 2));
-        builder.add(syncIconLabel, cc.xywh(2, 1, 1, 2));
-        builder.add(accountLabel, cc.xyw(1, 3, 2));
-        builder.add(usagePB, cc.xyw(1, 4, 2));
+        builder.add(accountLabel, cc.xy(1, 3));
+        builder.add(usagePB, cc.xy(1, 4));
 
         return builder.getPanel();
     }
@@ -177,7 +177,7 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(openWebInterfaceLabel, cc.xy(1, 1));
+        builder.add(openWebInterfaceLabel.getUIComponent(), cc.xy(1, 1));
         builder.add(pauseResumeLabel, cc.xy(1, 2));
         builder.add(configLabel, cc.xy(1, 3));
 
@@ -323,8 +323,14 @@ public class MainFrame extends PFUIComponent {
         MyActionListener myActionListener = new MyActionListener();
 
         syncTextLabel = new JLabel("sync text");
+        syncTextLabel.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+
+        // Sync-complete icon on the right of text, but left aligned.
+        syncTextLabel.setComponentOrientation(
+                ComponentOrientation.RIGHT_TO_LEFT);
+        syncTextLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
         syncDateLabel = new JLabel("sync date");
-        syncIconLabel = new JLabel(Icons.getIconById(Icons.SYNC_COMPLETE));
         accountLabel = new JLabel("account@powerfolder.com");
         usagePB = new JProgressBar();
 
@@ -343,8 +349,8 @@ public class MainFrame extends PFUIComponent {
         compactLogoLabel.addMouseMotionListener(listener);
         compactLogoLabel.addMouseListener(listener);
 
-        openWebInterfaceLabel = new JLabel(Translation.getTranslation(
-                "main_frame.open_web_interface.text"));
+        openWebInterfaceLabel = new ActionLabel(getController(),
+                new MyOpenWebInterface(getController()));
         pauseResumeLabel = new JLabel(
             Translation.getTranslation("main_frame.pause.text"));
         configLabel = new JLabel("config");
@@ -913,14 +919,6 @@ public class MainFrame extends PFUIComponent {
                 getController().setSilentMode(!getController().isSilentMode());
             } else if (source == closeButton) {
                 doCloseOperation();
-            } else if (source == openWebInterfaceLabel) {
-                try {
-                    BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
-                        .getValue(getController()));
-                } catch (IOException e1) {
-                    logWarning("Unable to goto PowerFolder homepage", e1);
-                }
-
             }
         }
     }
@@ -1000,6 +998,22 @@ public class MainFrame extends PFUIComponent {
 
         public void mouseClicked(MouseEvent e) {
             // Don't care
+        }
+    }
+
+    private class MyOpenWebInterface extends BaseAction {
+
+        private MyOpenWebInterface(Controller controller) {
+            super("action_open_web_interface", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
+                    .getValue(getController()));
+            } catch (IOException e1) {
+                logWarning("Unable to goto PowerFolder homepage", e1);
+            }
         }
     }
 
