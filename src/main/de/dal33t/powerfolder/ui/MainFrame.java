@@ -19,18 +19,8 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimerTask;
@@ -42,7 +32,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -100,11 +89,13 @@ public class MainFrame extends PFUIComponent {
     private JLabel statusLabel;
     private JLabel statusIcon;
     private JButton uncompactModeButton;
+    private JButton closeButton;
     private JLabel pauseResumeLabel;
     private JButton pauseResumeButton;
     private JLabel logInOutLabel;
     private JButton logInOutButton;
     private JButton openWebInterfaceButton;
+    private JLabel compactLogoLabel;
 
     /**
      * The status bar on the lower edge of the main frame.
@@ -136,41 +127,41 @@ public class MainFrame extends PFUIComponent {
                 "Synthetica.titlePane.enabled", Boolean.FALSE);
         uiComponent.getRootPane().updateUI();
 
-        FormLayout layout = new FormLayout("pref:grow, 3dlu, pref",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow",
+            "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
-
         CellConstraints cc = new CellConstraints();
+
+        builder.add(createUpperCompactSection(), cc.xy(1, 1));
 
         int row = 1;
 
-        builder.add(statusLabel, cc.xy(1, row));
-        builder.add(statusIcon, cc.xy(3, row));
+//        builder.add(statusLabel, cc.xy(1, row));
+//        builder.add(statusIcon, cc.xy(3, row));
 
         row += 2;
 
-        builder.add(logInOutLabel, cc.xy(1, row));
-        builder.add(logInOutButton, cc.xy(3, row));
+//        builder.add(logInOutLabel, cc.xy(1, row));
+//        builder.add(logInOutButton, cc.xy(3, row));
 
         row += 2;
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "main_frame.open_web_interface.text")),
-                cc.xy(1, row));
-        builder.add(openWebInterfaceButton, cc.xy(3, row));
+//        builder.add(new JLabel(Translation.getTranslation(
+//                "main_frame.open_web_interface.text")),
+//                cc.xy(1, row));
+//        builder.add(openWebInterfaceButton, cc.xy(3, row));
 
         row += 2;
 
-        builder.add(pauseResumeLabel, cc.xy(1, row));
-        builder.add(pauseResumeButton, cc.xy(3, row));
+//        builder.add(pauseResumeLabel, cc.xy(1, row));
+//        builder.add(pauseResumeButton, cc.xy(3, row));
 
         row += 2;
 
-        builder.add(new JLabel(
-                Translation.getTranslation("main_frame.uncompact.text")),
-                cc.xy(1, row));
-        builder.add(uncompactModeButton, cc.xy(3, row));
+//        builder.add(new JLabel(
+//                Translation.getTranslation("main_frame.uncompact.text")),
+//                cc.xy(1, row));
+//        builder.add(uncompactModeButton, cc.xy(3, row));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.setMinimumSize(new Dimension(20, 20));
@@ -179,6 +170,17 @@ public class MainFrame extends PFUIComponent {
         uiComponent.pack();
         uiComponent.setResizable(false);
         relocateIfNecessary();
+    }
+
+    private Component createUpperCompactSection() {
+        FormLayout layout = new FormLayout("fill:pref:grow, pref, pref",
+            "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(compactLogoLabel, cc.xy(1, 1));
+        builder.add(uncompactModeButton, cc.xy(2, 1));
+        builder.add(closeButton, cc.xy(3, 1));
+        return builder.getPanel();
     }
 
     private void configureUiUncompact() {
@@ -191,8 +193,6 @@ public class MainFrame extends PFUIComponent {
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
             "pref, 1dlu, fill:0:grow, 1dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
-
         CellConstraints cc = new CellConstraints();
 
         builder.add(logoLabel, cc.xyw(1, 1, 4));
@@ -317,6 +317,16 @@ public class MainFrame extends PFUIComponent {
             Translation.getTranslation("main_frame.uncompact.tips"));
         uncompactModeButton.addActionListener(myActionListener);
 
+        closeButton = new JButtonMini(
+            Icons.getIconById(Icons.CLOSE),
+            Translation.getTranslation("main_frame.close.tips"));
+        closeButton.addActionListener(myActionListener);
+
+        compactLogoLabel = new JLabel(Icons.getIconById(Icons.LOGO400UI));
+        MyMouseMotionListener listener = new MyMouseMotionListener();
+        compactLogoLabel.addMouseMotionListener(listener);
+        compactLogoLabel.addMouseListener(listener);
+
         pauseResumeButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
             Translation.getTranslation("main_frame.pause.tips"));
         pauseResumeButton.addActionListener(myActionListener);
@@ -337,8 +347,7 @@ public class MainFrame extends PFUIComponent {
             Translation.getTranslation("main_frame.log_in.text"));
 
         // add window listener, checks if exit is needed on pressing X
-        MyWindowListener myWindowListener = new MyWindowListener(
-            getController());
+        MyWindowListener myWindowListener = new MyWindowListener();
         uiComponent.addWindowListener(myWindowListener);
         uiComponent.addWindowStateListener(myWindowListener);
 
@@ -740,12 +749,42 @@ public class MainFrame extends PFUIComponent {
     public void toFront() {
         uiComponent.setVisible(true);
         int state = uiComponent.getExtendedState();
-        state &= ~JFrame.ICONIFIED;
+        state &= ~Frame.ICONIFIED;
         uiComponent.setExtendedState(state);
         uiComponent.setAlwaysOnTop(true);
         uiComponent.toFront();
         uiComponent.requestFocus();
         uiComponent.setAlwaysOnTop(false);
+    }
+
+    private void doCloseOperation() {
+        if (OSUtil.isSystraySupported()) {
+            handleExitFirstRequest();
+            boolean quitOnX = PreferencesEntry.QUIT_ON_X.getValueBoolean(getController());
+            if (quitOnX) {
+                exitProgram();
+            } else {
+                getUIController().hideChildPanels();
+                uiComponent.setVisible(false);
+            }
+        } else {
+            // Quit if systray is not Supported by OS.
+            exitProgram();
+        }
+    }
+
+    /**
+     * Shuts down the program
+     */
+    private void exitProgram() {
+        uiComponent.setVisible(false);
+        uiComponent.dispose();
+        new Thread("Close PowerFolder Thread") {
+            @Override
+            public void run() {
+                getController().tryToExit(0);
+            }
+        }.start();
     }
 
     // ////////////////
@@ -763,11 +802,6 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class MyWindowListener extends WindowAdapter {
-        private final Controller c;
-
-        private MyWindowListener(Controller c) {
-            this.c = c;
-        }
 
         @Override
         public void windowStateChanged(WindowEvent e) {
@@ -803,19 +837,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void windowClosing(WindowEvent e) {
-            if (OSUtil.isSystraySupported()) {
-                handleExitFirstRequest();
-                boolean quitOnX = PreferencesEntry.QUIT_ON_X.getValueBoolean(c);
-                if (quitOnX) {
-                    exitProgram();
-                } else {
-                    getUIController().hideChildPanels();
-                    uiComponent.setVisible(false);
-                }
-            } else {
-                // Quit if systray is not Supported by OS.
-                exitProgram();
-            }
+            doCloseOperation();
         }
 
         /**
@@ -825,27 +847,13 @@ public class MainFrame extends PFUIComponent {
          */
         public void windowIconified(WindowEvent e) {
             boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
-                .getValueBoolean(c);
+                .getValueBoolean(getController());
             if (minToSysTray) {
                 getUIController().hideChildPanels();
                 uiComponent.setVisible(false);
             } else {
                 super.windowIconified(e);
             }
-        }
-
-        /**
-         * Shuts down the program
-         */
-        private void exitProgram() {
-            uiComponent.setVisible(false);
-            uiComponent.dispose();
-            new Thread("Close PowerFolder Thread") {
-                @Override
-                public void run() {
-                    c.tryToExit(0);
-                }
-            }.start();
         }
     }
 
@@ -961,6 +969,8 @@ public class MainFrame extends PFUIComponent {
                 getUIController().reconfigureForCompactMode(false);
             } else if (source == pauseResumeButton) {
                 getController().setSilentMode(!getController().isSilentMode());
+            } else if (source == closeButton) {
+                doCloseOperation();
             } else if (source == logInOutButton) {
                 boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
                     .getValueBoolean(getController());
@@ -1022,6 +1032,74 @@ public class MainFrame extends PFUIComponent {
         public void run() {
             // Update general sync stats
             updateSyncStats();
+        }
+    }
+
+    /**
+     * Mouse(Motion)Listener to handle dragging in compact mode.
+     */
+    private class MyMouseMotionListener implements MouseListener,
+            MouseMotionListener {
+
+        private int originalMouseXOnScreen;
+        private int originalMouseYOnScreen;
+        private int originalFrameX;
+        private int originalFrameY;
+        private Cursor originalCursor;
+
+        /**
+         * Remember where we started.
+         *
+         * @param e
+         */
+        public void mousePressed(MouseEvent e) {
+            originalMouseXOnScreen = e.getXOnScreen();
+            originalMouseYOnScreen = e.getYOnScreen();
+            originalFrameX = getUIComponent().getX();
+            originalFrameY = getUIComponent().getY();
+        }
+
+        /**
+         * How much have we dragged?
+         *
+         * @param e
+         */
+        public void mouseDragged(MouseEvent e) {
+            int x = originalFrameX + e.getXOnScreen() - originalMouseXOnScreen;
+            int y = originalFrameY + e.getYOnScreen() - originalMouseYOnScreen;
+            getUIComponent().setLocation(x, y);
+        }
+
+        /**
+         * Make the cursor a hand.
+         *
+         * @param e
+         */
+        public void mouseEntered(MouseEvent e) {
+            originalCursor = CursorUtils.setHandCursor(getUIComponent());
+        }
+
+        /**
+         * Reset the cursor.
+         *
+         * @param e
+         */
+        public void mouseExited(MouseEvent e) {
+            if (originalCursor != null) {
+                CursorUtils.returnToOriginal(getUIComponent(), originalCursor);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            // Don't care
+        }
+
+        public void mouseMoved(MouseEvent e) {
+            // Don't care
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            // Don't care
         }
     }
 

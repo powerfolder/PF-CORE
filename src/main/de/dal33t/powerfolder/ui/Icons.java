@@ -87,6 +87,7 @@ public class Icons {
 
     public static final String COMPACT = "compact.icon";
     public static final String UNCOMACT = "uncompact.icon";
+    public static final String CLOSE = "close.icon";
 
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";
