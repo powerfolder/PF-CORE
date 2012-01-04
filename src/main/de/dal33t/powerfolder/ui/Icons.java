@@ -102,7 +102,7 @@ public class Icons {
     public static final String EDIT = "edit.icon";
     public static final String DELETE = "delete.icon";
     public static final String FORCE_UPDATE = "force_update.icon";
-    public static final String LOGIN = "login.icon";
+    public static final String SYNC_COMPLETE = "sync_complete.icon";
 
     public static final String UNKNOWN_FILE = "unknown.icon";
     public static final String UNKNOWN_FILE_GRAY = "unknown_file_gray";

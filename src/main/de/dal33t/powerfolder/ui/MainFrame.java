@@ -23,7 +23,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.IOException;
 
@@ -36,16 +35,12 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
-import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.SilentModeListener;
 import de.dal33t.powerfolder.event.SilentModeEvent;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -84,17 +79,17 @@ public class MainFrame extends PFUIComponent {
     private JButton inlineInfoCloseButton;
     private JSplitPane split;
     private final AtomicBoolean compactModeActive = new AtomicBoolean();
-    private ServerClient client;
 
-    private JLabel statusLabel;
-    private JLabel statusIcon;
     private JButton uncompactModeButton;
     private JButton closeButton;
+    private JLabel syncTextLabel;
+    private JLabel syncDateLabel;
+    private JLabel syncIconLabel;
+    private JLabel accountLabel;
+    private JProgressBar usagePB;
+    private JLabel openWebInterfaceLabel;
     private JLabel pauseResumeLabel;
-    private JButton pauseResumeButton;
-    private JLabel logInOutLabel;
-    private JButton logInOutButton;
-    private JButton openWebInterfaceButton;
+    private JLabel configLabel;
     private JLabel compactLogoLabel;
 
     /**
@@ -116,8 +111,6 @@ public class MainFrame extends PFUIComponent {
         initComponents();
         configureUiUncompact();
 
-        getController().scheduleAndRepeat(new MyTimerTask(), 5000, 5000);
-
     }
 
     private void configureUiCompact() {
@@ -128,40 +121,19 @@ public class MainFrame extends PFUIComponent {
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("pref:grow",
-            "pref");
+            "pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createUpperCompactSection(), cc.xy(1, 1));
-
-        int row = 1;
-
-//        builder.add(statusLabel, cc.xy(1, row));
-//        builder.add(statusIcon, cc.xy(3, row));
-
-        row += 2;
-
-//        builder.add(logInOutLabel, cc.xy(1, row));
-//        builder.add(logInOutButton, cc.xy(3, row));
-
-        row += 2;
+        builder.add(createLowerCompactSection(), cc.xy(1, 2));
 
 //        builder.add(new JLabel(Translation.getTranslation(
 //                "main_frame.open_web_interface.text")),
 //                cc.xy(1, row));
-//        builder.add(openWebInterfaceButton, cc.xy(3, row));
-
-        row += 2;
-
+//        builder.add(openWebInterfaceLabel, cc.xy(3, row));
 //        builder.add(pauseResumeLabel, cc.xy(1, row));
 //        builder.add(pauseResumeButton, cc.xy(3, row));
-
-        row += 2;
-
-//        builder.add(new JLabel(
-//                Translation.getTranslation("main_frame.uncompact.text")),
-//                cc.xy(1, row));
-//        builder.add(uncompactModeButton, cc.xy(3, row));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.setMinimumSize(new Dimension(20, 20));
@@ -172,11 +144,52 @@ public class MainFrame extends PFUIComponent {
         relocateIfNecessary();
     }
 
+    private Component createLowerCompactSection() {
+        FormLayout layout = new FormLayout("fill:pref:grow, pref",
+            "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(createLowerLeftCompactSection(), cc.xy(1, 1));
+        builder.add(createLowerRightCompactSection(), cc.xy(2, 1));
+        
+        return builder.getPanel();
+    }
+
+    private Component createLowerLeftCompactSection() {
+        FormLayout layout = new FormLayout("100dlu, pref",
+            "pref, pref, pref, pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(syncTextLabel, cc.xy(1, 1));
+        builder.add(syncDateLabel, cc.xy(1, 2));
+        builder.add(syncIconLabel, cc.xywh(2, 1, 1, 2));
+        builder.add(accountLabel, cc.xyw(1, 3, 2));
+        builder.add(usagePB, cc.xyw(1, 4, 2));
+
+        return builder.getPanel();
+    }
+
+    private Component createLowerRightCompactSection() {
+        FormLayout layout = new FormLayout("pref:grow",
+            "pref, pref, pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(openWebInterfaceLabel, cc.xy(1, 1));
+        builder.add(pauseResumeLabel, cc.xy(1, 2));
+        builder.add(configLabel, cc.xy(1, 3));
+
+        return builder.getPanel();
+    }
+
     private Component createUpperCompactSection() {
         FormLayout layout = new FormLayout("fill:pref:grow, pref, pref",
             "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
+
         builder.add(compactLogoLabel, cc.xy(1, 1));
         builder.add(uncompactModeButton, cc.xy(2, 1));
         builder.add(closeButton, cc.xy(3, 1));
@@ -309,8 +322,11 @@ public class MainFrame extends PFUIComponent {
 
         MyActionListener myActionListener = new MyActionListener();
 
-        statusLabel = new JLabel(Translation.getTranslation("main_frame.status.unsure"));
-        statusIcon = new JLabel(Icons.getIconById(Icons.CHECKED));
+        syncTextLabel = new JLabel("sync text");
+        syncDateLabel = new JLabel("sync date");
+        syncIconLabel = new JLabel(Icons.getIconById(Icons.SYNC_COMPLETE));
+        accountLabel = new JLabel("account@powerfolder.com");
+        usagePB = new JProgressBar();
 
         uncompactModeButton = new JButtonMini(
             Icons.getIconById(Icons.UNCOMACT),
@@ -327,24 +343,12 @@ public class MainFrame extends PFUIComponent {
         compactLogoLabel.addMouseMotionListener(listener);
         compactLogoLabel.addMouseListener(listener);
 
-        pauseResumeButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
-            Translation.getTranslation("main_frame.pause.tips"));
-        pauseResumeButton.addActionListener(myActionListener);
-
+        openWebInterfaceLabel = new JLabel(Translation.getTranslation(
+                "main_frame.open_web_interface.text"));
         pauseResumeLabel = new JLabel(
             Translation.getTranslation("main_frame.pause.text"));
+        configLabel = new JLabel("config");
 
-        logInOutButton = new JButtonMini(Icons.getIconById(Icons.LOGIN),
-            Translation.getTranslation("main_frame.log_in.tip"));
-        logInOutButton.addActionListener(myActionListener);
-
-        openWebInterfaceButton = new JButtonMini(
-            Icons.getIconById(Icons.ONLINE_FOLDER),
-            Translation.getTranslation("main_frame.open_web_interface.tip"));
-        openWebInterfaceButton.addActionListener(myActionListener);
-
-        logInOutLabel = new JLabel(
-            Translation.getTranslation("main_frame.log_in.text"));
 
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener();
@@ -383,8 +387,6 @@ public class MainFrame extends PFUIComponent {
 
         getController().addSilentModeListener(new MySilentModeListener());
         updateSilentMode();
-        client = getApplicationModel().getServerClientModel().getClient();
-        client.addListener(new MyServerClientListener());
     }
 
     /**
@@ -888,72 +890,12 @@ public class MainFrame extends PFUIComponent {
 
     private void updateSilentMode() {
         if (getController().isSilentMode()) {
-            pauseResumeButton.setIcon(Icons.getIconById(Icons.RUN));
-            pauseResumeButton.setToolTipText(Translation
-                .getTranslation("main_frame.resume.tips"));
             pauseResumeLabel.setText(Translation
                 .getTranslation("main_frame.resume.text"));
         } else {
-            pauseResumeButton.setIcon(Icons.getIconById(Icons.PAUSE));
-            pauseResumeButton.setToolTipText(Translation
-                .getTranslation("main_frame.pause.tips"));
             pauseResumeLabel.setText(Translation
                 .getTranslation("main_frame.pause.text"));
         }
-    }
-
-    private void updateLoginLogout(ServerClientEvent event) {
-        if (client.isLoggedIn()) {
-            logInOutLabel.setText(Translation
-                .getTranslation("main_frame.log_out.text"));
-        } else {
-            logInOutLabel.setText(Translation
-                .getTranslation("main_frame.log_in.text"));
-        }
-    }
-
-    private void updateSyncStats() {
-        boolean syncing = getApplicationModel().getFolderRepositoryModel()
-            .wasSyncingAtDate();
-        Date syncDate;
-        if (syncing) {
-            syncDate = getApplicationModel().getFolderRepositoryModel()
-                .getEtaSyncDate();
-        } else {
-            syncDate = getApplicationModel().getFolderRepositoryModel()
-                .getLastSyncDate();
-        }
-        String syncStatsText;
-        String iconKey;
-        if (!getController().getNodeManager().isStarted()) {
-            syncStatsText = Translation
-                .getTranslation("main_frame.status.not_running");
-            iconKey = Icons.NODE_DISCONNECTED;
-        } else if (getController().getFolderRepository().getFoldersCount()
-                == 0) {
-            // No folders
-            syncStatsText = Translation
-                .getTranslation("main_frame.status.no_folders");
-            iconKey = Icons.QUESTION;
-        } else if (syncDate == null && !syncing) { // Never synced
-            syncStatsText = Translation
-                .getTranslation("main_frame.status.never_synced");
-            iconKey = Icons.QUESTION;
-        } else {
-            if (syncing) {
-                long aniIndex = System.currentTimeMillis() / 1000 % 3;
-                syncStatsText = Translation
-                    .getTranslation("main_frame.status.synchronizing." + aniIndex);
-
-                iconKey = Icons.SYNC_ANIMATION[0];
-            } else {
-                syncStatsText = Translation
-                    .getTranslation("main_frame.status.in_sync");
-                iconKey = Icons.CHECKED;
-            }
-        }
-        statusLabel.setText(syncStatsText);
-        statusIcon.setIcon(Icons.getIconById(iconKey));
     }
 
     // ////////////////
@@ -967,18 +909,11 @@ public class MainFrame extends PFUIComponent {
                 closeInlineInfoPanel();
             } else if (source == uncompactModeButton) {
                 getUIController().reconfigureForCompactMode(false);
-            } else if (source == pauseResumeButton) {
+            } else if (source == pauseResumeLabel) {
                 getController().setSilentMode(!getController().isSilentMode());
             } else if (source == closeButton) {
                 doCloseOperation();
-            } else if (source == logInOutButton) {
-                boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
-                    .getValueBoolean(getController());
-                if (changeLoginAllowed) {
-                    PFWizard.openLoginWizard(getController(), getController()
-                        .getOSClient());
-                }
-            } else if (source == openWebInterfaceButton) {
+            } else if (source == openWebInterfaceLabel) {
                 try {
                     BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
                         .getValue(getController()));
@@ -997,41 +932,6 @@ public class MainFrame extends PFUIComponent {
 
         public void setSilentMode(SilentModeEvent event) {
             updateSilentMode();
-        }
-    }
-
-    private class MyServerClientListener implements ServerClientListener {
-
-        public void accountUpdated(ServerClientEvent event) {
-            updateLoginLogout(event);
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void login(ServerClientEvent event) {
-            updateLoginLogout(event);
-        }
-
-        public void nodeServerStatusChanged(ServerClientEvent event) {
-            updateLoginLogout(event);
-        }
-
-        public void serverConnected(ServerClientEvent event) {
-            updateLoginLogout(event);
-        }
-
-        public void serverDisconnected(ServerClientEvent event) {
-            updateLoginLogout(event);
-        }
-    }
-
-    private class MyTimerTask extends TimerTask {
-
-        public void run() {
-            // Update general sync stats
-            updateSyncStats();
         }
     }
 
