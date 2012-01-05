@@ -35,6 +35,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.security.OnlineStorageSubscription;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.SilentModeListener;
@@ -47,6 +52,7 @@ import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -82,6 +88,7 @@ public class MainFrame extends PFUIComponent {
     private JButton inlineInfoCloseButton;
     private JSplitPane split;
     private final AtomicBoolean compactModeActive = new AtomicBoolean();
+    private ServerClient client;
 
     private JButton uncompactModeButton;
     private JButton closeButton;
@@ -394,6 +401,10 @@ public class MainFrame extends PFUIComponent {
 
         getController().addSilentModeListener(new MySilentModeListener());
         configurePauseResumeLink();
+
+        client = getApplicationModel().getServerClientModel().getClient();
+        client.addListener(new MyServerClientListener());
+
     }
 
     /**
@@ -905,6 +916,32 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private void updateOnlineStorageDetails() {
+        double percentageUsed = 0;
+        long totalStorage = 0;
+        long spaceUsed = 0;
+        if (client.isConnected()) {
+            if (client.isLoggedIn()) {
+                AccountDetails ad = client.getAccountDetails();
+                OnlineStorageSubscription storageSubscription = client
+                        .getAccount().getOSSubscription();
+                if (!storageSubscription.isDisabled()) {
+                    totalStorage = storageSubscription.getStorageSize();
+                    spaceUsed = ad.getSpaceUsed();
+                    if (totalStorage > 0) {
+                        percentageUsed = 100.0d * (double) spaceUsed
+                            / (double) totalStorage;
+                    }
+                    percentageUsed = Math.max(0.0d, percentageUsed);
+                    percentageUsed = Math.min(100.0d, percentageUsed);
+                }
+            }
+        }
+        usagePB.setValue((int) percentageUsed);
+        usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
+            + Format.formatBytesShort(totalStorage));
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
@@ -1027,4 +1064,32 @@ public class MainFrame extends PFUIComponent {
             getController().setSilentMode(!getController().isSilentMode());
         }
     }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void login(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+    }
+
 }
