@@ -246,9 +246,6 @@ public class StatusTab extends PFUIComponent {
     }
 
     private void updateSyncStats() {
-        // #1826 Lets say we are synchronized, when NOT syncing at the moment.
-        // boolean synced =
-        // getController().getFolderRepository().isSynchronized();
         boolean syncing = getApplicationModel().getFolderRepositoryModel()
             .wasSyncingAtDate();
         Date syncDate;
@@ -259,8 +256,57 @@ public class StatusTab extends PFUIComponent {
             syncDate = getApplicationModel().getFolderRepositoryModel()
                 .getLastSyncDate();
         }
-        displaySyncStats(syncDate, syncing, getController().getNodeManager()
-            .isStarted());
+
+        if (isFiner()) {
+            logFiner("Sync status: syncing? " + syncing + ", date: " +
+                    syncDate);
+        }
+        if (synchronizationStatusLabel != null) {
+            String syncStatsText;
+            if (!getController().getNodeManager()
+            .isStarted()) {
+                // Not started
+                syncStatsText = Translation
+                    .getTranslation("status_tab.not_running");
+            } else if (getController().getFolderRepository().getFoldersCount()
+                    == 0) {
+                // No folders
+                syncStatsText = Translation
+                    .getTranslation("status_tab.no_folders");
+            } else if (syncDate == null && !syncing) { // Never synced
+                syncStatsText = Translation
+                    .getTranslation("status_tab.never_synced");
+            } else {
+                if (syncing) {
+                    long aniIndex = System.currentTimeMillis() / 1000 % 3;
+                    syncStatsText = Translation
+                        .getTranslation("status_tab.synchronizing." + aniIndex);
+                } else {
+                    syncStatsText = Translation
+                        .getTranslation("status_tab.in_sync");
+                }
+            }
+            synchronizationStatusLabel.setText(syncStatsText);
+        }
+
+        if (synchronizationDateLabel != null) {
+            if (syncDate == null) {
+                synchronizationDateLabel.setVisible(false);
+            } else {
+                String syncDateText;
+                if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
+                    syncDateText = Translation
+                        .getTranslation("status_tab.sync_unknown");
+                } else {
+                    String date = Format.formatDateShort(syncDate);
+                    syncDateText = syncing ? Translation.getTranslation(
+                        "status_tab.sync_eta", date) : Translation
+                        .getTranslation("status_tab.last_synced", date);
+                }
+                synchronizationDateLabel.setVisible(true);
+                synchronizationDateLabel.setText(syncDateText);
+            }
+        }
     }
 
     /**
@@ -683,60 +729,6 @@ public class StatusTab extends PFUIComponent {
             showBuyNow);
         // Make sure to display buy now if license is about to expire.
         updateLicenseDetails();
-    }
-
-    private void displaySyncStats(Date syncDate, boolean syncing,
-        boolean started) {
-        
-        if (isFiner()) {
-            logFiner("Sync status: syncing? " + syncing + ", date: " +
-                    syncDate);
-        }
-        if (synchronizationStatusLabel != null) {
-            String syncStatsText;
-            if (!started) {
-                // Not started
-                syncStatsText = Translation
-                    .getTranslation("status_tab.not_running");
-            } else if (getController().getFolderRepository().getFoldersCount()
-                    == 0) {
-                // No folders
-                syncStatsText = Translation
-                    .getTranslation("status_tab.no_folders");
-            } else if (syncDate == null && !syncing) { // Never synced
-                syncStatsText = Translation
-                    .getTranslation("status_tab.never_synced");
-            } else {
-                if (syncing) {
-                    long aniIndex = System.currentTimeMillis() / 1000 % 3;
-                    syncStatsText = Translation
-                        .getTranslation("status_tab.synchronizing." + aniIndex);
-                } else {
-                    syncStatsText = Translation
-                        .getTranslation("status_tab.in_sync");
-                }
-            }
-            synchronizationStatusLabel.setText(syncStatsText);
-        }
-
-        if (synchronizationDateLabel != null) {
-            if (syncDate == null) {
-                synchronizationDateLabel.setVisible(false);
-            } else {
-                String syncDateText;
-                if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
-                    syncDateText = Translation
-                        .getTranslation("status_tab.sync_unknown");
-                } else {
-                    String date = Format.formatDateShort(syncDate);
-                    syncDateText = syncing ? Translation.getTranslation(
-                        "status_tab.sync_eta", date) : Translation
-                        .getTranslation("status_tab.last_synced", date);
-                }
-                synchronizationDateLabel.setVisible(true);
-                synchronizationDateLabel.setText(syncDateText);
-            }
-        }
     }
 
     /**

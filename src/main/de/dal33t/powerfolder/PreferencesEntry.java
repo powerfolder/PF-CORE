@@ -25,7 +25,6 @@ import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.skin.BlueGlobe;
-import de.dal33t.powerfolder.skin.LightSky;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
 

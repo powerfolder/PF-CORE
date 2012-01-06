@@ -40,19 +40,13 @@ import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.SilentModeListener;
-import de.dal33t.powerfolder.event.SilentModeEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -136,13 +130,6 @@ public class MainFrame extends PFUIComponent {
 
         builder.add(createUpperCompactSection(), cc.xy(1, 1));
         builder.add(createLowerCompactSection(), cc.xy(1, 2));
-
-//        builder.add(new JLabel(Translation.getTranslation(
-//                "main_frame.open_web_interface.text")),
-//                cc.xy(1, row));
-//        builder.add(openWebInterfaceLabel, cc.xy(3, row));
-//        builder.add(pauseResumeLabel, cc.xy(1, row));
-//        builder.add(pauseResumeButton, cc.xy(3, row));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.setMinimumSize(new Dimension(20, 20));
@@ -257,8 +244,8 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setLocation(mainX, mainY);
 
         relocateIfNecessary();
-
         configureInlineInfo();
+        updateSyncStats();
 
         if (PreferencesEntry.MAIN_FRAME_MAXIMIZED
             .getValueBoolean(getController()))
@@ -330,15 +317,14 @@ public class MainFrame extends PFUIComponent {
 
         MyActionListener myActionListener = new MyActionListener();
 
-        syncTextLabel = new JLabel("sync text");
-        syncTextLabel.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+        syncTextLabel = new JLabel(" ");
 
         // Sync-complete icon on the right of text, but left aligned.
         syncTextLabel.setComponentOrientation(
                 ComponentOrientation.RIGHT_TO_LEFT);
         syncTextLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
-        syncDateLabel = new JLabel("sync date");
+        syncDateLabel = new JLabel(" ");
         accountLabel = new JLabel(" ");
         usagePB = new JProgressBar();
 
@@ -405,6 +391,69 @@ public class MainFrame extends PFUIComponent {
         client = getApplicationModel().getServerClientModel().getClient();
         client.addListener(new MyServerClientListener());
 
+        getApplicationModel().getFolderRepositoryModel()
+            .addOverallFolderStatListener(new MyOverallFolderStatListener());
+    }
+
+    private void updateSyncStats() {
+        boolean syncing = getApplicationModel().getFolderRepositoryModel()
+            .wasSyncingAtDate();
+        Date syncDate;
+        if (syncing) {
+            syncDate = getApplicationModel().getFolderRepositoryModel()
+                .getEtaSyncDate();
+        } else {
+            syncDate = getApplicationModel().getFolderRepositoryModel()
+                .getLastSyncDate();
+        }
+
+        if (isFiner()) {
+            logFiner("Sync status: syncing? " + syncing + ", date: " +
+                    syncDate);
+        }
+
+        String syncStatsText;
+        boolean synced = false;
+        if (!getController().getNodeManager().isStarted()) {
+            // Not started
+            syncStatsText = Translation
+                .getTranslation("main_frame.not_running");
+        } else if (getController().getFolderRepository().getFoldersCount()
+                == 0) {
+            // No folders
+            syncStatsText = Translation
+                .getTranslation("main_frame.no_folders");
+        } else if (syncDate == null && !syncing) { // Never synced
+            syncStatsText = Translation
+                .getTranslation("main_frame.never_synced");
+        } else {
+            if (syncing) {
+                long aniIndex = System.currentTimeMillis() / 1000 % 3;
+                syncStatsText = Translation
+                    .getTranslation("main_frame.synchronizing." + aniIndex);
+            } else {
+                syncStatsText = Translation
+                    .getTranslation("main_frame.in_sync");
+                synced = true;
+            }
+        }
+        syncTextLabel.setText(syncStatsText);
+        //syncTextLabel.setIcon(synced ? Icons.getIconById(Icons.SYNC_COMPLETE)
+        //        : null);
+
+        String syncDateText = " ";
+        if (syncDate != null) {
+            if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
+                syncDateText = Translation
+                    .getTranslation("main_frame.sync_unknown");
+            } else {
+                String date = Format.formatDateShort(syncDate);
+                syncDateText = syncing ? Translation.getTranslation(
+                    "main_frame.sync_eta", date) : Translation
+                    .getTranslation("main_frame.last_synced", date);
+            }
+        }
+        syncDateLabel.setText(syncDateText);
     }
 
     /**
@@ -1097,5 +1146,19 @@ public class MainFrame extends PFUIComponent {
             updateOnlineStorageDetails();
         }
     }
+
+
+    private class MyOverallFolderStatListener implements
+            OverallFolderStatListener
+    {
+        public void statCalculated(OverallFolderStatEvent e) {
+            updateSyncStats();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
 
 }
