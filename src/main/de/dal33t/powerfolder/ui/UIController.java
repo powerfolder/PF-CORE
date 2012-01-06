@@ -1357,6 +1357,17 @@ public class UIController extends PFComponent {
         mainFrame.reconfigureForCompactMode(compactMode);
     }
 
+    /**
+     * Special case. A folder has just been created from an invite.
+     * Switch to the folder tab and crack open the new folder info.
+     *
+     * @param folderInfo
+     */
+    public void displayInviteFolderContents(FolderInfo folderInfo) {
+        mainFrame.showFoldersTab();
+        openFilesInformation(folderInfo);
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////

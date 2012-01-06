@@ -34,6 +34,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -70,6 +73,15 @@ public class TextPanelPanel extends PFWizardPanel {
     protected void afterDisplay() {
         if (autoFadeOut) {
             new FadeOutWorker().execute();
+        }
+
+        // If it's an invite, try to display it in the UI.
+        Object o = getWizardContext().getAttribute(FOLDER_IS_INVITE);
+        if (o != null && o instanceof Boolean && (Boolean)o) {
+            Object p = getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
+            if (p != null && p instanceof FolderInfo) {
+                getController().getUIController().displayInviteFolderContents((FolderInfo)p);
+            }
         }
     }
 
@@ -150,9 +162,8 @@ public class TextPanelPanel extends PFWizardPanel {
         }
 
         private JDialog getWizardDialog() {
-            JDialog diag = (JDialog) getWizardContext().getAttribute(
+            return (JDialog) getWizardContext().getAttribute(
                 WizardContextAttributes.DIALOG_ATTRIBUTE);
-            return diag;
         }
 
     }
