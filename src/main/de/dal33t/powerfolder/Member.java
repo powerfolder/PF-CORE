@@ -837,6 +837,12 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean wasHandshaked = handshaked;
         Identity identity = peer.getIdentity();
 
+        boolean receivedFolderList = false;
+        // #2569: Server waits for client list of folders first.
+        if (getController().getMySelf().isServer() && !isServer()) {
+            receivedFolderList = waitForFoldersJoin();
+        }
+
         synchronized (peerInitalizeLock) {
             if (!isConnected() || identity == null) {
                 logFine("Disconnected while completing handshake");
@@ -845,21 +851,43 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             // Send node informations now
             // Send joined folders to synchronize
+            Collection<FolderInfo> allFolders = getController()
+                .getFolderRepository().getJoinedFolderInfos();
+            Collection<FolderInfo>  folders2node = allFolders;
+            folders2node = allFolders;
+
+            // #2569: Send only "filtered" folder list. Client specific
+            if (getController().getMySelf().isServer() && receivedFolderList) {
+                String magicId = peer.getMyMagicId();
+                FolderList remoteFolderList = getLastFolderList();
+                if (remoteFolderList != null) {
+                    folders2node = new LinkedList<FolderInfo>();
+                    for (FolderInfo folderInfo : allFolders) {
+                        if (remoteFolderList.contains(folderInfo, magicId)) {
+                            folders2node.add(folderInfo);
+                        }
+                    }
+                }
+            }
+            
+            if (allFolders.size() != folders2node.size()) {
+                logWarning("SAVED on folder list: " + allFolders.size()
+                    + " down to " + folders2node.size());
+            }
+
             FolderList folderList;
             if (getProtocolVersion() >= 106) {
-                folderList = new FolderListExt(getController()
-                    .getFolderRepository().getJoinedFolderInfos(),
+                folderList = new FolderListExt(folders2node,
                     peer.getRemoteMagicId());
             } else {
-                folderList = new FolderList(getController()
-                    .getFolderRepository().getJoinedFolderInfos(),
+                folderList = new FolderList(folders2node,
                     peer.getRemoteMagicId());
             }
             peer.sendMessagesAsynchron(folderList);
         }
 
         // My messages sent, now wait for his folder list.
-        boolean receivedFolderList = waitForFoldersJoin();
+        receivedFolderList = waitForFoldersJoin();
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
@@ -1032,8 +1060,10 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getNodeManager().connectStateChanged(this);
 
             // Inform security manager to update account state.
+            boolean syncFolderMemberships = !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                .getValueBoolean(getController());
             getController().getSecurityManager().nodeAccountStateChanged(this,
-                false);
+                syncFolderMemberships);
         }
 
         if (isInfo()) {
@@ -2331,8 +2361,17 @@ public class Member extends PFComponent implements Comparable<Member> {
     public void setServer(boolean server) {
         boolean oldValue = this.server;
         this.server = server;
+
         // Fire event on nodemanager
         if (oldValue != server) {
+            
+            // #2569: Server 2 server connection. don't wait for folder lists
+            if (getController().getMySelf().isServer() && server) {
+                synchronized (folderListWaiter) {
+                    folderListWaiter.notifyAll();
+                }
+            }
+            
             getController().getNodeManager().fireNodeSettingsChanged(this);
         }
     }
