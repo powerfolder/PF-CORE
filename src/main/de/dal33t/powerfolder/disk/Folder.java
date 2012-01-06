@@ -842,6 +842,7 @@ public class Folder extends PFComponent {
             }
 
             // Set modified date of remote
+            // TODO: Set last modified only if required
             if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime()))
             {
                 logSevere("Failed to set modified date on " + targetFile
@@ -2100,14 +2101,14 @@ public class Folder extends PFComponent {
         boolean mySelfRead = hasReadPermission(getController().getMySelf());
         if (!memberRead || !mySelfRead) {
             if (memberRead) {
-                if (isInfo()) {
-                    logInfo("Not joining " + member + " / "
+                if (isWarning()) {
+                    logWarning("Not joining " + member + " / "
                         + member.getAccountInfo()
                         + ". Myself got no read permission");
                 }
             } else {
-                if (isInfo()) {
-                    logInfo("Not joining " + member + " / "
+                if (isWarning()) {
+                    logWarning("Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission");
                 }
             }
