@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JDialog;
 
@@ -59,7 +60,8 @@ public class PFWizard extends PFUIComponent {
     // The attribute in the wizard context of the success panel. Displayed at
     // end
     public static final String SUCCESS_PANEL = "successpanel";
-    private static volatile int N_WIZARDS_OPEN = 0;
+    private static final AtomicInteger NUMBER_OF_OPEN_WIZARDS =
+            new AtomicInteger();
 
     private JDialog dialog;
     private Wizard wizard;
@@ -76,7 +78,7 @@ public class PFWizard extends PFUIComponent {
     }
 
     public static boolean isWizardOpen() {
-        return N_WIZARDS_OPEN > 0;
+        return NUMBER_OF_OPEN_WIZARDS.get() > 0;
     }
 
     /**
@@ -247,7 +249,7 @@ public class PFWizard extends PFUIComponent {
             buildUI();
         }
         wizard.start(wizardPanel, false);
-        N_WIZARDS_OPEN++;
+        NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
         dialog.setVisible(true);
     }
 
@@ -295,13 +297,13 @@ public class PFWizard extends PFUIComponent {
             public void wizardFinished(Wizard wizard) {
                 dialog.setVisible(false);
                 dialog.dispose();
-                N_WIZARDS_OPEN--;
+                NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
             }
 
             public void wizardCancelled(Wizard wizard) {
                 dialog.setVisible(false);
                 dialog.dispose();
-                N_WIZARDS_OPEN--;
+                NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
             }
 
             public void wizardPanelChanged(Wizard wizard) {

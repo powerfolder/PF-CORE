@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
@@ -130,7 +131,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Registered to ALL folders to deligate problem event of any folder to
      * registered listeners.
      * <p>
-     * TODO: Valve listeners deteriorate the UI refresh speed.
+     * TODO: Value listeners deteriorate the UI refresh speed.
      */
     private final ProblemListener valveProblemListenerSupport;
 
@@ -1247,6 +1248,12 @@ public class FolderRepository extends PFComponent implements Runnable {
      * folders.
      */
     public void lookForNewFolders() {
+        if (PFWizard.isWizardOpen()) {
+            if (isFine()) {
+                logFine("A wizard is open somewhere; skipping...");
+            }
+            return;
+        }
         if (skipNewFolderSearch.get()
             || !getController().getOSClient().isLoggedIn())
         {
