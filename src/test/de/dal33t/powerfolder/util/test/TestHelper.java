@@ -247,12 +247,22 @@ public class TestHelper {
             try {
                 FileUtils.recursiveDelete(file);
             } catch (IOException e) {
-                e.printStackTrace();
+                TestHelper.waitMilliSeconds(250);
+                try {
+                    FileUtils.recursiveDelete(file);
+                } catch (IOException e1) {
+                    TestHelper.waitMilliSeconds(1000);
+                    try {
+                        FileUtils.recursiveDelete(file);
+                    } catch (IOException e2) {
+                        e2.printStackTrace();
+                    }
+                }
             }
         }
         if (0 != testDir.listFiles().length) {
             StringBuilder b = new StringBuilder();
-            listFiles(testDir, b);
+   listFiles(testDir, b);
             throw new IllegalStateException(
                 "cleaning test dir not succeded. Files left: " + b.toString());
         }
