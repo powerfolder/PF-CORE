@@ -339,7 +339,7 @@ public class MainFrame extends PFUIComponent {
         syncTextLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
         syncDateLabel = new JLabel("sync date");
-        accountLabel = new JLabel("account@powerfolder.com");
+        accountLabel = new JLabel(" ");
         usagePB = new JProgressBar();
 
         uncompactModeButton = new JButtonMini(
@@ -920,6 +920,7 @@ public class MainFrame extends PFUIComponent {
         double percentageUsed = 0;
         long totalStorage = 0;
         long spaceUsed = 0;
+        String username = " ";
         if (client.isConnected()) {
             if (client.isLoggedIn()) {
                 AccountDetails ad = client.getAccountDetails();
@@ -934,12 +935,17 @@ public class MainFrame extends PFUIComponent {
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
+                    String s = client.getUsername();
+                    if (!StringUtils.isEmpty(s)) {
+                        username = s;
+                    }
                 }
             }
         }
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
+        accountLabel.setText(username);
     }
 
     // ////////////////
