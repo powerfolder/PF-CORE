@@ -91,6 +91,7 @@ public class MainFrame extends PFUIComponent {
     private JLabel accountLabel;
     private JProgressBar usagePB;
     private ActionLabel openWebInterfaceLabel;
+    private ActionLabel openFoldersBaseLabel;
     private ActionLabel pauseResumeLabel;
     private ActionLabel configurationLabel;
     private JLabel compactLogoLabel;
@@ -168,13 +169,14 @@ public class MainFrame extends PFUIComponent {
 
     private Component createLowerRightCompactSection() {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, pref");
+            "pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(openWebInterfaceLabel.getUIComponent(), cc.xy(1, 1));
-        builder.add(pauseResumeLabel.getUIComponent(), cc.xy(1, 2));
-        builder.add(configurationLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(openFoldersBaseLabel.getUIComponent(), cc.xy(1, 2));
+        builder.add(pauseResumeLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(configurationLabel.getUIComponent(), cc.xy(1, 4));
 
         return builder.getPanel();
     }
@@ -345,6 +347,8 @@ public class MainFrame extends PFUIComponent {
 
         openWebInterfaceLabel = new ActionLabel(getController(),
                 new MyOpenWebInterfaceAction(getController()));
+        openFoldersBaseLabel = new ActionLabel(getController(),
+                new MyOpenFoldersBaseAction(getController()));
         pauseResumeLabel = new ActionLabel(getController(),
                 new MyPauseResumeAction(getController()));
         configurationLabel = new ActionLabel(getController(),
@@ -1106,6 +1110,17 @@ public class MainFrame extends PFUIComponent {
             } catch (IOException e1) {
                 logWarning("Unable to goto PowerFolder homepage", e1);
             }
+        }
+    }
+
+    private class MyOpenFoldersBaseAction extends BaseAction {
+
+        private MyOpenFoldersBaseAction(Controller controller) {
+            super("action_open_folders_base", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FileUtils.openFile(getController().getFolderRepository().getFoldersAbsoluteDir());
         }
     }
 
