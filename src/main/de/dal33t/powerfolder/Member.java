@@ -868,9 +868,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                         }
                     }
                 }
-                if (allFolders.size() != folders2node.size()) {
-                    logWarning("SAVED on folder list: " + allFolders.size()
-                        + " down to " + folders2node.size());
+                if (allFolders.size() != folders2node.size() && isFine()) {
+                    logFine("Sending optimized list of folders: "
+                        + folders2node.size() + "/" + allFolders.size());
                 }
             }
 
@@ -1932,9 +1932,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                         folders2node.add(folderInfo);
                     }
                 }
-                if (allFolders.size() != folders2node.size()) {
-                    logWarning("SAVED on folder list: " + allFolders.size()
-                        + " down to " + folders2node.size());
+                if (allFolders.size() != folders2node.size() && isFine()) {
+                    logFine("Sending optimized list of folders: "
+                        + folders2node.size() + "/" + allFolders.size());
                 }
             }
 
