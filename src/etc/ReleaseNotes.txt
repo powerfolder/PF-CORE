@@ -1,7 +1,7 @@
 PowerFolder Version 5.5 - http://www.powerfolder.com
 
 = Improvements/New features =
- * New skins: PowerFolder 2012 Look and Storm 
+ * New skins: PowerFolder 2012 "Blue Globe" and "Storm" 
  * PowerFolders base path will fall back to default if not available, e.g. network drive.
  * File browser shows better feedback messages if no files matches the search input.
  * Chat popups now show the message and have a reply button.
