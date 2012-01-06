@@ -95,6 +95,13 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
         } catch (ConnectionException e) {
             logFiner("Unable to accept incoming connection handler " + this, e);
             shutdown();
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof InterruptedException) {
+                logFiner("Acceptor interrupted, closing. " + this);
+                shutdown();
+            } else {
+                throw e;
+            }
         } finally {
             // Remove from acceptors list
             getController().getNodeManager().acceptors.remove(this);
