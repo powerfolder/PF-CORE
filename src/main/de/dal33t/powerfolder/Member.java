@@ -1918,8 +1918,13 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             Collection<FolderInfo> joinedFolders = getController()
                 .getFolderRepository().getJoinedFolderInfos();
-            FolderList myFolderList = new FolderList(joinedFolders,
-                remoteMagicId);
+
+            FolderList myFolderList;
+            if (getProtocolVersion() >= 106) {
+                myFolderList = new FolderListExt(joinedFolders, remoteMagicId);
+            } else {
+                myFolderList = new FolderList(joinedFolders, remoteMagicId);
+            }
             sendMessageAsynchron(myFolderList);
         } finally {
             folderJoinLock.unlock();
