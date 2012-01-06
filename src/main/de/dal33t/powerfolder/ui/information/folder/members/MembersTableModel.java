@@ -752,11 +752,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             getController().getOSClient().getSecurityService()
                 .setDefaultPermission(folderInfo, newPermission);
 
-            // TODO Ugly hack. Remove after #1653
-            // SecurityManagerClient secMan = (SecurityManagerClient)
-            // getController()
-            // .getSecurityManager();
-            // secMan.invalidateCache(folder.getMembersAsCollection());
             getController().getFolderRepository()
                 .triggerSynchronizeAllFolderMemberships();
             return null;

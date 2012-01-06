@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +38,8 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.NetworkingModeListener;
+import de.dal33t.powerfolder.event.NetworkingModeEvent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.KnownNodesExt;
@@ -110,22 +110,16 @@ public class LimitedConnectivityChecker {
      * Installs a task to check the connecvitity of this system once. or when
      * the networking mode changes.
      * 
-     * @param controller
+     * @param ctrl
      */
-    public static void install(final Controller controller) {
-        Reject.ifNull(controller, "Controller is null");
-        CheckTask task = new CheckTask(controller);
-        controller.schedule(task,
+    public static void install(Controller ctrl) {
+        Reject.ifNull(ctrl, "Controller is null");
+        CheckTask task = new CheckTask(ctrl);
+        ctrl.schedule(task,
             1000L * Constants.LIMITED_CONNECTIVITY_CHECK_DELAY);
 
         // Support networking mode switch.
-        controller.addPropertyChangeListener(
-            Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    controller.getThreadPool().execute(
-                        new CheckTask(controller));
-                }
-            });
+        ctrl.addNetworkingModeListener(new MyNetworkingModeListener(ctrl));
     }
 
     public String getHost() {
@@ -302,5 +296,22 @@ public class LimitedConnectivityChecker {
             }
         };
         controllerArg.getUIController().invokeLater(showMessage);
+    }
+
+    private static class MyNetworkingModeListener implements NetworkingModeListener {
+
+        private Controller controller;
+
+        private MyNetworkingModeListener(Controller controller) {
+            this.controller = controller;
+        }
+
+        public void setNetworkingMode(NetworkingModeEvent event) {
+            controller.getThreadPool().execute(new CheckTask(controller));
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
     }
 }

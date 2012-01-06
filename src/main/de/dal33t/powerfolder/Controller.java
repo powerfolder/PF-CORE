@@ -67,15 +67,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.event.SilentModeEvent;
-import de.dal33t.powerfolder.event.SilentModeListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -148,7 +140,6 @@ public class Controller extends PFComponent {
      * 
      * @todo replace these with CoreListeners.
      */
-    public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
     public static final String PROPERTY_LIMITED_CONNECTIVITY = "limitedConnectivity";
 
     /** general wait time for all threads (5000 is a balanced value) */
@@ -310,6 +301,8 @@ public class Controller extends PFComponent {
 
     private SilentModeListener silentModeListenerSupport;
 
+    private NetworkingModeListener networkingModeListenerSupport;
+
     private Controller() {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
@@ -322,6 +315,8 @@ public class Controller extends PFComponent {
         massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
         silentModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(SilentModeListener.class);
+        networkingModeListenerSupport = ListenerSupportFactory
+            .createListenerSupport(NetworkingModeListener.class);
 
     }
 
@@ -1445,6 +1440,15 @@ public class Controller extends PFComponent {
             listener);
     }
 
+    public void addNetworkingModeListener(NetworkingModeListener listener) {
+        ListenerSupportFactory.addListener(networkingModeListenerSupport, listener);
+    }
+
+    public void removeNetworkingModeListener(NetworkingModeListener listener) {
+        ListenerSupportFactory.removeListener(networkingModeListenerSupport,
+            listener);
+    }
+
     public void setNetworkingMode(NetworkingMode newMode) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
@@ -1452,13 +1456,13 @@ public class Controller extends PFComponent {
             logWarning("Backup only client. Only supports server only networking mode");
         }
         logFine("setNetworkingMode: " + newMode);
-        NetworkingMode oldValue = getNetworkingMode();
-        if (newMode != oldValue) {
+        NetworkingMode oldMode = getNetworkingMode();
+        if (newMode != oldMode) {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
 
             networkingMode = newMode;
-            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue,
-                newMode.toString());
+            networkingModeListenerSupport.setNetworkingMode(
+                    new NetworkingModeEvent(oldMode, newMode));
 
             // Restart nodeManager
             nodeManager.shutdown();
