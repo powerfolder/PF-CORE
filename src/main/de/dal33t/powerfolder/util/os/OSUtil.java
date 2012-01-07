@@ -19,13 +19,15 @@
  */
 package de.dal33t.powerfolder.util.os;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Util;
-
 import java.awt.SystemTray;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jfree.util.Log;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Util;
 
 public class OSUtil {
 
@@ -65,7 +67,6 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os != null && os.toLowerCase().indexOf("windows 7") >= 0;
     }
-    
 
     /**
      * @return if current system is running windows XP
@@ -74,7 +75,6 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os != null && os.toLowerCase().indexOf("windows xp") >= 0;
     }
-
 
     /**
      * @return true if this is a Google Android system
@@ -200,7 +200,7 @@ public class OSUtil {
     }
 
     private static boolean loadLibrary(Class<?> clazz, String file,
-        boolean absPath, boolean logErrorsVerbose)
+        boolean absPath, boolean quiet)
     {
         try {
             log.finer(clazz.getName() + " --> Loading library: " + file);
@@ -211,10 +211,10 @@ public class OSUtil {
             }
             return true;
         } catch (UnsatisfiedLinkError e) {
-            if (logErrorsVerbose) {
-                log.log(Level.FINER, "UnsatisfiedLinkError", e);
+            if (quiet) {
+                log.log(Level.FINER, "UnsatisfiedLinkError. " + e);
             } else {
-                log.log(Level.SEVERE, "UnsatisfiedLinkError", e);
+                log.log(Level.SEVERE, "UnsatisfiedLinkError. " + e);
             }
             return false;
         }
@@ -239,30 +239,45 @@ public class OSUtil {
         }
 
         String fileName = System.mapLibraryName(lib);
-        File targetFile = new File(Controller.getTempFilesLocation(), fileName);
-        targetFile.deleteOnExit();
-        File fLib = Util.copyResourceTo(fileName, dir, targetFile, false);
+        File targetFile = null;
+        File fLib;
+
+        int i = 0;
+        do {
+            String libName = lib;
+            if (i > 0) {
+                libName += "-" + i;
+            }
+            String altFileName = System.mapLibraryName(libName);
+            targetFile = new File(Controller.getTempFilesLocation(),
+                altFileName);
+            targetFile.deleteOnExit();
+            boolean quiet = i != 1;
+            fLib = Util.copyResourceTo(fileName, dir, targetFile, false, quiet);
+
+            // Usually not possible.
+            if (loadLibrary(clazz, lib, false, true)) {
+                return true;
+            }
+            if (fLib != null) {
+                try {
+                    if (loadLibrary(clazz, fLib.getAbsolutePath(), true, quiet))
+                    {
+                        return true;
+                    }
+                } catch (UnsatisfiedLinkError e) {
+                    Log.warn("Unable to load library " + lib + ": " + e);
+                }
+            }
+            i++;
+        } while (i < 5);
 
         if (fLib == null) {
-            log.fine(clazz.getName() + " --> Failed to load " + lib
-                + ": Failed to copy resource to " + targetFile);
-            String altFileName = System.mapLibraryName(lib + "-1");
-            File altTargetFile = new File(Controller.getTempFilesLocation(),
-                altFileName);
-            altTargetFile.deleteOnExit();
-            fLib = Util.copyResourceTo(fileName, dir, altTargetFile, false);
-            if (fLib == null) {
-                log.warning(clazz.getName() + " --> Completely failed to load "
-                    + lib + ": Failed to copy resource to " + altTargetFile);
-                return false;
-            }
+            log.warning(clazz.getName() + " --> Completely failed to load "
+                + lib + ": Failed to copy resource to " + targetFile);
+            return false;
         }
-        if (loadLibrary(clazz, lib, false, true)) {
-            return true;
-        }
-        if (loadLibrary(clazz, fLib.getAbsolutePath(), true, false)) {
-            return true;
-        }
+
         log.warning(clazz.getName() + " --> Completely failed to load " + lib
             + " - see error above!");
         return false;
