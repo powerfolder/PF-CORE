@@ -140,12 +140,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertSyncPercentages(0, 0, 0, 100, 0);
 
         // Bring them in sync
-        // 1 conflicting + 1 latest
+        // 1 latest
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        waitForCompletedDownloads(2, 1, 2, 1, 2);
+        waitForCompletedDownloads(1, 1, 1, 0, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
-        assertAllInSync(2, 12 + 1000);
+        assertAllInSync(1, 12);
     }
 
     public void testMultipleFilesMultiple() throws Exception {
@@ -195,11 +195,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         // Bring them in sync
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        waitForCompletedDownloads(2, 1, 2, 1, 2);
+        waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
-        // 1 normal + 1 conflicting.
-        assertAllInSync(2, testFile.length() + lisaTestFileSize);
+        // 1 normal
+        assertAllInSync(1, testFile.length());
     }
 
     public void testMultipleFiles() {
