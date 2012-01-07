@@ -56,7 +56,7 @@ public class SendFileListTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return !lisasListener.messages.isEmpty();
+                return lisasListener.messages.size() == 2;
             }
         });
         assertEquals("Received: " + lisasListener.messages, 2,
@@ -96,7 +96,8 @@ public class SendFileListTest extends TwoControllerTestCase {
 
         // Test
         assertEquals(1, lisasListener.messages.size());
-        assertTrue(lisasListener.messages.get(0) instanceof FolderFilesChanged);
+        assertTrue("Wrong message received: " + lisasListener.messages.get(0),
+            lisasListener.messages.get(0) instanceof FolderFilesChanged);
         FolderFilesChanged list = (FolderFilesChanged) lisasListener.messages
             .get(0);
         assertEquals(nFiles, list.getFiles().length);
