@@ -1974,8 +1974,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                     folders2node.add(folderInfo);
                 }
             }
-            if (isWarning() && allFolders.size() != folders2node.size()) {
-                logWarning("Generated optimized folder list: "
+            if (isFiner() && allFolders.size() != folders2node.size()) {
+                logFiner("Generated optimized folder list: "
                     + folders2node.size() + "/" + allFolders.size());
             }
         }
