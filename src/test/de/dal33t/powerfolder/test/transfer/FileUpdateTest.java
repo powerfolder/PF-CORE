@@ -252,12 +252,24 @@ public class FileUpdateTest extends TwoControllerTestCase {
             p instanceof FileConflictProblem);
         FileConflictProblem cp = (FileConflictProblem) p;
         assertEquals(fInfoAtLisa, cp.getFileInfo());
+        assertTrue("Old file not in archive @ bart: " + fInfoAtBart,
+            getFolderAtBart().getFileArchiver()
+                .hasArchivedFileInfo(fInfoAtBart));
+        FileInfo fInfoArchivedAtBart = getFolderAtBart().getFileArchiver()
+            .getArchivedFilesInfos(fInfoAtBart).get(0);
+        assertEquals(fInfoAtBart, fInfoArchivedAtBart);
+        // HMMM is this good? File might be overwritten on the next update
+        assertEquals(fInfoAtBart.getVersion(), fInfoArchivedAtBart.getVersion());
+        assertEquals(fInfoAtBart.getModifiedBy(),
+            fInfoArchivedAtBart.getModifiedBy());
+        assertEquals(fInfoAtBart.getModifiedDate(),
+            fInfoArchivedAtBart.getModifiedDate());
 
         // The old copy should have been distributed.
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getKnownItemCount() == 2
-                    && getFolderAtLisa().getKnownItemCount() == 2;
+                return getFolderAtBart().getKnownItemCount() == 1
+                    && getFolderAtLisa().getKnownItemCount() == 1;
             }
 
             public String message() {
@@ -310,8 +322,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
                     .triggerFileRequesting();
                 getContollerLisa().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting();
-                return getFolderAtBart().getKnownItemCount() == 3
-                    && getFolderAtLisa().getKnownItemCount() == 3;
+                return getFolderAtBart().getKnownItemCount() == 1
+                    && getFolderAtLisa().getKnownItemCount() == 1
+                    && !getFolderAtLisa().getProblems().isEmpty();
             }
 
             public String message() {
@@ -327,6 +340,19 @@ public class FileUpdateTest extends TwoControllerTestCase {
             p instanceof FileConflictProblem);
         cp = (FileConflictProblem) p;
         assertEquals(fInfoAtLisa, cp.getFileInfo());
+
+        assertTrue("Old file not in archive @ lisa: " + fInfoAtLisa,
+            getFolderAtLisa().getFileArchiver()
+                .hasArchivedFileInfo(fInfoAtLisa));
+        FileInfo fInfoArchivedAtLisa = getFolderAtLisa().getFileArchiver()
+            .getArchivedFilesInfos(fInfoAtLisa).get(0);
+        assertEquals(fInfoAtBart, fInfoArchivedAtLisa);
+        // HMMM is this good? File might be overwritten on the next update
+        assertEquals(fInfoAtLisa.getVersion(), fInfoArchivedAtLisa.getVersion());
+        assertEquals(fInfoAtLisa.getModifiedBy(),
+            fInfoArchivedAtLisa.getModifiedBy());
+        assertEquals(fInfoAtLisa.getModifiedDate(),
+            fInfoArchivedAtLisa.getModifiedDate());
     }
 
     public void testManyUpdatesWhileTransfer() {
