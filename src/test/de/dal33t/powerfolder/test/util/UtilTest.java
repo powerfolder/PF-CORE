@@ -44,14 +44,15 @@ public class UtilTest extends TestCase {
     public void testCopyResourceTo() throws IOException {
         File testFile1 = File.createTempFile("xxxxx", "yy");
         assertEquals(testFile1, Util.copyResourceTo("Translation.properties",
-            null, testFile1, false));
+            null, testFile1, false, false));
         assertTrue(testFile1.length() > 100);
         assertEquals(testFile1, Util.copyResourceTo("Translation.properties",
-            null, testFile1, false));
+            null, testFile1, false, false));
         assertTrue(testFile1.length() > 100);
 
         File testFile2 = File.createTempFile("xxxxx", "yy");
-        assertNull(Util.copyResourceTo("NOTEXISTING", null, testFile2, false));
+        assertNull(Util.copyResourceTo("NOTEXISTING", null, testFile2, false,
+            false));
         assertTrue(testFile2.length() == 0);
     }
 
