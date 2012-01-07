@@ -266,8 +266,9 @@ public class Util {
      *            true if the resource should be copied even if not required.
      */
     public static File copyResourceTo(String resource, String altLocation,
-        File destinationFile, boolean forceOverwrite)
+        File destinationFile, boolean forceOverwrite, boolean quiet)
     {
+        Reject.ifNull(resource, "Resoucse");
         try {
             // Step 1) Check existence of resource
             URL resURL = Thread.currentThread().getContextClassLoader()
@@ -307,8 +308,13 @@ public class Util {
             // Preserver last mod for later caching.
             destinationFile.setLastModified(resCon.getLastModified());
         } catch (IOException ioe) {
-            LOG.warning("Unable to create target for resource: "
-                + destinationFile);
+            if (quiet) {
+                LOG.fine("Unable to create target for resource: "
+                    + destinationFile);
+            } else {
+                LOG.warning("Unable to create target for resource: "
+                    + destinationFile);
+            }
             return null;
         }
         LOG.finer("created target for resource: " + destinationFile);
