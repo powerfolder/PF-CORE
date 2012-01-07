@@ -2101,13 +2101,13 @@ public class Folder extends PFComponent {
         boolean mySelfRead = hasReadPermission(getController().getMySelf());
         if (!memberRead || !mySelfRead) {
             if (memberRead) {
-                if (isWarning()) {
+                if (getController().isStarted() && isWarning()) {
                     logWarning("Not joining " + member + " / "
                         + member.getAccountInfo()
                         + ". Myself got no read permission");
                 }
             } else {
-                if (isWarning()) {
+                if (getController().isStarted() && isWarning()) {
                     logWarning("Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission");
                 }
