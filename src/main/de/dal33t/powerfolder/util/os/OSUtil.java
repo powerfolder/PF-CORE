@@ -24,8 +24,6 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jfree.util.Log;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Util;
 
@@ -266,7 +264,7 @@ public class OSUtil {
                         return true;
                     }
                 } catch (UnsatisfiedLinkError e) {
-                    Log.warn("Unable to load library " + lib + ": " + e);
+                    log.warning("Unable to load library " + lib + ": " + e);
                 }
             }
             i++;
