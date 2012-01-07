@@ -80,8 +80,8 @@ public class FolderList extends Message {
         Reject.ifBlank(remoteMagicId, "Remote magic id is blank");
         // Split folderlist into secret and public list
         // Encrypt secret folder ids with magic id
-        List<FolderInfo> secretFos = new ArrayList<FolderInfo>(allFolders
-            .size());
+        List<FolderInfo> secretFos = new ArrayList<FolderInfo>(
+            allFolders.size());
         for (FolderInfo folderInfo : allFolders) {
             // Send secret folder infos if magic id is not empty
             // Clone folderinfo
@@ -113,6 +113,7 @@ public class FolderList extends Message {
      *            to.
      * @return true if this {@link FolderList} could be stored.
      * @see #load(Member)
+     * @deprecated #2569
      */
     public synchronized boolean store(Member member) {
         return store(getMemberFile(member));
@@ -122,7 +123,8 @@ public class FolderList extends Message {
      * @param file
      *            the file to store this {@link FolderList} in.
      * @return true if this {@link FolderList} could be stored to that file.
-     *@see #load(File)
+     * @see #load(File)
+     * @deprecated #2569
      */
     public synchronized boolean store(File file) {
         Reject.ifNull(file, "File");
@@ -144,6 +146,7 @@ public class FolderList extends Message {
      *            the {@link Member} to load a {@link FolderList} previously
      *            stored with {@link #store(Member)} from
      * @return the loaded {@link FolderList} or null if failed or not existing.
+     * @deprecated #2569
      */
     public static FolderList load(Member member) {
         return load(getMemberFile(member));
@@ -154,6 +157,7 @@ public class FolderList extends Message {
      *            the file to load a {@link FolderList} previously stored with
      *            {@link #store(File)} from
      * @return the loaded {@link FolderList} or null if failed or not existing.
+     * @deprecated #2569
      */
     public static FolderList load(File file) {
         Reject.ifNull(file, "File");
@@ -193,7 +197,9 @@ public class FolderList extends Message {
             .getBytes(Convert.UTF8))));
         return new File(Controller.getMiscFilesLocation(), member
             .getController().getConfigName()
-            + ".temp/nodes/" + idPath + ".FolderList");
+            + ".temp/nodes/"
+            + idPath
+            + ".FolderList");
     }
 
     @Override
