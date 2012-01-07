@@ -861,7 +861,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 folderList = new FolderList(folders2node,
                     peer.getRemoteMagicId());
             }
-            logWarning("Sending CH " + folderList);
+            if (isFiner()) {
+                logFiner("Sending CH " + folderList);
+            }
             peer.sendMessagesAsynchron(folderList);
         }
 
@@ -1362,7 +1364,14 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
-                logWarning("RECEIVED FOLDER LIST: " + fList);
+                // #2569
+                if (isWarning()
+                    && fList.secretFolders != null
+                    && fList.secretFolders.length > 100
+                    && getController().getFolderRepository().getFoldersCount() < 100)
+                {
+                    logWarning("Received large " + fList);
+                }
                 Runnable r = new Runnable() {
                     public void run() {
                         folderJoinLock.lock();
@@ -1391,7 +1400,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                                     myFolderList = new FolderList(folders2node,
                                         remoteMagicId);
                                 }
-                                logWarning("Sending SFM " + myFolderList);
+                                if (isFiner()) {
+                                    logFiner("Sending HM " + myFolderList);
+                                }
                                 sendMessageAsynchron(myFolderList);
                             }
 
@@ -1928,7 +1939,9 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else {
                 myFolderList = new FolderList(folders2node, remoteMagicId);
             }
-            logWarning("Sending SFM " + myFolderList);
+            if (isFiner()) {
+                logFiner("Sending SFM " + myFolderList);
+            }
             sendMessageAsynchron(myFolderList);
         } finally {
             folderJoinLock.unlock();
