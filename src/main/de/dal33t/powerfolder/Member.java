@@ -851,29 +851,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             // Send node informations now
             // Send joined folders to synchronize
-            Collection<FolderInfo> allFolders = getController()
-                .getFolderRepository().getJoinedFolderInfos();
-            Collection<FolderInfo> folders2node = allFolders;
-            folders2node = allFolders;
-
-            // #2569: Send only "filtered" folder list. Client specific
-            if (getController().getMySelf().isServer() && receivedFolderList) {
-                FolderList remoteFolderList = getLastFolderList();
-                if (remoteFolderList != null) {
-                    String magicId = peer.getMyMagicId();
-                    folders2node = new LinkedList<FolderInfo>();
-                    for (FolderInfo folderInfo : allFolders) {
-                        if (remoteFolderList.contains(folderInfo, magicId)) {
-                            folders2node.add(folderInfo);
-                        }
-                    }
-                }
-                if (allFolders.size() != folders2node.size() && isFine()) {
-                    logFine("Sending optimized list of folders: "
-                        + folders2node.size() + "/" + allFolders.size());
-                }
-            }
-
+            FolderList remoteFolderList = getLastFolderList();
+            Collection<FolderInfo> folders2node = getFilteredFolderList(remoteFolderList);
             FolderList folderList;
             if (getProtocolVersion() >= 106) {
                 folderList = new FolderListExt(folders2node,
@@ -882,6 +861,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 folderList = new FolderList(folders2node,
                     peer.getRemoteMagicId());
             }
+            logWarning("Sending CH " + folderList);
             peer.sendMessagesAsynchron(folderList);
         }
 
@@ -1382,6 +1362,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
+                logWarning("RECEIVED FOLDER LIST: " + fList);
                 Runnable r = new Runnable() {
                     public void run() {
                         folderJoinLock.lock();
@@ -1392,6 +1373,28 @@ public class Member extends PFComponent implements Comparable<Member> {
                             folderListReceived = true;
                             // Send filelist only during handshake
                             joinToLocalFolders(fList, fromPeer);
+
+                            // #2569: Send only "filtered" client specific
+                            // folder list. Send renewed list.
+                            ConnectionHandler thisPeer = peer;
+                            if (getController().getMySelf().isServer()
+                                && !isServer() && thisPeer != null)
+                            {
+                                String remoteMagicId = thisPeer
+                                    .getRemoteMagicId();
+                                Collection<FolderInfo> folders2node = getFilteredFolderList(fList);
+                                FolderList myFolderList;
+                                if (getProtocolVersion() >= 106) {
+                                    myFolderList = new FolderListExt(
+                                        folders2node, remoteMagicId);
+                                } else {
+                                    myFolderList = new FolderList(folders2node,
+                                        remoteMagicId);
+                                }
+                                logWarning("Sending SFM " + myFolderList);
+                                sendMessageAsynchron(myFolderList);
+                            }
+
                         } finally {
                             folderJoinLock.unlock();
                         }
@@ -1918,36 +1921,55 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Send node informations now
             // Send joined folders to synchronize
-            Collection<FolderInfo> allFolders = getController()
-                .getFolderRepository().getJoinedFolderInfos();
-            Collection<FolderInfo> folders2node = allFolders;
-            folders2node = allFolders;
-
-            // #2569: Send only "filtered" folder list. Client specific
-            if (getController().getMySelf().isServer() && folderList != null) {
-                String magicId = peer.getMyMagicId();
-                folders2node = new LinkedList<FolderInfo>();
-                for (FolderInfo folderInfo : allFolders) {
-                    if (folderList.contains(folderInfo, magicId)) {
-                        folders2node.add(folderInfo);
-                    }
-                }
-                if (allFolders.size() != folders2node.size() && isFine()) {
-                    logFine("Sending optimized list of folders: "
-                        + folders2node.size() + "/" + allFolders.size());
-                }
-            }
-
+            Collection<FolderInfo> folders2node = getFilteredFolderList(folderList);
             FolderList myFolderList;
             if (getProtocolVersion() >= 106) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
                 myFolderList = new FolderList(folders2node, remoteMagicId);
             }
+            logWarning("Sending SFM " + myFolderList);
             sendMessageAsynchron(myFolderList);
         } finally {
             folderJoinLock.unlock();
         }
+    }
+
+    /**
+     * #2569: Send only "filtered" client specific folder list if myself is a
+     * server (server->client). For client<->client, server<->server and
+     * client->server the full list of joined folders is returned.
+     * 
+     * @param remoteFolderList
+     * @return
+     */
+    private Collection<FolderInfo> getFilteredFolderList(
+        FolderList remoteFolderList)
+    {
+        Collection<FolderInfo> allFolders = getController()
+            .getFolderRepository().getJoinedFolderInfos();
+        Collection<FolderInfo> folders2node = allFolders;
+        folders2node = allFolders;
+        ConnectionHandler thisPeer = peer;
+
+        // #2569: Send only "filtered" folder list. Client specific
+        if (getController().getMySelf().isServer() && !isServer()
+            && remoteFolderList != null && thisPeer != null
+            && StringUtils.isNotBlank(thisPeer.getMyMagicId()))
+        {
+            String magicId = thisPeer.getMyMagicId();
+            folders2node = new LinkedList<FolderInfo>();
+            for (FolderInfo folderInfo : allFolders) {
+                if (remoteFolderList.contains(folderInfo, magicId)) {
+                    folders2node.add(folderInfo);
+                }
+            }
+            if (isWarning() && allFolders.size() != folders2node.size()) {
+                logWarning("Generated optimized folder list: "
+                    + folders2node.size() + "/" + allFolders.size());
+            }
+        }
+        return folders2node;
     }
 
     /**
