@@ -80,7 +80,7 @@ public class MacUtils extends Loggable {
         File targetFile = new File(Controller.getTempFilesLocation(), fileName);
         targetFile.deleteOnExit();
         File file = Util.copyResourceTo("mac/" + fileName, null, targetFile,
-            false);
+            false, false);
         placesHelperPath = file.getAbsolutePath();
         try {
             Runtime.getRuntime().exec(
