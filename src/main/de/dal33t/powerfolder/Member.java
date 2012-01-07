@@ -20,8 +20,6 @@
 package de.dal33t.powerfolder;
 
 import java.io.Externalizable;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -157,7 +155,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /** Folder memberships received? */
     private volatile boolean folderListReceived;
-    private Reference<FolderList> lastFolderList;
+    private FolderList lastFolderList;
 
     /**
      * The number of expected deltas to receive to have the filelist completed
@@ -1376,9 +1374,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                     public void run() {
                         folderJoinLock.lock();
                         try {
-                            lastFolderList = new SoftReference<FolderList>(
-                                fList);
-                            fList.store(Member.this);
+                            lastFolderList = fList;
+                            // fList.store(Member.this);
                             folderListReceived = true;
                             // Send filelist only during handshake
                             joinToLocalFolders(fList, fromPeer);
@@ -2103,13 +2100,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return the latest received folder list
      */
     public FolderList getLastFolderList() {
-        FolderList list = lastFolderList != null ? lastFolderList.get() : null;
-        if (list != null) {
-            return list;
-        }
-        list = FolderList.load(this);
-        lastFolderList = new SoftReference<FolderList>(list);
-        return list;
+        return lastFolderList;
     }
 
     /**
