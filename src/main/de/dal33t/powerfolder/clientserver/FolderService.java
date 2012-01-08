@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -50,6 +51,9 @@ public interface FolderService {
      * @see SyncProfile#getDefault(de.dal33t.powerfolder.Controller)
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile);
+    
+    void createFolder(FolderInfo foInfo, SyncProfile profile,
+        File targetDir);
 
     /**
      * Removes a folder from the account. Required owner permission if
@@ -62,6 +66,7 @@ public interface FolderService {
      * @deprecated legacy support. remove after major 4.0 distribution
      */
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
+    
 
     /**
      * Removes a folder from the account. Required owner permission if
