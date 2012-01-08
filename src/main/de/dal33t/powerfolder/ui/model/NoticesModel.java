@@ -202,23 +202,23 @@ public class NoticesModel extends PFUIComponent {
     }
 
     private void handleOutOfMemoryNotice(OutOfMemoryNotice notice) {
-            // http\://www.powerfolder.com/wiki/Memory_configuration
-            String memoryConfigHelp = Help.getWikiArticleURL(getController(),
-                WikiLinks.MEMORY_CONFIGURATION);
-            String infoText = Translation.getTranslation(
-                "low_memory.error.text", memoryConfigHelp);
-            int response = DialogFactory.genericDialog(
-                getController(),
-                Translation.getTranslation("low_memory.error.title"),
-                infoText,
-                new String[]{
-                    Translation.getTranslation("general.ok"),
-                    Translation
-                        .getTranslation("dialog.already_running.exit_button")},
-                0, GenericDialogType.ERROR);
-            if (response == 1) { // Exit
-                getController().exit(0);
-            }
+        // http\://www.powerfolder.com/wiki/Memory_configuration
+        String memoryConfigHelp = Help.getWikiArticleURL(getController(),
+            WikiLinks.MEMORY_CONFIGURATION);
+        String infoText = Translation.getTranslation(
+            "low_memory.error.text", memoryConfigHelp);
+        int response = DialogFactory.genericDialog(
+            getController(),
+            Translation.getTranslation("low_memory.error.title"),
+            infoText,
+            new String[]{
+                Translation.getTranslation("general.ok"),
+                Translation
+                    .getTranslation("dialog.already_running.exit_button")},
+            0, GenericDialogType.ERROR);
+        if (response == 1) { // Exit
+            getController().exit(0);
+        }
     }
 
     private void handleFolderAutoCreateNotice(FolderAutoCreateNotice
