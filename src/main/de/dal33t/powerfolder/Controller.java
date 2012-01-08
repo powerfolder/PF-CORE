@@ -134,14 +134,6 @@ public class Controller extends PFComponent {
      */
     public static final String PROGRAM_VERSION = "5.5.7 - 4.0.22"; // 4.0.22
 
-    /**
-     * the (java beans like) property, listen to changes of the networking mode
-     * by calling addPropertyChangeListener with this as parameter
-     * 
-     * @todo replace these with CoreListeners.
-     */
-    public static final String PROPERTY_LIMITED_CONNECTIVITY = "limitedConnectivity";
-
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
 
@@ -303,6 +295,8 @@ public class Controller extends PFComponent {
 
     private NetworkingModeListener networkingModeListenerSupport;
 
+    private LimitedConnectivityListener limitedConnectivityListenerSupport;
+
     private Controller() {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
@@ -317,6 +311,8 @@ public class Controller extends PFComponent {
             .createListenerSupport(SilentModeListener.class);
         networkingModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(NetworkingModeListener.class);
+        limitedConnectivityListenerSupport = ListenerSupportFactory
+            .createListenerSupport(LimitedConnectivityListener.class);
 
     }
 
@@ -1449,6 +1445,15 @@ public class Controller extends PFComponent {
             listener);
     }
 
+    public void addLimitedConnectivityListener(LimitedConnectivityListener listener) {
+        ListenerSupportFactory.addListener(limitedConnectivityListenerSupport, listener);
+    }
+
+    public void removeLimitedConnectivityListener(LimitedConnectivityListener listener) {
+        ListenerSupportFactory.removeListener(limitedConnectivityListenerSupport,
+            listener);
+    }
+
     public void setNetworkingMode(NetworkingMode newMode) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
@@ -1485,10 +1490,10 @@ public class Controller extends PFComponent {
     }
 
     public void setLimitedConnectivity(boolean limitedConnectivity) {
-        Object oldValue = this.limitedConnectivity;
+        boolean oldValue = this.limitedConnectivity;
         this.limitedConnectivity = limitedConnectivity;
-        firePropertyChange(PROPERTY_LIMITED_CONNECTIVITY, oldValue,
-            this.limitedConnectivity);
+        LimitedConnectivityEvent e = new LimitedConnectivityEvent(oldValue, limitedConnectivity);
+        limitedConnectivityListenerSupport.setLimitedConnectivity(e);
     }
 
     /**

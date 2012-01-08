@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -226,18 +225,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         updateSilentMode();
 
         // Behavior when the limited connecvitiy gets checked
-        getController().addPropertyChangeListener(
-            Controller.PROPERTY_LIMITED_CONNECTIVITY,
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    // EventQueue because property change not fired in EDT.
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            updateLimitedConnectivityLabel();
-                        }
-                    });
-                }
-            });
+        getController().addLimitedConnectivityListener(
+                new MyLimitedConnectivityListener());
 
         syncButton = new SyncIconButtonMini(getController());
         syncButton.addActionListener(listener);
@@ -777,6 +766,16 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         public void setSilentMode(SilentModeEvent event) {
             updateSilentMode();
+        }
+    }
+
+    private class MyLimitedConnectivityListener implements LimitedConnectivityListener {
+        public void setLimitedConnectivity(LimitedConnectivityEvent event) {
+            updateLimitedConnectivityLabel();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 
