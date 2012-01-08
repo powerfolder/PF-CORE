@@ -1312,7 +1312,7 @@ public class ServerClient extends PFComponent {
             try {
                 login(username, passwordObf);
                 getController().schedule(new HostingServerRetriever(), 200L);
-            } catch (RemoteCallException ex) {
+            } catch (Exception ex) {
                 logWarning("Unable to login. " + ex);
                 logFine(ex);
             }
