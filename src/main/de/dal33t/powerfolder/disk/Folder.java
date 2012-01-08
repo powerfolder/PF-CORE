@@ -2068,13 +2068,13 @@ public class Folder extends PFComponent {
      * 
      * @param memberInfo
      */
-    private void join0(MemberInfo memberInfo) {
+    private boolean join0(MemberInfo memberInfo) {
         if (memberInfo.isInvalid(getController())) {
-            return;
+            return false;
         }
         Member member = memberInfo.getNode(getController(), true);
         if (member.isMySelf()) {
-            return;
+            return false;
         }
         Date deadLine = new Date(System.currentTimeMillis()
             - Constants.NODE_TIME_TO_REMOVE_MEMBER);
@@ -2084,10 +2084,10 @@ public class Folder extends PFComponent {
             logFine(member + " was offline too long. "
                 + "Hiding in memberslist: " + member + " last seen online: "
                 + memberInfo.lastConnectTime);
-            return;
+            return false;
         }
         // Ok let him join
-        join(member);
+        return join(member);
     }
 
     /**
@@ -2201,8 +2201,9 @@ public class Folder extends PFComponent {
             if (!memberInfo.isOnSameNetwork(getController())) {
                 continue;
             }
-            join0(memberInfo);
-            logInfo("Discovered new Member " + memberInfo);
+            if (join0(memberInfo)) {                
+                logInfo("Discovered new Member " + memberInfo);
+            }
         }
         // Update members map with my members.
         for (Member member : members.keySet()) {
