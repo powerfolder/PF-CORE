@@ -47,8 +47,10 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
 import de.dal33t.powerfolder.ui.wizard.*;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LinkedTextBuilder;
@@ -169,6 +171,8 @@ public class NoticesModel extends PFUIComponent {
      * @param notice
      */
     public void activateNotice(Notice notice) {
+        // @todo Refactor this, moving activation to within notices.
+        // There is no need for 'instanceof' handling.
         if (notice instanceof InvitationNotice) {
             InvitationNotice invitationNotice = (InvitationNotice) notice;
             handleInvitationNotice(invitationNotice);
@@ -187,11 +191,34 @@ public class NoticesModel extends PFUIComponent {
         } else if (notice instanceof FolderAutoCreateNotice) {
             FolderAutoCreateNotice eventNotice = (FolderAutoCreateNotice) notice;
             handleFolderAutoCreateNotice(eventNotice);
+        } else if (notice instanceof OutOfMemoryNotice) {
+            OutOfMemoryNotice eventNotice = (OutOfMemoryNotice) notice;
+            handleOutOfMemoryNotice(eventNotice);
         } else {
             logWarning("Don't know what to do with notice: "
                 + notice.getClass().getName() + " : " + notice.toString());
         }
         markRead(notice);
+    }
+
+    private void handleOutOfMemoryNotice(OutOfMemoryNotice notice) {
+            // http\://www.powerfolder.com/wiki/Memory_configuration
+            String memoryConfigHelp = Help.getWikiArticleURL(getController(),
+                WikiLinks.MEMORY_CONFIGURATION);
+            String infoText = Translation.getTranslation(
+                "low_memory.error.text", memoryConfigHelp);
+            int response = DialogFactory.genericDialog(
+                getController(),
+                Translation.getTranslation("low_memory.error.title"),
+                infoText,
+                new String[]{
+                    Translation.getTranslation("general.ok"),
+                    Translation
+                        .getTranslation("dialog.already_running.exit_button")},
+                0, GenericDialogType.ERROR);
+            if (response == 1) { // Exit
+                getController().exit(0);
+            }
     }
 
     private void handleFolderAutoCreateNotice(FolderAutoCreateNotice

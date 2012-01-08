@@ -115,13 +115,7 @@ import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
-import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
-import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
-import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.notification.PreviewNotificationHandler;
@@ -130,7 +124,6 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -858,26 +851,10 @@ public class UIController extends PFComponent {
      * @param oome
      */
     public void showOutOfMemoryError(OutOfMemoryError oome) {
-        // @todo convert this to a warning notification?
         if (!seenOome) {
             seenOome = true;
-            // http\://www.powerfolder.com/wiki/Memory_configuration
-            String memoryConfigHelp = Help.getWikiArticleURL(getController(),
-                WikiLinks.MEMORY_CONFIGURATION);
-            String infoText = Translation.getTranslation(
-                "low_memory.error.text", memoryConfigHelp);
-            int response = DialogFactory.genericDialog(
-                getController(),
-                Translation.getTranslation("low_memory.error.title"),
-                infoText,
-                new String[]{
-                    Translation.getTranslation("general.ok"),
-                    Translation
-                        .getTranslation("dialog.already_running.exit_button")},
-                0, GenericDialogType.ERROR);
-            if (response == 1) { // Exit
-                getController().exit(0);
-            }
+            applicationModel.getNoticesModel().handleNotice(
+                    new OutOfMemoryNotice(oome));
         }
     }
 
