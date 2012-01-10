@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -273,12 +272,6 @@ public class Controller extends PFComponent {
      * The Online Storage client
      */
     private ServerClient osClient;
-
-    /**
-     * the currently used socket to connect to a new member used in shutdown,
-     * connection try ofter take 30s
-     */
-    private Socket currentConnectingSocket;
 
     /** global Threadpool */
     private ScheduledExecutorService threadPool;
@@ -1497,20 +1490,6 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Closes the currently connecting outgoing socket
-     */
-    public void closeCurrentConnectionTry() {
-        // shut down current connection try
-        if (currentConnectingSocket != null) {
-            try {
-                currentConnectingSocket.close();
-            } catch (IOException e) {
-                logFiner("IOException", e);
-            }
-        }
-    }
-
-    /**
      * Tries to shutdown the controller and exits to system with the given
      * status. May be canceled by user intervention when folders are still
      * syncing.
@@ -1604,9 +1583,6 @@ public class Controller extends PFComponent {
             logFine("Shutting down global threadpool");
             threadPool.shutdownNow();
         }
-
-        // shut down current connection try
-        closeCurrentConnectionTry();
 
         if (isUIOpen()) {
             logFine("Shutting down UI");
@@ -2637,7 +2613,7 @@ public class Controller extends PFComponent {
      *            required only for Linux shutdowns.
      */
     public void syncAndExit(int secWait) {
-        logInfo("Sync and exit initiated. Begin check in " + secWait + "s");
+        logInfo("Sync and exit initiated. Begin check in " + secWait + 's');
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         SyncAllFoldersAction.perfomSync(this);
         scheduleAndRepeat(new Runnable() {
