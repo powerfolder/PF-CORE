@@ -1980,9 +1980,10 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
         }
 
-        if (true) {
-            return allFolders;
-        }
+        // FIXME: Server<->SERVER
+//        if (true) {
+//            return allFolders;
+//        }
         return folders2node;
     }
 
