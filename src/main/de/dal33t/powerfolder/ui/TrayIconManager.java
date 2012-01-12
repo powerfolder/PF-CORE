@@ -61,7 +61,7 @@ public class TrayIconManager extends PFComponent {
     private static final long ROTATION_STEP_DELAY = 200L;
 
     private enum TrayIconState {
-        NORMAL,
+        ALL_OK,
         NOT_CONNECTED,
         NOT_LOGGED_IN
     }
@@ -80,7 +80,7 @@ public class TrayIconManager extends PFComponent {
         super(uiController.getController());
         this.uiController = uiController;
 
-        Image image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+        Image image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
         if (image == null) {
             logSevere("Unable to retrieve default system tray icon. "
                     + "System tray disabled");
@@ -117,7 +117,7 @@ public class TrayIconManager extends PFComponent {
     }
 
     private void updateConnectionStatus() {
-        state = TrayIconManager.TrayIconState.NORMAL;
+        state = TrayIconManager.TrayIconState.ALL_OK;
         ServerClient client = getController().getOSClient();
         boolean connected = client.isConnected();
         boolean loggedIn = client.isLoggedIn();
@@ -172,7 +172,7 @@ public class TrayIconManager extends PFComponent {
                 // Blank for blink.
                 image = Icons.getImageById(Icons.BLANK);
             } else {
-                image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+                image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
             }
         } else {
 
@@ -194,8 +194,8 @@ public class TrayIconManager extends PFComponent {
                 }
                 tooltip.append(Translation.getTranslation(
                         "systray.tooltip.syncing"));
-            } else if (state == TrayIconState.NORMAL) {
-                image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+            } else if (state == TrayIconState.ALL_OK) {
+                image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
                 tooltip.append(Translation.getTranslation(
                         "systray.tooltip.in_sync"));
             } else if (state == TrayIconState.NOT_CONNECTED) {
@@ -208,7 +208,7 @@ public class TrayIconManager extends PFComponent {
                         "systray.tooltip.not_logged_in"));
             } else {
                 logSevere("Indeterminate TrayIcon state " + state);
-                image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+                image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
             }
 
             // Only update the up/down rates intermittantly.

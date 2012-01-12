@@ -209,7 +209,7 @@ public class Icons {
     public static final String PACMAN_15 = "pac_15.icon";
     public static final String PACMAN_16 = "pac_16.icon";
     public static final String PACMAN_DOT = "pac_dot.icon";
-    public static final String SYSTRAY_DEFAULT = "systray_default.icon";
+    public static final String SYSTRAY_ALL_OK = "systray_all_ok.icon";
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
