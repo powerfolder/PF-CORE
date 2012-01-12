@@ -1979,11 +1979,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                     + folders2node.size() + "/" + allFolders.size());
             }
         }
-
-        // FIXME: Server<->SERVER
-//        if (true) {
-//            return allFolders;
-//        }
         return folders2node;
     }
 
