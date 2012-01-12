@@ -2106,7 +2106,8 @@ public class Folder extends PFComponent {
                         + member.getAccountInfo()
                         + ". Myself got no read permission";
                     if (getController().isStarted()
-                        && member.isCompletelyConnected())
+                        && member.isCompletelyConnected()
+                        && getController().getOSClient().isConnected())
                     {
                         logWarning(msg);
                     } else {
@@ -2118,7 +2119,8 @@ public class Folder extends PFComponent {
                     String msg = "Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission";
                     if (getController().isStarted()
-                        && member.isCompletelyConnected())
+                        && member.isCompletelyConnected()
+                        && getController().getOSClient().isConnected())
                     {
                         logWarning(msg);
                     } else {
