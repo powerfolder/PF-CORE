@@ -108,6 +108,7 @@ public class TransferManager extends PFComponent {
     public static final int OLD_MAX_REQUESTS_QUEUED = 20;
     public static final long PARTIAL_TRANSFER_DELAY = 3000; // Ten seconds
     public static final long ONE_DAY = 24L * 3600 * 1000; // One day in ms
+    public static final long SIX_HOURS = 6L * 3600 * 1000; // 6 hours
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
@@ -309,8 +310,8 @@ public class TransferManager extends PFComponent {
         getController().scheduleAndRepeat(new PartialTransferStatsUpdater(),
             PARTIAL_TRANSFER_DELAY, PARTIAL_TRANSFER_DELAY);
 
-        getController().scheduleAndRepeat(new TransferCleaner(), ONE_DAY,
-            ONE_DAY);
+        getController().scheduleAndRepeat(new TransferCleaner(), SIX_HOURS,
+            SIX_HOURS);
 
         started = true;
         logFine("Started");
@@ -353,6 +354,10 @@ public class TransferManager extends PFComponent {
         int n = 0;
         for (DownloadManager completedDownload : completedDownloads.values()) {
             long numberOfDays = calcDays(completedDownload.getCompletedDate());
+            if (completedDownload.getCompletedDate() == null && isSevere()) {
+                logSevere("Completed download misses completed date: "
+                    + completedDownload.getCompletedDate());
+            }
             if (numberOfDays >= trueDownloadCleanupFrequency) {
                 if (isFiner()) {
                     logFiner("Auto-cleaning up download '"
