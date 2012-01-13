@@ -197,6 +197,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
+        // For whatever
+        TestHelper.waitMilliSeconds(500);
         forceStatsCals();
         // 1 normal
         assertAllInSync(1, testFile.length());
