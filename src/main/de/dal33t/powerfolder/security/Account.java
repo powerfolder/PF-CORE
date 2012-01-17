@@ -528,11 +528,13 @@ public class Account implements Serializable {
     }
 
     public boolean willAutoRenew() {
-        boolean licAutoRenew = autoRenewTill != null
-            && autoRenewTill.before(new Date());
-        licAutoRenew = licAutoRenew || autoRenewTill == null;
-        licAutoRenew = licAutoRenew && autoRenewDevices > 0;
-        return licAutoRenew;
+        if (autoRenewDevices <= 0) {
+            return false;
+        }
+        if (autoRenewTill == null) {
+            return true;
+        }
+        return autoRenewTill.after(new Date());
     }
 
     /**
