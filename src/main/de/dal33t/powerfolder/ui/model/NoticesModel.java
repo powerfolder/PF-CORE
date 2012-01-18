@@ -143,7 +143,7 @@ public class NoticesModel extends PFUIComponent {
             .getValue()
             && notice.isNotification()
             && !notice.isRead()
-            && !getApplicationModel().isDialogOpen() && !suppressPopup)
+            && !PFWizard.isWizardOpen() && !suppressPopup)
         {
             SystemNotificationHandler noticeHandler = new SystemNotificationHandler(getController(),
                 notice);
