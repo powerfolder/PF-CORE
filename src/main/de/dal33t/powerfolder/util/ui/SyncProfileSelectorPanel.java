@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -68,7 +67,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private boolean ignoreChanges;
     private JButtonMini configureButton;
     private JButtonMini deleteButton;
-    private boolean settingSyncProfile;
+
     @SuppressWarnings("unused")
     // Held to prevent gc from collecting it.
     private BoundPermission changeModePermission;
@@ -114,9 +113,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     public void setUpdateableFolder(Folder folder) {
         updateableFolder = folder;
-        settingSyncProfile = true;
         configureCombo(folder.getSyncProfile());
-        settingSyncProfile = false;
     }
 
     /**
@@ -140,9 +137,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             new MyConfigureAction(getController()));
         deleteButton = new JButtonMini(new MyDeleteAction(getController()));
 
-        settingSyncProfile = true;
         configureCombo(syncProfile);
-        settingSyncProfile = false;
 
         // Warn if changing to delete type profiles
         addModelValueChangeListener(new PropertyChangeListener() {
@@ -251,8 +246,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      *            profile is changed by the CustomSyncProfileDialog
      */
     public void setSyncProfile(SyncProfile syncProfile, boolean updateFolder) {
-
-        settingSyncProfile = true;
         valueModel.setValue(syncProfile);
 
         if (updateFolder) {
@@ -278,7 +271,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         // Cannot use a change listener becaue the sync profile name may have
         // changed, which is not a listen-able 'event' :-(
         configureCombo(syncProfile);
-        settingSyncProfile = false;
     }
 
     /**
@@ -332,7 +324,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         if (response == 0) { // OK
             CreateEditSyncProfileDialog createEditSyncProfileDialog = new CreateEditSyncProfileDialog(
                 getController(), this, create);
-            createEditSyncProfileDialog.getUIComponent().setVisible(true);
+            createEditSyncProfileDialog.open();
         }
     }
 
@@ -348,7 +340,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         if (response == 0) { // OK
             DeleteSyncProfileDialog deleteProfileDialog = new DeleteSyncProfileDialog(
                 getController(), this);
-            deleteProfileDialog.getUIComponent().setVisible(true);
+            deleteProfileDialog.open();
         }
 
     }

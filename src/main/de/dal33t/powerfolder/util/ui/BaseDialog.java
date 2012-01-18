@@ -25,6 +25,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.*;
 
@@ -51,12 +53,29 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.3 $
  */
 public abstract class BaseDialog extends PFUIComponent {
+
+    private static final AtomicInteger NUMBER_OF_OPEN_DIALOGS =
+            new AtomicInteger();
+
     private JDialog dialog;
     private boolean modal;
+    private boolean resizable;
+
+    // Make sure open / close count change fires exactly once per instance.
+    private final AtomicBoolean doneWizardClose = new AtomicBoolean();
+
+    /**
+     * Are there any open dilogs?
+     *
+     * @return
+     */
+    public static boolean isDialogOpen() {
+        return NUMBER_OF_OPEN_DIALOGS.get() > 0;
+    }
 
     /**
      * Initializes the base dialog.
-     * 
+     *
      * @param controller
      *            the controller
      * @param modal
@@ -65,6 +84,46 @@ public abstract class BaseDialog extends PFUIComponent {
     protected BaseDialog(Controller controller, boolean modal) {
         super(controller);
         this.modal = modal;
+        getController().getUIController()
+                .getApplicationModel().setBaseDialogOpen(
+                NUMBER_OF_OPEN_DIALOGS.incrementAndGet() > 0);
+    }
+
+    /**
+     * Make absolutely sure decrementOpenDialogs() gets called.
+     * Should have been called by Window closed / closing.
+     *
+     * @throws Throwable
+     */
+    protected void finalize() throws Throwable {
+        try{
+            decrementOpenDialogs();
+        } finally {
+            super.finalize();
+        }
+    }
+
+    private void decrementOpenDialogs() {
+        if (!doneWizardClose.getAndSet(true)) {
+            NUMBER_OF_OPEN_DIALOGS.decrementAndGet();
+            getController().getUIController().getApplicationModel()
+                    .setWizardOpen(isDialogOpen());
+        }
+    }
+
+    /**
+     * Initializes the base dialog.
+     *
+     * @param controller
+     *            the controller
+     * @param modal
+     *            if dialog should be modal
+     * @param resizable
+     *           if dialog is resizable
+     */
+    protected BaseDialog(Controller controller, boolean modal, boolean resizable) {
+        this(controller, modal);
+        this.resizable = resizable;
     }
 
     // Abstract methods *******************************************************
@@ -105,11 +164,6 @@ public abstract class BaseDialog extends PFUIComponent {
      * @return the component
      */
     protected abstract Component getButtonBar();
-
-    /** override and return true to allow resize */
-    protected boolean allowResize() {
-        return false;
-    }
 
     // Helper methods *********************************************************
 
@@ -160,16 +214,16 @@ public abstract class BaseDialog extends PFUIComponent {
         return closeButton;
     }
 
-    // Own methods ************************************************************
-
     /**
-     * Shows (and builds) the dialog
+     * Shows (and builds) the dialog.
      */
-    public final void open() {
+    public JDialog open() {
         Window window = getUIController().getActiveFrame();
         Cursor c = CursorUtils.setWaitCursor(window);
         try {
-            getUIComponent().setVisible(true);
+            createUIComponent();
+            dialog.setVisible(true);
+            return dialog;
         } finally {
             CursorUtils.returnToOriginal(window, c);
         }
@@ -191,100 +245,80 @@ public abstract class BaseDialog extends PFUIComponent {
         }
     }
 
-    /**
-     * Enables/disables visibility of dialog
-     * 
-     * @param vis
-     *            if the dialog should be visible
-     */
-    public final void setVisible(boolean vis) {
-        if (dialog != null) {
-            dialog.setVisible(vis);
-        }
-    }
-
-    /**
-     * Answers if this dialog is open
-     * 
-     * @return
-     */
-    protected final boolean isOpen() {
-        return dialog != null;
-    }
-
     protected void rePack() {
-        if (!isOpen()) {
+        if (dialog == null) {
             throw new IllegalStateException("Must be open to rePack");
         }
         dialog.pack();
     }
 
-    // Internal methods *******************************************************
-
     /**
-     * Build (if nessesary) and returns the ui component
+     * Build
      * 
      * @return
      */
-    protected final JDialog getUIComponent() {
-        if (dialog == null) {
-            dialog = new JDialog(getUIController().getActiveFrame(),
+    private void createUIComponent() {
+        dialog = new JDialog(getUIController().getActiveFrame(),
                 getTitle(), modal
-                    ? Dialog.ModalityType.APPLICATION_MODAL
-                    : Dialog.ModalityType.MODELESS);
-            dialog.setResizable(allowResize());
-            dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialog.addWindowListener(new WindowAdapter() {
-                public void windowClosed(WindowEvent e) {
-                    close();
-                }
+                        ? Dialog.ModalityType.APPLICATION_MODAL
+                        : Dialog.ModalityType.MODELESS);
+        dialog.setResizable(resizable);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-                public void windowClosing(WindowEvent e) {
-                    close();
-                }
-            });
-
-            FormLayout layout = new FormLayout("pref, pref:grow",
+        FormLayout layout = new FormLayout("pref, pref:grow",
                 "fill:pref:grow, 10dlu, fill:pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
 
-            Icon icon = getIcon();
-            JLabel iconLabel = icon != null ? new JLabel(getIcon()) : null;
-            if (iconLabel != null) {
-                iconLabel.setBorder(Borders
+        Icon icon = getIcon();
+        JLabel iconLabel = icon != null ? new JLabel(getIcon()) : null;
+        if (iconLabel != null) {
+            iconLabel.setBorder(Borders
                     .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-                builder.add(iconLabel, cc.xywh(1, 1, 1, 1, "right, top"));
-            }
+            builder.add(iconLabel, cc.xywh(1, 1, 1, 1, "right, top"));
+        }
 
-            JComponent content = getContent();
-            content.setBorder(Borders
+        JComponent content = getContent();
+        content.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-            builder.add(content, cc.xy(2, 1));
-            Component buttonBar = getButtonBar();
-            ((JComponent) buttonBar).setBorder(Borders
+        builder.add(content, cc.xy(2, 1));
+        Component buttonBar = getButtonBar();
+        ((JComponent) buttonBar).setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-            builder.add(buttonBar, cc.xyw(1, 3, 2));
+        builder.add(buttonBar, cc.xyw(1, 3, 2));
 
-            // Add panel to component
-            dialog.getContentPane().add(builder.getPanel());
+        // Add panel to component
+        dialog.getContentPane().add(builder.getPanel());
 
-            dialog.getRootPane().setDefaultButton(getDefaultButton());
+        dialog.getRootPane().setDefaultButton(getDefaultButton());
 
-            // Add escape key as close
-            KeyStroke strokeEsc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-            JComponent rootPane = dialog.getRootPane();
-            rootPane.registerKeyboardAction(new CloseAction(), strokeEsc,
+        // Add escape key as close
+        KeyStroke strokeEsc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        JComponent rootPane = dialog.getRootPane();
+        rootPane.registerKeyboardAction(new CloseAction(), strokeEsc,
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-            dialog.pack();
-            int x = ((int) Toolkit.getDefaultToolkit().getScreenSize()
+        dialog.pack();
+        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize()
                 .getWidth() - dialog.getWidth()) / 2;
-            int y = ((int) Toolkit.getDefaultToolkit().getScreenSize()
+        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize()
                 .getHeight() - dialog.getHeight()) / 2;
-            dialog.setLocation(x, y);
+        dialog.setLocation(x, y);
 
-        }
-        return dialog;
+        dialog.addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                if (!doneWizardClose.getAndSet(true)) {
+                    getController().getUIController().getApplicationModel().setBaseDialogOpen(
+                            NUMBER_OF_OPEN_DIALOGS.decrementAndGet() > 0);
+                }
+            }
+            public void windowClosing(WindowEvent e) {
+                if (!doneWizardClose.getAndSet(true)) {
+                    getController().getUIController().getApplicationModel().setBaseDialogOpen(
+                            NUMBER_OF_OPEN_DIALOGS.decrementAndGet() > 0);
+                }
+            }
+        });
+
     }
 }

@@ -160,11 +160,14 @@ public class LinkFolderOnlineDialog extends BaseDialog {
 
     protected void finalize() throws Throwable {
 
-        // Detatch listener.
-        if (listener != null) {
-            getController().getOSClient().removeListener(listener);
+        try {
+            // Detatch listener.
+            if (listener != null) {
+                getController().getOSClient().removeListener(listener);
+            }
+        } finally {
+            super.finalize();
         }
-        super.finalize();
     }
 
     private void populateOnlineFolders() {

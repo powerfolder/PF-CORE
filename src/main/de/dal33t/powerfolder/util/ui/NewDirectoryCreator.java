@@ -55,13 +55,13 @@ class NewDirectoryCreator extends BaseDialog {
         okButton = createOKButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 valueModel.setValue(subdirField.getText());
-                setVisible(false);
+                close();
             }
         });
 
         JButton cancelButton = createCancelButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                setVisible(false);
+                close();
             }
         });
 

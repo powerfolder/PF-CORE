@@ -80,10 +80,6 @@ public class PreferencesDialog extends BaseDialog {
         preferenceTabs = new ArrayList<PreferenceTab>();
     }
 
-    public JDialog getDialog() {
-        return getUIComponent();
-    }
-
     public String getTitle() {
         return Translation.getTranslation("preferences.dialog.title");
     }
@@ -279,7 +275,7 @@ public class PreferencesDialog extends BaseDialog {
                     @Override
                     public void finished() {
                         if (get() == Boolean.TRUE) {
-                            setVisible(false);
+                            close();
                         }
                         okButton.setEnabled(true);
                     }

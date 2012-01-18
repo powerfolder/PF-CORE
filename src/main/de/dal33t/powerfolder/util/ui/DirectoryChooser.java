@@ -130,7 +130,7 @@ class DirectoryChooser extends BaseDialog {
             public void actionPerformed(ActionEvent e) {
                 // Signal cancel with a null vm value.
                 selectedDirs.clear();
-                setVisible(false);
+                close();
             }
         });
 
@@ -164,7 +164,7 @@ class DirectoryChooser extends BaseDialog {
                         file.mkdirs();
                         selectedDirs.clear();
                         selectedDirs.add(file);
-                        setVisible(false);
+                        close();
                     } catch (SecurityException e) {
                         logSevere("Failed to create directory", e);
                     }
@@ -184,7 +184,7 @@ class DirectoryChooser extends BaseDialog {
         }
 
         if (!selectedDirs.isEmpty()) {
-            setVisible(false);
+            close();
         }
     }
 
@@ -430,10 +430,10 @@ class DirectoryChooser extends BaseDialog {
             selectedDirs.clear();
             File[] selectedFiles = chooser.getSelectedFiles();
             selectedDirs.addAll(Arrays.asList(selectedFiles));
-            setVisible(false);
+            close();
         } else {
             selectedDirs.clear();
-            setVisible(true);
+            close();
         }
     }
 

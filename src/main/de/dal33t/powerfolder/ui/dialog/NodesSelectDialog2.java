@@ -128,8 +128,7 @@ public class NodesSelectDialog2 extends BaseDialog {
                 .getTranslation("general.search"));
         findFriendsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                FindComputersDialog dialog = new FindComputersDialog(getController(),
-                    true);
+                FindComputersDialog dialog = new FindComputersDialog(getController());
                 dialog.open();
             }
         });

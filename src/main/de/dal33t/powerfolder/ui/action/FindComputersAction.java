@@ -36,7 +36,7 @@ public class FindComputersAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        FindComputersDialog dialog = new FindComputersDialog(getController(), true);
+        FindComputersDialog dialog = new FindComputersDialog(getController());
         dialog.open();
     }
 }

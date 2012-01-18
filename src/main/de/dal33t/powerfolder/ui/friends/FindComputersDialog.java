@@ -37,10 +37,9 @@ public class FindComputersDialog extends BaseDialog {
     private JButton closeButton;
     private JButton connectButton;
 
-    public FindComputersDialog(Controller controller, boolean modal) {
-        super(controller, modal);
+    public FindComputersDialog(Controller controller) {
+        super(controller, true, true);
         initComponents();
-        getUIComponent().setResizable(true);
     }
 
     private void initComponents() {
