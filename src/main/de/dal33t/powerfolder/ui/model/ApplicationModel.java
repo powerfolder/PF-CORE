@@ -64,7 +64,6 @@ public class ApplicationModel extends PFUIComponent {
     private ValueModel useOSModel;
     private LicenseModel licenseModel;
     private NoticesModel noticesModel;
-    private final ValueModel dialogActiveModel; // <Boolean>
     private final DialogMonitorBean dialogMonitorBean;
 
     /**
@@ -113,16 +112,16 @@ public class ApplicationModel extends PFUIComponent {
             .getModel(getController());
         licenseModel = new LicenseModel();
         noticesModel = new NoticesModel(getController());
-        dialogActiveModel = new ValueHolder(Boolean.FALSE);
         dialogMonitorBean = new DialogMonitorBean();
     }
 
     /**
      * Are there any dialogs (BaseDialog or Wizard) open?
-     * @return ValueModel&lt;Boolean&gt;
+     *
+     * @return
      */
-    public ValueModel getDialogActiveModel() {
-        return dialogActiveModel;
+    public boolean isDialogOpen() {
+        return dialogMonitorBean.isDialogOpen();
     }
 
     /**
@@ -301,12 +300,7 @@ public class ApplicationModel extends PFUIComponent {
      * Wizards. If one is open, we should not be spamming users with more
      * dialogs (and potentially other events).
      */
-    private class DialogMonitorBean {
-
-        /**
-         * Prevent concurent events from screwing the pooch.
-         */
-        private final Object changeLock = ".";
+    private static class DialogMonitorBean {
 
         /**
          * Are any Wizards open?
@@ -324,12 +318,7 @@ public class ApplicationModel extends PFUIComponent {
          * @param wizardOpen
          */
         public void setWizardOpen(boolean wizardOpen) {
-            synchronized (changeLock) {
-                if (this.wizardOpen.compareAndSet(!wizardOpen, wizardOpen)) {
-                    // Only advise if there has been a state change.
-                    advise();
-                }
-            }
+            this.wizardOpen.set(wizardOpen);
         }
 
         /**
@@ -338,13 +327,7 @@ public class ApplicationModel extends PFUIComponent {
          * @param baseDialogOpen
          */
         public void setBaseDialogOpen(boolean baseDialogOpen) {
-            synchronized (changeLock) {
-                if (this.baseDialogOpen.compareAndSet(!baseDialogOpen,
-                        baseDialogOpen)) {
-                    // Only advise if there has been a state change.
-                    advise();
-                }
-            }
+            this.baseDialogOpen.set(baseDialogOpen);
         }
 
         /**
@@ -354,14 +337,6 @@ public class ApplicationModel extends PFUIComponent {
          */
         private boolean isDialogOpen() {
             return wizardOpen.get() || baseDialogOpen.get();
-        }
-
-        /**
-         * Let the value model's listeners know.
-         */
-        private void advise() {
-            System.out.println("hghg wizards " + wizardOpen + ", dialogs " + baseDialogOpen);
-            dialogActiveModel.setValue(isDialogOpen());
         }
     }
 }
