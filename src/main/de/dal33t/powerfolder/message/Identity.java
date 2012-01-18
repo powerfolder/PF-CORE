@@ -45,7 +45,7 @@ public class Identity extends Message {
 
     /** Flag which indicates that encryption is supported. */
     private boolean supportsEncryption;
-    
+
     /**
      * #2366: For server only. Since v3.5.13
      */
@@ -106,6 +106,8 @@ public class Identity extends Message {
      */
     private int protocolVersion = 108;
 
+    private boolean requestFullFolderlist;
+
     private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
         .isEnabled();
 
@@ -143,6 +145,8 @@ public class Identity extends Message {
             .getValueBoolean(controller);
         this.useCompressedStream = !handler.isOnLAN()
             || (handler.isOnLAN() && useZIPonLAN);
+        // #2569
+        this.requestFullFolderlist = controller.getMySelf().isServer();
     }
 
     /**
@@ -187,7 +191,7 @@ public class Identity extends Message {
     public boolean isSupportingFileHistoryRequests() {
         return supportingFileHistoryRequests;
     }
-    
+
     public boolean isSupportsQuickLogin() {
         return supportsQuickLogin;
     }
@@ -198,6 +202,16 @@ public class Identity extends Message {
      */
     public Boolean isUseCompressedStream() {
         return useCompressedStream;
+    }
+
+    /**
+     * #2569: Connection improvement: Don't send full folderlist from server to
+     * client.
+     * 
+     * @return
+     */
+    public boolean isRequestFullFolderlist() {
+        return requestFullFolderlist;
     }
 
     /**
