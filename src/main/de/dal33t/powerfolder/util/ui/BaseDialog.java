@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public abstract class BaseDialog extends PFUIComponent {
 
-    private JDialog dialog;
+    protected JDialog dialog;
     private boolean modal;
     private boolean resizable;
 

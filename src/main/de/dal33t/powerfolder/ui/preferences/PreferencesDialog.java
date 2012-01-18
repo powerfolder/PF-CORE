@@ -80,6 +80,10 @@ public class PreferencesDialog extends BaseDialog {
         preferenceTabs = new ArrayList<PreferenceTab>();
     }
 
+    public JDialog getDialog() {
+        return dialog;
+    }
+
     public String getTitle() {
         return Translation.getTranslation("preferences.dialog.title");
     }
