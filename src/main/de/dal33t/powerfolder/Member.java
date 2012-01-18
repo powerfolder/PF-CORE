@@ -1386,7 +1386,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                             // #2569: Send only "filtered" client specific
                             // folder list. Send renewed list.
                             ConnectionHandler thisPeer = peer;
-                            Identity identity = thisPeer.getIdentity();
+                            Identity identity = thisPeer != null ? thisPeer.getIdentity() : null;
                             boolean fullList = identity != null
                                 && identity.isRequestFullFolderlist();
                             if (getController().getMySelf().isServer()
@@ -1936,7 +1936,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Send node informations now
             // Send joined folders to synchronize
-            Identity identity = thisPeer.getIdentity();
+            Identity identity = thisPeer != null ? thisPeer.getIdentity() : null;
             boolean fullList = identity != null
                 && identity.isRequestFullFolderlist();
             Collection<FolderInfo> folders2node = getFilteredFolderList(
