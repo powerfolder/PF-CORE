@@ -837,7 +837,9 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         boolean receivedFolderList = false;
         // #2569: Server waits for client list of folders first.
-        if (getController().getMySelf().isServer() && !isServer()) {
+        if (getController().getMySelf().isServer() && identity != null
+            && !identity.isRequestFullFolderlist())
+        {
             receivedFolderList = waitForFoldersJoin();
         }
 
@@ -850,7 +852,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // Send node informations now
             // Send joined folders to synchronize
             FolderList remoteFolderList = getLastFolderList();
-            Collection<FolderInfo> folders2node = getFilteredFolderList(remoteFolderList);
+            Collection<FolderInfo> folders2node = getFilteredFolderList(
+                remoteFolderList, identity.isRequestFullFolderlist());
             FolderList folderList;
             if (getProtocolVersion() >= 106) {
                 folderList = new FolderListExt(folders2node,
@@ -1383,12 +1386,16 @@ public class Member extends PFComponent implements Comparable<Member> {
                             // #2569: Send only "filtered" client specific
                             // folder list. Send renewed list.
                             ConnectionHandler thisPeer = peer;
+                            boolean fullList = thisPeer.getIdentity() != null
+                                && thisPeer.getIdentity()
+                                    .isRequestFullFolderlist();
                             if (getController().getMySelf().isServer()
-                                && !isServer() && thisPeer != null)
+                                && !fullList && thisPeer != null)
                             {
                                 String remoteMagicId = thisPeer
                                     .getRemoteMagicId();
-                                Collection<FolderInfo> folders2node = getFilteredFolderList(fList);
+                                Collection<FolderInfo> folders2node = getFilteredFolderList(
+                                    fList, fullList);
                                 FolderList myFolderList;
                                 if (getProtocolVersion() >= 106) {
                                     myFolderList = new FolderListExt(
@@ -1397,8 +1404,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                                     myFolderList = new FolderList(folders2node,
                                         remoteMagicId);
                                 }
-                                if (isFiner()) {
-                                    logFiner("Sending HM " + myFolderList);
+                                if (isFine()) {
+                                    logFine("Sending HM " + myFolderList);
                                 }
                                 sendMessageAsynchron(myFolderList);
                             }
@@ -1929,7 +1936,10 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Send node informations now
             // Send joined folders to synchronize
-            Collection<FolderInfo> folders2node = getFilteredFolderList(folderList);
+            boolean fullList = thisPeer.getIdentity() != null
+                && thisPeer.getIdentity().isRequestFullFolderlist();
+            Collection<FolderInfo> folders2node = getFilteredFolderList(
+                folderList, fullList);
             FolderList myFolderList;
             if (getProtocolVersion() >= 106) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
@@ -1954,7 +1964,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return
      */
     private Collection<FolderInfo> getFilteredFolderList(
-        FolderList remoteFolderList)
+        FolderList remoteFolderList, boolean fullList)
     {
         Collection<FolderInfo> allFolders = getController()
             .getFolderRepository().getJoinedFolderInfos();
@@ -1962,8 +1972,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         folders2node = allFolders;
         ConnectionHandler thisPeer = peer;
 
-        // #2569: Send only "filtered" folder list. Client specific
-        if (getController().getMySelf().isServer() && !isServer()
+        // #2569: Send "filtered" folder list if no full list is requested.
+        if (getController().getMySelf().isServer() && !fullList
             && remoteFolderList != null && thisPeer != null
             && StringUtils.isNotBlank(thisPeer.getMyMagicId()))
         {
