@@ -22,11 +22,14 @@ package de.dal33t.powerfolder.ui.wizard;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 
 import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JDialog;
 
@@ -63,18 +66,56 @@ public class PFWizard extends PFUIComponent {
     private static final AtomicInteger NUMBER_OF_OPEN_WIZARDS =
             new AtomicInteger();
 
+    // Make sure open / close count change fires exactly once per instance.
+    private final AtomicBoolean doneWizardClose = new AtomicBoolean();
+
     private JDialog dialog;
-    private Wizard wizard;
+    private final Wizard wizard;
     private final String title;
 
     /**
      * @param controller
      *            the controller
+     * @param title
      */
     public PFWizard(Controller controller, String title) {
         super(controller);
-        wizard = new Wizard();
         this.title = title;
+        NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
+        setFolderCreateActivity();
+        wizard = new Wizard();
+    }
+
+    /**
+     * Make absolutely sure decrementOpenWizards() gets called.
+     * Should have been called by Window closed / closing.
+     *
+     * @throws Throwable
+     */
+    protected void finalize() throws Throwable {
+        try{
+            decrementOpenWizards();
+        } finally {
+            super.finalize();
+        }
+    }
+
+    private void decrementOpenWizards() {
+        if (!doneWizardClose.getAndSet(true)) {
+            NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
+            setFolderCreateActivity();
+        }
+    }
+
+    /**
+     * This is a blanket call to disable the autodetect of folders while a
+     * Wizard is open. Typically a Wizard will create a directory and the
+     * folder repo will sometimes autocreate the folder at the same time.
+     * So FolderRepository.setFolderCreateActivity() suspends this while a
+     * Wizard is open.
+     */
+    private void setFolderCreateActivity() {
+        getController().getFolderRepository().setFolderCreateActivity(isWizardOpen());
     }
 
     public static boolean isWizardOpen() {
@@ -240,7 +281,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the wizard on a panel.
-     * 
+     *
      * @param wizardPanel
      */
     public void open(PFWizardPanel wizardPanel) {
@@ -249,7 +290,6 @@ public class PFWizard extends PFUIComponent {
             buildUI();
         }
         wizard.start(wizardPanel, false);
-        NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
         dialog.setVisible(true);
     }
 
@@ -297,16 +337,23 @@ public class PFWizard extends PFUIComponent {
             public void wizardFinished(Wizard wizard) {
                 dialog.setVisible(false);
                 dialog.dispose();
-                NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
             }
 
             public void wizardCancelled(Wizard wizard) {
                 dialog.setVisible(false);
                 dialog.dispose();
-                NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
             }
 
             public void wizardPanelChanged(Wizard wizard) {
+            }
+        });
+
+        dialog.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                decrementOpenWizards();
+            }
+            public void windowClosed(WindowEvent e) {
+                decrementOpenWizards();
             }
         });
 

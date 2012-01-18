@@ -113,6 +113,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean triggered;
     private final AtomicBoolean skipNewFolderSearch = new AtomicBoolean();
     private File foldersBasedir;
+    private final AtomicBoolean folderCreateActivity = new AtomicBoolean();
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
@@ -1243,13 +1244,27 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * Can be set by the UI when we are creating folders so that
+     * lookForNewFolders does not jump in while the user is setting up a new
+     * folder in a Wizard or something.
+     *
+     * Don't forget to set this back to false when finished.
+     *
+     * @param activity
+     */
+    public void setFolderCreateActivity(boolean activity) {
+        logInfo("Set folderCreateActivity to " + activity);
+        folderCreateActivity.set(activity);
+    }
+
+    /**
      * Scan the PowerFolder base directory for new directories that might be new
      * folders.
      */
     public void lookForNewFolders() {
         if (skipNewFolderSearch.get()
-            || !getController().getOSClient().isLoggedIn())
-        {
+                || folderCreateActivity.get()
+                || !getController().getOSClient().isLoggedIn()) {
             if (isFine()) {
                 logFine("Skipping searching for new folders...");
             }
