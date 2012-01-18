@@ -63,8 +63,7 @@ public class PFWizard extends PFUIComponent {
     // The attribute in the wizard context of the success panel. Displayed at
     // end
     public static final String SUCCESS_PANEL = "successpanel";
-    private static final AtomicInteger NUMBER_OF_OPEN_WIZARDS =
-            new AtomicInteger();
+    private static final AtomicInteger NUMBER_OF_OPEN_WIZARDS = new AtomicInteger();
 
     // Make sure open / close count change fires exactly once per instance.
     private final AtomicBoolean doneWizardClose = new AtomicBoolean();
@@ -82,18 +81,18 @@ public class PFWizard extends PFUIComponent {
         super(controller);
         this.title = title;
         NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
-        setFolderCreateActivity();
+        setSuspendNewFolderSearch(true);
         wizard = new Wizard();
     }
 
     /**
-     * Make absolutely sure decrementOpenWizards() gets called.
-     * Should have been called by Window closed / closing.
-     *
+     * Make absolutely sure decrementOpenWizards() gets called. Should have been
+     * called by Window closed / closing.
+     * 
      * @throws Throwable
      */
     protected void finalize() throws Throwable {
-        try{
+        try {
             decrementOpenWizards();
         } finally {
             super.finalize();
@@ -103,19 +102,20 @@ public class PFWizard extends PFUIComponent {
     private void decrementOpenWizards() {
         if (!doneWizardClose.getAndSet(true)) {
             NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
-            setFolderCreateActivity();
+            setSuspendNewFolderSearch(false);
         }
     }
 
     /**
      * This is a blanket call to disable the autodetect of folders while a
-     * Wizard is open. Typically a Wizard will create a directory and the
-     * folder repo will sometimes autocreate the folder at the same time.
-     * So FolderRepository.setFolderCreateActivity() suspends this while a
-     * Wizard is open.
+     * Wizard is open. Typically a Wizard will create a directory and the folder
+     * repo will sometimes autocreate the folder at the same time. So
+     * FolderRepository.setFolderCreateActivity() suspends this while a Wizard
+     * is open.
      */
-    private void setFolderCreateActivity() {
-        getController().getFolderRepository().setFolderCreateActivity(isWizardOpen());
+    private void setSuspendNewFolderSearch(boolean suspend) {
+        getController().getFolderRepository()
+            .setSuspendNewFolderSearch(suspend);
     }
 
     public static boolean isWizardOpen() {
@@ -134,8 +134,8 @@ public class PFWizard extends PFUIComponent {
         // BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
         WizardPanel nextPanel = WhatToDoPanel.doSyncOption(controller,
             wizard.getWizardContext());
-        wizard.open(new LoginPanel(controller, nextPanel,
-            !controller.isBackupOnly()));
+        wizard.open(new LoginPanel(controller, nextPanel, !controller
+            .isBackupOnly()));
     }
 
     /**
@@ -174,8 +174,8 @@ public class PFWizard extends PFUIComponent {
         wizard.open(new SendInvitationsPanel(controller));
     }
 
-    public static void openOnlineStorageJoinWizard(
-        Controller controller, List<FolderInfo> folderInfoList)
+    public static void openOnlineStorageJoinWizard(Controller controller,
+        List<FolderInfo> folderInfoList)
     {
 
         PFWizard wizard = new PFWizard(controller,
@@ -196,8 +196,8 @@ public class PFWizard extends PFUIComponent {
         wizard.open(new MultiOnlineStorageSetupPanel(controller));
     }
 
-    public static void openTypicalFolderJoinWizard(
-        Controller controller, FolderInfo folderInfo)
+    public static void openTypicalFolderJoinWizard(Controller controller,
+        FolderInfo folderInfo)
     {
 
         PFWizard wizard = new PFWizard(controller,
@@ -246,8 +246,7 @@ public class PFWizard extends PFUIComponent {
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.finish.os_login_title"),
             Translation.getTranslation("wizard.finish.os_login_text"), true);
-        wizard.open(new LoginPanel(controller, client,
-            nextFinishPanel, false));
+        wizard.open(new LoginPanel(controller, client, nextFinishPanel, false));
     }
 
     /**
@@ -281,7 +280,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the wizard on a panel.
-     *
+     * 
      * @param wizardPanel
      */
     public void open(PFWizardPanel wizardPanel) {
@@ -352,6 +351,7 @@ public class PFWizard extends PFUIComponent {
             public void windowClosing(WindowEvent e) {
                 decrementOpenWizards();
             }
+
             public void windowClosed(WindowEvent e) {
                 decrementOpenWizards();
             }
@@ -360,10 +360,10 @@ public class PFWizard extends PFUIComponent {
         dialog.getContentPane().add(
             GradientPanel.create(wizard, GradientPanel.VERY_LIGHT_GRAY));
         dialog.pack();
-        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() -
-                dialog.getWidth()) / 2;
-        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() -
-                dialog.getHeight()) / 2;
+        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
+            .getWidth()) / 2;
+        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
+            .getHeight()) / 2;
         dialog.setLocation(x, y);
         wizard.getContext().setAttribute(
             WizardContextAttributes.DIALOG_ATTRIBUTE, dialog);
@@ -372,13 +372,14 @@ public class PFWizard extends PFUIComponent {
     }
 
     public static void openFolderAutoCreateWizard(Controller controller,
-                                                  FolderInfo folderInfo) {
+        FolderInfo folderInfo)
+    {
         Folder folder = controller.getFolderRepository().getFolder(folderInfo);
         if (folder == null) {
-            DialogFactory.genericDialog(controller,
-                    Translation.getTranslation("wizard.control.no_folder.title"),
-                    Translation.getTranslation("wizard.control.no_folder.description"),
-                    GenericDialogType.INFO);
+            DialogFactory.genericDialog(controller, Translation
+                .getTranslation("wizard.control.no_folder.title"), Translation
+                .getTranslation("wizard.control.no_folder.description"),
+                GenericDialogType.INFO);
         } else {
             FolderAutoCreatePanel panel = new FolderAutoCreatePanel(controller,
                 folderInfo);

@@ -111,9 +111,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     // The trigger to start scanning
     private final Object scanTrigger = new Object();
     private boolean triggered;
-    private final AtomicBoolean skipNewFolderSearch = new AtomicBoolean();
+    private final AtomicInteger suspendNewFolderSearch = new AtomicInteger(0);
     private File foldersBasedir;
-    private final AtomicBoolean folderCreateActivity = new AtomicBoolean();
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
@@ -935,7 +934,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
         Reject.ifNull(folder, "Folder is null");
         try {
-            skipNewFolderSearch.set(true);
+            suspendNewFolderSearch.incrementAndGet();
 
             // Remember that we have removed this folder.
             addToRemovedFolderDirectories(folder);
@@ -1024,7 +1023,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } finally {
-            skipNewFolderSearch.set(false);
+            suspendNewFolderSearch.decrementAndGet();
         }
 
         // Fire event
@@ -1246,15 +1245,18 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Can be set by the UI when we are creating folders so that
      * lookForNewFolders does not jump in while the user is setting up a new
-     * folder in a Wizard or something.
-     *
-     * Don't forget to set this back to false when finished.
-     *
+     * folder in a Wizard or something. Don't forget to set this back to false
+     * when finished.
+     * 
      * @param activity
      */
-    public void setFolderCreateActivity(boolean activity) {
+    public void setSuspendNewFolderSearch(boolean activity) {
         logInfo("Set folderCreateActivity to " + activity);
-        folderCreateActivity.set(activity);
+        if (activity) {
+            suspendNewFolderSearch.incrementAndGet();
+        } else {
+            suspendNewFolderSearch.decrementAndGet();
+        }
     }
 
     /**
@@ -1262,9 +1264,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * folders.
      */
     public void lookForNewFolders() {
-        if (skipNewFolderSearch.get()
-                || folderCreateActivity.get()
-                || !getController().getOSClient().isLoggedIn()) {
+        if (suspendNewFolderSearch.get() > 0
+            || !getController().getOSClient().isLoggedIn())
+        {
             if (isFine()) {
                 logFine("Skipping searching for new folders...");
             }
@@ -1467,6 +1469,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private ReentrantLock accountSyncLock = new ReentrantLock();
 
     public void updateFolders(Account a) {
+        // TODO: Called too often
         Reject.ifNull(a, "Account");
         if (getController().getMySelf().isServer()) {
             return;
