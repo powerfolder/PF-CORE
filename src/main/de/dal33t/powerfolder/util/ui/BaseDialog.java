@@ -23,10 +23,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.*;
 
@@ -54,24 +50,9 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public abstract class BaseDialog extends PFUIComponent {
 
-    private static final AtomicInteger NUMBER_OF_OPEN_DIALOGS =
-            new AtomicInteger();
-
     private JDialog dialog;
     private boolean modal;
     private boolean resizable;
-
-    // Make sure open / close count change fires exactly once per instance.
-    private final AtomicBoolean doneWizardClose = new AtomicBoolean();
-
-    /**
-     * Are there any open dilogs?
-     *
-     * @return
-     */
-    public static boolean isDialogOpen() {
-        return NUMBER_OF_OPEN_DIALOGS.get() > 0;
-    }
 
     /**
      * Initializes the base dialog.
@@ -84,31 +65,6 @@ public abstract class BaseDialog extends PFUIComponent {
     protected BaseDialog(Controller controller, boolean modal) {
         super(controller);
         this.modal = modal;
-        getController().getUIController()
-                .getApplicationModel().setBaseDialogOpen(
-                NUMBER_OF_OPEN_DIALOGS.incrementAndGet() > 0);
-    }
-
-    /**
-     * Make absolutely sure decrementOpenDialogs() gets called.
-     * Should have been called by Window closed / closing.
-     *
-     * @throws Throwable
-     */
-    protected void finalize() throws Throwable {
-        try{
-            decrementOpenDialogs();
-        } finally {
-            super.finalize();
-        }
-    }
-
-    private void decrementOpenDialogs() {
-        if (!doneWizardClose.getAndSet(true)) {
-            NUMBER_OF_OPEN_DIALOGS.decrementAndGet();
-            getController().getUIController().getApplicationModel()
-                    .setWizardOpen(isDialogOpen());
-        }
     }
 
     /**
@@ -304,21 +260,6 @@ public abstract class BaseDialog extends PFUIComponent {
         int y = ((int) Toolkit.getDefaultToolkit().getScreenSize()
                 .getHeight() - dialog.getHeight()) / 2;
         dialog.setLocation(x, y);
-
-        dialog.addWindowListener(new WindowAdapter() {
-            public void windowClosed(WindowEvent e) {
-                if (!doneWizardClose.getAndSet(true)) {
-                    getController().getUIController().getApplicationModel().setBaseDialogOpen(
-                            NUMBER_OF_OPEN_DIALOGS.decrementAndGet() > 0);
-                }
-            }
-            public void windowClosing(WindowEvent e) {
-                if (!doneWizardClose.getAndSet(true)) {
-                    getController().getUIController().getApplicationModel().setBaseDialogOpen(
-                            NUMBER_OF_OPEN_DIALOGS.decrementAndGet() > 0);
-                }
-            }
-        });
 
     }
 }

@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.model;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -64,8 +63,6 @@ public class ApplicationModel extends PFUIComponent {
     private ValueModel useOSModel;
     private LicenseModel licenseModel;
     private NoticesModel noticesModel;
-    private final ValueModel dialogActiveModel; // <Boolean>
-    private final DialogMonitorBean dialogMonitorBean;
 
     /**
      * Constructs a non-initialized application model. Before the model can be
@@ -113,16 +110,6 @@ public class ApplicationModel extends PFUIComponent {
             .getModel(getController());
         licenseModel = new LicenseModel();
         noticesModel = new NoticesModel(getController());
-        dialogActiveModel = new ValueHolder(Boolean.FALSE);
-        dialogMonitorBean = new DialogMonitorBean();
-    }
-
-    /**
-     * Are there any dialogs (BaseDialog or Wizard) open?
-     * @return ValueModel&lt;Boolean&gt;
-     */
-    public ValueModel getDialogActiveModel() {
-        return dialogActiveModel;
     }
 
     /**
@@ -274,94 +261,5 @@ public class ApplicationModel extends PFUIComponent {
 
     public NoticesModel getNoticesModel() {
         return noticesModel;
-    }
-
-    /**
-     * A Wizard has been opened or closed, let the monitor know.
-     * @param wizardOpen
-     */
-    public void setWizardOpen(boolean wizardOpen) {
-        dialogMonitorBean.setWizardOpen(wizardOpen);
-    }
-
-    /**
-     * A BaseDialog has been opened or closed, let the monitor know.
-     * @param baseDialogOpen
-     */
-    public void setBaseDialogOpen(boolean baseDialogOpen) {
-        dialogMonitorBean.setBaseDialogOpen(baseDialogOpen);
-    }
-
-    // ////////////////
-    // Inner Classes //
-    // ////////////////
-
-    /**
-     * This class is used in monitoring the state of active BaseDialogs or
-     * Wizards. If one is open, we should not be spamming users with more
-     * dialogs (and potentially other events).
-     */
-    private class DialogMonitorBean {
-
-        /**
-         * Prevent concurent events from screwing the pooch.
-         */
-        private final Object changeLock = ".";
-
-        /**
-         * Are any Wizards open?
-         */
-        private final AtomicBoolean wizardOpen = new AtomicBoolean();
-
-        /**
-         * Are any BaseDialogs open?
-         */
-        private final AtomicBoolean baseDialogOpen = new AtomicBoolean();
-
-        /**
-         * PFWizard sets this when a Wizard opens or closes.
-         *
-         * @param wizardOpen
-         */
-        public void setWizardOpen(boolean wizardOpen) {
-            synchronized (changeLock) {
-                if (this.wizardOpen.compareAndSet(!wizardOpen, wizardOpen)) {
-                    // Only advise if there has been a state change.
-                    advise();
-                }
-            }
-        }
-
-        /**
-         * BaseDialog sets this when a BaseDialog opens or closes.
-         *
-         * @param baseDialogOpen
-         */
-        public void setBaseDialogOpen(boolean baseDialogOpen) {
-            synchronized (changeLock) {
-                if (this.baseDialogOpen.compareAndSet(!baseDialogOpen,
-                        baseDialogOpen)) {
-                    // Only advise if there has been a state change.
-                    advise();
-                }
-            }
-        }
-
-        /**
-         * Is anything open?
-         *
-         * @return
-         */
-        private boolean isDialogOpen() {
-            return wizardOpen.get() || baseDialogOpen.get();
-        }
-
-        /**
-         * Let the value model's listeners know.
-         */
-        private void advise() {
-            System.out.println("hghg wizards " + wizardOpen + ", dialogs " + baseDialogOpen);
-            dialogActiveModel.setValue(isDialogOpen());
-        }
     }
 }
