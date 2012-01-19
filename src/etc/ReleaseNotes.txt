@@ -10,7 +10,8 @@ PowerFolder Version 5.5 - http://www.powerfolder.com
  * Program update dialog now clearly indicates that the update is for PowerFolder.
  * Activation by file not longer supported. Please always use online activation.
  * Directory chooser now shows drive names.
- * Folderlist: Not longer shows icons on mouse hover. 
+ * Debug log panel: CPU activity dump button added. 
+ * Folderlist: Not longer shows icons on mouse hover.
  
 = Bugfixes =
  * Security: Fixed bug, which causes the client to sync if not yet logged in.
