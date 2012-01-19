@@ -47,7 +47,9 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.TextPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 
@@ -86,6 +88,7 @@ public class DebugInformationCard extends InformationCard {
     private JButton startBroadcastMananger;
 
     private JButton openDebugDir;
+    private JButton dumpThreads;
 
     private JComboBox logLevelCombo;
 
@@ -231,6 +234,10 @@ public class DebugInformationCard extends InformationCard {
         openDebugDir = new JButton("Send Logs");
         openDebugDir.setEnabled(true);
         openDebugDir.setToolTipText("Send log files to Support Team");
+
+        dumpThreads = new JButton("CPU dump");
+        dumpThreads
+            .setToolTipText("Dumps the current CPU activity to logs");
 
         shutdownFileRequestorButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -384,6 +391,22 @@ public class DebugInformationCard extends InformationCard {
                 }
             }
         });
+
+        dumpThreads.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (((Level) logLevelCombo.getSelectedItem()).intValue() > Level.INFO
+                    .intValue())
+                {
+                    logLevelCombo.setSelectedItem(Level.INFO);
+                }
+                String dump = Debug.dumpCurrentStacktraces(true);
+                if (StringUtils.isNotBlank(dump)) {
+                    logInfo("Active threads:\n\n" + dump);
+                } else if (isInfo()) {
+                    logInfo("No threads active");
+                }
+            }
+        });
     }
 
     private void updateBoxes() {
@@ -445,7 +468,8 @@ public class DebugInformationCard extends InformationCard {
         bar.addFixed(logToFileCheckBox);
         bar.addRelatedGap();
         bar.addFixed(scrollLockCheckBox);
-        bar.addRelatedGap();
+        bar.addUnrelatedGap();
+        bar.addFixed(dumpThreads);
         return bar.getPanel();
     }
 
