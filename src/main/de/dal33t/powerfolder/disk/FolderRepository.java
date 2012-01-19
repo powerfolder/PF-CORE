@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -1251,7 +1250,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param activity
      */
     public void setSuspendNewFolderSearch(boolean activity) {
-        logInfo("Set folderCreateActivity to " + activity);
+        logInfo("setSuspendNewFolderSearch to " + activity);
         if (activity) {
             suspendNewFolderSearch.incrementAndGet();
         } else {
