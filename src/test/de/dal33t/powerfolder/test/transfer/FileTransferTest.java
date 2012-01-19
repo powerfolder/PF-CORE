@@ -1101,6 +1101,18 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
         disconnectBartAndLisa();
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() == 0;
+            }
+
+            public String message() {
+                return "Active downloads @ lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .countActiveDownloads();
+            }
+        });
 
         LoggingManager.setConsoleLogging(Level.FINE);
         assertTrue(tempFile.exists());
