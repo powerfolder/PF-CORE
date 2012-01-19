@@ -66,7 +66,19 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.LimitedConnectivityEvent;
+import de.dal33t.powerfolder.event.LimitedConnectivityListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.NetworkingModeEvent;
+import de.dal33t.powerfolder.event.NetworkingModeListener;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.SilentModeEvent;
+import de.dal33t.powerfolder.event.SilentModeListener;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -131,7 +143,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.6.5 - 4.5.7"; // 4.5.7
+    public static final String PROGRAM_VERSION = "5.6.6"; // 4.5.9
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -978,6 +990,31 @@ public class Controller extends PFComponent {
                 performHourly();
             }
         }, initialDelay, 3600, TimeUnit.SECONDS);
+
+        // =========
+        // Profiling
+        // =========
+        // final Collector cpu = CollectorFactory.getFactory().createCollector(
+        // CollectorID.CPU_USAGE.id);
+        threadPool.scheduleAtFixedRate(new Runnable() {
+            public void run() {
+                if (!verbose) {
+                    return;
+                }
+                // if (cpu == null || cpu.getMaxValue() == 0) {
+                // return;
+                // }
+                // double cpuUsage = cpu.getValue() * 100 / cpu.getMaxValue();
+                // logWarning("" + cpuUsage + "% " + cpu.getValue() + " / " +
+                // cpu.getMaxValue());
+                // if (cpuUsage > 1) {
+                String dump = Debug.dumpCurrentStacktraces(true);
+                if (StringUtils.isNotBlank(dump) && isInfo()) {
+                    logFine("Active threads:\n\n" + dump);
+                }
+                // }
+            }
+        }, 30, 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -1430,7 +1467,8 @@ public class Controller extends PFComponent {
     }
 
     public void addNetworkingModeListener(NetworkingModeListener listener) {
-        ListenerSupportFactory.addListener(networkingModeListenerSupport, listener);
+        ListenerSupportFactory.addListener(networkingModeListenerSupport,
+            listener);
     }
 
     public void removeNetworkingModeListener(NetworkingModeListener listener) {
@@ -1438,13 +1476,18 @@ public class Controller extends PFComponent {
             listener);
     }
 
-    public void addLimitedConnectivityListener(LimitedConnectivityListener listener) {
-        ListenerSupportFactory.addListener(limitedConnectivityListenerSupport, listener);
+    public void addLimitedConnectivityListener(
+        LimitedConnectivityListener listener)
+    {
+        ListenerSupportFactory.addListener(limitedConnectivityListenerSupport,
+            listener);
     }
 
-    public void removeLimitedConnectivityListener(LimitedConnectivityListener listener) {
-        ListenerSupportFactory.removeListener(limitedConnectivityListenerSupport,
-            listener);
+    public void removeLimitedConnectivityListener(
+        LimitedConnectivityListener listener)
+    {
+        ListenerSupportFactory.removeListener(
+            limitedConnectivityListenerSupport, listener);
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
@@ -1459,8 +1502,8 @@ public class Controller extends PFComponent {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
 
             networkingMode = newMode;
-            networkingModeListenerSupport.setNetworkingMode(
-                    new NetworkingModeEvent(oldMode, newMode));
+            networkingModeListenerSupport
+                .setNetworkingMode(new NetworkingModeEvent(oldMode, newMode));
 
             // Restart nodeManager
             nodeManager.shutdown();
@@ -1485,7 +1528,8 @@ public class Controller extends PFComponent {
     public void setLimitedConnectivity(boolean limitedConnectivity) {
         boolean oldValue = this.limitedConnectivity;
         this.limitedConnectivity = limitedConnectivity;
-        LimitedConnectivityEvent e = new LimitedConnectivityEvent(oldValue, limitedConnectivity);
+        LimitedConnectivityEvent e = new LimitedConnectivityEvent(oldValue,
+            limitedConnectivity);
         limitedConnectivityListenerSupport.setLimitedConnectivity(e);
     }
 
