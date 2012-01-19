@@ -1251,12 +1251,13 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param activity
      */
     public void setSuspendNewFolderSearch(boolean activity) {
-        logInfo("setSuspendNewFolderSearch to " + activity);
         if (activity) {
             suspendNewFolderSearch.incrementAndGet();
         } else {
             suspendNewFolderSearch.decrementAndGet();
         }
+        logInfo("setSuspendNewFolderSearch to " + activity + " now: "
+            + suspendNewFolderSearch.get());
     }
 
     /**
