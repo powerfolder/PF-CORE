@@ -57,71 +57,86 @@ public class NewFolderAction extends BaseAction {
     public void actionPerformed(ActionEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // Select directory
-                FolderRepository folderRepository =
-                        getController().getFolderRepository();
-                List<File> files = DialogFactory.chooseDirectory(
-                        getUIController(),
-                        folderRepository.getFoldersBasedir(),
-                        true);
-                if (files == null || files.isEmpty()) {
-                    return;
-                }
 
-                // Setup sucess panel of this wizard path
-                FolderCreatePanel createPanel = new FolderCreatePanel(
-                        getController());
+                // Suspend new folder search in the FolderRepository.
+                FolderRepository folderRepository = getController().getFolderRepository();
+                folderRepository.setSuspendNewFolderSearch(true);
 
-                TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                    Translation.getTranslation("wizard.setup_success"), Translation
-                        .getTranslation("wizard.what_to_do.folder_backup_success")
-                        + Translation.getTranslation("wizard.what_to_do.pcs_join"));
-
-                PFWizard wizard = new PFWizard(getController(),
-                    Translation.getTranslation("wizard.pfwizard.folder_title"));
-
-                wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-                    successPanel);
-                wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-                    false);
-                wizard.getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
-                    getController().getOSClient().isBackupByDefault());
-
-                List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
-
-                outer:
-                for (File file : files) {
-                    // Has user already got this folder?
-                    for (Folder folder : folderRepository.getFolders()) {
-                        if (folder.getBaseDirectoryInfo().getDiskFile(
-                                folderRepository).equals(file)) {
-                            continue outer;
-                        }
+                try {
+                    // Select directory
+                    List<File> files = DialogFactory.chooseDirectory(
+                            getUIController(),
+                            folderRepository.getFoldersBasedir(),
+                            true);
+                    if (files == null || files.isEmpty()) {
+                        return;
                     }
 
-                    // FolderInfo
-                    String name = FileUtils.getSuggestedFolderName(file);
-                    String folderId = '[' + IdGenerator.makeId() + ']';
-                    FolderInfo fi = new FolderInfo(name, folderId);
+                    // Setup sucess panel of this wizard path
+                    FolderCreatePanel createPanel = new FolderCreatePanel(
+                            getController());
 
-                    FolderCreateItem item = new FolderCreateItem(file);
-                    item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-                    item.setFolderInfo(fi);
-                    item.setArchiveHistory(
-                            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(
-                                    getController()));
-                    item.setArchiveMode(ArchiveMode.FULL_BACKUP);
-                    folderCreateItems.add(item);
+                    TextPanelPanel successPanel = new TextPanelPanel(getController(),
+                        Translation.getTranslation("wizard.setup_success"), Translation
+                            .getTranslation("wizard.what_to_do.folder_backup_success")
+                            + Translation.getTranslation("wizard.what_to_do.pcs_join"));
 
+                    PFWizard wizard = new PFWizard(getController(),
+                        Translation.getTranslation("wizard.pfwizard.folder_title"));
+
+                    wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+                        successPanel);
+                    wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                        false);
+                    wizard.getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                        getController().getOSClient().isBackupByDefault());
+
+                    List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
+
+                    outer:
+                    for (File file : files) {
+                        // Has user already got this folder?
+                        for (Folder folder : folderRepository.getFolders()) {
+                            if (folder.getBaseDirectoryInfo().getDiskFile(
+                                    folderRepository).equals(file)) {
+                                continue outer;
+                            }
+                        }
+
+                        // FolderInfo
+                        String name = FileUtils.getSuggestedFolderName(file);
+                        String folderId = '[' + IdGenerator.makeId() + ']';
+                        FolderInfo fi = new FolderInfo(name, folderId);
+
+                        FolderCreateItem item = new FolderCreateItem(file);
+                        item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+                        item.setFolderInfo(fi);
+                        item.setArchiveHistory(
+                                ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(
+                                        getController()));
+                        item.setArchiveMode(ArchiveMode.FULL_BACKUP);
+                        folderCreateItems.add(item);
+
+                    }
+
+                    if (folderCreateItems.isEmpty()) {
+                        return;
+                    }
+
+                    // Wizard will also suspend new folder search.
+                    wizard.getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
+                            folderCreateItems);
+                    wizard.open(createPanel);
+                    // Wizard unsuspends new folder search.
+
+                } finally {
+                    try {
+                        // Unsuspend new folder search in the FolderRepository.
+                        folderRepository.setSuspendNewFolderSearch(false);
+                    } catch (Exception ex) {
+                        // Nothing much can be done now.
+                    }
                 }
-
-                if (folderCreateItems.isEmpty()) {
-                    return;
-                }
-
-                wizard.getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
-                        folderCreateItems);
-                wizard.open(createPanel);
             }
         });
     }
