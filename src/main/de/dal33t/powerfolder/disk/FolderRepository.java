@@ -1242,10 +1242,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Can be set by the UI when we are creating folders so that
-     * lookForNewFolders does not jump in while the user is setting up a new
-     * folder in a Wizard or something. Don't forget to set this back to false
-     * when finished.
+     * ATTENTION: This is a stack based system. When suspending the search do it
+     * only ONCE and make sure you release the lock in a finally block Can be
+     * set by the UI when we are creating folders so that lookForNewFolders does
+     * not jump in while the user is setting up a new folder in a Wizard or
+     * something. Don't forget to set this back to false when finished.
      * 
      * @param activity
      */
