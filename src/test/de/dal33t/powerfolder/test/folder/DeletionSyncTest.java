@@ -491,7 +491,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             getContollerLisa().getMySelf().getInfo());
 
         disconnectBartAndLisa();
-        
+
         // Create a file with version = 1
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
@@ -510,7 +510,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .iterator().next(), getContollerBart());
         assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
             .getVersion());
-        
+
         connectBartAndLisa();
 
         // Let Lisa download the file via auto-dl and broadcast the change to
@@ -638,6 +638,17 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertEquals(1, getFolderAtBart().getKnownItemCount());
             assertEquals(1, getFolderAtLisa().getKnownItemCount());
         } else {
+            TestHelper.waitForCondition(10, new ConditionWithMessage() {
+                public boolean reached() {
+                    return getFolderAtBart().getKnownItemCount() == 2
+                        && getFolderAtLisa().getKnownItemCount() == 2;
+                }
+
+                public String message() {
+                    return "Bart: " + getFolderAtBart().getKnownItemCount()
+                        + ", Lisa: " + getFolderAtLisa().getKnownItemCount();
+                }
+            });
             assertEquals(2, getFolderAtBart().getKnownItemCount());
             assertEquals(2, getFolderAtLisa().getKnownItemCount());
         }
