@@ -660,7 +660,7 @@ public enum ConfigurationEntry {
     /**
      * The loglevel to write to debug file when verbose=true
      */
-    LOG_LEVEL_FILE("log.file.level", Level.INFO.getName()),
+    LOG_LEVEL_FILE("log.file.level", Level.FINE.getName()),
 
     /**
      * The loglevel to print to console when verbose=true
