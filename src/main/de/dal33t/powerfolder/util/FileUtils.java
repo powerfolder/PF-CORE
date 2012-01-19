@@ -665,7 +665,7 @@ public class FileUtils {
                 // work.
                 // makeSystemOnWindows(desktopIniFile);
             } catch (IOException e) {
-                log.log(Level.SEVERE, "Problem writing Desktop.ini file(s)", e);
+                log.log(Level.WARNING, "Problem writing Desktop.ini file(s). " + e);
             } finally {
                 if (pw != null) {
                     try {
