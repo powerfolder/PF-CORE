@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -750,6 +751,110 @@ public class Debug {
 
     public static String getCurrentStackTrace() {
         return getStackTrace(Thread.currentThread().getStackTrace());
+    }
+
+    public static String dumpCurrentStacktraces(boolean hideIdleThreds) {
+        ThreadGroup top = Thread.currentThread().getThreadGroup();
+        while (top.getParent() != null) {
+            top = top.getParent();
+        }
+        StringBuilder b = new StringBuilder();
+        for (String dumps : getGroupInfo(top, hideIdleThreds)) {
+            b.append(dumps);
+        }
+        return b.toString();
+    }
+
+    private static List<String> getGroupInfo(ThreadGroup group,
+        boolean hideIdleThreds)
+    {
+        Thread threads[] = new Thread[group.activeCount()];
+        List<String> threadDumps = new LinkedList<String>();
+        group.enumerate(threads, false);
+
+        for (Thread thread : threads) {
+            if (thread != null) {
+                String threadDump = dumpStackTrace(thread, hideIdleThreds);
+                if (StringUtils.isBlank(threadDump)) {
+                    continue;
+                }
+                String dump = " " + thread
+                    + " --------------------------------------\n";
+                dump += threadDump;
+                dump += "\n";
+                threadDumps.add(dump);
+            }
+        }
+        ThreadGroup[] activeGroup = new ThreadGroup[group.activeGroupCount()];
+        group.enumerate(activeGroup, false);
+
+        int i = 0;
+        while (i < activeGroup.length) {
+            threadDumps.addAll(getGroupInfo(activeGroup[i], hideIdleThreds));
+            i++;
+        }
+        return threadDumps;
+    }
+
+    private static String dumpStackTrace(Thread t, boolean hideIdleThreds) {
+        StringBuilder b = new StringBuilder();
+        for (StackTraceElement te : t.getStackTrace()) {
+            if (hideIdleThreds) {
+                if (te.toString().contains(
+                    "java.net.SocketInputStream.socketRead0"))
+                {
+                    return null;
+                }
+                if (te.toString().contains("java.lang.Thread.sleep")) {
+                    return null;
+                }
+                if (te.toString().contains("java.lang.Object.wait")) {
+                    return null;
+                }
+                if (te.toString()
+                    .contains("sun.awt.windows.WToolkit.eventLoop"))
+                {
+                    return null;
+                }
+                if (te.toString().contains("sun.misc.Unsafe.park")) {
+                    return null;
+                }
+                if (te.toString().contains(
+                    "java.net.PlainSocketImpl.socketAccept"))
+                {
+                    return null;
+                }
+                if (te.toString().contains(
+                    "java.net.SocketOutputStream.socketWrite0(Native Method)"))
+                {
+                    return null;
+                }
+                if (te.toString().contains(
+                    "java.net.PlainDatagramSocketImpl.receive0"))
+                {
+                    return null;
+                }
+                if (te.toString().contains("java.lang.Thread.getStackTrace")) {
+                    return null;
+                }
+                if (te.toString().contains(
+                    "java.net.PlainSocketImpl.socketConnect"))
+                {
+                    return null;
+                }
+                if (te
+                    .toString()
+                    .contains(
+                        "net.contentobjects.jnotify.linux.JNotify_linux.nativeNotifyLoop"))
+                {
+                    return null;
+                }
+            }
+
+            b.append("  " + te);
+            b.append("\n");
+        }
+        return b.toString();
     }
 
     private static String detailedObjectState0(Class<?> c, Object o) {
