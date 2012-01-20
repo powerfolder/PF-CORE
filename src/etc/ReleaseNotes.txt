@@ -1,6 +1,7 @@
 PowerFolder Version 5.5 - http://www.powerfolder.com
 
 = Improvements/New features =
+ * Free edition can now sync up to 2 GB of data.
  * New skins: PowerFolder 2012 "Blue Globe" and "Storm"
  * System tray icon improvement: Shows a "OK" icons instead of "P" icon when the sync is ok.
  * PowerFolders base path will fall back to default if not available, e.g. network drive.
