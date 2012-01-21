@@ -1,4 +1,4 @@
-PowerFolder Version 5.5 - http://www.powerfolder.com
+PowerFolder Version 5.6 - http://www.powerfolder.com
 
 = Improvements/New features =
  * Free edition can now sync up to 2 GB of data.
