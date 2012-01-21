@@ -116,6 +116,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     public static final String OPEN = "OPEN;";
     public static final String MAKEFOLDER = "MAKEFOLDER;";
     public static final String REMOVEFOLDER = "REMOVEFOLDER;";
+    public static final String PING = "PING;";
 
     // Private vars
     private ServerSocket serverSocket;
@@ -143,35 +144,14 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
     /**
      * Checks if there is a running instance of RemoteComamndManager. Determines
-     * this by opening a server socket port.
+     * this by opening sending a remote commando.
      * 
      * @param port
      *            the port to check
-     * @return true if port allready taken
+     * @return true if port already taken
      */
     public static boolean hasRunningInstance(int port) {
-        ServerSocket testSocket = null;
-        try {
-            // Only bind to localhost
-            testSocket = new ServerSocket(port, 0,
-                InetAddress.getByName("127.0.0.1"));
-
-            // Server socket can be opend, no instance of PowerFolder running
-            return false;
-        } catch (UnknownHostException e) {
-        } catch (IOException e) {
-        } finally {
-            if (testSocket != null) {
-                try {
-                    testSocket.close();
-                } catch (IOException e) {
-                    log.log(Level.SEVERE,
-                        "Unable to close already running test socket. "
-                            + testSocket, e);
-                }
-            }
-        }
-        return true;
+        return sendCommand(port, PING);
     }
 
     /**
@@ -198,7 +178,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(int port, String command) {
         try {
-            log.log(Level.INFO, "Sending remote command '" + command + '\'');
+            log.log(Level.FINE, "Sending remote command '" + command + '\'');
             Socket socket = new Socket("127.0.0.1", port);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(
                 socket.getOutputStream(), ENCODING));
@@ -210,7 +190,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
             return true;
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to send remote command", e);
+            log.log(Level.FINE, "Unable to send remote command. " + e);
         }
         return false;
     }
@@ -331,7 +311,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             w.write("\");");
             w.close();
         } else if (line.contains("/open/")) {
-            // TODO Error handling
+            // TODO Error handling.
+            // TODO Send back SC_FORBIDDEN
             int start = line.indexOf("/open/");
             int end = line.indexOf(" HTTP");
             String addr = line.substring(start + 6, end);
@@ -355,7 +336,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             logInfo("Opening file: " + file);
             FileUtils.openFile(file);
         }
-        
+
         w.flush();
         w.close();
     }
@@ -422,6 +403,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     removeFolder(folderConfig);
                 }
             }, 0);
+        } else if (command.startsWith(PING)) {
+            // Do nothing
         } else {
             log.warning("Remote command not recognizable '" + command + '\'');
         }
