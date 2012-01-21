@@ -849,6 +849,12 @@ public class Debug {
                 {
                     return null;
                 }
+                if (te.toString().contains(
+                    "de.dal33t.powerfolder.util.net.UDTSocket.recv"))
+                {
+                    return null;
+                }
+
             }
 
             b.append("  " + te);
