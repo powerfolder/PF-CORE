@@ -851,7 +851,7 @@ public class FileUtils {
     public static String encodeURLinFilename(String url) {
         url = url.replace("//", "=");
         url = url.replace(":", ";");
-        return "$s$" + url + "$";
+        return "$s$" + url + '$';
     }
 
     /**
@@ -865,9 +865,9 @@ public class FileUtils {
             return null;
         }
 
-        int start = filename.indexOf("$");
-        int endType = filename.indexOf("$", start + 1);
-        int endURL = filename.indexOf("$", endType + 1);
+        int start = filename.indexOf('$');
+        int endType = filename.indexOf('$', start + 1);
+        int endURL = filename.indexOf('$', endType + 1);
         if (start < 0 || endType < 0 || endURL < 0) {
             return null;
         }
@@ -919,7 +919,7 @@ public class FileUtils {
      * (2), and so on until it finds an non-existing file.
      * <p>
      * 
-     * @param targetFile
+     * @param baseDir
      * @param rawName
      *            the raw name of the file. is it NOT guranteed that it will/can
      *            be named like this.
@@ -1089,4 +1089,35 @@ public class FileUtils {
         // In system subdirectory, so do not scan.
         return false;
     }
+
+    /**
+     * Does a directory have any files, recursively?
+     *
+     * @param base
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public static boolean hasFiles(File base) {
+        Reject.ifNull(base, "Base is null");
+        Reject.ifFalse(base.isDirectory(), "Base is not folder");
+        return hasFilesInternal(base);
+    }
+
+    private static boolean hasFilesInternal(File dir) {
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()) {
+                boolean b = hasFiles(file);
+                if (b) {
+                    // A subdirectory has a file; we're out of here.
+                    return true;
+                }
+            } else {
+                // We got one!
+                return true;
+            }
+        }
+        // Nothing to see here.
+        return false;
+    }
+
 }

@@ -548,4 +548,62 @@ public class FileUtilsTest extends TestCase {
         assertEquals("Bad file name", "jim", f.getName());
         assertTrue("Bad file name", f.getParent().endsWith("bob"));
     }
+
+    /**
+     * Test the FileUtils hasFiles method.
+     */
+    public void testHasFiles() {
+
+        // Test null directory
+        try {
+            FileUtils.hasFiles(null);
+            fail("Should not work on a null");
+        } catch (NullPointerException e) {
+            // All good.
+        }
+
+        // Test empty dir
+        File base = new File("build/test/x");
+        try {
+            FileUtils.recursiveDelete(base);
+        } catch (IOException e) {
+        }
+        assertTrue("Failed to create test dir", base.mkdirs());
+        assertFalse("Failed because test dir has files", FileUtils.hasFiles(base));
+
+        // Test with a file
+        File randomFile1 = TestHelper.createRandomFile(base, "b");
+        assertTrue("Failed because test file not detected", FileUtils.hasFiles(base));
+
+        // Test bad directory (a file)
+        try {
+            FileUtils.hasFiles(randomFile1);
+            fail("Should not work on a file");
+        } catch (IllegalArgumentException e) {
+            // All good.
+        }
+
+        // Test again with file removed
+        randomFile1.delete();
+        assertFalse("Failed because test file not deleted", FileUtils.hasFiles(base));
+
+        // Test with subdirestory
+        File subDir = new File(base, "sub");
+        assertTrue("Failed to create test sub dir", subDir.mkdirs());
+        assertFalse("Failed because test sub dir has files", FileUtils.hasFiles(base));
+
+        // Test with a file in subDirectory
+        File randomFile2 = TestHelper.createRandomFile(subDir, "c");
+        assertTrue("Failed because test file not detected", FileUtils.hasFiles(base));
+
+        // Test again with file removed from subDirectory
+        randomFile2.delete();
+        assertFalse("Failed because test file not deleted", FileUtils.hasFiles(base));
+
+        try {
+            FileUtils.recursiveDelete(base);
+        } catch (IOException e) {
+        }
+
+    }
 }
