@@ -24,11 +24,10 @@ public class CompositeMapTest extends TestCase {
         new Modifier(map3).start();
 
         for (int i = 0; i < 10000; i++) {
-            for (String key : composite.keySet()) {
-                String value = composite.get(key);
-                if (!key.equals(value)) {
-                    throw new IllegalStateException("Key: " + key + " Value: "
-                        + value);
+            for (Map.Entry<String, String> entry : composite.entrySet()) {
+                if (!entry.getKey().equals(entry.getValue())) {
+                    throw new IllegalStateException("Key: " + entry.getKey()
+                        + " Value: " + entry.getValue());
                 }
                 if (LOCK.tryAcquire()) {
                     return;
