@@ -116,7 +116,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     public static final String OPEN = "OPEN;";
     public static final String MAKEFOLDER = "MAKEFOLDER;";
     public static final String REMOVEFOLDER = "REMOVEFOLDER;";
-    public static final String PING = "PING;";
+    public static final String PING = "PING";
 
     // Private vars
     private ServerSocket serverSocket;
@@ -405,6 +405,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }, 0);
         } else if (command.startsWith(PING)) {
             // Do nothing
+            log.fine("Received ping");
         } else {
             log.warning("Remote command not recognizable '" + command + '\'');
         }
