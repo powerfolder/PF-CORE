@@ -1119,7 +1119,6 @@ public class FileUtils {
                     return true;
                 }
             } else {
-                System.out.println("hghg " + file);
                 // We got one!
                 return true;
             }
