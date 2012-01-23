@@ -1574,7 +1574,6 @@ public class Controller extends PFComponent {
      * state
      */
     public void shutdownAndRequestRestart() {
-        shuttingDown = true;
         restartRequested = true;
         shutdown();
     }
