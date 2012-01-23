@@ -1292,11 +1292,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (baseDir.exists() && baseDir.canRead() && !baseDir.isHidden()) {
             File[] files = baseDir.listFiles();
             for (File file : files) {
-                // Don't autocreate if it has been removed previously.
-                if (removedFolderDirectories.contains(file)) {
-                    continue;
-                }
-                if (file.isDirectory()) {
+                // Only create if user has entered some files.
+                if (file.isDirectory() && FileUtils.hasFiles(file)) {
+                    // Don't autocreate if it has been removed previously.
+                    if (removedFolderDirectories.contains(file)) {
+                        continue;
+                    }
                     boolean known = false;
                     for (Folder folder : getFolders()) {
                         File localBase = folder.getLocalBase();

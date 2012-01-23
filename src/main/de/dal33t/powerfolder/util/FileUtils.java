@@ -1114,12 +1114,12 @@ public class FileUtils {
         }
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
-                boolean b = hasFilesInternal(file, depth + 1);
-                if (b) {
+                if (hasFilesInternal(file, depth + 1)) {
                     // A subdirectory has a file; we're out of here.
                     return true;
                 }
             } else {
+                System.out.println("hghg " + file);
                 // We got one!
                 return true;
             }
