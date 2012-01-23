@@ -594,12 +594,21 @@ public class FileUtilsTest extends TestCase {
 
         // Test with a file in subDirectory
         File randomFile2 = TestHelper.createRandomFile(subDir, "c");
-        assertTrue("Failed because test file not detected", FileUtils.hasFiles(base));
+        assertTrue("Failed because test file not detected in subDir", FileUtils.hasFiles(base));
 
         // Test again with file removed from subDirectory
         randomFile2.delete();
-        assertFalse("Failed because test file not deleted", FileUtils.hasFiles(base));
+        assertFalse("Failed because test file not deleted in subDir", FileUtils.hasFiles(base));
 
+        // Test with a file in the .PowerFolder dir. Don't care about files here.
+        File dotPowerFolderDir = new File(base, ".PowerFolder");
+        assertTrue("Failed to create test .PowerFolder dir", dotPowerFolderDir.mkdirs());
+        File randomFile3 = TestHelper.createRandomFile(dotPowerFolderDir, "c");
+        assertFalse("Failed because test file not detected in .PowerFolder dir", FileUtils.hasFiles(base));
+        randomFile3.delete();
+        assertFalse("Failed because test file not deleted in .PowerFolder dir", FileUtils.hasFiles(base));
+
+        // Bye
         try {
             FileUtils.recursiveDelete(base);
         } catch (IOException e) {

@@ -1092,6 +1092,7 @@ public class FileUtils {
 
     /**
      * Does a directory have any files, recursively?
+     * This ignores the .PowerFolder dir.
      *
      * @param base
      * @return
@@ -1100,13 +1101,20 @@ public class FileUtils {
     public static boolean hasFiles(File base) {
         Reject.ifNull(base, "Base is null");
         Reject.ifFalse(base.isDirectory(), "Base is not folder");
-        return hasFilesInternal(base);
+        return hasFilesInternal(base, 0);
     }
 
-    private static boolean hasFilesInternal(File dir) {
+    private static boolean hasFilesInternal(File dir, int depth) {
+        if (depth > 100) {
+            // Smells fishy. Should not be this deep into the structure.
+        }
+        if (dir.getName().equals(".PowerFolder")) {
+            // Don't care about our .PowerFolder files, just the user's stuff.
+            return false;
+        }
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
-                boolean b = hasFiles(file);
+                boolean b = hasFilesInternal(file, depth + 1);
                 if (b) {
                     // A subdirectory has a file; we're out of here.
                     return true;
@@ -1116,7 +1124,7 @@ public class FileUtils {
                 return true;
             }
         }
-        // Nothing to see here.
+        // No files here.
         return false;
     }
 
