@@ -588,45 +588,60 @@ public class SettingsTab extends PFUIComponent {
      */
     public void moveLocalFolder() {
 
-        File originalDirectory = folder.getCommitOrLocalDir();
+        // Lock out the 'new folder' scanner.
+        // Else it's _just_ possible the scanner might see the renamed folder
+        // and autocreate it during the file move.
+        getController().getFolderRepository().setSuspendNewFolderSearch(true);
 
-        // Select the new folder.
-        List<File> files = DialogFactory.chooseDirectory(getController()
-            .getUIController(), originalDirectory, false);
-        if (!files.isEmpty()) {
-            File newDirectory = files.get(0);
-            boolean accessible = folder.checkIfDeviceDisconnected();
-            if (accessible
-                && FileUtils.isSubdirectory(originalDirectory, newDirectory))
-            {
-                DialogFactory.genericDialog(getController(),
-                    Translation.getTranslation("settings_tab.subdir.title"),
-                    Translation.getTranslation("settings_tab.subdir.text"),
-                    GenericDialogType.ERROR);
-            } else {
-                File foldersBaseDir = new File(getController()
-                    .getFolderRepository().getFoldersBasedir());
-                if (newDirectory.equals(foldersBaseDir)) {
-                    DialogFactory
-                        .genericDialog(getController(), Translation
-                            .getTranslation("settings_tab.basedir.title"),
-                            Translation
-                                .getTranslation("settings_tab.basedir.text"),
-                            GenericDialogType.ERROR);
+        try {
+
+            File originalDirectory = folder.getCommitOrLocalDir();
+
+            // Select the new folder.
+            List<File> files = DialogFactory.chooseDirectory(getController()
+                .getUIController(), originalDirectory, false);
+            if (!files.isEmpty()) {
+                File newDirectory = files.get(0);
+                boolean accessible = folder.checkIfDeviceDisconnected();
+                if (accessible
+                    && FileUtils.isSubdirectory(originalDirectory, newDirectory))
+                {
+                    DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation("settings_tab.subdir.title"),
+                        Translation.getTranslation("settings_tab.subdir.text"),
+                        GenericDialogType.ERROR);
                 } else {
-                    // Find out if the user wants to move the content of the
-                    // current folder
-                    // to the new one.
-                    int moveContent = shouldMoveContent();
+                    File foldersBaseDir = new File(getController()
+                        .getFolderRepository().getFoldersBasedir());
+                    if (newDirectory.equals(foldersBaseDir)) {
+                        DialogFactory
+                            .genericDialog(getController(), Translation
+                                .getTranslation("settings_tab.basedir.title"),
+                                Translation
+                                    .getTranslation("settings_tab.basedir.text"),
+                                GenericDialogType.ERROR);
+                    } else {
+                        // Find out if the user wants to move the content of the
+                        // current folder
+                        // to the new one.
+                        int moveContent = shouldMoveContent();
 
-                    if (moveContent == 2) {
-                        // Cancel
-                        return;
+                        if (moveContent == 2) {
+                            // Cancel
+                            return;
+                        }
+
+                        moveDirectory(originalDirectory, newDirectory,
+                            moveContent == 0);
                     }
-
-                    moveDirectory(originalDirectory, newDirectory,
-                        moveContent == 0);
                 }
+            }
+        } finally {
+            try {
+                // Unlock the 'new folder' scanner.
+                getController().getFolderRepository().setSuspendNewFolderSearch(false);
+            } catch (Exception e) {
+                logSevere(e);
             }
         }
     }
