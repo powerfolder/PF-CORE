@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
-import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Help;

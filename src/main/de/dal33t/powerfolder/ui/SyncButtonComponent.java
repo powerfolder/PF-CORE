@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;

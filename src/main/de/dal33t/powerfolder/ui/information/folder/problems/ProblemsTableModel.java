@@ -30,7 +30,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;

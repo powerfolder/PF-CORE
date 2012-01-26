@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;

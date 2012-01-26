@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.ui.information;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 
 import javax.swing.*;
 import java.awt.*;

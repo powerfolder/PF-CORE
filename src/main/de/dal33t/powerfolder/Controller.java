@@ -2604,6 +2604,7 @@ public class Controller extends PFComponent {
      * @param password
      *            required only for Linux shutdowns.
      */
+    // @todo Remove reliance on UI
     public void syncAndShutdown(final String password) {
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         SyncAllFoldersAction.perfomSync(this);
@@ -2631,6 +2632,7 @@ public class Controller extends PFComponent {
      *
      * @param secWait number of seconds to wait.
      */
+    // @todo Remove reliance on UI
     public void syncAndExit(int secWait) {
         logInfo("Sync and exit initiated. Begin check in " + secWait + 's');
         final AtomicBoolean oneShot = new AtomicBoolean(true);

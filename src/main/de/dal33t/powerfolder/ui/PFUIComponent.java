@@ -17,10 +17,12 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder;
+package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * A element which is owned by a ui controller
