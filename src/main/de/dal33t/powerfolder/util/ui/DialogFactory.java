@@ -30,7 +30,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 
 /**

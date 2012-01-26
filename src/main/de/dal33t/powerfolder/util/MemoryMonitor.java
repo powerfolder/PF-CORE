@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.Help;
 
 /**
  * Detects if PowerFolder is running out of memory.

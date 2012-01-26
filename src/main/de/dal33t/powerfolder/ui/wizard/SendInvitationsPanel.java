@@ -71,11 +71,10 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**

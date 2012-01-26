@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.PFWizardPanel;
 import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;

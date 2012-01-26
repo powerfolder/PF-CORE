@@ -17,7 +17,7 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.util;
+package de.dal33t.powerfolder.util.ui;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -25,6 +25,9 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkJButton;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -71,7 +74,7 @@ public class Help {
      * @param article
      */
     public static void openWikiArticle(Controller controller, String article) {
-        LOG.fine("Opening wiki article '" + article + "'");
+        LOG.fine("Opening wiki article '" + article + '\'');
         try {
             BrowserLauncher.openURL(getWikiArticleURL(controller, article));
         } catch (IOException e) {
@@ -85,9 +88,6 @@ public class Help {
      * 
      * @param labelText
      *            the text of the lable
-     * @param homepageNodeId
-     *            the node id on the powerfolder homepage of this topic. e.g
-     *            node/faq
      * @return a lable that is clickable
      */
     public static LinkLabel createQuickstartGuideLabel(Controller controller,
@@ -135,8 +135,6 @@ public class Help {
     /**
      * Creates a linklabel, which links to a article on the PowerFolder wiki.
      * 
-     * @param labelText
-     *            the text of the lable
      * @param article
      *            The article url. e.g. LAN-IP-List for
      *            http://wiki.powerfolder.com/wiki/LAN-IP-List

@@ -46,7 +46,6 @@ import de.dal33t.powerfolder.message.KnownNodesExt;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.SingleMessageProducer;
 import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;

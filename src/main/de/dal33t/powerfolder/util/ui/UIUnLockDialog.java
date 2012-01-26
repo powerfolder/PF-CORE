@@ -64,7 +64,6 @@ import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;

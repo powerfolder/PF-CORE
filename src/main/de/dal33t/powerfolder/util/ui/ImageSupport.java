@@ -17,7 +17,7 @@
 *
 * $Id: ImageSupport.java 5457 2008-10-17 14:25:41Z harry $
 */
-package de.dal33t.powerfolder.util;
+package de.dal33t.powerfolder.util.ui;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -215,10 +215,10 @@ public class ImageSupport {
 
             if (windowRatio < srcRatio) {
                 // Bind the height image to the height of the window
-                destHeight = (int) (((double) width / (double) srcWidth) * srcHeight);
+                destHeight = (int) ((double) width / (double) srcWidth * srcHeight);
             } else {
                 // Bind the width of the image to the width of the window
-                destWidth = (int) (((double) height / (double) srcHeight) * srcWidth);
+                destWidth = (int) ((double) height / (double) srcHeight * srcWidth);
             }
 
             if (scalingType == Image.SCALE_FAST) {

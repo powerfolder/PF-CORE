@@ -63,7 +63,7 @@ import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;

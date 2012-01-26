@@ -83,21 +83,13 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
-import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * UI component for the information settings tab

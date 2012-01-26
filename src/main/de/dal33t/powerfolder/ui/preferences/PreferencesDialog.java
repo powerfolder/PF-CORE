@@ -48,13 +48,10 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.*;
 
 public class PreferencesDialog extends BaseDialog {
 

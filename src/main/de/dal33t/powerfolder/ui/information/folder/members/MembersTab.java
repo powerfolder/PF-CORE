@@ -56,7 +56,7 @@ import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -259,7 +259,7 @@ public class MembersTab extends PFUIComponent {
     }
 
     private JComboBox createdEditComboBox(
-        final SelectionInList<FolderPermission> model)
+        SelectionInList<FolderPermission> model)
     {
         return BasicComponentFactory.createComboBox(model,
             new DefaultListCellRenderer() {

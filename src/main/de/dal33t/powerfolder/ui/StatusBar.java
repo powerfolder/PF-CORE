@@ -57,7 +57,7 @@ import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;

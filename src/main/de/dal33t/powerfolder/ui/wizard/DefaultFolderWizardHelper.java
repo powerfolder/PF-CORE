@@ -37,6 +37,7 @@ import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ui.Help;
 import jwf.WizardContext;
 import jwf.WizardPanel;
 
