@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.security.Permission;
+import de.dal33t.powerfolder.security.SingletonPermission;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -46,7 +47,6 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  */
 public class PermissionUserType extends Loggable implements UserType {
 
-    private static final String PERMISSION_PACKAGE_PREFIX = "de.dal33t.powerfolder.security.";
     private static final int[] sqlTypes = {Types.VARCHAR};
     private static FolderInfoDAO FOLDER_INFO_DAO = null;
 
@@ -110,12 +110,12 @@ public class PermissionUserType extends Loggable implements UserType {
             FolderInfo fdInfo = FOLDER_INFO_DAO.findByID(fiId);
 
             if (fdInfo == null) {
-                logSevere("FolderInfo with ID " + fiId + " not found!", new RuntimeException());
+                logSevere("FolderInfo with ID " + fiId + " not found!",
+                    new RuntimeException());
                 fdInfo = new FolderInfo(null, fiId);
             } else {
                 fdInfo = fdInfo.intern();
             }
-            
 
             // choose the right permission implementation
             if (clazzName.equals(FolderAdminPermission.class.getSimpleName())) {
@@ -137,7 +137,8 @@ public class PermissionUserType extends Loggable implements UserType {
         // SingletonPermissions (e. g. ChangePreferencesPermission)
         else {
             // get class name
-            String clazzName = PERMISSION_PACKAGE_PREFIX + permissionID;
+            String clazzName = SingletonPermission.PERMISSION_PACKAGE_PREFIX
+                + permissionID;
 
             // choose/create the right permission implementation
             try {
@@ -200,8 +201,7 @@ public class PermissionUserType extends Loggable implements UserType {
     public static void setFolderInfoDAO(FolderInfoDAO fdao) {
         if (FOLDER_INFO_DAO != null && fdao != null) {
             Logger log = Logger.getLogger(PermissionUserType.class.getName());
-            log
-                .severe("FolderInfoDAO was already set! The reset should not happen!");
+            log.severe("FolderInfoDAO was already set! The reset should not happen!");
         }
         FOLDER_INFO_DAO = fdao;
     }
