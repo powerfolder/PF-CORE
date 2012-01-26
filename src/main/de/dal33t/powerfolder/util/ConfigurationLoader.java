@@ -386,8 +386,10 @@ public class ConfigurationLoader {
             String key = (String) obj;
             String value = preConfig.getProperty(key);
             if (!targetConfig.containsKey(key) || replaceExisting) {
-                targetConfig.setProperty(key, value);
-                if (!key.startsWith(PREFERENCES_PREFIX)) {
+                Object oldValue = targetConfig.setProperty(key, value);
+                if (!key.startsWith(PREFERENCES_PREFIX)
+                    && !value.equals(oldValue))
+                {
                     n++;
                 }
                 LOG.finer("Preconfigured " + key + "=" + value);
