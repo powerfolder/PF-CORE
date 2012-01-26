@@ -25,7 +25,7 @@ package de.dal33t.powerfolder.security;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public class ComputersAppPermission extends SingeltonPermission {
+public class ComputersAppPermission extends SingletonPermission {
     private static final long serialVersionUID = 100L;
     public static final ComputersAppPermission INSTANCE = new ComputersAppPermission();
 }

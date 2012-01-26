@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.lang.reflect.Field;
+
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Permission for simple yes/no rights on actions without resources such as
@@ -26,9 +29,36 @@ package de.dal33t.powerfolder.security;
  * 
  * @author sprajc
  */
-public class SingeltonPermission implements Permission {
+public class SingletonPermission implements Permission {
 
+    public static final String PERMISSION_PACKAGE_PREFIX = "de.dal33t.powerfolder.security.";
     private static final long serialVersionUID = 100L;
+
+    public static SingletonPermission getByID(String permissionID) {
+        if (StringUtils.isBlank(permissionID)) {
+            return null;
+        }
+        // get class name
+        String clazzName = PERMISSION_PACKAGE_PREFIX + permissionID;
+        if (!clazzName.endsWith("Permission")) {
+            clazzName += "Permission";
+        }
+        // choose/create the right permission implementation
+        try {
+            Class<?> permClass = Class.forName(clazzName);
+            Object pObj;
+            try {
+                Field iField = permClass.getField("INSTANCE");
+                pObj = iField.get(null);
+            } catch (Exception e) {
+                // Try to construct
+                pObj = permClass.newInstance();
+            }
+            return (SingletonPermission) pObj;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public boolean implies(Permission impliedPermision) {
         return false;

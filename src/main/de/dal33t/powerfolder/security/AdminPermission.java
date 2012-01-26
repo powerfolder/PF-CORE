@@ -25,7 +25,7 @@ package de.dal33t.powerfolder.security;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public class AdminPermission extends SingeltonPermission {
+public class AdminPermission extends SingletonPermission {
     private static final long serialVersionUID = 100L;
     public static final AdminPermission INSTANCE = new AdminPermission();
 

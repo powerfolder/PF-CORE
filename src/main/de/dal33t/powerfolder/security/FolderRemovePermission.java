@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
  * 
  * @author sprajc
  */
-public class FolderRemovePermission extends SingeltonPermission {
+public class FolderRemovePermission extends SingletonPermission {
     private static final long serialVersionUID = 100L;
     public static final Permission INSTANCE = new FolderRemovePermission();
 }

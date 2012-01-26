@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
  * 
  * @author sprajc
  */
-public class ChangeTransferModePermission extends SingeltonPermission {
+public class ChangeTransferModePermission extends SingletonPermission {
     private static final long serialVersionUID = 100L;
     public final static Permission INSTANCE = new ChangeTransferModePermission();
 }
