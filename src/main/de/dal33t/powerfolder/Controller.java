@@ -1078,7 +1078,7 @@ public class Controller extends PFComponent {
      * #2526
      */
     private void backupConfigAssets() {
-        File backupDir = new File(Controller.getMiscFilesLocation(), "backups/"
+        File backupDir = new File(getMiscFilesLocation(), "backups/"
             + Format.formatDateCanonical(new Date()));
         if (!backupDir.exists()) {
             backupDir.mkdirs();
@@ -1090,7 +1090,7 @@ public class Controller extends PFComponent {
         } catch (IOException e) {
             logWarning("Unable to backup file " + configFile + ". " + e);
         }
-        File myKeyFile = new File(Controller.getMiscFilesLocation(),
+        File myKeyFile = new File(getMiscFilesLocation(),
             getController().getConfigName() + ".mykey");
         File mykeyBackup = new File(backupDir, myKeyFile.getName());
         if (myKeyFile.exists()) {
@@ -1100,7 +1100,7 @@ public class Controller extends PFComponent {
                 logWarning("Unable to backup file " + myKeyFile + ". " + e);
             }
         }
-        File dbFile = new File(Controller.getMiscFilesLocation(),
+        File dbFile = new File(getMiscFilesLocation(),
             "Accounts.h2.db");
         File dbBackup = new File(backupDir, dbFile.getName());
         if (dbFile.exists()) {
@@ -1534,30 +1534,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Tries to shutdown the controller and exits to system with the given
-     * status. May be canceled by user intervention when folders are still
-     * syncing.
-     * 
-     * @param status
-     */
-    public void tryToExit(int status) {
-        if (status == 0) { // only on normal shutdown
-            if (isShutDownAllowed()) {
-                shutdown();
-                System.exit(status);
-            } else {
-                logWarning("not allow shutdown");
-            }
-        } else {
-            shutdown();
-            System.exit(status);
-        }
-    }
-
-    /**
      * Shutsdown controller and exits to system with the given status
      * 
-     * @param status
+     * @param status thes status to exit with.
      */
     public void exit(int status) {
         if (Feature.EXIT_ON_SHUTDOWN.isDisabled()) {
@@ -1583,11 +1562,6 @@ public class Controller extends PFComponent {
      */
     public boolean isRestartRequested() {
         return restartRequested;
-    }
-
-    /** do we allow a normal shutdown as this time? */
-    private boolean isShutDownAllowed() {
-        return folderRepository.isShutdownAllowed();
     }
 
     /**
@@ -1710,7 +1684,7 @@ public class Controller extends PFComponent {
 
         if (wasStarted) {
             System.out.println("------------ PowerFolder "
-                + Controller.PROGRAM_VERSION
+                + PROGRAM_VERSION
                 + " Controller Shutdown ------------");
         }
 
@@ -2642,7 +2616,7 @@ public class Controller extends PFComponent {
                     log.info("Sync and shutdown in sync.");
                     if (SystemUtil.shutdown(password)) {
                         log.info("Shutdown command issued.");
-                        tryToExit(0);
+                        exit(0);
                     } else {
                         log.warning("Shutdown command failed.");
                     }
@@ -2654,9 +2628,8 @@ public class Controller extends PFComponent {
     /**
      * Perform a full sync, then wait for the repo to finish syncing. Then
      * request system shutdown and exit PF.
-     * 
-     * @param password
-     *            required only for Linux shutdowns.
+     *
+     * @param secWait number of seconds to wait.
      */
     public void syncAndExit(int secWait) {
         logInfo("Sync and exit initiated. Begin check in " + secWait + 's');
@@ -2669,7 +2642,7 @@ public class Controller extends PFComponent {
                     // in case the user aborts the shutdown.
                     oneShot.set(false);
                     log.info("I'm in sync - exit now. Sync and exit was triggered.");
-                    tryToExit(0);
+                    exit(0);
                 }
             }
         }, 1000L * secWait, 10000);

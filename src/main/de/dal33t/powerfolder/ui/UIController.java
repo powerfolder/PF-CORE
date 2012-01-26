@@ -50,14 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
@@ -133,6 +126,7 @@ import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
@@ -532,7 +526,9 @@ public class UIController extends PFComponent {
                     mainFrame.getUIComponent().setVisible(false);
                 } else if (COMMAND_EXIT.equals(e.getActionCommand())) {
                     // Exit to system
-                    getController().tryToExit(0);
+                    if (isShutdownAllowed()) {
+                        getController().exit(0);
+                    }
                 } else if (COMMAND_SYNC_SHUTDOWN.equals(e.getActionCommand())) {
                     if (OSUtil.isLinux()) {
                         FormLayout layout = new FormLayout(
@@ -1535,4 +1531,69 @@ public class UIController extends PFComponent {
             handleFolderAutoCreate(e);
         }
     }
+
+    /**
+     * Can we shut down?
+     * If WARN_ON_CLOSE, let user know if there are any folders still syncing.
+     *
+     * @return if all clear to shut down.
+     */
+    public boolean isShutdownAllowed() {
+        boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
+            .getValueBoolean(getController());
+        if (warnOnClose) {
+            Collection<Folder> folderCollection =
+                    getController().getFolderRepository().getFolders();
+            List<Folder> foldersToWarn = new ArrayList<Folder>(
+                folderCollection.size());
+            for (Folder folder : folderCollection) {
+                if (folder.isTransferring()) {
+                    logWarning("Close warning on folder: " + folder);
+                    foldersToWarn.add(folder);
+                }
+            }
+            if (!foldersToWarn.isEmpty()) {
+                StringBuilder folderslist = new StringBuilder();
+                for (Folder folder : foldersToWarn) {
+                    folderslist.append("\n     - " + folder.getName());
+                }
+                String title = Translation
+                    .getTranslation("uicontroller.warn_on_close.title");
+                String text;
+                if (getController().getFolderRepository().isSyncing()) {
+                    Date syncDate = applicationModel.getFolderRepositoryModel()
+                        .getEtaSyncDate();
+                    text = Translation.getTranslation(
+                        "uicontroller.warn_on_close_eta.text",
+                        folderslist.toString(),
+                        Format.formatDateShort(syncDate));
+                } else {
+                    text = Translation.getTranslation(
+                        "uicontroller.warn_on_close.text",
+                        folderslist.toString());
+                }
+                String question = Translation
+                    .getTranslation("general.neverAskAgain");
+                NeverAskAgainResponse response = DialogFactory
+                    .genericDialog(getController(), title, text,
+                            new String[]{
+                            Translation.getTranslation(
+                                    "uicontroller.continue_exit"),
+                            Translation.getTranslation("general.cancel")},
+                        0, GenericDialogType.QUESTION, question);
+                if (response.isNeverAskAgain()) {
+                    PreferencesEntry.WARN_ON_CLOSE.setValue(
+                        getController(), false);
+                }
+                return response.getButtonIndex() == 0;
+            }
+
+            // No folders unsynced
+            return true;
+        }
+
+        // Do not warn on close, so we allow shut down
+        return true;
+    }
+
 }

@@ -850,14 +850,16 @@ public class MainFrame extends PFUIComponent {
      * Shuts down the program
      */
     private void exitProgram() {
-        uiComponent.setVisible(false);
-        uiComponent.dispose();
-        new Thread("Close PowerFolder Thread") {
-            @Override
-            public void run() {
-                getController().tryToExit(0);
-            }
-        }.start();
+        if (getUIController().isShutdownAllowed()) {
+            uiComponent.setVisible(false);
+            uiComponent.dispose();
+            new Thread("Close PowerFolder Thread") {
+                @Override
+                public void run() {
+                    getController().exit(0);
+                }
+            }.start();
+        }
     }
 
     // ////////////////
