@@ -1814,7 +1814,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
                     ConfigurationLoader.processMessage(getController(), clr);
                 } else {
-                    logWarning("Ingnoring reload config request from non server: "
+                    logWarning("Ignoring reload config request from non server: "
                         + message);
                 }
             } else {
