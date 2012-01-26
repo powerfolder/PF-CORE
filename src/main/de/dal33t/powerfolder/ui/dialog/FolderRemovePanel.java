@@ -74,7 +74,7 @@ public class FolderRemovePanel extends BaseDialog {
      * @param foInfo
      */
     public FolderRemovePanel(Controller controller, FolderInfo foInfo) {
-        super(controller, true);
+        super(Senior.MAIN_FRAME, controller, true);
         Reject.ifNull(foInfo, "FolderInfo");
         this.foInfo = foInfo;
         folder = foInfo.getFolder(getController());

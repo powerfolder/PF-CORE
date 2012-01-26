@@ -60,7 +60,7 @@ public class SyncFolderPanel extends BaseDialog {
 
     public SyncFolderPanel(Controller controller, Folder folder) {
         // Modal dialog
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.folder = folder;
 
     }

@@ -75,7 +75,7 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         FolderInfo foInfo, ValueModel locationValueModel,
         ValueModel permissionsValueModel, String fileName)
     {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         Reject.ifNull(foInfo, "Folder info is null");
         this.locationValueModel = locationValueModel;
         this.permissionsValueModel = permissionsValueModel;

@@ -60,7 +60,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
     public DeleteSyncProfileDialog(Controller controller,
         SyncProfileSelectorPanel syncProfileSelectorPanel)
     {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.syncProfileSelectorPanel = syncProfileSelectorPanel;
     }
 

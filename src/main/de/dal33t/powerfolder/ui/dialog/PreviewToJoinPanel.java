@@ -73,7 +73,7 @@ public class PreviewToJoinPanel extends BaseDialog {
      * @param folder
      */
     public PreviewToJoinPanel(Controller controller, Folder folder) {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         Reject.ifFalse(folder.isPreviewOnly(), "Folder should be a preview");
         this.folder = folder;
     }

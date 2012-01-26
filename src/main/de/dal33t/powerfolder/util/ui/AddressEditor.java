@@ -67,7 +67,7 @@ public class AddressEditor extends BaseDialog {
     }
 
     public AddressEditor(Controller controller, String string) {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         result = EditorResult.CANCEL;
         validationResultModel = new DefaultValidationResultModel();
         

@@ -67,7 +67,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     public PreviewFolderRemovePanel(PreviewFolderRemoveAction action,
         Controller controller, Folder folder)
     {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.action = action;
         this.folder = folder;
     }

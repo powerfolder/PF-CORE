@@ -77,7 +77,7 @@ public class RestoreArchiveDialog extends BaseDialog {
     public RestoreArchiveDialog(Controller controller, FileInfo fileInfo,
         FileInfoVersionTypeHolder fileInfoVersionTypeHolder)
     {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         versionInfo = fileInfoVersionTypeHolder.getFileInfo();
         online = fileInfoVersionTypeHolder.isOnline();
         this.fileInfo = fileInfo;

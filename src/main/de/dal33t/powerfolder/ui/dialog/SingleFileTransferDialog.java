@@ -69,7 +69,7 @@ public class SingleFileTransferDialog extends BaseDialog {
     public SingleFileTransferDialog(Controller controller, File file,
         Member node)
     {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.file = file;
         if (node != null) {
             computersMembers.add(node);

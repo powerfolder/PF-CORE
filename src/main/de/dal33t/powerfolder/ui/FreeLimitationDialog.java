@@ -51,7 +51,7 @@ public class FreeLimitationDialog extends BaseDialog {
     private JButton buyProButton;
 
     protected FreeLimitationDialog(Controller controller) {
-        super(controller, false);
+        super(Senior.NONE, controller, false);
     }
 
     @Override

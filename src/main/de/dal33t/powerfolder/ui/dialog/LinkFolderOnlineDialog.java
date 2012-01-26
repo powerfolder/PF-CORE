@@ -77,7 +77,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     public LinkFolderOnlineDialog(Controller controller,
                                   ChooseMultiDiskLocationPanel parent,
                                   File file, String currentFolderName) {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.parent = parent;
         this.file = file;
         this.currentFolderName = currentFolderName;

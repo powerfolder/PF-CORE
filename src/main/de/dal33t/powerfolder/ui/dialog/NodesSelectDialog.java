@@ -62,7 +62,7 @@ public class NodesSelectDialog extends BaseDialog {
     public NodesSelectDialog(Controller controller,
                              ValueModel viaPowerFolderModel,
                              Collection<Member> viaPowerFolderMembers) {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.viaPowerFolderModel = viaPowerFolderModel;
         this.viaPowerFolderMembers = viaPowerFolderMembers;
     }

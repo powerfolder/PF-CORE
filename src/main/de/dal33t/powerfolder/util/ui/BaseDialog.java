@@ -50,26 +50,41 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public abstract class BaseDialog extends PFUIComponent {
 
-    protected JDialog dialog;
-    private boolean modal;
+    /**
+     * Used to decide which owner the dialog gets.
+     */
+    public enum Senior {
+        NONE,
+        MAIN_FRAME
+    }
+
+    private final Senior senior;
+    private final boolean modal;
     private boolean resizable;
+
+    protected JDialog dialog;
 
     /**
      * Initializes the base dialog.
      *
+     * @param senior
+     *            the component to be modal to and to locate on
      * @param controller
      *            the controller
      * @param modal
      *            if dialog should be modal
      */
-    protected BaseDialog(Controller controller, boolean modal) {
+    protected BaseDialog(Senior senior, Controller controller, boolean modal) {
         super(controller);
+        this.senior = senior;
         this.modal = modal;
     }
 
     /**
      * Initializes the base dialog.
      *
+     * @param senior
+     *            the component to be modal to and to locate on\
      * @param controller
      *            the controller
      * @param modal
@@ -77,15 +92,15 @@ public abstract class BaseDialog extends PFUIComponent {
      * @param resizable
      *           if dialog is resizable
      */
-    protected BaseDialog(Controller controller, boolean modal, boolean resizable) {
-        this(controller, modal);
+    protected BaseDialog(Senior senior, Controller controller, boolean modal, boolean resizable) {
+        this(senior, controller, modal);
         this.resizable = resizable;
     }
 
     // Abstract methods *******************************************************
 
     /**
-     * The title of this basedialog
+     * The title of this base dialog
      * 
      * @return
      */
@@ -214,7 +229,11 @@ public abstract class BaseDialog extends PFUIComponent {
      * @return
      */
     private void createUIComponent() {
-        dialog = new JDialog(getUIController().getActiveFrame(),
+        Window owner = null;
+        if (senior == Senior.MAIN_FRAME) {
+            owner = getUIController().getMainFrame().getUIComponent();
+        }
+        dialog = new JDialog(owner,
                 getTitle(), modal
                         ? Dialog.ModalityType.APPLICATION_MODAL
                         : Dialog.ModalityType.MODELESS);
@@ -255,10 +274,28 @@ public abstract class BaseDialog extends PFUIComponent {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         dialog.pack();
-        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize()
-                .getWidth() - dialog.getWidth()) / 2;
-        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize()
-                .getHeight() - dialog.getHeight()) / 2;
+        int ownerX;
+        int ownerY;
+        int ownerWidth;
+        int ownerHeight;
+
+        if (owner != null && owner.isVisible() &&
+                (senior == Senior.MAIN_FRAME)) {
+            ownerX = owner.getX();
+            ownerY = owner.getY();
+            ownerWidth = owner.getWidth();
+            ownerHeight = owner.getHeight();
+        } else {
+            // Senior.NONE centers dialog on the screen.
+            ownerX = 0;
+            ownerY = 0;
+            ownerWidth =
+                    (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+            ownerHeight =
+                    (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+        }
+        int x = ownerX + (ownerWidth - dialog.getWidth()) / 2;
+        int y = ownerY + (ownerHeight  - dialog.getHeight()) / 2;
         dialog.setLocation(x, y);
 
     }

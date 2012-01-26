@@ -76,7 +76,7 @@ public class PreferencesDialog extends BaseDialog {
     private PluginSettingsTab pluginSettingsTab;
 
     public PreferencesDialog(Controller controller) {
-        super(controller, true);
+        super(Senior.MAIN_FRAME, controller, true);
         preferenceTabs = new ArrayList<PreferenceTab>();
     }
 

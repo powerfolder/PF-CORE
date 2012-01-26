@@ -38,7 +38,7 @@ public class FindComputersDialog extends BaseDialog {
     private JButton connectButton;
 
     public FindComputersDialog(Controller controller) {
-        super(controller, true, true);
+        super(Senior.NONE, controller, true, true);
         initComponents();
     }
 

@@ -56,7 +56,7 @@ public class NodesSelectDialog2 extends BaseDialog {
      */
     public NodesSelectDialog2(Controller controller,
                               Collection<Member> selectedMembers) {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.selectedMembers = selectedMembers;
     }
 

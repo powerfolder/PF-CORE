@@ -90,7 +90,7 @@ class DirectoryChooser extends BaseDialog {
      */
     DirectoryChooser(Controller controller, File initialValue,
                      List<String> onlineFolders, boolean multiSelect) {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.multiSelect = multiSelect;
         selectedDirs = new ArrayList<File>();
         selectedDirs.add(initialValue);

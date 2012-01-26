@@ -79,7 +79,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     public CreateEditSyncProfileDialog(Controller controller,
         SyncProfileSelectorPanel syncProfileSelectorPanel, boolean create)
     {
-        super(controller, true);
+        super(Senior.NONE, controller, true);
         this.syncProfileSelectorPanel = syncProfileSelectorPanel;
         this.create = create;
         originalConfiguration = syncProfileSelectorPanel.getSyncProfile()

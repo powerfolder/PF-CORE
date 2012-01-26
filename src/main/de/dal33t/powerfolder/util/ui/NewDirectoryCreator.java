@@ -45,7 +45,7 @@ class NewDirectoryCreator extends BaseDialog {
 
     NewDirectoryCreator(Controller controller, boolean modal,
                                String baseDirectory, ValueModel valueModel) {
-        super(controller, modal);
+        super(Senior.NONE, controller, modal);
         this.baseDirectory = baseDirectory;
         subdirField = new JTextField();
         this.valueModel = valueModel;
