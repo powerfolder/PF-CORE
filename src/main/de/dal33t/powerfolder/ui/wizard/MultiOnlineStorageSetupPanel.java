@@ -54,8 +54,8 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.util.ui.UserDirectories;
-import de.dal33t.powerfolder.util.ui.UserDirectory;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.UserDirectory;
 
 /**
  * Class to do sync profile configuration for OS joins.

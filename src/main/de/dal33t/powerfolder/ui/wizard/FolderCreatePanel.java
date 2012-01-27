@@ -63,7 +63,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.UserDirectories;
+import de.dal33t.powerfolder.util.UserDirectories;
 
 /**
  * A panel that actually starts the creation process of a folder on display.

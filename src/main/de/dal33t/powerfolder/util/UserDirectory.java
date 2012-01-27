@@ -17,7 +17,7 @@
  *
  * $Id: ChooseDiskLocationPanel.java 9522 2009-09-11 16:47:01Z harry $
  */
-package de.dal33t.powerfolder.util.ui;
+package de.dal33t.powerfolder.util;
 
 import java.io.File;
 
@@ -45,6 +45,6 @@ public class UserDirectory {
     }
     
     public String toString() {
-        return translatedName +"/" + placeholder + " @ " + directory;
+        return translatedName + '/' + placeholder + " @ " + directory;
     }
 }

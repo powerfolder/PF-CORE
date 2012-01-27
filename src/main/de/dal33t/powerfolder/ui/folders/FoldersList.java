@@ -64,8 +64,8 @@ import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
-import de.dal33t.powerfolder.util.ui.UserDirectories;
 
 /**
  * This class creates a list combining folder repository and server client

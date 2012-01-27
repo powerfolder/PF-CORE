@@ -17,7 +17,7 @@
  *
  * $Id: ChooseDiskLocationPanel.java 9522 2009-09-11 16:47:01Z harry $
  */
-package de.dal33t.powerfolder.util.ui;
+package de.dal33t.powerfolder.util;
 
 import java.io.File;
 import java.util.Iterator;
@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -224,7 +223,6 @@ public class UserDirectories {
         boolean foundMusic = false;
         boolean foundPictures = false;
         boolean foundVideos = false;
-        boolean foundFavorites = false;
         // Hidden by Vista and 7
         if (OSUtil.isWindowsSystem()) {
 
@@ -275,6 +273,7 @@ public class UserDirectories {
             addTargetDirectory(userHome, USER_DIR_VIDEOS_DEFAULT,
                 "user.dir.videos", false);
         }
+        boolean foundFavorites = false;
         if (!foundFavorites) {
             addTargetDirectory(userHome, USER_DIR_FAVORITES_DEFAULT,
                 "user.dir.favorites", false);
@@ -339,7 +338,7 @@ public class UserDirectories {
      * 
      * @param root
      * @param subdir
-     * @param translation
+     * @param translationId
      * @param allowHidden
      *            allow display of hidden dirs
      */
@@ -357,7 +356,7 @@ public class UserDirectories {
     /**
      * Adds a generic user directory if if exists for this os.
      * 
-     * @param translation
+     * @param translationId
      * @param allowHidden
      *            allow display of hidden dirs
      */

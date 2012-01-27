@@ -50,7 +50,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
@@ -67,27 +66,12 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.UserDirectories;
-import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * Repository of all known power folders. Local and unjoined.

@@ -31,14 +31,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.UserDirectories;
-import de.dal33t.powerfolder.util.ui.UserDirectory;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * Class to consolidate the settings for creating a folder. Used as constructor

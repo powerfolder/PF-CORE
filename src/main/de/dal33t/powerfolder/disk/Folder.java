@@ -90,23 +90,13 @@ import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Visitor;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.Pattern;
-import de.dal33t.powerfolder.util.ui.UserDirectories;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
