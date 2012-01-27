@@ -71,8 +71,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
-import de.dal33t.powerfolder.util.ui.ManuallyInvokedUpdateHandler;
 import de.dal33t.powerfolder.util.update.Updater;
+import de.dal33t.powerfolder.util.update.ManuallyInvokedUpdateHandler;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
