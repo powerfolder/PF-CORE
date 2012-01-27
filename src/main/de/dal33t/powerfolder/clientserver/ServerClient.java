@@ -172,15 +172,15 @@ public class ServerClient extends PFComponent {
     {
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
-        this.supportsQuickLogin = true;
+        supportsQuickLogin = true;
 
         // Custom server
-        String theName = !StringUtils.isBlank(name) ? name : Translation
-            .getTranslation("online_storage.connecting");
+        String theName = StringUtils.isBlank(name) ? Translation
+                .getTranslation("online_storage.connecting") : name;
 
         boolean temporaryNode = StringUtils.isBlank(nodeId);
-        String theNodeId = !temporaryNode ? nodeId : MEMBER_ID_TEMP_PREFIX
-            + '|' + IdGenerator.makeId();
+        String theNodeId = temporaryNode ? MEMBER_ID_TEMP_PREFIX
+                + '|' + IdGenerator.makeId() : nodeId;
         Member theNode = controller.getNodeManager().getNode(theNodeId);
         if (theNode == null) {
             String networkId = getController().getNodeManager().getNetworkId();
@@ -207,11 +207,11 @@ public class ServerClient extends PFComponent {
 
     private void init(Member serverNode, boolean serverChange) {
         Reject.ifNull(serverNode, "Server node is null");
-        this.listenerSupport = ListenerSupportFactory
+        listenerSupport = ListenerSupportFactory
             .createListenerSupport(ServerClientListener.class);
         setNewServerNode(serverNode);
         // Allowed by default
-        this.allowServerChange = serverChange;
+        allowServerChange = serverChange;
         setAnonAccount();
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
@@ -275,7 +275,7 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * @param node
+     * @param conHan
      * @return true if the node is the primary login server for the current
      *         account. account.
      */
@@ -356,7 +356,7 @@ public class ServerClient extends PFComponent {
      * Sets/Changes the server.
      * 
      * @param serverNode
-     * @param serverChange
+     * @param allowServerChange
      */
     public void setServer(Member serverNode, boolean allowServerChange) {
         Reject.ifNull(serverNode, "Server node is null");
@@ -364,7 +364,7 @@ public class ServerClient extends PFComponent {
         this.allowServerChange = allowServerChange;
         loginWithLastKnown();
         if (!isConnected()) {
-            getServer().markForImmediateConnect();
+            server.markForImmediateConnect();
         }
     }
 
@@ -508,8 +508,8 @@ public class ServerClient extends PFComponent {
             return null;
         }
         String url = getWebURL() + Constants.LOGIN_URI;
-        if (StringUtils.isNotBlank(getUsername())) {
-            url = LoginUtil.decorateURL(url, getUsername(), (char[]) null);
+        if (StringUtils.isNotBlank(username)) {
+            url = LoginUtil.decorateURL(url, username, (char[]) null);
         }
         return url;
     }
@@ -652,10 +652,10 @@ public class ServerClient extends PFComponent {
             }
         }
 
-        if (!StringUtils.isBlank(un)) {
-            return login(un, pw);
-        } else {
+        if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
+        } else {
+            return login(un, pw);
         }
         // Failed!
         return null;
@@ -952,7 +952,7 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * @param folder
+     * @param foInfo
      *            the folder to check.
      * @return true if the cloud has joined the folder.
      */
@@ -1048,11 +1048,11 @@ public class ServerClient extends PFComponent {
             serverHost += newServer.getConnectAddress().getPort();
         }
         ConfigurationEntry.SERVER_HOST.setValue(getController(), serverHost);
-        if (!isTempServerNode(newServer)) {
-            ConfigurationEntry.SERVER_NODEID.setValue(getController(),
-                newServer.id);
-        } else {
+        if (isTempServerNode(newServer)) {
             ConfigurationEntry.SERVER_NODEID.removeValue(getController());
+        } else {
+            ConfigurationEntry.SERVER_NODEID.setValue(getController(),
+                    newServer.id);
         }
     }
 
@@ -1114,7 +1114,7 @@ public class ServerClient extends PFComponent {
         server = newServerNode;
         server.setServer(true);
         listenerSupport.nodeServerStatusChanged(new ServerClientEvent(
-            ServerClient.this, server));
+                this, server));
         // Why?
         // // Put on friendslist
         // if (!isTempServerNode(server)) {
@@ -1306,7 +1306,7 @@ public class ServerClient extends PFComponent {
         }
 
         listenerSupport.serverConnected(new ServerClientEvent(
-            ServerClient.this, newNode));
+                this, newNode));
 
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
@@ -1321,7 +1321,8 @@ public class ServerClient extends PFComponent {
         // #2425
         if (ConfigurationEntry.SYNC_AND_EXIT.getValueBoolean(getController())) {
             // Check after 60 seconds. Then every 10 secs
-            getController().syncAndExit(60);
+            getController().performFullSync(false);
+            getController().exitAfterSync(60);
         }
     }
 

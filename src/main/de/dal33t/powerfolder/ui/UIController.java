@@ -82,7 +82,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -101,7 +100,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.skin.Skin;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
 import de.dal33t.powerfolder.ui.information.InformationCard;
@@ -114,13 +112,7 @@ import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.notification.PreviewNotificationHandler;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -556,17 +548,20 @@ public class UIController extends PFComponent {
                             0, GenericDialogType.QUESTION);
                         if (i == 0) {
                             String password = textField.getText();
-                            getController().syncAndShutdown(password);
+                            getController().performFullSync(true);
+                            getController().shutdownAfterSync(password);
                         }
                     } else {
-                        getController().syncAndShutdown(null);
+                        getController().performFullSync(true);
+                        getController().shutdownAfterSync(null);
                     }
                 } else if (COMMAND_SYNC_EXIT.equals(e.getActionCommand())) {
-                    getController().syncAndExit(4);
+                    getController().performFullSync(true);
+                    getController().exitAfterSync(4);
                 } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            SyncAllFoldersAction.perfomSync(getController());
+                            getController().performFullSync(true);
                         }
                     });
                 } else if (COMMAND_GOTOHP.equals(e.getActionCommand())) {

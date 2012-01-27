@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -75,7 +74,7 @@ public class SyncButtonComponent extends PFUIComponent {
         public void mousePressed(MouseEvent e) {
             mousePressed.set(true);
             logFine("Triggering SyncAllFoldersAction perfomSync");
-            SyncAllFoldersAction.perfomSync(getController());
+            getController().performFullSync(true);
         }
 
         public void mouseReleased(MouseEvent e) {

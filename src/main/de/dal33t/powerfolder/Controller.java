@@ -34,17 +34,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.ServiceLoader;
-import java.util.StringTokenizer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.FutureTask;
@@ -63,6 +53,8 @@ import org.apache.commons.cli.CommandLine;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
@@ -98,7 +90,7 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
@@ -423,7 +415,7 @@ public class Controller extends PFComponent {
         // initialize logger
         // Enabled verbose mode if in config.
         // This logs to file for analysis.
-        verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
+        verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
         initLogger();
         if (verbose) {
             ByteSerializer.BENCHMARK = true;
@@ -541,7 +533,7 @@ public class Controller extends PFComponent {
         }
 
         setLoadingCompletion(35, 60);
-        securityManager = new SecurityManagerClient(getController(), osClient);
+        securityManager = new SecurityManagerClient(this, osClient);
 
         // init repo (read folders)
         folderRepository.init();
@@ -668,6 +660,46 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * For each folder, kick off scan.
+     *
+     * @param uiMode
+     *              No UI --> Don't show SyncFolderPanel.
+     */
+    public void performFullSync(boolean uiMode) {
+        // Let other nodes scan now!
+        folderRepository.broadcastScanCommandOnAllFolders();
+
+        // Force scan on all folders, of repository was selected
+        Collection<Folder> folders = folderRepository.getFolders();
+        for (Folder folder : folders) {
+
+            // Never sync preview folders
+            if (folder != null && !folder.isPreviewOnly()) {
+                // Ask for more sync options on that folder if on project sync
+                if (uiMode && folder.getSyncProfile().equals(
+                                SyncProfile.MANUAL_SYNCHRONIZATION)) {
+                    new SyncFolderPanel(this, folder).open();
+                } else {
+                    // Recommend scan on this folder
+                    folder.recommendScanOnNextMaintenance();
+                }
+            }
+        }
+
+        setSilentMode(false);
+
+        // Now trigger the scan
+        folderRepository.triggerMaintenance();
+
+        // Trigger file requesting
+        folderRepository.getFileRequestor().triggerFileRequesting();
+
+        // Fresh reconnection try!
+        reconnectManager.buildReconnectionQueue();
+
+    }
+
+    /**
      * Add ask for friend listener.
      * 
      * @param l
@@ -731,7 +763,7 @@ public class Controller extends PFComponent {
             if (!StringUtils.isBlank(pluginConfig)) {
                 newPluginConfig += ',' + pluginConfig;
             }
-            ConfigurationEntry.PLUGINS.setValue(getController(),
+            ConfigurationEntry.PLUGINS.setValue(this,
                 newPluginConfig);
         }
     }
@@ -785,7 +817,7 @@ public class Controller extends PFComponent {
 
         // Enable debug reports.
         debugReports = ConfigurationEntry.DEBUG_REPORTS
-            .getValueBoolean(getController());
+            .getValueBoolean(this);
 
         LoggingManager.clearBuffer();
     }
@@ -980,8 +1012,8 @@ public class Controller extends PFComponent {
         // Hourly tasks
         // ============
         boolean alreadyDetected = ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
-            .getValueBoolean(getController())
-            && ConfigurationEntry.UPLOAD_LIMIT_WAN.getValueInt(getController()) > 0;
+            .getValueBoolean(this)
+            && ConfigurationEntry.UPLOAD_LIMIT_WAN.getValueInt(this) > 0;
         // If already detected wait 10 mins before next test. Otherwise start
         // instantly.
         long initialDelay = alreadyDetected ? 600 : 5;
@@ -1022,7 +1054,7 @@ public class Controller extends PFComponent {
      */
     private void performHourly() {
         if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
-            .getValueBoolean(getController()))
+            .getValueBoolean(this))
         {
             FutureTask<Object> recalculateRunnable = transferManager
                 .getRecalculateAutomaticRate();
@@ -1031,7 +1063,7 @@ public class Controller extends PFComponent {
     }
 
     private void openBroadcastManager() {
-        if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(getController())) {
+        if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
             try {
                 broadcastManager = new BroadcastMananger(this);
                 broadcastManager.start();
@@ -1083,7 +1115,6 @@ public class Controller extends PFComponent {
         if (!backupDir.exists()) {
             backupDir.mkdirs();
         }
-        File configFile = getConfigFile();
         File configBackup = new File(backupDir, configFile.getName());
         try {
             FileUtils.copyFile(configFile, configBackup);
@@ -1091,7 +1122,7 @@ public class Controller extends PFComponent {
             logWarning("Unable to backup file " + configFile + ". " + e);
         }
         File myKeyFile = new File(getMiscFilesLocation(),
-            getController().getConfigName() + ".mykey");
+                getConfigName() + ".mykey");
         File mykeyBackup = new File(backupDir, myKeyFile.getName());
         if (myKeyFile.exists()) {
             try {
@@ -1120,7 +1151,7 @@ public class Controller extends PFComponent {
             alreadyRunningCheck();
         }
         if (!ConfigurationEntry.NET_RCON_MANAGER
-            .getValueBoolean(getController()))
+            .getValueBoolean(this))
         {
             logWarning("Not starting RemoteCommandManager");
             return;
@@ -1137,12 +1168,12 @@ public class Controller extends PFComponent {
      */
     private boolean initializeListenerOnLocalPort() {
         if (ConfigurationEntry.NET_BIND_RANDOM_PORT
-            .getValueBoolean(getController()))
+            .getValueBoolean(this))
         {
             bindRandomPort();
         } else {
             String ports = ConfigurationEntry.NET_BIND_PORT
-                .getValue(getController());
+                .getValue(this);
             if ("0".equals(ports)) {
                 logWarning("Not opening connection listener. (port=0)");
             } else {
@@ -1591,7 +1622,7 @@ public class Controller extends PFComponent {
         started = false;
         startTime = null;
 
-        PreferencesEntry.LAST_NODE_ID.setValue(getController(),
+        PreferencesEntry.LAST_NODE_ID.setValue(this,
             LoginUtil.hashAndSalt(getMySelf().getId()));
 
         if (taskManager != null) {
@@ -1780,11 +1811,11 @@ public class Controller extends PFComponent {
      * @return true if this is the first start of PowerFolder of this config.
      */
     public boolean isFirstStart() {
-        return getController().preferences.getBoolean("openwizard2", true);
+        return preferences.getBoolean("openwizard2", true);
     }
 
     public void setFirstStart(boolean bool) {
-        getController().preferences.putBoolean("openwizard2", bool);
+        preferences.putBoolean("openwizard2", bool);
     }
 
     /**
@@ -2073,7 +2104,7 @@ public class Controller extends PFComponent {
      */
     private boolean openListener(int port) {
         String bind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
+            .getValue(this);
         logFine("Opening incoming connection listener on port " + port
             + " on interface " + (bind != null ? bind : "(all)"));
         while (true) {
@@ -2525,7 +2556,7 @@ public class Controller extends PFComponent {
                     notices.add(notice);
                 }
             }
-            String filename = getController().getConfigName() + ".notices";
+            String filename = getConfigName() + ".notices";
             File file = new File(getMiscFilesLocation(), filename);
             ObjectOutputStream outputStream = null;
             try {
@@ -2558,7 +2589,7 @@ public class Controller extends PFComponent {
         if (isUIEnabled()) {
 
             // Load notices.
-            String filename = getController().getConfigName() + ".notices";
+            String filename = getConfigName() + ".notices";
             File file = new File(getMiscFilesLocation(), filename);
             if (file.exists()) {
                 logInfo("Loading notices");
@@ -2598,16 +2629,14 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Perform a full sync, then wait for the repo to finish syncing. Then
-     * request system shutdown and exit PF.
+     * Wait for the repo to finish syncing. Then request system shutdown and
+     * exit PF.
      * 
      * @param password
      *            required only for Linux shutdowns.
      */
-    // @todo Remove reliance on UI
-    public void syncAndShutdown(final String password) {
+    public void shutdownAfterSync(final String password) {
         final AtomicBoolean oneShot = new AtomicBoolean(true);
-        SyncAllFoldersAction.perfomSync(this);
         scheduleAndRepeat(new Runnable() {
             public void run() {
                 if (oneShot.get() && !folderRepository.isSyncing()) {
@@ -2627,16 +2656,14 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Perform a full sync, then wait for the repo to finish syncing. Then
-     * request system shutdown and exit PF.
+     * Waits for the repo to finish syncing. Then request system shutdown and
+     * exit PF.
      *
      * @param secWait number of seconds to wait.
      */
-    // @todo Remove reliance on UI
-    public void syncAndExit(int secWait) {
+    public void exitAfterSync(int secWait) {
         logInfo("Sync and exit initiated. Begin check in " + secWait + 's');
         final AtomicBoolean oneShot = new AtomicBoolean(true);
-        SyncAllFoldersAction.perfomSync(this);
         scheduleAndRepeat(new Runnable() {
             public void run() {
                 if (oneShot.get() && !folderRepository.isSyncing()) {
