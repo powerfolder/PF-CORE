@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +52,9 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+
 /**
  * Util helper class.
  * 
@@ -59,6 +62,26 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * @version $Revision: 1.64 $
  */
 public class Util {
+
+    /** Flag if awt is available */
+    private static boolean awtAvailable;
+    // Initalize awt check
+    static {
+        // Okay lets check if we have an AWT system
+        try {
+            Color col = Color.RED;
+            col.brighter();
+
+            SimpleAttributeSet warn = new SimpleAttributeSet();
+            StyleConstants.setForeground(warn, Color.RED);
+
+            // Okay we have AWT
+            awtAvailable = true;
+        } catch (Error e) {
+            // ERROR ? Okay no AWT
+            awtAvailable = false;
+        }
+    }
 
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
 
@@ -70,6 +93,15 @@ public class Util {
 
     // No instance possible
     private Util() {
+    }
+
+    /**
+     * Answers if we have the AWT libs available
+     *
+     * @return
+     */
+    public static boolean isAwtAvailable() {
+        return awtAvailable;
     }
 
     public static final boolean equals(Object a, Object b) {

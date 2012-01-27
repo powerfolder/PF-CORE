@@ -119,7 +119,7 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
-import de.dal33t.powerfolder.util.update.UIUpdateHandler;
+import de.dal33t.powerfolder.util.ui.UIUpdateHandler;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
 
@@ -548,20 +548,20 @@ public class UIController extends PFComponent {
                             0, GenericDialogType.QUESTION);
                         if (i == 0) {
                             String password = textField.getText();
-                            getController().performFullSync(true);
+                            getController().performFullSync();
                             getController().shutdownAfterSync(password);
                         }
                     } else {
-                        getController().performFullSync(true);
+                        getController().performFullSync();
                         getController().shutdownAfterSync(null);
                     }
                 } else if (COMMAND_SYNC_EXIT.equals(e.getActionCommand())) {
-                    getController().performFullSync(true);
+                    getController().performFullSync();
                     getController().exitAfterSync(4);
                 } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            getController().performFullSync(true);
+                            getController().performFullSync();
                         }
                     });
                 } else if (COMMAND_GOTOHP.equals(e.getActionCommand())) {

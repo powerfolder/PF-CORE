@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallRequest;
 import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallResponse;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.Util;
 
 public class RemoteServiceStubFactory {
     private static final Logger LOG = Logger
@@ -102,7 +102,6 @@ public class RemoteServiceStubFactory {
             String serviceId, Member remoteSide,
             ThrowableHandler throwableHandler)
         {
-            super();
             this.controller = controller;
             this.remoteSide = remoteSide;
             this.serviceId = serviceId;
@@ -112,7 +111,7 @@ public class RemoteServiceStubFactory {
         public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable
         {
-            if (UIUtil.isAwtAvailable() && EventQueue.isDispatchThread()) {
+            if (Util.isAwtAvailable() && EventQueue.isDispatchThread()) {
                 LOG.log(Level.WARNING, "Call to remote service method ("
                     + method + ") executed in EDT thread. Args: "
                     + (args != null ? Arrays.asList(args) : "n/a"),

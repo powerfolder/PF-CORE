@@ -74,7 +74,7 @@ public class SyncButtonComponent extends PFUIComponent {
         public void mousePressed(MouseEvent e) {
             mousePressed.set(true);
             logFine("Triggering SyncAllFoldersAction perfomSync");
-            getController().performFullSync(true);
+            getController().performFullSync();
         }
 
         public void mouseReleased(MouseEvent e) {

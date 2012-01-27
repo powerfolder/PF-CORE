@@ -44,7 +44,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The security manager for the client.
@@ -270,7 +269,7 @@ public class SecurityManagerClient extends PFComponent implements
             return session.getAccountInfo();
         }
         // Smells like hack
-        if (UIUtil.isAwtAvailable() && EventQueue.isDispatchThread()) {
+        if (Util.isAwtAvailable() && EventQueue.isDispatchThread()) {
             if (isFiner()) {
                 logFiner("Not trying to refresh account of " + node
                     + ". Running in EDT thread");

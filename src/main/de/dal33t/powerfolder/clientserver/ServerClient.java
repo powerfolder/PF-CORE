@@ -1321,7 +1321,7 @@ public class ServerClient extends PFComponent {
         // #2425
         if (ConfigurationEntry.SYNC_AND_EXIT.getValueBoolean(getController())) {
             // Check after 60 seconds. Then every 10 secs
-            getController().performFullSync(false);
+            getController().performFullSync();
             getController().exitAfterSync(60);
         }
     }

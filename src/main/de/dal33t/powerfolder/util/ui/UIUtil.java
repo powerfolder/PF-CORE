@@ -44,8 +44,6 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -54,7 +52,9 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.Constants;
 
 /**
  * Offers helper/utility method for UI related stuff.
@@ -72,27 +72,6 @@ public class UIUtil {
     // The size of a medium sized font, e.g. the big subpoints on a wizard
     public static final int MED_FONT_SIZE = 15;
 
-    /** Flag if awt is available */
-    private static boolean awtAvailable;
-
-    // Initalize awt check
-    static {
-        // Okay lets check if we have an AWT system
-        try {
-            Color col = Color.RED;
-            col.brighter();
-
-            SimpleAttributeSet warn = new SimpleAttributeSet();
-            StyleConstants.setForeground(warn, Color.RED);
-
-            // Okay we have AWT
-            awtAvailable = true;
-        } catch (Error e) {
-            // ERROR ? Okay no AWT
-            awtAvailable = false;
-        }
-    }
-
     // UI Contstans
     /** The property name for the look and feel change on UIManager */
     public static final String UIMANAGER_LOOK_N_FEEL_PROPERTY = "lookAndFeel";
@@ -102,15 +81,6 @@ public class UIUtil {
 
     private UIUtil() {
         // No instance allowed
-    }
-
-    /**
-     * Answers if we have the AWT libs available
-     * 
-     * @return
-     */
-    public static boolean isAwtAvailable() {
-        return awtAvailable;
     }
 
     public static void setFontSize(JLabel label, int fontSize) {
@@ -135,7 +105,7 @@ public class UIUtil {
         throws InterruptedException
     {
         Reject.ifNull(task, "Task is null");
-        if (!isAwtAvailable() || SwingUtilities.isEventDispatchThread()) {
+        if (!Util.isAwtAvailable() || SwingUtilities.isEventDispatchThread()) {
             task.run();
         } else {
             try {
@@ -161,10 +131,10 @@ public class UIUtil {
      */
     public static void invokeLaterInEDT(Runnable task) {
         Reject.ifNull(task, "Task is null");
-        if (!isAwtAvailable()) {
-            task.run();
-        } else {
+        if (Util.isAwtAvailable()) {
             SwingUtilities.invokeLater(task);
+        } else {
+            task.run();
         }
     }
 
@@ -330,7 +300,7 @@ public class UIUtil {
     /**
      * Apply opacity to a window. Done with reflection to ensure there is no
      * issue pre Java 1.6.0_10, although the Java version should already have
-     * been checked ({@link de.dal33t.powerfolder.Constants#OPACITY_SUPPORTED}).
+     * been checked ({@link Constants#OPACITY_SUPPORTED}).
      * 
      * @param window
      * @param opacity

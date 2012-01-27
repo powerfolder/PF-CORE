@@ -29,7 +29,7 @@ import java.util.List;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
+import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
 
 /**

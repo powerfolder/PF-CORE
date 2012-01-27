@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
+import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly

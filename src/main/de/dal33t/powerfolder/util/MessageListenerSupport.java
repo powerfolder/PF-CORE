@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Helper class to handle message listener/firing
@@ -43,7 +42,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class MessageListenerSupport extends Loggable {
 
     // AWT system check
-    private static final boolean AWT_AVAILABLE = UIUtil.isAwtAvailable();
+    private static final boolean AWT_AVAILABLE = Util.isAwtAvailable();
 
     private Loggable source;
 

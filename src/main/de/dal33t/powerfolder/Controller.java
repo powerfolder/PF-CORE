@@ -661,11 +661,8 @@ public class Controller extends PFComponent {
 
     /**
      * For each folder, kick off scan.
-     *
-     * @param uiMode
-     *              No UI --> Don't show SyncFolderPanel.
      */
-    public void performFullSync(boolean uiMode) {
+    public void performFullSync() {
         // Let other nodes scan now!
         folderRepository.broadcastScanCommandOnAllFolders();
 
@@ -676,7 +673,7 @@ public class Controller extends PFComponent {
             // Never sync preview folders
             if (folder != null && !folder.isPreviewOnly()) {
                 // Ask for more sync options on that folder if on project sync
-                if (uiMode && folder.getSyncProfile().equals(
+                if (Util.isAwtAvailable() && folder.getSyncProfile().equals(
                                 SyncProfile.MANUAL_SYNCHRONIZATION)) {
                     new SyncFolderPanel(this, folder).open();
                 } else {

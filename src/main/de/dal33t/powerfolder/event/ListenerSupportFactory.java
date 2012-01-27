@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -46,7 +46,7 @@ public class ListenerSupportFactory {
         .getLogger(ListenerSupportFactory.class.getName());
 
     // AWT system check
-    static final boolean AWT_AVAILABLE = UIUtil.isAwtAvailable();
+    static final boolean AWT_AVAILABLE = Util.isAwtAvailable();
 
     /**
      * Creates a listener support for the listener event interface.
