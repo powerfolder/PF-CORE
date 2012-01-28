@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
 import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.ui.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 
 /**

@@ -25,7 +25,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.ui.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ArchiveMode;
 

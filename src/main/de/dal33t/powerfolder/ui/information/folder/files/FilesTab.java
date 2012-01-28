@@ -34,7 +34,6 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -55,7 +54,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
 import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
@@ -275,11 +273,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         JToggleButton detailsButton = new JToggleButton(detailsAction);
         detailsButton.setIcon(null);
 
-        MySyncFolderAction syncFolderAction = new MySyncFolderAction(
-            getController());
-        JButton syncFolderButton = new JButton(syncFolderAction);
-        syncFolderButton.setIcon(null);
-
         JButton restoreButton = new JButton(
             new MyRestoreAction(getController()));
         restoreButton.setIcon(null);
@@ -301,8 +294,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(detailsButton);
-        bar.addRelatedGap();
-        bar.addGridded(syncFolderButton);
         bar.addRelatedGap();
         bar.addGridded(restoreButton);
 
@@ -424,29 +415,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         public void actionPerformed(ActionEvent e) {
             tablePanel.toggleDetails();
-        }
-    }
-
-    private class MySyncFolderAction extends BaseAction {
-
-        private MySyncFolderAction(Controller controller) {
-            super("action_sync_folder", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (folder != null) {
-                if (folder.isPreviewOnly()) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            PreviewToJoinPanel panel = new PreviewToJoinPanel(
-                                getController(), folder);
-                            panel.open();
-                        }
-                    });
-                } else {
-                    getApplicationModel().syncFolder(folder);
-                }
-            }
         }
     }
 

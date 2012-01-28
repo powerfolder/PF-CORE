@@ -64,7 +64,6 @@ import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
-import de.dal33t.powerfolder.util.ui.UIPanel;
 
 /**
  * The status bar on the lower side of the main window.
@@ -72,7 +71,7 @@ import de.dal33t.powerfolder.util.ui.UIPanel;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class StatusBar extends PFUIComponent implements UIPanel {
+public class StatusBar extends PFUIComponent {
 
     private JComponent comp;
     private JButton compactModeButton;
