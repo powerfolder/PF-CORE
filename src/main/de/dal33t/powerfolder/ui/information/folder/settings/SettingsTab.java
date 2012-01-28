@@ -298,7 +298,7 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
 
-        if (PreferencesEntry.SHOW_ADVANCED_SETTINGS
+        if (PreferencesEntry.ADVANCED_MODE
             .getValueBoolean(getController()))
         {
             row += 2;

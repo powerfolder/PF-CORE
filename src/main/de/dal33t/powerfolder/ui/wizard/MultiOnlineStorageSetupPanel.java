@@ -174,7 +174,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      */
     @SuppressWarnings({"unchecked"})
     public void afterDisplay() {
-        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+        boolean showAppData = PreferencesEntry.ADVANCED_MODE
             .getValueBoolean(getController());
         Map<String, UserDirectory> userDirs = UserDirectories
             .getUserDirectoriesFiltered(getController(), showAppData);

@@ -195,7 +195,7 @@ public class PreferencesDialog extends BaseDialog {
 
         advancedSettingsTab = new AdvancedSettingsTab(getController());
 
-        if (PreferencesEntry.SHOW_ADVANCED_SETTINGS
+        if (PreferencesEntry.ADVANCED_MODE
             .getValueBoolean(getController()))
         {
             preferenceTabs.add(advancedSettingsTab);
@@ -204,14 +204,14 @@ public class PreferencesDialog extends BaseDialog {
         }
 
         // Behavior for advanced settings panel
-        generalSettingsTab.getShowAdvancedSettingsModel()
+        generalSettingsTab.getAdvancedModeModel()
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     showAdvancedTab(Boolean.TRUE.equals(evt.getNewValue()));
                 }
             });
         showAdvancedTab(Boolean.TRUE.equals(generalSettingsTab
-            .getShowAdvancedSettingsModel().getValue()));
+            .getAdvancedModeModel().getValue()));
 
         tabbedPane.setSelectedIndex(0);
 

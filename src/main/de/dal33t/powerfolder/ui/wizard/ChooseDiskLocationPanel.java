@@ -269,7 +269,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     protected void initComponents() {
 
         userDirectories = UserDirectories.getUserDirectoriesFiltered(
-            getController(), PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            getController(), PreferencesEntry.ADVANCED_MODE
                 .getValueBoolean(getController()));
 
         FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(

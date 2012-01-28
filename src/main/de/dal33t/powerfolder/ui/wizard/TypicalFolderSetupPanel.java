@@ -151,7 +151,7 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
         }
         Reject.ifNull(folderInfo, "Expecting a single folder info");
         folderTextField.setText(folderInfo.name);
-        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+        boolean showAppData = PreferencesEntry.ADVANCED_MODE
             .getValueBoolean(getController());
         Map<String, UserDirectory> userDirectoryMap = UserDirectories
             .getUserDirectoriesFiltered(getController(), showAppData);

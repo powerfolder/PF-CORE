@@ -260,7 +260,7 @@ public class FoldersList extends PFUIComponent {
         Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
         
         if (showTypical) {
-            boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            boolean showAppData = PreferencesEntry.ADVANCED_MODE
                 .getValueBoolean(getController());
             for (String name : UserDirectories.getUserDirectoriesFiltered(
                 getController(), showAppData).keySet())

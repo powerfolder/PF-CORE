@@ -239,7 +239,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         allBox.addActionListener(new MyAllActionListner());
         boxes.add(allBox);
 
-        boolean showAppData = PreferencesEntry.SHOW_ADVANCED_SETTINGS
+        boolean showAppData = PreferencesEntry.ADVANCED_MODE
             .getValueBoolean(getController());
 
         for (String name : userDirectories.keySet()) {
