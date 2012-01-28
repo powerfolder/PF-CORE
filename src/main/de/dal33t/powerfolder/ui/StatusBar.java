@@ -22,8 +22,6 @@ package de.dal33t.powerfolder.ui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.TimerTask;
@@ -56,9 +54,7 @@ import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ui.Help;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
@@ -81,7 +77,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private JComponent comp;
     private JButton compactModeButton;
-    private JButton onlineStateInfo;
     private JButton sleepButton;
     private SyncIconButtonMini syncButton;
     private JLabel portLabel;
@@ -127,7 +122,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
 
             FormLayout mainLayout = new FormLayout(
-                "1dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
+                "1dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
                     + portArea
                     + debugArea
                     + " pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu", "pref");
@@ -136,8 +131,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             CellConstraints cc = new CellConstraints();
 
             int col = 2;
-            mainBuilder.add(onlineStateInfo, cc.xy(col, 1));
-            col += 2;
             mainBuilder.add(sleepButton, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(syncButton, cc.xy(col, 1));
@@ -186,36 +179,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 Translation.getTranslation("status_bar.compact.tips"));
         compactModeButton.addActionListener(listener);
 
-        onlineStateInfo = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
 
         configureConnectionLabels();
-
-        // Add behavior
-        onlineStateInfo.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                // open connect dialog
-                if (getController().getNodeManager().isStarted()) {
-                    boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
-                        .getValueBoolean(getController());
-                    if (changeLoginAllowed) {
-                        PFWizard.openLoginWizard(getController(),
-                            getController().getOSClient());
-                    }
-                } else if (!ProUtil.isRunningProVersion()) {
-                    // Smells like hack(tm).
-                    new FreeLimitationDialog(getController()).open();
-                } else if (getApplicationModel().getLicenseModel()
-                    .getActivationAction() != null)
-                {
-                    getApplicationModel()
-                        .getLicenseModel()
-                        .getActivationAction()
-                        .actionPerformed(
-                            new ActionEvent(onlineStateInfo,
-                                ActionEvent.ACTION_PERFORMED, "clicked"));
-                }
-            }
-        });
 
         sleepButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
             Translation.getTranslation("status_bar.sleep.tips"));
@@ -330,7 +295,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             new MyNodeListener());
         getController().getOSClient().addListener(new MyServerClientListener());
 
-        updateConnectionLabels();
+        checkQuality();
     }
 
     private void updateLimitedConnectivityLabel() {
@@ -367,111 +332,32 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
     }
 
-    private void updateConnectionLabels() {
+    private void checkQuality() {
         connectLabelUpdater.schedule(new Runnable() {
             public void run() {
-                updateConnectionLabels0();
+                checkQuality0();
             }
         });
     }
 
-    private void updateConnectionLabels0() {
+    private void checkQuality0() {
         Controller controller = getController();
         IOProvider ioProvider = controller.getIOProvider();
-        Icon connectionQualityIcon = null;
-        String connectionQualityText = null;
         if (ioProvider != null) {
             ConnectionHandlerFactory factory = ioProvider
                 .getConnectionHandlerFactory();
             if (factory != null) {
                 ConnectionQuality quality = factory.getConnectionQuality();
                 if (quality != null) {
-                    switch (quality) {
-                        case GOOD :
-                            connectionQualityIcon = Icons
-                                .getIconById(Icons.CONNECTION_GOOD);
-                            connectionQualityText = Translation
-                                .getTranslation("connection_quality_good.text");
-                            break;
-                        case MEDIUM :
-                            connectionQualityIcon = Icons
-                                .getIconById(Icons.CONNECTION_MEDIUM);
-                            connectionQualityText = Translation
-                                .getTranslation("connection_quality_medium.text");
-                            break;
-                        case POOR :
-                            connectionQualityIcon = Icons
-                                .getIconById(Icons.CONNECTION_POOR);
-                            connectionQualityText = Translation
-                                .getTranslation("connection_quality_poor.text");
-
-                            // Only show warning once!
-                            if (!shownQualityWarningToday) {
-                                shownQualityWarningToday = true;
-                                showQualityWarning(controller);
-                            }
-                            break;
+                    if (quality == ConnectionQuality.POOR) {
+                        // Only show warning once!
+                        if (!shownQualityWarningToday) {
+                            shownQualityWarningToday = true;
+                            showQualityWarning(controller);
+                        }
                     }
                 }
             }
-        }
-        if (connectionQualityIcon == null) {
-            connectionQualityIcon = Icons.getIconById(Icons.BLANK);
-        }
-
-        // Get connected node count
-        int nOnlineUser = controller.getNodeManager().countConnectedNodes();
-
-        if (!controller.getNodeManager().isStarted()) {
-            // Disabled
-            onlineStateInfo.setToolTipText(Translation
-                .getTranslation("online_label.disabled"));
-            onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));
-        } else if (nOnlineUser > 0) {
-            if (connectionQualityText == null) {
-                // No connection quality indication yet - just show connected.
-                String text = Translation.getTranslation("online_label.online");
-                if (controller.isLanOnly()) {
-                    text += " ("
-                        + Translation
-                            .getTranslation("general.network_mode.lan_only")
-                        + ')';
-                } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE
-                    && !getController().isBackupOnly())
-                {
-                    text += " ("
-                        + Translation
-                            .getTranslation("general.network_mode.server_only")
-                        + ')';
-                }
-                onlineStateInfo.setToolTipText(text);
-                onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
-            } else {
-                onlineStateInfo.setIcon(connectionQualityIcon);
-                onlineStateInfo.setToolTipText(connectionQualityText);
-            }
-            if (!getController().getOSClient().isLoggedIn()) {
-                onlineStateInfo.setToolTipText(Translation
-                    .getTranslation("online_label.not_loggedin"));
-                onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));
-            }
-        } else {
-            // Connecting
-            String text = Translation.getTranslation("online_label.connecting");
-            if (controller.isLanOnly()) {
-                text += " ("
-                    + Translation
-                        .getTranslation("general.network_mode.lan_only") + ')';
-            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE
-                && !getController().isBackupOnly())
-            {
-                text += " ("
-                    + Translation
-                        .getTranslation("general.network_mode.server_only")
-                    + ')';
-            }
-            onlineStateInfo.setToolTipText(text);
-            onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
         }
 
     }
@@ -584,15 +470,15 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private class MyNodeListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
-            updateConnectionLabels();
+            checkQuality();
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            updateConnectionLabels();
+            checkQuality();
         }
 
         public void startStop(NodeManagerEvent e) {
-            updateConnectionLabels();
+            checkQuality();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -615,11 +501,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
 
         public void login(ServerClientEvent event) {
-            updateConnectionLabels();
+            checkQuality();
         }
 
         public void accountUpdated(ServerClientEvent event) {
-            updateConnectionLabels();
+            checkQuality();
         }
     }
 
