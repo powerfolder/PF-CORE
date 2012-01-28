@@ -1048,19 +1048,25 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Local folder popup
             contextMenu.add(openExplorerAction);
             contextMenu.addSeparator();
-            contextMenu.add(syncFolderAction);
-            contextMenu.add(openFilesInformationAction);
-            contextMenu.add(mostRecentChangesAction);
-            contextMenu.add(clearCompletedDownloadsAction);
+            boolean advanced = PreferencesEntry.ADVANCED_MODE.getValueBoolean(
+                    getController());
+            if (advanced) {
+                contextMenu.add(syncFolderAction);
+                contextMenu.add(openFilesInformationAction);
+                contextMenu.add(mostRecentChangesAction);
+                contextMenu.add(clearCompletedDownloadsAction);
+            }
             if (!getController().isBackupOnly()) {
                 contextMenu.addSeparator();
                 contextMenu.add(inviteAction);
-                contextMenu.add(openMembersInformationAction);
+                if (advanced) {
+                    contextMenu.add(openMembersInformationAction);
+                }
             }
             contextMenu.addSeparator();
             contextMenu.add(openSettingsInformationAction);
             contextMenu.add(removeFolderAction);
-            if (serverClient.isConnected() && serverClient.isLoggedIn()) {
+            if (advanced && serverClient.isConnected() && serverClient.isLoggedIn()) {
                 boolean osConfigured = serverClient.joinedByCloud(folder);
                 if (osConfigured) {
                     contextMenu.add(stopOnlineStorageAction);
