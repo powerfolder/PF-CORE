@@ -176,8 +176,11 @@ public class FoldersTab extends PFUIComponent {
         builderInner.add(notLoggedInLabel, cc.xy(1, 1));
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
-        builderInner.add(folderWizardActionLabel.getUIComponent(), cc.xy(3, 1));
-        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(5, 1));
+        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+            builderInner.add(folderWizardActionLabel.getUIComponent(),
+                    cc.xy(5, 1));
+        }
         JPanel emptyPanelInner = builderInner.getPanel();
         builderOuter.add(emptyPanelInner, cc.xy(1, 1));
         emptyPanelOuter = builderOuter.getPanel();
@@ -226,20 +229,33 @@ public class FoldersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        ActionLabel folderWizardLink = new ActionLabel(getController(),
-            getApplicationModel().getActionModel().getFolderWizardAction());
-        folderWizardLink.convertToBigLabel();
         ActionLabel newFolderLink = new ActionLabel(getController(),
             getApplicationModel().getActionModel().getNewFolderAction());
         newFolderLink.convertToBigLabel();
-        FormLayout layout = new FormLayout(
-            "3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu", "pref");
+        ActionLabel folderWizardLink = null;
+        Boolean advancedMode = PreferencesEntry.ADVANCED_MODE.getValueBoolean(
+                        getController());
+        if (advancedMode) {
+            folderWizardLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getFolderWizardAction());
+            folderWizardLink.convertToBigLabel();
+        }
+        FormLayout layout;
+        if (advancedMode) {
+            layout = new FormLayout(
+                "3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu", "pref");
+        } else {
+            layout = new FormLayout(
+                "3dlu, pref, 3dlu:grow, pref, 3dlu", "pref");
+        }
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(folderWizardLink.getUIComponent(), cc.xy(2, 1));
-        builder.add(newFolderLink.getUIComponent(), cc.xy(4, 1));
-        builder.add(autoAcceptCB, cc.xy(6, 1));
+        builder.add(newFolderLink.getUIComponent(), cc.xy(2, 1));
+        if (advancedMode) {
+            builder.add(folderWizardLink.getUIComponent(), cc.xy(4, 1));
+        }
+        builder.add(autoAcceptCB, cc.xy(advancedMode ? 6 : 4, 1));
         return builder.getPanel();
     }
 

@@ -501,30 +501,41 @@ public class StatusTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
 
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu:grow",
-            "pref");
+        Boolean advancedMode = PreferencesEntry.ADVANCED_MODE.getValueBoolean(
+                        getController());
+        FormLayout layout;
+        if (advancedMode) {
+            layout = new FormLayout("pref, 3dlu, pref, 3dlu:grow",
+                "pref");
+        } else {
+            layout = new FormLayout("pref, 3dlu:grow",
+                "pref");
+        }
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
-        ActionLabel newFolderLink = new ActionLabel(getController(),
-            getApplicationModel().getActionModel().getFolderWizardAction());
-        newFolderLink.convertToBigLabel();
-        JComponent newFolderLinkComponent = newFolderLink.getUIComponent();
 
         // Set the links to the height of a checkbox,
         // to make the layout similar to Computers and Folders tabs.
         JCheckBox dummyCB = new JCheckBox("x");
         int dummyHeight = (int) dummyCB.getPreferredSize().getHeight();
-        newFolderLinkComponent.setMinimumSize(new Dimension(
-            (int) newFolderLinkComponent.getMinimumSize().getWidth(),
-            dummyHeight));
-        newFolderLinkComponent.setMaximumSize(new Dimension(
-            (int) newFolderLinkComponent.getMaximumSize().getWidth(),
-            dummyHeight));
-        newFolderLinkComponent.setPreferredSize(new Dimension(
-            (int) newFolderLinkComponent.getPreferredSize().getWidth(),
-            dummyHeight));
-        builder.add(newFolderLinkComponent, cc.xy(1, 1));
+
+        if (advancedMode) {
+            ActionLabel newFolderLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getFolderWizardAction());
+            newFolderLink.convertToBigLabel();
+            JComponent newFolderLinkComponent = newFolderLink.getUIComponent();
+
+            newFolderLinkComponent.setMinimumSize(new Dimension(
+                (int) newFolderLinkComponent.getMinimumSize().getWidth(),
+                dummyHeight));
+            newFolderLinkComponent.setMaximumSize(new Dimension(
+                (int) newFolderLinkComponent.getMaximumSize().getWidth(),
+                dummyHeight));
+            newFolderLinkComponent.setPreferredSize(new Dimension(
+                (int) newFolderLinkComponent.getPreferredSize().getWidth(),
+                dummyHeight));
+            builder.add(newFolderLinkComponent, cc.xy(1, 1));
+        }
         if (!getController().isBackupOnly()) {
             ActionLabel searchComputerLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFindComputersAction());
@@ -541,7 +552,7 @@ public class StatusTab extends PFUIComponent {
                 .setPreferredSize(new Dimension(
                     (int) searchComputerLinkComponent.getPreferredSize()
                         .getWidth(), dummyHeight));
-            builder.add(searchComputerLinkComponent, cc.xy(3, 1));
+            builder.add(searchComputerLinkComponent, cc.xy(advancedMode ? 3 : 1, 1));
         }
 
         return builder.getPanel();
