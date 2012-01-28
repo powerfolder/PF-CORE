@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
-import de.dal33t.powerfolder.ui.start.StartTab;
 import de.dal33t.powerfolder.ui.status.StatusTab;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -44,7 +43,6 @@ public class MainTabbedPane extends PFUIComponent {
     public static final int FOLDERS_INDEX = 1;
     public static final int COMPUTERS_INDEX =  2;
 
-    private StartTab startTab;
     private StatusTab statusTab;
     private FoldersTab foldersTab;
     private ComputersTab computersTab;
@@ -126,7 +124,6 @@ public class MainTabbedPane extends PFUIComponent {
             uiComponent.setMinimumSize(new Dimension(minWidth, minHeight));
 
             CursorUtils.setHandCursor(uiComponent);
-            CursorUtils.setDefaultCursor(startTab.getUIComponent());
             CursorUtils.setDefaultCursor(statusTab.getUIComponent());
             CursorUtils.setDefaultCursor(foldersTab.getUIComponent());
             CursorUtils.setDefaultCursor(computersTab.getUIComponent());
@@ -147,7 +144,6 @@ public class MainTabbedPane extends PFUIComponent {
     private void initComponents() {
         uiComponent = new JTabbedPane();
         uiComponent.setOpaque(false);
-        startTab = new StartTab(getController());
         statusTab = new StatusTab(getController());
         foldersTab = new FoldersTab(getController());
         computersTab = new ComputersTab(getController());
