@@ -35,8 +35,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.event.ExpansionEvent;
-import de.dal33t.powerfolder.event.ExpansionListener;
+import de.dal33t.powerfolder.ui.event.ExpansionEvent;
+import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
@@ -82,8 +82,8 @@ public class ComputersList extends PFUIComponent {
      */
     public ComputersList(Controller controller, ComputersTab computersTab) {
         super(controller);
-        this.forcedUpdater = new DelayedUpdater(controller, 500L);
-        this.lightUpdater = new DelayedUpdater(controller, 500L);
+        forcedUpdater = new DelayedUpdater(controller, 500L);
+        lightUpdater = new DelayedUpdater(controller, 500L);
 
         this.computersTab = computersTab;
         expansionListener = new MyExpansionListener();

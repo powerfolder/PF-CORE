@@ -17,7 +17,7 @@
 *
 * $Id: ExpansionEvent.java 4282 2008-06-16 03:25:09Z tot $
 */
-package de.dal33t.powerfolder.event;
+package de.dal33t.powerfolder.ui.event;
 
 import de.dal33t.powerfolder.ui.ExpandableView;
 

@@ -65,7 +65,6 @@ import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 import de.dal33t.powerfolder.util.ui.UIPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The status bar on the lower side of the main window.
@@ -77,7 +76,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private JComponent comp;
     private JButton compactModeButton;
-    private JButton sleepButton;
     private SyncIconButtonMini syncButton;
     private JLabel portLabel;
     private JLabel networkModeLabel;
@@ -91,7 +89,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private boolean shownLimitedConnectivityToday;
 
     private DelayedUpdater syncUpdater;
-    private DelayedUpdater connectLabelUpdater;
+    private DelayedUpdater checkQualityUpdater;
     private NoticesModel noticeModel;
 
     protected StatusBar(Controller controller) {
@@ -122,7 +120,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
 
             FormLayout mainLayout = new FormLayout(
-                "1dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
+                "1dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
                     + portArea
                     + debugArea
                     + " pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu", "pref");
@@ -131,8 +129,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             CellConstraints cc = new CellConstraints();
 
             int col = 2;
-            mainBuilder.add(sleepButton, cc.xy(col, 1));
-            col += 2;
             mainBuilder.add(syncButton, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(newNoticesButton, cc.xy(col, 1));
@@ -171,7 +167,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private void initComponents() {
         syncUpdater = new DelayedUpdater(getController(), 1000L);
-        connectLabelUpdater = new DelayedUpdater(getController());
+        checkQualityUpdater = new DelayedUpdater(getController());
 
         MyActionListener listener = new MyActionListener();
 
@@ -181,13 +177,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
 
         configureConnectionLabels();
-
-        sleepButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
-            Translation.getTranslation("status_bar.sleep.tips"));
-        sleepButton.addActionListener(listener);
-
-        getController().addSilentModeListener(new MySilentModeListener());
-        updateSilentMode();
 
         // Behavior when the limited connecvitiy gets checked
         getController().addLimitedConnectivityListener(
@@ -333,7 +322,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void checkQuality() {
-        connectLabelUpdater.schedule(new Runnable() {
+        checkQualityUpdater.schedule(new Runnable() {
             public void run() {
                 checkQuality0();
             }
@@ -450,18 +439,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 syncButton.spin(anySynchronizing);
             }
         });
-    }
-
-    private void updateSilentMode() {
-        if (getController().isSilentMode()) {
-            sleepButton.setIcon(Icons.getIconById(Icons.RUN));
-            sleepButton.setToolTipText(Translation
-                .getTranslation("status_bar.no_sleep.tips"));
-        } else {
-            sleepButton.setIcon(Icons.getIconById(Icons.PAUSE));
-            sleepButton.setToolTipText(Translation
-                .getTranslation("status_bar.sleep.tips"));
-        }
     }
 
     // ////////////////
@@ -602,9 +579,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == sleepButton) {
-                getController().setSilentMode(!getController().isSilentMode());
-            } else if (e.getSource() == pendingMessagesButton) {
+            if (e.getSource() == pendingMessagesButton) {
                 getUIController().openChat(null);
             } else if (e.getSource() == syncButton) {
                 syncAllFolders();
@@ -625,18 +600,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
     }
 
-    private class MyValueChangeListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            // Move into EDT. Property change event might be called from
-            // anywhere, not just from EDT.
-            UIUtil.invokeLaterInEDT(new Runnable() {
-                public void run() {
-                    updateSilentMode();
-                }
-            });
-        }
-    }
-
     private class MyNoticesListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -644,16 +607,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         }
     }
 
-
-    private class MySilentModeListener implements SilentModeListener {
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void setSilentMode(SilentModeEvent event) {
-            updateSilentMode();
-        }
-    }
 
     private class MyLimitedConnectivityListener implements LimitedConnectivityListener {
         public void setLimitedConnectivity(LimitedConnectivityEvent event) {
