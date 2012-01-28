@@ -738,7 +738,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            parent.restoreFiles();
+            parent.fileArchive();
         }
     }
 

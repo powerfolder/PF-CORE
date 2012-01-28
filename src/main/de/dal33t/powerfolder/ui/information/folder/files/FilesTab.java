@@ -273,9 +273,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         JToggleButton detailsButton = new JToggleButton(detailsAction);
         detailsButton.setIcon(null);
 
-        JButton restoreButton = new JButton(
-            new MyRestoreAction(getController()));
-        restoreButton.setIcon(null);
+        JButton fileArchiveButton = new JButton(
+            new MyFileArchiveAction(getController()));
+        fileArchiveButton.setIcon(null);
 
         flatViewCB = new JCheckBox(Translation
             .getTranslation("files_tab.flat_view.text"));
@@ -295,7 +295,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(detailsButton);
         bar.addRelatedGap();
-        bar.addGridded(restoreButton);
+        bar.addGridded(fileArchiveButton);
 
         builder.add(bar.getPanel(), cc.xy(1, 1));
         builder.add(flatViewCB, cc.xy(3, 1));
@@ -334,7 +334,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             folder.getInfo(), relativeName));
     }
 
-    public void restoreFiles() {
+    public void fileArchive() {
         if (folder != null) {
             DiskItem[] diskItems = tablePanel.getSelectedRows();
             if (diskItems.length == 0) {
@@ -418,14 +418,14 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
     }
 
-    private class MyRestoreAction extends BaseAction {
+    private class MyFileArchiveAction extends BaseAction {
 
-        private MyRestoreAction(Controller controller) {
-            super("action_restore_file", controller);
+        private MyFileArchiveAction(Controller controller) {
+            super("action_file_archive", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
-            restoreFiles();
+            fileArchive();
         }
     }
 
