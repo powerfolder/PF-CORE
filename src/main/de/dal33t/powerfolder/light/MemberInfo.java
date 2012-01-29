@@ -80,12 +80,12 @@ public class MemberInfo implements Serializable {
     @Type(type = "socketAddressType")
     private InetSocketAddress connectAddress;
     /**
-     * The last time a successfull (physical) connection was possible. Just the
+     * The last time a successful (physical) connection was possible. Just the
      * initial handshake. Node might not have been completely connected
      * afterwards because handshake was not completed, e.g. because
      * uninteresting.
      */
-    public Date lastConnectTime;
+    private Date lastConnectTime;
 
     // flag if peer was connected at remote side
     public boolean isConnected;
@@ -135,6 +135,21 @@ public class MemberInfo implements Serializable {
 
     public String getNick() {
         return nick;
+    }
+
+    public Date getLastConnectTime() {
+        return lastConnectTime;
+    }
+
+    public void setLastConnectNow() {
+        lastConnectTime = new Date();
+    }
+
+    /**
+     * WARNING: FOR TESTS ONLY.
+     */
+    public void setLastConnectTime(Date date) {
+        lastConnectTime = date;
     }
 
     // Logic ******************************************************************
