@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Abstract version of a Transfer.<BR>
@@ -384,6 +385,10 @@ public abstract class Transfer extends Loggable implements Serializable {
         // FIXME: Find a better way to determine queued status
         if (getPartner() == null) {
             return false;
+        }
+        if (OSUtil.isMacOS()) {
+            // Hack. last connect date seems to be in the future under mac. Why that?
+            return getPartner().isConnected();
         }
         boolean stillQueuedAtPartner = getPartner().isConnected();
         if (stillQueuedAtPartner && getPartner().getLastConnectTime() != null) {
