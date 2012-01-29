@@ -896,7 +896,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Sleep a couple of seconds for things to settle,
                 // before removing dirs, to avoid conflicts.
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                 }
 
@@ -1411,7 +1411,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             {
                 logWarning("Removing local " + folder + ' ' + a
                     + " does not have read permission");
-                removeFolder(folder, false);
+                removeFolder(folder, true);
             }
         }
     }
