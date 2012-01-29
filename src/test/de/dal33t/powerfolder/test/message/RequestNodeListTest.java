@@ -264,7 +264,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         Date lastConnectTime, boolean supernode)
     {
         MemberInfo sample = new MemberInfo(nick, IdGenerator.makeId(), null);
-        sample.lastConnectTime = lastConnectTime;
+        sample.setLastConnectTime(lastConnectTime);
         sample.isSupernode = supernode;
         return sample;
     }

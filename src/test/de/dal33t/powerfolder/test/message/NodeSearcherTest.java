@@ -55,25 +55,25 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         // Add some users to our protagonists
 
         MemberInfo maggi = new MemberInfo("Maggi", IdGenerator.makeId(), null);
-        maggi.lastConnectTime = new Date();
+        maggi.setLastConnectTime(new Date());
         // Marge is very long offline
         MemberInfo marge = new MemberInfo("Marge", IdGenerator.makeId(), null);
-        marge.lastConnectTime = new Date(System.currentTimeMillis()
-            - Constants.NODE_TIME_TO_INVALIDATE - 10000);
+        marge.setLastConnectTime(new Date(System.currentTimeMillis()
+            - Constants.NODE_TIME_TO_INVALIDATE - 10000));
 
         getContollerLisa().getNodeManager().addNode(maggi);
         getContollerLisa().getNodeManager().addNode(marge);
 
         MemberInfo homer = new MemberInfo("Homer", IdGenerator.makeId(), null);
-        homer.lastConnectTime = new Date();
+        homer.setLastConnectTime(new Date());
         homer.setConnectAddress(new InetSocketAddress("127.0.0.1", 234));
         MemberInfo flenders = new MemberInfo("Ned Flenders",
             IdGenerator.makeId(), null);
-        flenders.lastConnectTime = new Date();
+        flenders.setLastConnectTime(new Date());
         flenders.setConnectAddress(new InetSocketAddress("127.0.0.1", 2314));
         MemberInfo moe = new MemberInfo("Moe", IdGenerator.makeId(), null);
-        moe.lastConnectTime = new Date(System.currentTimeMillis()
-            - Constants.NODE_TIME_TO_INVALIDATE - 10000);
+        moe.setLastConnectTime(new Date(System.currentTimeMillis()
+            - Constants.NODE_TIME_TO_INVALIDATE - 10000));
         moe.setConnectAddress(new InetSocketAddress("127.0.0.1", 333));
 
         getContollerBart().getNodeManager().addNode(homer);
