@@ -83,18 +83,22 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
     void removeListener(CoreListener listener) {
         if (listener instanceof WeakCoreListener) {
             if (!weaklistenersInEDT.isEmpty()) {
-                for (WeakCoreListener listner : weaklistenersInEDT) {
-                    CoreListener candidate = listner.getRef();
-                    if (candidate != null && candidate.equals(listener)) {
-                        weaklistenersInEDT.remove(listner);
+                for (WeakCoreListener weakCandidate : weaklistenersInEDT) {
+                    CoreListener candidate = weakCandidate.getRef();
+                    if ((candidate != null && candidate.equals(listener))
+                        || weakCandidate.equals(listener))
+                    {
+                        weaklistenersInEDT.remove(weakCandidate);
                     }
                 }
             }
             if (!weakListenersNonEDT.isEmpty()) {
-                for (WeakCoreListener listner : weakListenersNonEDT) {
-                    CoreListener candidate = listner.getRef();
-                    if (candidate != null && candidate.equals(listener)) {
-                        weakListenersNonEDT.remove(listner);
+                for (WeakCoreListener weakCandidate : weakListenersNonEDT) {
+                    CoreListener candidate = weakCandidate.getRef();
+                    if ((candidate != null && candidate.equals(listener))
+                        || weakCandidate.equals(listener))
+                    {
+                        weakListenersNonEDT.remove(weakCandidate);
                     }
                 }
             }
@@ -209,7 +213,11 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
         final Object[] args)
     {
         for (WeakCoreListener listner : weakListenersNonEDT) {
-            fire(method, args, listner);
+            if (listner.isValid()) {
+                fire(method, args, listner);
+            } else {
+                weakListenersNonEDT.remove(listner);
+            }
         }
     }
 
@@ -218,7 +226,11 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
         Runnable runner = new Runnable() {
             public void run() {
                 for (WeakCoreListener weakListener : weaklistenersInEDT) {
-                    fire(method, args, weakListener);
+                    if (weakListener.isValid()) {
+                        fire(method, args, weakListener);
+                    } else {
+                        weaklistenersInEDT.remove(weakListener);
+                    }
                 }
             }
         };
