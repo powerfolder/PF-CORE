@@ -1222,7 +1222,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         // Remove filelist to save memory.
         for (Folder folder : getFoldersActuallyJoined()) {
-            folder.getDAO().deleteDomain(getId());
+            folder.getDAO().deleteDomain(getId(), -1);
         }
 
         if (wasHandshaked) {
