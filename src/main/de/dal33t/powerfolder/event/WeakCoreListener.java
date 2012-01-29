@@ -39,6 +39,10 @@ class WeakCoreListener implements CoreListener, InvocationHandler {
         listenerRef = new WeakReference<CoreListener>(listener);
         this.src = src;
     }
+    
+    public boolean isValid() {
+        return listenerRef.get() != null;
+    }
 
     public boolean fireInEventDispatchThread() {
         CoreListener listener = listenerRef.get();
