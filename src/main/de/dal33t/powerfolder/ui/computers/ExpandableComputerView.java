@@ -129,7 +129,7 @@ public class ExpandableComputerView extends PFUIComponent implements
             .getTranslation("exp_computer_view.collapse"));
         lowerOuterPanel.setVisible(true);
         borderPanel.setBorder(Borders.createEmptyBorder("0, 0, 10dlu, 0"));
-        listenerSupport.collapseAllButSource(new ExpansionEvent(this));
+        listenerSupport.resetAllButSource(new ExpansionEvent(this));
     }
 
     /**

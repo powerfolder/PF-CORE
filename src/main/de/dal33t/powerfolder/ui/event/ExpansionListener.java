@@ -25,7 +25,8 @@ import de.dal33t.powerfolder.event.CoreListener;
  * Listener for ExpansionEvents.
  * There should only ever be one expanded view,
  * so implementations are to ensure that all other views are collapsed.
+ * Same with being focussed.
  */
 public interface ExpansionListener extends CoreListener {
-    void collapseAllButSource(ExpansionEvent e);
+    void resetAllButSource(ExpansionEvent e);
 }

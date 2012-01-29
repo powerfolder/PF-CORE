@@ -534,7 +534,7 @@ public class FoldersList extends PFUIComponent {
      */
     private class MyExpansionListener implements ExpansionListener {
 
-        public void collapseAllButSource(ExpansionEvent e) {
+        public void resetAllButSource(ExpansionEvent e) {
             synchronized (views) {
                 for (ExpandableFolderView view : views) {
                     if (!view.equals(e.getSource())) {

@@ -389,7 +389,7 @@ public class ComputersList extends PFUIComponent {
      */
     private class MyExpansionListener implements ExpansionListener {
 
-        public void collapseAllButSource(ExpansionEvent e) {
+        public void resetAllButSource(ExpansionEvent e) {
             synchronized (viewList) {
                 for (ExpandableComputerView view : viewList) {
                     if (!view.equals(e.getSource())) {

@@ -244,17 +244,18 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Expand this view if collapsed.
      */
     public void expand() {
-        if (type != ExpandableFolderModel.Type.Local) {
-            // Only expand for Local folder only.
-            return;
+        // Only actually expand local folders in advanced mode,
+        // but we still need to fire the reset to clear other's focus.
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController()) &&
+            type != ExpandableFolderModel.Type.Local) {
+            expanded.set(true);
+            updateUpperComponents();
+            upperPanel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.collapse"));
+            updateNameLabel();
+            lowerOuterPanel.setVisible(true);
         }
-        expanded.set(true);
-        updateUpperComponents();
-        upperPanel.setToolTipText(Translation
-            .getTranslation("exp_folder_view.collapse"));
-        updateNameLabel();
-        lowerOuterPanel.setVisible(true);
-        listenerSupport.collapseAllButSource(new ExpansionEvent(this));
+        listenerSupport.resetAllButSource(new ExpansionEvent(this));
     }
 
     /**
