@@ -42,8 +42,8 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class ListenerSupportFactory {
 
-    static final Logger LOG = Logger
-        .getLogger(ListenerSupportFactory.class.getName());
+    static final Logger LOG = Logger.getLogger(ListenerSupportFactory.class
+        .getName());
 
     // AWT system check
     static final boolean AWT_AVAILABLE = Util.isAwtAvailable();
@@ -88,7 +88,7 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param suspended
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void setSuspended(Object listenerSupport, boolean suspended) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
@@ -141,7 +141,7 @@ public class ListenerSupportFactory {
      *            except by this listener support (or any other weak or soft
      *            reference).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void addListener(CoreListener listenerSupport,
         CoreListener listener, boolean weak)
     {
@@ -177,7 +177,7 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param listener
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void removeListener(Object listenerSupport,
         CoreListener listener)
     {
@@ -207,7 +207,7 @@ public class ListenerSupportFactory {
      * 
      * @param listenerSupport
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void removeAllListeners(Object listenerSupport) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");

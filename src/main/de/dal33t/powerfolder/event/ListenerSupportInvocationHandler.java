@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
@@ -19,6 +20,10 @@ import de.dal33t.powerfolder.util.ProfilingEntry;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  */
 class ListenerSupportInvocationHandler<T> implements InvocationHandler {
+    private static final Logger LOG = Logger
+        .getLogger(ListenerSupportInvocationHandler.class.getName());
+    private static final int WARN_IF_MORE_LISTENERS = 144;
+
     private Class<T> listenerInterface;
     private List<CoreListener> listenersNonEDT;
     private List<WeakCoreListener> weakListenersNonEDT;
@@ -48,10 +53,17 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
     void addListener(CoreListener listener) {
         if (checkListener(listener)) {
             // Okay, add listener
+            int n = 0;
             if (listener.fireInEventDispatchThread()) {
                 listenersInEDT.add(listener);
+                n = listenersInEDT.size();
             } else {
                 listenersNonEDT.add(listener);
+                n = listenersNonEDT.size();
+            }
+            if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS) {
+                LOG.warning(n + " listeners of " + listenerInterface.getName()
+                    + " registered");
             }
         }
     }
@@ -66,11 +78,18 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
     void addWeakListener(CoreListener listener) {
         if (checkListener(listener)) {
             // Okay, add listener
+            int n = 0;
             WeakCoreListener weakListener = new WeakCoreListener(listener, this);
             if (listener.fireInEventDispatchThread()) {
                 weaklistenersInEDT.add(weakListener);
+                n = weaklistenersInEDT.size();
             } else {
                 weakListenersNonEDT.add(weakListener);
+                n = weakListenersNonEDT.size();
+            }
+            if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS) {
+                LOG.warning(n + " weak listeners of "
+                    + listenerInterface.getName() + " registered");
             }
         }
     }
