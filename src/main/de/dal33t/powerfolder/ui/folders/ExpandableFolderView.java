@@ -36,13 +36,7 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -111,6 +105,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private Folder folder;
     private ExpandableFolderModel.Type type;
     private boolean online;
+    private final AtomicBoolean focus = new AtomicBoolean();
 
     private final AtomicBoolean showing100Sync = new AtomicBoolean();
 
@@ -260,7 +255,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateNameLabel();
         lowerOuterPanel.setVisible(true);
         listenerSupport.collapseAllButSource(new ExpansionEvent(this));
-        borderPanel.setBorder(Borders.createEmptyBorder("0, 0, 10dlu, 0"));
     }
 
     /**
@@ -273,7 +267,23 @@ public class ExpandableFolderView extends PFUIComponent implements
             .getTranslation("exp_folder_view.expand"));
         updateNameLabel();
         lowerOuterPanel.setVisible(false);
-        borderPanel.setBorder(null);
+    }
+
+    public void setFocus(boolean focus) {
+        this.focus.set(focus);
+        updateBorderPanel();
+    }
+
+    public boolean hasFocus() {
+        return focus.get();
+    }
+
+    private void updateBorderPanel() {
+        if (focus.get()) {
+            borderPanel.setBorder(BorderFactory.createEtchedBorder());
+        } else {
+            borderPanel.setBorder(BorderFactory.createEmptyBorder());
+        }
     }
 
     /**
@@ -1509,6 +1519,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1) {
+                setFocus(true);
                 if (expanded.get()) {
                     collapse();
                 } else {

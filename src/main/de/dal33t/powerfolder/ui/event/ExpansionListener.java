@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.event;
 
-import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.CoreListener;
 
 /**

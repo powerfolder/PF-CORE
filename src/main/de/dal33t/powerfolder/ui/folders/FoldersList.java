@@ -285,11 +285,22 @@ public class FoldersList extends PFUIComponent {
                 localFolders.isEmpty();
 
         synchronized (views) {
+
+            // Remember expanded view.
             FolderInfo expandedFolderInfo = null;
             for (ExpandableFolderView view : views) {
                 if (view.isExpanded()) {
                     expandedFolderInfo = view.getFolderInfo();
                     break; // There can only be one expanded view.
+                }
+            }
+
+            // Remember focussed view.
+            FolderInfo focussedFolderInfo = null;
+            for (ExpandableFolderView view : views) {
+                if (view.hasFocus()) {
+                    focussedFolderInfo = view.getFolderInfo();
+                    break; // There can only be one focussed view.
                 }
             }
 
@@ -311,7 +322,7 @@ public class FoldersList extends PFUIComponent {
             addSeparator(collapseLocal, localIcon, localLabel, false);
             if (!collapseLocal) {
                 for (ExpandableFolderModel folderBean : localFolders) {
-                    addView(folderBean, expandedFolderInfo);
+                    addView(folderBean, expandedFolderInfo, focussedFolderInfo);
                 }
             }
 
@@ -319,7 +330,7 @@ public class FoldersList extends PFUIComponent {
 
             if (!collapseOnline) {
                 for (ExpandableFolderModel folderBean : onlineFolders) {
-                    addView(folderBean, expandedFolderInfo);
+                    addView(folderBean, expandedFolderInfo, focussedFolderInfo);
                 }
             }
 
@@ -328,7 +339,7 @@ public class FoldersList extends PFUIComponent {
 
                 if (!collapseTypical) {
                     for (ExpandableFolderModel folderBean : typicalFolders) {
-                        addView(folderBean, expandedFolderInfo);
+                        addView(folderBean, expandedFolderInfo, focussedFolderInfo);
                     }
                 }
             }
@@ -361,7 +372,9 @@ public class FoldersList extends PFUIComponent {
         folderListPanel.add(panel);
     }
 
-    private void addView(ExpandableFolderModel folderBean, FolderInfo expandedFolderInfo) {
+    private void addView(ExpandableFolderModel folderBean,
+                         FolderInfo expandedFolderInfo,
+                         FolderInfo focussedFolderInfo) {
         ExpandableFolderView newView = new ExpandableFolderView(
             getController(), folderBean.getFolderInfo());
         newView.configure(folderBean);
@@ -381,6 +394,14 @@ public class FoldersList extends PFUIComponent {
         {
             newView.expand();
         }
+
+        // Was view focussed before?
+        if (focussedFolderInfo != null
+            && folderBean.getFolderInfo().equals(focussedFolderInfo))
+        {
+            newView.setFocus(true);
+        }
+        
         newView.addExpansionListener(expansionListener);
     }
 
@@ -519,6 +540,7 @@ public class FoldersList extends PFUIComponent {
                     if (!view.equals(e.getSource())) {
                         // Not source, so collapse.
                         view.collapse();
+                        view.setFocus(false);
                     }
                 }
             }
