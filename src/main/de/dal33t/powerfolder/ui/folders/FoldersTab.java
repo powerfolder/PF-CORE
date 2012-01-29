@@ -20,10 +20,8 @@
 package de.dal33t.powerfolder.ui.folders;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -56,7 +54,6 @@ public class FoldersTab extends PFUIComponent {
     private JPanel uiComponent;
     private FoldersList foldersList;
     private JScrollPane scrollPane;
-    private JCheckBox autoAcceptCB;
     private JLabel connectingLabel;
     private JLabel notLoggedInLabel;
     private ActionLabel loginActionLabel;
@@ -119,18 +116,6 @@ public class FoldersTab extends PFUIComponent {
         tellFriendLabel.getUIComponent().setOpaque(false);
         tellFriendLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("3dlu, 6px, 4px, 3dlu"));
-
-        boolean autoSetup = ConfigurationEntry.AUTO_ACCEPT_INVITE
-            .getValueBoolean(getController())
-            || ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
-                .getValueBoolean(getController());
-        autoAcceptCB = new JCheckBox(
-            Translation.getTranslation("folders_tab.auto_accept.text"));
-        autoAcceptCB.setToolTipText(Translation
-            .getTranslation("folders_tab.auto_accept.tip"));
-        autoAcceptCB.addActionListener(new MyActionListener());
-        autoAcceptCB.setSelected(autoSetup && !getController().isBackupOnly());
-        autoAcceptCB.setVisible(!getController().isBackupOnly());
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
@@ -243,10 +228,10 @@ public class FoldersTab extends PFUIComponent {
         FormLayout layout;
         if (advancedMode) {
             layout = new FormLayout(
-                "3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu", "pref");
+                "3dlu, pref, 3dlu, pref, 3dlu:grow", "pref");
         } else {
             layout = new FormLayout(
-                "3dlu, pref, 3dlu:grow, pref, 3dlu", "pref");
+                "3dlu, pref, 3dlu:grow", "pref");
         }
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -255,7 +240,6 @@ public class FoldersTab extends PFUIComponent {
         if (advancedMode) {
             builder.add(folderWizardLink.getUIComponent(), cc.xy(4, 1));
         }
-        builder.add(autoAcceptCB, cc.xy(advancedMode ? 6 : 4, 1));
         return builder.getPanel();
     }
 
@@ -266,27 +250,6 @@ public class FoldersTab extends PFUIComponent {
         foldersList.populate();
     }
 
-    private void configureAutoAccept() {
-        ConfigurationEntry.AUTO_ACCEPT_INVITE.setValue(getController(),
-            autoAcceptCB.isSelected());
-        ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),
-            autoAcceptCB.isSelected());
-        getController().saveConfig();
-
-        // Re-run setup if selected.
-        if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
-            .getValueBoolean(getController())
-            && getController().getOSClient().isLoggedIn())
-        {
-            getController().schedule(new Runnable() {
-                public void run() {
-                    getController().getFolderRepository().updateFolders(
-                        getController().getOSClient().getAccount());
-                }
-            }, 0);
-        }
-    }
-
     public void storeValues() {
         foldersList.storeValues();
     }
@@ -295,19 +258,8 @@ public class FoldersTab extends PFUIComponent {
     // Inner classes //
     // ////////////////
 
-    /**
-     * Action listener for type list.
-     */
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource().equals(autoAcceptCB)) {
-                configureAutoAccept();
-            }
-        }
-    }
-
     private class MyLoginAction extends AbstractAction {
-        public MyLoginAction() {
+        MyLoginAction() {
             boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
                 .getValueBoolean(getController());
             setEnabled(changeLoginAllowed);

@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -670,7 +671,7 @@ public enum ConfigurationEntry {
     /**
      * Whether to request debug reports
      * 
-     * @see de.dal33t.powerfolder.message.RequestNodeInformation
+     * @see RequestNodeInformation
      */
     DEBUG_REPORTS("debug.reports", false),
 
@@ -845,13 +846,11 @@ public enum ConfigurationEntry {
     DEFAULT_TRANSFER_MODE("default.transfer.mode",
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
 
-    /** Whether to automatically accept folder invites. */
-    AUTO_ACCEPT_INVITE("auto.accept.invite", false),
-
     /**
-     * Automatically setup all folders the user has access to.
+     * Automatically setup all folders the user has access to
+     * and also automatically accept folder invites.
      */
-    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", false),
+    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", true),
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
 
@@ -874,7 +873,7 @@ public enum ConfigurationEntry {
         Reject.ifTrue(
             aConfigKey.startsWith(FolderSettings.FOLDER_SETTINGS_PREFIX_V4),
             "Config entries must not start with '"
-                + FolderSettings.FOLDER_SETTINGS_PREFIX_V4 + "'");
+                + FolderSettings.FOLDER_SETTINGS_PREFIX_V4 + '\'');
         configKey = aConfigKey;
         if (theDefaultValue != null) {
             defaultValue = theDefaultValue;

@@ -75,6 +75,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JCheckBox conflictDetectionBox;
 
+    private JCheckBox folderAutoSetupBox;
+
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
@@ -211,6 +213,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         conflictDetectionBox.setSelected(ConfigurationEntry.CONFLICT_DETECTION
             .getValueBoolean(getController()));
 
+        folderAutoSetupBox = new JCheckBox(
+            Translation.getTranslation("preferences.dialog.auto_setup_folders"));
+        folderAutoSetupBox.setSelected(ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
+            .getValueBoolean(getController()));
+
         modeModel = new ValueHolder();
         versionModel = new ValueHolder();
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(
@@ -297,7 +304,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -353,6 +360,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             
             row += 2;
             builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(folderAutoSetupBox, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(massDeleteBox, cc.xyw(3, row, 2));
@@ -484,6 +494,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(),
             conflictDetectionBox.isSelected());
+
+        ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),
+            folderAutoSetupBox.isSelected());
+        // Re-run setup if selected.
+        if (folderAutoSetupBox.isSelected()
+            && getController().getOSClient().isLoggedIn()) {
+            getController().schedule(new Runnable() {
+                public void run() {
+                    getController().getFolderRepository().updateFolders(
+                        getController().getOSClient().getAccount());
+                }
+            }, 0);
+        }
 
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
             massDeleteBox.isSelected());

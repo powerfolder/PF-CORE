@@ -245,9 +245,9 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     public void expand() {
         // Only actually expand local folders in advanced mode,
-        // but we still need to fire the reset to clear other's focus.
+        // but we still need to fire the reset to clear others' focus.
         if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController()) &&
-            type != ExpandableFolderModel.Type.Local) {
+            type == ExpandableFolderModel.Type.Local) {
             expanded.set(true);
             updateUpperComponents();
             upperPanel.setToolTipText(Translation
