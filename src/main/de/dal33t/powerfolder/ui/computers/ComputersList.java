@@ -260,9 +260,13 @@ public class ComputersList extends PFUIComponent {
 
             // Clear view listeners
             Member expandedNode = null;
+            Member focussedNode = null;
             for (ExpandableComputerView view : viewList) {
                 if (view.isExpanded()) {
                     expandedNode = view.getNode();
+                }
+                if (view.hasFocus()) {
+                    focussedNode = view.getNode();
                 }
                 view.removeExpansionListener(expansionListener);
                 view.removeCoreListeners();
@@ -284,7 +288,7 @@ public class ComputersList extends PFUIComponent {
                         myComputersLabel);
                 }
                 if (!multiGroup || !collapseMyComputers) {
-                    addView(node, expandedNode);
+                    addView(node, expandedNode, focussedNode);
                 }
             }
 
@@ -297,7 +301,7 @@ public class ComputersList extends PFUIComponent {
                         connectedLansLabel);
                 }
                 if (!multiGroup || !collapseConnectedLans) {
-                    addView(node, expandedNode);
+                    addView(node, expandedNode, focussedNode);
                 }
             }
 
@@ -309,7 +313,7 @@ public class ComputersList extends PFUIComponent {
                     addSeparator(collapseFriends, friendsIcon, friendsLabel);
                 }
                 if (!multiGroup || !collapseFriends) {
-                    addView(node, expandedNode);
+                    addView(node, expandedNode, focussedNode);
                 }
             }
 
@@ -340,7 +344,7 @@ public class ComputersList extends PFUIComponent {
         computerListPanel.add(panel);
     }
 
-    private void addView(Member node, Member expandedNode) {
+    private void addView(Member node, Member expandedNode, Member focussedNode) {
 
         ExpandableComputerView view = new ExpandableComputerView(
             getController(), node);
@@ -349,6 +353,10 @@ public class ComputersList extends PFUIComponent {
         if (expandedNode != null && node.equals(expandedNode)) {
             // Maintain expanded state of view on rebuild.
             view.expand();
+        }
+        if (focussedNode != null && node.equals(focussedNode)) {
+            // Maintain focussed state of view on rebuild.
+            view.setFocus(true);
         }
         view.addExpansionListener(expansionListener);
     }
@@ -393,8 +401,9 @@ public class ComputersList extends PFUIComponent {
             synchronized (viewList) {
                 for (ExpandableComputerView view : viewList) {
                     if (!view.equals(e.getSource())) {
-                        // No source, so collapse.
+                        // Not source, so collapse.
                         view.collapse();
+                        view.setFocus(false);
                     }
                 }
             }

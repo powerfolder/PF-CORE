@@ -34,13 +34,7 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -106,6 +100,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     private JPopupMenu contextMenu;
     private JPanel borderPanel;
+    private final AtomicBoolean focus = new AtomicBoolean();
 
     /**
      * Constructor
@@ -128,7 +123,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_computer_view.collapse"));
         lowerOuterPanel.setVisible(true);
-        borderPanel.setBorder(Borders.createEmptyBorder("0, 0, 10dlu, 0"));
+        updateBorderPanel();
         listenerSupport.resetAllButSource(new ExpansionEvent(this));
     }
 
@@ -140,7 +135,24 @@ public class ExpandableComputerView extends PFUIComponent implements
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_computer_view.expand"));
         lowerOuterPanel.setVisible(false);
-        borderPanel.setBorder(null);
+        updateBorderPanel();
+    }
+
+    public void setFocus(boolean focus) {
+        this.focus.set(focus);
+        updateBorderPanel();
+    }
+
+    public boolean hasFocus() {
+        return focus.get();
+    }
+
+    private void updateBorderPanel() {
+        if (focus.get()) {
+            borderPanel.setBorder(BorderFactory.createEtchedBorder());
+        } else {
+            borderPanel.setBorder(BorderFactory.createEmptyBorder());
+        }
     }
 
     /**
@@ -513,6 +525,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1) {
+                setFocus(true);
                 if (expanded.get()) {
                     collapse();
                 } else {

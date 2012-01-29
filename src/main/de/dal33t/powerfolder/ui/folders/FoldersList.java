@@ -288,19 +288,14 @@ public class FoldersList extends PFUIComponent {
 
             // Remember expanded view.
             FolderInfo expandedFolderInfo = null;
-            for (ExpandableFolderView view : views) {
-                if (view.isExpanded()) {
-                    expandedFolderInfo = view.getFolderInfo();
-                    break; // There can only be one expanded view.
-                }
-            }
-
             // Remember focussed view.
             FolderInfo focussedFolderInfo = null;
             for (ExpandableFolderView view : views) {
-                if (view.hasFocus()) {
+                if (expandedFolderInfo == null && view.isExpanded()) {
+                    expandedFolderInfo = view.getFolderInfo();
+                }
+                if (focussedFolderInfo == null && view.hasFocus()) {
                     focussedFolderInfo = view.getFolderInfo();
-                    break; // There can only be one focussed view.
                 }
             }
 
