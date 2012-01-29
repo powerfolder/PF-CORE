@@ -645,7 +645,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         info.nick = identity.getMemberInfo().nick;
         // Reset the last connect time
-        info.lastConnectTime = new Date();
+        info.setLastConnectNow();
 
         synchronized (peerInitalizeLock) {
             ConnectionHandler oldPeer = peer;
@@ -1227,7 +1227,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         if (wasHandshaked) {
             // Reset the last connect time
-            info.lastConnectTime = new Date();
+            info.setLastConnectNow();
 
             // Inform security manager to update account state.
             getController().getSecurityManager().nodeAccountStateChanged(this,
@@ -1386,7 +1386,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                             // #2569: Send only "filtered" client specific
                             // folder list. Send renewed list.
                             ConnectionHandler thisPeer = peer;
-                            Identity identity = thisPeer != null ? thisPeer.getIdentity() : null;
+                            Identity identity = thisPeer != null ? thisPeer
+                                .getIdentity() : null;
                             boolean fullList = identity != null
                                 && identity.isRequestFullFolderlist();
                             if (getController().getMySelf().isServer()
@@ -1936,7 +1937,9 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Send node informations now
             // Send joined folders to synchronize
-            Identity identity = thisPeer != null ? thisPeer.getIdentity() : null;
+            Identity identity = thisPeer != null
+                ? thisPeer.getIdentity()
+                : null;
             boolean fullList = identity != null
                 && identity.isRequestFullFolderlist();
             Collection<FolderInfo> folders2node = getFilteredFolderList(
@@ -2326,7 +2329,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      *         never connected
      */
     public Date getLastConnectTime() {
-        return info.lastConnectTime;
+        return info.getLastConnectTime();
     }
 
     /**
@@ -2337,13 +2340,14 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return Date object representing the last time on the network
      */
     public Date getLastNetworkConnectTime() {
-        if (info.lastConnectTime == null) {
+        Date lastConnectTime = getLastConnectTime();
+        if (lastConnectTime == null) {
             return lastNetworkConnectTime;
         } else if (lastNetworkConnectTime == null) {
-            return info.lastConnectTime;
+            return lastConnectTime;
         }
-        if (info.lastConnectTime.after(lastNetworkConnectTime)) {
-            return info.lastConnectTime;
+        if (lastConnectTime.after(lastNetworkConnectTime)) {
+            return lastConnectTime;
         }
         return lastNetworkConnectTime;
     }
@@ -2491,16 +2495,17 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // Take his last connect time if newer
-        boolean updateLastNetworkConnectTime = (lastNetworkConnectTime == null && newInfo.lastConnectTime != null)
-            || (newInfo.lastConnectTime != null && lastNetworkConnectTime
-                .before(newInfo.lastConnectTime));
+        Date newLastConnectTime = newInfo.getLastConnectTime();
+        boolean updateLastNetworkConnectTime = (lastNetworkConnectTime == null && newLastConnectTime != null)
+            || (newLastConnectTime != null && lastNetworkConnectTime
+                .before(newLastConnectTime));
 
         if (!isConnected() && updateLastNetworkConnectTime) {
             // logFiner(
             // "Last connect time fresher on remote side. this "
             // + lastNetworkConnectTime + ", remote: "
             // + newInfo.lastConnectTime);
-            lastNetworkConnectTime = newInfo.lastConnectTime;
+            lastNetworkConnectTime = newLastConnectTime;
             updated = true;
         }
 
