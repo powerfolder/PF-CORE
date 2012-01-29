@@ -869,7 +869,7 @@ public class Folder extends PFComponent {
                 + ". old: " + oldLocalFileInfo.toDetailString());
             // Really basic raw conflict detection.
             addProblem(new FileConflictProblem(fInfo));
-            
+
             // String fn = fInfo.getFilenameOnly();
             // String extraInfo = "_";
             // extraInfo += oldLocalFileInfo.getModifiedBy().getNick();
@@ -2068,12 +2068,12 @@ public class Folder extends PFComponent {
         }
         Date deadLine = new Date(System.currentTimeMillis()
             - Constants.NODE_TIME_TO_REMOVE_MEMBER);
-        boolean offline2Long = memberInfo.lastConnectTime == null
-            || memberInfo.lastConnectTime.before(deadLine);
+        boolean offline2Long = memberInfo.getLastConnectTime() == null
+            || memberInfo.getLastConnectTime().before(deadLine);
         if (offline2Long) {
             logFine(member + " was offline too long. "
                 + "Hiding in memberslist: " + member + " last seen online: "
-                + memberInfo.lastConnectTime);
+                + memberInfo.getLastConnectTime());
             return false;
         }
         // Ok let him join
@@ -2193,7 +2193,7 @@ public class Folder extends PFComponent {
             if (!memberInfo.isOnSameNetwork(getController())) {
                 continue;
             }
-            if (join0(memberInfo)) {                
+            if (join0(memberInfo)) {
                 logInfo("Discovered new Member " + memberInfo);
             }
         }
