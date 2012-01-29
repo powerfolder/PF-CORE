@@ -113,20 +113,20 @@ public class MemberComparator implements Comparator<Member> {
             }
 
             // otherwise sort after nick
-            result += member1.getNick().toLowerCase().compareTo(
-                member2.getNick().toLowerCase());
+            result += member1.getNick().toLowerCase()
+                .compareTo(member2.getNick().toLowerCase());
         } else if (type == 1) {
             // Sort by last connect time
-            result = compareDates(member1.getInfo().lastConnectTime, member2
-                .getInfo().lastConnectTime);
+            result = compareDates(member1.getInfo().getLastConnectTime(),
+                member2.getInfo().getLastConnectTime());
         } else if (type == 2) {
             // Sort by connection type
             result -= member1.isOnLAN() ? 100 : 0;
             result += member2.isOnLAN() ? 100 : 0;
         } else if (type == 3) {
             // Sort by reconn priority
-            result = compareDates(member1.getLastNetworkConnectTime(), member2
-                .getLastNetworkConnectTime());
+            result = compareDates(member1.getLastNetworkConnectTime(),
+                member2.getLastNetworkConnectTime());
 
             if (member1.isFriend()) {
                 result -= 8;
@@ -152,19 +152,20 @@ public class MemberComparator implements Comparator<Member> {
             result -= member2.isOnLAN() ? 10000 : 0;
 
             // Compare by upload availibility
-            long tsresult = compareTransferStatus(member1
-                .getLastTransferStatus(), member2.getLastTransferStatus());
+            long tsresult = compareTransferStatus(
+                member1.getLastTransferStatus(),
+                member2.getLastTransferStatus());
 
             result += tsresult;
 
             // logWarning("TS Result between " + member1.getNick() + " and "
             // + member2.getNick() +": " + tsresult);
         } else if (type == 5) { // nickname
-            return member1.getNick().toLowerCase().compareTo(
-                member2.getNick().toLowerCase());
+            return member1.getNick().toLowerCase()
+                .compareTo(member2.getNick().toLowerCase());
         } else if (type == 6) { // hostname
-            return member1.getHostName().toLowerCase().compareTo(
-                member2.getHostName().toLowerCase());
+            return member1.getHostName().toLowerCase()
+                .compareTo(member2.getHostName().toLowerCase());
         } else if (type == 7) { // ip
             String ip1 = member1.getIP();
             if (ip1 == null) {
