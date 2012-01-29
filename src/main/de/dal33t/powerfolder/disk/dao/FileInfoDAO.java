@@ -98,7 +98,7 @@ public interface FileInfoDAO {
      * 
      * @param domain
      */
-    void deleteDomain(String domain);
+    void deleteDomain(String domain, int newInitialSize);
 
     /**
      * Finds all {@link FileInfo} objects of the given domain.

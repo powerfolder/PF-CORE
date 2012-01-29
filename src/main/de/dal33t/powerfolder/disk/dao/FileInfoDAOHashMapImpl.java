@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
@@ -129,8 +128,16 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    public void deleteDomain(String domain) {
-        domains.remove(domain);
+    public void deleteDomain(String domain, int newInitialSize) {
+        String theDomain = StringUtils.isBlank(domain) ? selfDomain : domain;
+        domains.remove(theDomain);
+        if (newInitialSize > 0) {
+            domains.put(theDomain, new Domain(newInitialSize));
+            if (isFine()) {
+                logFine("Created new domain (" + theDomain
+                    + ") with initial capacity " + newInitialSize);
+            }
+        }
     }
 
     public FileInfo find(FileInfo info, String domain) {
@@ -195,28 +202,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
 
     public void store(String domain, Collection<FileInfo> infos) {
         Domain d = getDomain(domain);
-
-        if (d.initLock.isLocked()) {
-            // Another thread is re-initializing the domain. wait for that.
-            d.initLock.lock();
-            d.initLock.unlock();
-        }
-
-        // Correct initial-capacity:
-        if (infos.size() > d.files.size() * 2 + 4) {
-            try {
-                d.initLock.lock();
-                if (isFine()) {
-                    logFine("Extending initial capacity to " + infos.size());
-                }
-                ConcurrentHashMap<FileInfo, FileInfo> newFilesMap = Util
-                    .createConcurrentHashMap(infos.size());
-                newFilesMap.putAll(d.files);
-                d.files = newFilesMap;
-            } finally {
-                d.initLock.unlock();
-            }
-        }
 
         for (FileInfo fileInfo : infos) {
             if (fileInfo.isFile()) {
@@ -346,7 +331,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             if (isFiner()) {
                 logFiner("Domain '" + theDomain + "' created");
             }
-            d = new Domain();
+            d = new Domain(500);
             domains.put(theDomain, d);
             return d;
         }
@@ -382,11 +367,15 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     private static class Domain {
-        private ReentrantLock initLock = new ReentrantLock();
-        private ConcurrentMap<FileInfo, FileInfo> files = Util
-            .createConcurrentHashMap(4);
+
+        private final ConcurrentMap<FileInfo, FileInfo> files;
         private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = Util
             .createConcurrentHashMap(4);
+
+        public Domain(int suggestedSize) {
+            super();
+            files = Util.createConcurrentHashMap(suggestedSize);
+        }
 
         public String toString() {
             return "Domain: " + files.size() + " files, " + directories.size()

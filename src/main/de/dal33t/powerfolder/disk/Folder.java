@@ -90,7 +90,17 @@ import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Visitor;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -1566,6 +1576,8 @@ public class Folder extends PFComponent {
                             setDBDirty();
                         }
                     }
+                    // Help with initial capacity info.
+                    dao.deleteDomain(null, files.length);
                     dao.store(null, files);
                 }
 
@@ -2349,7 +2361,7 @@ public class Folder extends PFComponent {
         logFine("Member left " + member);
 
         // remove files of this member in our datastructure
-        dao.deleteDomain(member.getId());
+        dao.deleteDomain(member.getId(), -1);
 
         // Fire event
         fireMemberLeft(member);
@@ -2842,11 +2854,12 @@ public class Folder extends PFComponent {
         // Update DAO
         if (newList.isNull()) {
             // Delete files in domain and do nothing
-            dao.deleteDomain(from.getId());
+            dao.deleteDomain(from.getId(), -1);
             return;
         }
         // Store but also deleted/clear domain before.
-        store(from, true, newList.files);
+        int expectedItems = newList.nFollowingDeltas * newList.files.length;
+        store(from, expectedItems, newList.files);
 
         // Try to find same files
         findSameFiles(from, Arrays.asList(newList.files));
@@ -2974,26 +2987,25 @@ public class Folder extends PFComponent {
     }
 
     private void store(Member member, FileInfo... fileInfos) {
-        store(member, false, fileInfos);
+        store(member, -1, fileInfos);
     }
 
-    private void store(Member member, boolean deletedDomain,
-        FileInfo... fileInfos)
+    private void store(Member member, int newDomainSize, FileInfo... fileInfos)
     {
-        store(member, deletedDomain, Arrays.asList(fileInfos));
+        store(member, newDomainSize, Arrays.asList(fileInfos));
     }
 
     private void store(Member member, Collection<FileInfo> fileInfos) {
-        store(member, false, fileInfos);
+        store(member, -1, fileInfos);
     }
 
-    private void store(Member member, boolean deleteDomain,
+    private void store(Member member, int newDomainSize,
         Collection<FileInfo> fileInfos)
     {
         synchronized (dbAccessLock) {
             String domainID = member.isMySelf() ? null : member.getId();
-            if (deleteDomain) {
-                dao.deleteDomain(domainID);
+            if (newDomainSize > 0) {
+                dao.deleteDomain(domainID, newDomainSize);
             }
             dao.store(domainID, fileInfos);
         }
