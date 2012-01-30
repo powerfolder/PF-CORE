@@ -157,7 +157,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 InetAddress.getByName("127.0.0.1"));
 
             // Server socket can be opend, no instance of PowerFolder running
-            log.warning("No running instance found");
+            log.fine("No running instance found");
             return false;
         } catch (UnknownHostException e) {
         } catch (IOException e) {
