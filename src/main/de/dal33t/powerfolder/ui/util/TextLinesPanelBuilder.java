@@ -34,24 +34,23 @@ import de.dal33t.powerfolder.util.StringUtils;
 public class TextLinesPanelBuilder {
     public static JPanel createTextPanel(String text, int fontsize) {
         // split into tokens
-        String contentsArray[] = text.split("\n");
+        String[] contentsArray = text.split("\n");
         FormLayout contentsForm = new FormLayout("pref");
         PanelBuilder builder = new PanelBuilder(contentsForm);
         
         int row = 1;
         CellConstraints cc = new CellConstraints();
 
-        for (int i = 0; i < contentsArray.length; i++) {
-            String lineText = contentsArray[i];
+        for (String lineText : contentsArray) {
             if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
                 builder.appendRow("3dlu");
             } else {
                 builder.appendRow("pref");
-                JLabel label = new JLabel("<HTML><BODY>" + contentsArray[i]
-                    + "</BODY></HTML>");
+                JLabel label = new JLabel("<HTML><BODY>" + lineText
+                        + "</BODY></HTML>");
                 Font font = new Font(label.getFont().getFontName(), Font.BOLD,
-                    fontsize);
+                        fontsize);
                 label.setFont(font);
                 builder.add(label, cc.xy(1, row));
             }
