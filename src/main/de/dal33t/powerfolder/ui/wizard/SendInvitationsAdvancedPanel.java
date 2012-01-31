@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.util.BaseDialog;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;

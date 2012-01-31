@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.BaseDialog;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 
 /**
  * A dialog that gets displayed when the free version hits its limits.

@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.wizard.ChooseMultiDiskLocationPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.ui.util.BaseDialog;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 
 /**
  * Panel displayed when wanting to link a synchronized directory to an online

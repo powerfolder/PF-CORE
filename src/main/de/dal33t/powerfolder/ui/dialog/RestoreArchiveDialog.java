@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.util.BaseDialog;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.util.DialogFactory;
 import de.dal33t.powerfolder.ui.util.GenericDialogType;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileInfoVersionTypeHolder;

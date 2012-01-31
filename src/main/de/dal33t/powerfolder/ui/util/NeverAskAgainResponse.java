@@ -32,7 +32,7 @@ public class NeverAskAgainResponse {
      *
      * @param buttonIndex 0 = first button, 1 = second, etc.
      * -1 if dialog cancelled.
-     * @param neverAskAgain true if never askagain checked.
+     * @param neverAskAgain true if never ask again checked.
      */
     public NeverAskAgainResponse(int buttonIndex, boolean neverAskAgain) {
         this.buttonIndex = buttonIndex;

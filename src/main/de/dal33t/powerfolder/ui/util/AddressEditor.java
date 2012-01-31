@@ -45,7 +45,7 @@ import com.jgoodies.validation.view.ValidationResultViewFactory;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.BaseDialog;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.util.net.AddressRange;
 
 public class AddressEditor extends BaseDialog {

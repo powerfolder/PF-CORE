@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.*;
 
 import javax.swing.*;
 import java.awt.*;

@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.BaseDialog;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**

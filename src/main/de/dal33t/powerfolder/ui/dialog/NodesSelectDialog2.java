@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.ui.friends.FindComputersDialog;
 import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
-import de.dal33t.powerfolder.ui.util.BaseDialog;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
