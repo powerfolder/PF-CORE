@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.ui.util;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.ui.CursorUtils;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
 
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;

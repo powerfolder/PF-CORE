@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui.widget;
 
 import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.CursorUtils;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
 
 import javax.swing.*;
 import java.awt.*;

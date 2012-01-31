@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.CursorUtils;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.transfer.TransferManager;
 
 import javax.swing.*;

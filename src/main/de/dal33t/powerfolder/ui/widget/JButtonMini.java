@@ -34,7 +34,7 @@ import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.event.WeakActionListener;
 import de.dal33t.powerfolder.event.WeakPropertyChangeListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.CursorUtils;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
 
 /**
  * Class showing image button with no border, except when hover or pressed. Uses

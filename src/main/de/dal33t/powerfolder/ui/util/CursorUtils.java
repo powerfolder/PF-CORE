@@ -17,7 +17,7 @@
  *
  * $Id: CursorUtils.java 15990 2011-08-03 12:43:11Z harry $
  */
-package de.dal33t.powerfolder.ui;
+package de.dal33t.powerfolder.ui.util;
 
 import java.awt.*;
 
