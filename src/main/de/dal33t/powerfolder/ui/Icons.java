@@ -150,7 +150,7 @@ public class Icons {
     public static final String ONLINE_FOLDER = "settings.icon";
     public static final String ONLINE_FOLDER_SMALL = "online_folder_small.icon";
     public static final String PREVIEW_FOLDER = "preview_folder.icon";
-    public static final String TYPICAL_FOLDER = "settings.icon";
+    public static final String TYPICAL_FOLDER = "typical_folder.icon";
 
     public static final String BLACK_LIST = "black_list.icon";
     public static final String WHITE_LIST = "white_list.icon";

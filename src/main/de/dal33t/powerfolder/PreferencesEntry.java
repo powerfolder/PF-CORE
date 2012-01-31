@@ -155,7 +155,7 @@ public enum PreferencesEntry {
 
     SHOW_AUTO_CREATED_FOLDERS("show.auto.created.folders", true),
 
-    SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
+    SHOW_TYPICAL_FOLDERS("show.typical.folders", true),
 
     DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true);
 
