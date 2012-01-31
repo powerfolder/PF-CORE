@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard

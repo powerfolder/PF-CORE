@@ -38,12 +38,12 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
-import de.dal33t.powerfolder.util.ui.EstimatedTime;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.EstimatedTime;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Renderer for any transfer table

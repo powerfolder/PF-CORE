@@ -21,10 +21,10 @@ package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * UI Model for the Online Storage client.

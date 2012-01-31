@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

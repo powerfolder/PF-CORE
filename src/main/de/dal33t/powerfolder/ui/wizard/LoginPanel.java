@@ -55,8 +55,8 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.ConfigurationLoaderDialog;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {

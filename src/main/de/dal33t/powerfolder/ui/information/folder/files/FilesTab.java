@@ -60,7 +60,7 @@ import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
 import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * UI component for the folder files tab

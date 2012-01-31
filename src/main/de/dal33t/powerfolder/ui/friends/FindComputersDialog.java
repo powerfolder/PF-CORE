@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.friends;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
+import de.dal33t.powerfolder.ui.util.BaseDialog;
 
 import javax.swing.*;
 

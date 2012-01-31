@@ -8,7 +8,7 @@ import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import de.dal33t.powerfolder.util.ui.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 
 public class DelayedUpdaterTest extends TestCase {
     private DelayedUpdater updater;

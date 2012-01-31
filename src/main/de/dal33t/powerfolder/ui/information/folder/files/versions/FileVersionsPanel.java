@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.light.FileInfo;
 
 import javax.swing.*;

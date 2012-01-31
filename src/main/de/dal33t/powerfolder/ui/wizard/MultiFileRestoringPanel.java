@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -134,7 +134,7 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
         }
     }
 
-    private class RestoreWorker extends SwingWorker {
+    private class RestoreWorker extends de.dal33t.powerfolder.ui.util.SwingWorker {
 
         public Object construct() {
             int i = 1;

@@ -21,8 +21,8 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
+import de.dal33t.powerfolder.ui.event.SelectionModel;
 
 import javax.swing.*;
 
@@ -33,7 +33,7 @@ import javax.swing.*;
  * public void actionPerformed(ActionEvent e)
  */
 public abstract class SelectionBaseAction extends BaseAction implements
-    SelectionChangeListener
+        SelectionChangeListener
 {
     private SelectionModel selectionModel;
 

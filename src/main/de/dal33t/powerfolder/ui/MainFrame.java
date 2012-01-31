@@ -48,10 +48,10 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.DialogFactory;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.util.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**

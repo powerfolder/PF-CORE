@@ -46,10 +46,10 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
-import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JPanel panel;

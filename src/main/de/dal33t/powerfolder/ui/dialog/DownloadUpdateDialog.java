@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.StreamCallback;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 import javax.swing.*;
 import java.awt.*;

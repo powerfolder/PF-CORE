@@ -20,9 +20,9 @@
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.Controller;

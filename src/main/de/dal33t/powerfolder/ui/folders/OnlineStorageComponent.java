@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 /**
  * Class showing the Online storage sync details for an ExpandableFolderView

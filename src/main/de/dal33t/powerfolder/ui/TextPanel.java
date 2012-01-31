@@ -19,8 +19,7 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import de.dal33t.powerfolder.util.ui.UIPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -34,7 +33,7 @@ import java.awt.*;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.6 $
  */
-public class TextPanel implements UIPanel {
+public class TextPanel {
     private AutoScrollDocumentListner docListener;
     private JTextPane textArea;
     private JScrollPane textAreaPane;

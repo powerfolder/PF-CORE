@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.ui.notices;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.DialogFactory;
+import de.dal33t.powerfolder.ui.util.GenericDialogType;
 
 /**
  * Notice to wrap a WarningEvent. Show in notification and add to app model.

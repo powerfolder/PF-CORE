@@ -74,6 +74,10 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
+import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
+import de.dal33t.powerfolder.ui.event.SelectionModel;
+import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
@@ -83,13 +87,11 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
-import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * UI component for the information settings tab

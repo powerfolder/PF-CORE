@@ -44,12 +44,12 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.BaseDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.util.DialogFactory;
+import de.dal33t.powerfolder.ui.util.SyncProfileSelectorPanel;
 
 /**
  * Panel displayed when wanting to move a folder from preview to join

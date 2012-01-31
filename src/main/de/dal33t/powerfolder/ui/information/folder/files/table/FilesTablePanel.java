@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.*;
@@ -61,8 +62,6 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     TreeSelectionListener, DirectoryFilterListener
@@ -359,7 +358,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
         int[] rows = table.getSelectedRows();
         final DiskItem[] diskItems = tableModel.getDiskItemsAtRows(rows);
-        SwingWorker worker = new ActivityVisualizationWorker(getUIController())
+        de.dal33t.powerfolder.ui.util.SwingWorker worker = new ActivityVisualizationWorker(getUIController())
         {
             public Object construct() {
                 FolderRepository repo = getController().getFolderRepository();
@@ -510,7 +509,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            SwingWorker worker = new ActivityVisualizationWorker(
+            de.dal33t.powerfolder.ui.util.SwingWorker worker = new ActivityVisualizationWorker(
                 getUIController())
             {
 

@@ -24,6 +24,8 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FO
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.SyncProfileSelectorPanel;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -44,8 +46,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 /**
  * Class to do folder creation for an optional specified folderInfo.

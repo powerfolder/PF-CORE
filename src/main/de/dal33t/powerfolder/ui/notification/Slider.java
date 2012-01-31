@@ -31,7 +31,7 @@ import javax.swing.JWindow;
 import javax.swing.Timer;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Creates an animated view that slides out of the bottom-right corner of the

@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 /**
  * Table to display files of a folder.

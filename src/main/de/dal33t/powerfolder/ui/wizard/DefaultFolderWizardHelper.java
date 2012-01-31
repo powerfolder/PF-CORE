@@ -36,9 +36,9 @@ import de.dal33t.powerfolder.security.Account;
 import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.ui.PFUIPanel;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.ui.Help;
+import de.dal33t.powerfolder.ui.util.Help;
 import jwf.WizardContext;
 import jwf.WizardPanel;
 
@@ -52,7 +52,7 @@ import java.io.File;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public class DefaultFolderWizardHelper extends PFUIPanel {
+public class DefaultFolderWizardHelper extends PFUIComponent {
 
     private ServerClient client;
     private ServerClientListener listener;

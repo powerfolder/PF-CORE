@@ -43,7 +43,6 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIPanel;
 
 /**
  * Displays some network statistics and file statistics.
@@ -51,7 +50,7 @@ import de.dal33t.powerfolder.util.ui.UIPanel;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $
  */
-public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
+public class NetworkStatisticsPanel extends PFUIComponent {
 
     private JPanel panel;
     private JPanel networkStatsPanel;

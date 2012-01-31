@@ -54,16 +54,13 @@ import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.ui.Help;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DelayedUpdater;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
-import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
+import de.dal33t.powerfolder.ui.util.*;
+import de.dal33t.powerfolder.ui.util.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker.CheckTask;
+import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
 
 /**
  * The status bar on the lower side of the main window.

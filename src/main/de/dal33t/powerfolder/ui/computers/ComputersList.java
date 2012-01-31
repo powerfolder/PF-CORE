@@ -41,9 +41,9 @@ import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 public class ComputersList extends PFUIComponent {
 

@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
+import de.dal33t.powerfolder.ui.util.BaseDialog;
 
 import javax.swing.*;
 import java.awt.*;

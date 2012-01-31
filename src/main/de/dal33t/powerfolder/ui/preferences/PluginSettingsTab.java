@@ -26,15 +26,15 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
+import de.dal33t.powerfolder.ui.event.SelectionModel;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.plugin.Plugin;
 import de.dal33t.powerfolder.plugin.PluginEvent;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.plugin.PluginManagerListener;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

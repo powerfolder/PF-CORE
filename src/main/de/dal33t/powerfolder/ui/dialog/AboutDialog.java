@@ -69,8 +69,8 @@ import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.TextLinesPanelBuilder;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.ManuallyInvokedUpdateHandler;
 

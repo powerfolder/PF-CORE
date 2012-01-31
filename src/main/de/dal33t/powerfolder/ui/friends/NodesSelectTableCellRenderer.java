@@ -21,10 +21,8 @@ package de.dal33t.powerfolder.ui.friends;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

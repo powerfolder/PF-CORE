@@ -25,7 +25,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.ProgressListener;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +39,7 @@ import java.util.concurrent.Semaphore;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public abstract class ActivityVisualizationWorker extends SwingWorker {
+public abstract class ActivityVisualizationWorker extends de.dal33t.powerfolder.ui.util.SwingWorker {
     private JDialog dialog;
     private JLabel infoText;
     private JProgressBar bar;

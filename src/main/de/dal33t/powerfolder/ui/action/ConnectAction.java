@@ -29,9 +29,9 @@ import javax.swing.JOptionPane;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Asks for ip and tries to connect

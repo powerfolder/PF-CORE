@@ -90,6 +90,7 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.ByteSerializer;
@@ -116,8 +117,7 @@ import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.util.ui.UIUnLockDialog;
+import de.dal33t.powerfolder.ui.util.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 
 /**

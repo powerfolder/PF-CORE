@@ -31,8 +31,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.ui.util.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,7 +70,7 @@ public class SyncFolderPanel extends BaseDialog {
      * Performs the choosen sync options
      */
     private void performSync() {
-        SwingWorker worker = new SyncFolderWorker();
+        de.dal33t.powerfolder.ui.util.SwingWorker worker = new SyncFolderWorker();
         worker.start();
     }
 

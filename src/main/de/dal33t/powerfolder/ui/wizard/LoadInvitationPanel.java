@@ -20,6 +20,9 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.ui.util.FileSelectorFactory;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.SyncProfileSelectorPanel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,9 +55,6 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.FileSelectorFactory;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 /**
  * Class that selects an invitation then does the folder setup for that invite.

@@ -36,10 +36,9 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
-import de.dal33t.powerfolder.util.ui.UIPanel;
+import de.dal33t.powerfolder.ui.util.ConfigurationLoaderDialog;
 
-public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
+public class ServerSelectorPanel extends PFUIComponent {
 
     private JPanel panel;
     private JTextField addressField;

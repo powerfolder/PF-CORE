@@ -56,13 +56,13 @@ import javax.swing.plaf.IconUIResource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.util.OverlayedIcon;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.skin.BlueGlobe;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
 /**
  * Contains all icons for the powerfolder application. Icons should be got by

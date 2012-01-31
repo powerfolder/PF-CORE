@@ -47,10 +47,10 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 

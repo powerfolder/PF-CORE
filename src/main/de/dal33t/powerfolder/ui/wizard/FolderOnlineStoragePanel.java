@@ -39,10 +39,10 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.ui.util.DialogFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.GenericDialogType;
 
 public class FolderOnlineStoragePanel extends PFWizardPanel {
 

@@ -32,15 +32,13 @@ import javax.swing.JTextArea;
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.TextPanel;
+import de.dal33t.powerfolder.ui.util.DialogFactory;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.GenericDialogType;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>

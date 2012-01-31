@@ -25,9 +25,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.dialog.PreviewFolderRemovePanel;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
+import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
+import de.dal33t.powerfolder.ui.event.SelectionModel;
 
 /**
  * Action which acts on selected preview folder. Removes selected folder from PF

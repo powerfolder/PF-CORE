@@ -64,7 +64,7 @@ import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTableModel;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Dialog for selecting a number of users.

@@ -38,9 +38,9 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
  * A Label which executes the action when clicked.

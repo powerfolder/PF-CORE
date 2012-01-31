@@ -23,10 +23,10 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
