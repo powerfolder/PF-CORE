@@ -414,7 +414,6 @@ public class MainFrame extends PFUIComponent {
         }
 
         String syncStatsText;
-        boolean synced = false;
         if (!getController().getNodeManager().isStarted()) {
             // Not started
             syncStatsText = Translation
@@ -435,7 +434,6 @@ public class MainFrame extends PFUIComponent {
             } else {
                 syncStatsText = Translation
                     .getTranslation("main_frame.in_sync");
-                synced = true;
             }
         }
         syncTextLabel.setText(syncStatsText);
@@ -514,7 +512,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Stores all current window valus.
+     * Stores all current window values.
      */
     public void storeValues() {
         // Store main window preferences
@@ -550,8 +548,6 @@ public class MainFrame extends PFUIComponent {
                 PreferencesEntry.INFO_WIDTH.setValue(getController(),
                     inlineInfoPanel.getWidth());
             }
-
-            mainTabbedPane.storeValues();
         }
     }
 

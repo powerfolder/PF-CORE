@@ -19,20 +19,13 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -59,13 +52,12 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -86,18 +78,7 @@ public class FoldersList extends PFUIComponent {
     private boolean empty;
     private volatile boolean populated;
 
-    private boolean collapseLocal;
-    private JLabel localLabel;
-    private JLabel localIcon;
-
     private boolean showTypical;
-    private boolean collapseTypical;
-    private JLabel typicalLabel;
-    private JLabel typicalIcon;
-
-    private boolean collapseOnline;
-    private JLabel onlineLabel;
-    private JLabel onlineIcon;
 
     private DelayedUpdater transfersUpdater;
     private DelayedUpdater foldersUpdater;
@@ -114,12 +95,6 @@ public class FoldersList extends PFUIComponent {
         showTypical = PreferencesEntry.SHOW_TYPICAL_FOLDERS
             .getValueBoolean(getController());
         this.foldersTab = foldersTab;
-        collapseLocal = PreferencesEntry.FOLDER_LOCAL_COLLAPSED
-            .getValueBoolean(getController());
-        collapseTypical = PreferencesEntry.FOLDER_TYPICAL_COLLAPSED
-            .getValueBoolean(getController());
-        collapseOnline = PreferencesEntry.FOLDER_ONLINE_COLLAPSED.
-                getValueBoolean(getController());
         transfersUpdater = new DelayedUpdater(getController());
         foldersUpdater = new DelayedUpdater(getController());
         expansionListener = new MyExpansionListener();
@@ -127,23 +102,6 @@ public class FoldersList extends PFUIComponent {
 
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
 
-        localLabel = new JLabel(Translation
-            .getTranslation("folders_list.local_folders"));
-        localIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
-        localLabel.addMouseListener(new LocalListener());
-        localIcon.addMouseListener(new LocalListener());
-
-        typicalLabel = new JLabel(Translation
-            .getTranslation("folders_list.typical_folders"));
-        typicalIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
-        typicalLabel.addMouseListener(new TypicalListener());
-        typicalIcon.addMouseListener(new TypicalListener());
-
-        onlineLabel = new JLabel(Translation
-            .getTranslation("folders_list.online_folders"));
-        onlineIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
-        onlineLabel.addMouseListener(new OnlineListener());
-        onlineIcon.addMouseListener(new OnlineListener());
         buildUI();
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
@@ -237,8 +195,6 @@ public class FoldersList extends PFUIComponent {
 
         // Get combined list of repo and account folders.
         List<ExpandableFolderModel> localFolders = new ArrayList<ExpandableFolderModel>();
-        List<ExpandableFolderModel> typicalFolders = new ArrayList<ExpandableFolderModel>();
-        List<ExpandableFolderModel> onlineFolders = new ArrayList<ExpandableFolderModel>();
 
         for (Folder folder : repo.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
@@ -247,18 +203,16 @@ public class FoldersList extends PFUIComponent {
                     getController().getOSClient().joinedByCloud(folder));
             localFolders.add(bean);
         }
-        Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
-       
+
         for (FolderInfo folderInfo : client.getAccountFolders()) {
             ExpandableFolderModel bean = new ExpandableFolderModel(
                 ExpandableFolderModel.Type.CloudOnly, folderInfo, null, true);
             if (localFolders.contains(bean)) {
                 continue;
             }
-            onlineFolders.add(bean);
+            localFolders.add(bean);
         }
-        Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
-        
+
         if (showTypical) {
             boolean showAppData = PreferencesEntry.ADVANCED_MODE
                 .getValueBoolean(getController());
@@ -270,19 +224,16 @@ public class FoldersList extends PFUIComponent {
                 ExpandableFolderModel bean = new ExpandableFolderModel(
                     ExpandableFolderModel.Type.Typical, folderInfo, null, false);
 
-                if (!localFolders.contains(bean)
-                    && !onlineFolders.contains(bean))
+                if (!localFolders.contains(bean))
                 {
-                    typicalFolders.add(bean);
+                    localFolders.add(bean);
                 }
             }
-            Collections.sort(typicalFolders, FolderBeanComparator.INSTANCE);
         }
-        
-        
 
-        empty = onlineFolders.isEmpty() && typicalFolders.isEmpty() &&
-                localFolders.isEmpty();
+        Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
+
+        empty = localFolders.isEmpty();
 
         synchronized (views) {
 
@@ -313,57 +264,26 @@ public class FoldersList extends PFUIComponent {
                 scrollPane.repaint();
             }
 
+            addSeparator(new JLabel(Translation.getTranslation("folder_list.my_folders")));
+
             // Add new folder views.
-            addSeparator(collapseLocal, localIcon, localLabel, false);
-            if (!collapseLocal) {
-                for (ExpandableFolderModel folderBean : localFolders) {
-                    addView(folderBean, expandedFolderInfo, focussedFolderInfo);
-                }
-            }
-
-            addSeparator(collapseOnline, onlineIcon, onlineLabel, true);
-
-            if (!collapseOnline) {
-                for (ExpandableFolderModel folderBean : onlineFolders) {
-                    addView(folderBean, expandedFolderInfo, focussedFolderInfo);
-                }
-            }
-
-            if (showTypical) {
-                addSeparator(collapseTypical, typicalIcon, typicalLabel, true);
-
-                if (!collapseTypical) {
-                    for (ExpandableFolderModel folderBean : typicalFolders) {
-                        addView(folderBean, expandedFolderInfo, focussedFolderInfo);
-                    }
-                }
+            for (ExpandableFolderModel folderBean : localFolders) {
+                addView(folderBean, expandedFolderInfo, focussedFolderInfo);
             }
 
         }
         foldersTab.updateEmptyLabel();
     }
 
-    private void addSeparator(boolean collapsed, JLabel icon, JLabel label, boolean showSeparator) {
+    private void addSeparator(JLabel label) {
         FormLayout layout = new FormLayout(
-            "3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu", "pref, 4dlu");
+            "3dlu, pref, 3dlu, pref:grow, 3dlu", "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND) : Icons
-            .getIconById(Icons.COLLAPSE));
-        icon.setToolTipText(collapsed ? Translation
-            .getTranslation("folders_list.expand_hint") : Translation
-            .getTranslation("folders_list.collapse_hint"));
-        label.setToolTipText(collapsed ? Translation
-            .getTranslation("folders_list.expand_hint") : Translation
-            .getTranslation("folders_list.collapse_hint"));
-        builder.add(icon, cc.xy(2, 1));
-        builder.add(label, cc.xy(4, 1));
-        if (showSeparator) {
-            builder.add(new JSeparator(), cc.xy(6, 1));
-        }
+        builder.add(label, cc.xy(2, 1));
+        builder.add(new JSeparator(), cc.xy(4, 1));
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
-        panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         folderListPanel.add(panel);
     }
 
@@ -426,15 +346,6 @@ public class FoldersList extends PFUIComponent {
         for (ExpandableFolderView view : views) {
             view.updateProblems();
         }
-    }
-
-    public void storeValues() {
-        PreferencesEntry.FOLDER_LOCAL_COLLAPSED.setValue(getController(),
-                collapseLocal);
-        PreferencesEntry.FOLDER_TYPICAL_COLLAPSED.setValue(getController(),
-                collapseTypical);
-        PreferencesEntry.FOLDER_ONLINE_COLLAPSED.setValue(getController(),
-                collapseOnline);
     }
 
     // /////////////////
@@ -568,27 +479,6 @@ public class FoldersList extends PFUIComponent {
 
         public boolean fireInEventDispatchThread() {
             return true;
-        }
-    }
-
-    private class LocalListener extends MouseAdapter {
-        public void mouseClicked(MouseEvent e) {
-            collapseLocal = !collapseLocal;
-            updateFolders();
-        }
-    }
-
-    private class TypicalListener extends MouseAdapter {
-        public void mouseClicked(MouseEvent e) {
-            collapseTypical = !collapseTypical;
-            updateFolders();
-        }
-    }
-
-    private class OnlineListener extends MouseAdapter {
-        public void mouseClicked(MouseEvent e) {
-            collapseOnline = !collapseOnline;
-            updateFolders();
         }
     }
 

@@ -210,10 +210,6 @@ public class MainTabbedPane extends PFUIComponent {
         }
     }
 
-    public void storeValues() {
-        foldersTab.storeValues();
-    }
-
     /**
      * Listener to populate the folders and computers the first time the tabs
      * are selected.

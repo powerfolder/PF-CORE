@@ -250,10 +250,6 @@ public class FoldersTab extends PFUIComponent {
         foldersList.populate();
     }
 
-    public void storeValues() {
-        foldersList.storeValues();
-    }
-
     // ////////////////
     // Inner classes //
     // ////////////////
