@@ -244,8 +244,9 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void expand() {
         // Only actually expand local folders in advanced mode,
         // but we still need to fire the reset to clear others' focus.
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController()) &&
-            type == ExpandableFolderModel.Type.Local) {
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())
+            && type == ExpandableFolderModel.Type.Local)
+        {
             expanded.set(true);
             updateUpperComponents();
             upperPanel.setToolTipText(Translation
@@ -534,7 +535,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         webdavAction = new WebdavAction(getController());
         webViewAction = new WebViewAction(getController());
-        
+
         expanded = new AtomicBoolean();
         mouseOver = new AtomicBoolean();
 
@@ -618,10 +619,14 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateLocalButtons() {
         boolean enabled = type == ExpandableFolderModel.Type.Local;
 
-        openSettingsInformationButton.setEnabled(enabled&& !getController().isBackupOnly());
-        transferModeLabel.setEnabled(enabled&& !getController().isBackupOnly());
-        localDirectoryLabel.setEnabled(enabled && !getController().isBackupOnly());
-        openSettingsInformationAction.setEnabled(enabled && !getController().isBackupOnly());
+        openSettingsInformationButton.setEnabled(enabled
+            && !getController().isBackupOnly());
+        transferModeLabel
+            .setEnabled(enabled && !getController().isBackupOnly());
+        localDirectoryLabel.setEnabled(enabled
+            && !getController().isBackupOnly());
+        openSettingsInformationAction.setEnabled(enabled
+            && !getController().isBackupOnly());
 
         openFilesInformationButton.setEnabled(enabled);
         openFilesInformationAction.setEnabled(enabled);
@@ -1057,8 +1062,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Local folder popup
             contextMenu.add(openExplorerAction);
             contextMenu.addSeparator();
-            boolean advanced = PreferencesEntry.ADVANCED_MODE.getValueBoolean(
-                    getController());
+            boolean advanced = PreferencesEntry.ADVANCED_MODE
+                .getValueBoolean(getController());
             if (advanced) {
                 contextMenu.add(syncFolderAction);
                 contextMenu.add(openFilesInformationAction);
@@ -1075,7 +1080,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             contextMenu.addSeparator();
             contextMenu.add(openSettingsInformationAction);
             contextMenu.add(removeFolderAction);
-            if (advanced && serverClient.isConnected() && serverClient.isLoggedIn()) {
+            if (advanced && serverClient.isConnected()
+                && serverClient.isLoggedIn())
+            {
                 boolean osConfigured = serverClient.joinedByCloud(folder);
                 if (osConfigured) {
                     contextMenu.add(stopOnlineStorageAction);
@@ -1523,9 +1530,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     collapse();
                 } else {
                     expand();
-                    if (type == ExpandableFolderModel.Type.Local
-                        && getUIController().isShowingFolder())
-                    {
+                    if (type == ExpandableFolderModel.Type.Local) {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
                     }
