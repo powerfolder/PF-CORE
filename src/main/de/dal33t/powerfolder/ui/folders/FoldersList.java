@@ -199,8 +199,8 @@ public class FoldersList extends PFUIComponent {
         for (Folder folder : repo.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
             ExpandableFolderModel bean = new ExpandableFolderModel(
-                    ExpandableFolderModel.Type.Local, folderInfo, folder,
-                    getController().getOSClient().joinedByCloud(folder));
+                ExpandableFolderModel.Type.Local, folderInfo, folder,
+                getController().getOSClient().joinedByCloud(folder));
             localFolders.add(bean);
         }
 
@@ -224,8 +224,7 @@ public class FoldersList extends PFUIComponent {
                 ExpandableFolderModel bean = new ExpandableFolderModel(
                     ExpandableFolderModel.Type.Typical, folderInfo, null, false);
 
-                if (!localFolders.contains(bean))
-                {
+                if (!localFolders.contains(bean)) {
                     localFolders.add(bean);
                 }
             }
@@ -264,7 +263,8 @@ public class FoldersList extends PFUIComponent {
                 scrollPane.repaint();
             }
 
-            addSeparator(new JLabel(Translation.getTranslation("folder_list.my_folders")));
+            addSeparator(new JLabel(
+                Translation.getTranslation("folder_list.my_folders")));
 
             // Add new folder views.
             for (ExpandableFolderModel folderBean : localFolders) {
@@ -276,8 +276,8 @@ public class FoldersList extends PFUIComponent {
     }
 
     private void addSeparator(JLabel label) {
-        FormLayout layout = new FormLayout(
-            "3dlu, pref, 3dlu, pref:grow, 3dlu", "pref, 4dlu");
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
+            "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(label, cc.xy(2, 1));
@@ -288,8 +288,8 @@ public class FoldersList extends PFUIComponent {
     }
 
     private void addView(ExpandableFolderModel folderBean,
-                         FolderInfo expandedFolderInfo,
-                         FolderInfo focussedFolderInfo) {
+        FolderInfo expandedFolderInfo, FolderInfo focussedFolderInfo)
+    {
         ExpandableFolderView newView = new ExpandableFolderView(
             getController(), folderBean.getFolderInfo());
         newView.configure(folderBean);
@@ -316,7 +316,7 @@ public class FoldersList extends PFUIComponent {
         {
             newView.setFocus(true);
         }
-        
+
         newView.addExpansionListener(expansionListener);
     }
 
@@ -384,9 +384,15 @@ public class FoldersList extends PFUIComponent {
      * Listener for changes to server client folder set.
      */
     private class MyServerClientListener implements ServerClientListener {
+        private boolean lastLoginSuccess = false;
 
         public void login(ServerClientEvent event) {
-            updateFolders();
+            if (event.isLoginSuccess()) {
+                updateFolders();
+                lastLoginSuccess = true;
+            } else if (lastLoginSuccess) {
+                updateFolders();
+            }
         }
 
         public void accountUpdated(ServerClientEvent event) {
@@ -399,7 +405,7 @@ public class FoldersList extends PFUIComponent {
         public void serverDisconnected(ServerClientEvent event) {
             updateFolders();
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
             updateFolders();
         }
@@ -457,7 +463,8 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
-    private static class FolderBeanComparator implements Comparator<ExpandableFolderModel>
+    private static class FolderBeanComparator implements
+        Comparator<ExpandableFolderModel>
     {
 
         private static final FolderBeanComparator INSTANCE = new FolderBeanComparator();
