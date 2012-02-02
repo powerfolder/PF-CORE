@@ -60,6 +60,10 @@ public abstract class BoundPermission extends PFComponent {
         }, 0);
     }
 
+    public Permission getPermission() {
+        return permission;
+    }
+
     // Abstract behavior ******************************************************
 
     /**
@@ -79,12 +83,8 @@ public abstract class BoundPermission extends PFComponent {
             // Not using this.
             return;
         }
-        // Disable access by default. Only if actually has permission
-        UIUtil.invokeLaterInEDT(new Runnable() {
-            public void run() {
-                hasPermission(false);
-            }
-        });
+
+        boolean hadPermission = hasPermission;
 
         // Alternative thru security manager.
         // AccountInfo aInfo = getController().getOSClient().getAccountInfo();
@@ -94,8 +94,8 @@ public abstract class BoundPermission extends PFComponent {
         // Faster:
         hasPermission = getController().getOSClient().getAccount()
             .hasPermission(permission);
-
-        if (initial || hasPermission) {
+        boolean changed = hasPermission != hadPermission;
+        if (changed || initial) {
             // Prevent unwanted while sitting in EDT queue.
             final boolean thisHasPermission = hasPermission;
             UIUtil.invokeLaterInEDT(new Runnable() {
@@ -138,4 +138,8 @@ public abstract class BoundPermission extends PFComponent {
         }
     }
 
+    @Override
+    public String toString() {
+        return "BoundPermission [permission=" + permission + "]";
+    }
 }
