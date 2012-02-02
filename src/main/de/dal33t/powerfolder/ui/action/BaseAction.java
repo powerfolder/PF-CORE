@@ -79,8 +79,8 @@ public abstract class BaseAction extends AbstractAction {
     protected void configureFromActionId(String actionId) {
         putValue(NAME, Translation.getTranslation(actionId + ".name"));
         setMnemonicKey(Translation.getTranslation(actionId + ".key"));
-        putValue(SHORT_DESCRIPTION, Translation.getTranslation(actionId
-            + ".description"));
+        putValue(SHORT_DESCRIPTION,
+            Translation.getTranslation(actionId + ".description"));
         Icon icon = Icons.getIconById(actionId + ".icon");
         if (icon != null && icon.getIconHeight() != -1) { // check if valid
             putValue(SMALL_ICON, icon);
@@ -114,8 +114,15 @@ public abstract class BaseAction extends AbstractAction {
             // Disabled #1958
             return;
         }
+        if (permission != null && boundPermission != null
+            && permission.equals(boundPermission.getPermission()))
+        {
+            // Do nothing. Unchanged.
+            return;
+        }
         boundPermission = null;
         if (permission != null) {
+          
             boundPermission = new BoundPermission(getController(), permission) {
                 public void hasPermission(boolean hasPermission) {
                     setEnabled(hasPermission);
@@ -133,8 +140,8 @@ public abstract class BaseAction extends AbstractAction {
         if (StringUtils.isBlank(key)) {
             putValue(MNEMONIC_KEY, null);
         } else {
-            putValue(MNEMONIC_KEY, Integer.valueOf(Character.toUpperCase(key
-                .charAt(0))));
+            putValue(MNEMONIC_KEY,
+                Integer.valueOf(Character.toUpperCase(key.charAt(0))));
         }
     }
 
