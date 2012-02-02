@@ -42,11 +42,12 @@ public class MainTabbedPane extends PFUIComponent {
 
     public static final int STATUS_INDEX = 0;
     public static final int FOLDERS_INDEX = 1;
-    public static final int COMPUTERS_INDEX =  2;
+    public static final int COMPUTERS_INDEX = 2;
 
     private StatusTab statusTab;
     private FoldersTab foldersTab;
     private ComputersTab computersTab;
+    private boolean showComputersTab;
 
     /**
      * The main tabbed pane.
@@ -60,6 +61,9 @@ public class MainTabbedPane extends PFUIComponent {
      */
     public MainTabbedPane(Controller controller) {
         super(controller);
+        showComputersTab = PreferencesEntry.ADVANCED_MODE
+            .getValueBoolean(getController())
+            && !getController().isBackupOnly();
     }
 
     /**
@@ -71,49 +75,50 @@ public class MainTabbedPane extends PFUIComponent {
             // Initalize components
             initComponents();
 
-            uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.status.name"), statusTab
-                .getUIComponent());
+            uiComponent.add(
+                Translation.getTranslation("main_tabbed_pane.status.name"),
+                statusTab.getUIComponent());
 
-            uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.folders.name"), foldersTab
-                .getUIComponent());
+            uiComponent.add(
+                Translation.getTranslation("main_tabbed_pane.folders.name"),
+                foldersTab.getUIComponent());
 
-            if (getController().isBackupOnly()) {
-                // Do not display computers tab in backup only mode, BUT
-                // need to create it anyways to prevent UI events breaking.
-                computersTab.getUIComponent();
-            } else {
+            if (showComputersTab) {
                 uiComponent.add(Translation
                     .getTranslation("main_tabbed_pane.computers.name"),
                     computersTab.getUIComponent());
+            } else {
+                // Do not display computers tab in backup only mode, BUT
+                // need to create it anyways to prevent UI events breaking.
+                computersTab.getUIComponent();
             }
 
-            String key = Translation.getTranslation("main_tabbed_pane.status.key");
-            uiComponent.setMnemonicAt(STATUS_INDEX, (int) Character
-                .toUpperCase(key.charAt(0)));
+            String key = Translation
+                .getTranslation("main_tabbed_pane.status.key");
+            uiComponent.setMnemonicAt(STATUS_INDEX,
+                (int) Character.toUpperCase(key.charAt(0)));
             uiComponent.setToolTipTextAt(STATUS_INDEX, Translation
                 .getTranslation("main_tabbed_pane.status.description"));
             uiComponent
                 .setIconAt(STATUS_INDEX, Icons.getIconById(Icons.STATUS));
 
             key = Translation.getTranslation("main_tabbed_pane.folders.key");
-            uiComponent.setMnemonicAt(FOLDERS_INDEX, (int) Character
-                .toUpperCase(key.charAt(0)));
+            uiComponent.setMnemonicAt(FOLDERS_INDEX,
+                (int) Character.toUpperCase(key.charAt(0)));
             uiComponent.setToolTipTextAt(FOLDERS_INDEX, Translation
                 .getTranslation("main_tabbed_pane.folders.description"));
-            uiComponent.setIconAt(FOLDERS_INDEX, Icons
-                .getIconById(Icons.FOLDER));
+            uiComponent.setIconAt(FOLDERS_INDEX,
+                Icons.getIconById(Icons.FOLDER));
 
-            if (!getController().isBackupOnly()) {
+            if (showComputersTab) {
                 key = Translation
                     .getTranslation("main_tabbed_pane.computers.key");
-                uiComponent.setMnemonicAt(COMPUTERS_INDEX, (int) Character
-                    .toUpperCase(key.charAt(0)));
+                uiComponent.setMnemonicAt(COMPUTERS_INDEX,
+                    (int) Character.toUpperCase(key.charAt(0)));
                 uiComponent.setToolTipTextAt(COMPUTERS_INDEX, Translation
                     .getTranslation("main_tabbed_pane.computers.description"));
-                uiComponent.setIconAt(COMPUTERS_INDEX, Icons
-                    .getIconById(Icons.COMPUTER));
+                uiComponent.setIconAt(COMPUTERS_INDEX,
+                    Icons.getIconById(Icons.COMPUTER));
             }
 
             uiComponent.addChangeListener(new MyChagelistener());
@@ -200,7 +205,7 @@ public class MainTabbedPane extends PFUIComponent {
      * @param computersIcon
      */
     public void setComputersIcon(Icon computersIcon) {
-        if (!getController().isBackupOnly()) {
+        if (showComputersTab) {
             try {
                 uiComponent.setIconAt(COMPUTERS_INDEX, computersIcon);
             } catch (Exception e) {
