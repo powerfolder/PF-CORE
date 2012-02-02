@@ -258,18 +258,16 @@ public class StatusTab extends PFUIComponent {
         }
 
         if (isFiner()) {
-            logFiner("Sync status: syncing? " + syncing + ", date: " +
-                    syncDate);
+            logFiner("Sync status: syncing? " + syncing + ", date: " + syncDate);
         }
         if (synchronizationStatusLabel != null) {
             String syncStatsText;
-            if (!getController().getNodeManager()
-            .isStarted()) {
+            if (!getController().getNodeManager().isStarted()) {
                 // Not started
                 syncStatsText = Translation
                     .getTranslation("status_tab.not_running");
-            } else if (getController().getFolderRepository().getFoldersCount()
-                    == 0) {
+            } else if (getController().getFolderRepository().getFoldersCount() == 0)
+            {
                 // No folders
                 syncStatsText = Translation
                     .getTranslation("status_tab.no_folders");
@@ -501,15 +499,13 @@ public class StatusTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
 
-        Boolean advancedMode = PreferencesEntry.ADVANCED_MODE.getValueBoolean(
-                        getController());
+        Boolean advancedMode = PreferencesEntry.ADVANCED_MODE
+            .getValueBoolean(getController());
         FormLayout layout;
         if (advancedMode) {
-            layout = new FormLayout("pref, 3dlu, pref, 3dlu:grow",
-                "pref");
+            layout = new FormLayout("pref, 3dlu, pref, 3dlu:grow", "pref");
         } else {
-            layout = new FormLayout("pref, 3dlu:grow",
-                "pref");
+            layout = new FormLayout("pref, 3dlu:grow", "pref");
         }
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -536,7 +532,9 @@ public class StatusTab extends PFUIComponent {
                 dummyHeight));
             builder.add(newFolderLinkComponent, cc.xy(1, 1));
         }
-        if (!getController().isBackupOnly()) {
+        if (!getController().isBackupOnly()
+            && PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController()))
+        {
             ActionLabel searchComputerLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFindComputersAction());
             JComponent searchComputerLinkComponent = searchComputerLink
@@ -552,7 +550,8 @@ public class StatusTab extends PFUIComponent {
                 .setPreferredSize(new Dimension(
                     (int) searchComputerLinkComponent.getPreferredSize()
                         .getWidth(), dummyHeight));
-            builder.add(searchComputerLinkComponent, cc.xy(advancedMode ? 3 : 1, 1));
+            builder.add(searchComputerLinkComponent,
+                cc.xy(advancedMode ? 3 : 1, 1));
         }
 
         return builder.getPanel();
