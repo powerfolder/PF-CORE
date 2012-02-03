@@ -60,6 +60,7 @@ import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -73,6 +74,7 @@ import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
@@ -205,8 +207,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
                         .getValue());
                 }
                 if (!sendInvitation()) {
-                    throw new RuntimeException(Translation
-                        .getTranslation("wizard.send_invitations.no_invitees"));
+                    throw new RuntimeException(
+                        Translation
+                            .getTranslation("wizard.send_invitations.no_invitees"));
                 }
             }
 
@@ -233,9 +236,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
         int row = 1;
 
-        builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.invitation_hint1"), cc
-            .xyw(1, row, 2));
+        builder.addLabel(LoginUtil.getUsernameLabel(getController()),
+            cc.xyw(1, row, 2));
         row += 2;
 
         FormLayout layout2 = new FormLayout("pref:grow, 3dlu, pref, pref",
@@ -243,7 +245,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
         builder2.add(addButton, cc.xy(3, 1));
-        builder2.add(searchButton, cc.xy(4, 1));
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+            builder2.add(searchButton, cc.xy(4, 1));
+        }
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
         builder.add(panel2, cc.xy(1, row));
@@ -312,6 +316,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         inviteInfoLabel.setText(Translation
             .getTranslation("wizard.send_invitations.information"));
+        inviteInfoLabel.setVisible(Help.hasWiki(getController()));
 
         viaPowerFolderText = new AutoTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
@@ -342,14 +347,15 @@ public class SendInvitationsPanel extends PFWizardPanel {
         permissionsModel = new ValueHolder(FolderPermission.readWrite(folder),
             true);
 
-        JScrollPane messagePane = new JScrollPane(BasicComponentFactory
-            .createTextArea(messageModel));
+        JScrollPane messagePane = new JScrollPane(
+            BasicComponentFactory.createTextArea(messageModel));
         FormLayout layout2 = new FormLayout("fill:140dlu",
             "pref, 3dlu, fill:40dlu");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         CellConstraints cc = new CellConstraints();
-        builder2.addLabel(Translation
-            .getTranslation("dialog.personalized_message.hint"), cc.xy(1, 1));
+        builder2.addLabel(
+            Translation.getTranslation("dialog.personalized_message.hint"),
+            cc.xy(1, 1));
         builder2.add(messagePane, cc.xy(1, 3));
         messageComp = builder2.getPanel();
         messageComp.setVisible(false);
@@ -368,7 +374,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 // FIXME Shows email unscrambled!
                 candidateAddresses.add(0, aInfo.getUsername());
             }
-            candidateAddresses.add(friend.getNick());
+            //candidateAddresses.add(friend.getNick());
         }
         for (Member node : getController().getNodeManager().getConnectedNodes())
         {
@@ -380,7 +386,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 // FIXME Shows email unscrambled!
                 candidateAddresses.add(0, aInfo.getUsername());
             }
-            candidateAddresses.add(node.getNick());
+            //candidateAddresses.add(node.getNick());
         }
         return candidateAddresses;
     }
