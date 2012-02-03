@@ -277,10 +277,12 @@ public class SettingsTab extends PFUIComponent {
             cc.xyw(4, row, 4));
 
         row += 2;
-        builder.addLabel(
-            Translation.getTranslation("settings_tab.download_script"),
-            cc.xy(2, row));
-        builder.add(createScriptField(), cc.xyw(4, row, 4));
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+            builder.addLabel(
+                Translation.getTranslation("settings_tab.download_script"),
+                cc.xy(2, row));
+            builder.add(createScriptField(), cc.xyw(4, row, 4));
+        }
 
         row += 2;
         builder.add(
@@ -300,9 +302,7 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
 
-        if (PreferencesEntry.ADVANCED_MODE
-            .getValueBoolean(getController()))
-        {
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
             row += 2;
             builder.add(createMaintainPanel(), cc.xy(4, row));
         }
@@ -598,22 +598,25 @@ public class SettingsTab extends PFUIComponent {
                 File newDirectory = files.get(0);
                 boolean accessible = folder.checkIfDeviceDisconnected();
                 if (accessible
-                    && FileUtils.isSubdirectory(originalDirectory, newDirectory))
+                    && FileUtils
+                        .isSubdirectory(originalDirectory, newDirectory))
                 {
-                    DialogFactory.genericDialog(getController(),
-                        Translation.getTranslation("settings_tab.subdir.title"),
-                        Translation.getTranslation("settings_tab.subdir.text"),
-                        GenericDialogType.ERROR);
+                    DialogFactory
+                        .genericDialog(getController(), Translation
+                            .getTranslation("settings_tab.subdir.title"),
+                            Translation
+                                .getTranslation("settings_tab.subdir.text"),
+                            GenericDialogType.ERROR);
                 } else {
                     File foldersBaseDir = new File(getController()
                         .getFolderRepository().getFoldersBasedir());
                     if (newDirectory.equals(foldersBaseDir)) {
-                        DialogFactory
-                            .genericDialog(getController(), Translation
+                        DialogFactory.genericDialog(getController(),
+                            Translation
                                 .getTranslation("settings_tab.basedir.title"),
-                                Translation
-                                    .getTranslation("settings_tab.basedir.text"),
-                                GenericDialogType.ERROR);
+                            Translation
+                                .getTranslation("settings_tab.basedir.text"),
+                            GenericDialogType.ERROR);
                     } else {
                         // Find out if the user wants to move the content of the
                         // current folder
@@ -633,7 +636,8 @@ public class SettingsTab extends PFUIComponent {
         } finally {
             try {
                 // Unlock the 'new folder' scanner.
-                getController().getFolderRepository().setSuspendNewFolderSearch(false);
+                getController().getFolderRepository()
+                    .setSuspendNewFolderSearch(false);
             } catch (Exception e) {
                 logSevere(e);
             }
