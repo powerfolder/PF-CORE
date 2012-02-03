@@ -247,14 +247,28 @@ public class LoginUtil {
      * @return
      */
     public static String getUsernameText(Controller controller) {
-        if (controller != null
-            && ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
-                .getValueBoolean(controller))
-        {
+        if (controller != null && isUsernameEmailOnly(controller)) {
             return Translation.getTranslation("general.email");
+        } else if (isUsernameAny(controller)) {
+            return Translation.getTranslation("general.username") + " / "
+                + Translation.getTranslation("general.email");
         } else {
             return Translation.getTranslation("general.username");
         }
+    }
+
+    private static boolean isUsernameAny(Controller controller) {
+        String v = ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+            .getValue(controller);
+        return "both".equalsIgnoreCase(v);
+    }
+
+    public static boolean isUsernameEmailOnly(Controller controller) {
+        if (isUsernameAny(controller)) {
+            return false;
+        }
+        return ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+            .getValueBoolean(controller);
     }
 
     /**
