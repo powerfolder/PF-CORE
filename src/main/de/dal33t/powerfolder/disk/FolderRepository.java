@@ -1165,7 +1165,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         } else {
             suspendNewFolderSearch.decrementAndGet();
         }
-        logInfo("setSuspendNewFolderSearch to " + activity + " now: "
+        logFine("setSuspendNewFolderSearch to " + activity + " now: "
             + suspendNewFolderSearch.get());
     }
 
