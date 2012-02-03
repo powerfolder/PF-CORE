@@ -248,11 +248,15 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         int row = 2;
-        builder.add(
-            new JLabel(Translation.getTranslation("general.transfer_mode")),
-            cc.xy(2, row));
-        builder.add(transferModeSelectorPanel.getUIComponent(),
-            cc.xyw(4, row, 4));
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+            builder.add(
+                new JLabel(Translation.getTranslation("general.transfer_mode")),
+                cc.xy(2, row));
+            builder.add(transferModeSelectorPanel.getUIComponent(),
+                cc.xyw(4, row, 4));            
+        } else {
+            transferModeSelectorPanel.getUIComponent();
+        }
 
         row += 2;
         builder.add(
@@ -285,14 +289,19 @@ public class SettingsTab extends PFUIComponent {
         }
 
         row += 2;
-        builder.add(
-            new JLabel(Translation
-                .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row,
-                "right, top"));
-        builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
-
-        row += 2;
-        builder.add(createConfigurePanel(), cc.xy(4, row));
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("settings_tab.ignore_patterns")), cc.xy(2,
+                    row, "right, top"));
+            builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
+            row += 2;
+            builder.add(createConfigurePanel(), cc.xy(4, row));
+        } else {
+            createPatternsPanel();
+            createConfigurePanel();
+            row += 2;
+        }
 
         // Disabled. Not used anymore.
         createPreviewPanel();
