@@ -87,8 +87,10 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
                 weakListenersNonEDT.add(weakListener);
                 n = weakListenersNonEDT.size();
             }
-            if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS) {
-                LOG.warning(n + " weak listeners of "
+            if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS
+                && n % 10 == 0)
+            {
+                LOG.log(Level.WARNING, n + " weak listeners of "
                     + listenerInterface.getName() + " registered");
             }
         }
