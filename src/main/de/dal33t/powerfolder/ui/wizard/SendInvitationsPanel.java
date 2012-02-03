@@ -66,9 +66,9 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
+import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -274,7 +274,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(messageComp, cc.xy(1, row));
         row += 2;
 
-        builder.add(advancedLink.getUIComponent(), cc.xy(1, row));
+        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+            builder.add(advancedLink.getUIComponent(), cc.xy(1, row));
+        } else {
+            advancedLink.getUIComponent();
+        }
         row += 2;
 
         builder.add(inviteInfoLabel.getUIComponent(), cc.xyw(1, row, 2));
