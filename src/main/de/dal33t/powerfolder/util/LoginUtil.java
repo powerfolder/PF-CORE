@@ -250,7 +250,7 @@ public class LoginUtil {
         if (controller != null && isUsernameEmailOnly(controller)) {
             return Translation.getTranslation("general.email");
         } else if (isUsernameAny(controller)) {
-            return Translation.getTranslation("general.username") + " / "
+            return Translation.getTranslation("general.username") + "/"
                 + Translation.getTranslation("general.email");
         } else {
             return Translation.getTranslation("general.username");
