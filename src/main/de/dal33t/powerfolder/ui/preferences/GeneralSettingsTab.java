@@ -80,8 +80,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
-    private JCheckBox advancedModeBox;
-    private ValueModel advancedModeModel;
+    private JCheckBox expertModeBox;
+    private ValueModel expertModeModel;
 
     private JCheckBox usePowerFolderIconBox;
 
@@ -121,11 +121,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     // Exposing *************************************************************
 
     /**
-     * @return the model containing the visible-state of the advanced settings
+     * @return the model containing the visible-state of the expert settings
      *         dialog
      */
-    public ValueModel getAdvancedModeModel() {
-        return advancedModeModel;
+    public ValueModel getExpertModeModel() {
+        return expertModeModel;
     }
 
     /**
@@ -134,15 +134,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private void initComponents() {
         writeTrigger = new Trigger();
 
-        advancedModeModel = new ValueHolder(
-            PreferencesEntry.ADVANCED_MODE
+        expertModeModel = new ValueHolder(
+            PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController()));
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
-        advancedModeBox = BasicComponentFactory.createCheckBox(
-                advancedModeModel,
-            Translation.getTranslation("preferences.dialog.advanced_mode"));
+        expertModeBox = BasicComponentFactory.createCheckBox(
+                expertModeModel,
+            Translation.getTranslation("preferences.dialog.expert_mode"));
 
         ValueModel massDeleteModel = new ValueHolder(
             ConfigurationEntry.MASS_DELETE_PROTECTION
@@ -356,7 +356,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(advancedModeBox, cc.xyw(3, row, 2));
+            builder.add(expertModeBox, cc.xyw(3, row, 2));
             
             row += 2;
             builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
@@ -441,12 +441,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         // Advanced
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())
-                ^ advancedModeBox.isSelected()) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
+                ^ expertModeBox.isSelected()) {
             needsRestart = true;
         }
-        PreferencesEntry.ADVANCED_MODE.setValue(getController(),
-            advancedModeBox.isSelected());
+        PreferencesEntry.EXPERT_MODE.setValue(getController(),
+            expertModeBox.isSelected());
 
         if (createPowerFoldersDesktopShortcutsBox != null) {
             // Desktop PowerFolders shortcut.

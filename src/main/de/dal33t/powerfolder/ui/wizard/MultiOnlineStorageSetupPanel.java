@@ -133,10 +133,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.add(localFolderField, cc.xy(3, 3));
         builder.add(localFolderButton, cc.xy(5, 3));
 
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
-            builder
-                .add(
-                    new JLabel(Translation
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder.add(new JLabel(Translation
                         .getTranslation("general.transfer_mode")), cc.xy(1, 5));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
             p.setOpaque(false);
@@ -179,7 +177,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      */
     @SuppressWarnings({"unchecked"})
     public void afterDisplay() {
-        boolean showAppData = PreferencesEntry.ADVANCED_MODE
+        boolean showAppData = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
         Map<String, UserDirectory> userDirs = UserDirectories
             .getUserDirectoriesFiltered(getController(), showAppData);

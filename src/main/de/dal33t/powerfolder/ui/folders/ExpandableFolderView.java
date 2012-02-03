@@ -244,7 +244,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void expand() {
         // Only actually expand local folders in advanced mode,
         // but we still need to fire the reset to clear others' focus.
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
             && type == ExpandableFolderModel.Type.Local)
         {
             expanded.set(true);
@@ -1062,9 +1062,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Local folder popup
             contextMenu.add(openExplorerAction);
             contextMenu.addSeparator();
-            boolean advanced = PreferencesEntry.ADVANCED_MODE
+            boolean expert = PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController());
-            if (advanced) {
+            if (expert) {
                 contextMenu.add(syncFolderAction);
                 contextMenu.add(openFilesInformationAction);
                 contextMenu.add(mostRecentChangesAction);
@@ -1073,14 +1073,14 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (!getController().isBackupOnly()) {
                 contextMenu.addSeparator();
                 contextMenu.add(inviteAction);
-                if (advanced) {
+                if (expert) {
                     contextMenu.add(openMembersInformationAction);
                 }
             }
             contextMenu.addSeparator();
             contextMenu.add(openSettingsInformationAction);
             contextMenu.add(removeFolderAction);
-            if (advanced && serverClient.isConnected()
+            if (expert && serverClient.isConnected()
                 && serverClient.isLoggedIn())
             {
                 boolean osConfigured = serverClient.joinedByCloud(folder);

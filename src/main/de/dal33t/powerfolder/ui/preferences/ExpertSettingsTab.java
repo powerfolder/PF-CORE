@@ -68,7 +68,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 
-public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
+public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
     private JTextField advPort;
@@ -92,13 +92,13 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
     private boolean needsRestart;
 
-    public AdvancedSettingsTab(Controller controller) {
+    public ExpertSettingsTab(Controller controller) {
         super(controller);
         initComponents();
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.dialog.advanced.title");
+        return Translation.getTranslation("preferences.dialog.expert.title");
     }
 
     public boolean needsRestart() {

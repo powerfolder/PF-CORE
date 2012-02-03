@@ -61,7 +61,7 @@ public class MainTabbedPane extends PFUIComponent {
      */
     public MainTabbedPane(Controller controller) {
         super(controller);
-        showComputersTab = PreferencesEntry.ADVANCED_MODE
+        showComputersTab = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController())
             && !getController().isBackupOnly();
     }

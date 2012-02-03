@@ -162,7 +162,7 @@ public class FoldersTab extends PFUIComponent {
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
         builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builderInner.add(folderWizardActionLabel.getUIComponent(),
                     cc.xy(5, 1));
         }
@@ -218,15 +218,15 @@ public class FoldersTab extends PFUIComponent {
             getApplicationModel().getActionModel().getNewFolderAction());
         newFolderLink.convertToBigLabel();
         ActionLabel folderWizardLink = null;
-        Boolean advancedMode = PreferencesEntry.ADVANCED_MODE.getValueBoolean(
+        Boolean expertMode = PreferencesEntry.EXPERT_MODE.getValueBoolean(
                         getController());
-        if (advancedMode) {
+        if (expertMode) {
             folderWizardLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFolderWizardAction());
             folderWizardLink.convertToBigLabel();
         }
         FormLayout layout;
-        if (advancedMode) {
+        if (expertMode) {
             layout = new FormLayout(
                 "3dlu, pref, 3dlu, pref, 3dlu:grow", "pref");
         } else {
@@ -237,7 +237,7 @@ public class FoldersTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(newFolderLink.getUIComponent(), cc.xy(2, 1));
-        if (advancedMode) {
+        if (expertMode) {
             builder.add(folderWizardLink.getUIComponent(), cc.xy(4, 1));
         }
         return builder.getPanel();

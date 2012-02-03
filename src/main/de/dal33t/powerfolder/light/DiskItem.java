@@ -17,12 +17,9 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder;
+package de.dal33t.powerfolder.light;
 
 import java.util.Date;
-
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Common interface for FileInfo and Directory.

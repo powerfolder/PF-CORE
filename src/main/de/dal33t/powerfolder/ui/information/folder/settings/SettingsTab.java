@@ -248,7 +248,7 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         int row = 2;
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.add(
                 new JLabel(Translation.getTranslation("general.transfer_mode")),
                 cc.xy(2, row));
@@ -281,7 +281,7 @@ public class SettingsTab extends PFUIComponent {
             cc.xyw(4, row, 4));
 
         row += 2;
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.addLabel(
                 Translation.getTranslation("settings_tab.download_script"),
                 cc.xy(2, row));
@@ -289,9 +289,8 @@ public class SettingsTab extends PFUIComponent {
         }
 
         row += 2;
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
-            builder.add(
-                new JLabel(Translation
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder.add(new JLabel(Translation
                     .getTranslation("settings_tab.ignore_patterns")), cc.xy(2,
                     row, "right, top"));
             builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
@@ -311,7 +310,7 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
 
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             row += 2;
             builder.add(createMaintainPanel(), cc.xy(4, row));
         }

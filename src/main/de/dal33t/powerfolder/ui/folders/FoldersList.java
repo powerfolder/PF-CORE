@@ -214,7 +214,7 @@ public class FoldersList extends PFUIComponent {
         }
 
         if (showTypical) {
-            boolean showAppData = PreferencesEntry.ADVANCED_MODE
+            boolean showAppData = PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController());
             for (String name : UserDirectories.getUserDirectoriesFiltered(
                 getController(), showAppData).keySet())

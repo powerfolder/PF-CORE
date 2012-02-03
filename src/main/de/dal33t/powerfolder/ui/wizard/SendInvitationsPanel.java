@@ -245,7 +245,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
         builder2.add(addButton, cc.xy(3, 1));
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder2.add(searchButton, cc.xy(4, 1));
         }
         JPanel panel2 = builder2.getPanel();
@@ -274,7 +274,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(messageComp, cc.xy(1, row));
         row += 2;
 
-        if (PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.add(advancedLink.getUIComponent(), cc.xy(1, row));
         } else {
             advancedLink.getUIComponent();

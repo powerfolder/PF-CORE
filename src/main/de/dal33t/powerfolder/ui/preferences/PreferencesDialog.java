@@ -69,7 +69,7 @@ public class PreferencesDialog extends BaseDialog {
     private NetworkSettingsTab networkSettingsTab;
     private DialogsSettingsTab dialogsSettingsTab;
     private DynDnsSettingsTab dynDnsSettingsTab;
-    private AdvancedSettingsTab advancedSettingsTab;
+    private ExpertSettingsTab expertSettingsTab;
     private PluginSettingsTab pluginSettingsTab;
 
     public PreferencesDialog(Controller controller) {
@@ -121,12 +121,12 @@ public class PreferencesDialog extends BaseDialog {
         rePack();
     }
 
-    private void showAdvancedTab(boolean enable) {
+    private void showExpertTab(boolean enable) {
         if (!getController().isBackupOnly()) {
             showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX);
         }
         // Advanced tab is after DYN DNS, if shown.
-        showTab(enable, advancedSettingsTab, DYNDNS_TAB_INDEX +
+        showTab(enable, expertSettingsTab, DYNDNS_TAB_INDEX +
                 (getController().isBackupOnly() ? 0 : 1));
     }
 
@@ -193,25 +193,25 @@ public class PreferencesDialog extends BaseDialog {
             }
         });
 
-        advancedSettingsTab = new AdvancedSettingsTab(getController());
+        expertSettingsTab = new ExpertSettingsTab(getController());
 
-        if (PreferencesEntry.ADVANCED_MODE
+        if (PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController()))
         {
-            preferenceTabs.add(advancedSettingsTab);
-            tabbedPane.addTab(advancedSettingsTab.getTabName(),
-                advancedSettingsTab.getUIPanel());
+            preferenceTabs.add(expertSettingsTab);
+            tabbedPane.addTab(expertSettingsTab.getTabName(),
+                expertSettingsTab.getUIPanel());
         }
 
-        // Behavior for advanced settings panel
-        generalSettingsTab.getAdvancedModeModel()
+        // Behavior for expert settings panel
+        generalSettingsTab.getExpertModeModel()
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    showAdvancedTab(Boolean.TRUE.equals(evt.getNewValue()));
+                    showExpertTab(Boolean.TRUE.equals(evt.getNewValue()));
                 }
             });
-        showAdvancedTab(Boolean.TRUE.equals(generalSettingsTab
-            .getAdvancedModeModel().getValue()));
+        showExpertTab(Boolean.TRUE.equals(generalSettingsTab
+            .getExpertModeModel().getValue()));
 
         tabbedPane.setSelectedIndex(0);
 
@@ -383,10 +383,10 @@ public class PreferencesDialog extends BaseDialog {
             && component == dynDnsSettingsTab.getUIPanel())
         {
             article = WikiLinks.SETTINGS_DYN_DNS;
-        } else if (advancedSettingsTab != null
-            && component == advancedSettingsTab.getUIPanel())
+        } else if (expertSettingsTab != null
+            && component == expertSettingsTab.getUIPanel())
         {
-            article = WikiLinks.SETTINGS_ADVANCED;
+            article = WikiLinks.SETTINGS_EXPERT;
         } else if (pluginSettingsTab != null
             && component == pluginSettingsTab.getUIPanel())
         {

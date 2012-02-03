@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
-import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;

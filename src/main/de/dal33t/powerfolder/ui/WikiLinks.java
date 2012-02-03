@@ -29,7 +29,7 @@ public interface WikiLinks {
     String SETTINGS_UI = "User_Interface";
     String SETTINGS_NETWORK = "Network";
     String SETTINGS_DYN_DNS = "DynDNS";
-    String SETTINGS_ADVANCED = "Advanced";
+    String SETTINGS_EXPERT = "Expert";
     String SETTINGS_DIALOG = "Dialogs";
     String SETTINGS_PLUGIN = "Plugins";
 

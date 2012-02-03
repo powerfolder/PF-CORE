@@ -499,10 +499,10 @@ public class StatusTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
 
-        Boolean advancedMode = PreferencesEntry.ADVANCED_MODE
+        Boolean expertMode = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
         FormLayout layout;
-        if (advancedMode) {
+        if (expertMode) {
             layout = new FormLayout("pref, 3dlu, pref, 3dlu:grow", "pref");
         } else {
             layout = new FormLayout("pref, 3dlu:grow", "pref");
@@ -515,7 +515,7 @@ public class StatusTab extends PFUIComponent {
         JCheckBox dummyCB = new JCheckBox("x");
         int dummyHeight = (int) dummyCB.getPreferredSize().getHeight();
 
-        if (advancedMode) {
+        if (expertMode) {
             ActionLabel newFolderLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFolderWizardAction());
             newFolderLink.convertToBigLabel();
@@ -533,7 +533,7 @@ public class StatusTab extends PFUIComponent {
             builder.add(newFolderLinkComponent, cc.xy(1, 1));
         }
         if (!getController().isBackupOnly()
-            && PreferencesEntry.ADVANCED_MODE.getValueBoolean(getController()))
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             ActionLabel searchComputerLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFindComputersAction());
@@ -551,7 +551,7 @@ public class StatusTab extends PFUIComponent {
                     (int) searchComputerLinkComponent.getPreferredSize()
                         .getWidth(), dummyHeight));
             builder.add(searchComputerLinkComponent,
-                cc.xy(advancedMode ? 3 : 1, 1));
+                cc.xy(expertMode ? 3 : 1, 1));
         }
 
         return builder.getPanel();

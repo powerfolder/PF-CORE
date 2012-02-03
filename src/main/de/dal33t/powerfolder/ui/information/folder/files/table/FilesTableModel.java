@@ -29,7 +29,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
