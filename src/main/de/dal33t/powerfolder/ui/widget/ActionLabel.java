@@ -35,12 +35,9 @@ import javax.swing.JLabel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.*;
 
 /**
  * A Label which executes the action when clicked.

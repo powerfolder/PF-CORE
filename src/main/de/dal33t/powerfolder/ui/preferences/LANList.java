@@ -17,7 +17,7 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.ui.util;
+package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,13 +37,13 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.util.AddressEditor;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.dialog.AddressEditor;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.AddressRange;
-import de.dal33t.powerfolder.ui.util.AddressEditor.EditorResult;
+import de.dal33t.powerfolder.ui.dialog.AddressEditor.EditorResult;
 
 public class LANList extends PFComponent {
 
@@ -134,7 +134,7 @@ public class LANList extends PFComponent {
     }
 
     public boolean save() {
-        Object ips[] = ((DefaultListModel) networklist.getModel()).toArray();
+        Object[] ips = ((DefaultListModel) networklist.getModel()).toArray();
         StringBuilder list = new StringBuilder();
         for (Object o : ips) {
             if (list.length() > 0) {
@@ -152,7 +152,7 @@ public class LANList extends PFComponent {
         if (StringUtils.isBlank(lanListValue)) {
             return;
         }
-        String lanlist[] = lanListValue.split(",");
+        String[] lanlist = lanListValue.split(",");
         for (String ip : lanlist) {
             AddressRange ar;
             try {

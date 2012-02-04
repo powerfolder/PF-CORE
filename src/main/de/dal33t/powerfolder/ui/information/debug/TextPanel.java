@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui;
+package de.dal33t.powerfolder.ui.information.debug;
 
 import de.dal33t.powerfolder.ui.util.UIUtil;
 
@@ -42,7 +42,6 @@ public class TextPanel {
     public JComponent getUIComponent() {
         if (textAreaPane == null) {
             initComponents();
-
         }
         return textAreaPane;
     }

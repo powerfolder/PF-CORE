@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;

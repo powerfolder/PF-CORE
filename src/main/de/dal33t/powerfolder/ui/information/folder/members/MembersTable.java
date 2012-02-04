@@ -41,7 +41,7 @@ import com.jgoodies.binding.adapter.BasicComponentFactory;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.ColorUtil;

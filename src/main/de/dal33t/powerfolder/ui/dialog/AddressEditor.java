@@ -17,7 +17,7 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.util;
+package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;

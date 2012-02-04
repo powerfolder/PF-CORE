@@ -31,7 +31,7 @@ import javax.swing.border.LineBorder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.Controller;
 

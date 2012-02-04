@@ -47,6 +47,7 @@ import javax.swing.border.AbstractBorder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;

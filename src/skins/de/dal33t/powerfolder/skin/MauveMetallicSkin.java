@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import javax.swing.LookAndFeel;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaMauveMetallicLookAndFeel;
 

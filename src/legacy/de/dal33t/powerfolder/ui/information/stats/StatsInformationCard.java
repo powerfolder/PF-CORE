@@ -25,7 +25,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.transfer.BandwidthLimiterInfo;
 import de.dal33t.powerfolder.transfer.CoalescedBandwidthStat;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.util.Translation;

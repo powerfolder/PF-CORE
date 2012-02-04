@@ -241,25 +241,33 @@ public class Format extends PFComponent {
      * 
      * @param dt
      *            The time in milliseconds
-     * @return the formatted string. Examples: "102 days", "10:20:23"
+     * @return the formatted string.
+     * Examples "10 days", "5 hours", "17 minutes", "Less than one minute"
      */
     public static String formatDeltaTime(long dt) {
-        // @TODO make this progressive as it nears zero: "102 days" or
-        // "10 hours" or "5 minutes" or "Less than one minute". "10:20:23" looks
-        // like a time (twenty past ten).
         Formatter f = new Formatter();
-        long days = dt / 1000 / 60 / 60 / 24;
-        long hours = dt / 1000 / 60 / 60;
-        if (days > 1) { // Two days or more
-            f.format(Translation.getTranslation("general.days", String
-                .valueOf(days))
-                + ", ");
-            hours %= 24;
+        long days = dt / 24 / 3600 / 1000;
+        if (days >= 2) {
+            return f.format(Translation.getTranslation("format.n.days",
+                    String.valueOf(days))).out().toString();
         }
-        long minutes = dt / 1000 / 60 % 60;
-        long seconds = dt / 1000 % 60;
-        return f.format(Translation.getTranslation("general.time"), hours,
-            minutes, seconds).out().toString();
+        long hours = dt / 3600 / 1000;
+        if (hours >= 2) {
+            return f.format(Translation.getTranslation("format.n.hours",
+                    String.valueOf(hours))).out().toString();
+        }
+        long minutes = dt / 60 / 1000;
+        if (minutes >= 1) {
+            return f.format(Translation.getTranslation("format.n.minutes",
+                    String.valueOf(minutes))).out().toString();
+        } else if (minutes == 1) {
+            return f.format(Translation.getTranslation(
+                    "format.one_minute")).out().toString();
+        } else {
+            return f.format(
+                    Translation.getTranslation("format.less_than_one_minute"))
+                    .out().toString();
+        }
     }
 
     private static class CanonicalDateFormat extends ThreadLocal<DateFormat> {

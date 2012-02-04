@@ -17,7 +17,7 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.ui;
+package de.dal33t.powerfolder.ui.util;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

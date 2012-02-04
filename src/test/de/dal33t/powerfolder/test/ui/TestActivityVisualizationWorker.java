@@ -30,7 +30,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 
 /**

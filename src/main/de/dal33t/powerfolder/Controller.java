@@ -91,7 +91,7 @@ import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
@@ -675,7 +675,7 @@ public class Controller extends PFComponent {
                 // Ask for more sync options on that folder if on project sync
                 if (Util.isAwtAvailable() && folder.getSyncProfile().equals(
                                 SyncProfile.MANUAL_SYNCHRONIZATION)) {
-                    new SyncFolderPanel(this, folder).open();
+                    new SyncFolderDialog(this, folder).open();
                 } else {
                     // Recommend scan on this folder
                     folder.recommendScanOnNextMaintenance();

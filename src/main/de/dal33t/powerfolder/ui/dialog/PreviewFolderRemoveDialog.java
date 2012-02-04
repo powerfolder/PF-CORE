@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.00 $
  */
-public class PreviewFolderRemovePanel extends BaseDialog {
+public class PreviewFolderRemoveDialog extends BaseDialog {
 
     private final PreviewFolderRemoveAction action;
     private final Folder folder;
@@ -64,7 +64,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
      * @param controller
      * @param folder
      */
-    public PreviewFolderRemovePanel(PreviewFolderRemoveAction action,
+    public PreviewFolderRemoveDialog(PreviewFolderRemoveAction action,
         Controller controller, Folder folder)
     {
         super(Senior.NONE, controller, true);

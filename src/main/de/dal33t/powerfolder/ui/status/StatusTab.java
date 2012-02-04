@@ -63,7 +63,7 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.model.NoticesModel;
 import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;

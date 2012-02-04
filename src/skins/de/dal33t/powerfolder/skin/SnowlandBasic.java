@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.skin;
 
 import java.util.Properties;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 public class SnowlandBasic extends AbstractSyntheticaSkin {
     public static final String NAME = "Snowland (Basic)";

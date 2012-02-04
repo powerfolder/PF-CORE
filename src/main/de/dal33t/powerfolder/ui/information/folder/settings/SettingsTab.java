@@ -72,15 +72,15 @@ import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
 import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
 import de.dal33t.powerfolder.ui.event.SelectionModel;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
-import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
+import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -932,7 +932,7 @@ public class SettingsTab extends PFUIComponent {
         if (fldr.isPreviewOnly()) {
 
             // Join preview folder.
-            PreviewToJoinPanel panel = new PreviewToJoinPanel(controller, fldr);
+            PreviewToJoinDialog panel = new PreviewToJoinDialog(controller, fldr);
             panel.open();
 
         } else {
@@ -1097,7 +1097,7 @@ public class SettingsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            FolderRemovePanel panel = new FolderRemovePanel(getController(),
+            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
                 folder.getInfo());
             panel.open();
         }

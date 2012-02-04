@@ -25,7 +25,7 @@ import javax.swing.Icon;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.security.Permission;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.util.StringUtils;

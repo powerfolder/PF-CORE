@@ -27,7 +27,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.DownloadManagerTableCellRenderer;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;

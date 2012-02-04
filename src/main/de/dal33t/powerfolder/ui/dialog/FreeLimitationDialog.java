@@ -17,7 +17,7 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.ui;
+package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 /**
  * A dialog that gets displayed when the free version hits its limits.
@@ -50,7 +51,7 @@ public class FreeLimitationDialog extends BaseDialog {
 
     private JButton buyProButton;
 
-    protected FreeLimitationDialog(Controller controller) {
+    public FreeLimitationDialog(Controller controller) {
         super(Senior.NONE, controller, false);
     }
 

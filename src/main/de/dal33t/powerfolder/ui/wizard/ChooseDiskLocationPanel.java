@@ -63,7 +63,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.ui.util.DialogFactory;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;

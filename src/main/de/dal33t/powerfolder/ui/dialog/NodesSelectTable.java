@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.ui.dialog;
 
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.friends.NodesSelectTableCellRenderer;
 
 import javax.swing.*;

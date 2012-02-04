@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.00 $
  */
-public class FolderRemovePanel extends BaseDialog {
+public class FolderRemoveDialog extends BaseDialog {
 
     private final FolderInfo foInfo;
     private Folder folder;
@@ -73,7 +73,7 @@ public class FolderRemovePanel extends BaseDialog {
      * @param controller
      * @param foInfo
      */
-    public FolderRemovePanel(Controller controller, FolderInfo foInfo) {
+    public FolderRemoveDialog(Controller controller, FolderInfo foInfo) {
         super(Senior.MAIN_FRAME, controller, true);
         Reject.ifNull(foInfo, "FolderInfo");
         this.foInfo = foInfo;

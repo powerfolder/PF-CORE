@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.util;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.Controller;
 
 import java.io.File;

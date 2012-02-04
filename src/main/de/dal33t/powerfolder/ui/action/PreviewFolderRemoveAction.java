@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.dialog.PreviewFolderRemovePanel;
+import de.dal33t.powerfolder.ui.dialog.PreviewFolderRemoveDialog;
 import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
 import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
 import de.dal33t.powerfolder.ui.event.SelectionModel;
@@ -63,7 +63,7 @@ public class PreviewFolderRemoveAction extends BaseAction {
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (folder != null) {
             // show a confirm dialog
-            PreviewFolderRemovePanel flp = new PreviewFolderRemovePanel(this,
+            PreviewFolderRemoveDialog flp = new PreviewFolderRemoveDialog(this,
                 getController(), folder);
             flp.open();
         }

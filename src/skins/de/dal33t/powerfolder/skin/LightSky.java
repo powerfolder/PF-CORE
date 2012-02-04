@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.skin;
 
 import java.util.Properties;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 public class LightSky extends AbstractSyntheticaSkin {
     public static String ICON_PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/lightsky/icons.properties";

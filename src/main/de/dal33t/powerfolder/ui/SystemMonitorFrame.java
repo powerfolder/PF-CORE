@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.plaf.RootPaneUI;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 import de.javasoft.synthetica.addons.SystemMonitor;

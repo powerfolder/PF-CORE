@@ -102,6 +102,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
+import de.dal33t.powerfolder.ui.dialog.FreeLimitationDialog;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;

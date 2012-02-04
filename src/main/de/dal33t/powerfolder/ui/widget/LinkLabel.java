@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.StringUtils;

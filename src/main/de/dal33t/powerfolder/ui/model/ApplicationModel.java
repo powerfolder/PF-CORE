@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
@@ -129,7 +129,7 @@ public class ApplicationModel extends PFUIComponent {
         if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
         {
             // Ask for more sync options on that folder if on project sync
-            new SyncFolderPanel(getController(), folder).open();
+            new SyncFolderDialog(getController(), folder).open();
         } else {
 
             getController().setSilentMode(false);

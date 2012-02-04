@@ -11,7 +11,7 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 import junit.framework.TestCase;
 

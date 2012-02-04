@@ -28,7 +28,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -44,7 +44,7 @@ import java.awt.event.ActionListener;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
-public class SyncFolderPanel extends BaseDialog {
+public class SyncFolderDialog extends BaseDialog {
 
     private JButton okButton;
     private static final Object SEND_OPTION = new Object();
@@ -56,7 +56,7 @@ public class SyncFolderPanel extends BaseDialog {
     private JComponent sendAndReceiveChangesButton;
     private ValueModel optionModel;
 
-    public SyncFolderPanel(Controller controller, Folder folder) {
+    public SyncFolderDialog(Controller controller, Folder folder) {
         // Modal dialog
         super(Senior.NONE, controller, true);
         this.folder = folder;

@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkJButton;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 

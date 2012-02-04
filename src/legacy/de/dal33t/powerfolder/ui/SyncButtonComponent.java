@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.util.Translation;

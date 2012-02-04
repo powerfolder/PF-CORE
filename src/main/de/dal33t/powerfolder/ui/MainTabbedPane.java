@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.status.StatusTab;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Translation;
 
 /**

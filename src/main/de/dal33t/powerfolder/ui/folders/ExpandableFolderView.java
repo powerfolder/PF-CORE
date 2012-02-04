@@ -72,10 +72,10 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.ExpandableView;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
-import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
+import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -1637,7 +1637,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (folder.isPreviewOnly()) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        PreviewToJoinPanel panel = new PreviewToJoinPanel(
+                        PreviewToJoinDialog panel = new PreviewToJoinDialog(
                             getController(), folder);
                         panel.open();
                     }
@@ -1655,7 +1655,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            FolderRemovePanel panel = new FolderRemovePanel(getController(),
+            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
                 folderInfo);
             panel.open();
         }
