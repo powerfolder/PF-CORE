@@ -38,7 +38,7 @@ public class ActionModel extends PFComponent {
     private FindComputersAction findComputersAction;
     private OpenPreferencesAction openPreferencesAction;
    // private OpenStatsChartsAction openStatsChartsAction;
-    private OpenAboutBoxAction openAboutBoxAction;
+    //private OpenAboutBoxAction openAboutBoxAction;
     private ConnectAction connectAction;
     private OpenDownloadsInformationAction openDownloadsInformationAction;
     private OpenUploadsInformationAction openUploadsInformationAction;
@@ -100,13 +100,13 @@ public class ActionModel extends PFComponent {
         return openUploadsInformationAction;
     }
 
-    public OpenAboutBoxAction getOpenAboutBoxAction() {
-        if (openAboutBoxAction == null) {
-            openAboutBoxAction = new OpenAboutBoxAction(getController());
-        }
-        return openAboutBoxAction;
-    }
-
+//    public OpenAboutBoxAction getOpenAboutBoxAction() {
+//        if (openAboutBoxAction == null) {
+//            openAboutBoxAction = new OpenAboutBoxAction(getController());
+//        }
+//        return openAboutBoxAction;
+//    }
+//
     public ConnectAction getConnectAction() {
         if (connectAction == null) {
             connectAction = new ConnectAction(getController());

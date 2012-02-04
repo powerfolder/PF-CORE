@@ -57,10 +57,7 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.*;
-import de.dal33t.powerfolder.ui.util.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker.CheckTask;
-import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
 
 /**
  * The status bar on the lower side of the main window.
@@ -76,7 +73,7 @@ public class StatusBar extends PFUIComponent {
     private JLabel portLabel;
     private JLabel networkModeLabel;
     private JButton newNoticesButton;
-    private JButton openAboutBoxButton;
+    //private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
     //private JButton openStatsChartButton;
     private JButton openDebugButton;
@@ -142,10 +139,10 @@ public class StatusBar extends PFUIComponent {
                 col += 2;
             }
 //            mainBuilder.add(openStatsChartButton, cc.xy(col, 1));
-            col += 2;
+//            col += 2;
             mainBuilder.add(openPreferencesButton, cc.xy(col, 1));
-            col += 2;
-            mainBuilder.add(openAboutBoxButton, cc.xy(col, 1));
+//            col += 2;
+//            mainBuilder.add(openAboutBoxButton, cc.xy(col, 1));
             if (Feature.COMPACT_MODE.isEnabled()) {
                 col += 2;
                 mainBuilder.add(compactModeButton, cc.xy(col, 1));
@@ -201,8 +198,8 @@ public class StatusBar extends PFUIComponent {
 //        openStatsChartButton.setVisible(getController().isVerbose());
         openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
-        openAboutBoxButton = new JButtonMini(getApplicationModel()
-            .getActionModel().getOpenAboutBoxAction());
+//        openAboutBoxButton = new JButtonMini(getApplicationModel()
+//            .getActionModel().getOpenAboutBoxAction());
         openDebugButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenDebugInformationAction());
 
