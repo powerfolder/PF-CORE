@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Date;
 import java.util.jar.JarFile;
@@ -27,8 +29,7 @@ import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.text.SimpleDateFormat;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -36,11 +37,9 @@ import javax.swing.border.EmptyBorder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -48,6 +47,8 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.update.ManuallyInvokedUpdateHandler;
+import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class InformationTab extends PFComponent implements PreferenceTab {
@@ -91,8 +92,8 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
         readDateTimeFromJar();
         FormLayout layout = new FormLayout(
-            "pref:grow, pref:grow, pref:grow, pref:grow",
-            "fill:pref:grow, fill:pref:grow");
+            "pref:grow, pref:grow, pref:grow",
+            "fill:pref:grow, fill:pref:grow, fill:pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(createGeneralBox(), cc.xywh(1, 1, 2, 1));
@@ -102,10 +103,51 @@ public class InformationTab extends PFComponent implements PreferenceTab {
             builder.add(createTeamPanel(), cc.xy(3, 1));
             builder.add(createTranslators(), cc.xy(3, 2));
         }
+        builder.add(ButtonBarFactory.buildRightAlignedBar(
+                createActivateButton(),
+            createCheckForUpdatesButton()), cc.xyw(1, 3, 3));
 
         panel = builder.getPanel();
-//        panel.setBackground(Color.WHITE);
     }
+
+    private JButton createActivateButton() {
+        JButton activateButton = new JButton(
+            Translation.getTranslation("about_dialog.activate.text"));
+        activateButton.setToolTipText(Translation
+            .getTranslation("about_dialog.activate.tips"));
+        activateButton.setMnemonic(Translation
+            .getTranslation("about_dialog.activate.key").trim().charAt(0));
+        Action action = getController().getUIController().getApplicationModel()
+                .getLicenseModel().getActivationAction();
+        if (action != null) {
+            activateButton.addActionListener(action);
+        }
+        activateButton.setBackground(Color.WHITE);
+        boolean changeLoginAllowed =
+                ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+            .getValueBoolean(getController());
+        activateButton.setEnabled(changeLoginAllowed);
+        return activateButton;
+    }
+
+    /**
+     * Creates an internationlaized check for updates button. This button will
+     * invoke the manual updatechecker.
+     */
+    private JButton createCheckForUpdatesButton() {
+        JButton checkForUpdatesButton = new JButton(
+            Translation.getTranslation("about_dialog.check_for_updates.text"));
+        checkForUpdatesButton.setToolTipText(Translation
+            .getTranslation("about_dialog.check_for_updates.tips"));
+        checkForUpdatesButton.setMnemonic(Translation
+            .getTranslation("about_dialog.check_for_updates.key").trim()
+            .charAt(0));
+        checkForUpdatesButton.addActionListener(new UpdateAction());
+        checkForUpdatesButton.setBackground(Color.WHITE);
+        return checkForUpdatesButton;
+    }
+
+
 
     private static JPanel createTranslators() {
         return createTextBox(
@@ -339,4 +381,18 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     public void save() {
         // Nothing to do here.
     }
+
+    private class UpdateAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (getController().getUpdateSettings() != null) {
+                ManuallyInvokedUpdateHandler handler = new ManuallyInvokedUpdateHandler(
+                    getController());
+                Updater updater = new Updater(getController(), getController()
+                    .getUpdateSettings(), handler);
+                updater.start();
+            }
+            PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);
+        }
+    }
+
 }
