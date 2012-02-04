@@ -32,6 +32,7 @@ public interface WikiLinks {
     String SETTINGS_EXPERT = "Expert";
     String SETTINGS_DIALOG = "Dialogs";
     String SETTINGS_PLUGIN = "Plugins";
+    String SETTINGS_INFO = "Information";
 
     String PROBLEM_UNSYNCED_FOLDER = "Unsynchronized-Folder";
     String PROBLEM_DEVICE_DISCONNECTED = "Disconnected-Device";

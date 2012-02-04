@@ -71,6 +71,7 @@ public class PreferencesDialog extends BaseDialog {
     private DynDnsSettingsTab dynDnsSettingsTab;
     private ExpertSettingsTab expertSettingsTab;
     private PluginSettingsTab pluginSettingsTab;
+    private InformationTab informationTab;
 
     public PreferencesDialog(Controller controller) {
         super(Senior.MAIN_FRAME, controller, true);
@@ -172,6 +173,11 @@ public class PreferencesDialog extends BaseDialog {
         dialogsSettingsTab = new DialogsSettingsTab(getController());
         preferenceTabs.add(dialogsSettingsTab);
         tabbedPane.addTab(dialogsSettingsTab.getTabName(), dialogsSettingsTab
+            .getUIPanel());
+
+        informationTab = new InformationTab(getController());
+        preferenceTabs.add(informationTab);
+        tabbedPane.addTab(informationTab.getTabName(), informationTab
             .getUIPanel());
 
         if (getController().getPluginManager().countPlugins() > 0) {
@@ -389,6 +395,10 @@ public class PreferencesDialog extends BaseDialog {
             article = WikiLinks.SETTINGS_EXPERT;
         } else if (pluginSettingsTab != null
             && component == pluginSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_PLUGIN;
+        } else if (informationTab != null
+            && component == informationTab.getUIPanel())
         {
             article = WikiLinks.SETTINGS_PLUGIN;
         }

@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.skin.BlueGlobe;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.ui.util.ConfigurationLoaderDialog;
+import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
 
 public class PowerFolderPro extends AbstractDistribution {
 

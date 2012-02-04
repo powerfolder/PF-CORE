@@ -55,7 +55,7 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.ConfigurationLoaderDialog;
+import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 @SuppressWarnings("serial")

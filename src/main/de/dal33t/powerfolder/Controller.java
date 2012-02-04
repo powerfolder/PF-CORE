@@ -117,7 +117,7 @@ import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import de.dal33t.powerfolder.ui.util.UIUnLockDialog;
+import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 
 /**

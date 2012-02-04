@@ -17,7 +17,7 @@
  *
  * $Id: CleanupTranslationFiles.java 4282 2008-06-16 03:25:09Z tot $
  */
-package de.dal33t.powerfolder.ui.util;
+package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -60,6 +60,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
