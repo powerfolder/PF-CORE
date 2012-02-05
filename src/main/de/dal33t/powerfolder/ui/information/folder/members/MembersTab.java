@@ -48,6 +48,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -206,12 +207,14 @@ public class MembersTab extends PFUIComponent {
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(inviteButton);
-        bar.addRelatedGap();
-        bar.addGridded(openChatButton);
-        bar.addRelatedGap();
-        bar.addGridded(reconnectButton);
-        bar.addRelatedGap();
-        bar.addGridded(builder.getPanel());
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            bar.addRelatedGap();
+            bar.addGridded(openChatButton);
+            bar.addRelatedGap();
+            bar.addGridded(reconnectButton);
+            bar.addRelatedGap();
+            bar.addGridded(builder.getPanel());
+        }
         JPanel buttonBarPanel = bar.getPanel();
 
         refreshButton.setMinimumSize(openChatButton.getMinimumSize());
