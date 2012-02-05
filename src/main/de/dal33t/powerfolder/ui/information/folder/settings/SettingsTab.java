@@ -75,6 +75,7 @@ import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
 import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
 import de.dal33t.powerfolder.ui.event.SelectionModel;

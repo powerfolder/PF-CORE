@@ -53,17 +53,14 @@ import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.util.TreeNodeList;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.Constants;
 
 /**
  * Offers helper/utility method for UI related stuff.
  * <p>
- * TODO Move methods from <code>Util</code> here.^
- * 
- * @see de.dal33t.powerfolder.util.Util
+ *
+ * @see Util
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -259,9 +256,6 @@ public class UIUtil {
         Object userObject = obj;
         if (obj instanceof DefaultMutableTreeNode) {
             userObject = ((DefaultMutableTreeNode) obj).getUserObject();
-
-        } else if (obj instanceof TreeNodeList) {
-            userObject = ((TreeNodeList) obj).getUserObject();
         }
         // if userobject is null, return original
         return userObject != null ? userObject : obj;

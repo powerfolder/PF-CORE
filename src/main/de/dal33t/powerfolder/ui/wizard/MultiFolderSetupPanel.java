@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.ui.util.ArchiveModeSelectorPanel;
+import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;

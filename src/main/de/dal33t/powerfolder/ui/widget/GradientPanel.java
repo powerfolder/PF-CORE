@@ -17,8 +17,7 @@ public class GradientPanel extends JPanel {
     public static final Color VERY_VERY_LIGHT_GRAY = new Color(242, 242, 242);
     public static final Color VERY_LIGHT_GRAY = new Color(230, 230, 230);
 
-    public GradientPanel(Color background) {
-        super();
+    private GradientPanel(Color background) {
         setBackground(background);
     }
 
