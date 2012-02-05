@@ -119,10 +119,7 @@ public enum Feature {
      */
     REGION_SELECTOR(false),
 
-    /**
-     * TRAC #2506
-     */
-    COMPACT_MODE(false),
+    COMPACT_MODE(true),
     
     /**
      * #2533 By default disabled to save memory. Otherwise swingx.jar would be required.
