@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.disk;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 
 import javax.swing.*;
 import java.awt.*;

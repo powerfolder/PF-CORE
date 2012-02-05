@@ -41,8 +41,8 @@ import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.task.SendMessageTask;
-import de.dal33t.powerfolder.ui.util.DialogFactory;
-import de.dal33t.powerfolder.ui.util.GenericDialogType;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 
 /**
  * methods for loading and saving powerfolder invitations

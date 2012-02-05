@@ -33,9 +33,9 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.DialogFactory;
-import de.dal33t.powerfolder.ui.util.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.ArchiveModeSelectorPanel;
 import jwf.WizardPanel;
 

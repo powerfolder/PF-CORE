@@ -48,6 +48,8 @@ import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
 import de.dal33t.powerfolder.ui.wizard.*;
 import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;

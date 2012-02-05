@@ -25,7 +25,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEX
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.util.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

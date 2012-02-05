@@ -16,9 +16,9 @@ import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.ui.util.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.ui.util.GenericDialogType;
 
 public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
     private static volatile boolean updateDialogOpen = false;

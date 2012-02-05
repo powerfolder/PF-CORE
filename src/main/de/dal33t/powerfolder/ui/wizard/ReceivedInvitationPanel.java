@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.util.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

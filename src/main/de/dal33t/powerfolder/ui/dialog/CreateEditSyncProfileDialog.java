@@ -28,9 +28,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.SyncProfileConfiguration;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-import de.dal33t.powerfolder.ui.util.DialogFactory;
-import de.dal33t.powerfolder.ui.util.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

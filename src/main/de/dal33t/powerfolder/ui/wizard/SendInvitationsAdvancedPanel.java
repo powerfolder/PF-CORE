@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>

@@ -20,9 +20,7 @@
 package de.dal33t.powerfolder.ui.friends;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.InetSocketAddress;
@@ -51,11 +49,10 @@ import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.DialogFactory;
-import de.dal33t.powerfolder.ui.util.DoubleClickAction;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.PopupMenuOpener;
-import de.dal33t.powerfolder.ui.util.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
@@ -446,5 +443,25 @@ public class FindComputersPanel extends PFUIComponent {
             searchResultTable.selectAll();
         }
     }
+
+    private static class DoubleClickAction extends MouseAdapter {
+        private Action action;
+
+        DoubleClickAction(Action action) {
+            if (action == null) {
+                throw new NullPointerException("Action is null");
+            }
+            this.action = action;
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2
+                && action.isEnabled())
+            {
+                action.actionPerformed(null);
+            }
+        }
+    }
+
 
 }

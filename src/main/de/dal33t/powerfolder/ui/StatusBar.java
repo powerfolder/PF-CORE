@@ -58,6 +58,8 @@ import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker.CheckTask;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 
 /**
  * The status bar on the lower side of the main window.

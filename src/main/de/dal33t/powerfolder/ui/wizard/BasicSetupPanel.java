@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.LineSpeedSelectionPanel;
+import de.dal33t.powerfolder.ui.panel.LineSpeedSelectionPanel;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
