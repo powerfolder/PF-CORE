@@ -665,7 +665,8 @@ public class FileUtils {
                 // work.
                 // makeSystemOnWindows(desktopIniFile);
             } catch (IOException e) {
-                log.log(Level.WARNING, "Problem writing Desktop.ini file(s). " + e);
+                log.log(Level.WARNING, "Problem writing Desktop.ini file(s). "
+                    + e);
             } finally {
                 if (pw != null) {
                     try {
@@ -849,9 +850,13 @@ public class FileUtils {
      * @return
      */
     public static String encodeURLinFilename(String url) {
-        url = url.replace("//", "=");
-        url = url.replace(":", ";");
-        return "$s$" + url + '$';
+        url = url.replace("://", "___");
+        url = url.replace(":", "_");
+        return "_s_" + url + '_';
+
+        // url = url.replace("//", "=");
+        // url = url.replace(":", ";");
+        // return "$s$" + url + '$';
     }
 
     /**
@@ -861,21 +866,17 @@ public class FileUtils {
      * @return the url
      */
     public static String decodeURLFromFilename(String filename) {
-        if (!filename.contains("$")) {
+        if (!filename.contains("_s_")) {
             return null;
         }
-
-        int start = filename.indexOf('$');
-        int endType = filename.indexOf('$', start + 1);
-        int endURL = filename.indexOf('$', endType + 1);
-        if (start < 0 || endType < 0 || endURL < 0) {
+        int start = filename.indexOf("_s_");
+        int endURL = filename.lastIndexOf("_");
+        if (start < 0 || endURL < 0) {
             return null;
         }
-
-        String url = filename.substring(endType + 1, endURL);
-
-        url = url.replace("=", "//");
-        url = url.replace(";", ":");
+        String url = filename.substring(start + 3, endURL);
+        url = url.replace("___", "://");
+        url = url.replace("_", ":");
         return url;
     }
 
@@ -1091,9 +1092,9 @@ public class FileUtils {
     }
 
     /**
-     * Does a directory have any files, recursively?
-     * This ignores the .PowerFolder dir.
-     *
+     * Does a directory have any files, recursively? This ignores the
+     * .PowerFolder dir.
+     * 
      * @param base
      * @return
      * @throws IllegalArgumentException
