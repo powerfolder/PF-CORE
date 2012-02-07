@@ -25,12 +25,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -76,14 +80,50 @@ public class CleanupTranslationFiles {
     private static final String outputName = "src/etc/Translation";
 
     private Properties originals;
+    private boolean deep = false;
 
     public void run() throws IOException {
         originals = loadTranslationFile(baseName + ".properties");
         List<String> keys = new ArrayList<String>();
+        List<String> searchContents = new ArrayList<String>();
         for (Object string : originals.keySet()) {
-            keys.add((String) string);
+            String key = (String) string;
+            keys.add(key);
+            if (key.startsWith("action_")) {
+                int i = key.lastIndexOf('.');
+                if (i > 0) {
+                    key = key.substring(0, i);
+                }
+            }
+            searchContents.add(key);
         }
         Collections.sort(keys);
+        if (deep) {
+            Collection<String> usedOriginals = new HashSet<String>();
+            findContent(searchContents, new File("src/main"), usedOriginals);
+            findContent(searchContents, new File("../PowerFolder-Pro/src/pro"),
+                usedOriginals);
+            findContent(searchContents, new File(
+                "../PowerFolder-Pro/src/server"), usedOriginals);
+            System.out.println("Found " + usedOriginals.size() + "/"
+                + keys.size() + ". " + (keys.size() - usedOriginals.size())
+                + " unused translations. Removing: ");
+
+            Collection<String> unused = new HashSet<String>(searchContents);
+            unused.removeAll(usedOriginals);
+
+            for (String key : unused) {
+                System.out.println(key);
+                if (!keys.remove(key)) {
+                    boolean r = keys.remove(key + ".key")
+                        || keys.remove(key + ".label")
+                        || keys.remove(key + ".description");
+                    if (!r) {
+                        System.err.println("Unable to remove " + key);
+                    }
+                }
+            }
+        }
 
         // writeTranslationFile(null, keys, originals);
 
@@ -190,6 +230,41 @@ public class CleanupTranslationFiles {
         }
         System.out.println("Result for " + localeName + ": " + missing
             + " missing translations.");
+    }
+
+    private void findContent(Collection<String> contents, File f,
+        Collection<String> foundContents) throws FileNotFoundException
+    {
+        if (f.isDirectory()) {
+            for (File innerFile : f.listFiles(new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return name.endsWith("java")
+                        || new File(dir, name).isDirectory();
+                }
+            }))
+            {
+                findContent(contents, innerFile, foundContents);
+            }
+        } else {
+            InputStream in = new FileInputStream(f);
+            try {
+                byte[] buf = StreamUtils.readIntoByteArray(in);
+                String input = new String(buf, Convert.UTF8);
+                for (String content : contents) {
+                    if (input.contains(content)) {
+                        foundContents.add(content);
+                    }
+                }
+                System.out.println(f.getAbsolutePath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
+            }
+        }
     }
 
     private Properties loadTranslationFile(String fileName) {
