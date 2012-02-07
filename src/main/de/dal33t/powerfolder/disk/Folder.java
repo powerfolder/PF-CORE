@@ -1371,6 +1371,10 @@ public class Folder extends PFComponent {
                     return;
                 }
             } else {
+                // #2627 / ASR-771-79727
+                if (dir.exists() && dir.isFile() && dir.length() == 0) {
+                    dir.delete();
+                }
                 dir.mkdirs();
                 dir.setLastModified(dirInfo.getModifiedDate().getTime());
             }
