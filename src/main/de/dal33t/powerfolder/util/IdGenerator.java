@@ -30,14 +30,15 @@ import java.util.UUID;
 public class IdGenerator {
 
     /**
-     * Generates a randomly unique, base64 encoded id for a UUID. The UUID is
-     * 128 bits (16 bytes) strong. The returned string is 22 characters long.
+     * Generates a randomly unique, base58 encoded id for a UUID. The UUID is
+     * 128 bits (16 bytes) strong. String does NOT contain any special
+     * characters NOR url incompatible chars.
      * 
      * @see UUID
      * @return the base64 encoded uuid
      */
     public static String makeId() {
-        String id = Base64.encodeBytes(makeIdBytes());
+        String id = Base58.encode(makeIdBytes());
         // Remove the last == at the end
         return FileUtils.removeInvalidFilenameChars(
             id.substring(0, id.length() - 2)).replace("+", "");
