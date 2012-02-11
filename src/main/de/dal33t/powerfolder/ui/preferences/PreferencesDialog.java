@@ -22,8 +22,6 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,20 +50,18 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 public class PreferencesDialog extends BaseDialog {
 
-    private ValueModel mydnsndsModel;
+    private ValueModel myDynDnsModel;
     private JButton okButton;
     private JButton cancelButton;
     private JButton helpButton;
     private List<PreferenceTab> preferenceTabs;
     private JTabbedPane tabbedPane;
 
-    private static final int DYNDNS_TAB_INDEX = 3;
-
+    private InformationTab informationTab;
     private GeneralSettingsTab generalSettingsTab;
     private UISettingsTab uiSettingsTab;
     private NetworkSettingsTab networkSettingsTab;
@@ -73,7 +69,6 @@ public class PreferencesDialog extends BaseDialog {
     private DynDnsSettingsTab dynDnsSettingsTab;
     private ExpertSettingsTab expertSettingsTab;
     private PluginSettingsTab pluginSettingsTab;
-    private InformationTab informationTab;
 
     public PreferencesDialog(Controller controller) {
         super(Senior.MAIN_FRAME, controller, true);
@@ -92,8 +87,8 @@ public class PreferencesDialog extends BaseDialog {
         return null;
     }
 
-    public ValueModel getDyndnsModel() {
-        return mydnsndsModel;
+    public ValueModel getDynDnsModel() {
+        return myDynDnsModel;
     }
 
     void enableTab(int index, boolean flag) {
@@ -102,35 +97,6 @@ public class PreferencesDialog extends BaseDialog {
 
     void selectTab(int index) {
         tabbedPane.setSelectedIndex(index);
-    }
-
-    private void showTab(boolean enable, PreferenceTab tab, int tabindex) {
-        Reject.ifNull(tab, "Unable to show/hide tab. Tab is null");
-        Reject.ifTrue(tabindex < 0, "Unable to show/hide tab. Invalid index: "
-            + tabindex);
-        if (enable) {
-            if (!preferenceTabs.contains(tab)) {
-                preferenceTabs.add(tab);
-            }
-            // calculate a valid insert index before inserting
-            int currentNumberOfTabs = tabbedPane.getTabCount();
-            int newTabindex = Math.min(tabindex, currentNumberOfTabs);
-            tabbedPane.insertTab(tab.getTabName(), null, tab.getUIPanel(),
-                null, newTabindex);
-        } else {
-            preferenceTabs.remove(tab);
-            tabbedPane.remove(tab.getUIPanel());
-        }
-        rePack();
-    }
-
-    private void showExpertTab(boolean enable) {
-        if (!getController().isBackupOnly()) {
-            showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX);
-        }
-        // Advanced tab is after DYN DNS, if shown.
-        showTab(enable, expertSettingsTab, DYNDNS_TAB_INDEX +
-                (getController().isBackupOnly() ? 0 : 1));
     }
 
     public JComponent getContent() {
@@ -142,52 +108,71 @@ public class PreferencesDialog extends BaseDialog {
     public void initComponents() {
         preferenceTabs.clear();
 
-        mydnsndsModel = new ValueHolder(ConfigurationEntry.HOSTNAME
+        myDynDnsModel = new ValueHolder(ConfigurationEntry.HOSTNAME
             .getValue(getController()));
 
         tabbedPane = new JTabbedPane(SwingConstants.TOP,
             JTabbedPane.WRAP_TAB_LAYOUT);
 
-        generalSettingsTab = new GeneralSettingsTab(getController());
-        preferenceTabs.add(generalSettingsTab);
-        tabbedPane.addTab(generalSettingsTab.getTabName(), generalSettingsTab
-            .getUIPanel());
-
-        uiSettingsTab = new UISettingsTab(getController());
-        preferenceTabs.add(uiSettingsTab);
-        tabbedPane.addTab(uiSettingsTab.getTabName(), uiSettingsTab
-            .getUIPanel());
-
-        networkSettingsTab = new NetworkSettingsTab(getController());
-        preferenceTabs.add(networkSettingsTab);
-        tabbedPane.addTab(networkSettingsTab.getTabName(), networkSettingsTab
-            .getUIPanel());
-
-        // Do not show DYN DNS if in backup only mode.
-        if (!getController().isBackupOnly()) {
-            dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
-                mydnsndsModel);
-            preferenceTabs.add(dynDnsSettingsTab);
-            tabbedPane.addTab(dynDnsSettingsTab.getTabName(), dynDnsSettingsTab
-                .getUIPanel());
-        }
-
-        dialogsSettingsTab = new DialogsSettingsTab(getController());
-        preferenceTabs.add(dialogsSettingsTab);
-        tabbedPane.addTab(dialogsSettingsTab.getTabName(), dialogsSettingsTab
-            .getUIPanel());
-
+        // Information tab
         informationTab = new InformationTab(getController());
         preferenceTabs.add(informationTab);
         tabbedPane.addTab(informationTab.getTabName(), informationTab
             .getUIPanel());
 
-        if (getController().getPluginManager().countPlugins() > 0) {
-            pluginSettingsTab = new PluginSettingsTab(getController(), this);
-            preferenceTabs.add(pluginSettingsTab);
-            tabbedPane.addTab(pluginSettingsTab.getTabName(), pluginSettingsTab
-                .getUIPanel());
+        // General tab
+        generalSettingsTab = new GeneralSettingsTab(getController());
+        preferenceTabs.add(generalSettingsTab);
+        tabbedPane.addTab(generalSettingsTab.getTabName(), generalSettingsTab
+            .getUIPanel());
+
+        // UI tab
+        uiSettingsTab = new UISettingsTab(getController());
+        preferenceTabs.add(uiSettingsTab);
+        tabbedPane.addTab(uiSettingsTab.getTabName(), uiSettingsTab
+            .getUIPanel());
+
+        // Dialog tab
+        dialogsSettingsTab = new DialogsSettingsTab(getController());
+        preferenceTabs.add(dialogsSettingsTab);
+        tabbedPane.addTab(dialogsSettingsTab.getTabName(), dialogsSettingsTab
+            .getUIPanel());
+
+        Boolean expertMode =
+                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
+        if (expertMode) {
+
+            // Expert tab
+            expertSettingsTab = new ExpertSettingsTab(getController());
+            preferenceTabs.add(expertSettingsTab);
+            tabbedPane.addTab(expertSettingsTab.getTabName(),
+                expertSettingsTab.getUIPanel());
+
+            // Network tab
+            networkSettingsTab = new NetworkSettingsTab(getController());
+            preferenceTabs.add(networkSettingsTab);
+            tabbedPane.addTab(networkSettingsTab.getTabName(),
+                    networkSettingsTab.getUIPanel());
+
+            // DynDns tab
+            if (!getController().isBackupOnly()) {
+                dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
+                        myDynDnsModel);
+                preferenceTabs.add(dynDnsSettingsTab);
+                tabbedPane.addTab(dynDnsSettingsTab.getTabName(),
+                        dynDnsSettingsTab.getUIPanel());
+            }
+
+            // Plugins tab
+            if (getController().getPluginManager().countPlugins() > 0) {
+                pluginSettingsTab = new PluginSettingsTab(getController(),
+                        this);
+                preferenceTabs.add(pluginSettingsTab);
+                tabbedPane.addTab(pluginSettingsTab.getTabName(),
+                        pluginSettingsTab.getUIPanel());
+            }
         }
+
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (dynDnsSettingsTab == null) {
@@ -201,25 +186,6 @@ public class PreferencesDialog extends BaseDialog {
             }
         });
 
-        expertSettingsTab = new ExpertSettingsTab(getController());
-
-        if (PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController()))
-        {
-            preferenceTabs.add(expertSettingsTab);
-            tabbedPane.addTab(expertSettingsTab.getTabName(),
-                expertSettingsTab.getUIPanel());
-        }
-
-        // Behavior for expert settings panel
-        generalSettingsTab.getExpertModeModel()
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    showExpertTab(Boolean.TRUE.equals(evt.getNewValue()));
-                }
-            });
-        showExpertTab(Boolean.TRUE.equals(generalSettingsTab
-            .getExpertModeModel().getValue()));
 
         tabbedPane.setSelectedIndex(0);
 

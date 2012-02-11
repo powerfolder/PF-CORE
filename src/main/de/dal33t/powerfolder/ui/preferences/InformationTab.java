@@ -103,7 +103,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
             builder.add(createTeamPanel(), cc.xy(3, 1));
             builder.add(createTranslators(), cc.xy(3, 2));
         }
-        builder.add(ButtonBarFactory.buildRightAlignedBar(
+        builder.add(ButtonBarFactory.buildCenteredBar(
                 createActivateButton(),
             createCheckForUpdatesButton()), cc.xyw(1, 3, 3));
 
