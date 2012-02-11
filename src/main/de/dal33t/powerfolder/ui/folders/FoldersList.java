@@ -344,7 +344,7 @@ public class FoldersList extends PFUIComponent {
      */
     private void updateProblems() {
         for (ExpandableFolderView view : views) {
-            view.updateProblems();
+            view.updateIconAndOS();
         }
     }
 

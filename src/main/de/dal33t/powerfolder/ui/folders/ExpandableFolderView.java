@@ -116,7 +116,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
-    private JButtonMini problemButton;
     private ActionLabel membersLabel;
 
     private JPanel uiComponent;
@@ -231,7 +230,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateFolderMembershipDetails();
         updateIconAndOS();
         updateLocalButtons();
-        updateProblems();
         updateNameLabel();
         updatePermissions();
         updateDeletedFiles();
@@ -343,12 +341,13 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name space # files probs sync / join
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         updateIconAndOS();
 
+        // Primary and upperSyncFolder buttons share the same slot.
         upperBuilder.add(primaryButton, cc.xy(1, 1));
         upperBuilder.add(upperSyncFolderButton, cc.xy(1, 1));
 
@@ -364,7 +363,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperBuilder.add(upperMountWebDavButton, cc.xy(7, 1));
         upperBuilder.add(upperOpenWebViewButton, cc.xy(9, 1));
-        upperBuilder.add(problemButton, cc.xy(11, 1));
+//        upperBuilder.add(problemButton, cc.xy(11, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -525,7 +524,6 @@ public class ExpandableFolderView extends PFUIComponent implements
             getController());
         stopOnlineStorageAction = new StopOnlineStorageAction(getController());
 
-        MyProblemAction myProblemAction = new MyProblemAction(getController());
         syncFolderAction = new MySyncFolderAction(getController());
 
         webdavAction = new WebdavAction(getController());
@@ -547,7 +545,6 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         inviteButton = new JButtonMini(inviteAction);
 
-        problemButton = new JButtonMini(myProblemAction);
         upperSyncFolderButton = new SyncIconButtonMini(getController());
         upperSyncFolderButton
             .addActionListener(new PrimaryButtonActionListener());
@@ -588,7 +585,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateFolderMembershipDetails();
         updateTransferMode();
         updateLocalButtons();
-        updateProblems();
+        updateIconAndOS();
         updatePermissions();
 
         registerListeners();
@@ -648,18 +645,14 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setVisible(true);
             return;
         }
+
+        // Do Local updates later.
         syncUpdater.schedule(new Runnable() {
             public void run() {
-                if (type == ExpandableFolderModel.Type.Local) {
-                    if (folder.isSyncing()) {
-                        primaryButton.setVisible(false);
-                        upperSyncFolderButton.setVisible(true);
-                        upperSyncFolderButton.spin(folder.isSyncing());
-                    } else {
-                        upperSyncFolderButton.setVisible(false);
-                        upperSyncFolderButton.spin(false);
-                        primaryButton.setVisible(true);
-                    }
+                if (folder.isSyncing()) {
+                    primaryButton.setVisible(false);
+                    upperSyncFolderButton.setVisible(true);
+                    upperSyncFolderButton.spin(true);
                 } else {
                     upperSyncFolderButton.setVisible(false);
                     upperSyncFolderButton.spin(false);
@@ -969,27 +962,44 @@ public class ExpandableFolderView extends PFUIComponent implements
             "exp_folder_view.members", countText, connectedCountText));
     }
 
-    private void updateIconAndOS() {
+    /**
+     * Gets called externally to update the display of problems.
+     */
+    public void updateIconAndOS() {
         boolean osComponentVisible = getController().getOSClient()
             .isBackupByDefault() && !getController().isBackupOnly();
         if (type == ExpandableFolderModel.Type.Local) {
-            boolean preview = folder.isPreviewOnly();
-            if (preview) {
+
+            if (folder != null && folder.countProblems() > 0) {
+                // Got a problem.
+                primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
+                primaryButton.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.folder_problem_text"));
+            } else if (folder != null && folder.isPreviewOnly()) {
+                // It's a preview.
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_preview_text"));
-            } else if (online) {
-                primaryButton.setIcon(Icons
-                    .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
-                primaryButton
-                    .setToolTipText(Translation
-                        .getTranslation("exp_folder_view.folder_local_online_text"));
-                osComponent.getUIComponent().setVisible(osComponentVisible);
             } else {
-                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
+                // We are in sync.
+                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
                 primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_local_text"));
+                    .getTranslation("exp_folder_view.folder_sync_complete"));
             }
+//            } else if (online) {
+//                // We are local and online.
+//                primaryButton.setIcon(Icons
+//                    .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
+//                primaryButton
+//                    .setToolTipText(Translation
+//                        .getTranslation("exp_folder_view.folder_local_online_text"));
+//                osComponent.getUIComponent().setVisible(osComponentVisible);
+//            } else {
+//                // Just a local folder.
+//                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
+//                primaryButton.setToolTipText(Translation
+//                    .getTranslation("exp_folder_view.folder_local_text"));
+//            }
         } else if (type == ExpandableFolderModel.Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.TYPICAL_FOLDER));
             primaryButton.setToolTipText(Translation
@@ -1090,14 +1100,6 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void openExplorer() {
         FileUtils.openFile(folder.getCommitOrLocalDir());
-    }
-
-    /**
-     * This is called when a Problem has been added / removed for this folder.
-     * If there are problems for this folder, show icon.
-     */
-    public void updateProblems() {
-        problemButton.setVisible(folder != null && folder.countProblems() > 0);
     }
 
     /**
@@ -1588,29 +1590,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    // private class MyServerClientListener implements ServerClientListener {
-    //
-    // public void login(ServerClientEvent event) {
-    // // updateIconAndOS();
-    // }
-    //
-    // public void accountUpdated(ServerClientEvent event) {
-    // // updateIconAndOS();
-    // }
-    //
-    // public void serverConnected(ServerClientEvent event) {
-    // // updateIconAndOS();
-    // }
-    //
-    // public void serverDisconnected(ServerClientEvent event) {
-    // // updateIconAndOS();
-    // }
-    //
-    // public boolean fireInEventDispatchThread() {
-    // return true;
-    // }
-    // }
-    //
     private class MySyncFolderAction extends BaseAction {
 
         private MySyncFolderAction(Controller controller) {
@@ -1645,18 +1624,18 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    private class MyProblemAction extends BaseAction {
-
-        private MyProblemAction(Controller controller) {
-            super("action_folder_problem", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openProblemsInformation(
-                folderInfo);
-        }
-    }
-
+//    private class MyProblemAction extends BaseAction {
+//
+//        private MyProblemAction(Controller controller) {
+//            super("action_folder_problem", controller);
+//        }
+//
+//        public void actionPerformed(ActionEvent e) {
+//            getController().getUIController().openProblemsInformation(
+//                folderInfo);
+//        }
+//    }
+//
     private class MyClearCompletedDownloadsAction extends BaseAction {
 
         private MyClearCompletedDownloadsAction(Controller controller) {
@@ -1747,20 +1726,26 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private class PrimaryButtonActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (type == ExpandableFolderModel.Type.CloudOnly) {
+            if (type == ExpandableFolderModel.Type.Local &&
+                    folder != null && folder.countProblems() > 0) {
+                // Display the problem.
+                getController().getUIController().openProblemsInformation(
+                        folderInfo);
+            } else if (type == ExpandableFolderModel.Type.CloudOnly) {
+                // Join the folder locally.
                 PFWizard.openOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
             } else if (type == ExpandableFolderModel.Type.Local
-                && folder.isPreviewOnly())
-            {
-                // Local Preview
+                && folder != null && folder.isPreviewOnly()) {
+                // Local Preview - want to change?
                 SettingsTab.doPreviewChange(getController(), folder);
             } else if (type == ExpandableFolderModel.Type.Local) {
-                // Local
+                // Local - open it
                 if (Desktop.isDesktopSupported()) {
                     openExplorer();
                 }
-            } else { // Typical
+            } else {
+                // Typical - ask to create.
                 askToCreateFolder();
             }
         }
