@@ -952,11 +952,17 @@ public class MainFrame extends PFUIComponent {
             } else if (source == compactButton) {
                 boolean compactMe = !compact.getAndSet(!compact.get());
                 if (compactMe) {
+
+                    // Need to hide the child windows when minimize.
+                    closeInlineInfoPanel();
+                    getUIController().hideChildPanels();
+                    
                     compactButton.setIcon(Icons.getIconById(Icons.UNCOMPACT));
                     compactButton.setToolTipText(Translation.getTranslation(
                             "main_frame.uncompact.tips"));
                     mainTabbedPane.getUIComponent().setVisible(false);
                 } else {
+
                     compactButton.setIcon(Icons.getIconById(Icons.COMPACT));
                     compactButton.setToolTipText(Translation.getTranslation(
                             "main_frame.compact.tips"));
