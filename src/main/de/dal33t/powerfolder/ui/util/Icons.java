@@ -86,7 +86,7 @@ public class Icons {
     public static final String FILTER_TEXT_FIELD_GLASS_ARROW = "filter_text_field_glass_arrow.icon";
 
     public static final String COMPACT = "compact.icon";
-    public static final String UNCOMACT = "uncompact.icon";
+    public static final String UNCOMPACT = "uncompact.icon";
     public static final String CLOSE = "close.icon";
 
     public static final String BLANK = "blank.icon";

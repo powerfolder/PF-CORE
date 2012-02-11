@@ -23,6 +23,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.IOException;
 
 import javax.swing.*;
@@ -42,6 +43,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.util.*;
@@ -59,7 +61,7 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  */
 public class MainFrame extends PFUIComponent {
 
-    public static final int MIN_HEIGHT = 300;
+    public static final int MIN_HEIGHT_UNCOMPACT = 500;
     public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
         .getDefaultValueInt();
     public static final int MIN_INFO_WIDTH = 500;
@@ -88,6 +90,9 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel openFoldersBaseLabel;
     private ActionLabel pauseResumeLabel;
     private ActionLabel configurationLabel;
+
+    private AtomicBoolean compact = new AtomicBoolean();
+    private JButton compactButton;
 
     /**
      * @param controller
@@ -153,7 +158,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, 1dlu, fill:0:grow, 1dlu, pref");
+            "pref, pref, fill:0:grow, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -163,31 +168,18 @@ public class MainFrame extends PFUIComponent {
         builder.add(inlineInfoCloseButton,
             cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
 
+        builder.add(compactButton, cc.xyw(1, 2, 4, CellConstraints.CENTER,
+                CellConstraints.BOTTOM));
+
         builder.add(centralPanel, cc.xyw(1, 3, 4));
 
-        builder.add(createMiniPanel(), cc.xyw(1, 5, 4));
+        builder.add(createMiniPanel(), cc.xyw(1, 4, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setResizable(true);
 
         Controller c = getController();
-        int mainY = PreferencesEntry.MAIN_FRAME_Y.getValueInt(c);
-
-        int width = PreferencesEntry.MAIN_FRAME_WIDTH.getValueInt(c);
-        int height = PreferencesEntry.MAIN_FRAME_HEIGHT.getValueInt(c);
-        if (height <= 0) {
-            // Default height. 2x the default border from bottom away.
-            height = Toolkit.getDefaultToolkit().getScreenSize().height - mainY
-                - 2 * Constants.UI_DEFAULT_SCREEN_BORDER;
-        }
-        if (width < MIN_WIDTH) {
-            width = MIN_WIDTH;
-        }
-        if (height < MIN_HEIGHT) {
-            height = MIN_HEIGHT;
-        }
-        uiComponent.setMinimumSize(new Dimension(width, height));
 
         // Pack elements
         uiComponent.pack();
@@ -196,6 +188,7 @@ public class MainFrame extends PFUIComponent {
 
         // Initial top-left corner
         int mainX = PreferencesEntry.MAIN_FRAME_X.getValueInt(c);
+        int mainY = PreferencesEntry.MAIN_FRAME_Y.getValueInt(c);
         uiComponent.setLocation(mainX, mainY);
 
         relocateIfNecessary();
@@ -259,7 +252,14 @@ public class MainFrame extends PFUIComponent {
             + " / Width over all monitors: "
             + UIUtil.getScreenWidthAllMonitors());
 
-        uiComponent = new JFrame();
+        uiComponent = new JFrame() {
+            // Add own pack method to pack for compact / uncompact mode.
+            @Override
+            public void pack() {
+                super.pack();
+                customPack();
+            }
+        };
         if (uiComponent.isAlwaysOnTopSupported()
             && PreferencesEntry.MAIN_ALWAYS_ON_TOP
                 .getValueBoolean(getController()))
@@ -333,6 +333,22 @@ public class MainFrame extends PFUIComponent {
 
         getApplicationModel().getFolderRepositoryModel()
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
+
+        compactButton = new JButtonMini(Icons.getIconById(Icons.COMPACT),
+                Translation.getTranslation("main_frame.compact.tips"));
+        compactButton.addActionListener(myActionListener);
+    }
+
+    /**
+     * Nice default sizes for compact and uncompact mode.
+     */
+    private void customPack() {
+        if (compact.get()) {
+            // Default pack height is okay in compact mode.
+            uiComponent.setSize(MIN_WIDTH, uiComponent.getHeight());
+        } else {
+            uiComponent.setSize(MIN_WIDTH, MIN_HEIGHT_UNCOMPACT);
+        }
     }
 
     private void updateSyncStats() {
@@ -917,6 +933,22 @@ public class MainFrame extends PFUIComponent {
             Object source = e.getSource();
             if (source == inlineInfoCloseButton) {
                 closeInlineInfoPanel();
+            } else if (source == compactButton) {
+                boolean compactMe = !compact.getAndSet(!compact.get());
+                if (compactMe) {
+                    compactButton.setIcon(Icons.getIconById(Icons.UNCOMPACT));
+                    compactButton.setToolTipText(Translation.getTranslation(
+                            "main_frame.uncompact.tips"));
+                    mainTabbedPane.getUIComponent().setVisible(false);
+                } else {
+                    compactButton.setIcon(Icons.getIconById(Icons.COMPACT));
+                    compactButton.setToolTipText(Translation.getTranslation(
+                            "main_frame.compact.tips"));
+                    mainTabbedPane.getUIComponent().setVisible(true);
+                }
+                if (uiComponent.getExtendedState() == Frame.NORMAL) {
+                    getUIComponent().pack();
+                }
             }
         }
     }

@@ -136,7 +136,7 @@ public enum PreferencesEntry {
     MAIN_FRAME_WIDTH("mainframe4.width", 350),
 
     MAIN_FRAME_HEIGHT("mainframe4.height", -1),
-    
+
     INFO_WIDTH("infoframe4.width", -1),
 
     MAIN_FRAME_X("mainframe4.x", Constants.UI_DEFAULT_SCREEN_BORDER),
