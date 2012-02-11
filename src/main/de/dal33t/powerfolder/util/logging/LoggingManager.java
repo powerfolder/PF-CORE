@@ -81,12 +81,14 @@ public class LoggingManager {
     /** The file logging level */
     private static Level fileLoggingLevel;
 
-    /** The buffered logging level */
-    private static Level bufferedLoggingLevel;
-
     /** The name of the file logging file */
     private static String fileLoggingFileName;
 
+    /** #2585 */
+    private static boolean fileRotate;
+
+    /** The buffered logging level */
+    private static Level bufferedLoggingLevel;
     /**
      * The default filter for the handlers
      */
@@ -182,10 +184,13 @@ public class LoggingManager {
      * other threads trying to access it during construction.
      * 
      * @param level
+     * @param rotate
+     *            to rotate the file every day
      */
-    public static void setFileLogging(Level level) {
+    public static void setFileLogging(Level level, boolean rotate) {
 
         fileLoggingLevel = level;
+        fileRotate = rotate;
 
         if (fileHandler == null) {
             createFileHandler();
@@ -231,8 +236,12 @@ public class LoggingManager {
         synchronized (fileHandlerLock) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String logFilename = prefix + '-' + sdf.format(new Date())
-                    + "-log.txt";
+                String logFilename = prefix;
+                if (fileRotate) {
+                    logFilename += '-';
+                    logFilename += sdf.format(new Date());
+                }
+                logFilename += "-log.txt";
                 fileLoggingFileName = new File(getDebugDir(),
                     FileUtils.removeInvalidFilenameChars(logFilename))
                     .getAbsolutePath();
