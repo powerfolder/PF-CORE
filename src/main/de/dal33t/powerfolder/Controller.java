@@ -135,7 +135,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.6.14 - 4.5.35"; // 4.5.35
+    public static final String PROGRAM_VERSION = "5.6.15 - 4.5.37"; // 4.5.37
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -673,8 +673,10 @@ public class Controller extends PFComponent {
             // Never sync preview folders
             if (folder != null && !folder.isPreviewOnly()) {
                 // Ask for more sync options on that folder if on project sync
-                if (Util.isAwtAvailable() && folder.getSyncProfile().equals(
-                                SyncProfile.MANUAL_SYNCHRONIZATION)) {
+                if (Util.isAwtAvailable()
+                    && folder.getSyncProfile().equals(
+                        SyncProfile.MANUAL_SYNCHRONIZATION))
+                {
                     new SyncFolderDialog(this, folder).open();
                 } else {
                     // Recommend scan on this folder
@@ -760,8 +762,7 @@ public class Controller extends PFComponent {
             if (!StringUtils.isBlank(pluginConfig)) {
                 newPluginConfig += ',' + pluginConfig;
             }
-            ConfigurationEntry.PLUGINS.setValue(this,
-                newPluginConfig);
+            ConfigurationEntry.PLUGINS.setValue(this, newPluginConfig);
         }
     }
 
@@ -782,10 +783,12 @@ public class Controller extends PFComponent {
 
             // Enable file logging
             str = ConfigurationEntry.LOG_LEVEL_FILE.getValue(this);
+            boolean rotate = ConfigurationEntry.LOG_FILE_ROTATE
+                .getValueBoolean(this);
             Level fileLevel = LoggingManager.levelForName(str);
             LoggingManager.setFileLogging(fileLevel != null
                 ? fileLevel
-                : Level.FINE);
+                : Level.FINE, rotate);
 
             // Switch on the document handler.
             if (isUIEnabled()) {
@@ -813,8 +816,7 @@ public class Controller extends PFComponent {
         }
 
         // Enable debug reports.
-        debugReports = ConfigurationEntry.DEBUG_REPORTS
-            .getValueBoolean(this);
+        debugReports = ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(this);
 
         LoggingManager.clearBuffer();
     }
@@ -1050,8 +1052,7 @@ public class Controller extends PFComponent {
      * These tasks get performed every hour.
      */
     private void performHourly() {
-        if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
-            .getValueBoolean(this))
+        if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.getValueBoolean(this))
         {
             FutureTask<Object> recalculateRunnable = transferManager
                 .getRecalculateAutomaticRate();
@@ -1118,8 +1119,8 @@ public class Controller extends PFComponent {
         } catch (IOException e) {
             logWarning("Unable to backup file " + configFile + ". " + e);
         }
-        File myKeyFile = new File(getMiscFilesLocation(),
-                getConfigName() + ".mykey");
+        File myKeyFile = new File(getMiscFilesLocation(), getConfigName()
+            + ".mykey");
         File mykeyBackup = new File(backupDir, myKeyFile.getName());
         if (myKeyFile.exists()) {
             try {
@@ -1128,8 +1129,7 @@ public class Controller extends PFComponent {
                 logWarning("Unable to backup file " + myKeyFile + ". " + e);
             }
         }
-        File dbFile = new File(getMiscFilesLocation(),
-            "Accounts.h2.db");
+        File dbFile = new File(getMiscFilesLocation(), "Accounts.h2.db");
         File dbBackup = new File(backupDir, dbFile.getName());
         if (dbFile.exists()) {
             try {
@@ -1147,9 +1147,7 @@ public class Controller extends PFComponent {
         if (RemoteCommandManager.hasRunningInstance()) {
             alreadyRunningCheck();
         }
-        if (!ConfigurationEntry.NET_RCON_MANAGER
-            .getValueBoolean(this))
-        {
+        if (!ConfigurationEntry.NET_RCON_MANAGER.getValueBoolean(this)) {
             logWarning("Not starting RemoteCommandManager");
             return;
         }
@@ -1164,13 +1162,10 @@ public class Controller extends PFComponent {
      * 65535).
      */
     private boolean initializeListenerOnLocalPort() {
-        if (ConfigurationEntry.NET_BIND_RANDOM_PORT
-            .getValueBoolean(this))
-        {
+        if (ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(this)) {
             bindRandomPort();
         } else {
-            String ports = ConfigurationEntry.NET_BIND_PORT
-                .getValue(this);
+            String ports = ConfigurationEntry.NET_BIND_PORT.getValue(this);
             if ("0".equals(ports)) {
                 logWarning("Not opening connection listener. (port=0)");
             } else {
@@ -1564,7 +1559,8 @@ public class Controller extends PFComponent {
     /**
      * Shutsdown controller and exits to system with the given status
      * 
-     * @param status thes status to exit with.
+     * @param status
+     *            thes status to exit with.
      */
     public void exit(int status) {
         if (Feature.EXIT_ON_SHUTDOWN.isDisabled()) {
@@ -1711,8 +1707,7 @@ public class Controller extends PFComponent {
         }
 
         if (wasStarted) {
-            System.out.println("------------ PowerFolder "
-                + PROGRAM_VERSION
+            System.out.println("------------ PowerFolder " + PROGRAM_VERSION
                 + " Controller Shutdown ------------");
         }
 
@@ -2100,8 +2095,7 @@ public class Controller extends PFComponent {
      * @return if succeeded
      */
     private boolean openListener(int port) {
-        String bind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(this);
+        String bind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(this);
         logFine("Opening incoming connection listener on port " + port
             + " on interface " + (bind != null ? bind : "(all)"));
         while (true) {
@@ -2655,8 +2649,9 @@ public class Controller extends PFComponent {
     /**
      * Waits for the repo to finish syncing. Then request system shutdown and
      * exit PF.
-     *
-     * @param secWait number of seconds to wait.
+     * 
+     * @param secWait
+     *            number of seconds to wait.
      */
     public void exitAfterSync(int secWait) {
         logInfo("Sync and exit initiated. Begin check in " + secWait + 's');
