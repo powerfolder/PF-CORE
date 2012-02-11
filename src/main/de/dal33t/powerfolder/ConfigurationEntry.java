@@ -390,7 +390,7 @@ public enum ConfigurationEntry {
      * The TCP port for the {@link RemoteCommandManager}
      */
     NET_RCON_PORT("net.rcon.port", 1338),
-    
+
     /**
      * If broadcast on LAN
      */
@@ -664,6 +664,11 @@ public enum ConfigurationEntry {
     LOG_LEVEL_FILE("log.file.level", Level.FINE.getName()),
 
     /**
+     * #2585
+     */
+    LOG_FILE_ROTATE("log.file.rotate", true),
+
+    /**
      * The loglevel to print to console when verbose=true
      */
     LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName()),
@@ -847,8 +852,8 @@ public enum ConfigurationEntry {
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
 
     /**
-     * Automatically setup all folders the user has access to
-     * and also automatically accept folder invites.
+     * Automatically setup all folders the user has access to and also
+     * automatically accept folder invites.
      */
     AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", true),
 
