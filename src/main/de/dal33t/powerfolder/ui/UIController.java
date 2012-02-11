@@ -284,8 +284,6 @@ public class UIController extends PFComponent {
             logInfo("Starting minimized");
         }
 
-        mainFrame.setNetworkingModeStatus(getController().getNetworkingMode());
-
         // Show main window
         try {
             EventQueue.invokeAndWait(new Runnable() {
@@ -1087,11 +1085,10 @@ public class UIController extends PFComponent {
 
     /**
      * Show the pending messages button in the status bar.
-     * 
+     *
      * @param show
      */
     public void showPendingMessages(boolean show) {
-        mainFrame.showPendingMessages(show);
     }
 
     /**

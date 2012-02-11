@@ -1532,10 +1532,6 @@ public class Controller extends PFComponent {
             nodeManager.shutdown();
             nodeManager.start();
             reconnectManager.buildReconnectionQueue();
-
-            if (isUIEnabled()) {
-                uiController.getMainFrame().setNetworkingModeStatus(newMode);
-            }
         }
     }
 

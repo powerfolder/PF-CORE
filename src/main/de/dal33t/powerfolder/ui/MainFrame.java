@@ -96,11 +96,6 @@ public class MainFrame extends PFUIComponent {
     private JLabel compactLogoLabel;
 
     /**
-     * The status bar on the lower edge of the main frame.
-     */
-    private StatusBar statusBar;
-
-    /**
      * @param controller
      *            the controller.
      * @throws HeadlessException
@@ -200,7 +195,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, 1dlu, fill:0:grow, 1dlu, pref");
+            "pref, 1dlu, fill:0:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -211,7 +206,6 @@ public class MainFrame extends PFUIComponent {
             cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
 
         builder.add(centralPanel, cc.xyw(1, 3, 4));
-        builder.add(statusBar.getUIComponent(), cc.xyw(1, 5, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
@@ -372,8 +366,6 @@ public class MainFrame extends PFUIComponent {
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
         mainTabbedPane = new MainTabbedPane(getController());
-
-        statusBar = new StatusBar(getController());
 
         updateTitle();
 
@@ -616,19 +608,6 @@ public class MainFrame extends PFUIComponent {
      */
     public void showFoldersTab() {
         mainTabbedPane.setActiveTab(MainTabbedPane.FOLDERS_INDEX);
-    }
-
-    /**
-     * Show the pending messages button in the status bar.
-     * 
-     * @param show
-     */
-    public void showPendingMessages(boolean show) {
-        statusBar.showPendingMessages(show);
-    }
-
-    public void setNetworkingModeStatus(NetworkingMode networkingMode) {
-        statusBar.setNetworkingModeStatus(networkingMode);
     }
 
     public void showInlineInfoPanel(JPanel panel, String title) {
