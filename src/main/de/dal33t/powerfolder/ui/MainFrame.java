@@ -346,8 +346,11 @@ public class MainFrame extends PFUIComponent {
         if (compact.get()) {
             // Default pack height is okay in compact mode.
             uiComponent.setSize(MIN_WIDTH, uiComponent.getHeight());
+            uiComponent.setResizable(false);
         } else {
+            // Include space for the central content. 
             uiComponent.setSize(MIN_WIDTH, MIN_HEIGHT_UNCOMPACT);
+            uiComponent.setResizable(true);
         }
     }
 
@@ -828,7 +831,14 @@ public class MainFrame extends PFUIComponent {
                     uiComponent
                         .setSize(mainWidth, uiComponent.getSize().height);
                 }
+
+                // Need to show the compact button.
+                compactButton.setVisible(true);
+            } else if (!wasMaximized && nowMaximized) {
+                // Need to hide the compact button.
+                compactButton.setVisible(false);
             }
+
 
         }
 
