@@ -1006,9 +1006,12 @@ public class ExpandableFolderView extends PFUIComponent implements
                 .getTranslation("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
         } else { // CloudOnly
-            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
+            primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
             primaryButton.setToolTipText(Translation
-                .getTranslation("exp_folder_view.folder_online_text"));
+                .getTranslation("exp_folder_view.folder_sync_complete"));
+//            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
+//            primaryButton.setToolTipText(Translation
+//                .getTranslation("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(osComponentVisible);
         }
 
