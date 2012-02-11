@@ -145,7 +145,10 @@ public class DebugInformationCard extends InformationCard {
                 } else if (e.getSource() == logToFileCheckBox) {
                     if (logToFileCheckBox.isSelected()) {
                         LoggingManager.setFileLogging(LoggingManager
-                            .getDocumentLoggingLevel());// need to check
+                            .getDocumentLoggingLevel(),
+                            ConfigurationEntry.LOG_LEVEL_CONSOLE
+                                .getValueBoolean(getController()));// need to
+                                                                   // check
                     }
                 } else if (e.getSource() == scrollLockCheckBox) {
                     textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
@@ -236,8 +239,7 @@ public class DebugInformationCard extends InformationCard {
         openDebugDir.setToolTipText("Send log files to Support Team");
 
         dumpThreads = new JButton("CPU dump");
-        dumpThreads
-            .setToolTipText("Dumps the current CPU activity to logs");
+        dumpThreads.setToolTipText("Dumps the current CPU activity to logs");
 
         shutdownFileRequestorButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
