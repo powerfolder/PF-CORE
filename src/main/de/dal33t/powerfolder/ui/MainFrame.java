@@ -757,7 +757,8 @@ public class MainFrame extends PFUIComponent {
     private void doCloseOperation() {
         if (OSUtil.isSystraySupported()) {
             handleExitFirstRequest();
-            boolean quitOnX = PreferencesEntry.QUIT_ON_X.getValueBoolean(getController());
+            boolean quitOnX = PreferencesEntry.QUIT_ON_X.getValueBoolean(
+                    getController());
             if (quitOnX) {
                 exitProgram();
             } else {
@@ -804,10 +805,13 @@ public class MainFrame extends PFUIComponent {
 
         @Override
         public void windowStateChanged(WindowEvent e) {
-            boolean wasMaximized = (e.getOldState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
-            boolean nowMaximized = (e.getNewState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
+            boolean wasMaximized = (e.getOldState() &
+                    Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
+            boolean nowMaximized = (e.getNewState() &
+                    Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
             if (wasMaximized && !nowMaximized) {
-                logFine("old: " + e.getOldState() + ", new: " + e.getNewState());
+                logFine("old: " + e.getOldState() + ", new: " +
+                        e.getNewState());
                 if (isShowingInfoInline()) {
                     // Prevents the following:
                     // 1) Start with main only
@@ -832,14 +836,12 @@ public class MainFrame extends PFUIComponent {
                         .setSize(mainWidth, uiComponent.getSize().height);
                 }
 
-                // Need to show the compact button.
+                // Need to show the compact button if normal state.
                 compactButton.setVisible(true);
             } else if (!wasMaximized && nowMaximized) {
-                // Need to hide the compact button.
+                // Need to hide the compact button if maximized state.
                 compactButton.setVisible(false);
             }
-
-
         }
 
         public void windowClosing(WindowEvent e) {
@@ -894,11 +896,15 @@ public class MainFrame extends PFUIComponent {
 
     private void configurePauseResumeLink() {
         if (getController().isSilentMode()) {
-            pauseResumeLabel.setText(Translation.getTranslation("action_resume_sync.name"));
-            pauseResumeLabel.setToolTipText(Translation.getTranslation("action_resume_sync.description"));
+            pauseResumeLabel.setText(Translation.getTranslation(
+                    "action_resume_sync.name"));
+            pauseResumeLabel.setToolTipText(Translation.getTranslation(
+                    "action_resume_sync.description"));
         } else {
-            pauseResumeLabel.setText(Translation.getTranslation("action_pause_sync.name"));
-            pauseResumeLabel.setToolTipText(Translation.getTranslation("action_pause_sync.description"));
+            pauseResumeLabel.setText(Translation.getTranslation(
+                    "action_pause_sync.name"));
+            pauseResumeLabel.setToolTipText(Translation.getTranslation(
+                    "action_pause_sync.description"));
         }
     }
 
@@ -997,7 +1003,8 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            FileUtils.openFile(getController().getFolderRepository().getFoldersAbsoluteDir());
+            FileUtils.openFile(getController().getFolderRepository()
+                    .getFoldersAbsoluteDir());
         }
     }
 

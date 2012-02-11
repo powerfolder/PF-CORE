@@ -870,6 +870,9 @@ public class UIController extends PFComponent {
             if (frame.getExtendedState() == Frame.ICONIFIED) {
                 frame.setExtendedState(Frame.NORMAL);
             }
+            if (frame.getWidth() < MainFrame.MIN_INFO_WIDTH) {
+                frame.setSize(MainFrame.MIN_INFO_WIDTH, frame.getHeight());
+            }
             UIUtil.putOnScreen(frame);
             frame.setVisible(true);
         }
