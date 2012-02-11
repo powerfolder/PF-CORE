@@ -23,7 +23,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.IOException;
 
 import javax.swing.*;
@@ -42,7 +41,6 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
@@ -80,11 +78,8 @@ public class MainFrame extends PFUIComponent {
     private JLabel inlineInfoLabel;
     private JButton inlineInfoCloseButton;
     private JSplitPane split;
-    private final AtomicBoolean compactModeActive = new AtomicBoolean();
     private ServerClient client;
 
-    private JButton uncompactModeButton;
-    private JButton closeButton;
     private JLabel syncTextLabel;
     private JLabel syncDateLabel;
     private JLabel accountLabel;
@@ -93,7 +88,6 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel openFoldersBaseLabel;
     private ActionLabel pauseResumeLabel;
     private ActionLabel configurationLabel;
-    private JLabel compactLogoLabel;
 
     /**
      * @param controller
@@ -107,47 +101,23 @@ public class MainFrame extends PFUIComponent {
             new MyFolderRepositoryListener());
 
         initComponents();
-        configureUiUncompact();
+        configureUi();
 
     }
 
-    private void configureUiCompact() {
-
-        // Hide the title pane in compact mode.
-        uiComponent.getRootPane().putClientProperty(
-                "Synthetica.titlePane.enabled", Boolean.FALSE);
-        uiComponent.getRootPane().updateUI();
-
-        FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(createUpperCompactSection(), cc.xy(1, 1));
-        builder.add(createLowerCompactSection(), cc.xy(1, 2));
-
-        uiComponent.getContentPane().removeAll();
-        uiComponent.setMinimumSize(new Dimension(20, 20));
-        uiComponent.getContentPane().add(builder.getPanel());
-        uiComponent.setExtendedState(Frame.NORMAL);
-        uiComponent.pack();
-        uiComponent.setResizable(false);
-        relocateIfNecessary();
-    }
-
-    private Component createLowerCompactSection() {
+    private JPanel createMiniPanel() {
         FormLayout layout = new FormLayout("fill:pref:grow, pref",
             "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(createLowerLeftCompactSection(), cc.xy(1, 1));
-        builder.add(createLowerRightCompactSection(), cc.xy(2, 1));
+        builder.add(createLeftMiniPanel(), cc.xy(1, 1));
+        builder.add(createRightMiniPanel(), cc.xy(2, 1));
         
         return builder.getPanel();
     }
 
-    private Component createLowerLeftCompactSection() {
+    private Component createLeftMiniPanel() {
         FormLayout layout = new FormLayout("100dlu",
             "pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
@@ -161,7 +131,7 @@ public class MainFrame extends PFUIComponent {
         return builder.getPanel();
     }
 
-    private Component createLowerRightCompactSection() {
+    private Component createRightMiniPanel() {
         FormLayout layout = new FormLayout("pref:grow",
             "pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
@@ -175,27 +145,15 @@ public class MainFrame extends PFUIComponent {
         return builder.getPanel();
     }
 
-    private Component createUpperCompactSection() {
-        FormLayout layout = new FormLayout("fill:pref:grow, pref, pref",
-            "pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        CellConstraints cc = new CellConstraints();
+    private void configureUi() {
 
-        builder.add(compactLogoLabel, cc.xy(1, 1));
-        builder.add(uncompactModeButton, cc.xy(2, 1));
-        builder.add(closeButton, cc.xy(3, 1));
-        return builder.getPanel();
-    }
-
-    private void configureUiUncompact() {
-
-        // Display the title pane in uncompact mode.
+        // Display the title pane.
         uiComponent.getRootPane().putClientProperty(
                 "Synthetica.titlePane.enabled", Boolean.TRUE);
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, 1dlu, fill:0:grow");
+            "pref, 1dlu, fill:0:grow, 1dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -206,6 +164,8 @@ public class MainFrame extends PFUIComponent {
             cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
 
         builder.add(centralPanel, cc.xyw(1, 3, 4));
+
+        builder.add(createMiniPanel(), cc.xyw(1, 5, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
@@ -322,21 +282,6 @@ public class MainFrame extends PFUIComponent {
         syncDateLabel = new JLabel(" ");
         accountLabel = new JLabel(" ");
         usagePB = new JProgressBar();
-
-        uncompactModeButton = new JButtonMini(
-            Icons.getIconById(Icons.UNCOMACT),
-            Translation.getTranslation("main_frame.uncompact.tips"));
-        uncompactModeButton.addActionListener(myActionListener);
-
-        closeButton = new JButtonMini(
-            Icons.getIconById(Icons.CLOSE),
-            Translation.getTranslation("main_frame.close.tips"));
-        closeButton.addActionListener(myActionListener);
-
-        compactLogoLabel = new JLabel(Icons.getIconById(Icons.LOGO400UI));
-        MyHybridMouseListener hybridMouseListener = new MyHybridMouseListener();
-        compactLogoLabel.addMouseMotionListener(hybridMouseListener);
-        compactLogoLabel.addMouseListener(hybridMouseListener);
 
         openWebInterfaceLabel = new ActionLabel(getController(),
                 new MyOpenWebInterfaceAction(getController()));
@@ -774,20 +719,6 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    public void reconfigureForCompactMode(final boolean compactMode) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (compactModeActive.getAndSet(compactMode) != compactMode) {
-                    if (compactMode) {
-                        configureUiCompact();
-                    } else {
-                        configureUiUncompact();
-                    }
-                }
-            }
-        });
-    }
-
     /**
      * Source:
      * http://stackoverflow.com/questions/309023/howto-bring-a-java-window
@@ -986,10 +917,6 @@ public class MainFrame extends PFUIComponent {
             Object source = e.getSource();
             if (source == inlineInfoCloseButton) {
                 closeInlineInfoPanel();
-            } else if (source == uncompactModeButton) {
-                getUIController().reconfigureForCompactMode(false);
-            } else if (source == closeButton) {
-                doCloseOperation();
             }
         }
     }
@@ -1002,74 +929,6 @@ public class MainFrame extends PFUIComponent {
 
         public void setSilentMode(SilentModeEvent event) {
             configurePauseResumeLink();
-        }
-    }
-
-    /**
-     * Mouse(Motion)Listener to handle dragging in compact mode.
-     */
-    private class MyHybridMouseListener implements MouseListener,
-            MouseMotionListener {
-
-        private int originalMouseXOnScreen;
-        private int originalMouseYOnScreen;
-        private int originalFrameX;
-        private int originalFrameY;
-        private Cursor originalCursor;
-
-        /**
-         * Remember where we started.
-         *
-         * @param e
-         */
-        public void mousePressed(MouseEvent e) {
-            originalMouseXOnScreen = e.getXOnScreen();
-            originalMouseYOnScreen = e.getYOnScreen();
-            originalFrameX = getUIComponent().getX();
-            originalFrameY = getUIComponent().getY();
-        }
-
-        /**
-         * How much have we dragged?
-         *
-         * @param e
-         */
-        public void mouseDragged(MouseEvent e) {
-            int x = originalFrameX + e.getXOnScreen() - originalMouseXOnScreen;
-            int y = originalFrameY + e.getYOnScreen() - originalMouseYOnScreen;
-            getUIComponent().setLocation(x, y);
-        }
-
-        /**
-         * Make the cursor a hand.
-         *
-         * @param e
-         */
-        public void mouseEntered(MouseEvent e) {
-            originalCursor = CursorUtils.setHandCursor(getUIComponent());
-        }
-
-        /**
-         * Reset the cursor.
-         *
-         * @param e
-         */
-        public void mouseExited(MouseEvent e) {
-            if (originalCursor != null) {
-                CursorUtils.returnToOriginal(getUIComponent(), originalCursor);
-            }
-        }
-
-        public void mouseReleased(MouseEvent e) {
-            // Don't care
-        }
-
-        public void mouseMoved(MouseEvent e) {
-            // Don't care
-        }
-
-        public void mouseClicked(MouseEvent e) {
-            // Don't care
         }
     }
 
@@ -1089,7 +948,7 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyOpenFoldersBaseAction extends BaseAction {
+    private static class MyOpenFoldersBaseAction extends BaseAction {
 
         private MyOpenFoldersBaseAction(Controller controller) {
             super("action_open_folders_base", controller);

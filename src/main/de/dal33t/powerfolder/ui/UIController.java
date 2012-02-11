@@ -1318,10 +1318,6 @@ public class UIController extends PFComponent {
         }
     }
 
-    public void reconfigureForCompactMode(boolean compactMode) {
-        mainFrame.reconfigureForCompactMode(compactMode);
-    }
-
     /**
      * Special case. A folder has just been created from an invite.
      * Switch to the folder tab and crack open the new folder info.
