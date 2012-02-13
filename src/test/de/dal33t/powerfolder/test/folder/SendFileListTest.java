@@ -83,6 +83,7 @@ public class SendFileListTest extends TwoControllerTestCase {
                     .getInfo());
             }
         });
+        lisasListener.ignoreMetaFolder = true;
         lisasListener.messages.clear();
 
         // Create scenario
@@ -110,12 +111,17 @@ public class SendFileListTest extends TwoControllerTestCase {
 
     private static final class MyMessageListener implements MessageListener {
         public List<FolderRelatedMessage> messages = new ArrayList<FolderRelatedMessage>();
+        public boolean ignoreMetaFolder;
 
         public void handleMessage(Member source, Message message) {
             if (message instanceof FileList
                 || message instanceof FolderFilesChanged)
             {
-                messages.add((FolderRelatedMessage) message);
+                FolderRelatedMessage fm = (FolderRelatedMessage) message;
+                if (ignoreMetaFolder && fm.folder.isMetaFolder()) {
+                    return;
+                }
+                messages.add(fm);
             }
         }
 
