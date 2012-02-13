@@ -25,8 +25,10 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.FolderRelatedMessage;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -77,7 +79,8 @@ public class SendFileListTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return !lisasListener.messages.isEmpty();
+                return lisasListener.receivedMessagesFor(getFolderAtBart()
+                    .getInfo());
             }
         });
         lisasListener.messages.clear();
@@ -90,7 +93,8 @@ public class SendFileListTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return !lisasListener.messages.isEmpty();
+                return lisasListener.receivedMessagesFor(getFolderAtBart()
+                    .getInfo());
             }
         });
 
@@ -105,14 +109,23 @@ public class SendFileListTest extends TwoControllerTestCase {
     }
 
     private static final class MyMessageListener implements MessageListener {
-        public List<Message> messages = new ArrayList<Message>();
+        public List<FolderRelatedMessage> messages = new ArrayList<FolderRelatedMessage>();
 
         public void handleMessage(Member source, Message message) {
             if (message instanceof FileList
                 || message instanceof FolderFilesChanged)
             {
-                messages.add(message);
+                messages.add((FolderRelatedMessage) message);
             }
+        }
+
+        public boolean receivedMessagesFor(FolderInfo foInfo) {
+            for (FolderRelatedMessage m : messages) {
+                if (m.folder.equals(foInfo)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public boolean fireInEventDispatchThread() {
