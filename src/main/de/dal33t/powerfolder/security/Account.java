@@ -296,6 +296,22 @@ public class Account implements Serializable {
     }
 
     /**
+     * @param folder
+     * @return the permission on the given folder. null for no access.
+     */
+    public AccessMode getAllowedAccess(FolderInfo folder) {
+        for (Permission p : permissions) {
+            if (p instanceof FolderPermission) {
+                FolderPermission fp = (FolderPermission) p;
+                if (fp.folder.equals(folder)) {
+                    return fp.getMode();
+                }
+            }
+        }
+        return AccessMode.NO_ACCESS;
+    }
+
+    /**
      * @return the list of folders this account gets charged for.
      */
     public Collection<FolderInfo> getFoldersCharged() {
