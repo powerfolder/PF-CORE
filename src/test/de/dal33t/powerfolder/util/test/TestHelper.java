@@ -251,7 +251,7 @@ public class TestHelper {
                 try {
                     FileUtils.recursiveDelete(file);
                 } catch (IOException e1) {
-                    TestHelper.waitMilliSeconds(1000);
+                    TestHelper.waitMilliSeconds(5000);
                     try {
                         FileUtils.recursiveDelete(file);
                     } catch (IOException e2) {
