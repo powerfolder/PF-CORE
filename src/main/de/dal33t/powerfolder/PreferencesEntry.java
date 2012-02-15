@@ -151,7 +151,7 @@ public enum PreferencesEntry {
     /**
      * If the "Tell a friend" / Referral system should be visible.
      */
-    SHOW_TELL_A_FRIEND("show.tell-a-friend", true),
+    SHOW_TELL_A_FRIEND("show.tell-a-friend", false),
 
     SHOW_AUTO_CREATED_FOLDERS("show.auto.created.folders", true),
 
