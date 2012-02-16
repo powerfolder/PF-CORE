@@ -1080,7 +1080,7 @@ public class NodeManager extends PFComponent {
             } else {
                 // Old member, check its connection state
                 if (!member.isOnLAN() && handler.isOnLAN()) {
-                    // Only accept hanlder, if our one is disco! or our is not
+                    // Only accept handler, if our one is disco! or our is not
                     // on LAN
                     acceptHandler = true;
                     // #841 NOT isCompletelyConnected()
@@ -1088,17 +1088,7 @@ public class NodeManager extends PFComponent {
                     rejectCause = "Duplicate connection detected to "
                         + member.getNick() + " ("
                         + member.getReconnectAddress() + ")";
-                    // Ping connection
-                    try {
-                        member.sendMessage(new Ping());
-                        // Not accept node. Old peer is fine.
-                        acceptHandler = false;
-                    } catch (Exception e) {
-                        logWarning("Old connection to " + member.getNick()
-                            + " dropped. reconnecting");
-                        member.shutdown();
-                        acceptHandler = true;
-                    }
+                    acceptHandler = false;
                 } else {
                     // Otherwise accept. (our member = disco)
                     acceptHandler = true;
