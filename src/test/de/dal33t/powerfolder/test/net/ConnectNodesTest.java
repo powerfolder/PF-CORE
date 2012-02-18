@@ -19,11 +19,7 @@
  */
 package de.dal33t.powerfolder.test.net;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.ConnectResult;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
@@ -232,6 +228,9 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         final MyAskForFriendshipListener handlerAtMarge = new MyAskForFriendshipListener();
+        // Set expert true so friendship listeners fire.
+        // Otherwise the friend just gets accepted without notification.
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerMarge(), true);
         getContollerMarge().addAskForFriendshipListener(handlerAtMarge);
         assertFalse(handlerAtMarge.hasBeenAsked);
 
