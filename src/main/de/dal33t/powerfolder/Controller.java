@@ -2489,8 +2489,14 @@ public class Controller extends PFComponent {
             }
         }
 
-        for (AskForFriendshipListener listener : askForFriendshipListeners) {
-            listener.askForFriendship(event);
+        // Expert mode ? ask the expert : just accept the friendship
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(this)) {
+            for (AskForFriendshipListener listener :
+                    askForFriendshipListeners) {
+                listener.askForFriendship(event);
+            }
+        } else {
+            member.setFriend(true, null);
         }
     }
 
