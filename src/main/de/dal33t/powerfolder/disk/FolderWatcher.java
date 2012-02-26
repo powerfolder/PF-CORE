@@ -22,8 +22,8 @@ package de.dal33t.powerfolder.disk;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.Map.Entry;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -70,7 +70,9 @@ public class FolderWatcher extends PFComponent {
     }
 
     public boolean isSupported() {
-        return isLibLoaded();
+        return isLibLoaded()
+            && ConfigurationEntry.FOLDER_WATCHER_ENABLED
+                .getValueBoolean(getController());
     }
 
     /**
