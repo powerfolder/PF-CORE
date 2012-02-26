@@ -3569,8 +3569,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!hasWritePermission(member)) {
-                if (isInfo()) {
-                    logInfo("Not downloading files. " + member + " / "
+                if (isFine()) {
+                    logFine("Not downloading files. " + member + " / "
                         + member.getAccountInfo() + " no write permission");
                 }
                 continue;
