@@ -736,6 +736,10 @@ public enum ConfigurationEntry {
     FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", 60),
 
     /**
+     * #2637: Disabling can save OS resources.
+     */
+    FOLDER_WATCHER_ENABLED("folder.watcher.enabled", true),
+    /**
      * #2405: The delay for syncing after folderWatcher detects a change.
      */
     FOLDER_WATCHER_DELAY("folder.watcher.delay.seconds", 1),
