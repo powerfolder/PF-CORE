@@ -85,6 +85,7 @@ public class MainFrame extends PFUIComponent {
     private JLabel syncTextLabel;
     private JLabel syncDateLabel;
     private JLabel accountLabel;
+    private JLabel allInSyncLabel;
     private JProgressBar usagePB;
     private ActionLabel openWebInterfaceLabel;
     private ActionLabel openFoldersBaseLabel;
@@ -123,17 +124,32 @@ public class MainFrame extends PFUIComponent {
     }
 
     private Component createLeftMiniPanel() {
-        FormLayout layout = new FormLayout("100dlu",
-            "pref, pref, pref, pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(syncTextLabel, cc.xy(1, 1));
-        builder.add(syncDateLabel, cc.xy(1, 2));
-        builder.add(accountLabel, cc.xy(1, 3));
-        builder.add(usagePB, cc.xy(1, 4));
+        FormLayout layoutUpper = new FormLayout("pref, 100dlu",
+            "pref, pref");
+        DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
 
-        return builder.getPanel();
+        builderUpper.add(allInSyncLabel, cc.xywh(1, 1, 1, 2));
+        builderUpper.add(syncTextLabel, cc.xy(2, 1));
+        builderUpper.add(syncDateLabel, cc.xy(2, 2));
+
+        FormLayout layoutLower = new FormLayout("pref, 100dlu",
+            "pref, pref");
+        DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
+
+        // Include a spacer icon that lines up the pair with builderUpper
+        // when allInSyncLabel has null icon.
+        builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
+        builderLower.add(accountLabel, cc.xy(2, 1));
+        builderLower.add(usagePB, cc.xy(2, 2));
+
+        FormLayout layoutMain = new FormLayout("pref", "pref, pref");
+        DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
+        builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
+        builderMain.add(builderLower.getPanel(), cc.xy(1, 2));
+
+        return builderMain.getPanel();
     }
 
     private Component createRightMiniPanel() {
@@ -272,6 +288,8 @@ public class MainFrame extends PFUIComponent {
 
         MyActionListener myActionListener = new MyActionListener();
 
+        allInSyncLabel = new JLabel(Icons.getIconById(Icons.SYNC_COMPLETE));
+
         syncTextLabel = new JLabel(" ");
 
         // Sync-complete icon on the right of text, but left aligned.
@@ -372,6 +390,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         String syncStatsText;
+        boolean synced = false;
         if (!getController().getNodeManager().isStarted()) {
             // Not started
             syncStatsText = Translation
@@ -392,11 +411,10 @@ public class MainFrame extends PFUIComponent {
             } else {
                 syncStatsText = Translation
                     .getTranslation("main_frame.in_sync");
+                synced = true;
             }
         }
         syncTextLabel.setText(syncStatsText);
-        //syncTextLabel.setIcon(synced ? Icons.getIconById(Icons.SYNC_COMPLETE)
-        //        : null);
 
         String syncDateText = " ";
         if (syncDate != null) {
@@ -411,6 +429,12 @@ public class MainFrame extends PFUIComponent {
             }
         }
         syncDateLabel.setText(syncDateText);
+
+        if (synced) {
+            allInSyncLabel.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+        } else {
+            allInSyncLabel.setIcon(null);
+        }
     }
 
     /**
