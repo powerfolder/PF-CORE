@@ -1214,6 +1214,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (baseDir.exists() && baseDir.canRead() && !baseDir.isHidden()) {
             File[] files = baseDir.listFiles();
             for (File file : files) {
+                if (file.getName().equals(Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                {
+                    continue;
+                }
                 // Only create if user has entered some files.
                 if (file.isDirectory() && FileUtils.hasFiles(file)) {
                     // Don't autocreate if it has been removed previously.
