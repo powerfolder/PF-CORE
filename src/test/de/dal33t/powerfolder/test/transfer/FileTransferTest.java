@@ -20,10 +20,10 @@
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +46,9 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
 
 /**
  * Tests file transfer between nodes.
@@ -128,9 +131,9 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testFileCopyCert8() throws IOException {
-        File testFileBart = new File(getFolderAtBart().getLocalBase(),
+        File testFileBart = new TFile(getFolderAtBart().getLocalBase(),
             "cert8.db");
-        File origFile = new File("src/test-resources/cert8.db");
+        File origFile = new TFile("src/test-resources/cert8.db");
         FileUtils.copyFile(origFile, testFileBart);
 
         // Let him scan the new content
@@ -152,7 +155,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             + getFolderAtLisa().getKnownItemCount(), 1, getFolderAtLisa()
             .getKnownItemCount());
 
-        File testFileLisa = new File(getFolderAtLisa().getLocalBase(),
+        File testFileLisa = new TFile(getFolderAtLisa().getLocalBase(),
             "cert8.db");
         assertEquals(origFile.length(), testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
@@ -161,9 +164,9 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testFileCopyURLclassifier2() throws IOException {
-        File testFileBart = new File(getFolderAtBart().getLocalBase(),
+        File testFileBart = new TFile(getFolderAtBart().getLocalBase(),
             "urlclassifier2.sqlite");
-        File origFile = new File("src/test-resources/urlclassifier2.sqlite");
+        File origFile = new TFile("src/test-resources/urlclassifier2.sqlite");
         FileUtils.copyFile(origFile, testFileBart);
 
         // Let him scan the new content
@@ -185,7 +188,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             + getFolderAtLisa().getKnownItemCount(), 1, getFolderAtLisa()
             .getKnownItemCount());
 
-        File testFileLisa = new File(getFolderAtLisa().getLocalBase(),
+        File testFileLisa = new TFile(getFolderAtLisa().getLocalBase(),
             "urlclassifier2.sqlite");
         assertEquals(origFile.length(), testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
@@ -194,9 +197,9 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testSmallFileCopy() throws IOException {
-        File testFileBart = new File(getFolderAtBart().getLocalBase(),
+        File testFileBart = new TFile(getFolderAtBart().getLocalBase(),
             "TestFile.txt");
-        FileOutputStream fOut = new FileOutputStream(testFileBart);
+        TFileOutputStream fOut = new TFileOutputStream(testFileBart);
         byte[] testContent = "This is the contenent of the testfile".getBytes();
         fOut.write(testContent);
         fOut.close();
@@ -209,7 +212,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getKnownItemCount());
 
         // Give them time to copy
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return 1 == getFolderAtLisa().getKnownItemCount();
             }
@@ -220,7 +223,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             + getFolderAtLisa().getKnownItemCount(), 1, getFolderAtLisa()
             .getKnownItemCount());
 
-        File testFileLisa = new File(getFolderAtLisa().getLocalBase(),
+        File testFileLisa = new TFile(getFolderAtLisa().getLocalBase(),
             "TestFile.txt");
         assertEquals(testContent.length, testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
@@ -232,15 +235,15 @@ public class FileTransferTest extends TwoControllerTestCase {
         // First copy file
         testSmallFileCopy();
 
-        final File testFile1 = new File(getFolderAtBart().getLocalBase()
+        final File testFile1 = new TFile(getFolderAtBart().getLocalBase()
             + "/TestFile.txt");
-        FileOutputStream fOut = new FileOutputStream(testFile1, true);
+        OutputStream fOut = new TFileOutputStream(testFile1, true);
         fOut.write("-> Next content<-".getBytes());
         fOut.close();
 
         // Readin file content
-        FileInputStream fIn = new FileInputStream(testFile1);
-        byte[] content1 = new byte[fIn.available()];
+        InputStream fIn = new TFileInputStream(testFile1);
+        byte[] content1 = new byte[(int) testFile1.length()];
         fIn.read(content1);
         fIn.close();
 
@@ -285,7 +288,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Read content
         File testFile2 = testFileInfo2.getDiskFile(getContollerLisa()
             .getFolderRepository());
-        fIn = new FileInputStream(testFile2);
+        fIn = new TFileInputStream(testFile2);
         byte[] conten2 = new byte[fIn.available()];
         fIn.read(conten2);
         fIn.close();
@@ -308,18 +311,18 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
-        File testFile1 = new File(getFolderAtBart().getLocalBase()
+        File testFile1 = new TFile(getFolderAtBart().getLocalBase()
             + "/TestFile.txt");
-        FileOutputStream fOut = new FileOutputStream(testFile1);
+        OutputStream fOut = new TFileOutputStream(testFile1);
         fOut.write(new byte[]{});
         fOut.close();
         assertTrue("Testfile does not exists:" + testFile1, testFile1.exists());
 
-        File testFile2 = new File(getFolderAtBart().getLocalBase()
+        File testFile2 = new TFile(getFolderAtBart().getLocalBase()
             + "/subdir/TestFile2.txt");
         assertTrue("Unable mkdirs: " + testFile2.getParentFile(), testFile2
             .getParentFile().mkdirs());
-        fOut = new FileOutputStream(testFile2);
+        fOut = new TFileOutputStream(testFile2);
         fOut.write(new byte[]{});
         fOut.close();
         assertTrue("Testfile does not exists:" + testFile2, testFile2.exists());
@@ -603,7 +606,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         if (!FolderWatcher.isLibLoaded()) {
             return;
         }
-        LoggingManager.setConsoleLogging(Level.INFO);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().getFolderWatcher().setIngoreAll(false);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
@@ -909,7 +911,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         assertEquals(0, lisasListener.downloadCompleted);
 
-        LoggingManager.setConsoleLogging(Level.INFO);
         // Let him scan the new content
         scanFolder(getFolderAtBart());
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
@@ -1115,6 +1116,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         LoggingManager.setConsoleLogging(Level.FINE);
+
         assertTrue(tempFile.exists());
         assertTrue(tempFile.length() > 0);
         assertTrue(tempFile.length() < testFile.length());
@@ -1201,7 +1203,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() > 0
-                    && new File(getFolderAtLisa().getSystemSubDir(),
+                    && new TFile(getFolderAtLisa().getSystemSubDir(),
                         "transfers").listFiles(new FilenameFilter() {
                         public boolean accept(File dir, String name) {
                             return name.contains("(incomplete) ");
@@ -1212,7 +1214,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         FileInfo fInfo = getFolderAtLisa().getIncomingFiles().iterator().next();
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
-        final File incompleteFile = new File(getFolderAtLisa()
+        final File incompleteFile = new TFile(getFolderAtLisa()
             .getSystemSubDir(), "transfers").listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.contains("(incomplete) ");
@@ -1757,7 +1759,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Switch!
-        LoggingManager.setConsoleLogging(Level.FINE);
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Download should break
