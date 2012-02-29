@@ -47,6 +47,7 @@ import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.schlichtherle.truezip.file.TFileInputStream;
 
 /**
  * Simple class for a scheduled Upload
@@ -60,6 +61,7 @@ public class Upload extends Transfer {
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
     protected transient RandomAccessFile raf;
+    protected transient TFileInputStream in;
     private String debugState;
 
     /**
@@ -187,11 +189,16 @@ public class Upload extends Transfer {
             public void run() {
                 try {
                     debugState = "Opening file";
-                    try {
-                        raf = new RandomAccessFile(getFile().getDiskFile(
-                            getController().getFolderRepository()), "r");
-                    } catch (FileNotFoundException e) {
-                        throw new TransferException(e);
+
+                    if (!getFile().getFolder(
+                        getController().getFolderRepository()).isEncrypted())
+                    {
+                        try {
+                            raf = new RandomAccessFile(getFile().getDiskFile(
+                                getController().getFolderRepository()), "r");
+                        } catch (FileNotFoundException e) {
+                            throw new TransferException(e);
+                        }
                     }
                     if (isAborted() || isBroken()) {
                         throw new TransferException(
@@ -269,14 +276,16 @@ public class Upload extends Transfer {
             }
 
             private void closeRAF() {
-                try {
-                    if (isFiner()) {
-                        logFiner("Closing raf for "
-                            + getFile().toDetailString());
+                if (raf != null) {
+                    try {
+                        if (isFiner()) {
+                            logFiner("Closing raf for "
+                                + getFile().toDetailString());
+                        }
+                        raf.close();
+                    } catch (IOException e) {
+                        logSevere("IOException", e);
                     }
-                    raf.close();
-                } catch (IOException e) {
-                    logSevere("IOException", e);
                 }
             }
 
@@ -387,10 +396,26 @@ public class Upload extends Transfer {
                 getController().getFolderRepository());
 
             byte[] data = new byte[(int) pr.getRange().getLength()];
-            raf.seek(pr.getRange().getStart());
+
+            if (raf != null) {
+                raf.seek(pr.getRange().getStart());
+            } else {
+                try {
+                    in = new TFileInputStream(getFile().getDiskFile(
+                        getController().getFolderRepository()));
+                } catch (FileNotFoundException e) {
+                    throw new TransferException(e);
+                }
+                in.skip(pr.getRange().getStart());
+            }
             int pos = 0;
             while (pos < data.length) {
-                int read = raf.read(data, pos, data.length - pos);
+                int read;
+                if (raf != null) {
+                    read = raf.read(data, pos, data.length - pos);
+                } else {
+                    read = in.read(data, pos, data.length - pos);
+                }
                 if (read < 0) {
                     logWarning("Requested part exceeds filesize!");
                     throw new TransferException(
@@ -427,6 +452,13 @@ public class Upload extends Transfer {
                 logFiner("ConnectionException", e);
             }
             throw new TransferException(e);
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+            }
         }
         return true;
     }
