@@ -28,7 +28,6 @@ import java.io.Externalizable;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -107,6 +106,10 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.Pattern;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
+import de.schlichtherle.truezip.fs.FsSyncException;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -130,7 +133,7 @@ public class Folder extends PFComponent {
     private static final int TEN_SECONDS = 10;
 
     /** The base location of the folder. */
-    private final File localBase;
+    private final TFile localBase;
 
     /**
      * #2056: The directory to commit/mirror the whole folder to when in reaches
@@ -251,6 +254,8 @@ public class Folder extends PFComponent {
      */
     private boolean deviceDisconnected;
 
+    private boolean encrypted;
+
     /**
      * #1538: Script that gets executed after a download has been completed
      * successfully.
@@ -300,11 +305,27 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
+        encrypted = folderSettings.getLocalBaseDir().getName()
+            .endsWith(".pfzip");
         problems = new CopyOnWriteArrayList<Problem>();
-        if (folderSettings.getLocalBaseDir().isAbsolute()) {
-            localBase = folderSettings.getLocalBaseDir();
+        if (encrypted) {
+            localBase = new TFile(folderSettings.getLocalBaseDir());
+            localBase.mkdirs();
+            try {
+                new TFile(localBase, "dummy.txt").createNewFile();
+                new TFile(localBase, "dummy.txt").rm();
+                // localBase.createNewFile();
+            } catch (IOException e) {
+                logWarning("Unable to initialize encrypted storage at "
+                    + localBase);
+            }
+            if (!localBase.isArchive()) {
+                throw new IllegalStateException();
+            }
+        } else if (folderSettings.getLocalBaseDir().isAbsolute()) {
+            localBase = new TFile(folderSettings.getLocalBaseDir());
         } else {
-            localBase = new File(getController().getFolderRepository()
+            localBase = new TFile(getController().getFolderRepository()
                 .getFoldersAbsoluteDir(), folderSettings.getLocalBaseDir()
                 .getPath());
             logWarning("Original path: " + folderSettings.getLocalBaseDir()
@@ -431,7 +452,7 @@ public class Folder extends PFComponent {
         if (folderSettings.isCreateInvitationFile()) {
             try {
                 Invitation inv = createInvitation();
-                File invFile = new File(localBase,
+                File invFile = new TFile(localBase,
                     FileUtils.removeInvalidFilenameChars(inv.folder.name)
                         + ".invitation");
                 InvitationUtil.save(inv, invFile);
@@ -445,7 +466,7 @@ public class Folder extends PFComponent {
 
         // Remove desktop.ini. Was accidentally created in 4.3.0 release.
         if (currentInfo.isMetaFolder()) {
-            File desktopIni = new File(localBase,
+            File desktopIni = new TFile(localBase,
                 FileUtils.DESKTOP_INI_FILENAME);
             if (desktopIni.exists() && desktopIni.delete()) {
                 scanChangedFile(FileInfoFactory
@@ -1565,7 +1586,7 @@ public class Folder extends PFComponent {
             }
             try {
                 // load files and scan in
-                InputStream fIn = new BufferedInputStream(new FileInputStream(
+                InputStream fIn = new BufferedInputStream(new TFileInputStream(
                     dbFile));
                 ObjectInputStream in = new ObjectInputStream(fIn);
                 FileInfo[] files = (FileInfo[]) in.readObject();
@@ -1651,7 +1672,7 @@ public class Folder extends PFComponent {
     private void loadMetadata() {
         loadFolderDB();
         loadLastSyncDate();
-        diskItemFilter.loadPatternsFrom(new File(getSystemSubDir0(),
+        diskItemFilter.loadPatternsFrom(new TFile(getSystemSubDir0(),
             DiskItemFilter.PATTERNS_FILENAME), false);
     }
 
@@ -1659,13 +1680,13 @@ public class Folder extends PFComponent {
      * Loads the folder db from disk
      */
     private void loadFolderDB() {
-        if (loadFolderDB(new File(localBase,
+        if (loadFolderDB(new TFile(localBase,
             Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + DB_FILENAME)))
         {
             return;
         }
 
-        if (loadFolderDB(new File(localBase,
+        if (loadFolderDB(new TFile(localBase,
             Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + DB_BACKUP_FILENAME)))
         {
             return;
@@ -1687,7 +1708,7 @@ public class Folder extends PFComponent {
             persist();
         }
         if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
-            diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
+            diskItemFilter.savePatternsTo(new TFile(getSystemSubDir(),
                 DiskItemFilter.PATTERNS_FILENAME), true);
             savePatternsToMetaFolder();
         }
@@ -1697,6 +1718,13 @@ public class Folder extends PFComponent {
         ListenerSupportFactory
             .removeAllListeners(folderMembershipListenerSupport);
         diskItemFilter.removeAllListener();
+        if (encrypted && !currentInfo.isMetaFolder()) {
+            try {
+                TFile.umount(localBase);
+            } catch (FsSyncException e) {
+                logWarning("Problem unmounting " + localBase + ". " + e);
+            }
+        }
     }
 
     /**
@@ -1713,8 +1741,8 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private void storeFolderDB() {
-        File dbFile = new File(getSystemSubDir(), DB_FILENAME);
-        File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
+        File dbFile = new TFile(getSystemSubDir(), DB_FILENAME);
+        File dbFileBackup = new TFile(getSystemSubDir(), DB_BACKUP_FILENAME);
         try {
             FileInfo[] diskItems;
             synchronized (dbAccessLock) {
@@ -1739,7 +1767,7 @@ public class Folder extends PFComponent {
             if (!dbFile.createNewFile()) {
                 logSevere("Failed to create database file: " + dbFile);
             }
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+            OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
                 dbFile));
             ObjectOutputStream oOut = new ObjectOutputStream(fOut);
             // Store files
@@ -1776,11 +1804,11 @@ public class Folder extends PFComponent {
 
             // TODO Remove this in later version
             // Cleanup for older versions
-            File oldDbFile = new File(localBase, DB_FILENAME);
+            File oldDbFile = new TFile(localBase, DB_FILENAME);
             if (!oldDbFile.delete()) {
                 logFiner("Failed to delete 'old' database file: " + oldDbFile);
             }
-            File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
+            File oldDbFileBackup = new TFile(localBase, DB_BACKUP_FILENAME);
             if (!oldDbFileBackup.delete()) {
                 logFiner("Failed to delete backup of 'old' database file: "
                     + oldDbFileBackup);
@@ -2194,7 +2222,7 @@ public class Folder extends PFComponent {
             return;
         }
         // Update in the meta directory.
-        File file = new File(metaFolder.localBase, METAFOLDER_MEMBERS);
+        File file = new TFile(metaFolder.localBase, METAFOLDER_MEMBERS);
         FileInfo fileInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         // Read in.
         Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
@@ -2307,7 +2335,7 @@ public class Folder extends PFComponent {
         OutputStream os = null;
         ObjectOutputStream oos = null;
         try {
-            os = new BufferedOutputStream(new FileOutputStream(
+            os = new BufferedOutputStream(new TFileOutputStream(
                 fileInfo.getDiskFile(getController().getFolderRepository())));
             oos = new ObjectOutputStream(os);
             oos.writeObject(membersMap);
@@ -2641,7 +2669,7 @@ public class Folder extends PFComponent {
                                         || pathL.endsWith(".ds_store")
                                         || pathL.endsWith("desktop.ini"))
                                     {
-                                        new File(path).delete();
+                                        new TFile(path).delete();
                                     }
                                 }
                                 if (!localCopy.delete()) {
@@ -3355,7 +3383,7 @@ public class Folder extends PFComponent {
     }
 
     private File getSystemSubDir0() {
-        return new File(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        return new TFile(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
     }
 
     /**
@@ -3878,7 +3906,7 @@ public class Folder extends PFComponent {
      *         exist!! check before use
      */
     public File getDiskFile(FileInfo fInfo) {
-        return new File(localBase, FileInfoFactory.encodeIllegalChars(fInfo
+        return new TFile(localBase, FileInfoFactory.encodeIllegalChars(fInfo
             .getRelativeName()));
     }
 
@@ -4035,7 +4063,7 @@ public class Folder extends PFComponent {
     }
 
     private void storeLastSyncDate() {
-        File lastSyncFile = new File(getSystemSubDir0(),
+        File lastSyncFile = new TFile(getSystemSubDir0(),
             LAST_SYNC_INFO_FILENAME);
         if (!getSystemSubDir0().exists()) {
             return;
@@ -4053,7 +4081,7 @@ public class Folder extends PFComponent {
     }
 
     private void loadLastSyncDate() {
-        File lastSyncFile = new File(getSystemSubDir0(),
+        File lastSyncFile = new TFile(getSystemSubDir0(),
             LAST_SYNC_INFO_FILENAME);
         if (lastSyncFile.exists()) {
             lastSyncDate = new Date(lastSyncFile.lastModified());
@@ -4387,7 +4415,7 @@ public class Folder extends PFComponent {
             return;
         }
         // Write the patterns in the meta directory.
-        File file = new File(metaFolder.localBase,
+        File file = new TFile(metaFolder.localBase,
             DiskItemFilter.PATTERNS_FILENAME);
         FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         diskItemFilter.savePatternsTo(file, false);
@@ -4419,7 +4447,7 @@ public class Folder extends PFComponent {
                 persist();
             }
             if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
-                diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
+                diskItemFilter.savePatternsTo(new TFile(getSystemSubDir(),
                     DiskItemFilter.PATTERNS_FILENAME), true);
                 if (!shutdown) {
                     savePatternsToMetaFolder();
@@ -4431,6 +4459,10 @@ public class Folder extends PFComponent {
         public String toString() {
             return "FolderPersister for '" + Folder.this;
         }
+    }
+
+    public boolean isEncrypted() {
+        return encrypted;
     }
 
 }
