@@ -424,8 +424,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // #1697
         TFile.setDefaultArchiveDetector(new TArchiveDetector(
-            TArchiveDetector.NULL, "pfzip",
-            new JarDriver(IOPoolLocator.SINGLETON)));
+            TArchiveDetector.NULL, "pfzip", new JarDriver(
+                IOPoolLocator.SINGLETON)));
         TFile.setLenient(false);
 
         folderScanner.start();
@@ -813,12 +813,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Fire event
         fireFolderCreated(folder);
 
+        String log = "Setup " + (folder.isEncrypted() ? "encrypted " : "")
+            + "folder " + folderInfo.name + " at " + folder.getLocalBase();
         if (saveConfig) {
-            logInfo("Setup folder " + folderInfo.name + " at "
-                + folder.getLocalBase());
+            logInfo(log);
         } else {
-            logFine("Setup folder " + folderInfo.name + " at "
-                + folder.getLocalBase());
+            logFine(log);
         }
 
         removeFromRemovedFolderDirectories(folder);
