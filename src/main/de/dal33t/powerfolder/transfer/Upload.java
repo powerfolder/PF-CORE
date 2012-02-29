@@ -61,7 +61,6 @@ public class Upload extends Transfer {
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
     protected transient RandomAccessFile raf;
-    protected transient TFileInputStream in;
     private String debugState;
 
     /**
@@ -389,14 +388,11 @@ public class Upload extends Transfer {
                 return false;
             }
         }
+        File f = pr.getFile()
+            .getDiskFile(getController().getFolderRepository());
+        TFileInputStream in = null;
         try {
-
-            // TODO: Maybe cache the file
-            File f = pr.getFile().getDiskFile(
-                getController().getFolderRepository());
-
             byte[] data = new byte[(int) pr.getRange().getLength()];
-
             if (raf != null) {
                 raf.seek(pr.getRange().getStart());
             } else {
