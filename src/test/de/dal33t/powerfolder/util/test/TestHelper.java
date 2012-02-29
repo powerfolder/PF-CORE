@@ -24,9 +24,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -53,6 +52,9 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
 
 /**
  * Offers several helping methods for junit tests.
@@ -130,7 +132,10 @@ public class TestHelper {
      */
     public static void assertIncompleteFilesGone(List<Folder> folderList) {
         for (Folder f : folderList) {
-            File transfers = new File(f.getSystemSubDir(), "transfers");
+            File transfers = new TFile(f.getSystemSubDir(), "transfers");
+            if (!transfers.exists()) {
+                return;
+            }
             File[] list = transfers.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     return pathname.getName().contains("(incomplete)")
@@ -198,12 +203,12 @@ public class TestHelper {
 
     public static File getTestDir() {
         if (testFile == null) {
-            File localBuildProperties = new File("build-local.properties");
+            File localBuildProperties = new TFile("build-local.properties");
             if (localBuildProperties.exists()) {
                 BufferedInputStream bis = null;
                 Properties props = new Properties();
                 try {
-                    bis = new BufferedInputStream(new FileInputStream(
+                    bis = new BufferedInputStream(new TFileInputStream(
                         localBuildProperties));
                     props.load(bis);
                 } catch (IOException e) {
@@ -218,7 +223,7 @@ public class TestHelper {
                     }
                 }
                 if (props.containsKey("test.dir")) {
-                    testFile = new File(props.getProperty("test.dir"));
+                    testFile = new TFile(props.getProperty("test.dir"));
                     if (!testFile.exists()) {
                         testFile = null;
                     }
@@ -226,7 +231,7 @@ public class TestHelper {
             }
             if (testFile == null) {
                 // propertie not set or not existing dir
-                testFile = new File("build/test/");
+                testFile = new TFile("build/test/");
             }
         }
         testFile.mkdirs();
@@ -385,10 +390,10 @@ public class TestHelper {
         }
         File randomFile;
         do {
-            randomFile = new File(directory, createRandomFilename());
+            randomFile = new TFile(directory, createRandomFilename());
         } while (randomFile.exists());
         try {
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+            OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
                 randomFile));
             for (int i = 0; i < size; i++) {
                 fOut.write((int) (Math.random() * 256));
@@ -436,7 +441,7 @@ public class TestHelper {
             }
         }
         try {
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+            OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
                 file));
             for (int i = 0; i < size; i++) {
                 fOut.write((int) (Math.random() * 256));
@@ -483,13 +488,13 @@ public class TestHelper {
         byte[] contents)
     {
         try {
-            File file = new File(directory, filename);
+            File file = new TFile(directory, filename);
             File parent = file.getParentFile();
             if (!parent.exists()) {
                 parent.mkdirs();
             }
 
-            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStream fOut = new TFileOutputStream(file);
             fOut.write(contents);
             fOut.close();
 
@@ -563,13 +568,13 @@ public class TestHelper {
     }
 
     public static final boolean compareFiles(File a, File b) {
-        FileInputStream ain, bin;
+        InputStream ain, bin;
         try {
             if (a.length() != b.length()) {
                 return false;
             }
-            ain = new FileInputStream(a);
-            bin = new FileInputStream(b);
+            ain = new TFileInputStream(a);
+            bin = new TFileInputStream(b);
             byte[] abuf = new byte[8192], bbuf = new byte[8192];
             int aread;
             while ((aread = ain.read(abuf)) > 0) {
