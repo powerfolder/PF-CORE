@@ -47,6 +47,7 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.schlichtherle.truezip.file.TFile;
 
 /**
  * An implementation of {@link FileArchiver} that tries to move a file to an
@@ -218,7 +219,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 allSuccessful &= thisSuccessfuly;
             } else {
                 String baseName = getBaseName(f);
-                File vf = new File(dir, baseName);
+                File vf = new TFile(dir, baseName);
                 if (!checked.contains(vf)) {
                     checked.add(vf);
                 }
@@ -251,7 +252,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     private File getArchiveTarget(FileInfo fileInfo) {
-        return new File(archiveDirectory,
+        return new TFile(archiveDirectory,
             FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName())
                 + "_K_" + fileInfo.getVersion());
     }
