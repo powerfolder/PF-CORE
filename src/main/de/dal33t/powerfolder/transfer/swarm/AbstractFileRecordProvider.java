@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.transfer.swarm;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
+import de.schlichtherle.truezip.file.TFileInputStream;
 
 /**
  * Abstract {@link FileRecordProvider} which can compute {@link FilePartsRecord}
@@ -74,7 +75,7 @@ public abstract class AbstractFileRecordProvider implements FileRecordProvider {
         // calculate it.
         int partSize = Math
             .max(4096, (int) (Math.pow(f.length(), 0.25) * 2048));
-        FileInputStream in = new FileInputStream(f);
+        InputStream in = new TFileInputStream(f);
         try {
             FilePartsRecordBuilder b = new FilePartsRecordBuilder(
                 new Adler32(), MessageDigest.getInstance("SHA-256"),
