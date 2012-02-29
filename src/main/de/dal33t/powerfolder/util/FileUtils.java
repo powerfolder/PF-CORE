@@ -24,7 +24,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +46,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
 
 public class FileUtils {
 
@@ -126,7 +128,7 @@ public class FileUtils {
         if (from.equals(to)) {
             throw new IOException("cannot copy onto itself");
         }
-        copyFromStreamToFile(new FileInputStream(from), to);
+        copyFromStreamToFile(new TFileInputStream(from), to);
     }
 
     /**
@@ -190,7 +192,7 @@ public class FileUtils {
                     + to.getAbsolutePath());
             }
 
-            out = new FileOutputStream(to);
+            out = new TFileOutputStream(to);
             byte[] buffer = new byte[BYTE_CHUNK_SIZE];
             int read;
             int position = 0;
@@ -417,7 +419,7 @@ public class FileUtils {
                 for (File nextOriginalFile : files) {
                     // Synthesize target file name.
                     String lastPart = nextOriginalFile.getName();
-                    File nextTargetFile = new File(targetFile, lastPart);
+                    File nextTargetFile = new TFile(targetFile, lastPart);
                     recursiveMove(nextOriginalFile, nextTargetFile);
                 }
                 // Delete directory after move
@@ -488,7 +490,7 @@ public class FileUtils {
                 for (File nextOriginalFile : sourceFiles) {
                     // Synthesize target file name.
                     String lastPart = nextOriginalFile.getName();
-                    File nextTargetFile = new File(targetFile, lastPart);
+                    File nextTargetFile = new TFile(targetFile, lastPart);
                     recursiveCopy(nextOriginalFile, nextTargetFile, filter);
                 }
             }
@@ -561,7 +563,7 @@ public class FileUtils {
                 for (File sourceDirFile : sourceDirFiles) {
                     // Synthesize target file name.
                     String lastPart = sourceDirFile.getName();
-                    File targetDirFile = new File(target, lastPart);
+                    File targetDirFile = new TFile(target, lastPart);
                     recursiveMirror(sourceDirFile, targetDirFile, filter);
                     done.add(lastPart);
                 }
@@ -617,7 +619,7 @@ public class FileUtils {
         }
 
         // Look for a desktop ini in the folder.
-        File desktopIniFile = new File(directory, DESKTOP_INI_FILENAME);
+        File desktopIniFile = new TFile(directory, DESKTOP_INI_FILENAME);
         boolean iniExists = desktopIniFile.exists();
         boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
             .getValueBoolean(controller);
@@ -627,18 +629,18 @@ public class FileUtils {
             try {
                 // @todo Does anyone know a nicer way of finding the run time
                 // directory?
-                File hereFile = new File("");
+                File hereFile = new TFile("");
                 String herePath = hereFile.getAbsolutePath();
                 String exeName = controller.getDistribution().getBinaryName()
                     + ".exe";
-                File powerFolderFile = new File(herePath, exeName);
+                File powerFolderFile = new TFile(herePath, exeName);
                 if (!powerFolderFile.exists()) {
                     // Try harder
-                    powerFolderFile = new File(
+                    powerFolderFile = new TFile(
                         WinUtils.getProgramInstallationPath(), exeName);
 
                     if (!powerFolderFile.exists()) {
-                        powerFolderFile = new File(
+                        powerFolderFile = new TFile(
                             WinUtils.getProgramInstallationPath(), exeName);
 
                         log.fine("Could not find " + powerFolderFile.getName()
@@ -648,7 +650,7 @@ public class FileUtils {
                 }
 
                 // Write desktop ini directory
-                pw = new PrintWriter(new FileWriter(new File(directory,
+                pw = new PrintWriter(new FileWriter(new TFile(directory,
                     DESKTOP_INI_FILENAME)));
                 pw.println("[.ShellClassInfo]");
                 pw.println("ConfirmFileOp=0");
@@ -689,7 +691,7 @@ public class FileUtils {
      */
     public static void deleteDesktopIni(File directory) {
         // Look for a desktop ini in the folder.
-        File desktopIniFile = new File(directory, DESKTOP_INI_FILENAME);
+        File desktopIniFile = new TFile(directory, DESKTOP_INI_FILENAME);
         boolean iniExists = desktopIniFile.exists();
         if (iniExists) {
             desktopIniFile.delete();
@@ -749,7 +751,7 @@ public class FileUtils {
         if (!file.isFile()) {
             throw new IllegalArgumentException("Not a file:  " + file);
         }
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
+        ZipOutputStream out = new ZipOutputStream(new TFileOutputStream(zipfile));
         FileInputStream in = new FileInputStream(file); // Stream to read
         // file
         ZipEntry entry = new ZipEntry(file.getName()); // Make a ZipEntry
@@ -778,9 +780,9 @@ public class FileUtils {
         }
         String[] entries = dir.list();
         byte[] buffer = new byte[4096]; // Create a buffer for copying
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipfile));
+        ZipOutputStream out = new ZipOutputStream(new TFileOutputStream(zipfile));
         for (String entry1 : entries) {
-            File f = new File(dir, entry1);
+            File f = new TFile(dir, entry1);
             if (f.isDirectory()) {
                 continue;// Ignore directory
             }
@@ -899,10 +901,10 @@ public class FileUtils {
         Reject.ifBlank(rawName, "Raw name is null");
 
         String canName = FileUtils.removeInvalidFilenameChars(rawName);
-        File candidate = new File(baseDir, canName);
+        File candidate = new TFile(baseDir, canName);
         int suffix = 2;
         while (candidate.exists()) {
-            candidate = new File(baseDir, canName + " (" + suffix + ')');
+            candidate = new TFile(baseDir, canName + " (" + suffix + ')');
             suffix++;
             if (suffix > 1000) {
                 throw new IllegalStateException(
@@ -931,10 +933,10 @@ public class FileUtils {
         Reject.ifBlank(rawName, "Raw name is null");
 
         String name = removeInvalidFilenameChars(rawName);
-        File candidate = new File(baseDir, name);
+        File candidate = new TFile(baseDir, name);
         int suffix = 2;
         while (candidate.exists()) {
-            candidate = new File(baseDir, name + " (" + suffix + ')');
+            candidate = new TFile(baseDir, name + " (" + suffix + ')');
             suffix++;
         }
         return candidate;
@@ -1022,12 +1024,12 @@ public class FileUtils {
         Reject.ifNull(base, "Need a base directory");
         Reject.ifNull(relativeName, "RelativeName required");
         if (relativeName.indexOf('/') == -1) {
-            return new File(base, relativeName);
+            return new TFile(base, relativeName);
         } else {
             String[] parts = relativeName.split("/");
             File f = base;
             for (String part : parts) {
-                f = new File(f, part);
+                f = new TFile(f, part);
             }
             return f;
         }
