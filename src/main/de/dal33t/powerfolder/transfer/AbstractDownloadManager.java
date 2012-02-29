@@ -56,10 +56,11 @@ import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
+import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
 import de.dal33t.powerfolder.util.delta.MatchInfo;
 import de.dal33t.powerfolder.util.delta.MatchResultWorker;
-import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
+import de.schlichtherle.truezip.file.TFile;
 
 /**
  * Shared implementation of download managers. This class leaves details on what
@@ -241,7 +242,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
         if (tempFile == null) {
             try {
-                tempFile = new File(getMetaDataBaseDir(), "(incomplete) "
+                tempFile = new TFile(getMetaDataBaseDir(), "(incomplete) "
                     + getFileID());
             } catch (IOException e) {
                 logSevere("IOException", e);
@@ -815,7 +816,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (metaDataBaseDir != null) {
             return metaDataBaseDir;
         }
-        metaDataBaseDir = new File(getFileInfo().getFolder(
+        metaDataBaseDir = new TFile(getFileInfo().getFolder(
             getController().getFolderRepository()).getSystemSubDir(),
             "transfers");
         if (!metaDataBaseDir.exists() && !metaDataBaseDir.mkdirs()) {
@@ -839,7 +840,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return null;
         }
         try {
-            metaFile = new File(getMetaDataBaseDir(),
+            metaFile = new TFile(getMetaDataBaseDir(),
                 FileUtils.DOWNLOAD_META_FILE + getFileID());
             return metaFile;
         } catch (IOException e) {
