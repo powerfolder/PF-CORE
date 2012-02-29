@@ -336,6 +336,11 @@ public class Folder extends PFComponent {
                 localBase.mkdirs();
             }
         }
+
+        Reject.ifTrue(localBase.equals(getController().getFolderRepository()
+            .getFoldersAbsoluteDir()),
+            "Folder cannot be located at base directory for all folders");
+
         if (folderSettings.getCommitDir() != null) {
             if (folderSettings.getCommitDir().isAbsolute()) {
                 commitDir = folderSettings.getCommitDir();
