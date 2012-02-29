@@ -108,7 +108,7 @@ public class Invitation extends FolderRelatedMessage {
         File suggestedLocalBase)
     {
         Reject.ifNull(suggestedLocalBase, "File is null");
-        this.suggestedLocalBase = suggestedLocalBase;
+        this.suggestedLocalBase = new File(suggestedLocalBase.getPath());
         String folderBase = controller.getFolderRepository()
             .getFoldersBasedir();
         String appsDir = getAppsDir();
