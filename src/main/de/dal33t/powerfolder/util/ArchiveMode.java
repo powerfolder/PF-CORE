@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.NullFileArchiver;
+import de.schlichtherle.truezip.file.TFile;
 
 public enum ArchiveMode {
     NO_BACKUP("archive.no_backup") {
@@ -20,11 +21,12 @@ public enum ArchiveMode {
 
         @Override
         public FileArchiver getInstance(Folder f) {
-            File archive = new File(f.getSystemSubDir(), "archive");
-            if (!f.checkIfDeviceDisconnected() && !archive.exists() && !archive.mkdirs()) {
-                log
-                    .warning("Failed to create archive directory in system subdirectory: "
-                        + archive);
+            File archive = new TFile(f.getSystemSubDir(), "archive");
+            if (!f.checkIfDeviceDisconnected() && !archive.exists()
+                && !archive.mkdirs())
+            {
+                log.warning("Failed to create archive directory in system subdirectory: "
+                    + archive);
             }
             return new CopyOrMoveFileArchiver(archive, f.getController()
                 .getMySelf().getInfo());
