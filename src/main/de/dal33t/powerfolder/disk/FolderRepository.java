@@ -72,6 +72,10 @@ import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
+import de.schlichtherle.truezip.file.TArchiveDetector;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
+import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -417,6 +421,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Not starting FolderRepository. disabled by config");
             return;
         }
+
+        // #1697
+        TFile.setDefaultArchiveDetector(new TArchiveDetector(
+            TArchiveDetector.NULL, "pfzip",
+            new JarDriver(IOPoolLocator.SINGLETON)));
+        TFile.setLenient(false);
+
         folderScanner.start();
 
         // Now start thread
@@ -658,7 +669,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
         FolderSettings folderSettings)
     {
-        folderSettings.getLocalBaseDir().mkdirs();
+        if (!folderSettings.getLocalBaseDir().getName().endsWith(".pfzip")) {
+            folderSettings.getLocalBaseDir().mkdirs();
+        }
         Folder folder = createFolder0(folderInfo, folderSettings, true);
 
         // Obtain permission. Don't do this on startup (createFolder0)
@@ -767,9 +780,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderInfo metaFolderInfo = new FolderInfo(
             Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
             Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
-        File systemSubdir = new File(folderSettings.getLocalBaseDir(),
+        File systemSubdir = new TFile(folder.getLocalBase(),
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        FolderSettings metaFolderSettings = new FolderSettings(new File(
+        FolderSettings metaFolderSettings = new FolderSettings(new TFile(
             systemSubdir, Constants.METAFOLDER_SUBDIR),
             SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.NO_BACKUP, 0);
         metaFolderSettings.getLocalBaseDir().mkdirs();
@@ -802,10 +815,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (saveConfig) {
             logInfo("Setup folder " + folderInfo.name + " at "
-                + folderSettings.getLocalBaseDir());
+                + folder.getLocalBase());
         } else {
             logFine("Setup folder " + folderInfo.name + " at "
-                + folderSettings.getLocalBaseDir());
+                + folder.getLocalBase());
         }
 
         removeFromRemovedFolderDirectories(folder);
