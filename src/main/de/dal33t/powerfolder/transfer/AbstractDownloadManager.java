@@ -816,9 +816,18 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (metaDataBaseDir != null) {
             return metaDataBaseDir;
         }
-        metaDataBaseDir = new TFile(getFileInfo().getFolder(
-            getController().getFolderRepository()).getSystemSubDir(),
-            "transfers");
+
+        // FIXME: Implement
+        boolean workAroundTrueZIP = getFileInfo().getFolder(
+            getController().getFolderRepository()).isEncrypted();
+        if (workAroundTrueZIP) {
+            metaDataBaseDir = new TFile(System.getProperty("tmp.dir"),
+                "transfers");
+        } else {
+            metaDataBaseDir = new TFile(getFileInfo().getFolder(
+                getController().getFolderRepository()).getSystemSubDir(),
+                "transfers");
+        }
         if (!metaDataBaseDir.exists() && !metaDataBaseDir.mkdirs()) {
             throw new IOException(
                 "Couldn't create base directory for transfer meta data!");
