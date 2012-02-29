@@ -159,6 +159,9 @@ public class FolderWatcher extends PFComponent {
     }
 
     synchronized void reconfigure(SyncProfile syncProfile) {
+        if (folder.isEncrypted()) {
+            return;
+        }
         if (!isSupported()) {
             return;
         }
