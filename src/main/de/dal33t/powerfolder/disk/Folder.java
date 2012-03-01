@@ -314,7 +314,6 @@ public class Folder extends PFComponent {
             try {
                 new TFile(localBase, "dummy.txt").createNewFile();
                 new TFile(localBase, "dummy.txt").rm();
-                // localBase.createNewFile();
             } catch (IOException e) {
                 logWarning("Unable to initialize encrypted storage at "
                     + localBase);
@@ -337,6 +336,13 @@ public class Folder extends PFComponent {
             }
         }
 
+        // Support for meta folder.
+        if (fInfo.isMetaFolder()
+            && folderSettings.getLocalBaseDir().getAbsolutePath()
+                .contains(".pfzip"))
+        {
+            encrypted = true;
+        }
         Reject.ifTrue(localBase.equals(getController().getFolderRepository()
             .getFoldersAbsoluteDir()),
             "Folder cannot be located at base directory for all folders");
