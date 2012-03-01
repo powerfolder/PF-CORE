@@ -17,6 +17,7 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import de.schlichtherle.truezip.file.TFile;
 
 public class FileArchiverTest extends TwoControllerTestCase {
     @Override
@@ -44,8 +45,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
             fail(e.toString());
         }
 
-        File expected = new File(fb.getSystemSubDir(), "archive");
-        expected = new File(expected, fib.getRelativeName() + "_K_"
+        File expected = new TFile(fb.getSystemSubDir(), "archive");
+        expected = new TFile(expected, fib.getRelativeName() + "_K_"
             + fib.getVersion());
         assertTrue(expected.exists());
         assertEquals(expected.lastModified(), fib.getModifiedDate().getTime());
@@ -67,11 +68,11 @@ public class FileArchiverTest extends TwoControllerTestCase {
         });
 
         FileInfo fib = fb.getKnownFiles().iterator().next();
-        File eBart = new File(fb.getSystemSubDir(), "archive");
-        eBart = new File(eBart, fib.getRelativeName() + "_K_"
+        File eBart = new TFile(fb.getSystemSubDir(), "archive");
+        eBart = new TFile(eBart, fib.getRelativeName() + "_K_"
             + fib.getVersion());
-        File eLisa = new File(fl.getSystemSubDir(), "archive");
-        eLisa = new File(eLisa, fib.getRelativeName() + "_K_"
+        File eLisa = new TFile(fl.getSystemSubDir(), "archive");
+        eLisa = new TFile(eLisa, fib.getRelativeName() + "_K_"
             + fib.getVersion());
 
         modLisaFile(tl, fib);
@@ -106,10 +107,10 @@ public class FileArchiverTest extends TwoControllerTestCase {
             modLisaFile(tl, fib);
         }
 
-        File ver[] = new File[4];
-        File archdir = new File(fb.getSystemSubDir(), "archive");
+        File ver[] = new TFile[4];
+        File archdir = new TFile(fb.getSystemSubDir(), "archive");
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = new File(archdir, fib.getRelativeName() + "_K_" + i);
+            ver[i] = new TFile(archdir, fib.getRelativeName() + "_K_" + i);
         }
 
         assertFalse(ver[0].exists());
@@ -150,14 +151,14 @@ public class FileArchiverTest extends TwoControllerTestCase {
         FileInfo fib = fb.getKnownFiles().iterator().next();
         assertEquals(0, fb.getFileArchiver().getSize());
 
-        File ver[] = new File[5];
+        File ver[] = new TFile[5];
         for (int i = 0; i < ver.length; i++) {
             TestHelper.waitMilliSeconds(2100);
             modLisaFile(tl, fib);
         }
-        File archdir = new File(fb.getSystemSubDir(), "archive");
+        File archdir = new TFile(fb.getSystemSubDir(), "archive");
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = new File(archdir, fib.getRelativeName() + "_K_" + i);
+            ver[i] = new TFile(archdir, fib.getRelativeName() + "_K_" + i);
         }
         assertEquals(0, fl.getFileArchiver().getSize());
         assertFalse(ver[0].exists());
