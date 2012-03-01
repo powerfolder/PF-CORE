@@ -1573,13 +1573,31 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait at least 3000ms
         TestHelper.waitMilliSeconds(3000);
         // Make a modification in bart's file
+        TFile tmpCopy = new TFile(System.getProperty("tmp.dir"),
+            fbart.getName());
+        FileUtils.copyFile(fbart, tmpCopy);
+
         int modSize = (int) (1024 + Math.random() * 8192);
-        RandomAccessFile rbart = new RandomAccessFile(fbart, "rw");
-        rbart.seek((long) (Math.random() * (fbart.length() - modSize)));
+        long seek = (long) (Math.random() * (fbart.length() - modSize));
+        
+        byte[] buf = new byte[(int) seek];
+        TFileInputStream in = new TFileInputStream(tmpCopy);
+        in.read(buf);
+        TFileOutputStream out = new TFileOutputStream(fbart);
+        out.write(buf);
         for (int i = 0; i < modSize; i++) {
-            rbart.write((int) (Math.random() * 256));
+            out.write((int) (Math.random() * 256));
         }
-        rbart.close();
+        out.close();
+        in.close();
+        tmpCopy.rm();
+
+        // RandomAccessFile rbart = new RandomAccessFile(fbart, "rw");
+        // rbart.seek(seek);
+        // for (int i = 0; i < modSize; i++) {
+        // rbart.write((int) (Math.random() * 256));
+        // }
+        // rbart.close();
 
         long oldByteCount = getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred();
