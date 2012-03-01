@@ -21,8 +21,8 @@ package de.dal33t.powerfolder.test.transfer;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +34,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
 
 /**
  * Tests the script execution ability of PowerFolder.
@@ -73,7 +75,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
 
     public void testExecuteAfterDownload() throws IOException {
         assertEquals(0, outputFile.length());
-        File f = TestHelper.createRandomFile(new File(getFolderAtBart()
+        File f = TestHelper.createRandomFile(new TFile(getFolderAtBart()
             .getLocalBase(), "subdir1"));
         scanFolder(getFolderAtBart());
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
@@ -86,7 +88,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
 
             public String message() {
                 try {
-                    FileInputStream in = new FileInputStream(outputFile);
+                    InputStream in = new TFileInputStream(outputFile);
                     String content = new String(StreamUtils
                         .readIntoByteArray(in));
                     in.close();
@@ -98,7 +100,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
             }
         });
         assertTrue(outputFile.length() > 0);
-        FileInputStream in = new FileInputStream(outputFile);
+        InputStream in = new TFileInputStream(outputFile);
         String content = new String(StreamUtils.readIntoByteArray(in));
         in.close();
 
@@ -124,7 +126,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         int nFiles = 20;
         List<File> testFiles = new ArrayList<File>();
         for (int i = 0; i < nFiles; i++) {
-            File f = TestHelper.createRandomFile(new File(getFolderAtBart()
+            File f = TestHelper.createRandomFile(new TFile(getFolderAtBart()
                 .getLocalBase(), "subdir1"));
             testFiles.add(f);
         }
@@ -139,7 +141,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
 
             public String message() {
                 try {
-                    FileInputStream in = new FileInputStream(outputFile);
+                    InputStream in = new TFileInputStream(outputFile);
                     String content = new String(StreamUtils
                         .readIntoByteArray(in));
                     in.close();
@@ -153,7 +155,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(2500);
 
         assertTrue(outputFile.length() > 0);
-        FileInputStream in = new FileInputStream(outputFile);
+        InputStream in = new TFileInputStream(outputFile);
         String content = new String(StreamUtils.readIntoByteArray(in));
         in.close();
 
@@ -168,7 +170,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
     public void testExecuteBrokenScript() throws IOException {
         getFolderAtLisa().setDownloadScript(createBrokenScript());
         assertEquals(0, outputFile.length());
-        File f = TestHelper.createRandomFile(new File(getFolderAtBart()
+        File f = TestHelper.createRandomFile(new TFile(getFolderAtBart()
             .getLocalBase(), "subdir1"));
         scanFolder(getFolderAtBart());
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
