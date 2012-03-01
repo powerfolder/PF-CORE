@@ -22,8 +22,6 @@ package de.dal33t.powerfolder.disk;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,15 +31,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
-import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileReader;
+import de.schlichtherle.truezip.file.TFileWriter;
 
 /**
  * Class to hold a number of patterns to filter DiskItems with. The class has
@@ -111,7 +112,7 @@ public class DiskItemFilter {
             BufferedReader reader = null;
             try {
                 List<Pattern> tempPatterns = new ArrayList<Pattern>();
-                reader = new BufferedReader(new FileReader(file));
+                reader = new BufferedReader(new TFileReader(new TFile(file)));
                 String readPattern;
                 while ((readPattern = reader.readLine()) != null) {
                     String trimmedPattern = readPattern.trim();
@@ -175,7 +176,7 @@ public class DiskItemFilter {
      */
     public void savePatternsTo(File file, boolean createBackup) {
         if (createBackup) {
-            File backup = new File(file.getParentFile(), file.getName()
+            File backup = new TFile(file.getParentFile(), file.getName()
                 + ".backup");
             if (file.exists()) {
                 if (backup.exists()) {
@@ -187,7 +188,7 @@ public class DiskItemFilter {
         BufferedWriter writer = null;
         try {
             file.createNewFile();
-            writer = new BufferedWriter(new FileWriter(file));
+            writer = new BufferedWriter(new TFileWriter(new TFile(file)));
             for (Pattern pattern : patterns) {
                 writer.write(pattern.getPatternText());
                 writer.newLine();
