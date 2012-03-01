@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import de.schlichtherle.truezip.file.TFile;
 
 /**
  * Test cases for MetaFolder synchronization.
@@ -113,12 +114,12 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
         // Check the mata folder was created.
         File localBase = bartFolder.getLocalBase();
-        File systemSubdir = new File(localBase,
+        File systemSubdir = new TFile(localBase,
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         assertTrue("bart system subdir does not exist", systemSubdir.exists());
-        File metaFolderDir = new File(systemSubdir, Constants.METAFOLDER_SUBDIR);
+        File metaFolderDir = new TFile(systemSubdir, Constants.METAFOLDER_SUBDIR);
         assertTrue("bart metaFolder dir does not exist", metaFolderDir.exists());
-        File metaFolderSystemSubdir = new File(metaFolderDir,
+        File metaFolderSystemSubdir = new TFile(metaFolderDir,
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         assertTrue("bart metaFolder system subdir does not exist",
             metaFolderSystemSubdir.exists());
@@ -127,11 +128,11 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
         // Check the meta folder was created.
         localBase = lisaFolder.getLocalBase();
-        systemSubdir = new File(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        systemSubdir = new TFile(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
         assertTrue("lisa system subdir does not exist", systemSubdir.exists());
-        metaFolderDir = new File(systemSubdir, Constants.METAFOLDER_SUBDIR);
+        metaFolderDir = new TFile(systemSubdir, Constants.METAFOLDER_SUBDIR);
         assertTrue("lisa metaFolder dir does not exist", metaFolderDir.exists());
-        metaFolderSystemSubdir = new File(metaFolderDir,
+        metaFolderSystemSubdir = new TFile(metaFolderDir,
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         assertTrue("lisa metaFolder system subdir does not exist",
             metaFolderSystemSubdir.exists());
