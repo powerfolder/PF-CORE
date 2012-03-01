@@ -79,10 +79,10 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         Folder folderAtBart = getContollerBart().getFolderRepository()
             .getFolders().iterator().next();
 
-        assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION, folderAtBart
-            .getSyncProfile());
+        assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION,
+            folderAtBart.getSyncProfile());
         assertEquals("what.bat", folderAtBart.getDownloadScript());
-        assertEquals(oldDir.getName(), folderAtBart.getName());
+        assertEquals("testFolder", folderAtBart.getName());
     }
 
     public void testCreateNewFolder() {
