@@ -171,7 +171,7 @@ For creation of the installer:
 	<target name="compile" depends="init">
 		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build.dir}" source="1.6" target="1.6" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}">
+		<javac destdir="${build.dir}" source="1.6" target="1.6" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="off">
 			<classpath>
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />
@@ -353,7 +353,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}" />
 
 		<!-- Compile tests -->
-		<javac destdir="${build.dir}" debug="${Debug}" deprecation="false" failonerror="true" encoding="UTF-8">
+		<javac destdir="${build.dir}" debug="${Debug}" deprecation="off" failonerror="true" encoding="UTF-8">
 			<src path="${test.src.dir}" />
 			<classpath>
 				<pathelement location="${build.dir}" />
@@ -421,7 +421,7 @@ For creation of the installer:
 	<mkdir dir="${dist.dir}" />
 	<mkdir dir="${build.dir}" />
 
-	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}">
+	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="off">
 		<compilerarg value="-Xlint:${Unchecked}" />
 		<compilerarg value="-Xlint:${Fallthrough}" />
 
