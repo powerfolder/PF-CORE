@@ -222,8 +222,6 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                     .countActiveUploads() > 0;
             }
         });
-        // Give EDT time
-        TestHelper.waitForEmptyEDT();
 
         // Problem can occur: Transfer completes too quick. Uploads table model
         // is then empty!
