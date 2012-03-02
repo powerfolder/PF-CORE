@@ -284,7 +284,6 @@ public class Upload extends Transfer {
 
             private void closeIO() {
                 if (in != null) {
-                    logWarning("CLOSE IO: " + this);
                     try {
                         in.close();
                         in = null;
