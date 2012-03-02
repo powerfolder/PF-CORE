@@ -66,7 +66,16 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.UserDirectory;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -204,6 +213,17 @@ public class FolderRepository extends PFComponent implements Runnable {
      * for each folder name.
      */
     public void init() {
+
+        // #1697
+        TFile.setDefaultArchiveDetector(new TArchiveDetector(
+            TArchiveDetector.NULL, "pfzip", new JarDriver(
+                IOPoolLocator.SINGLETON)));
+        TFile.setLenient(false);
+
+        // KeyManagerProvider kp = new PromptingKeyManagerService();
+        // TFile.setDefaultArchiveDetector(new TArchiveDetector(
+        // TArchiveDetector.NULL, "pfzip", new SafeZipRaesDriver(
+        // IOPoolLocator.SINGLETON, kp)));
 
         initFoldersBasedir();
 
@@ -421,12 +441,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Not starting FolderRepository. disabled by config");
             return;
         }
-
-        // #1697
-        TFile.setDefaultArchiveDetector(new TArchiveDetector(
-            TArchiveDetector.NULL, "pfzip", new JarDriver(
-                IOPoolLocator.SINGLETON)));
-        TFile.setLenient(false);
 
         folderScanner.start();
 
