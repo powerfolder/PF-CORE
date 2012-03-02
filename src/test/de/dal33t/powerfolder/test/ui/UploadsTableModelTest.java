@@ -219,7 +219,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
-                    .countActiveUploads() > 0;
+                    .countActiveUploads() > 0 && bartModel.getRowCount() >= 1;
             }
         });
 
