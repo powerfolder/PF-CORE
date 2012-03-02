@@ -251,7 +251,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         }
     }
 
-    private File getArchiveTarget(FileInfo fileInfo) {
+    private TFile getArchiveTarget(FileInfo fileInfo) {
         return new TFile(archiveDirectory,
             FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName())
                 + "_K_" + fileInfo.getVersion());
@@ -389,12 +389,12 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     public boolean restore(FileInfo versionInfo, File target)
         throws IOException
     {
-
-        File archiveFile = getArchiveTarget(versionInfo);
+        TFile archiveFile = getArchiveTarget(versionInfo);
         if (archiveFile.exists()) {
             log.fine("Restoring " + versionInfo.getRelativeName() + " to "
                 + target.getAbsolutePath());
-            FileUtils.copyFile(archiveFile, target);
+            archiveFile.cp(target);
+            // FileUtils.copyFile(archiveFile, target);
             // #2256: New modification date. Otherwise conflict detection
             // triggers
             // target.setLastModified(versionInfo.getModifiedDate().getTime());
