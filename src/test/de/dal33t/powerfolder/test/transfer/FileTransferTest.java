@@ -69,6 +69,19 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
     }
 
+    public void testNonExtractZIPJAR() throws IOException {
+        assertTrue(getFolderAtBart().isEncrypted());
+        assertEquals(0, getFolderAtBart().getKnownItemCount());
+        TFile zip = new TFile("src/test-resources/testzip.zip");
+        TFile tzip = new TFile(getFolderAtBart().getLocalBase(), zip.getName());
+        zip.cp(tzip);
+        TFile jar = new TFile("src/test-resources/testjar.jar");
+        TFile tjar = new TFile(getFolderAtBart().getLocalBase(), jar.getName());
+        jar.cp(tjar);
+        scanFolder(getFolderAtBart());
+        assertEquals(2, getFolderAtBart().getKnownItemCount());
+    }
+
     /**
      * #2480: Filename imcompatibilties between Mac client and Windows server
      * 
@@ -1075,7 +1088,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.changeFile(testFile, 50 * 1024 * 1024);
+        TestHelper.changeFile(testFile, 20 * 1024 * 1024);
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
@@ -1131,7 +1144,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Reconnect /Resume transfer
         connectBartAndLisa();
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return !tempFile.exists();
             }
@@ -1490,10 +1503,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         Thread.sleep(3000);
 
         // Change and scan file.
-        assertTrue(fbart.setLastModified(System.currentTimeMillis()));
+        assertTrue(fbart.setLastModified(System.currentTimeMillis() + 4000));
         assertTrue("Bart lastmod: " + fbart.lastModified() + ", Lisa lastmod: "
-            + flisa.lastModified(), fbart.lastModified() > flisa.lastModified());
+            + flisa.lastModified(),
+            fbart.lastModified() - 2000 > flisa.lastModified());
         scanFolder(getFolderAtBart());
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
+        assertEquals(1, getFolderAtLisa().getKnownItemCount());
         assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
         FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
@@ -1579,7 +1595,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         int modSize = (int) (1024 + Math.random() * 8192);
         long seek = (long) (Math.random() * (fbart.length() - modSize));
-        
+
         byte[] buf = new byte[(int) seek];
         TFileInputStream in = new TFileInputStream(tmpCopy);
         in.read(buf);
