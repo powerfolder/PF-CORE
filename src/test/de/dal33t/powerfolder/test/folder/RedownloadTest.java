@@ -98,7 +98,8 @@ public class RedownloadTest extends TwoControllerTestCase {
         // Wait for copy.
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return testFileBart.exists();
+                return testFileBart.exists()
+                    && folderBart.getKnownItemCount() == 1;
             }
         });
 
