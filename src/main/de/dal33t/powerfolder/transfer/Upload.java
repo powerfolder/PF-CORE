@@ -61,6 +61,8 @@ public class Upload extends Transfer {
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
     protected transient RandomAccessFile raf;
+    protected transient TFileInputStream in;
+    private long inpos;
     private String debugState;
 
     /**
@@ -198,6 +200,14 @@ public class Upload extends Transfer {
                         } catch (FileNotFoundException e) {
                             throw new TransferException(e);
                         }
+                    } else {
+                        try {
+                            in = new TFileInputStream(getFile().getDiskFile(
+                                getController().getFolderRepository()));
+                            inpos = 0;
+                        } catch (FileNotFoundException e) {
+                            throw new TransferException(e);
+                        }
                     }
                     if (isAborted() || isBroken()) {
                         throw new TransferException(
@@ -257,14 +267,12 @@ public class Upload extends Transfer {
                         getTransferManager().logTransfer(false, took,
                             getFile(), getPartner());
                     }
-                    closeRAF();
+                    closeIO();
                     if (!isBroken() && !aborted) {
                         getTransferManager().setCompleted(Upload.this);
                     }
                 } catch (TransferException e) {
-                    if (raf != null) {
-                        closeRAF();
-                    }
+                    closeIO();
                     // Loggable.logWarningStatic(Upload.class, "Upload broken: "
                     // + Upload.this, e);
                     getTransferManager().uploadBroken(Upload.this,
@@ -274,7 +282,16 @@ public class Upload extends Transfer {
                 }
             }
 
-            private void closeRAF() {
+            private void closeIO() {
+                if (in != null) {
+                    logWarning("CLOSE IO: " + this);
+                    try {
+                        in.close();
+                        in = null;
+                    } catch (IOException e) {
+                        logSevere("IOException", e);
+                    }
+                }
                 if (raf != null) {
                     try {
                         if (isFiner()) {
@@ -390,27 +407,41 @@ public class Upload extends Transfer {
         }
         File f = pr.getFile()
             .getDiskFile(getController().getFolderRepository());
-        TFileInputStream in = null;
         try {
             byte[] data = new byte[(int) pr.getRange().getLength()];
+            long startOffset = pr.getRange().getStart();
             if (raf != null) {
-                raf.seek(pr.getRange().getStart());
+                raf.seek(startOffset);
             } else {
-                try {
-                    in = new TFileInputStream(getFile().getDiskFile(
-                        getController().getFolderRepository()));
-                } catch (FileNotFoundException e) {
-                    throw new TransferException(e);
+                long skip = startOffset - inpos;
+                if (skip >= 0) {
+                    inpos += in.skip(skip);
+                } else {
+                    try {
+                        try {
+                            in.close();
+                        } catch (Exception e) {
+                            logWarning(e.toString());
+                        }
+                        in = new TFileInputStream(getFile().getDiskFile(
+                            getController().getFolderRepository()));
+                        in.skip(startOffset);
+                        inpos = startOffset;
+                    } catch (FileNotFoundException e) {
+                        throw new TransferException(e);
+                    }
                 }
-                in.skip(pr.getRange().getStart());
+
             }
             int pos = 0;
             while (pos < data.length) {
                 int read;
+                int readLen = data.length - pos;
                 if (raf != null) {
-                    read = raf.read(data, pos, data.length - pos);
+                    read = raf.read(data, pos, readLen);
                 } else {
-                    read = in.read(data, pos, data.length - pos);
+                    read = in.read(data, pos, readLen);
+                    inpos += read;
                 }
                 if (read < 0) {
                     logWarning("Requested part exceeds filesize!");
@@ -448,13 +479,6 @@ public class Upload extends Transfer {
                 logFiner("ConnectionException", e);
             }
             throw new TransferException(e);
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-            }
         }
         return true;
     }
