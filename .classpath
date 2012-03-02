@@ -49,8 +49,7 @@
 	<classpathentry kind="lib" path="lib/truezip-driver-file-7.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-driver-tar-7.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-driver-tzp-7.4.3.jar"/>
-	<classpathentry kind="lib" path="lib/truezip-driver-zip-7.4.3.jar"/>
-	<classpathentry kind="lib" path="lib/truezip-file-7.4.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/truezip-driver-zip-7.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-file-7.4.3.jar" sourcepath="C:/Users/sprajc.POWERFOLDER/.m2/repository/de/schlichtherle/truezip/truezip-file/7.4.3/truezip-file-7.4.3-sources.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-kernel-7.4.3.jar" sourcepath="C:/Users/sprajc.POWERFOLDER/.m2/repository/de/schlichtherle/truezip/truezip-kernel/7.4.3/truezip-kernel-7.4.3-sources.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-swing-7.4.3.jar"/>
