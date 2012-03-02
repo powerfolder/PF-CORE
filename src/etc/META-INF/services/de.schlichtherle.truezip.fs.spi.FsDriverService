@@ -1,0 +1,4 @@
+de.schlichtherle.truezip.fs.file.FileDriverService
+de.schlichtherle.truezip.fs.nio.file.FileDriverService
+de.schlichtherle.truezip.fs.archive.zip.ZipDriverService
+de.schlichtherle.truezip.fs.archive.zip.raes.ZipRaesDriverService
