@@ -102,6 +102,10 @@ public class NewFolderAction extends BaseAction {
                                 continue outer;
                             }
                         }
+                        // Prevent user from syncing the base directory.
+                        if (file.equals(folderRepository.getFoldersAbsoluteDir())) {
+                            continue;
+                        }
 
                         // FolderInfo
                         String name = FileUtils.getSuggestedFolderName(file);

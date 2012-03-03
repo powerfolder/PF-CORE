@@ -165,13 +165,13 @@ public class DirectoryChooser extends BaseDialog {
                 if (!file.exists()) {
                     try {
                         file.mkdirs();
-                        selectedDirs.clear();
-                        selectedDirs.add(file);
-                        close();
                     } catch (SecurityException e) {
                         logSevere("Failed to create directory", e);
                     }
                 }
+                selectedDirs.clear();
+                selectedDirs.add(file);
+                close();
             }
         }
 

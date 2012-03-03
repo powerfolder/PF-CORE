@@ -31,7 +31,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.util.*;
-import de.dal33t.powerfolder.ui.dialog.GenericDialog;
 import de.dal33t.powerfolder.ui.dialog.directory.DirectoryChooser;
 import de.dal33t.powerfolder.util.Translation;
 
