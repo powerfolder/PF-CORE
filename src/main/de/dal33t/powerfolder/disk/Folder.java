@@ -1732,7 +1732,7 @@ public class Folder extends PFComponent {
         if (encrypted && !currentInfo.isMetaFolder()) {
             try {
                 TFile.umount(localBase);
-            } catch (FsSyncException e) {
+            } catch (Exception e) {
                 logWarning("Problem unmounting " + localBase + ". " + e);
             }
         }
