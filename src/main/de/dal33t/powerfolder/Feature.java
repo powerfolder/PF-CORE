@@ -175,7 +175,7 @@ public enum Feature {
             feature.disable();
         }
         // Feature.DETECT_UPDATE_BY_VERSION.enable();
-        Feature.CORRECT_MOVEMENT_DETECTION.enable();
+        // Feature.CORRECT_MOVEMENT_DETECTION.enable();
         Feature.CREDITS_SYSTEM.enable();
     }
 }
