@@ -231,7 +231,6 @@ public class LoggingManager {
      * @param level
      */
     private static void createFileHandler() {
-
         // Make sure nothing else tries to create the file handler concurrently.
         synchronized (fileHandlerLock) {
             try {
@@ -246,7 +245,7 @@ public class LoggingManager {
                     FileUtils.removeInvalidFilenameChars(logFilename))
                     .getAbsolutePath();
                 fileHandler = new FileHandler(fileLoggingFileName, true);
-                fileHandler.setFormatter(new LoggingFormatter());
+                fileHandler.setFormatter(new LoggingFormatter(!fileRotate));
                 getRootLogger().addHandler(fileHandler);
                 fileHandler.setFilter(DEFAULT_FILTER);
             } catch (IOException e) {

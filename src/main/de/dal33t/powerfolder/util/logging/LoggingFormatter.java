@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: LoggingFormatter.java 4734 2008-07-28 03:14:24Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: LoggingFormatter.java 4734 2008-07-28 03:14:24Z harry $
+ */
 package de.dal33t.powerfolder.util.logging;
 
 import java.io.PrintWriter;
@@ -30,10 +30,21 @@ import java.util.logging.LogRecord;
 import de.dal33t.powerfolder.util.Util;
 
 /**
- * Class to format a LogRecord in a readable form.
- * Displays as [hh:mm:ss] level [logger name] message.
+ * Class to format a LogRecord in a readable form. Displays as [hh:mm:ss] level
+ * [logger name] message.
  */
 public class LoggingFormatter extends Formatter {
+
+    private boolean showDate;
+
+    public LoggingFormatter(boolean showDate) {
+        super();
+        this.showDate = showDate;
+    }
+
+    public LoggingFormatter() {
+        this(false);
+    }
 
     /**
      * Format a log record nicely.
@@ -60,7 +71,12 @@ public class LoggingFormatter extends Formatter {
         }
         StringBuilder buf = new StringBuilder(300);
         buf.append('[');
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat sdf;
+        if (showDate) {
+            sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        } else {
+            sdf = new SimpleDateFormat("HH:mm:ss");
+        }
         buf.append(sdf.format(new Date(record.getMillis())));
         buf.append("] ");
         buf.append(levelDescription);
@@ -95,4 +111,3 @@ public class LoggingFormatter extends Formatter {
         return buf.toString();
     }
 }
-
