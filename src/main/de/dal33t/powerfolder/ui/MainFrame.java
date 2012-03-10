@@ -144,10 +144,12 @@ public class MainFrame extends PFUIComponent {
         builderLower.add(accountLabel, cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
 
-        FormLayout layoutMain = new FormLayout("pref", "pref, pref");
+        // 7dlu spacer to line up the synced icon with the individual icons
+        // in the folder list.
+        FormLayout layoutMain = new FormLayout("7dlu, pref", "pref, pref");
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
-        builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
-        builderMain.add(builderLower.getPanel(), cc.xy(1, 2));
+        builderMain.add(builderUpper.getPanel(), cc.xy(2, 1));
+        builderMain.add(builderLower.getPanel(), cc.xy(2, 2));
 
         return builderMain.getPanel();
     }
