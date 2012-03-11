@@ -86,11 +86,12 @@ public class MainFrame extends PFUIComponent {
     private JLabel syncDateLabel;
     private JLabel accountLabel;
     private JLabel allInSyncLabel;
+    private JButtonMini allInSyncButton;
     private JProgressBar usagePB;
-    private ActionLabel openWebInterfaceLabel;
-    private ActionLabel openFoldersBaseLabel;
-    private ActionLabel pauseResumeLabel;
-    private ActionLabel configurationLabel;
+    private ActionLabel openWebInterfaceActionLabel;
+    private ActionLabel openFoldersBaseActionLabel;
+    private ActionLabel pauseResumeActionLabel;
+    private ActionLabel configurationActoinLabel;
 
     private AtomicBoolean compact = new AtomicBoolean();
     private JButton compactButton;
@@ -130,7 +131,11 @@ public class MainFrame extends PFUIComponent {
             "pref, pref");
         DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
 
-        builderUpper.add(allInSyncLabel, cc.xywh(1, 1, 1, 2));
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builderUpper.add(allInSyncButton, cc.xywh(1, 1, 1, 2));
+        } else {
+            builderUpper.add(allInSyncLabel, cc.xywh(1, 1, 1, 2));
+        }
         builderUpper.add(syncTextLabel, cc.xy(2, 1));
         builderUpper.add(syncDateLabel, cc.xy(2, 2));
 
@@ -144,9 +149,16 @@ public class MainFrame extends PFUIComponent {
         builderLower.add(accountLabel, cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
 
-        // 7dlu spacer to line up the synced icon with the individual icons
-        // in the folder list.
-        FormLayout layoutMain = new FormLayout("7dlu, pref", "pref, pref");
+        // 7/8dlu spacer to line up the synced icon / button with the individual 
+        // icons in the folder list. There is a very slight difference in icon
+        // position between JLabels and JButtonMinis.
+        FormLayout layoutMain;
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            layoutMain = new FormLayout("8dlu, pref", "pref, pref");
+        } else {
+            layoutMain = new FormLayout("7dlu, pref", "pref, pref");
+        }
+
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
         builderMain.add(builderUpper.getPanel(), cc.xy(2, 1));
         builderMain.add(builderLower.getPanel(), cc.xy(2, 2));
@@ -160,10 +172,10 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(openWebInterfaceLabel.getUIComponent(), cc.xy(1, 1));
-        builder.add(openFoldersBaseLabel.getUIComponent(), cc.xy(1, 2));
-        builder.add(pauseResumeLabel.getUIComponent(), cc.xy(1, 3));
-        builder.add(configurationLabel.getUIComponent(), cc.xy(1, 4));
+        builder.add(openWebInterfaceActionLabel.getUIComponent(), cc.xy(1, 1));
+        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 2));
+        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(configurationActoinLabel.getUIComponent(), cc.xy(1, 4));
 
         return builder.getPanel();
     }
@@ -290,26 +302,25 @@ public class MainFrame extends PFUIComponent {
 
         MyActionListener myActionListener = new MyActionListener();
 
+
         allInSyncLabel = new JLabel(Icons.getIconById(Icons.SYNC_COMPLETE));
+        allInSyncButton = new JButtonMini(new MyShowFoldersAction(getController()));
+        allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+        allInSyncButton.setText(null);
 
         syncTextLabel = new JLabel(" ");
-
-        // Sync-complete icon on the right of text, but left aligned.
-        syncTextLabel.setComponentOrientation(
-                ComponentOrientation.RIGHT_TO_LEFT);
-        syncTextLabel.setHorizontalAlignment(SwingConstants.LEFT);
-
         syncDateLabel = new JLabel(" ");
+
         accountLabel = new JLabel(" ");
         usagePB = new JProgressBar();
 
-        openWebInterfaceLabel = new ActionLabel(getController(),
+        openWebInterfaceActionLabel = new ActionLabel(getController(),
                 new MyOpenWebInterfaceAction(getController()));
-        openFoldersBaseLabel = new ActionLabel(getController(),
+        openFoldersBaseActionLabel = new ActionLabel(getController(),
                 new MyOpenFoldersBaseAction(getController()));
-        pauseResumeLabel = new ActionLabel(getController(),
+        pauseResumeActionLabel = new ActionLabel(getController(),
                 new MyPauseResumeAction(getController()));
-        configurationLabel = new ActionLabel(getController(),
+        configurationActoinLabel = new ActionLabel(getController(),
                 new OpenPreferencesAction(getController()));
 
         // add window listener, checks if exit is needed on pressing X
@@ -431,12 +442,8 @@ public class MainFrame extends PFUIComponent {
             }
         }
         syncDateLabel.setText(syncDateText);
-
-        if (synced) {
-            allInSyncLabel.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
-        } else {
-            allInSyncLabel.setIcon(null);
-        }
+        allInSyncButton.setVisible(synced);
+        allInSyncLabel.setVisible(synced);
     }
 
     /**
@@ -922,14 +929,14 @@ public class MainFrame extends PFUIComponent {
 
     private void configurePauseResumeLink() {
         if (getController().isSilentMode()) {
-            pauseResumeLabel.setText(Translation.getTranslation(
+            pauseResumeActionLabel.setText(Translation.getTranslation(
                     "action_resume_sync.name"));
-            pauseResumeLabel.setToolTipText(Translation.getTranslation(
+            pauseResumeActionLabel.setToolTipText(Translation.getTranslation(
                     "action_resume_sync.description"));
         } else {
-            pauseResumeLabel.setText(Translation.getTranslation(
+            pauseResumeActionLabel.setText(Translation.getTranslation(
                     "action_pause_sync.name"));
-            pauseResumeLabel.setToolTipText(Translation.getTranslation(
+            pauseResumeActionLabel.setToolTipText(Translation.getTranslation(
                     "action_pause_sync.description"));
         }
     }
@@ -1091,5 +1098,14 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private class MyShowFoldersAction extends BaseAction {
+        private MyShowFoldersAction(Controller controller) {
+            super("action_show_folders_tab", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().getMainFrame().showFoldersTab();
+        }
+    }
 
 }

@@ -279,7 +279,7 @@ public class PreferencesDialog extends BaseDialog {
             .getTranslation("preferences.dialog.restart.text"), new String[]{
             Translation.getTranslation("preferences.dialog.restart.restart"),
             Translation.getTranslation("general.cancel")}, 0,
-            GenericDialogType.QUESTION); // Default is restart
+            GenericDialogType.INFO); // Default is restart
 
         if (result == 0) { // Restart
             getController().shutdownAndRequestRestart();
