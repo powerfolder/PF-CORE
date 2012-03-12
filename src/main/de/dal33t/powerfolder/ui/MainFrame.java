@@ -84,7 +84,7 @@ public class MainFrame extends PFUIComponent {
 
     private JLabel syncTextLabel;
     private JLabel syncDateLabel;
-    private JLabel accountLabel;
+    private JLabel loginLabel;
     private JLabel allInSyncLabel;
     private JButtonMini allInSyncButton;
     private JProgressBar usagePB;
@@ -109,7 +109,7 @@ public class MainFrame extends PFUIComponent {
 
         initComponents();
         configureUi();
-
+        updateOnlineStorageDetails();
     }
 
     private JPanel createMiniPanel() {
@@ -146,7 +146,7 @@ public class MainFrame extends PFUIComponent {
         // Include a spacer icon that lines up the pair with builderUpper
         // when allInSyncLabel has null icon.
         builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
-        builderLower.add(accountLabel, cc.xy(2, 1));
+        builderLower.add(loginLabel, cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
 
         // 7/8dlu spacer to line up the synced icon / button with the individual 
@@ -311,7 +311,7 @@ public class MainFrame extends PFUIComponent {
         syncTextLabel = new JLabel(" ");
         syncDateLabel = new JLabel(" ");
 
-        accountLabel = new JLabel(" ");
+        loginLabel = new JLabel(" ");
         usagePB = new JProgressBar();
 
         openWebInterfaceActionLabel = new ActionLabel(getController(),
@@ -945,7 +945,6 @@ public class MainFrame extends PFUIComponent {
         double percentageUsed = 0;
         long totalStorage = 0;
         long spaceUsed = 0;
-        String username = " ";
         if (client.isConnected()) {
             if (client.isLoggedIn()) {
                 AccountDetails ad = client.getAccountDetails();
@@ -962,15 +961,20 @@ public class MainFrame extends PFUIComponent {
                     percentageUsed = Math.min(100.0d, percentageUsed);
                     String s = client.getUsername();
                     if (!StringUtils.isEmpty(s)) {
-                        username = s;
+                        loginLabel.setText(s);
                     }
                 }
+            } else {
+                loginLabel.setText(Translation.getTranslation(
+                        "main_frame.loging_in.text"));
             }
+        } else {
+            loginLabel.setText(Translation.getTranslation(
+                    "main_frame.connecting.text"));
         }
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
-        accountLabel.setText(username);
     }
 
     // ////////////////
