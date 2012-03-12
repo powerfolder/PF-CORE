@@ -947,7 +947,13 @@ public class MainFrame extends PFUIComponent {
         double percentageUsed = 0;
         long totalStorage = 0;
         long spaceUsed = 0;
-        if (client.isConnected()) {
+        if (StringUtils.isBlank(client.getUsername())) {
+            loginActionLabel.setText(Translation.getTranslation(
+                    "main_frame.account_not_set.text"));
+        } else if (client.isPasswordEmpty()) {
+            loginActionLabel.setText(Translation.getTranslation(
+                    "main_frame.password_required.text"));
+        } else if (client.isConnected()) {
             if (client.isLoggedIn()) {
                 OnlineStorageSubscription storageSubscription = client
                         .getAccount().getOSSubscription();
