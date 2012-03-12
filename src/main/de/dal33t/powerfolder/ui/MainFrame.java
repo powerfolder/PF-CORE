@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
@@ -84,7 +85,7 @@ public class MainFrame extends PFUIComponent {
 
     private JLabel syncTextLabel;
     private JLabel syncDateLabel;
-    private JLabel loginLabel;
+    private ActionLabel loginActionLabel;
     private JLabel allInSyncLabel;
     private JButtonMini allInSyncButton;
     private JProgressBar usagePB;
@@ -146,7 +147,7 @@ public class MainFrame extends PFUIComponent {
         // Include a spacer icon that lines up the pair with builderUpper
         // when allInSyncLabel has null icon.
         builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
-        builderLower.add(loginLabel, cc.xy(2, 1));
+        builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
 
         // 7/8dlu spacer to line up the synced icon / button with the individual 
@@ -311,7 +312,8 @@ public class MainFrame extends PFUIComponent {
         syncTextLabel = new JLabel(" ");
         syncDateLabel = new JLabel(" ");
 
-        loginLabel = new JLabel(" ");
+        loginActionLabel = new ActionLabel(getController(),
+                new MyLoginAction(getController()));
         usagePB = new JProgressBar();
 
         openWebInterfaceActionLabel = new ActionLabel(getController(),
@@ -951,7 +953,7 @@ public class MainFrame extends PFUIComponent {
                         .getAccount().getOSSubscription();
                 AccountDetails ad = client.getAccountDetails();
                 if (storageSubscription.isDisabled()) {
-                    loginLabel.setText(Translation.getTranslation(
+                    loginActionLabel.setText(Translation.getTranslation(
                             "main_frame.account_disabled.text"));
                 } else {
                     totalStorage = storageSubscription.getStorageSize();
@@ -964,15 +966,15 @@ public class MainFrame extends PFUIComponent {
                     percentageUsed = Math.min(100.0d, percentageUsed);
                     String s = client.getUsername();
                     if (!StringUtils.isEmpty(s)) {
-                        loginLabel.setText(s);
+                        loginActionLabel.setText(s);
                     }
                 }
             } else {
-                loginLabel.setText(Translation.getTranslation(
+                loginActionLabel.setText(Translation.getTranslation(
                         "main_frame.loging_in.text"));
             }
         } else {
-            loginLabel.setText(Translation.getTranslation(
+            loginActionLabel.setText(Translation.getTranslation(
                     "main_frame.connecting.text"));
         }
         usagePB.setValue((int) percentageUsed);
@@ -1112,6 +1114,17 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().getMainFrame().showFoldersTab();
+        }
+    }
+
+    private class MyLoginAction extends BaseAction {
+
+        MyLoginAction(Controller controller) {
+            super("action_login", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            PFWizard.openLoginWizard(getController(), client);
         }
     }
 

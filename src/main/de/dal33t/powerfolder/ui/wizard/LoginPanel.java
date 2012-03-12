@@ -117,22 +117,14 @@ public class LoginPanel extends PFWizardPanel {
             && !StringUtils.isEmpty(usernameField.getText());
     }
 
-    protected void afterDisplay() {
-    }
-
-    public boolean validateNext() {
-        return true;
-    }
-
     public WizardPanel next() {
-        WizardPanel loginWorkerPanel = new SwingWorkerPanel(getController(),
+        return new SwingWorkerPanel(getController(),
             new LoginTask(),
             Translation
                 .getTranslation("wizard.login_online_storage.logging_in"),
             Translation
                 .getTranslation("wizard.login_online_storage.logging_in.text"),
             nextPanel);
-        return loginWorkerPanel;
     }
 
     protected JPanel buildContent() {
@@ -217,7 +209,7 @@ public class LoginPanel extends PFWizardPanel {
         usernameField.addKeyListener(new MyKeyListener());
         usernameField.setEditable(changeLoginAllowed);
         passwordLabel = new JLabel(
-            Translation.getTranslation("general.password") + ":");
+            Translation.getTranslation("general.password") + ':');
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
 
@@ -294,12 +286,11 @@ public class LoginPanel extends PFWizardPanel {
         updateButtons();
     }
 
-    private final class LoginTask implements Runnable {
+    private class LoginTask implements Runnable {
         public void run() {
-            boolean loginOk = false;
             try {
                 char[] pw = passwordField.getPassword();
-                loginOk = client.login(usernameField.getText(), pw).isValid();
+                boolean loginOk = client.login(usernameField.getText(), pw).isValid();
                 LoginUtil.clear(pw);
                 if (!loginOk) {
                     throw new SecurityException(
@@ -348,7 +339,7 @@ public class LoginPanel extends PFWizardPanel {
         }
     }
 
-    private final class BooleanNotConverter extends AbstractConverter {
+    private static class BooleanNotConverter extends AbstractConverter {
         private BooleanNotConverter(ValueModel subject) {
             super(subject);
         }
