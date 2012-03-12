@@ -947,15 +947,18 @@ public class MainFrame extends PFUIComponent {
         long spaceUsed = 0;
         if (client.isConnected()) {
             if (client.isLoggedIn()) {
-                AccountDetails ad = client.getAccountDetails();
                 OnlineStorageSubscription storageSubscription = client
                         .getAccount().getOSSubscription();
-                if (!storageSubscription.isDisabled()) {
+                AccountDetails ad = client.getAccountDetails();
+                if (storageSubscription.isDisabled()) {
+                    loginLabel.setText(Translation.getTranslation(
+                            "main_frame.account_disabled.text"));
+                } else {
                     totalStorage = storageSubscription.getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
                     if (totalStorage > 0) {
                         percentageUsed = 100.0d * (double) spaceUsed
-                            / (double) totalStorage;
+                                / (double) totalStorage;
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
@@ -974,7 +977,7 @@ public class MainFrame extends PFUIComponent {
         }
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
-            + Format.formatBytesShort(totalStorage));
+                + Format.formatBytesShort(totalStorage));
     }
 
     // ////////////////
