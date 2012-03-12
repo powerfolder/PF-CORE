@@ -220,11 +220,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 IOPoolLocator.SINGLETON)));
         TFile.setLenient(false);
 
-        // KeyManagerProvider kp = new PromptingKeyManagerService();
-        // TFile.setDefaultArchiveDetector(new TArchiveDetector(
-        // TArchiveDetector.NULL, "pfzip", new SafeZipRaesDriver(
-        // IOPoolLocator.SINGLETON, kp)));
-
         initFoldersBasedir();
 
         processV4Format();
