@@ -130,21 +130,21 @@ public class DirectoryInfo extends FileInfo {
     }
 
     // hashCode() is used from FileInfo
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (other instanceof DirectoryInfo) {
-            DirectoryInfo otherInfo = (DirectoryInfo) other;
-            boolean caseMatch = Util.equalsRelativeName(getRelativeName(),
-                otherInfo.getRelativeName());
-            return caseMatch
-                && Util.equals(getFolderInfo(), otherInfo.getFolderInfo());
-        }
-
-        return false;
-    }
+//
+//    @Override
+//    public boolean equals(Object other) {
+//        if (this == other) {
+//            return true;
+//        }
+//        if (other instanceof DirectoryInfo) {
+//            DirectoryInfo otherInfo = (DirectoryInfo) other;
+//            boolean caseMatch = Util.equalsRelativeName(getRelativeName(),
+//                otherInfo.getRelativeName());
+//            return caseMatch
+//                && Util.equals(getFolderInfo(), otherInfo.getFolderInfo());
+//        }
+//
+//        return false;
+//    }
 
 }
