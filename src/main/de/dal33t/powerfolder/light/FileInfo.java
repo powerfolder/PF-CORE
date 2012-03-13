@@ -252,7 +252,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         boolean existanceSync = diskFileDeleted && deleted || !diskFileDeleted
             && !deleted;
         if (ignoreSizeAndModDate) {
-            return existanceSync;
+            boolean dirFileSync = isFile() && diskFile.isFile();
+            return existanceSync && dirFileSync;
         }
         if (!existanceSync) {
             return false;
