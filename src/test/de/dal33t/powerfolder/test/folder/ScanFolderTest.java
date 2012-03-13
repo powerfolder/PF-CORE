@@ -86,8 +86,8 @@ public class ScanFolderTest extends ControllerTestCase {
         assertNotNull(fileInfo);
         assertNotSame(lookup, fileInfo);
         assertTrue(fileInfo.toDetailString(), lookup.equals(fileInfo));
-        assertFalse(fileInfo.toDetailString(), lookup
-            .isVersionDateAndSizeIdentical(fileInfo));
+        assertFalse(fileInfo.toDetailString(),
+            lookup.isVersionDateAndSizeIdentical(fileInfo));
         assertFileMatch(file, fileInfo);
         assertEquals(0, fileInfo.getVersion());
 
@@ -96,8 +96,8 @@ public class ScanFolderTest extends ControllerTestCase {
         assertNotNull(fileInfo);
         assertNotSame(lookup, fileInfo);
         assertTrue(fileInfo.toDetailString(), lookup.equals(fileInfo));
-        assertFalse(fileInfo.toDetailString(), lookup
-            .isVersionDateAndSizeIdentical(fileInfo));
+        assertFalse(fileInfo.toDetailString(),
+            lookup.isVersionDateAndSizeIdentical(fileInfo));
         assertFileMatch(file, fileInfo);
         assertEquals(1, fileInfo.getVersion());
 
@@ -106,8 +106,8 @@ public class ScanFolderTest extends ControllerTestCase {
         assertNotNull(fileInfo);
         assertNotSame(lookup, fileInfo);
         assertTrue(fileInfo.toDetailString(), lookup.equals(fileInfo));
-        assertFalse(fileInfo.toDetailString(), lookup
-            .isVersionDateAndSizeIdentical(fileInfo));
+        assertFalse(fileInfo.toDetailString(),
+            lookup.isVersionDateAndSizeIdentical(fileInfo));
         assertFileMatch(file, fileInfo);
         assertEquals(2, fileInfo.getVersion());
         assertTrue(fileInfo.isDeleted());
@@ -308,8 +308,8 @@ public class ScanFolderTest extends ControllerTestCase {
         File subdir = new File(getFolder().getLocalBase(),
             "subDir1/SUBDIR2.ext");
         assertTrue(subdir.mkdirs());
-        File file = TestHelper.createRandomFile(subdir, 10 + (int) (Math
-            .random() * 100));
+        File file = TestHelper.createRandomFile(subdir,
+            10 + (int) (Math.random() * 100));
 
         scanFolder();
         assertEquals(3, getFolder().getKnownItemCount());
@@ -355,8 +355,8 @@ public class ScanFolderTest extends ControllerTestCase {
         File subdir = new File(getFolder().getLocalBase(),
             "subDir1/SUBDIR2.ext");
         assertTrue(subdir.mkdirs());
-        File srcFile = TestHelper.createRandomFile(subdir, 10 + (int) (Math
-            .random() * 100));
+        File srcFile = TestHelper.createRandomFile(subdir,
+            10 + (int) (Math.random() * 100));
 
         scanFolder();
         assertEquals(3, getFolder().getKnownItemCount());
@@ -388,8 +388,8 @@ public class ScanFolderTest extends ControllerTestCase {
         File subdir = new File(getFolder().getLocalBase(),
             "subDir1/SUBDIR2.ext");
         assertTrue(subdir.mkdirs());
-        File file = TestHelper.createRandomFile(subdir, 10 + (int) (Math
-            .random() * 100));
+        File file = TestHelper.createRandomFile(subdir,
+            10 + (int) (Math.random() * 100));
 
         scanFolder();
         assertEquals(3, getFolder().getKnownItemCount());
@@ -464,8 +464,8 @@ public class ScanFolderTest extends ControllerTestCase {
                 } else if (Math.random() > 0.95) {
                     // Go one directory up
 
-                    File subDirCanidate = new File(currentSubDir, TestHelper
-                        .createRandomFilename());
+                    File subDirCanidate = new File(currentSubDir,
+                        TestHelper.createRandomFilename());
                     // System.err.println("Moving down to "
                     // + currentSubDir.getAbsoluteFile());
                     if (!subDirCanidate.isFile()) {
@@ -588,6 +588,52 @@ public class ScanFolderTest extends ControllerTestCase {
 
         // HOW TO HANDLE THAT? WHAT TO EXPECT??
         // assertEquals(1, getFolderAtBart().getFilesCount());
+    }
+
+    public void testSwitchDirFile() throws IOException {
+        File testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
+            "TESTFILE");
+        scanFolder(getFolder());
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolder().getKnownFiles().size() == 1;
+            }
+        });
+        assertEquals(0, getFolder().getKnownDirectories().size());
+        TestHelper.waitMilliSeconds(4000);
+
+        // Switch FILE -> DIR
+        assertTrue(testFile.delete());
+        assertTrue(testFile.mkdirs());
+        assertTrue(testFile.isDirectory());
+        assertFalse(testFile.isFile());
+        scanFolder(getFolder());
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolder().getKnownDirectories().size() == 1;
+            }
+        });
+        assertEquals("Known DIRS: " + getFolder().getKnownDirectories(), 1,
+            getFolder().getKnownDirectories().size());
+        assertEquals("Known FILES: " + getFolder().getKnownFiles(), 0,
+            getFolder().getKnownFiles().size());
+
+        TestHelper.waitMilliSeconds(4000);
+        // Switch DIR -> FOLDER
+        assertTrue(testFile.delete());
+        testFile.createNewFile();
+        TestHelper.changeFile(testFile);
+        assertFalse(testFile.isDirectory());
+        assertTrue(testFile.isFile());
+        scanFolder(getFolder());
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolder().getKnownFiles().size() == 1;
+            }
+        });
+        assertEquals(0, getFolder().getKnownDirectories().size());
     }
 
     /**
