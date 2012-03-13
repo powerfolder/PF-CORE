@@ -289,10 +289,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * <p>
      */
     public void shutdownWithMember() {
-        if (getMember() != null) {
+        Member thisMember = getMember();
+        if (thisMember != null) {
             // Shutdown member. This means this connection handler gets shut
             // down by member
-            getMember().shutdown();
+            thisMember.shutdown();
         }
 
         if (started) {
