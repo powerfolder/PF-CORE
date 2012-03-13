@@ -195,11 +195,22 @@ public final class FileInfoFactory {
             fn = original.getRelativeName();
         }
 
+        boolean isDir = localFile.isDirectory();
         if (original.isFile()) {
+            if (isDir) {
+                return new DirectoryInfo(fn, localFile.length(), modby,
+                    new Date(localFile.lastModified()),
+                    original.getVersion() + 1, false, original.getFolderInfo());
+            }
             return new FileInfo(fn, localFile.length(), modby, new Date(
                 localFile.lastModified()), original.getVersion() + 1, false,
                 original.getFolderInfo());
         } else if (original.isDiretory()) {
+            if (!isDir) {
+                return new FileInfo(fn, localFile.length(), modby, new Date(
+                    localFile.lastModified()), original.getVersion() + 1,
+                    false, original.getFolderInfo());
+            }
             return new DirectoryInfo(fn, localFile.length(), modby, new Date(
                 localFile.lastModified()), original.getVersion() + 1, false,
                 original.getFolderInfo());
@@ -289,9 +300,10 @@ public final class FileInfoFactory {
         // Spaces at start and end
         return output;
     }
-    
+
     /**
-     * #2480: Decodes illegal characters in filenames for windows such as: |, :, <, >,
+     * #2480: Decodes illegal characters in filenames for windows such as: |, :,
+     * <, >,
      * 
      * @param relativeFilename
      *            containing the legal chars, e.g. "My$%fA%$File.txt"
@@ -310,7 +322,8 @@ public final class FileInfoFactory {
             }
             String encoded = output.substring(start + 2, end);
             String decoded = Base64.decodeString(encoded + "==");
-            output = output.substring(0, start) + decoded + output.substring(end + 2);
+            output = output.substring(0, start) + decoded
+                + output.substring(end + 2);
         }
         return output;
     }
