@@ -39,7 +39,7 @@ class WeakCoreListener implements CoreListener, InvocationHandler {
         listenerRef = new WeakReference<CoreListener>(listener);
         this.src = src;
     }
-    
+
     public boolean isValid() {
         return listenerRef.get() != null;
     }
@@ -71,7 +71,7 @@ class WeakCoreListener implements CoreListener, InvocationHandler {
     }
 
     private void removeListener() {
-        src.removeListener(this);
+        // src.removeListener(this);
     }
 
 }
