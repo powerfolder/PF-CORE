@@ -19,14 +19,37 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.io.IOException;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
@@ -34,24 +57,37 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.OverallFolderStatEvent;
+import de.dal33t.powerfolder.event.OverallFolderStatListener;
+import de.dal33t.powerfolder.event.SilentModeEvent;
+import de.dal33t.powerfolder.event.SilentModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.ui.widget.JButton3Icons;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
-import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.JButton3Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
@@ -127,7 +163,8 @@ public class MainFrame extends PFUIComponent {
     private Component createLeftMiniPanel() {
         CellConstraints cc = new CellConstraints();
 
-        FormLayout layoutUpper = new FormLayout("pref, 100dlu", "pref, pref");
+        FormLayout layoutUpper = new FormLayout("pref, 3dlu, 100dlu",
+            "pref, pref");
         DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
 
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
@@ -135,8 +172,8 @@ public class MainFrame extends PFUIComponent {
         } else {
             builderUpper.add(allInSyncLabel, cc.xywh(1, 1, 1, 2));
         }
-        builderUpper.add(syncTextLabel, cc.xy(2, 1));
-        builderUpper.add(syncDateLabel, cc.xy(2, 2));
+        builderUpper.add(syncTextLabel, cc.xy(3, 1));
+        builderUpper.add(syncDateLabel, cc.xy(3, 2));
 
         FormLayout layoutLower = new FormLayout("pref, 100dlu", "pref, pref");
         DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
@@ -301,17 +338,35 @@ public class MainFrame extends PFUIComponent {
         MyActionListener myActionListener = new MyActionListener();
 
         allInSyncLabel = new JLabel(Icons.getIconById(Icons.SYNC_COMPLETE));
+        allInSyncLabel
+            .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        allInSyncLabel.addMouseListener(new SwitchCompactModeByMouse());
+
         allInSyncButton = new JButtonMini(new MyShowFoldersAction(
             getController()));
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);
 
         syncTextLabel = new JLabel(" ");
+        syncTextLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        syncTextLabel.addMouseListener(new SwitchCompactModeByMouse());
+
         syncDateLabel = new JLabel(" ");
+        syncDateLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        syncDateLabel.addMouseListener(new SwitchCompactModeByMouse());
 
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
         usagePB = new JProgressBar();
+        usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        usagePB.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1) {
+                    PFWizard.openLoginWizard(getController(), client);
+                }
+            }
+        });
 
         openWebInterfaceActionLabel = new ActionLabel(getController(),
             new MyOpenWebInterfaceAction(getController()));
@@ -320,7 +375,7 @@ public class MainFrame extends PFUIComponent {
         pauseResumeActionLabel = new ActionLabel(getController(),
             new MyPauseResumeAction(getController()));
         configurationActoinLabel = new ActionLabel(getController(),
-            new OpenPreferencesAction(getController()));
+            getApplicationModel().getActionModel().getOpenPreferencesAction());
 
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener();
@@ -337,6 +392,11 @@ public class MainFrame extends PFUIComponent {
         logoLabel = new JLabel();
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
+        logoLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        MyMouseWindowDragListener logoMouseListener = new MyMouseWindowDragListener();
+        logoLabel.addMouseListener(logoMouseListener);
+        logoLabel.addMouseMotionListener(logoMouseListener);
 
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
@@ -821,6 +881,15 @@ public class MainFrame extends PFUIComponent {
     // Inner Classes //
     // ////////////////
 
+    private final class SwitchCompactModeByMouse extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 1) {
+                switchCompactMode();
+            }
+        }
+    }
+
     private class MyWindowFocusListner implements WindowFocusListener {
         public void windowGainedFocus(WindowEvent e) {
             getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
@@ -939,12 +1008,15 @@ public class MainFrame extends PFUIComponent {
         double percentageUsed = 0;
         long totalStorage = 0;
         long spaceUsed = 0;
+        boolean showBar = true;
         if (StringUtils.isBlank(client.getUsername())) {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.account_not_set.text"));
+            showBar = false;
         } else if (client.isPasswordEmpty()) {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.password_required.text"));
+            showBar = false;
         } else if (client.isConnected()) {
             if (client.isLoggedIn()) {
                 OnlineStorageSubscription storageSubscription = client
@@ -970,14 +1042,41 @@ public class MainFrame extends PFUIComponent {
             } else {
                 loginActionLabel.setText(Translation
                     .getTranslation("main_frame.loging_in.text"));
+                showBar = false;
             }
         } else {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.connecting.text"));
+            showBar = false;
         }
+        // usagePB.setVisible(showBar);
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
+    }
+
+    private void switchCompactMode() {
+        boolean compactMe = !compact.getAndSet(!compact.get());
+        if (compactMe) {
+            // Need to hide the child windows when minimize.
+            closeInlineInfoPanel();
+            getUIController().hideChildPanels();
+
+            compactButton.setIcon(Icons.getIconById(Icons.UNCOMPACT));
+            compactButton.setToolTipText(Translation
+                .getTranslation("main_frame.uncompact.tips"));
+            mainTabbedPane.getUIComponent().setVisible(false);
+            compactButton.setVisible(false);
+        } else {
+            compactButton.setIcon(Icons.getIconById(Icons.COMPACT));
+            compactButton.setToolTipText(Translation
+                .getTranslation("main_frame.compact.tips"));
+            mainTabbedPane.getUIComponent().setVisible(true);
+            compactButton.setVisible(false);
+        }
+        if (uiComponent.getExtendedState() == Frame.NORMAL) {
+            getUIComponent().pack();
+        }
     }
 
     // ////////////////
@@ -990,27 +1089,7 @@ public class MainFrame extends PFUIComponent {
             if (source == inlineInfoCloseButton) {
                 closeInlineInfoPanel();
             } else if (source == compactButton) {
-                boolean compactMe = !compact.getAndSet(!compact.get());
-                if (compactMe) {
-
-                    // Need to hide the child windows when minimize.
-                    closeInlineInfoPanel();
-                    getUIController().hideChildPanels();
-
-                    compactButton.setIcon(Icons.getIconById(Icons.UNCOMPACT));
-                    compactButton.setToolTipText(Translation
-                        .getTranslation("main_frame.uncompact.tips"));
-                    mainTabbedPane.getUIComponent().setVisible(false);
-                } else {
-
-                    compactButton.setIcon(Icons.getIconById(Icons.COMPACT));
-                    compactButton.setToolTipText(Translation
-                        .getTranslation("main_frame.compact.tips"));
-                    mainTabbedPane.getUIComponent().setVisible(true);
-                }
-                if (uiComponent.getExtendedState() == Frame.NORMAL) {
-                    getUIComponent().pack();
-                }
+                switchCompactMode();
             }
         }
     }
@@ -1121,6 +1200,36 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             PFWizard.openLoginWizard(getController(), client);
+        }
+    }
+
+    private class MyMouseWindowDragListener extends MouseAdapter {
+        private int startX;
+        private int startY;
+        private boolean inDrag;
+
+        /** Called when the mouse has been pressed. */
+        public void mousePressed(MouseEvent e) {
+            Point p = e.getPoint();
+            startX = p.x;
+            startY = p.y;
+            inDrag = true;
+        }
+
+        /** Called when the mouse has been released. */
+        public void mouseReleased(MouseEvent e) {
+            inDrag = false;
+        }
+
+        // And two methods from MouseMotionListener:
+        public void mouseDragged(MouseEvent e) {
+            Point p = e.getPoint();
+            if (inDrag) {
+                int dx = p.x - startX;
+                int dy = p.y - startY;
+                Point l = uiComponent.getLocation();
+                uiComponent.setLocation(l.x + dx, l.y + dy);
+            }
         }
     }
 
