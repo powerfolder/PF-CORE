@@ -94,6 +94,7 @@ public class FolderScannerTest extends ControllerTestCase {
             countDeleted(getFolder().getKnownFiles()));
 
         // change a file
+        TestHelper.waitMilliSeconds(3000);
         TestHelper.changeFile(file2);
         result = scanFolderWaitIfBusy(folderScanner);
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
