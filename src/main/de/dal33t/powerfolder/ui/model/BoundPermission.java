@@ -138,6 +138,10 @@ public abstract class BoundPermission extends PFComponent {
         }
     }
 
+    public void dispose() {
+        getController().getOSClient().removeListener(listener);
+    }
+
     @Override
     public String toString() {
         return "BoundPermission [permission=" + permission + "]";
