@@ -82,6 +82,7 @@ public class FoldersList extends PFUIComponent {
 
     private DelayedUpdater transfersUpdater;
     private DelayedUpdater foldersUpdater;
+    @SuppressWarnings("unused")
     private BoundPermission folderCreatePermission;
 
     /**
@@ -147,7 +148,7 @@ public class FoldersList extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(folderListPanel, cc.xy(1, 1));
-        uiComponent = GradientPanel.create(builder.getPanel());
+        uiComponent = builder.getPanel();
 
         updateFolders();
     }
@@ -251,6 +252,7 @@ public class FoldersList extends PFUIComponent {
 
             // Remove all folder views.
             for (ExpandableFolderView view : views) {
+                view.dispose();
                 views.remove(view);
                 view.removeExpansionListener(expansionListener);
                 view.unregisterListeners();
@@ -262,9 +264,6 @@ public class FoldersList extends PFUIComponent {
             if (scrollPane != null) {
                 scrollPane.repaint();
             }
-
-            addSeparator(new JLabel(
-                Translation.getTranslation("folder_list.my_folders")));
 
             // Add new folder views.
             for (ExpandableFolderModel folderBean : localFolders) {
