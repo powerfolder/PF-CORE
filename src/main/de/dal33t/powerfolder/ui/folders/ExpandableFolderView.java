@@ -341,8 +341,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name space # files probs sync / join
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref",
-            "pref");
+            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         updateIconAndOS();
@@ -363,7 +362,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperBuilder.add(upperMountWebDavButton, cc.xy(7, 1));
         upperBuilder.add(upperOpenWebViewButton, cc.xy(9, 1));
-//        upperBuilder.add(problemButton, cc.xy(11, 1));
+        // upperBuilder.add(problemButton, cc.xy(11, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -986,20 +985,20 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_sync_complete"));
             }
-//            } else if (online) {
-//                // We are local and online.
-//                primaryButton.setIcon(Icons
-//                    .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
-//                primaryButton
-//                    .setToolTipText(Translation
-//                        .getTranslation("exp_folder_view.folder_local_online_text"));
-//                osComponent.getUIComponent().setVisible(osComponentVisible);
-//            } else {
-//                // Just a local folder.
-//                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
-//                primaryButton.setToolTipText(Translation
-//                    .getTranslation("exp_folder_view.folder_local_text"));
-//            }
+            // } else if (online) {
+            // // We are local and online.
+            // primaryButton.setIcon(Icons
+            // .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
+            // primaryButton
+            // .setToolTipText(Translation
+            // .getTranslation("exp_folder_view.folder_local_online_text"));
+            // osComponent.getUIComponent().setVisible(osComponentVisible);
+            // } else {
+            // // Just a local folder.
+            // primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
+            // primaryButton.setToolTipText(Translation
+            // .getTranslation("exp_folder_view.folder_local_text"));
+            // }
         } else if (type == ExpandableFolderModel.Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.TYPICAL_FOLDER));
             primaryButton.setToolTipText(Translation
@@ -1624,18 +1623,18 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-//    private class MyProblemAction extends BaseAction {
-//
-//        private MyProblemAction(Controller controller) {
-//            super("action_folder_problem", controller);
-//        }
-//
-//        public void actionPerformed(ActionEvent e) {
-//            getController().getUIController().openProblemsInformation(
-//                folderInfo);
-//        }
-//    }
-//
+    // private class MyProblemAction extends BaseAction {
+    //
+    // private MyProblemAction(Controller controller) {
+    // super("action_folder_problem", controller);
+    // }
+    //
+    // public void actionPerformed(ActionEvent e) {
+    // getController().getUIController().openProblemsInformation(
+    // folderInfo);
+    // }
+    // }
+    //
     private class MyClearCompletedDownloadsAction extends BaseAction {
 
         private MyClearCompletedDownloadsAction(Controller controller) {
@@ -1726,17 +1725,19 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private class PrimaryButtonActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (type == ExpandableFolderModel.Type.Local &&
-                    folder != null && folder.countProblems() > 0) {
+            if (type == ExpandableFolderModel.Type.Local && folder != null
+                && folder.countProblems() > 0)
+            {
                 // Display the problem.
                 getController().getUIController().openProblemsInformation(
-                        folderInfo);
+                    folderInfo);
             } else if (type == ExpandableFolderModel.Type.CloudOnly) {
                 // Join the folder locally.
                 PFWizard.openOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
             } else if (type == ExpandableFolderModel.Type.Local
-                && folder != null && folder.isPreviewOnly()) {
+                && folder != null && folder.isPreviewOnly())
+            {
                 // Local Preview - want to change?
                 SettingsTab.doPreviewChange(getController(), folder);
             } else if (type == ExpandableFolderModel.Type.Local) {
@@ -1781,6 +1782,13 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
         }
+    }
+
+    void dispose() {
+        removeFolderAction.dispose();
+        backupOnlineStorageAction.dispose();
+        stopOnlineStorageAction.dispose();
+        inviteAction.dispose();
     }
 
 }
