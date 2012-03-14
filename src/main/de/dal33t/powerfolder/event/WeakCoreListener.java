@@ -71,6 +71,7 @@ class WeakCoreListener implements CoreListener, InvocationHandler {
     }
 
     private void removeListener() {
+        // This may cause 100% CPU ?
         // src.removeListener(this);
     }
 
