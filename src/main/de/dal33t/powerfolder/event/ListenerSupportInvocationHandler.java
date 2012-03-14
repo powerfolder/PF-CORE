@@ -83,12 +83,36 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
             if (listener.fireInEventDispatchThread()) {
                 weaklistenersInEDT.add(weakListener);
                 n = weaklistenersInEDT.size();
+
+                // Do some cleanup
+                if (n % 10 == 0) {
+                    for (WeakCoreListener candidate : weaklistenersInEDT) {
+                        if (!candidate.isValid()) {
+                            // LOG.log(Level.WARNING, "Cleanup X of " +
+                            // candidate);
+                            weaklistenersInEDT.remove(candidate);
+                        }
+                    }
+                }
+                n = weaklistenersInEDT.size();
             } else {
                 weakListenersNonEDT.add(weakListener);
                 n = weakListenersNonEDT.size();
+
+                // Do some cleanup
+                if (n % 10 == 0) {
+                    for (WeakCoreListener candidate : weakListenersNonEDT) {
+                        if (!candidate.isValid()) {
+                            // LOG.log(Level.WARNING, "Cleanup Y of " +
+                            // candidate);
+                            weakListenersNonEDT.remove(candidate);
+                        }
+                    }
+                }
+                n = weakListenersNonEDT.size();
             }
             if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS
-                && n % 10 == 0)
+                && n % 100 == 0)
             {
                 LOG.log(Level.WARNING, n + " weak listeners of "
                     + listenerInterface.getName() + " registered");
@@ -124,8 +148,30 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
                 }
             }
         } else if (checkListener(listener)) {
-            listenersInEDT.remove(listener);
-            listenersNonEDT.remove(listener);
+            boolean removed = listenersInEDT.remove(listener);
+            removed = listenersNonEDT.remove(listener) || removed;
+            if (!removed) {
+                if (!weaklistenersInEDT.isEmpty()) {
+                    for (WeakCoreListener weakCandidate : weaklistenersInEDT) {
+                        CoreListener candidate = weakCandidate.getRef();
+                        if ((candidate != null && candidate.equals(listener))
+                            || weakCandidate.equals(listener))
+                        {
+                            weaklistenersInEDT.remove(weakCandidate);
+                        }
+                    }
+                }
+                if (!weakListenersNonEDT.isEmpty()) {
+                    for (WeakCoreListener weakCandidate : weakListenersNonEDT) {
+                        CoreListener candidate = weakCandidate.getRef();
+                        if ((candidate != null && candidate.equals(listener))
+                            || weakCandidate.equals(listener))
+                        {
+                            weakListenersNonEDT.remove(weakCandidate);
+                        }
+                    }
+                }
+            }
         }
     }
 
