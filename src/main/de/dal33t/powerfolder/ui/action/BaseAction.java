@@ -122,12 +122,17 @@ public abstract class BaseAction extends AbstractAction {
         }
         boundPermission = null;
         if (permission != null) {
-          
             boundPermission = new BoundPermission(getController(), permission) {
                 public void hasPermission(boolean hasPermission) {
                     setEnabled(hasPermission);
                 }
             };
+        }
+    }
+    
+    public void dispose() {
+        if (boundPermission != null) {
+            boundPermission.dispose();
         }
     }
 
