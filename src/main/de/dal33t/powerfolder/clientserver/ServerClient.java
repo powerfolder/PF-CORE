@@ -176,11 +176,11 @@ public class ServerClient extends PFComponent {
 
         // Custom server
         String theName = StringUtils.isBlank(name) ? Translation
-                .getTranslation("online_storage.connecting") : name;
+            .getTranslation("online_storage.connecting") : name;
 
         boolean temporaryNode = StringUtils.isBlank(nodeId);
-        String theNodeId = temporaryNode ? MEMBER_ID_TEMP_PREFIX
-                + '|' + IdGenerator.makeId() : nodeId;
+        String theNodeId = temporaryNode ? MEMBER_ID_TEMP_PREFIX + '|'
+            + IdGenerator.makeId() : nodeId;
         Member theNode = controller.getNodeManager().getNode(theNodeId);
         if (theNode == null) {
             String networkId = getController().getNodeManager().getNetworkId();
@@ -652,6 +652,12 @@ public class ServerClient extends PFComponent {
             }
         }
 
+        if (StringUtils.isBlank(un)
+            && !LoginUtil.isUsernameEmailOnly(getController()))
+        {
+            un = System.getProperty("user.name");
+        }
+
         if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
         } else {
@@ -1052,7 +1058,7 @@ public class ServerClient extends PFComponent {
             ConfigurationEntry.SERVER_NODEID.removeValue(getController());
         } else {
             ConfigurationEntry.SERVER_NODEID.setValue(getController(),
-                    newServer.id);
+                newServer.id);
         }
     }
 
@@ -1113,8 +1119,8 @@ public class ServerClient extends PFComponent {
     private void setNewServerNode(Member newServerNode) {
         server = newServerNode;
         server.setServer(true);
-        listenerSupport.nodeServerStatusChanged(new ServerClientEvent(
-                this, server));
+        listenerSupport.nodeServerStatusChanged(new ServerClientEvent(this,
+            server));
         // Why?
         // // Put on friendslist
         // if (!isTempServerNode(server)) {
@@ -1305,8 +1311,7 @@ public class ServerClient extends PFComponent {
                 + server.getId());
         }
 
-        listenerSupport.serverConnected(new ServerClientEvent(
-                this, newNode));
+        listenerSupport.serverConnected(new ServerClientEvent(this, newNode));
 
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
