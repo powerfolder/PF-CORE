@@ -30,7 +30,7 @@ import java.awt.event.ActionEvent;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.7 $
  */
-public class OpenPreferencesAction extends BaseAction {
+class OpenPreferencesAction extends BaseAction {
     private PreferencesDialog panel;
     
     public OpenPreferencesAction(Controller controller) {
