@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -132,6 +133,7 @@ public class MainFrame extends PFUIComponent {
 
     private AtomicBoolean compact = new AtomicBoolean();
     private JButton compactButton;
+    private JButton3Icons closeButton;
 
     /**
      * @param controller
@@ -141,12 +143,14 @@ public class MainFrame extends PFUIComponent {
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
 
+        compact.set(!PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController()));
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-
         initComponents();
         configureUi();
         updateOnlineStorageDetails();
+
     }
 
     private JPanel createMiniPanel() {
@@ -166,6 +170,7 @@ public class MainFrame extends PFUIComponent {
         FormLayout layoutUpper = new FormLayout("pref, 3dlu, 100dlu",
             "pref, pref");
         DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
+        builderUpper.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
 
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builderUpper.add(allInSyncButton, cc.xywh(1, 1, 1, 2));
@@ -189,14 +194,14 @@ public class MainFrame extends PFUIComponent {
         // position between JLabels and JButtonMinis.
         FormLayout layoutMain;
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            layoutMain = new FormLayout("8dlu, pref", "pref, pref");
+            layoutMain = new FormLayout("8dlu, pref", "pref, 3dlu, pref");
         } else {
-            layoutMain = new FormLayout("7dlu, pref", "pref, pref");
+            layoutMain = new FormLayout("7dlu, pref", "pref, 3dlu, pref");
         }
 
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
         builderMain.add(builderUpper.getPanel(), cc.xy(2, 1));
-        builderMain.add(builderLower.getPanel(), cc.xy(2, 2));
+        builderMain.add(builderLower.getPanel(), cc.xy(2, 3));
 
         return builderMain.getPanel();
     }
@@ -219,7 +224,7 @@ public class MainFrame extends PFUIComponent {
 
         // Display the title pane.
         uiComponent.getRootPane().putClientProperty(
-            "Synthetica.titlePane.enabled", Boolean.TRUE);
+            "Synthetica.titlePane.enabled", Boolean.FALSE);
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
@@ -227,7 +232,9 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(logoLabel, cc.xyw(1, 1, 4));
+        builder.add(logoLabel, cc.xyw(1, 1, 3));
+        builder.add(closeButton, cc.xywh(4, 1, 1, 1, "right, top"));
+
         builder.add(inlineInfoLabel,
             cc.xy(2, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
         builder.add(inlineInfoCloseButton,
@@ -398,6 +405,18 @@ public class MainFrame extends PFUIComponent {
         logoLabel.addMouseListener(logoMouseListener);
         logoLabel.addMouseMotionListener(logoMouseListener);
 
+        closeButton = new JButton3Icons(
+            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
+            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
+            Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
+        closeButton.setToolTipText(Translation
+            .getTranslation("main_frame.close.tips"));
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                doCloseOperation();
+            }
+        });
+
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
         mainTabbedPane = new MainTabbedPane(getController());
@@ -427,6 +446,7 @@ public class MainFrame extends PFUIComponent {
         compactButton = new JButtonMini(Icons.getIconById(Icons.COMPACT),
             Translation.getTranslation("main_frame.compact.tips"));
         compactButton.addActionListener(myActionListener);
+        compactButton.setVisible(false);
     }
 
     /**
