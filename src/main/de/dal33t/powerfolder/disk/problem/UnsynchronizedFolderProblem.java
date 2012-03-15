@@ -42,8 +42,8 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
 
     public String getDescription() {
         long time = System.currentTimeMillis() - lastSyncDate.getTime();
-        time = time / 1000;
-        time = time / 60;
+        time /= 1000;
+        time /= 60;
 
         // Minutes
         if (time <= 59) {
@@ -53,7 +53,7 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
         }
 
         // Hours
-        time = time / 60;
+        time /= 60;
         if (time <= 23) {
             return Translation.getTranslation(
                 "folder_problem.unsynchronized_hours", folderInfo.name,
@@ -61,7 +61,7 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
         }
 
         // Days
-        time = time / 24;
+        time /= 24;
         return Translation.getTranslation("folder_problem.unsynchronized",
             folderInfo.name, String.valueOf(time));
     }
