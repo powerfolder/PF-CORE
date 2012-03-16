@@ -38,14 +38,14 @@ public enum SocialNetwork {
      * To share a link on Twitter
      */
     TWITTER(
-        "http://twitter.com/?status=Share, send and sync your files online with PowerFolder: $ORIGINAL_URL$",
+        "http://twitter.com/?status=Share, send and sync your files online with $APPNAME$: $ORIGINAL_URL$",
         true),
 
     /**
      * Same for Linkedin.com
      */
     LINKEDIN(
-        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send, share and sync files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder",
+        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send, share and sync files. Work together online with $APPNAME$&summary=Securely send and share files. Work together online with $APPNAME$",
         true),
 
     /**
@@ -59,7 +59,7 @@ public enum SocialNetwork {
      * Good old email
      */
     EMAIL(
-        "mailto:to@email.com?SUBJECT=Share, send and sync your files online with PowerFolder&BODY=Share, send and sync your files online with PowerFolder: %20$ORIGINAL_URL$",
+        "mailto:to@email.com?SUBJECT=Share, send and sync your files online with $APPNAME$&BODY=Share, send and sync your files online with $APPNAME$: %20$ORIGINAL_URL$",
         false);
 
     private String template;
@@ -83,6 +83,15 @@ public enum SocialNetwork {
             if (replaceSpace) {
                 link = link.replace(" ", "%20");
             }
+            
+            String appname = Translation.getTranslation("general.application.name");
+            if (StringUtils.isNotBlank(appname)) {
+                link = link.replace("$APPNAME$",
+                    URLEncoder.encode(appname, "UTF-8"));
+            } else {
+                link = link.replace("$APPNAME$", "");
+            }
+            
             return link;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
