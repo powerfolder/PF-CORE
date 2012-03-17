@@ -1011,11 +1011,15 @@ public class ServerClient extends PFComponent {
                     for (MemberInfo serverMInfo : servers) {
                         Member hostingServer = serverMInfo.getNode(
                             getController(), true);
+                        boolean wasServer = hostingServer.isServer();
                         hostingServer.setServer(true);
-                        listenerSupport
-                            .nodeServerStatusChanged(new ServerClientEvent(
-                                ServerClient.this, hostingServer));
 
+                        if (!wasServer) {
+                            listenerSupport
+                                .nodeServerStatusChanged(new ServerClientEvent(
+                                    ServerClient.this, hostingServer));
+                        }
+                        
                         if (hostingServer.isConnected()
                             || hostingServer.isConnecting()
                             || hostingServer.equals(server))
