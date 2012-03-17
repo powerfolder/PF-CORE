@@ -126,13 +126,14 @@ public class MainFrame extends PFUIComponent {
     private JLabel allInSyncLabel;
     private JButtonMini allInSyncButton;
     private JProgressBar usagePB;
+    private ActionLabel expandCollapseActionLabel;
+    private MyExpandCollapseAction expandCollapseAction;
     private ActionLabel openWebInterfaceActionLabel;
     private ActionLabel openFoldersBaseActionLabel;
     private ActionLabel pauseResumeActionLabel;
     private ActionLabel configurationActoinLabel;
 
     private AtomicBoolean compact = new AtomicBoolean();
-    private JButton compactButton;
     private JButton3Icons closeButton;
 
     /**
@@ -167,10 +168,10 @@ public class MainFrame extends PFUIComponent {
     private Component createLeftMiniPanel() {
         CellConstraints cc = new CellConstraints();
 
-        FormLayout layoutUpper = new FormLayout("pref, 3dlu, 100dlu",
+        FormLayout layoutUpper = new FormLayout("pref, 3dlu, 107dlu",
             "pref, pref");
         DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
-        builderUpper.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
+        builderUpper.setBorder(Borders.createEmptyBorder("5dlu, 0, 0, 0"));
 
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builderUpper.add(allInSyncButton, cc.xywh(1, 1, 1, 2));
@@ -180,8 +181,12 @@ public class MainFrame extends PFUIComponent {
         builderUpper.add(syncTextLabel, cc.xy(3, 1));
         builderUpper.add(syncDateLabel, cc.xy(3, 2));
 
+        // builderUpper.add(compactButton, cc.xywh(4, 1, 1, 2,
+        // "center, center"));
+
         FormLayout layoutLower = new FormLayout("pref, 100dlu", "pref, pref");
         DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
+        builderLower.setBorder(Borders.createEmptyBorder("3dlu, 0, 5dlu, 0"));
 
         // Include a spacer icon that lines up the pair with builderUpper
         // when allInSyncLabel has null icon.
@@ -208,14 +213,16 @@ public class MainFrame extends PFUIComponent {
 
     private Component createRightMiniPanel() {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, pref, pref");
+            "pref, pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("0, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
-        builder.add(openWebInterfaceActionLabel.getUIComponent(), cc.xy(1, 1));
-        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 2));
-        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
-        builder.add(configurationActoinLabel.getUIComponent(), cc.xy(1, 4));
+        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
+        builder.add(openWebInterfaceActionLabel.getUIComponent(), cc.xy(1, 2));
+        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 4));
+        builder.add(configurationActoinLabel.getUIComponent(), cc.xy(1, 5));
 
         return builder.getPanel();
     }
@@ -228,7 +235,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, pref, fill:0:grow, pref");
+            "pref, fill:0:grow, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -240,12 +247,9 @@ public class MainFrame extends PFUIComponent {
         builder.add(inlineInfoCloseButton,
             cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
 
-        builder.add(compactButton,
-            cc.xyw(1, 2, 4, CellConstraints.CENTER, CellConstraints.BOTTOM));
+        builder.add(centralPanel, cc.xyw(1, 2, 4));
 
-        builder.add(centralPanel, cc.xyw(1, 3, 4));
-
-        builder.add(createMiniPanel(), cc.xyw(1, 4, 4));
+        builder.add(createMiniPanel(), cc.xyw(1, 3, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
@@ -342,8 +346,6 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         uiComponent.setBackground(Color.white);
 
-        MyActionListener myActionListener = new MyActionListener();
-
         allInSyncLabel = new JLabel(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncLabel
             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -375,6 +377,9 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
+        expandCollapseAction = new MyExpandCollapseAction(getController());
+        expandCollapseActionLabel = new ActionLabel(getController(),
+            expandCollapseAction);
         openWebInterfaceActionLabel = new ActionLabel(getController(),
             new MyOpenWebInterfaceAction(getController()));
         openFoldersBaseActionLabel = new ActionLabel(getController(),
@@ -429,7 +434,8 @@ public class MainFrame extends PFUIComponent {
             Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         inlineInfoCloseButton.setToolTipText(Translation
             .getTranslation("main_frame.inline_info_close.tip"));
-        inlineInfoCloseButton.addActionListener(myActionListener);
+        inlineInfoCloseButton
+            .addActionListener(new MyInlineCloseInfoActionListener());
         inlineInfoCloseButton.setContentAreaFilled(false);
 
         inlineInfoLabel = new JLabel();
@@ -442,11 +448,6 @@ public class MainFrame extends PFUIComponent {
 
         getApplicationModel().getFolderRepositoryModel()
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
-
-        compactButton = new JButtonMini(Icons.getIconById(Icons.COMPACT),
-            Translation.getTranslation("main_frame.compact.tips"));
-        compactButton.addActionListener(myActionListener);
-        compactButton.setVisible(false);
     }
 
     /**
@@ -951,12 +952,6 @@ public class MainFrame extends PFUIComponent {
                     uiComponent
                         .setSize(mainWidth, uiComponent.getSize().height);
                 }
-
-                // Need to show the compact button if normal state.
-                compactButton.setVisible(true);
-            } else if (!wasMaximized && nowMaximized) {
-                // Need to hide the compact button if maximized state.
-                compactButton.setVisible(false);
             }
         }
 
@@ -1081,18 +1076,12 @@ public class MainFrame extends PFUIComponent {
             // Need to hide the child windows when minimize.
             closeInlineInfoPanel();
             getUIController().hideChildPanels();
-
-            compactButton.setIcon(Icons.getIconById(Icons.UNCOMPACT));
-            compactButton.setToolTipText(Translation
-                .getTranslation("main_frame.uncompact.tips"));
             mainTabbedPane.getUIComponent().setVisible(false);
-            compactButton.setVisible(false);
+            expandCollapseAction.setShowExpand(true);
+
         } else {
-            compactButton.setIcon(Icons.getIconById(Icons.COMPACT));
-            compactButton.setToolTipText(Translation
-                .getTranslation("main_frame.compact.tips"));
             mainTabbedPane.getUIComponent().setVisible(true);
-            compactButton.setVisible(false);
+            expandCollapseAction.setShowExpand(false);
         }
         if (uiComponent.getExtendedState() == Frame.NORMAL) {
             getUIComponent().pack();
@@ -1103,13 +1092,11 @@ public class MainFrame extends PFUIComponent {
     // Inner classes //
     // ////////////////
 
-    private class MyActionListener implements ActionListener {
+    private class MyInlineCloseInfoActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
             if (source == inlineInfoCloseButton) {
                 closeInlineInfoPanel();
-            } else if (source == compactButton) {
-                switchCompactMode();
             }
         }
     }
@@ -1136,6 +1123,25 @@ public class MainFrame extends PFUIComponent {
                 BrowserLauncher.openURL(client.getLoginURLWithCredentials());
             } catch (IOException e1) {
                 logWarning("Unable to open web portal", e1);
+            }
+        }
+    }
+
+    private class MyExpandCollapseAction extends BaseAction {
+
+        private MyExpandCollapseAction(Controller controller) {
+            super("action_expand_interface", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            switchCompactMode();
+        }
+
+        public void setShowExpand(boolean expand) {
+            if (expand) {
+                configureFromActionId("action_expand_interface");
+            } else {
+                configureFromActionId("action_collapse_interface");
             }
         }
     }
