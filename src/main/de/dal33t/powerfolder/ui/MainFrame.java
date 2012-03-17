@@ -337,8 +337,9 @@ public class MainFrame extends PFUIComponent {
             }
         };
         if (uiComponent.isAlwaysOnTopSupported()
-            && PreferencesEntry.MAIN_ALWAYS_ON_TOP
-                .getValueBoolean(getController()))
+            && (PreferencesEntry.MAIN_ALWAYS_ON_TOP
+                .getValueBoolean(getController()) ||
+        compact.get()))
         {
             uiComponent.setAlwaysOnTop(true);
         }
