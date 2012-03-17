@@ -150,7 +150,8 @@ public class FoldersList extends PFUIComponent {
         builder.add(folderListPanel, cc.xy(1, 1));
         uiComponent = builder.getPanel();
 
-        updateFolders();
+        // First update via #populate() call
+        // updateFolders();
     }
 
     public boolean isEmpty() {
@@ -402,11 +403,15 @@ public class FoldersList extends PFUIComponent {
         }
 
         public void serverDisconnected(ServerClientEvent event) {
-            updateFolders();
+            if (event.getServerNode().hasJoinedAnyFolder()) {
+                updateFolders();
+            }
         }
 
         public void nodeServerStatusChanged(ServerClientEvent event) {
-            updateFolders();
+            if (event.getServerNode().hasJoinedAnyFolder()) {
+                updateFolders();
+            }
         }
 
         public boolean fireInEventDispatchThread() {
