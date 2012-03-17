@@ -336,13 +336,7 @@ public class MainFrame extends PFUIComponent {
                 customPack();
             }
         };
-        if (uiComponent.isAlwaysOnTopSupported()
-            && (PreferencesEntry.MAIN_ALWAYS_ON_TOP
-                .getValueBoolean(getController()) ||
-        compact.get()))
-        {
-            uiComponent.setAlwaysOnTop(true);
-        }
+        checkOnTop();
         uiComponent.addWindowFocusListener(new MyWindowFocusListner());
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         uiComponent.setBackground(Color.white);
@@ -449,6 +443,16 @@ public class MainFrame extends PFUIComponent {
 
         getApplicationModel().getFolderRepositoryModel()
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
+    }
+
+    /**
+     * Force UI on top if pref or compact.
+     */
+    private void checkOnTop() {
+        boolean onTop = uiComponent.isAlwaysOnTopSupported() &&
+                (PreferencesEntry.MAIN_ALWAYS_ON_TOP.getValueBoolean(
+                        getController()) || compact.get());
+        uiComponent.setAlwaysOnTop(onTop);
     }
 
     /**
@@ -1089,8 +1093,9 @@ public class MainFrame extends PFUIComponent {
             expandCollapseAction.setShowExpand(false);
         }
         if (uiComponent.getExtendedState() == Frame.NORMAL) {
-            getUIComponent().pack();
+            uiComponent.pack();
         }
+        checkOnTop();
     }
 
     // ////////////////
