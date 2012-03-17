@@ -1074,6 +1074,9 @@ public class MainFrame extends PFUIComponent {
         boolean compactMe = !compact.getAndSet(!compact.get());
         if (compactMe) {
             // Need to hide the child windows when minimize.
+            if (isMaximized()) {
+                uiComponent.setExtendedState(Frame.NORMAL);
+            }
             closeInlineInfoPanel();
             getUIController().hideChildPanels();
             mainTabbedPane.getUIComponent().setVisible(false);
@@ -1237,7 +1240,18 @@ public class MainFrame extends PFUIComponent {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                switchCompactMode();
+
+                if (isMaximized()) {
+                    uiComponent.setExtendedState(Frame.NORMAL);
+                }
+
+                if (isShowingInfoInline()) {
+                    if (!isMaximized()) {
+                        uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
+                    }
+                } else {
+                    switchCompactMode();
+                }
             }
         }
 
