@@ -1081,8 +1081,9 @@ public class MainFrame extends PFUIComponent {
             getUIController().hideChildPanels();
             mainTabbedPane.getUIComponent().setVisible(false);
             expandCollapseAction.setShowExpand(true);
-
+            toFront();
         } else {
+            uiComponent.setAlwaysOnTop(false);
             mainTabbedPane.getUIComponent().setVisible(true);
             expandCollapseAction.setShowExpand(false);
         }
