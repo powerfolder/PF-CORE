@@ -250,6 +250,11 @@ public class WinUtils extends Loggable {
         if (f.exists()) {
             return f;
         }
+
+        f = new File(programFiles + " (x86)/PowerFolder.com/PowerFolder");
+        if (f.exists()) {
+            return f;
+        }
         // Try harder
         try {
             f = new File("").getCanonicalFile();
