@@ -658,6 +658,12 @@ public class FileUtils {
                 pw.println("IconIndex=0");
                 pw.println("InfoTip="
                     + Translation.getTranslation("folder.info_tip"));
+                // Required on Win7
+                pw.println("IconResource=" + powerFolderFile.getAbsolutePath() + ",0");
+                pw.println("[ViewState]");
+                pw.println("Mode=");
+                pw.println("Vid=");
+                pw.println("FolderType=Generic");
                 pw.flush();
 
                 // Hide the files
