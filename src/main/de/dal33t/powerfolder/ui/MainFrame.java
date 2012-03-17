@@ -1234,6 +1234,13 @@ public class MainFrame extends PFUIComponent {
         private int startY;
         private boolean inDrag;
 
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 2) {
+                switchCompactMode();
+            }
+        }
+
         /** Called when the mouse has been pressed. */
         public void mousePressed(MouseEvent e) {
             Point p = e.getPoint();
