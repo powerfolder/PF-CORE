@@ -1028,15 +1028,12 @@ public class MainFrame extends PFUIComponent {
         double percentageUsed = 0;
         long totalStorage = 0;
         long spaceUsed = 0;
-        boolean showBar = true;
         if (StringUtils.isBlank(client.getUsername())) {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.account_not_set.text"));
-            showBar = false;
         } else if (client.isPasswordEmpty()) {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.password_required.text"));
-            showBar = false;
         } else if (client.isConnected()) {
             if (client.isLoggedIn()) {
                 OnlineStorageSubscription storageSubscription = client
@@ -1059,17 +1056,18 @@ public class MainFrame extends PFUIComponent {
                         loginActionLabel.setText(s);
                     }
                 }
-            } else {
+            } else if (client.isLoggingIn()) {
                 loginActionLabel.setText(Translation
                     .getTranslation("main_frame.loging_in.text"));
-                showBar = false;
+            } else {
+                // Not logged in and not logging in? Looks like it has failed.
+                loginActionLabel.setText(Translation
+                    .getTranslation("main_frame.log_in_failed.text"));
             }
         } else {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.connecting.text"));
-            showBar = false;
         }
-        // usagePB.setVisible(showBar);
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));

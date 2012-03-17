@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -92,6 +93,7 @@ public class ServerClient extends PFComponent {
     private String passwordObf;
     private Member server;
     private MyThrowableHandler throwableHandler = new MyThrowableHandler();
+    private final AtomicBoolean loggingIn = new AtomicBoolean();
 
     /**
      * If this client should connect to the server where his folders are hosted
@@ -713,87 +715,101 @@ public class ServerClient extends PFComponent {
     private Account login(String theUsername, String thePasswordObj) {
         logFine("Login with: " + theUsername);
         synchronized (loginLock) {
-            username = theUsername;
-            passwordObf = thePasswordObj;
-            saveLastKnowLogin();
-            if (!server.isConnected() || StringUtils.isBlank(passwordObf)) {
-                setAnonAccount();
-                fireLogin(accountDetails);
-                return accountDetails.getAccount();
-            }
-            boolean loginOk = false;
-            char[] pw = LoginUtil.deobfuscate(passwordObf);
+            loggingIn.set(true);
             try {
-                loginOk = securityService.login(username, pw);
-            } catch (RemoteCallException e) {
-                if (e.getCause() instanceof NoSuchMethodException) {
-                    // Old server version (Pre 1.5.0 or older)
-                    // Try it the old fashioned way
-                    logSevere("Client incompatible with server: Server version too old");
+                username = theUsername;
+                passwordObf = thePasswordObj;
+                saveLastKnowLogin();
+                if (!server.isConnected() || StringUtils.isBlank(passwordObf)) {
+                    setAnonAccount();
+                    fireLogin(accountDetails);
+                    return accountDetails.getAccount();
                 }
-                // Rethrow
-                throw e;
-            } finally {
-                LoginUtil.clear(pw);
-            }
+                boolean loginOk = false;
+                char[] pw = LoginUtil.deobfuscate(passwordObf);
+                try {
+                    loginOk = securityService.login(username, pw);
+                } catch (RemoteCallException e) {
+                    if (e.getCause() instanceof NoSuchMethodException) {
+                        // Old server version (Pre 1.5.0 or older)
+                        // Try it the old fashioned way
+                        logSevere("Client incompatible with server: Server version too old");
+                    }
+                    // Rethrow
+                    throw e;
+                } finally {
+                    LoginUtil.clear(pw);
+                }
 
-            if (!loginOk) {
-                logWarning("Login to server " + server.getReconnectAddress()
-                    + " (user " + theUsername + ") failed!");
-                setAnonAccount();
-                fireLogin(accountDetails, false);
+                if (!loginOk) {
+                    logWarning("Login to server " + server.getReconnectAddress()
+                            + " (user " + theUsername + ") failed!");
+                    setAnonAccount();
+                    fireLogin(accountDetails, false);
+                    return accountDetails.getAccount();
+                }
+                AccountDetails newAccountDetails = securityService
+                        .getAccountDetails();
+                logInfo("Login to server " + server.getReconnectAddress()
+                        + " (user " + theUsername + ") result: " + newAccountDetails);
+                if (newAccountDetails != null) {
+                    accountDetails = newAccountDetails;
+
+                    if (updateConfig) {
+                        boolean configChanged;
+                        if (accountDetails.getAccount().getServer() != null) {
+                            configChanged = setServerWebURLInConfig(accountDetails
+                                    .getAccount().getServer().getWebUrl());
+                            configChanged = setServerHTTPTunnelURLInConfig(accountDetails
+                                    .getAccount().getServer().getHTTPTunnelUrl())
+                                    || configChanged;
+                        } else {
+                            configChanged = setServerWebURLInConfig(null);
+                            configChanged = setServerHTTPTunnelURLInConfig(null)
+                                    || configChanged;
+                        }
+                        if (configChanged) {
+                            getController().saveConfig();
+                        }
+                    }
+
+                    // Fire login success
+                    fireLogin(accountDetails);
+                    getController().schedule(new Runnable() {
+                        public void run() {
+                            updateLocalSettings(accountDetails.getAccount());
+                        }
+                    }, 0);
+
+                    // Possible switch to new server
+                    ServerInfo targetServer = accountDetails.getAccount()
+                            .getServer();
+                    if (targetServer != null && allowServerChange) {
+                        // Not hosted on the server we just have logged into.
+                        boolean changeServer = !server.getInfo().equals(
+                                targetServer.getNode());
+                        if (changeServer) {
+                            changeToServer(targetServer);
+                        }
+                    }
+                } else {
+                    setAnonAccount();
+                    fireLogin(accountDetails, false);
+                }
                 return accountDetails.getAccount();
+            } finally {
+                loggingIn.set(false);
             }
-            AccountDetails newAccountDetails = securityService
-                .getAccountDetails();
-            logInfo("Login to server " + server.getReconnectAddress()
-                + " (user " + theUsername + ") result: " + newAccountDetails);
-            if (newAccountDetails != null) {
-                accountDetails = newAccountDetails;
-
-                if (updateConfig) {
-                    boolean configChanged;
-                    if (accountDetails.getAccount().getServer() != null) {
-                        configChanged = setServerWebURLInConfig(accountDetails
-                            .getAccount().getServer().getWebUrl());
-                        configChanged = setServerHTTPTunnelURLInConfig(accountDetails
-                            .getAccount().getServer().getHTTPTunnelUrl())
-                            || configChanged;
-                    } else {
-                        configChanged = setServerWebURLInConfig(null);
-                        configChanged = setServerHTTPTunnelURLInConfig(null)
-                            || configChanged;
-                    }
-                    if (configChanged) {
-                        getController().saveConfig();
-                    }
-                }
-
-                // Fire login success
-                fireLogin(accountDetails);
-                getController().schedule(new Runnable() {
-                    public void run() {
-                        updateLocalSettings(accountDetails.getAccount());
-                    }
-                }, 0);
-
-                // Possible switch to new server
-                ServerInfo targetServer = accountDetails.getAccount()
-                    .getServer();
-                if (targetServer != null && allowServerChange) {
-                    // Not hosted on the server we just have logged into.
-                    boolean changeServer = !server.getInfo().equals(
-                        targetServer.getNode());
-                    if (changeServer) {
-                        changeToServer(targetServer);
-                    }
-                }
-            } else {
-                setAnonAccount();
-                fireLogin(accountDetails, false);
-            }
-            return accountDetails.getAccount();
         }
+    }
+
+    /**
+     * Are we currently logging in?
+     *
+     * @return
+     */
+    public boolean isLoggingIn() {
+        return loggingIn.get();
     }
 
     /**
