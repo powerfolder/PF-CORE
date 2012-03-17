@@ -864,10 +864,11 @@ public class MainFrame extends PFUIComponent {
         int state = uiComponent.getExtendedState();
         state &= ~Frame.ICONIFIED;
         uiComponent.setExtendedState(state);
+        boolean onTop = uiComponent.isAlwaysOnTop();
         uiComponent.setAlwaysOnTop(true);
         uiComponent.toFront();
         uiComponent.requestFocus();
-        uiComponent.setAlwaysOnTop(false);
+        uiComponent.setAlwaysOnTop(onTop);
     }
 
     private void doCloseOperation() {
@@ -1074,6 +1075,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void switchCompactMode() {
+        int oldY = uiComponent.getY();
+        int oldH = uiComponent.getHeight();
         boolean compactMe = !compact.getAndSet(!compact.get());
         if (compactMe) {
             // Need to hide the child windows when minimize.
@@ -1086,13 +1089,24 @@ public class MainFrame extends PFUIComponent {
             expandCollapseAction.setShowExpand(true);
             toFront();
         } else {
-            uiComponent.setAlwaysOnTop(false);
             mainTabbedPane.getUIComponent().setVisible(true);
             expandCollapseAction.setShowExpand(false);
         }
+
         if (uiComponent.getExtendedState() == Frame.NORMAL) {
             uiComponent.pack();
+
+            // Try to maintain the lower window location,
+            // as this is where the user clicked open / collapse.
+            int oldB = oldY + oldH;
+            int newY = uiComponent.getY();
+            int newH = uiComponent.getHeight();
+            int newB = newY + newH;
+            int diff = newB - oldB;
+            int targetY = newY - diff;
+            uiComponent.setLocation(uiComponent.getX(), Math.max(targetY, 0));
         }
+
         checkOnTop();
     }
 
