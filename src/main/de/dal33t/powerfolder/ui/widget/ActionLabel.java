@@ -35,9 +35,12 @@ import javax.swing.JLabel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.ui.util.*;
 
 /**
  * A Label which executes the action when clicked.
@@ -66,9 +69,25 @@ public class ActionLabel extends PFComponent {
         Reject.ifNull(action, "Action listener is null");
         uiComponent.addMouseListener(new MyMouseAdapter());
         CursorUtils.setHandCursor(uiComponent);
+
         action.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 setEnabled(action.isEnabled());
+
+                if (Action.NAME.equals(evt.getPropertyName())) {
+                    text = (String) action.getValue(Action.NAME);
+                    displayText();
+                } else if (Action.SHORT_DESCRIPTION.equals(evt
+                    .getPropertyName()))
+                {
+                    String toolTips = (String) action
+                        .getValue(Action.SHORT_DESCRIPTION);
+                    if (toolTips != null && toolTips.length() > 0) {
+                        uiComponent.setToolTipText(toolTips);
+                    } else {
+                        uiComponent.setToolTipText("");
+                    }
+                }
             }
         });
         setEnabled(action.isEnabled());
