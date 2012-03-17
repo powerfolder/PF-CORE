@@ -2207,6 +2207,8 @@ public class Folder extends PFComponent {
             // Fire event if this member is new
             fireMemberJoined(member);
             updateMetaFolderMembers();
+            // Persist new members list
+            setDBDirty();
         }
     }
 
