@@ -353,7 +353,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         if (folderId
                             .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT))
                         {
-                            logWarning("Folder load scheduled after first login: "
+                            logFine("Folder load scheduled after first login: "
                                 + folderName + '/' + folderEntryId);
                             onLoginFolderEntryIds.add(folderEntryId);
                             return;
@@ -1300,6 +1300,24 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * In sync = all folders are 100% synced and all syncing actions (
+     * {@link #isSyncing()}) have stopped.
+     * 
+     * @return true if all folders are 100% in sync
+     */
+    public boolean isInSync() {
+        for (Folder folder : getFolders()) {
+            if (!folder.isInSync()) {
+                if (isWarning()) {
+                    logWarning(folder + " not in sync yet");
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * "syncing" means SCANNING local files OR uploding files OR downloading
      * files.
      * 
@@ -1467,7 +1485,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             FolderInfo foInfo = null;
             for (FolderInfo candidate : a.getFolders()) {
                 if (candidate.getName().equals(folderName)) {
-                    logWarning("Folder found on account " + a.getUsername()
+                    logInfo("Folder found on account " + a.getUsername()
                         + ". Loading it: " + candidate);
                     foInfo = candidate;
                     break;
