@@ -659,7 +659,8 @@ public class FileUtils {
                 pw.println("InfoTip="
                     + Translation.getTranslation("folder.info_tip"));
                 // Required on Win7
-                pw.println("IconResource=" + powerFolderFile.getAbsolutePath() + ",0");
+                pw.println("IconResource=" + powerFolderFile.getAbsolutePath()
+                    + ",0");
                 pw.println("[ViewState]");
                 pw.println("Mode=");
                 pw.println("Vid=");
@@ -757,7 +758,8 @@ public class FileUtils {
         if (!file.isFile()) {
             throw new IllegalArgumentException("Not a file:  " + file);
         }
-        ZipOutputStream out = new ZipOutputStream(new TFileOutputStream(zipfile));
+        ZipOutputStream out = new ZipOutputStream(
+            new TFileOutputStream(zipfile));
         FileInputStream in = new FileInputStream(file); // Stream to read
         // file
         ZipEntry entry = new ZipEntry(file.getName()); // Make a ZipEntry
@@ -786,7 +788,8 @@ public class FileUtils {
         }
         String[] entries = dir.list();
         byte[] buffer = new byte[4096]; // Create a buffer for copying
-        ZipOutputStream out = new ZipOutputStream(new TFileOutputStream(zipfile));
+        ZipOutputStream out = new ZipOutputStream(
+            new TFileOutputStream(zipfile));
         for (String entry1 : entries) {
             File f = new TFile(dir, entry1);
             if (f.isDirectory()) {
@@ -885,6 +888,12 @@ public class FileUtils {
         String url = filename.substring(start + 3, endURL);
         url = url.replace("___", "://");
         url = url.replace("_", ":");
+        if (url.endsWith(":")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        if (url.endsWith(":")) {
+            url = url.substring(0, url.length() - 1);
+        }
         return url;
     }
 
