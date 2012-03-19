@@ -37,6 +37,11 @@ public class FileUtilsTest extends TestCase {
         filename = "PowerFolder" + FileUtils.encodeURLinFilename(url) + ".exe";
         String actual = FileUtils.decodeURLFromFilename(filename);
         assertEquals(url, actual);
+
+        url = "https://access.powerfolder.com/cloud004";
+        filename = "PowerFolder" + FileUtils.encodeURLinFilename(url) + "_.exe";
+        actual = FileUtils.decodeURLFromFilename(filename);
+        assertEquals(url, actual);
     }
 
     public void testZipFile() throws IOException {
@@ -569,11 +574,13 @@ public class FileUtilsTest extends TestCase {
         } catch (IOException e) {
         }
         assertTrue("Failed to create test dir", base.mkdirs());
-        assertFalse("Failed because test dir has files", FileUtils.hasFiles(base));
+        assertFalse("Failed because test dir has files",
+            FileUtils.hasFiles(base));
 
         // Test with a file
         File randomFile1 = TestHelper.createRandomFile(base, "b");
-        assertTrue("Failed because test file not detected", FileUtils.hasFiles(base));
+        assertTrue("Failed because test file not detected",
+            FileUtils.hasFiles(base));
 
         // Test bad directory (a file)
         try {
@@ -585,28 +592,37 @@ public class FileUtilsTest extends TestCase {
 
         // Test again with file removed
         randomFile1.delete();
-        assertFalse("Failed because test file not deleted", FileUtils.hasFiles(base));
+        assertFalse("Failed because test file not deleted",
+            FileUtils.hasFiles(base));
 
         // Test with subdirestory
         File subDir = new File(base, "sub");
         assertTrue("Failed to create test sub dir", subDir.mkdirs());
-        assertFalse("Failed because test sub dir has files", FileUtils.hasFiles(base));
+        assertFalse("Failed because test sub dir has files",
+            FileUtils.hasFiles(base));
 
         // Test with a file in subDirectory
         File randomFile2 = TestHelper.createRandomFile(subDir, "c");
-        assertTrue("Failed because test file not detected in subDir", FileUtils.hasFiles(base));
+        assertTrue("Failed because test file not detected in subDir",
+            FileUtils.hasFiles(base));
 
         // Test again with file removed from subDirectory
         randomFile2.delete();
-        assertFalse("Failed because test file not deleted in subDir", FileUtils.hasFiles(base));
+        assertFalse("Failed because test file not deleted in subDir",
+            FileUtils.hasFiles(base));
 
-        // Test with a file in the .PowerFolder dir. Don't care about files here.
+        // Test with a file in the .PowerFolder dir. Don't care about files
+        // here.
         File dotPowerFolderDir = new File(base, ".PowerFolder");
-        assertTrue("Failed to create test .PowerFolder dir", dotPowerFolderDir.mkdirs());
+        assertTrue("Failed to create test .PowerFolder dir",
+            dotPowerFolderDir.mkdirs());
         File randomFile3 = TestHelper.createRandomFile(dotPowerFolderDir, "c");
-        assertFalse("Failed because test file not detected in .PowerFolder dir", FileUtils.hasFiles(base));
+        assertFalse(
+            "Failed because test file not detected in .PowerFolder dir",
+            FileUtils.hasFiles(base));
         randomFile3.delete();
-        assertFalse("Failed because test file not deleted in .PowerFolder dir", FileUtils.hasFiles(base));
+        assertFalse("Failed because test file not deleted in .PowerFolder dir",
+            FileUtils.hasFiles(base));
 
         // Bye
         try {
