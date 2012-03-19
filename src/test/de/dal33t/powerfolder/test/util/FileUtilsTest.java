@@ -37,9 +37,10 @@ public class FileUtilsTest extends TestCase {
         filename = "PowerFolder" + FileUtils.encodeURLinFilename(url) + ".exe";
         String actual = FileUtils.decodeURLFromFilename(filename);
         assertEquals(url, actual);
-
+        
         url = "https://access.powerfolder.com/cloud004";
-        filename = "PowerFolder" + FileUtils.encodeURLinFilename(url) + "_.exe";
+        System.err.println(FileUtils.encodeURLinFilename(url));
+        filename = "PowerFolder_Latest_Installer_s_https___access.powerfolder.com_cloud004_(1).exe";
         actual = FileUtils.decodeURLFromFilename(filename);
         assertEquals(url, actual);
     }

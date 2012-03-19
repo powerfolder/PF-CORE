@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.util.HashSet;
 import java.util.Set;
@@ -862,6 +863,7 @@ public class FileUtils {
      */
     public static String encodeURLinFilename(String url) {
         url = url.replace("://", "___");
+        url = url.replace("/", "_");
         url = url.replace(":", "_");
         return "_s_" + url + '_';
 
@@ -887,12 +889,12 @@ public class FileUtils {
         }
         String url = filename.substring(start + 3, endURL);
         url = url.replace("___", "://");
-        url = url.replace("_", ":");
-        if (url.endsWith(":")) {
-            url = url.substring(0, url.length() - 1);
-        }
-        if (url.endsWith(":")) {
-            url = url.substring(0, url.length() - 1);
+        // GUESS
+        try {
+            new URL(url.replace("_", ":"));
+            url = url.replace("_", ":");
+        } catch (Exception e) {
+            url = url.replace("_", "/");
         }
         return url;
     }
