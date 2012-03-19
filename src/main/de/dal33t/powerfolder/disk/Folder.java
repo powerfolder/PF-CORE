@@ -2437,6 +2437,19 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * In sync = Folders is 100% synced and all syncing actions (
+     * {@link #isSyncing()}) have stopped.
+     * 
+     * @return true if this folder is 100% in sync
+     */
+    public boolean isInSync() {
+        if (isSyncing()) {
+            return false;
+        }
+        return statistic.getHarmonizedSyncPercentage() >= 100.0d;
+    }
+
+    /**
      * Checks if the folder is syncing. Means: local file scan running or active
      * transfers.
      * 
