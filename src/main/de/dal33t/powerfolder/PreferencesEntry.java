@@ -139,9 +139,9 @@ public enum PreferencesEntry {
 
     INFO_WIDTH("infoframe4.width", -1),
 
-    MAIN_FRAME_X("mainframe4.x", Constants.UI_DEFAULT_SCREEN_BORDER),
+    MAIN_FRAME_X("mainframe4.x", -1),
 
-    MAIN_FRAME_Y("mainframe4.y", Constants.UI_DEFAULT_SCREEN_BORDER),
+    MAIN_FRAME_Y("mainframe4.y", -1),
     
     MAIN_FRAME_MAXIMIZED("mainframe.maximized", false),
 

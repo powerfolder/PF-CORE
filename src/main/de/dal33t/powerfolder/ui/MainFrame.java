@@ -264,7 +264,14 @@ public class MainFrame extends PFUIComponent {
 
         // Initial top-left corner
         int mainX = PreferencesEntry.MAIN_FRAME_X.getValueInt(c);
+        if (mainX < 0) {
+            mainX = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - mainWidth / 2;
+        }
         int mainY = PreferencesEntry.MAIN_FRAME_Y.getValueInt(c);
+        if (mainY < 0) {
+            mainY = Toolkit.getDefaultToolkit().getScreenSize().height / 3 * 2 - uiComponent.getHeight() / 2;
+        }
+        
         uiComponent.setLocation(mainX, mainY);
 
         relocateIfNecessary();
