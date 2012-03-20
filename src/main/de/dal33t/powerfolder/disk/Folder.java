@@ -4017,6 +4017,10 @@ public class Folder extends PFComponent {
      * Ensures that default ignore patterns are set.
      */
     public void addDefaultExcludes() {
+        File pFile = new TFile(getSystemSubDir(),
+            DiskItemFilter.PATTERNS_FILENAME);
+        boolean init = !pFile.exists();
+
         addPattern(Pattern.THUMBS_DB);
         addPattern(Pattern.OFFICE_TEMP);
         addPattern(FileUtils.DESKTOP_INI_FILENAME);
@@ -4068,6 +4072,12 @@ public class Folder extends PFComponent {
                         i + 1) + '*');
                 }
             }
+        }
+
+        if (init) {
+            diskItemFilter.savePatternsTo(pFile, false);
+            // Defaults have 0
+            pFile.setLastModified(0);
         }
     }
 
