@@ -95,7 +95,6 @@ public class ChatFrame extends PFUIComponent {
             initialize();
             buildUIComponent();
         }
-        uiComponent.addWindowListener(new MyWindowListener());
         return uiComponent;
     }
 
@@ -341,12 +340,6 @@ public class ChatFrame extends PFUIComponent {
             // Now display message.
             panel.updateChat();
         }
-
-        // If this is not being displayed, show the pending messages button
-        // in the UI, alerting the user to the messages.
-        if (!getUIComponent().isVisible()) {
-            getController().getUIController().showPendingMessages(true);
-        }
     }
 
     /**
@@ -445,21 +438,6 @@ public class ChatFrame extends PFUIComponent {
                     }
                 }
             });
-        }
-    }
-
-    private class MyWindowListener extends WindowAdapter {
-
-        // Clear the pending messages button in the UI, because user can
-        // see the messages now.
-        public void windowActivated(WindowEvent e) {
-            getController().getUIController().showPendingMessages(false);
-        }
-
-        // Clear the pending messages button in the UI, because user can
-        // see the messages now.
-        public void windowOpened(WindowEvent e) {
-            getController().getUIController().showPendingMessages(false);
         }
     }
 }

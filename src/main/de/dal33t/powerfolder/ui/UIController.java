@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.CheckboxMenuItem;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -35,14 +34,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -70,7 +65,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -572,91 +566,56 @@ public class UIController extends PFComponent {
                 }
             }
         };
-        MenuItem item = menu.add(new MenuItem(Translation
-            .getTranslation("general.application.name")));
+
+        // /////////////////////////
+        // Open / close menu item //
+        // /////////////////////////
+        final MenuItem opentUI = new MenuItem(Translation.getTranslation(
+                "systray.show"));
+        menu.add(opentUI);
+        opentUI.setActionCommand(COMMAND_OPENUI);
+        opentUI.addActionListener(systrayActionHandler);
+
+        // //////
+        // Web //
+        // //////
+        MenuItem item = menu.add(new MenuItem(Translation.getTranslation(
+                "general.application.name")));
         item.setActionCommand(COMMAND_GOTOHP);
         item.addActionListener(systrayActionHandler);
 
-        menu.addSeparator();
-
-        Menu notificationsMenu = new Menu(
-            Translation.getTranslation("systray.notifications"));
-        menu.add(notificationsMenu);
-        notificationsMenu.addActionListener(systrayActionHandler);
-
-        final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(
-            Translation.getTranslation("systray.notifications.chat"));
-        notificationsMenu.add(chatMenuItem);
-        final ValueModel chatNotificationsValueModel = applicationModel
-            .getChatNotificationsValueModel();
-        boolean selected = (Boolean) chatNotificationsValueModel.getValue();
-        chatMenuItem.setState(selected);
-        chatMenuItem.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                chatNotificationsValueModel.setValue(chatMenuItem.getState());
-            }
-        });
-        chatNotificationsValueModel
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    boolean selected2 = (Boolean) evt.getNewValue();
-                    chatMenuItem.setState(selected2);
-                }
-            });
-
-        final CheckboxMenuItem systemMenuItem = new CheckboxMenuItem(
-            Translation.getTranslation("systray.notifications.system"));
-        notificationsMenu.add(systemMenuItem);
-        final ValueModel systemNotificationsValueModel = applicationModel
-            .getSystemNotificationsValueModel();
-        systemMenuItem.setState((Boolean) systemNotificationsValueModel
-            .getValue());
-        systemMenuItem.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                systemNotificationsValueModel.setValue(systemMenuItem
-                    .getState());
-            }
-        });
-        systemNotificationsValueModel
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    systemMenuItem.setState((Boolean) evt.getNewValue());
-                }
-            });
-
+        /////////////
+        // Folders //
+        /////////////
         sysTrayFoldersMenu = new Menu(
             Translation.getTranslation("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
         menu.add(sysTrayFoldersMenu);
         menu.addSeparator();
 
-        item = menu.add(new MenuItem(Translation
-            .getTranslation("systray.sync_all")));
-        item.setActionCommand(COMMAND_SYNCALL);
-        item.addActionListener(systrayActionHandler);
-
-        final MenuItem opentUI = new MenuItem(
-            Translation.getTranslation("systray.show"));
-        menu.add(opentUI);
-        opentUI.setActionCommand(COMMAND_OPENUI);
-        opentUI.addActionListener(systrayActionHandler);
-
-        menu.addSeparator();
-
+        // ////////////////
+        // Sync/Shutdown //
+        // ////////////////
         if (SystemUtil.isShutdownSupported()) {
-            item = menu.add(new MenuItem(Translation
-                .getTranslation("systray.sync_shutdown")));
+            item = menu.add(new MenuItem(Translation.getTranslation(
+                    "systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
         }
 
-        item = menu.add(new MenuItem(Translation
-            .getTranslation("systray.sync_exit")));
+        // ////////////
+        // Sync Exit //
+        // ////////////
+        item = menu.add(new MenuItem(Translation.getTranslation(
+                "systray.sync_exit")));
         item.setActionCommand(COMMAND_SYNC_EXIT);
         item.addActionListener(systrayActionHandler);
 
-        item = menu
-            .add(new MenuItem(Translation.getTranslation("systray.exit")));
+        // ///////
+        // Exit //
+        // ///////
+        item = menu.add(new MenuItem(Translation.getTranslation(
+                "systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
@@ -1084,14 +1043,6 @@ public class UIController extends PFComponent {
 
     public boolean chatFrameVisible() {
         return chatFrame.getUIComponent().isVisible();
-    }
-
-    /**
-     * Show the pending messages button in the status bar.
-     *
-     * @param show
-     */
-    public void showPendingMessages(boolean show) {
     }
 
     /**
