@@ -104,6 +104,7 @@ import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.ui.util.*;
+import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
 import de.dal33t.powerfolder.util.update.UIUpdateHandler;
@@ -132,6 +133,7 @@ public class UIController extends PFComponent {
     private static final String COMMAND_GOTOHP = "gotohp";
     private static final String COMMAND_PAUSE = "pause";
     private static final String COMMAND_RESUME = "resume";
+    private static final String COMMAND_PREFERENCES = "preferences";
 
     private boolean started;
     private SplashScreen splash;
@@ -561,6 +563,8 @@ public class UIController extends PFComponent {
                         COMMAND_RESUME.equals(e.getActionCommand())) {
                     getController().setSilentMode(
                             !getController().isSilentMode());
+                } else if (COMMAND_PREFERENCES.equals(e.getActionCommand())) {
+                    new PreferencesDialog(getController()).open();
                 }
             }
         };
@@ -603,11 +607,15 @@ public class UIController extends PFComponent {
         // //////////////
         // Preferences //
         // //////////////
-        
+        item = menu.add(new MenuItem(Translation.getTranslation(
+                "action_open_preferences.name")));
+        item.setActionCommand(COMMAND_PREFERENCES);
+        item.addActionListener(systrayActionHandler);
+
         menu.addSeparator();
 
         // ////////////////
-        // Sync/Shutdown //
+        // Sync Shutdown //
         // ////////////////
         if (SystemUtil.isShutdownSupported()) {
             item = menu.add(new MenuItem(Translation.getTranslation(
@@ -1297,7 +1305,6 @@ public class UIController extends PFComponent {
     }
 
     private void configurePauseResumeLink() {
-        System.out.println("UI " + getController().isSilentMode());
         if (getController().isSilentMode()) {
             pauseResumeMenu.setLabel(Translation.getTranslation(
                     "action_resume_sync.name"));
