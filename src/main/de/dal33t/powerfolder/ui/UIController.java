@@ -80,16 +80,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
-import de.dal33t.powerfolder.event.FolderAutoCreateListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -139,6 +130,8 @@ public class UIController extends PFComponent {
     private static final String COMMAND_SYNC_SHUTDOWN = "sync-shutdown";
     private static final String COMMAND_SYNC_EXIT = "sync-exit";
     private static final String COMMAND_GOTOHP = "gotohp";
+    private static final String COMMAND_PAUSE = "pause";
+    private static final String COMMAND_RESUME = "resume";
 
     private boolean started;
     private SplashScreen splash;
@@ -152,6 +145,7 @@ public class UIController extends PFComponent {
     // List of pending jobs, execute when ui is opend
     private final List<Runnable> pendingJobs;
     private Menu sysTrayFoldersMenu;
+    private MenuItem pauseResumeMenu;
 
     // The root of all models
     private ApplicationModel applicationModel;
@@ -563,6 +557,10 @@ public class UIController extends PFComponent {
                     } catch (IOException e1) {
                         logWarning("Unable to goto PowerFolder homepage", e1);
                     }
+                } else if (COMMAND_PAUSE.equals(e.getActionCommand()) ||
+                        COMMAND_RESUME.equals(e.getActionCommand())) {
+                    getController().setSilentMode(
+                            !getController().isSilentMode());
                 }
             }
         };
@@ -584,13 +582,28 @@ public class UIController extends PFComponent {
         item.setActionCommand(COMMAND_GOTOHP);
         item.addActionListener(systrayActionHandler);
 
-        /////////////
+        // //////////
         // Folders //
-        /////////////
+        // //////////
         sysTrayFoldersMenu = new Menu(
             Translation.getTranslation("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
         menu.add(sysTrayFoldersMenu);
+
+        // /////////////////
+        // Pause / Resume //
+        // /////////////////
+        pauseResumeMenu = new MenuItem(Translation.getTranslation(
+                "action_resume_sync.name"));
+        menu.add(pauseResumeMenu);
+        pauseResumeMenu.addActionListener(systrayActionHandler);
+        getController().addSilentModeListener(new MySilentModeListener());
+        configurePauseResumeLink();
+
+        // //////////////
+        // Preferences //
+        // //////////////
+        
         menu.addSeparator();
 
         // ////////////////
@@ -1283,13 +1296,25 @@ public class UIController extends PFComponent {
         openFilesInformation(folderInfo);
     }
 
+    private void configurePauseResumeLink() {
+        System.out.println("UI " + getController().isSilentMode());
+        if (getController().isSilentMode()) {
+            pauseResumeMenu.setLabel(Translation.getTranslation(
+                    "action_resume_sync.name"));
+            pauseResumeMenu.setActionCommand(COMMAND_RESUME);
+        } else {
+            pauseResumeMenu.setLabel(Translation.getTranslation(
+                    "action_pause_sync.name"));
+            pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
+        }
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
 
     private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
+            FolderRepositoryListener {
 
         private final AtomicBoolean synchronizing = new AtomicBoolean();
 
@@ -1537,5 +1562,18 @@ public class UIController extends PFComponent {
         // Do not warn on close, so we allow shut down
         return true;
     }
+
+    private class MySilentModeListener implements SilentModeListener {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void setSilentMode(SilentModeEvent event) {
+            configurePauseResumeLink();
+        }
+    }
+
+
 
 }

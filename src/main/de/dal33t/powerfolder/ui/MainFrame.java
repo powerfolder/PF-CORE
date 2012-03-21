@@ -1019,6 +1019,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configurePauseResumeLink() {
+        System.out.println("MF " + getController().isSilentMode());
         if (getController().isSilentMode()) {
             pauseResumeActionLabel.setText(Translation
                 .getTranslation("action_resume_sync.name"));
