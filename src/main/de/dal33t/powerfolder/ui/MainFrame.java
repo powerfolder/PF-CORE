@@ -58,6 +58,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -219,7 +220,12 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
-        builder.add(openWebInterfaceActionLabel.getUIComponent(), cc.xy(1, 2));
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+            .getValueBoolean(getController()))
+        {
+            builder.add(openWebInterfaceActionLabel.getUIComponent(),
+                cc.xy(1, 2));
+        }
         builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 3));
         builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 4));
         builder.add(configurationActoinLabel.getUIComponent(), cc.xy(1, 5));
