@@ -271,29 +271,34 @@ public class MainFrame extends PFUIComponent {
         // Initial top-left corner
         int mainX = PreferencesEntry.MAIN_FRAME_X.getValueInt(c);
         if (mainX < 0) {
-            mainX = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - mainWidth / 2;
+            mainX = Toolkit.getDefaultToolkit().getScreenSize().width / 2
+                - mainWidth / 2;
         }
         int mainY = PreferencesEntry.MAIN_FRAME_Y.getValueInt(c);
         if (mainY < 0) {
-            mainY = Toolkit.getDefaultToolkit().getScreenSize().height / 3 * 2 - uiComponent.getHeight() / 2;
+            mainY = Toolkit.getDefaultToolkit().getScreenSize().height / 3 * 2
+                - uiComponent.getHeight() / 2;
         }
-        
+
         uiComponent.setLocation(mainX, mainY);
 
         relocateIfNecessary();
         configureInlineInfo();
         updateSyncStats();
 
-        if (PreferencesEntry.MAIN_FRAME_MAXIMIZED
-            .getValueBoolean(getController()))
-        {
-            if (uiComponent.getRootPane().getUI() instanceof SyntheticaRootPaneUI)
-            {
-                ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
-                    .setMaximizedBounds(uiComponent);
-            }
-            uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
-        }
+        // Never start maximized
+        //
+        // if (PreferencesEntry.MAIN_FRAME_MAXIMIZED
+        // .getValueBoolean(getController()))
+        // {
+        // if (uiComponent.getRootPane().getUI() instanceof
+        // SyntheticaRootPaneUI)
+        // {
+        // ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
+        // .setMaximizedBounds(uiComponent);
+        // }
+        // uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
+        // }
     }
 
     /**
@@ -462,9 +467,9 @@ public class MainFrame extends PFUIComponent {
      * Force UI on top if pref or compact.
      */
     private void checkOnTop() {
-        boolean onTop = uiComponent.isAlwaysOnTopSupported() &&
-                (PreferencesEntry.MAIN_ALWAYS_ON_TOP.getValueBoolean(
-                        getController()) || compact.get());
+        boolean onTop = uiComponent.isAlwaysOnTopSupported()
+            && (PreferencesEntry.MAIN_ALWAYS_ON_TOP
+                .getValueBoolean(getController()) || compact.get());
         uiComponent.setAlwaysOnTop(onTop);
     }
 
