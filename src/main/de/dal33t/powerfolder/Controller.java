@@ -294,6 +294,8 @@ public class Controller extends PFComponent {
 
     private LimitedConnectivityListener limitedConnectivityListenerSupport;
 
+    private PauseResumeTask pauseResumeTask;
+
     private Controller() {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
@@ -1418,6 +1420,24 @@ public class Controller extends PFComponent {
         preferences.putBoolean("silentMode", newSilentMode);
         silentModeListenerSupport.setSilentMode(new SilentModeEvent(
             newSilentMode));
+
+        if (pauseResumeTask != null) {
+            try {
+                removeScheduled(pauseResumeTask);
+                logInfo("Cancelled resume task");
+            } catch (Exception e) {
+                logSevere(e);
+            }
+        }
+        if (newSilentMode) {
+            pauseResumeTask = new PauseResumeTask();
+            int delay = 1000 *
+                    ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(this);
+            schedule(pauseResumeTask, delay);
+            log.info("Scheduled resume task in " + delay + " seconds.");
+        } else {
+            pauseResumeTask = null;
+        }
     }
 
     /**
@@ -2669,5 +2689,12 @@ public class Controller extends PFComponent {
                 }
             }
         }, 1000L * secWait, 10000);
+    }
+
+    private class PauseResumeTask implements Runnable {
+        public void run() {
+            setSilentMode(false);
+            log.info("Executed resume task.");
+        }
     }
 }
