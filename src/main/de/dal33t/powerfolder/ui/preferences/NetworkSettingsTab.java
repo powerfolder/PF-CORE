@@ -22,8 +22,7 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.*;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -61,10 +60,22 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JSlider silentModeThrottle;
     private boolean needsRestart = false;
     private JLabel silentThrottleLabel;
+    private JLabel pauseResumeLabel;
+    private JComboBox pauseResumeCombo;
     private JButton httpProxyButton;
     private ServerSelectorPanel severSelector;
     private JCheckBox useOnlineStorageCB;
     private JComboBox serverDisconnectBehaviorBox;
+
+    private static final Map<Integer, String> PAUSE_RESUME_VALUES;
+
+    static {
+        PAUSE_RESUME_VALUES = new TreeMap<Integer, String>();
+        PAUSE_RESUME_VALUES.put(5 * 60, Translation.getTranslation("preferences.dialog.network.pause.5minutes"));
+        PAUSE_RESUME_VALUES.put(3600, Translation.getTranslation("preferences.dialog.network.pause.1hour"));
+        PAUSE_RESUME_VALUES.put(8 * 36060, Translation.getTranslation("preferences.dialog.network.pause.8hours"));
+        PAUSE_RESUME_VALUES.put(Integer.MAX_VALUE, Translation.getTranslation("preferences.dialog.network.pause.permanent"));
+    }
 
     public NetworkSettingsTab(Controller controller) {
         super(controller);
@@ -146,6 +157,16 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             new JLabel(silentModeThrottle.getMaximum() + "%"));
         silentModeThrottle.setLabelTable(smtT);
 
+        pauseResumeLabel = new JLabel(
+            Translation.getTranslation("preferences.dialog.network.resume.text"));
+        pauseResumeLabel.setToolTipText(Translation
+            .getTranslation("preferences.dialog.network.resume.tooltip"));
+
+        pauseResumeCombo = new JComboBox();
+        for (Map.Entry<Integer, String> entry : PAUSE_RESUME_VALUES.entrySet()) {
+            pauseResumeCombo.addItem(entry.getValue());
+        }
+
         int smt = 25;
         try {
             smt = Math.min(100, Math.max(10, Integer
@@ -156,13 +177,27 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
         silentModeThrottle.setValue(smt);
 
+        int pauseResume = ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(
+                getController());
+
+        // Default combo permanent.
+        pauseResumeCombo.setSelectedIndex(pauseResumeCombo.getItemCount() - 1);
+        int i = 0;
+        for (Map.Entry<Integer, String> entry :
+                PAUSE_RESUME_VALUES.entrySet()) {
+            if (pauseResume == entry.getKey()) {
+                pauseResumeCombo.setSelectedIndex(i);
+                break;
+            }
+            i++;
+        }
+
         HttpProxyAction action  = new HttpProxyAction(getController());
         httpProxyButton = new JButton(action);
 
         severSelector = new ServerSelectorPanel(getController());
 
-        useOnlineStorageCB = new JCheckBox(
-            Translation
+        useOnlineStorageCB = new JCheckBox(Translation
                 .getTranslation("preferences.dialog.online_storage.text"));
         useOnlineStorageCB.setToolTipText(Translation
             .getTranslation("preferences.dialog.online_storage.tip"));
@@ -224,12 +259,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             if (getController().isBackupOnly()) {
                 layout = new FormLayout(
                         "right:pref, 3dlu, 140dlu, pref:grow",
-                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             } else {
                 // Extra pref for useOnlineStorageCB.
                 layout = new FormLayout(
                         "right:pref, 3dlu, 140dlu, pref:grow",
-                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             }
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -275,6 +310,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(silentThrottleLabel,
                 cc.xywh(1, row, 1, 1, "default, top"));
             builder.add(silentModeThrottle, cc.xy(3, row));
+
+            row += 2;
+            builder.add(pauseResumeLabel,
+                cc.xywh(1, row, 1, 1, "default, top"));
+            builder.add(pauseResumeCombo, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(
@@ -341,6 +381,16 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
         ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
             getController(), String.valueOf(syncAnyways));
+        int selectedIndex = pauseResumeCombo.getSelectedIndex();
+        int i = 0;
+        for (Integer pauseTime : PAUSE_RESUME_VALUES.keySet()) {
+            if (i == selectedIndex) {
+                ConfigurationEntry.PAUSE_RESUME_SECONDS.setValue(getController(),
+                        pauseTime);
+                break;
+            }
+            i++;
+        }
     }
 
     private static String getTooltip(NetworkingMode nm) {

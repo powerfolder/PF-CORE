@@ -863,7 +863,9 @@ public enum ConfigurationEntry {
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
 
-    REMOVED_FOLDER_FILES("removed.folder.files", "");
+    REMOVED_FOLDER_FILES("removed.folder.files", ""),
+
+    PAUSE_RESUME_SECONDS("pause.resume.seconds", Integer.MAX_VALUE);
 
     // Methods/Constructors ***************************************************
 
