@@ -1431,10 +1431,13 @@ public class Controller extends PFComponent {
         }
         if (newSilentMode) {
             pauseResumeTask = new PauseResumeTask();
-            int delay = 1000 *
-                    ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(this);
-            schedule(pauseResumeTask, delay);
-            log.info("Scheduled resume task in " + delay + " seconds.");
+            int delay = ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(
+                    this);
+            if (delay  < Integer.MAX_VALUE) {
+                schedule(pauseResumeTask, delay * 1000);
+                log.info("Scheduled resume task in " + delay * 1000 +
+                        " seconds.");
+            }
         } else {
             pauseResumeTask = null;
         }
