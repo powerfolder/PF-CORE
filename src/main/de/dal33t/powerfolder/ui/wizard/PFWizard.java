@@ -130,10 +130,8 @@ public class PFWizard extends PFUIComponent {
     public static void openBasicSetupWizard(Controller controller) {
         PFWizard wizard = new PFWizard(controller,
             Translation.getTranslation("wizard.pfwizard.folder_title"));
-        // WhatToDoPanel wtdp = new WhatToDoPanel(controller);
-        // BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
         WizardPanel nextPanel = WhatToDoPanel.doSyncOption(controller,
-            wizard.getWizardContext());
+            wizard.getWizardContext(), false);
         wizard.open(new LoginPanel(controller, nextPanel, !controller
             .isBackupOnly()));
     }

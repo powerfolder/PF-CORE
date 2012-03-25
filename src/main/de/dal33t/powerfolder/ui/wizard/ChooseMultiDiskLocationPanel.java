@@ -84,8 +84,6 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.UserDirectories;
-import de.dal33t.powerfolder.util.UserDirectory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -115,6 +113,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private List<JCheckBox> boxes;
     private ServerClientListener listener;
 
+    private final boolean cancelNotFinish;
+
     // Map<file, folderName>
     private Map<File, String> links;
 
@@ -126,12 +126,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
      * @param next
      *            the next panel after selecting the directory.
      */
-    public ChooseMultiDiskLocationPanel(Controller controller, WizardPanel next)
+    public ChooseMultiDiskLocationPanel(Controller controller, WizardPanel next,
+                                        boolean cancelNotFinish)
     {
         super(controller);
         Reject.ifNull(next, "Next wizard panel is null");
         this.next = next;
         links = new HashMap<File, String>();
+        this.cancelNotFinish = cancelNotFinish;
     }
 
     // From WizardPanel *******************************************************
@@ -440,6 +442,16 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             getController().getOSClient().removeListener(listener);
             super.finish();
         }
+    }
+
+    @Override
+    public boolean canFinish() {
+        return !cancelNotFinish;
+    }
+
+    @Override
+    public boolean canCancel() {
+        return cancelNotFinish;
     }
 
     protected String getTitle() {

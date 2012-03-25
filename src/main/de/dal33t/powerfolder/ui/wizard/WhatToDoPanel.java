@@ -115,7 +115,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         Object option = decision.getValue();
 
         if (option == synchronizedOption) {
-            return doSyncOption(getController(), getWizardContext());
+            return doSyncOption(getController(), getWizardContext(), true);
         } else if (option == backupOption) {
             return doBackupOption(getController(), getWizardContext());
         } else if (option == hostOption) {
@@ -176,7 +176,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         MultiFolderSetupPanel setupPanel = new MultiFolderSetupPanel(
             getController());
-        return new ChooseMultiDiskLocationPanel(getController(), setupPanel);
+        return new ChooseMultiDiskLocationPanel(getController(), setupPanel, true);
     }
 
     public static PFWizardPanel doHostOption(Controller controller,
@@ -210,7 +210,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         wizardContext.setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
 
-        return new ChooseMultiDiskLocationPanel(controller, createPanel);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel, true);
     }
 
     public static PFWizardPanel doDownloadOption(Controller controller,
@@ -243,7 +243,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         wizardContext.setAttribute(SAVE_INVITE_LOCALLY, false);
 
-        return new ChooseMultiDiskLocationPanel(controller, createPanel);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel, true);
     }
 
     public static PFWizardPanel doBackupOption(Controller controller,
@@ -281,11 +281,11 @@ public class WhatToDoPanel extends PFWizardPanel {
         // return new ChooseMultiDiskLocationPanel(controller, setupPanel);
 
         FolderCreatePanel createPanel = new FolderCreatePanel(controller);
-        return new ChooseMultiDiskLocationPanel(controller, createPanel);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel, true);
     }
 
     public static PFWizardPanel doSyncOption(Controller controller,
-        WizardContext wizardContext)
+        WizardContext wizardContext, boolean cancelNotFinish)
     {
         // Reset folderinfo for disk location
         wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
@@ -317,7 +317,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         wizardContext.setAttribute(SAVE_INVITE_LOCALLY, true);
 
-        return new ChooseMultiDiskLocationPanel(controller, createPanel);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel,
+                cancelNotFinish);
     }
 
     /**
