@@ -177,17 +177,12 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             double sync = 100.0 * (size + partialTotal) / totalSize;
             if (isFiner()) {
                 logFiner("Sync for member " + memberInfo.nick + ", " + size
-                    + " + " + partialTotal + " / " + totalSize + " = " + sync + map);
+                    + " + " + partialTotal + " / " + totalSize + " = " + sync
+                    + map);
             }
-
             if (Double.compare(sync, 100.0) > 0) {
-                if (folder.isMetaFolder()) {
-                    logFine("Sync percentage > 100% - folder=" + folder.name
-                        + ", member=" + memberInfo.nick + ", sync=" + sync);
-                } else {
-                    logWarning("Sync percentage > 100% - folder=" + folder.name
-                        + ", member=" + memberInfo.nick + ", sync=" + sync);
-                }
+                logFine("Sync percentage > 100% - folder=" + folder.name
+                    + ", member=" + memberInfo.nick + ", sync=" + sync);
                 sync = 100.0;
             }
             return sync;
