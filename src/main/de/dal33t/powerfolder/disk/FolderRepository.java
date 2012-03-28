@@ -1286,7 +1286,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (client.isConnected() && client.isLoggedIn()) {
                     boolean joined = client.joinedByCloud(folder);
                     if (!joined) {
-                        client.getFolderService().createFolder(fi, null);
+                        new CreateFolderOnServerTask(client.getAccountInfo(),
+                            fi, null).scheduleTask(getController());
                     }
                 }
             }
@@ -1505,7 +1506,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Make sure it is backed up by the server.
             CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                foInfo, null);
+                a.createInfo(), foInfo, null);
             task.setArchiveVersions(settings.getVersions());
             getController().getTaskManager().scheduleTask(task);
 
