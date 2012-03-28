@@ -317,8 +317,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                         continue;
                     }
 
-                    client.getFolderService().createFolder(folderInfo,
-                        SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                    client.getFolderService().createFolder(folderInfo, null);
 
                     // Set as default synced folder?
                     attribute = getWizardContext().getAttribute(
