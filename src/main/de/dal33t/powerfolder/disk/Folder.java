@@ -109,7 +109,6 @@ import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
-import de.schlichtherle.truezip.fs.FsSyncException;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -118,12 +117,6 @@ import de.schlichtherle.truezip.fs.FsSyncException;
  * @version $Revision: 1.114 $
  */
 public class Folder extends PFComponent {
-    public static final String DB_FILENAME;
-    public static final String DB_BACKUP_FILENAME;
-    static {
-        DB_FILENAME = System.getProperty("pf.dbfilename", ".PowerFolder.db");
-        DB_BACKUP_FILENAME = DB_FILENAME + ".bak";
-    }
 
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
     public static final String METAFOLDER_MEMBERS = "Members";
@@ -1275,8 +1268,8 @@ public class Folder extends PFComponent {
         File file = getDiskFile(fInfo);
 
         // ignore our database file
-        if (file.getName().equals(DB_FILENAME)
-            || file.getName().equals(DB_BACKUP_FILENAME))
+        if (file.getName().equals(Constants.DB_FILENAME)
+            || file.getName().equals(Constants.DB_BACKUP_FILENAME))
         {
             logFiner("Ignoring folder database file: " + file);
             return null;
@@ -1692,13 +1685,13 @@ public class Folder extends PFComponent {
      */
     private void loadFolderDB() {
         if (loadFolderDB(new TFile(localBase,
-            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + DB_FILENAME)))
+            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + Constants.DB_FILENAME)))
         {
             return;
         }
 
         if (loadFolderDB(new TFile(localBase,
-            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + DB_BACKUP_FILENAME)))
+            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + Constants.DB_BACKUP_FILENAME)))
         {
             return;
         }
@@ -1752,8 +1745,8 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private void storeFolderDB() {
-        File dbFile = new TFile(getSystemSubDir(), DB_FILENAME);
-        File dbFileBackup = new TFile(getSystemSubDir(), DB_BACKUP_FILENAME);
+        File dbFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME);
+        File dbFileBackup = new TFile(getSystemSubDir(), Constants.DB_BACKUP_FILENAME);
         try {
             FileInfo[] diskItems;
             synchronized (dbAccessLock) {
@@ -1815,11 +1808,11 @@ public class Folder extends PFComponent {
 
             // TODO Remove this in later version
             // Cleanup for older versions
-            File oldDbFile = new TFile(localBase, DB_FILENAME);
+            File oldDbFile = new TFile(localBase, Constants.DB_FILENAME);
             if (!oldDbFile.delete()) {
                 logFiner("Failed to delete 'old' database file: " + oldDbFile);
             }
-            File oldDbFileBackup = new TFile(localBase, DB_BACKUP_FILENAME);
+            File oldDbFileBackup = new TFile(localBase, Constants.DB_BACKUP_FILENAME);
             if (!oldDbFileBackup.delete()) {
                 logFiner("Failed to delete backup of 'old' database file: "
                     + oldDbFileBackup);
