@@ -34,7 +34,18 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.security.Security;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.ServiceLoader;
+import java.util.StringTokenizer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.FutureTask;
@@ -52,8 +63,8 @@ import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
@@ -90,9 +101,10 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
+import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
@@ -117,7 +129,6 @@ import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 
 /**
@@ -135,26 +146,10 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.6.15 - 5.0.1"; // 5.0.0
+    public static final String PROGRAM_VERSION = "5.9.0"; // 5.0.26
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
-
-    /** Default config name */
-    public static final String DEFAULT_CONFIG_FILE;
-    static {
-        DEFAULT_CONFIG_FILE = System.getProperty("pf.defconfig",
-            "PowerFolder.config");
-    }
-
-    /**
-     * The directory name the located the misc/config dir in. e.g.
-     * user.home/.PowerFolder
-     */
-    public static final String MISC_DIR_NAME;
-    static {
-        MISC_DIR_NAME = System.getProperty("pf.configdir", "PowerFolder");
-    }
 
     /** The command line entered by the user when starting the program */
     private CommandLine commandLine;
@@ -338,7 +333,7 @@ public class Controller extends PFComponent {
      * Starts this controller loading the config from the default config file
      */
     public void startDefaultConfig() {
-        startConfig(DEFAULT_CONFIG_FILE);
+        startConfig(Constants.DEFAULT_CONFIG_FILE);
     }
 
     /**
@@ -403,7 +398,7 @@ public class Controller extends PFComponent {
             return;
         }
 
-        boolean isDefaultConfig = DEFAULT_CONFIG_FILE
+        boolean isDefaultConfig = Constants.DEFAULT_CONFIG_FILE
             .startsWith(getConfigName());
         if (isDefaultConfig) {
             // To keep compatible with previous versions
@@ -832,7 +827,7 @@ public class Controller extends PFComponent {
     private boolean loadConfigFile(String theFilename) {
         String filename = theFilename;
         if (filename == null) {
-            filename = DEFAULT_CONFIG_FILE;
+            filename = Constants.DEFAULT_CONFIG_FILE;
         }
 
         if (filename.indexOf('.') < 0) {
@@ -2250,7 +2245,7 @@ public class Controller extends PFComponent {
     public static File getMiscFilesLocation() {
         File base;
         File unixConfigDir = new File(System.getProperty("user.home") + "/."
-            + MISC_DIR_NAME);
+            + Constants.MISC_DIR_NAME);
         if (OSUtil.isWindowsSystem()
             && Feature.WINDOWS_MISC_DIR_USE_APP_DATA.isEnabled())
         {
@@ -2266,7 +2261,7 @@ public class Controller extends PFComponent {
                 return unixConfigDir;
             }
 
-            File windowsConfigDir = new File(appData, MISC_DIR_NAME);
+            File windowsConfigDir = new File(appData, Constants.MISC_DIR_NAME);
             base = windowsConfigDir;
 
             // Check if migration is necessary
@@ -2655,7 +2650,9 @@ public class Controller extends PFComponent {
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         scheduleAndRepeat(new Runnable() {
             public void run() {
-                if (oneShot.get() && !folderRepository.isSyncing()) {
+                // ALPS Problem: Change to check for all in sync.
+
+                if (oneShot.get() && folderRepository.isInSync()) {
                     // Make sure we only try to shutdown once,
                     // in case the user aborts the shutdown.
                     oneShot.set(false);
@@ -2683,7 +2680,8 @@ public class Controller extends PFComponent {
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         scheduleAndRepeat(new Runnable() {
             public void run() {
-                if (oneShot.get() && !folderRepository.isSyncing()) {
+                // ALPS Problem: Change to check for all in sync.
+                if (oneShot.get() && folderRepository.isInSync()) {
                     // Make sure we only try to shutdown once,
                     // in case the user aborts the shutdown.
                     oneShot.set(false);
