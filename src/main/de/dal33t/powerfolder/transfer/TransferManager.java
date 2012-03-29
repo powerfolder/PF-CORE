@@ -1217,8 +1217,8 @@ public class TransferManager extends PFComponent {
             throw new NullPointerException("Downloadrequest/File is null");
         }
         // Never upload db files !!
-        if (Folder.DB_FILENAME.equalsIgnoreCase(dl.file.getRelativeName())
-            || Folder.DB_BACKUP_FILENAME.equalsIgnoreCase(dl.file
+        if (Constants.DB_FILENAME.equalsIgnoreCase(dl.file.getRelativeName())
+            || Constants.DB_BACKUP_FILENAME.equalsIgnoreCase(dl.file
                 .getRelativeName()))
         {
             logSevere(from.getNick()
