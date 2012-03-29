@@ -11,7 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -58,7 +57,7 @@ public class FolderConfigRestore {
         ClassNotFoundException
     {
         File sysDir = new File(baseDir, Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        File dbFile = new File(sysDir, Folder.DB_FILENAME);
+        File dbFile = new File(sysDir, Constants.DB_FILENAME);
         // load files and scan in
         InputStream fIn = new BufferedInputStream(new FileInputStream(dbFile));
         ObjectInputStream in = new ObjectInputStream(fIn);
