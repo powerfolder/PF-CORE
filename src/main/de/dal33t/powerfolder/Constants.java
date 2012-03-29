@@ -31,22 +31,37 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class Constants {
 
     // General settings *******************************************************
-
-    /**
-     * The minimum suported version for AWTUtilities.setWindowOpacity is
-     * 1.6.0_10-b12. And not in Linux, but okay in Mac and Windows.
-     */
-    public static final boolean OPACITY_SUPPORTED = !OSUtil.isLinux()
-        && JavaVersion.systemVersion().compareTo(
-            new JavaVersion(1, 6, 0, 10, 12)) >= 0;
-
     /**
      * The name of the subdirectory in every folder to store powerfolder
      * relevant files.
      */
     public static final String POWERFOLDER_SYSTEM_SUBDIR;
     static {
-        POWERFOLDER_SYSTEM_SUBDIR = System.getProperty("pf.syssubdir", ".PowerFolder");
+        POWERFOLDER_SYSTEM_SUBDIR = System.getProperty("pf.syssubdir",
+            ".PowerFolder");
+    }
+
+    /** Default config name */
+    public static final String DEFAULT_CONFIG_FILE;
+    static {
+        DEFAULT_CONFIG_FILE = System.getProperty("pf.defconfig",
+            "PowerFolder.config");
+    }
+
+    /**
+     * The directory name the located the misc/config dir in. e.g.
+     * user.home/.PowerFolder
+     */
+    public static final String MISC_DIR_NAME;
+    static {
+        MISC_DIR_NAME = System.getProperty("pf.configdir", "PowerFolder");
+    }
+
+    public static final String DB_FILENAME;
+    public static final String DB_BACKUP_FILENAME;
+    static {
+        DB_FILENAME = System.getProperty("pf.dbfilename", ".PowerFolder.db");
+        DB_BACKUP_FILENAME = DB_FILENAME + ".bak";
     }
 
     /**
@@ -97,11 +112,19 @@ public class Constants {
      * The maximum number of lines in a chat.
      */
     public static final int MAX_CHAT_LINES = 500;
-    
+
     /**
      * The number of pixels to stay away from the screen border by default.
      */
     public static final int UI_DEFAULT_SCREEN_BORDER = 50;
+
+    /**
+     * The minimum suported version for AWTUtilities.setWindowOpacity is
+     * 1.6.0_10-b12. And not in Linux, but okay in Mac and Windows.
+     */
+    public static final boolean OPACITY_SUPPORTED = !OSUtil.isLinux()
+        && JavaVersion.systemVersion().compareTo(
+            new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
     // Network architecture contants ******************************************
 
