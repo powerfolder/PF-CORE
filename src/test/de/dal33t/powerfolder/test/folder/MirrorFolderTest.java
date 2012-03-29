@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -193,7 +194,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         // DB Must have been stored
         assertTrue(
             "Database file was NOT saved at Lisa although directory have been synced",
-            new File(foLisa.getSystemSubDir(), Folder.DB_FILENAME).exists());
+            new File(foLisa.getSystemSubDir(), Constants.DB_FILENAME).exists());
     }
 
     public void testMixedCaseSubdirs() throws IOException {
