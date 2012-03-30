@@ -36,6 +36,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * Panel for displaying and selecting archive mode. Attached are a pair of
@@ -68,8 +70,8 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
 
     private JComboBox archiveCombo;
     private JPanel panel;
-    private ValueModel modeModel; // <ArchiveMode>
-    private ValueModel versionModel; // <Integer>
+    private List<ValueModel> modeModels; // {ArchiveMode}
+    private List<ValueModel> versionModels; // {Integer}
     private ActionListener purgeListener;
 
     /**
@@ -77,29 +79,47 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      * 
      * @param controller
      *            the necessary evil...
-     * @param modeModel
-     *            ValueModel<ArchiveMode> that gets notified of mode changes.
-     * @param versionModel
-     *            ValueModel<Integer> that gets notified of version history
+     * @param modeModels
+     *            List<ValueModel{ArchiveMode}> that gets notified of mode changes.
+     * @param versionModels
+     *            List<ValueModel{Integer}> that gets notified of version history
      *            changes.
+     * @param purgeListener
+     *            Listener to the user clicking the purge archive button.
      */
     public ArchiveModeSelectorPanel(Controller controller,
-        ValueModel modeModel, ValueModel versionModel,
-        ActionListener purgeListener)
-    {
+        List<ValueModel> modeModels, List<ValueModel> versionModels,
+        ActionListener purgeListener) {
         super(controller);
-        this.modeModel = modeModel;
-        this.versionModel = versionModel;
+        this.modeModels = modeModels;
+        this.versionModels = versionModels;
         this.purgeListener = purgeListener;
         initComponents();
     }
 
     public ArchiveModeSelectorPanel(Controller controller,
-        ValueModel modeModel, ValueModel versionModel)
-    {
+        ValueModel modeModel, ValueModel versionModel,
+        ActionListener purgeListener) {
         super(controller);
-        this.modeModel = modeModel;
-        this.versionModel = versionModel;
+        modeModels = Collections.singletonList(modeModel);
+        versionModels = Collections.singletonList(versionModel);
+        this.purgeListener = purgeListener;
+        initComponents();
+    }
+
+    public ArchiveModeSelectorPanel(Controller controller,
+        List<ValueModel> modeModels, List<ValueModel> versionModels) {
+        super(controller);
+        this.modeModels = modeModels;
+        this.versionModels = versionModels;
+        initComponents();
+    }
+
+    public ArchiveModeSelectorPanel(Controller controller,
+        ValueModel modeModel, ValueModel versionModel) {
+        super(controller);
+        modeModels = Collections.singletonList(modeModel);
+        versionModels = Collections.singletonList(versionModel);
         initComponents();
     }
 
@@ -165,12 +185,20 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
     private void fireChange() {
         int index = archiveCombo.getSelectedIndex();
         if (index == 0) { // No Backup
-            versionModel.setValue(0);
-            modeModel.setValue(ArchiveMode.NO_BACKUP);
+            for (ValueModel versionModel : versionModels) {
+                versionModel.setValue(0);
+            }
+            for (ValueModel modeModel : modeModels) {
+                modeModel.setValue(ArchiveMode.NO_BACKUP);
+            }
         } else {
-            versionModel.setValue(PAIRS
-                .toArray(new NameValuePair[PAIRS.size()])[index].getValue());
-            modeModel.setValue(ArchiveMode.FULL_BACKUP);
+            for (ValueModel versionModel : versionModels) {
+                versionModel.setValue(PAIRS.toArray(
+                        new NameValuePair[PAIRS.size()])[index].getValue());
+            }
+            for (ValueModel modeModel : modeModels) {
+                modeModel.setValue(ArchiveMode.FULL_BACKUP);
+            }
         }
     }
 

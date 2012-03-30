@@ -27,6 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -179,11 +180,31 @@ public class SettingsTab extends PFUIComponent {
         onlineVersionModel = new ValueHolder(); // <Integer>
         onlineVersionModel.addValueChangeListener(onlineListener);
 
+        List<ValueModel> localModeModels = new ArrayList<ValueModel>();
+        List<ValueModel> localVersionModels = new ArrayList<ValueModel>();
+        List<ValueModel> onlineModeModels = new ArrayList<ValueModel>();
+        List<ValueModel> onlineVersionModels = new ArrayList<ValueModel>();
+
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(controller)) {
+            // Expert gets separate archive mode panels - local and online.
+            localModeModels.add(localModeModel);
+            localVersionModels.add(localVersionModel);
+            onlineModeModels.add(onlineModeModel);
+            onlineVersionModels.add(onlineVersionModel);
+        } else {
+            // Non-expert gets one archive mode panel,
+            // which simultaneously updates both local and online.
+            localModeModels.add(localModeModel);
+            localVersionModels.add(localVersionModel);
+            localModeModels.add(onlineModeModel);
+            localVersionModels.add(onlineVersionModel);
+        }
+
         localArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            controller, localModeModel, localVersionModel,
+            controller, localModeModels, localVersionModels,
             new LocalPurgeListener());
         onlineArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            controller, onlineModeModel, onlineVersionModel,
+            controller, onlineModeModels, onlineVersionModels,
             new OnlinePurgeListener());
         onlineLabel = new JLabel(
             Translation.getTranslation("general.online_archive_mode"));
@@ -252,7 +273,9 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         int row = 2;
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        Boolean expertMode =
+                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
+        if (expertMode) {
             builder.add(
                 new JLabel(Translation.getTranslation("general.transfer_mode")),
                 cc.xy(2, row));
@@ -264,28 +287,26 @@ public class SettingsTab extends PFUIComponent {
 
         row += 2;
         builder.add(
-            new JLabel(Translation
-                .getTranslation("settings_tab.local_folder_location")), cc.xy(
-                2, row));
+            new JLabel(Translation.getTranslation(
+                    "settings_tab.local_folder_location")), cc.xy(2, row));
         builder.add(localFolderField, cc.xy(4, row));
         builder.add(localFolderButton, cc.xy(6, row));
 
         row += 2;
-        builder
-            .add(
-                new JLabel(Translation
-                    .getTranslation("general.local_archive_mode")), cc.xy(2,
-                    row));
+        builder.add(new JLabel(Translation.getTranslation(
+                "general.local_archive_mode")), cc.xy(2, row));
         builder.add(localArchiveModeSelectorPanel.getUIComponent(),
             cc.xyw(4, row, 4));
 
-        row += 2;
-        builder.add(onlineLabel, cc.xy(2, row));
-        builder.add(onlineArchiveModeSelectorPanel.getUIComponent(),
-            cc.xyw(4, row, 4));
+        if (expertMode) {
+            row += 2;
+            builder.add(onlineLabel, cc.xy(2, row));
+            builder.add(onlineArchiveModeSelectorPanel.getUIComponent(),
+                cc.xyw(4, row, 4));
+        }
 
         row += 2;
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        if (expertMode) {
             builder.addLabel(
                 Translation.getTranslation("settings_tab.download_script"),
                 cc.xy(2, row));
@@ -293,7 +314,7 @@ public class SettingsTab extends PFUIComponent {
         }
 
         row += 2;
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        if (expertMode) {
             builder.add(new JLabel(Translation
                     .getTranslation("settings_tab.ignore_patterns")), cc.xy(2,
                     row, "right, top"));
@@ -314,7 +335,7 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
 
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        if (expertMode) {
             row += 2;
             builder.add(createMaintainPanel(), cc.xy(4, row));
         }
