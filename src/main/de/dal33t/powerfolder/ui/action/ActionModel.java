@@ -37,13 +37,9 @@ public class ActionModel extends PFComponent {
     private NewFolderAction newFolderAction;
     private FindComputersAction findComputersAction;
     private OpenPreferencesAction openPreferencesAction;
-   // private OpenStatsChartsAction openStatsChartsAction;
-    //private OpenAboutBoxAction openAboutBoxAction;
-    private ConnectAction connectAction;
     private OpenDownloadsInformationAction openDownloadsInformationAction;
     private OpenUploadsInformationAction openUploadsInformationAction;
     private ViewNoticesAction viewNoticesAction;
-    private OpenDebugInformationAction openDebugInformationAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -77,13 +73,6 @@ public class ActionModel extends PFComponent {
         return openPreferencesAction;
     }
 
-//    public OpenStatsChartsAction getOpenStatsChartsAction() {
-//        if (openStatsChartsAction == null) {
-//            openStatsChartsAction = new OpenStatsChartsAction(getController());
-//        }
-//        return openStatsChartsAction;
-//    }
-
     public OpenDownloadsInformationAction getOpenDownloadsInformationAction() {
         if (openDownloadsInformationAction == null) {
             openDownloadsInformationAction = new OpenDownloadsInformationAction(
@@ -100,32 +89,10 @@ public class ActionModel extends PFComponent {
         return openUploadsInformationAction;
     }
 
-//    public OpenAboutBoxAction getOpenAboutBoxAction() {
-//        if (openAboutBoxAction == null) {
-//            openAboutBoxAction = new OpenAboutBoxAction(getController());
-//        }
-//        return openAboutBoxAction;
-//    }
-//
-    public ConnectAction getConnectAction() {
-        if (connectAction == null) {
-            connectAction = new ConnectAction(getController());
-        }
-        return connectAction;
-    }
-
     public ViewNoticesAction getViewNoticesAction() {
         if (viewNoticesAction == null) {
             viewNoticesAction = new ViewNoticesAction(getController());
         }
         return viewNoticesAction;
-    }
-
-    public OpenDebugInformationAction getOpenDebugInformationAction() {
-        if (openDebugInformationAction == null) {
-            openDebugInformationAction = new OpenDebugInformationAction(
-                getController());
-        }
-        return openDebugInformationAction;
     }
 }

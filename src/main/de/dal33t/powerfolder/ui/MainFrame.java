@@ -132,7 +132,8 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel openWebInterfaceActionLabel;
     private ActionLabel openFoldersBaseActionLabel;
     private ActionLabel pauseResumeActionLabel;
-    private ActionLabel configurationActoinLabel;
+    private ActionLabel configurationActionLabel;
+    private ActionLabel openDebugActionLabel;
 
     private AtomicBoolean compact = new AtomicBoolean();
     private JButton3Icons closeButton;
@@ -214,7 +215,7 @@ public class MainFrame extends PFUIComponent {
 
     private Component createRightMiniPanel() {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, pref, pref, pref");
+            "pref, pref, pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("0, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
@@ -228,7 +229,10 @@ public class MainFrame extends PFUIComponent {
         }
         builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 3));
         builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 4));
-        builder.add(configurationActoinLabel.getUIComponent(), cc.xy(1, 5));
+        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 5));
+        if (getController().isVerbose()) {
+            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 6));
+        }
 
         return builder.getPanel();
     }
@@ -399,8 +403,10 @@ public class MainFrame extends PFUIComponent {
             new MyOpenFoldersBaseAction(getController()));
         pauseResumeActionLabel = new ActionLabel(getController(),
             new MyPauseResumeAction(getController()));
-        configurationActoinLabel = new ActionLabel(getController(),
+        configurationActionLabel = new ActionLabel(getController(),
             getApplicationModel().getActionModel().getOpenPreferencesAction());
+        openDebugActionLabel = new ActionLabel(getController(),
+            new MyOpenDebugAction(getController()));
 
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener();
@@ -1206,6 +1212,17 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getUIController().askToPauseResume();
+        }
+    }
+
+    private static class MyOpenDebugAction extends BaseAction {
+
+        private MyOpenDebugAction(Controller controller) {
+            super("action_open_debug_information", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getUIController().openDebugInformation();
         }
     }
 

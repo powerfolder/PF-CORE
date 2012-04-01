@@ -1000,11 +1000,6 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
-    // public void openStatsCard() {
-    // informationFrame.displayStats();
-    // displayInformationWindow();
-    // }
-
     /**
      * Call when non-quitOnX close called. Hides child frames.
      */
