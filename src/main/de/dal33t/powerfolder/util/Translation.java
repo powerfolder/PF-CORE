@@ -54,7 +54,7 @@ public class Translation {
     public static final Locale PORTUGUESE = new Locale("pt");
     public static final Locale HUNGARIAN = new Locale("hu");
     public static final Locale TURKISCH = new Locale("tr");
-    
+
     /** List of all supported locales */
     private static List<Locale> supportedLocales;
 
@@ -80,22 +80,22 @@ public class Translation {
         if (supportedLocales == null) {
             supportedLocales = new ArrayList<Locale>();
             supportedLocales.add(Locale.ENGLISH);
-            supportedLocales.add(Locale.UK);
+            // supportedLocales.add(Locale.UK);
             supportedLocales.add(Locale.GERMAN);
             supportedLocales.add(DUTCH);
-            supportedLocales.add(Locale.JAPANESE);
+            // supportedLocales.add(Locale.JAPANESE);
             supportedLocales.add(Locale.ITALIAN);
             supportedLocales.add(SPANISH);
-            supportedLocales.add(RUSSIAN);
+            // supportedLocales.add(RUSSIAN);
             supportedLocales.add(Locale.FRENCH);
-            supportedLocales.add(Locale.CHINESE);
-            supportedLocales.add(SWEDISH);
-            supportedLocales.add(ARABIC);
-            supportedLocales.add(POLISH);
-            supportedLocales.add(PORTUGUESE);
-            supportedLocales.add(HUNGARIAN);
+            // supportedLocales.add(Locale.CHINESE);
+            // supportedLocales.add(SWEDISH);
+            // supportedLocales.add(ARABIC);
+            // supportedLocales.add(POLISH);
+            // supportedLocales.add(PORTUGUESE);
+            // supportedLocales.add(HUNGARIAN);
             // Not yet supported:
-            //supportedLocales.add(TURKISCH);
+            // supportedLocales.add(TURKISCH);
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
         return Collections.unmodifiableList(supportedLocales);
@@ -220,8 +220,9 @@ public class Translation {
                     .entrySet())
                 {
                     if (translation.contains(placeHolderEntry.getKey())) {
-                        translation = translation.replace(placeHolderEntry
-                            .getKey(), placeHolderEntry.getValue());
+                        translation = translation.replace(
+                            placeHolderEntry.getKey(),
+                            placeHolderEntry.getValue());
                     }
                 }
             }
