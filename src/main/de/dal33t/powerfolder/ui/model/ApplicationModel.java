@@ -132,7 +132,7 @@ public class ApplicationModel extends PFUIComponent {
             new SyncFolderDialog(getController(), folder).open();
         } else {
 
-            getController().setSilentMode(false);
+            getController().setPaused(false);
 
             // Let other nodes scan now!
             folder.broadcastScanCommand();

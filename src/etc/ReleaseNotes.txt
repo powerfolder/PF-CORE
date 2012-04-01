@@ -1400,8 +1400,8 @@ Version 0.5.0b
 
 - Added details panel for folder like file details on right side
 
-- Silent mode now makes PowerFolder run more silently in background. Required for games.
-  When SilentMode is active, these things are disable:
+- Paused mode now makes PowerFolder run more silently in background. Required for games.
+  When paused, these things are disable:
   Scans of local folder copies, Line speed tests for determing
   if user is on local network
   

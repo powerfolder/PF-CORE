@@ -1430,7 +1430,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     {
                         logFiner("Remote sync command received on "
                             + targetFolder);
-                        getController().setSilentMode(false);
+                        getController().setPaused(false);
                         // Now trigger the scan
                         targetFolder.recommendScanOnNextMaintenance();
                         getController().getFolderRepository()

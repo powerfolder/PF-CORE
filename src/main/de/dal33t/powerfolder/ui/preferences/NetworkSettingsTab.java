@@ -57,25 +57,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox udtConnectionBox;
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
-    private JSlider silentModeThrottle;
+    private JSlider pausedModeThrottle;
     private boolean needsRestart = false;
-    private JLabel silentThrottleLabel;
-    private JLabel pauseResumeLabel;
-    private JComboBox pauseResumeCombo;
+    private JLabel pausedThrottleLabel;
     private JButton httpProxyButton;
     private ServerSelectorPanel severSelector;
     private JCheckBox useOnlineStorageCB;
     private JComboBox serverDisconnectBehaviorBox;
-
-    private static final Map<Integer, String> PAUSE_RESUME_VALUES;
-
-    static {
-        PAUSE_RESUME_VALUES = new TreeMap<Integer, String>();
-        PAUSE_RESUME_VALUES.put(5 * 60, Translation.getTranslation("preferences.dialog.network.pause.5minutes"));
-        PAUSE_RESUME_VALUES.put(3600, Translation.getTranslation("preferences.dialog.network.pause.1hour"));
-        PAUSE_RESUME_VALUES.put(8 * 36060, Translation.getTranslation("preferences.dialog.network.pause.8hours"));
-        PAUSE_RESUME_VALUES.put(Integer.MAX_VALUE, Translation.getTranslation("preferences.dialog.network.pause.permanent"));
-    }
 
     public NetworkSettingsTab(Controller controller) {
         super(controller);
@@ -134,63 +122,38 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         udtConnectionBox.setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
             .getValueBoolean(getController()));
 
-        silentThrottleLabel = new JLabel(
-            Translation.getTranslation("preferences.dialog.silent_throttle"));
-        silentThrottleLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.silent_throttle.tooltip"));
+        pausedThrottleLabel = new JLabel(
+            Translation.getTranslation("preferences.dialog.paused_throttle"));
+        pausedThrottleLabel.setToolTipText(Translation
+            .getTranslation("preferences.dialog.paused_throttle.tooltip"));
 
-        silentModeThrottle = new JSlider();
-        silentModeThrottle.setMinimum(10);
-        silentModeThrottle.setMajorTickSpacing(25);
-        silentModeThrottle.setMinorTickSpacing(5);
+        pausedModeThrottle = new JSlider();
+        pausedModeThrottle.setMinimum(10);
+        pausedModeThrottle.setMajorTickSpacing(25);
+        pausedModeThrottle.setMinorTickSpacing(5);
 
-        silentModeThrottle.setPaintTicks(true);
-        silentModeThrottle.setPaintLabels(true);
+        pausedModeThrottle.setPaintTicks(true);
+        pausedModeThrottle.setPaintLabels(true);
         Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
-        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing())
+        for (int i = 0; i <= 100; i += pausedModeThrottle.getMajorTickSpacing())
         {
             smtT.put(i, new JLabel(Integer.toString(i) + '%'));
         }
-        smtT.put(silentModeThrottle.getMinimum(),
-            new JLabel(silentModeThrottle.getMinimum() + "%"));
-        smtT.put(silentModeThrottle.getMaximum(),
-            new JLabel(silentModeThrottle.getMaximum() + "%"));
-        silentModeThrottle.setLabelTable(smtT);
-
-        pauseResumeLabel = new JLabel(
-            Translation.getTranslation("preferences.dialog.network.resume.text"));
-        pauseResumeLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.network.resume.tooltip"));
-
-        pauseResumeCombo = new JComboBox();
-        for (Map.Entry<Integer, String> entry : PAUSE_RESUME_VALUES.entrySet()) {
-            pauseResumeCombo.addItem(entry.getValue());
-        }
+        smtT.put(pausedModeThrottle.getMinimum(),
+            new JLabel(pausedModeThrottle.getMinimum() + "%"));
+        smtT.put(pausedModeThrottle.getMaximum(),
+            new JLabel(pausedModeThrottle.getMaximum() + "%"));
+        pausedModeThrottle.setLabelTable(smtT);
 
         int smt = 25;
         try {
             smt = Math.min(100, Math.max(10, Integer
-                .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
+                .parseInt(ConfigurationEntry.UPLOADLIMIT_PAUSEDMODE_THROTTLE
                     .getValue(getController()))));
         } catch (NumberFormatException e) {
-            logWarning("silentmodethrottle: " + e);
+            logWarning("pausedmodethrottle: " + e);
         }
-        silentModeThrottle.setValue(smt);
-
-        int pauseResume = ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(
-                getController());
-
-        // Default combo permanent.
-        pauseResumeCombo.setSelectedIndex(pauseResumeCombo.getItemCount() - 1);
-        int i = 0;
-        for (Map.Entry<Integer, String> entry :
-                PAUSE_RESUME_VALUES.entrySet()) {
-            if (pauseResume == entry.getKey()) {
-                pauseResumeCombo.setSelectedIndex(i);
-                break;
-            }
-            i++;
-        }
+        pausedModeThrottle.setValue(smt);
 
         HttpProxyAction action  = new HttpProxyAction(getController());
         httpProxyButton = new JButton(action);
@@ -259,12 +222,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             if (getController().isBackupOnly()) {
                 layout = new FormLayout(
                         "right:pref, 3dlu, 140dlu, pref:grow",
-                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             } else {
                 // Extra pref for useOnlineStorageCB.
                 layout = new FormLayout(
                         "right:pref, 3dlu, 140dlu, pref:grow",
-                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             }
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -307,14 +270,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(silentThrottleLabel,
+            builder.add(pausedThrottleLabel,
                 cc.xywh(1, row, 1, 1, "default, top"));
-            builder.add(silentModeThrottle, cc.xy(3, row));
-
-            row += 2;
-            builder.add(pauseResumeLabel,
-                cc.xywh(1, row, 1, 1, "default, top"));
-            builder.add(pauseResumeCombo, cc.xy(3, row));
+            builder.add(pausedModeThrottle, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(
@@ -365,11 +323,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         tm.setUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
         tm.setDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
         try {
-            ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
+            ConfigurationEntry.UPLOADLIMIT_PAUSEDMODE_THROTTLE.setValue(
                 getController(),
-                Integer.toString(silentModeThrottle.getValue()));
+                Integer.toString(pausedModeThrottle.getValue()));
         } catch (Exception e) {
-            logSevere("Unable to set silent mode throttle: " + e);
+            logSevere("Unable to set paused mode throttle: " + e);
         }
 
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
@@ -381,16 +339,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
         ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
             getController(), String.valueOf(syncAnyways));
-        int selectedIndex = pauseResumeCombo.getSelectedIndex();
-        int i = 0;
-        for (Integer pauseTime : PAUSE_RESUME_VALUES.keySet()) {
-            if (i == selectedIndex) {
-                ConfigurationEntry.PAUSE_RESUME_SECONDS.setValue(getController(),
-                        pauseTime);
-                break;
-            }
-            i++;
-        }
     }
 
     private static String getTooltip(NetworkingMode nm) {

@@ -69,8 +69,8 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
-import de.dal33t.powerfolder.event.SilentModeEvent;
-import de.dal33t.powerfolder.event.SilentModeListener;
+import de.dal33t.powerfolder.event.PausedModeEvent;
+import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -453,7 +453,7 @@ public class MainFrame extends PFUIComponent {
 
         inlineInfoLabel = new JLabel();
 
-        getController().addSilentModeListener(new MySilentModeListener());
+        getController().addPausedModeListener(new MyPausedModeListener());
         configurePauseResumeLink();
 
         client = getApplicationModel().getServerClientModel().getClient();
@@ -1030,7 +1030,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configurePauseResumeLink() {
-        if (getController().isSilentMode()) {
+        if (getController().isPaused()) {
             pauseResumeActionLabel.setText(Translation
                 .getTranslation("action_resume_sync.name"));
             pauseResumeActionLabel.setToolTipText(Translation
@@ -1141,13 +1141,13 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MySilentModeListener implements SilentModeListener {
+    private class MyPausedModeListener implements PausedModeListener {
 
         public boolean fireInEventDispatchThread() {
             return true;
         }
 
-        public void setSilentMode(SilentModeEvent event) {
+        public void setPausedMode(PausedModeEvent event) {
             configurePauseResumeLink();
         }
     }
@@ -1205,7 +1205,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().setSilentMode(!getController().isSilentMode());
+            getUIController().askToPauseResume();
         }
     }
 

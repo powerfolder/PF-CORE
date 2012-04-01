@@ -69,19 +69,8 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LimitedConnectivityEvent;
-import de.dal33t.powerfolder.event.LimitedConnectivityListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.NetworkingModeEvent;
-import de.dal33t.powerfolder.event.NetworkingModeListener;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.event.SilentModeEvent;
-import de.dal33t.powerfolder.event.SilentModeListener;
+import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -193,9 +182,9 @@ public class Controller extends PFComponent {
     private boolean debugReports;
 
     /**
-     * If running is silent mode
+     * If running is paused mode
      */
-    private volatile boolean silentMode;
+    private volatile boolean paused;
 
     /**
      * cache the networking mode in a field so we dont heve to do all this
@@ -283,7 +272,7 @@ public class Controller extends PFComponent {
      */
     private boolean limitedConnectivity;
 
-    private SilentModeListener silentModeListenerSupport;
+    private PausedModeListener pausedModeListenerSupport;
 
     private NetworkingModeListener networkingModeListenerSupport;
 
@@ -301,8 +290,8 @@ public class Controller extends PFComponent {
         askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
-        silentModeListenerSupport = ListenerSupportFactory
-            .createListenerSupport(SilentModeListener.class);
+        pausedModeListenerSupport = ListenerSupportFactory
+            .createListenerSupport(PausedModeListener.class);
         networkingModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(NetworkingModeListener.class);
         limitedConnectivityListenerSupport = ListenerSupportFactory
@@ -446,8 +435,13 @@ public class Controller extends PFComponent {
         ConfigurationLoader.loadAndMergeConfigURL(this);
         ConfigurationLoader.loadAndMergeFromInstaller(this);
 
-        // Init silentmode
-        silentMode = preferences.getBoolean("silentMode", false);
+        // Init paused only if user expects pause to be permanent.
+        paused = PreferencesEntry.PAUSED.getValueBoolean(this) &&
+                ConfigurationEntry.PAUSE_RESUME_SECONDS
+                        .getValueInt(getController()) == Integer.MAX_VALUE;
+
+        // Now set it, just in case it was paused in permanent mode.
+        PreferencesEntry.PAUSED.setValue(this, paused);
 
         // Load and set http proxy settings
         HTTPProxySettings.loadFromConfig(this);
@@ -516,8 +510,8 @@ public class Controller extends PFComponent {
             return;
         }
         if (!isUIEnabled()) {
-            // Disable silent mode
-            silentMode = false;
+            // Disable paused function
+            paused = false;
         }
 
         setLoadingCompletion(30, 35);
@@ -551,7 +545,7 @@ public class Controller extends PFComponent {
 
         setLoadingCompletion(75, 80);
 
-        // Start all configured listener if not in silent mode
+        // Start all configured listener if not in paused mode
         startConfiguredListener();
         setLoadingCompletion(80, 85);
 
@@ -682,7 +676,7 @@ public class Controller extends PFComponent {
             }
         }
 
-        setSilentMode(false);
+        setPaused(false);
 
         // Now trigger the scan
         folderRepository.triggerMaintenance();
@@ -1399,22 +1393,23 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Sets the silent mode.
+     * Sets the paused mode.
      * 
-     * @param newSilentMode
+     * @param newPausedValue
      */
-    public void setSilentMode(boolean newSilentMode) {
-        boolean oldValue = silentMode;
-        silentMode = newSilentMode;
-        if (newSilentMode) {
+    public void setPaused(boolean newPausedValue) {
+        boolean oldPausedValue = paused;
+        paused = newPausedValue;
+
+        if (newPausedValue) {
             folderRepository.getFolderScanner().abortScan();
         }
-        if (oldValue != newSilentMode) {
+        if (oldPausedValue != newPausedValue) {
             transferManager.updateSpeedLimits();
         }
-        preferences.putBoolean("silentMode", newSilentMode);
-        silentModeListenerSupport.setSilentMode(new SilentModeEvent(
-            newSilentMode));
+        PreferencesEntry.PAUSED.setValue(this, newPausedValue);
+        pausedModeListenerSupport.setPausedMode(new PausedModeEvent(
+            newPausedValue));
 
         if (pauseResumeTask != null) {
             try {
@@ -1424,7 +1419,7 @@ public class Controller extends PFComponent {
                 logSevere(e);
             }
         }
-        if (newSilentMode) {
+        if (newPausedValue) {
             int delay = ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(
                     this);
             if (delay  < Integer.MAX_VALUE) {
@@ -1439,10 +1434,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * @return true if the controller is running is silent mode.
+     * @return true if the controller is paused.
      */
-    public boolean isSilentMode() {
-        return silentMode;
+    public boolean isPaused() {
+        return paused;
     }
 
     /**
@@ -1498,12 +1493,12 @@ public class Controller extends PFComponent {
         return networkingMode;
     }
 
-    public void addSilentModeListener(SilentModeListener listener) {
-        ListenerSupportFactory.addListener(silentModeListenerSupport, listener);
+    public void addPausedModeListener(PausedModeListener listener) {
+        ListenerSupportFactory.addListener(pausedModeListenerSupport, listener);
     }
 
-    public void removeSilentModeListener(SilentModeListener listener) {
-        ListenerSupportFactory.removeListener(silentModeListenerSupport,
+    public void removePausedModeListener(PausedModeListener listener) {
+        ListenerSupportFactory.removeListener(pausedModeListenerSupport,
             listener);
     }
 
@@ -2694,7 +2689,7 @@ public class Controller extends PFComponent {
 
     private class PauseResumeTask implements Runnable {
         public void run() {
-            setSilentMode(false);
+            setPaused(false);
             log.info("Executed resume task.");
         }
     }

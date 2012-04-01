@@ -51,11 +51,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);
-        getContollerHomer().setSilentMode(true);
-        getContollerBart().setSilentMode(true);
-        getContollerMarge().setSilentMode(true);
-        getContollerLisa().setSilentMode(true);
-        getContollerMaggie().setSilentMode(true);
+        getContollerHomer().setPaused(true);
+        getContollerBart().setPaused(true);
+        getContollerMarge().setPaused(true);
+        getContollerLisa().setPaused(true);
+        getContollerMaggie().setPaused(true);
     }
 
     /**

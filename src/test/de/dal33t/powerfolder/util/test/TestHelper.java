@@ -546,9 +546,9 @@ public class TestHelper {
         // "Folder has auto-detect of local files disabled: " + folder
         // + ". sync profile: " + folder.getSyncProfile());
         // }
-        boolean silentModeBefore = folder.getController().isSilentMode();
+        boolean pausedBefore = folder.getController().isPaused();
         // Break scanning process
-        folder.getController().setSilentMode(true);
+        folder.getController().setPaused(true);
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return folder.getController().getFolderRepository()
@@ -564,7 +564,7 @@ public class TestHelper {
                 + ". Last scan result: " + folder.getLastScanResultState()
                 + ". Device disconnected? " + folder.isDeviceDisconnected());
         }
-        folder.getController().setSilentMode(silentModeBefore);
+        folder.getController().setPaused(pausedBefore);
     }
 
     public static final boolean compareFiles(File a, File b) {

@@ -125,6 +125,8 @@ public enum PreferencesEntry {
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
 
+    SHOW_ASK_FOR_PAUSE("show.ask.for.pause", true),
+
     /** Main frame always on top. */
     MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
     /**
@@ -157,7 +159,9 @@ public enum PreferencesEntry {
 
     SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
 
-    DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true);
+    DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true),
+
+    PAUSED("paused", false);
 
     /** String, Boolean, Integer */
     private Class type;

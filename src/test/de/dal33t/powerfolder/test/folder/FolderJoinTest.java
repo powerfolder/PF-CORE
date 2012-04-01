@@ -114,8 +114,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
     }
 
     public void testJoinMultipleFolders() {
-        getContollerBart().setSilentMode(true);
-        getContollerLisa().setSilentMode(true);
+        getContollerBart().setPaused(true);
+        getContollerLisa().setPaused(true);
         int nFolders = 500;
         Folder folder1 = null;
         Folder folder2 = null;
@@ -246,7 +246,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * @throws FolderException
      * @throws IOException
      */
-    public void testStartAutoDownloadInSilentMode() throws FolderException {
+    public void testStartAutoDownloadInPausedMode() throws FolderException {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId());
         // Prepare folder on "host" Bart.
@@ -261,8 +261,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(folderBart.getLocalBase());
         scanFolder(folderBart);
 
-        // Set lisa in silent mode
-        getContollerLisa().setSilentMode(true);
+        // Set lisa in paused mode
+        getContollerLisa().setPaused(true);
 
         // Now let lisa join with auto-download
         FolderSettings folderSettingsLisa = new FolderSettings(

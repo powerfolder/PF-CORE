@@ -1036,15 +1036,15 @@ public class TransferManager extends PFComponent {
 
     /**
      * This method is called after any change associated with bandwidth. I.e.:
-     * upload limits, silent mode
+     * upload limits, paused mode
      */
     public void updateSpeedLimits() {
         int throttle = 100;
 
-        if (getController().isSilentMode()) {
+        if (getController().isPaused()) {
             try {
                 throttle = Integer
-                    .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
+                    .parseInt(ConfigurationEntry.UPLOADLIMIT_PAUSEDMODE_THROTTLE
                         .getValue(getController()));
                 if (throttle < 10) {
                     throttle = 10;

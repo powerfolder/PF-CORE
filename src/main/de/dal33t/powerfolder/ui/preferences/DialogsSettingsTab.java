@@ -58,6 +58,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** Show folders that have been found in PF folder base & auto-created. */
     private JCheckBox showAutoCreatedFoldersBox;
 
+    /** Show pause options. */
+    private JCheckBox showPauseOptionsCB;
+
     /** warn on limited connectivity */
     private JCheckBox warnOnLimitedConnectivityCB;
 
@@ -125,6 +128,12 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.show_auto_created_folders"));
         showAutoCreatedFoldersBox.setSelected(
                 PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.getValueBoolean(
+                        getController()));
+
+        showPauseOptionsCB = new JCheckBox(Translation
+            .getTranslation("preferences.dialog.show_pause_options"));
+        showPauseOptionsCB.setSelected(
+                PreferencesEntry.SHOW_ASK_FOR_PAUSE.getValueBoolean(
                         getController()));
 
         notificationDisplaySlider = new JSlider();
@@ -220,7 +229,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -244,6 +253,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(showAutoCreatedFoldersBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(showPauseOptionsCB, cc.xy(3, row));
 
             row += 2;
             builder.add(warnOnDuplicateFoldersCB, cc.xy(3, row));
@@ -340,6 +352,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
         PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.setValue(getController(),
             showAutoCreatedFoldersBox.isSelected());
+
+        PreferencesEntry.SHOW_ASK_FOR_PAUSE.setValue(getController(),
+            showPauseOptionsCB.isSelected());
 
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
             notificationDisplaySlider.getValue());

@@ -449,9 +449,9 @@ public enum ConfigurationEntry {
     DOWNLOAD_LIMIT_LAN("landownloadlimit", 0),
 
     /**
-     * The percentage to throttle the uploadlimits in silentmode.
+     * The percentage to throttle the uploadlimits in paused mode.
      */
-    UPLOADLIMIT_SILENTMODE_THROTTLE("net.silentmodethrottle"),
+    UPLOADLIMIT_PAUSEDMODE_THROTTLE("net.silentmodethrottle"),
 
     /**
      * The maximum size (in bytes) of an {@link FileChunk} used for file

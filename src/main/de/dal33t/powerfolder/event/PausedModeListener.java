@@ -19,15 +19,6 @@
 */
 package de.dal33t.powerfolder.event;
 
-public class SilentModeEvent {
-
-    private final boolean silentMode;
-
-    public SilentModeEvent(boolean silentMode) {
-        this.silentMode = silentMode;
-    }
-
-    public boolean isSilentMode() {
-        return silentMode;
-    }
+public interface PausedModeListener extends CoreListener {
+    void setPausedMode(PausedModeEvent event);
 }

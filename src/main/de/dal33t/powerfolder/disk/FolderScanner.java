@@ -48,7 +48,7 @@ import de.dal33t.powerfolder.util.Util;
  * for each subfolder of the root a DirectoryCrawler is used with a maximum of
  * MAX_CRAWLERS.<BR>
  * On succes the resultState of ScanResult is ScanResult.ResultState.SCANNED.<BR>
- * If the user aborted the scan (by selecting silent mode) the resultState =
+ * If the user aborted the scan (by selecting paused mode) the resultState =
  * ScanResult.ResultState.USER_ABORT.<BR>
  * If during scanning files dare deleted when scanning, the whole folder is
  * deleted or in practice the harddisk fails the resultState is

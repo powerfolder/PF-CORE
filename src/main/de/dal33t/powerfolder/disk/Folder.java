@@ -2062,7 +2062,7 @@ public class Folder extends PFComponent {
      */
     public boolean scanAllowedNow() {
         return !syncProfile.isManualSync() && !syncProfile.isDailySync()
-            && !getController().isSilentMode();
+            && !getController().isPaused();
     }
 
     /**

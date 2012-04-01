@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.FolderWatcher;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -57,7 +56,7 @@ public class ScanFolderTest extends ControllerTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        getController().setSilentMode(true);
+        getController().setPaused(true);
         setupTestFolder(SyncProfile.HOST_FILES);
     }
 
@@ -481,7 +480,7 @@ public class ScanFolderTest extends ControllerTestCase {
         }
 
         for (int i = 0; i < 100; i++) {
-            getController().setSilentMode(false);
+            getController().setPaused(false);
             assertTrue(getFolder().scanLocalFiles());
             // syncFolder(getFolder());
 
@@ -681,7 +680,7 @@ public class ScanFolderTest extends ControllerTestCase {
      * @throws IOException
      */
     public void testScanDirMovementWithWatcher() throws IOException {
-        getController().setSilentMode(false);
+        getController().setPaused(false);
         if (!FolderWatcher.isLibLoaded()) {
             System.err.println("NOT testing with file watcher. Lib not loaded");
             return;

@@ -86,10 +86,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
-import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
-import de.dal33t.powerfolder.ui.dialog.FreeLimitationDialog;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.dialog.*;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
@@ -443,6 +440,23 @@ public class UIController extends PFComponent {
         }
     }
 
+    public void askToPauseResume() {
+        boolean silent = getController().isPaused();
+        if (silent) {
+            // Resuming - nothing to ask.
+            getController().setPaused(!silent);
+        } else {
+            if (PreferencesEntry.SHOW_ASK_FOR_PAUSE.getValueBoolean(
+                    getController())) {
+                PauseDialog pd = new PauseDialog(getController());
+                pd.open();
+            } else {
+                getController().setPaused(!silent);
+            }
+        }
+
+    }
+
     private void handlePromo() {
         String prefKey = "startCount" + Controller.PROGRAM_VERSION;
         int thisVersionStartCount = getController().getPreferences().getInt(
@@ -561,8 +575,7 @@ public class UIController extends PFComponent {
                     }
                 } else if (COMMAND_PAUSE.equals(e.getActionCommand()) ||
                         COMMAND_RESUME.equals(e.getActionCommand())) {
-                    getController().setSilentMode(
-                            !getController().isSilentMode());
+                    askToPauseResume();
                 } else if (COMMAND_PREFERENCES.equals(e.getActionCommand())) {
                     new PreferencesDialog(getController()).open();
                 }
@@ -601,7 +614,7 @@ public class UIController extends PFComponent {
                 "action_resume_sync.name"));
         menu.add(pauseResumeMenu);
         pauseResumeMenu.addActionListener(systrayActionHandler);
-        getController().addSilentModeListener(new MySilentModeListener());
+        getController().addPausedModeListener(new MyPausedModeListener());
         configurePauseResumeLink();
 
         // //////////////
@@ -1305,7 +1318,7 @@ public class UIController extends PFComponent {
     }
 
     private void configurePauseResumeLink() {
-        if (getController().isSilentMode()) {
+        if (getController().isPaused()) {
             pauseResumeMenu.setLabel(Translation.getTranslation(
                     "action_resume_sync.name"));
             pauseResumeMenu.setActionCommand(COMMAND_RESUME);
@@ -1570,13 +1583,13 @@ public class UIController extends PFComponent {
         return true;
     }
 
-    private class MySilentModeListener implements SilentModeListener {
+    private class MyPausedModeListener implements PausedModeListener {
 
         public boolean fireInEventDispatchThread() {
             return true;
         }
 
-        public void setSilentMode(SilentModeEvent event) {
+        public void setPausedMode(PausedModeEvent event) {
             configurePauseResumeLink();
         }
     }

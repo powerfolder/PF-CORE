@@ -50,7 +50,7 @@ public class FolderMoveTest extends ControllerTestCase {
         super.setUp();
 
         // Setup a test folder; delete previous tests.
-        getController().setSilentMode(true);
+        getController().setPaused(true);
         setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.NO_BACKUP);
         folder = getFolder();
         File localBase = folder.getLocalBase();

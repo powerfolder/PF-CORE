@@ -92,7 +92,8 @@ public abstract class BaseDialog extends PFUIComponent {
      * @param resizable
      *           if dialog is resizable
      */
-    protected BaseDialog(Senior senior, Controller controller, boolean modal, boolean resizable) {
+    protected BaseDialog(Senior senior, Controller controller, boolean modal,
+                         boolean resizable) {
         this(senior, controller, modal);
         this.resizable = resizable;
     }

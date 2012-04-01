@@ -118,15 +118,15 @@ public class GenericDialog {
         neverAskAgainMode = neverAskAgainText != null &&
                 neverAskAgainText.trim().length() > 0;
 
-        if (DEFAULT.equals(type)) {
+        if (DEFAULT == type) {
             icon = null;
-        } else if (INFO.equals(type)) {
+        } else if (INFO == type) {
             icon = INFO_ICON_ICON;
-        } else if (WARN.equals(type)) {
+        } else if (WARN == type) {
             icon = WARN_ICON_ICON;
-        } else if (ERROR.equals(type)) {
+        } else if (ERROR == type) {
             icon = ERROR_ICON_ICON;
-        } else if (QUESTION.equals(type)) {
+        } else if (QUESTION == type) {
             icon = QUESTION_ICON_ICON;
         } else {
             throw new IllegalArgumentException("Invalid type. Could not find icon for " + type);

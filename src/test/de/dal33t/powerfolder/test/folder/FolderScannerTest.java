@@ -47,10 +47,10 @@ public class FolderScannerTest extends ControllerTestCase {
     }
 
     public void testScanFiles() throws Exception {
-        getController().setSilentMode(true);
+        getController().setPaused(true);
         final FolderScanner folderScanner = getController()
             .getFolderRepository().getFolderScanner();
-        getController().setSilentMode(false);
+        getController().setPaused(false);
 
         File file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
         assertTrue(file1.exists());

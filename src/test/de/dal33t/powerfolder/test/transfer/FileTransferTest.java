@@ -24,7 +24,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -1413,7 +1412,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
-        getContollerBart().setSilentMode(true);
+        getContollerBart().setPaused(true);
 
         // Now change the file
         TestHelper.changeFile(testFile);
@@ -1768,8 +1767,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testSwitchSyncProfile() {
 
-        getContollerBart().setSilentMode(true);
-        getContollerLisa().setSilentMode(true);
+        getContollerBart().setPaused(true);
+        getContollerLisa().setPaused(true);
         getContollerBart().getTransferManager().setUploadCPSForLAN(1000000);
         getContollerLisa().getTransferManager().setUploadCPSForLAN(1000000);
 

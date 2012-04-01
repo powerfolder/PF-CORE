@@ -1103,8 +1103,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         Controller controller = getController();
 
         while (!myThread.isInterrupted() && myThread.isAlive()) {
-            // Only scan if not in silent mode
-            if (!controller.isSilentMode()) {
+            // Only scan if not in paused mode
+            if (!controller.isPaused()) {
                 scanningFolders.clear();
                 for (Folder folder : folders.values()) {
                     if (folder.isMaintenanceRequired()) {
@@ -1131,7 +1131,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // Fire event
                     fireMaintenanceFinished(maintainedFolder);
 
-                    if (controller.isSilentMode() || myThread.isInterrupted()) {
+                    if (controller.isPaused() || myThread.isInterrupted()) {
                         break;
                     }
 
