@@ -40,7 +40,8 @@ public interface AccountService {
      * @param username
      *            the username
      * @param password
-     *            the password
+     *            the password. if NULL a random password will be generated and
+     *            send by email.
      * @param newsLetter
      *            true if the users wants to subscribe to the newsletter.
      * @param serverInfo
