@@ -39,9 +39,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 
 /**
- * This is the main tabbed pain component in the PowerFolder GUI.
- * In expert mode, it shows the status, folders and computers tab.
- * In non-expert mode, it just returns the FolderTab.
+ * This is the main tabbed pain component in the PowerFolder GUI. In expert
+ * mode, it shows the status, folders and computers tab. In non-expert mode, it
+ * just returns the FolderTab.
  */
 public class MainTabbedPane extends PFUIComponent {
 
@@ -68,8 +68,8 @@ public class MainTabbedPane extends PFUIComponent {
         super(controller);
         initialized = new AtomicBoolean();
         showComputersTab = !getController().isBackupOnly();
-        expertMode = PreferencesEntry.EXPERT_MODE.getValueBoolean(
-                getController());
+        expertMode = PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController());
     }
 
     /**
@@ -83,18 +83,19 @@ public class MainTabbedPane extends PFUIComponent {
 
             if (expertMode) {
 
-                tabbedPane.add(Translation.getTranslation(
-                        "main_tabbed_pane.status.name"),
-                        statusTab.getUIComponent());
+                tabbedPane.add(
+                    Translation.getTranslation("main_tabbed_pane.status.name"),
+                    statusTab.getUIComponent());
 
-                tabbedPane.add(Translation.getTranslation(
-                        "main_tabbed_pane.folders.name"),
+                tabbedPane
+                    .add(Translation
+                        .getTranslation("main_tabbed_pane.folders.name"),
                         foldersTab.getUIComponent());
 
                 if (showComputersTab) {
-                    tabbedPane.add(Translation.getTranslation(
-                            "main_tabbed_pane.computers.name"),
-                            computersTab.getUIComponent());
+                    tabbedPane.add(Translation
+                        .getTranslation("main_tabbed_pane.computers.name"),
+                        computersTab.getUIComponent());
                 } else {
                     // Do not display computers tab in backup only mode, BUT
                     // need to create it anyways to prevent UI events breaking.
@@ -107,28 +108,28 @@ public class MainTabbedPane extends PFUIComponent {
                     (int) Character.toUpperCase(key.charAt(0)));
                 tabbedPane.setToolTipTextAt(STATUS_INDEX, Translation
                     .getTranslation("main_tabbed_pane.status.description"));
-                tabbedPane.setIconAt(STATUS_INDEX,
-                        Icons.getIconById(Icons.STATUS));
+                // tabbedPane.setIconAt(STATUS_INDEX,
+                // Icons.getIconById(Icons.STATUS));
 
-                key = Translation.getTranslation(
-                        "main_tabbed_pane.folders.key");
+                key = Translation
+                    .getTranslation("main_tabbed_pane.folders.key");
                 tabbedPane.setMnemonicAt(FOLDERS_INDEX,
                     (int) Character.toUpperCase(key.charAt(0)));
                 tabbedPane.setToolTipTextAt(FOLDERS_INDEX, Translation
                     .getTranslation("main_tabbed_pane.folders.description"));
-                tabbedPane.setIconAt(FOLDERS_INDEX,
-                    Icons.getIconById(Icons.FOLDER));
+                // tabbedPane.setIconAt(FOLDERS_INDEX,
+                // Icons.getIconById(Icons.FOLDER));
 
                 if (showComputersTab) {
                     key = Translation
                         .getTranslation("main_tabbed_pane.computers.key");
                     tabbedPane.setMnemonicAt(COMPUTERS_INDEX,
                         (int) Character.toUpperCase(key.charAt(0)));
-                    tabbedPane.setToolTipTextAt(COMPUTERS_INDEX, Translation
-                        .getTranslation("" +
-                            "main_tabbed_pane.computers.description"));
-                    tabbedPane.setIconAt(COMPUTERS_INDEX,
-                        Icons.getIconById(Icons.COMPUTER));
+                    tabbedPane.setToolTipTextAt(COMPUTERS_INDEX,
+                        Translation.getTranslation(""
+                            + "main_tabbed_pane.computers.description"));
+                    // tabbedPane.setIconAt(COMPUTERS_INDEX,
+                    // Icons.getIconById(Icons.COMPUTER));
                 }
 
                 tabbedPane.addChangeListener(new MyChangelistener());
@@ -209,7 +210,7 @@ public class MainTabbedPane extends PFUIComponent {
      */
     public void setStatusIcon(Icon statusIcon) {
         if (expertMode) {
-            tabbedPane.setIconAt(STATUS_INDEX, statusIcon);
+            // tabbedPane.setIconAt(STATUS_INDEX, statusIcon);
         }
     }
 
@@ -220,7 +221,7 @@ public class MainTabbedPane extends PFUIComponent {
      */
     public void setFoldersIcon(Icon foldersIcon) {
         if (expertMode) {
-            tabbedPane.setIconAt(FOLDERS_INDEX, foldersIcon);
+            //tabbedPane.setIconAt(FOLDERS_INDEX, foldersIcon);
         }
     }
 
@@ -242,7 +243,7 @@ public class MainTabbedPane extends PFUIComponent {
     public void setComputersIcon(Icon computersIcon) {
         if (showComputersTab && expertMode) {
             try {
-                tabbedPane.setIconAt(COMPUTERS_INDEX, computersIcon);
+                //tabbedPane.setIconAt(COMPUTERS_INDEX, computersIcon);
             } catch (Exception e) {
                 // Ignore. This will fail on preference setting change,
                 // just before restart.

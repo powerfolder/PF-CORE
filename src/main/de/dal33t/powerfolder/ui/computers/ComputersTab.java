@@ -48,31 +48,31 @@ public class ComputersTab extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public ComputersTab(Controller controller) {
         super(controller);
         emptyLabel = new JLabel(
-                Translation.getTranslation("computers_tab.no_computers_available"),
-                SwingConstants.CENTER);
+            Translation.getTranslation("computers_tab.no_computers_available"),
+            SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
         computersList = new ComputersList(getController(), this);
 
-        showOfflineCB = new JCheckBox(Translation.getTranslation(
-                "computers_tab.show_offline"));
-        showOfflineCB.setToolTipText(Translation.getTranslation(
-                "computers_tab.show_offline.tip"));
+        showOfflineCB = new JCheckBox(
+            Translation.getTranslation("computers_tab.show_offline"));
+        showOfflineCB.setToolTipText(Translation
+            .getTranslation("computers_tab.show_offline.tip"));
         showOfflineCB.addActionListener(new MyActionListener());
-        showOfflineCB.setSelected(PreferencesEntry.SHOW_OFFLINE.getValueBoolean(
-                getController()));
+        showOfflineCB.setSelected(PreferencesEntry.SHOW_OFFLINE
+            .getValueBoolean(getController()));
         configureNodeManagerModel();
     }
 
     /**
      * Gets the UI component
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -104,7 +104,7 @@ public class ComputersTab extends PFUIComponent {
         builder.add(emptyLabel, cc.xy(1, 6));
         builder.add(scrollPane, cc.xy(1, 6));
 
-        uiComponent = GradientPanel.create(builder.getPanel());
+        uiComponent = builder.getPanel();
 
         updateEmptyLabel();
     }
@@ -123,7 +123,7 @@ public class ComputersTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
         ActionLabel searchComputerLink = new ActionLabel(getController(),
-                getApplicationModel().getActionModel().getFindComputersAction());
+            getApplicationModel().getActionModel().getFindComputersAction());
         searchComputerLink.convertToBigLabel();
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
@@ -141,11 +141,11 @@ public class ComputersTab extends PFUIComponent {
      */
     private void configureNodeManagerModel() {
         NodeManagerModel nodeManagerModel = getUIController()
-                .getApplicationModel().getNodeManagerModel();
-            nodeManagerModel.getShowOfflineModel().setValue(
-                    showOfflineCB.isSelected());
+            .getApplicationModel().getNodeManagerModel();
+        nodeManagerModel.getShowOfflineModel().setValue(
+            showOfflineCB.isSelected());
         PreferencesEntry.SHOW_OFFLINE.setValue(getController(),
-                showOfflineCB.isSelected());
+            showOfflineCB.isSelected());
     }
 
     /**
@@ -155,9 +155,9 @@ public class ComputersTab extends PFUIComponent {
         computersList.populate();
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     /**
      * Action listener for type list.

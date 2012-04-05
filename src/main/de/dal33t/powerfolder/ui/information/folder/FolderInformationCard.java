@@ -109,7 +109,6 @@ public class FolderInformationCard extends InformationCard {
         updateProblems();
     }
 
-
     public void setFolderInfoDeleted(FolderInfo folderInfo) {
         detachProblemListener();
         setFolderInfo0(folderInfo);
@@ -184,10 +183,11 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.addTab(Translation
             .getTranslation("folder_information_card.problems.title"),
             problemsTab.getUIComponent());
-        tabbedPane.setIconAt(getProblemsTabIndex(), Icons
-            .getIconById(Icons.PROBLEMS));
-        tabbedPane.setToolTipTextAt(getProblemsTabIndex(), Translation
-            .getTranslation("folder_information_card.problems.tips"));
+        // tabbedPane.setIconAt(getProblemsTabIndex(), Icons
+        // .getIconById(Icons.PROBLEMS));
+        tabbedPane
+            .setToolTipTextAt(getProblemsTabIndex(), Translation
+                .getTranslation("folder_information_card.problems.tips"));
     }
 
     /**
@@ -237,13 +237,13 @@ public class FolderInformationCard extends InformationCard {
      * Build the ui component tab pane.
      */
     private void buildUIComponent() {
-        tabbedPane.addTab(Translation
-            .getTranslation("folder_information_card.files.title"), filesTab
-            .getUIComponent());
-        tabbedPane
-            .setIconAt(getFilesTabIndex(), Icons.getIconById(Icons.FILES));
-        tabbedPane.setToolTipTextAt(getFilesTabIndex(), Translation
-            .getTranslation("folder_information_card.files.tips"));
+        tabbedPane.addTab(
+            Translation.getTranslation("folder_information_card.files.title"),
+            filesTab.getUIComponent());
+        // tabbedPane
+        // .setIconAt(getFilesTabIndex(), Icons.getIconById(Icons.FILES));
+        tabbedPane.setToolTipTextAt(getFilesTabIndex(),
+            Translation.getTranslation("folder_information_card.files.tips"));
 
         // No computers stuff if backup mode.
         if (getController().isBackupOnly()) {
@@ -254,16 +254,16 @@ public class FolderInformationCard extends InformationCard {
             tabbedPane.addTab(Translation
                 .getTranslation("folder_information_card.members.title"),
                 membersTab.getUIComponent());
-            tabbedPane.setIconAt(getMembersTabIndex(), Icons
-                .getIconById(Icons.NODE_CONNECTED));
+            // tabbedPane.setIconAt(getMembersTabIndex(), Icons
+            // .getIconById(Icons.NODE_CONNECTED));
             tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
                 .getTranslation("folder_information_card.members.tips"));
-            
+
             tabbedPane.addTab(Translation
                 .getTranslation("folder_information_card.settings.title"),
                 settingsTab.getUIComponent());
-            tabbedPane.setIconAt(getSettingsTabIndex(), Icons
-                .getIconById(Icons.SETTINGS));
+            // tabbedPane.setIconAt(getSettingsTabIndex(), Icons
+            // .getIconById(Icons.SETTINGS));
             tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
                 .getTranslation("folder_information_card.settings.tips"));
         }

@@ -165,7 +165,7 @@ public class StatusTab extends PFUIComponent {
         UIUtil.removeBorder(scrollPane);
         builder.add(scrollPane, cc.xyw(1, 6, 2));
 
-        uiComponent = GradientPanel.create(builder.getPanel());
+        uiComponent = builder.getPanel();
     }
 
     /**

@@ -95,18 +95,18 @@ public class ComputersList extends PFUIComponent {
         previousFriends = new TreeSet<Member>(MemberComparator.NICK);
         previousMyComputers = new TreeSet<Member>(MemberComparator.NICK);
 
-        myComputersLabel = new JLabel(Translation
-            .getTranslation("computers_list.my_computers"));
+        myComputersLabel = new JLabel(
+            Translation.getTranslation("computers_list.my_computers"));
         myComputersIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         myComputersLabel.addMouseListener(new MyComputersListener());
         myComputersIcon.addMouseListener(new MyComputersListener());
-        friendsLabel = new JLabel(Translation
-            .getTranslation("computers_list.friends"));
+        friendsLabel = new JLabel(
+            Translation.getTranslation("computers_list.friends"));
         friendsIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
         friendsLabel.addMouseListener(new FriendsListener());
         friendsIcon.addMouseListener(new FriendsListener());
-        connectedLansLabel = new JLabel(Translation
-            .getTranslation("computers_list.lan"));
+        connectedLansLabel = new JLabel(
+            Translation.getTranslation("computers_list.lan"));
         connectedLansIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         connectedLansLabel.addMouseListener(new ConnectedLansListener());
         connectedLansIcon.addMouseListener(new ConnectedLansListener());
@@ -137,7 +137,7 @@ public class ComputersList extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(computerListPanel, cc.xy(1, 1));
-        uiComponent = GradientPanel.create(builder.getPanel());
+        uiComponent = builder.getPanel();
     }
 
     /**
@@ -191,9 +191,12 @@ public class ComputersList extends PFUIComponent {
         // 2) Friends and
         // 3) Connected LAN
         // Use maps to sort by name.
-        Map<Member, Member> myComputersMap = new TreeMap<Member, Member>(MemberComparator.NICK);
-        Map<Member, Member> friendsMap = new TreeMap<Member, Member>(MemberComparator.NICK);
-        Map<Member, Member> connectedLansMap = new TreeMap<Member, Member>(MemberComparator.NICK);
+        Map<Member, Member> myComputersMap = new TreeMap<Member, Member>(
+            MemberComparator.NICK);
+        Map<Member, Member> friendsMap = new TreeMap<Member, Member>(
+            MemberComparator.NICK);
+        Map<Member, Member> connectedLansMap = new TreeMap<Member, Member>(
+            MemberComparator.NICK);
 
         Set<Member> myComputersSet = map
             .get(NodeManagerModel.Type.MY_COMPUTERS_INDEX);
@@ -344,7 +347,8 @@ public class ComputersList extends PFUIComponent {
         computerListPanel.add(panel);
     }
 
-    private void addView(Member node, Member expandedNode, Member focussedNode) {
+    private void addView(Member node, Member expandedNode, Member focussedNode)
+    {
 
         ExpandableComputerView view = new ExpandableComputerView(
             getController(), node);
