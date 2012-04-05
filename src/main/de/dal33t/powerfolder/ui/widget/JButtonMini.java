@@ -70,11 +70,11 @@ public class JButtonMini extends JButton {
             setIcon(icon);
         }
 
-        setOpaque(false);
+        setOpaque(true);
         setBorder(null);
-        setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 1dlu"));
+        setBorder(Borders.createEmptyBorder("0dlu, 0dlu, 0dlu, 0dlu"));
         setMargin(new Insets(0, 0, 0, 0));
-        setBorderPainted(false);
+        setBorderPainted(false                     );
         if (toolTipText != null && toolTipText.trim().length() > 0) {
             setToolTipText(toolTipText);
         }

@@ -14,8 +14,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 public class GradientPanel extends JPanel {
-    public static final Color VERY_VERY_LIGHT_GRAY = new Color(242, 242, 242);
-    public static final Color VERY_LIGHT_GRAY = new Color(230, 230, 230);
+    public static final Color VERY_VERY_LIGHT_GRAY = new Color(255, 255, 255);
+    public static final Color VERY_LIGHT_GRAY = new Color(255, 255, 255);
 
     private GradientPanel(Color background) {
         setBackground(background);

@@ -31,7 +31,6 @@ public class JButton3Icons extends JButton {
         super(normalIcon);
         setOpaque(false);
         setBorder(Borders.EMPTY_BORDER);
-        setBackground(Color.WHITE);
         setPressedIcon(pushIcon);
         setRolloverIcon(hoverIcon);
         setMargin(new Insets(0, 0, 0, 0));
