@@ -400,7 +400,9 @@ public class LoggingManager {
             return Level.OFF;
         } else if (levelName.equalsIgnoreCase(Level.SEVERE.getName())) {
             return Level.SEVERE;
-        } else if (levelName.equalsIgnoreCase(Level.WARNING.getName())) {
+        } else if (levelName.equalsIgnoreCase(Level.WARNING.getName())
+            || levelName.equalsIgnoreCase("WARN"))
+        {
             return Level.WARNING;
         }
         return null;
