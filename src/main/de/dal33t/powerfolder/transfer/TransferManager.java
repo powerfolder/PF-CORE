@@ -2924,10 +2924,10 @@ public class TransferManager extends PFComponent {
                 // If the detected rate is too low the connection is possibly
                 // exhausted. Unlimt transfers? or keep the current rate
                 // unchanged?
-                if (uploadRate < 5240) {
+                if (uploadRate < 10240) {
                     uploadRate = 0;
                 }
-                if (downloadRate < 50400) {
+                if (downloadRate < 102400 || downloadRate < uploadRate) {
                     downloadRate = 0;
                 }
 
