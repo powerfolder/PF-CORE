@@ -188,7 +188,8 @@ public class TrayIconManager extends PFComponent {
                     "general.application.name"));
             tooltip.append(' ');
 
-            if (getController().getFolderRepository().isSyncing()) {
+            if (getController().getUIController().getApplicationModel()
+                    .getFolderRepositoryModel().isSyncing()) {
                 image = Icons.getImageById(Icons.SYNC_ANIMATION[angle]);
                 if (trayIcon != null) {
                     trayIcon.setImage(image);

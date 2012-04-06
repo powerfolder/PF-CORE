@@ -1319,26 +1319,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * "syncing" means SCANNING local files OR uploding files OR downloading
-     * files.
-     * 
-     * @return true if any folder is syncing. false if not.
-     */
-    public boolean isSyncing() {
-        for (Folder folder : folders.values()) {
-            if (folder.isSyncing()) {
-                return true;
-            }
-        }
-        for (Folder metaFolder : metaFolders.values()) {
-            if (metaFolder.isSyncing()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Gets a metaFolder for a FolderInfo. NOTE: the folderInfo is the parent
      * Folder's FolderInfo, NOT the FolderInfo of the metaFolder. BUT the
      * metaFolders Map key holds the parent FolderInfo

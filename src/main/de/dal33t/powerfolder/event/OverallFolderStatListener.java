@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.event;
 
 /**
- * Listener for produced OverallFolderStats.
+ * Listener to advise that there are new overall folder stats.
  */
 public interface OverallFolderStatListener extends CoreListener {
-    void statCalculated(OverallFolderStatEvent e);
+    void statCalculated();
 }

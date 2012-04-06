@@ -67,7 +67,6 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
@@ -83,6 +82,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -495,20 +495,18 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void updateSyncStats() {
-        boolean syncing = getApplicationModel().getFolderRepositoryModel()
-            .wasSyncingAtDate();
+        FolderRepositoryModel folderRepositoryModel =
+                getUIController().getApplicationModel()
+                        .getFolderRepositoryModel();
+        boolean syncing = folderRepositoryModel.isSyncing();
         Date syncDate;
         if (syncing) {
-            syncDate = getApplicationModel().getFolderRepositoryModel()
-                .getEtaSyncDate();
+            syncDate = folderRepositoryModel.getEstimatedSyncDate();
         } else {
-            syncDate = getApplicationModel().getFolderRepositoryModel()
-                .getLastSyncDate();
+            syncDate = folderRepositoryModel.getLastSyncDate();
         }
-
-        if (isFiner()) {
-            logFiner("Sync status: syncing? " + syncing + ", date: " + syncDate);
-        }
+        double overallSyncPercentage =
+                folderRepositoryModel.getOverallSyncPercentage();
 
         String syncStatsText;
         boolean synced = false;
@@ -525,9 +523,9 @@ public class MainFrame extends PFUIComponent {
                 .getTranslation("main_frame.never_synced");
         } else {
             if (syncing) {
-                long aniIndex = System.currentTimeMillis() / 1000 % 3;
                 syncStatsText = Translation
-                    .getTranslation("main_frame.synchronizing." + aniIndex);
+                .getTranslation("main_frame.syncing",
+                        Format.formatDecimal(overallSyncPercentage));
             } else {
                 syncStatsText = Translation
                     .getTranslation("main_frame.in_sync");
@@ -1254,9 +1252,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class MyOverallFolderStatListener implements
-        OverallFolderStatListener
-    {
-        public void statCalculated(OverallFolderStatEvent e) {
+        OverallFolderStatListener {
+        public void statCalculated() {
             updateSyncStats();
         }
 

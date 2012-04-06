@@ -1542,9 +1542,9 @@ public class UIController extends PFComponent {
                 String title = Translation
                     .getTranslation("uicontroller.warn_on_close.title");
                 String text;
-                if (getController().getFolderRepository().isSyncing()) {
+                if (applicationModel.getFolderRepositoryModel().isSyncing()) {
                     Date syncDate = applicationModel.getFolderRepositoryModel()
-                        .getEtaSyncDate();
+                        .getEstimatedSyncDate();
                     text = Translation.getTranslation(
                         "uicontroller.warn_on_close_eta.text",
                         folderslist.toString(),
