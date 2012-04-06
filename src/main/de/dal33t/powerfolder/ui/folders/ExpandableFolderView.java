@@ -117,6 +117,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
     private ActionLabel membersLabel;
+    private JLabel upperSyncPercentageLabel;
 
     private JPanel uiComponent;
     private JPanel borderPanel;
@@ -339,9 +340,9 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void buildUI() {
 
         // Build ui
-        // icon name space # files probs sync / join
+        // icon name #-files webdav open
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref");
+            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         updateIconAndOS();
@@ -357,12 +358,12 @@ public class ExpandableFolderView extends PFUIComponent implements
         nameLabel.addMouseListener(moa);
         nameLabel.addMouseListener(mca); // Because this is the biggest blank
                                          // area where the user might click.
-        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(5, 1));
+        upperBuilder.add(upperSyncPercentageLabel, cc.xy(5, 1));
+        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(7, 1));
         filesAvailableLabel.getUIComponent().addMouseListener(moa);
 
-        upperBuilder.add(upperMountWebDavButton, cc.xy(7, 1));
-        upperBuilder.add(upperOpenWebViewButton, cc.xy(9, 1));
-        // upperBuilder.add(problemButton, cc.xy(11, 1));
+        upperBuilder.add(upperMountWebDavButton, cc.xy(9, 1));
+        upperBuilder.add(upperOpenWebViewButton, cc.xy(11, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -538,6 +539,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         openSettingsInformationButton = new JButtonMini(
             openSettingsInformationAction);
 
+        upperSyncPercentageLabel = new JLabel("...");
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
         upperMountWebDavButton = new JButtonMini(webdavAction);
         upperOpenWebViewButton = new JButtonMini(webViewAction);
@@ -835,7 +837,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                         "exp_folder_view.files_available",
                         String.valueOf(count));
                 }
+                if (sync >= 0 && sync < 100) {
+                    upperSyncPercentageLabel.setText(Format.formatDecimal(sync)
+                            + '%');
+                } else {
+                    upperSyncPercentageLabel.setText("");
+                }
             } else {
+                upperSyncPercentageLabel.setText("");
                 showing100Sync.set(false);
                 syncPercentText = Translation
                     .getTranslation("exp_folder_view.not_yet_scanned");
@@ -844,6 +853,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 filesAvailableLabelText = "";
             }
         } else {
+            upperSyncPercentageLabel.setText("");
             syncPercentText = Translation.getTranslation(
                 "exp_folder_view.synchronized", "?");
             syncDateText = Translation.getTranslation(
