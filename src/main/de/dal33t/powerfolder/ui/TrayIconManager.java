@@ -196,6 +196,10 @@ public class TrayIconManager extends PFComponent {
                 }
                 tooltip.append(Translation.getTranslation(
                         "systray.tooltip.syncing"));
+            } else if (getController().isPaused()) {
+                image = Icons.getImageById(Icons.PAUSE);
+                tooltip.append(Translation.getTranslation(
+                        "systray.tooltip.paused"));
             } else if (state == TrayIconState.ALL_OK) {
                 image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
                 tooltip.append(Translation.getTranslation(
