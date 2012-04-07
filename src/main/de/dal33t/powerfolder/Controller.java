@@ -1403,6 +1403,7 @@ public class Controller extends PFComponent {
 
         if (newPausedValue) {
             folderRepository.getFolderScanner().abortScan();
+            transferManager.abortAllDownloads();
         }
         if (oldPausedValue != newPausedValue) {
             transferManager.updateSpeedLimits();

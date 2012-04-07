@@ -2688,6 +2688,12 @@ public class TransferManager extends PFComponent {
         }
     }
 
+    public void abortAllDownloads() {
+        for (DownloadManager downloadManager : dlManagers.values()) {
+            downloadManager.abort();
+        }
+    }
+
     public void checkActiveTranfersForExcludes() {
 
         for (DownloadManager dlManager : dlManagers.values()) {
