@@ -60,7 +60,7 @@ public class ChatNotificationHandler extends NotificationHandlerBase {
         setCancelAction(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 sliderClose();
-                getController().getUIController().clearBlink();
+//                getController().getUIController().clearBlink();
             }
         });
     }
