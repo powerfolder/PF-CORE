@@ -47,7 +47,6 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * for accessing and setting the configuration.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
- * @author Dennis "Bytekeeper" Waldherr
  * @version $Revision: 1.5 $
  */
 public enum ConfigurationEntry {
@@ -323,6 +322,11 @@ public enum ConfigurationEntry {
      * Password for connection (obfuscated)
      */
     SERVER_CONNECT_PASSWORD("server.connect.passwordobf"),
+
+    /**
+     * Password for connection (clear text)
+     */
+    SERVER_CONNECT_PASSWORD_CLEAR("server.connect.password"),
 
     /**
      * #2219: Allow clients to login with no password. Use system property
