@@ -616,6 +616,14 @@ public class ServerClient extends PFComponent {
             pw = LoginUtil
                 .deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
                     .getValue(getController()));
+
+            if (pw == null) {
+                String pws = ConfigurationEntry.SERVER_CONNECT_PASSWORD_CLEAR
+                    .getValue(getController());
+                if (StringUtils.isNotBlank(pws)) {
+                    pw = Util.toCharArray(pws);
+                }
+            }
         } else {
             // Old
             un = getController().getPreferences().get(
