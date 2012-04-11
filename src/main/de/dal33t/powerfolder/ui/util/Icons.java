@@ -56,11 +56,10 @@ import javax.swing.plaf.IconUIResource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.util.OverlayedIcon;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
-import de.dal33t.powerfolder.skin.BlueGlobe;
+import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -208,7 +207,7 @@ public class Icons {
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
     // BlueGlobe is our default.
-    private static final String DEFAULT_PROPERTIES_FILENAME = BlueGlobe.ICON_PROPERTIES_FILENAME;
+    private static final String DEFAULT_PROPERTIES_FILENAME = Origin.ICON_PROPERTIES_FILENAME;
 
     private static Properties iconProperties;
 
