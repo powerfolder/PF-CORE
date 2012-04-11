@@ -24,7 +24,7 @@ import java.util.Properties;
 import de.dal33t.powerfolder.ui.util.Icons;
 
 public class BlueGlobe extends AbstractSyntheticaSkin {
-    public static String ICON_PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/blueglobe/icons.properties";
+    private static String ICON_PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/blueglobe/icons.properties";
 
     public static final String NAME = "Blue Globe";
 
@@ -41,8 +41,8 @@ public class BlueGlobe extends AbstractSyntheticaSkin {
     @Override
     public Properties getIconsProperties() {
         Properties p = new Properties();
-        Properties my = Icons.loadProperties(ICON_PROPERTIES_FILENAME);
-        p.putAll(my);
+        p.putAll(Icons.loadProperties(Origin.ICON_PROPERTIES_FILENAME));
+        p.putAll(Icons.loadProperties(ICON_PROPERTIES_FILENAME));
         return p;
     }
 
