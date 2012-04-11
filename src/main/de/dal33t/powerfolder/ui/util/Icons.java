@@ -100,7 +100,6 @@ public class Icons {
     public static final String EDIT = "edit.icon";
     public static final String DELETE = "delete.icon";
     public static final String FORCE_UPDATE = "force_update.icon";
-    public static final String SYNC_COMPLETE = "sync_complete.icon";
 
     public static final String UNKNOWN_FILE = "unknown.icon";
     public static final String UNKNOWN_FILE_GRAY = "unknown_file_gray";
@@ -168,11 +167,18 @@ public class Icons {
     public static final String EMAIL_BUTTON = "email.icon";
 
     // Sync icons
-    public static final String SYNC = "sync.icon";
+    public static final String SYNC_COMPLETE = "sync_complete.icon";
     public static final String[] SYNC_ANIMATION = {"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
         "sync09.icon", "sync10.icon", "sync11.icon"};
+    
+    public static final String SYSTRAY_ALL_OK = "systray_sync_complete.icon";
+    public static final String[] SYSTRAY_SYNC_ANIMATION = {
+        "systray_sync00.icon", "systray_sync01.icon", "systray_sync02.icon",
+        "systray_sync03.icon", "systray_sync04.icon", "systray_sync05.icon",
+        "systray_sync06.icon", "systray_sync07.icon", "systray_sync08.icon",
+        "systray_sync09.icon", "systray_sync10.icon", "systray_sync11.icon"};
 
     // Online state icons
     public static final String CONNECTION_GOOD = "connection_good.icon";
@@ -188,26 +194,6 @@ public class Icons {
 
     // About stuff
     public static final String ABOUT_ANIMATION = "about_animation.icon";
-
-    public static final String PACMAN_00 = "pac_00.icon";
-    public static final String PACMAN_01 = "pac_01.icon";
-    public static final String PACMAN_02 = "pac_02.icon";
-    public static final String PACMAN_03 = "pac_03.icon";
-    public static final String PACMAN_04 = "pac_04.icon";
-    public static final String PACMAN_05 = "pac_05.icon";
-    public static final String PACMAN_06 = "pac_06.icon";
-    public static final String PACMAN_07 = "pac_07.icon";
-    public static final String PACMAN_08 = "pac_08.icon";
-    public static final String PACMAN_09 = "pac_09.icon";
-    public static final String PACMAN_10 = "pac_10.icon";
-    public static final String PACMAN_11 = "pac_11.icon";
-    public static final String PACMAN_12 = "pac_12.icon";
-    public static final String PACMAN_13 = "pac_13.icon";
-    public static final String PACMAN_14 = "pac_14.icon";
-    public static final String PACMAN_15 = "pac_15.icon";
-    public static final String PACMAN_16 = "pac_16.icon";
-    public static final String PACMAN_DOT = "pac_dot.icon";
-    public static final String SYSTRAY_ALL_OK = "systray_all_ok.icon";
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
@@ -355,6 +341,9 @@ public class Icons {
 
         URL imageURL = Thread.currentThread().getContextClassLoader()
             .getResource(iconId);
+        if (imageURL == null) {
+            return null;
+        }
         image = Toolkit.getDefaultToolkit().getImage(imageURL);
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached image " + id);
