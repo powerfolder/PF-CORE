@@ -473,7 +473,8 @@ Button
     </state>
 
     <state value="DEFAULT AND PRESSED">
-	 <painter method="buttonBackground" idref="syntheticaPainter" />
+	  <imagePainter method="buttonBackground" path="/de/dal33t/powerfolder/skin/origin/images/button_defaultPressed.png"
+                    sourceInsets="0 0 0 0" paintCenter="true" stretch="true"/>
 					    <opaque value="true"/>
          <color type="FOREGROUND" value="#fff000"/>
        <color type="TEXT_FOREGROUND" value="#000000"/><!--  Text color -->
@@ -501,8 +502,8 @@ Button
     </state>
 
     <state value="DEFAULT AND PRESSED AND FOCUSED">
-     
-  
+      <string id="buttonBorder">/de/dal33t/powerfolder/skin/origin/images/button_defaultPressed.png</string>
+      <defaultsProperty key="Synthetica.button.border.default.pressed" type="idref" value="buttonBorder"/>
 	  <painter method="buttonBackground" idref="syntheticaPainter" />
 	      <opaque value="false"/>
          <color type="FOREGROUND" value="#fff000"/>
