@@ -88,7 +88,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             // Show bar
             bar.setValue((int) (Math.max(0, downloadManager.getState()
                 .getProgress()) * 100));
-            bar.setBackground(defaultComp.getBackground());
+            //bar.setBackground(defaultComp.getBackground());
 
             Transfer.State state = downloadManager.getState();
             if (state == null) {
