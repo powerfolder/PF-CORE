@@ -155,7 +155,7 @@ public class Wizard extends JPanel implements ActionListener {
             finishButton.setMaximumSize(nextButton.getMaximumSize());
             finishButton.setPreferredSize(nextButton.getPreferredSize());
             finishButton.setActionCommand("Finish");
-            
+
             cancelButton.setText(map.get(CANCEL_I18N));
             cancelButton.setToolTipText(map.get(CANCEL_I18N_DESCRIPTION));
             cancelButton.setActionCommand("Cancel");
@@ -165,7 +165,6 @@ public class Wizard extends JPanel implements ActionListener {
 
             helpButton.setText(map.get(HELP_I18N));
             helpButton.setToolTipText(map.get(HELP_I18N_DESCRIPTION));
-            helpButton.setIcon(Icons.getIconById(Icons.QUESTION));
             helpButton.setActionCommand("Help");
         }
     }
@@ -347,8 +346,8 @@ public class Wizard extends JPanel implements ActionListener {
 
     private class MyHelpAction extends AbstractAction {
         private MyHelpAction() {
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_8,
-                ActionEvent.ALT_MASK));
+            putValue(ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_8, ActionEvent.ALT_MASK));
         }
 
         public void actionPerformed(ActionEvent e) {
