@@ -1272,9 +1272,9 @@ List
 
     <object class="javax.swing.plaf.ColorUIResource" id="hlBorderColor">
       <!-- #3680A3 -->
-      <int>54</int>
-      <int>128</int>
-      <int>163</int>
+      <int>150</int>
+      <int>150</int>
+      <int>150</int>
     </object>
     <defaultsProperty key="Synthetica.list.focusCellHighlightBorder.color" type="idref" value="hlBorderColor" />
 
@@ -1321,7 +1321,7 @@ Menu
 -->
   <style id="menu">
     <insets top="5" left="0" bottom="5" right="0"/>
-    <property key="Menu.textIconGap" type="integer" value="8"/>
+    <property key="Menu.textIconGap" type="integer" value="0"/>
 
     <imageIcon id="arrowIcon" path="/de/dal33t/powerfolder/skin/origin/images/arrowRight.png"/>
     <imageIcon id="arrowIconSelected" path="/de/dal33t/powerfolder/skin/origin/images/arrowRight_hover.png"/>
@@ -1471,6 +1471,7 @@ MenuItem
 	  <painter method="menuItemBackground" idref="syntheticaPainter" />
 	  <painter method="radioButtonMenuItemBackground" idref="syntheticaPainter" />
 	  <painter method="checkBoxMenuItemBackground" idref="syntheticaPainter" />
+	  
     </state>
 
     <state value="SELECTED">
@@ -1620,10 +1621,10 @@ Panel
   <style id="panel">    
     <!-- Default values for TitledBorder - not Synthetica specific, see javax.swing.border.TitledBorder -->
     <object class="javax.swing.plaf.ColorUIResource" id="titledBorderTitleColor">
-      <!-- #0C4A7C -->
-      <int>12</int>
-      <int>74</int>
-      <int>124</int>
+      <!-- #000000 -->
+      <int>0</int>
+      <int>0</int>
+      <int>0</int>
     </object>
     <defaultsProperty key="TitledBorder.titleColor" type="idref" value="titledBorderTitleColor"/>
 
