@@ -52,13 +52,13 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -186,13 +186,11 @@ public class UploadsInformationCard extends InformationCard implements
             .getTranslation("files_table_panel.file_details_tab.text"));
         tabbedPane.setToolTipTextAt(0, Translation
             .getTranslation("files_table_panel.file_details_tab.tip"));
-        tabbedPane.setIconAt(0, Icons.getIconById(Icons.FILE_DETAILS));
 
         tabbedPane.add(fileVersionsPanel.getPanel(), Translation
             .getTranslation("files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation
             .getTranslation("files_table_panel.file_versions_tab.tip"));
-        tabbedPane.setIconAt(1, Icons.getIconById(Icons.FILE_VERSION));
 
         return builder.getPanel();
     }
