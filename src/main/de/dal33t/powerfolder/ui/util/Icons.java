@@ -177,6 +177,8 @@ public class Icons {
         "systray_sync03.icon", "systray_sync04.icon", "systray_sync05.icon",
         "systray_sync06.icon", "systray_sync07.icon", "systray_sync08.icon",
         "systray_sync09.icon", "systray_sync10.icon", "systray_sync11.icon"};
+    
+    public static final String SYSTRAY_WARNING = "systray_warning.icon";
 
     // Online state icons
     public static final String CONNECTION_GOOD = "connection_good.icon";
