@@ -1,26 +1,25 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -48,10 +47,8 @@ import javax.swing.border.AbstractBorder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;
-
 
 /**
  * Splash screen
@@ -61,15 +58,8 @@ import de.dal33t.powerfolder.util.Waiter;
  */
 public class SplashScreen extends JWindow {
 
-    private static final Logger log = Logger.getLogger(SplashScreen.class.getName());
-
-    private static final Color FREE_BAR_COLOR1 = new Color(100, 10, 15);
-    private static final Color FREE_BAR_COLOR2 = new Color(235, 235, 235);
-    private static final Color FREE_TEXT_COLOR = new Color(100, 10, 15);
-
-    private static final Color PRO_BAR_COLOR1 = new Color(66, 99, 128);
-    private static final Color PRO_BAR_COLOR2 = new Color(235, 235, 235);
-    private static final Color PRO_TEXT_COLOR = Color.BLACK;
+    private static final Logger log = Logger.getLogger(SplashScreen.class
+        .getName());
 
     private Controller controller;
     private JProgressBar bar;
@@ -96,20 +86,10 @@ public class SplashScreen extends JWindow {
 
         // Get last start time
         long lastStartTookMS = controller.getPreferences().getLong(
-                "lastStartTookMS", 1000);
+            "lastStartTookMS", 1000);
 
         image = new JLabel(Icons.getIconById(Icons.SPLASH));
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
-        bar.setOpaque(false);
-        if (ProUtil.isRunningProVersion()) {
-            bar.setForeground(PRO_BAR_COLOR1);
-            bar.setBackground(PRO_BAR_COLOR2);
-            getContentPane().setBackground(PRO_BAR_COLOR2);
-        } else {
-            bar.setForeground(FREE_BAR_COLOR1);
-            bar.setBackground(FREE_BAR_COLOR2);
-            getContentPane().setBackground(FREE_BAR_COLOR2);
-        }
         bar.setBorder(BorderFactory.createEmptyBorder());
 
         getContentPane().add(image, BorderLayout.NORTH);
@@ -120,13 +100,13 @@ public class SplashScreen extends JWindow {
         getRootPane().setBorder(new SplashBorder());
 
         timer = new Timer("Splash barupdater", true);
-        timer.schedule(new BarUpdater(), 0, Math.max(
-            (int) lastStartTookMS / 200, 10));
+        timer.schedule(new BarUpdater(), 0,
+            Math.max((int) lastStartTookMS / 200, 10));
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension labelSize = getPreferredSize();
         setLocation(screenSize.width / 2 - labelSize.width / 2,
-                (int) (screenSize.height / 2.5) - labelSize.height / 2);
+            (int) (screenSize.height / 2.5) - labelSize.height / 2);
         final int pause = waitTime;
         final Runnable closerRunner = new Runnable() {
             public void run() {
@@ -157,8 +137,8 @@ public class SplashScreen extends JWindow {
 
         // Get 'tip of the day' text.
         int dayOfYear = new GregorianCalendar().get(Calendar.DAY_OF_YEAR);
-        String tipOfDayLengthString =
-                Translation.getTranslation("tip_of_the_day.length");
+        String tipOfDayLengthString = Translation
+            .getTranslation("tip_of_the_day.length");
         int day = 1 + dayOfYear % Integer.valueOf(tipOfDayLengthString);
         tipOfTheDay = Translation.getTranslation("tip_of_the_day.text_" + day);
 
@@ -216,11 +196,6 @@ public class SplashScreen extends JWindow {
                     Graphics g = image.getGraphics();
                     if (g == null) {
                         return;
-                    }
-                    if (ProUtil.isRunningProVersion()) {
-                        g.setColor(PRO_TEXT_COLOR);
-                    } else {
-                        g.setColor(FREE_TEXT_COLOR);
                     }
                     String version = Controller.PROGRAM_VERSION;
                     g.drawString(version, 20, getHeight() - 25);
