@@ -365,13 +365,11 @@ public class DownloadsInformationCard extends InformationCard implements
             .getTranslation("files_table_panel.file_details_tab.text"));
         tabbedPane.setToolTipTextAt(0, Translation
             .getTranslation("files_table_panel.file_details_tab.tip"));
-        tabbedPane.setIconAt(0, Icons.getIconById(Icons.FILE_DETAILS));
 
         tabbedPane.add(fileVersionsPanel.getPanel(), Translation
             .getTranslation("files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation
             .getTranslation("files_table_panel.file_versions_tab.tip"));
-        tabbedPane.setIconAt(1, Icons.getIconById(Icons.FILE_VERSION));
 
         return builder.getPanel();
     }
