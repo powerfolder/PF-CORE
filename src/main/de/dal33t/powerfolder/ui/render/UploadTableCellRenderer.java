@@ -19,16 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.render;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.util.Date;
 
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
-import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
-
-import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -39,13 +35,13 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.EstimatedTime;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.EstimatedTime;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Renderer for any transfer table
@@ -68,15 +64,10 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
     public UploadTableCellRenderer(Controller controller) {
         this.controller = controller;
 
-        // FIXME: Find a better way to set text color of progress bar string
-        UIManager.put("ProgressBar.selectionBackground", Color.BLACK);
-        UIManager.put("ProgressBar.selectionForeground", Color.BLACK);
-        // UIManager.put("ProgressBar.foreground", Color.WHITE);
-
         this.bar = new JProgressBar();
-        bar.setBorderPainted(false);
-        bar.setBorder(Borders.EMPTY_BORDER);
-        bar.setStringPainted(true);
+        // bar.setBorderPainted(false);
+        // bar.setBorder(Borders.EMPTY_BORDER);
+        // bar.setStringPainted(true);
 
         // Listen for ui l&f changes
         UIUtil.addUIChangeTask(new Runnable() {
@@ -97,8 +88,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
             TransferCounter counter = transfer.getCounter();
 
             // Show bar
-            bar
-                .setValue((int) (Math.max(0, transfer.getStateProgress()) * 100));
+            bar.setValue((int) (Math.max(0, transfer.getStateProgress()) * 100));
             bar.setBackground(defaultComp.getBackground());
 
             if (value instanceof Download) {
@@ -111,10 +101,8 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                     String problemInformation = download
                         .getProblemInformation();
                     if (problemInformation == null) {
-                        bar
-                            .setString(Translation
-                                .getTranslation(transferProblem
-                                    .getTranslationId()));
+                        bar.setString(Translation
+                            .getTranslation(transferProblem.getTranslationId()));
                     } else {
                         bar.setString(Translation.getTranslation(
                             transferProblem.getTranslationId(),
@@ -217,7 +205,6 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
         } else if (value instanceof FolderInfo) {
             FolderInfo foInfo = (FolderInfo) value;
             setText(foInfo.name);
-            setIcon(Icons.getIconById(Icons.FOLDER));
             setHorizontalAlignment(LEFT);
         } else if (value instanceof Member) {
             Member node = (Member) value;
@@ -227,12 +214,10 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                     + Translation.getTranslation("transfers.local") + ')';
             }
             setText(nickText);
-            setIcon(Icons.getSimpleIconFor(node));
             setHorizontalAlignment(LEFT);
         } else if (value instanceof MemberInfo) {
             MemberInfo node = (MemberInfo) value;
             String nickText = node.nick;
-
             setText(nickText);
             setIcon(null);
             setHorizontalAlignment(LEFT);
