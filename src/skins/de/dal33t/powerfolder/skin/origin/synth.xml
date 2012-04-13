@@ -1886,7 +1886,8 @@ RadioButton
 
 <!-- 
 *******************************************************************************
-RootPane
+
+Pane
 *******************************************************************************
 -->
   <style id="rootPane">
@@ -1926,7 +1927,7 @@ RootPane
     <imageIcon id="rootPaneMinimizeIconInactive" path="/de/dal33t/powerfolder/skin/origin/images/minimizeIcon_inactive.png"/>
     <imageIcon id="rootPaneIconifyIconInactive" path="/de/dal33t/powerfolder/skin/origin/images/iconifyIcon_inactive.png"/>
 
-    <defaultsProperty key="Synthetica.rootPane.titlePane.opaque" type="boolean" value="false"/>
+    <defaultsProperty key="Synthetica.rootPane.titlePane.opaque" type="boolean" value="true"/>
 
     <string id="rootPaneTitlePaneButtonAreaBackground">/de/dal33t/powerfolder/skin/origin/images/rootPaneButtonAreaBackground.png</string>
     <defaultsProperty key="Synthetica.rootPane.titlePane.buttonArea.background" type="idref" value="rootPaneTitlePaneButtonAreaBackground"/>
@@ -1945,7 +1946,7 @@ RootPane
     <string id="rootPaneBorderLightSelected">/de/dal33t/powerfolder/skin/origin/images/rootPaneBorder_selected_.png</string>
     <defaultsProperty key="Synthetica.rootPane.border.light.selected" type="idref" value="rootPaneBorderLightSelected"/>
 
-    <defaultsProperty key="Synthetica.rootPane.border.insets" type="insets" value="80 4 4 4"/>
+    <defaultsProperty key="Synthetica.rootPane.border.insets" type="insets" value="10 10 10 10"/>
     <defaultsProperty key="Synthetica.rootPane.border.size" type="insets" value="10 10 10 10"/>
 
     <state>
@@ -2338,7 +2339,7 @@ TabbedPane
   <bind style="tabbedPane" type="region" key="TabbedPane"/>
 
   <style id="tabbedPaneContent">
-    <insets top="3" left="3" bottom="3" right="3"/>
+    <insets top="7" left="3" bottom="3" right="3"/>
     <state>
       <opaque value="true"/>
 	    <color type="FOREGROUND" value="#ffffff"/>
@@ -2751,8 +2752,8 @@ TextField
       <string id="textFieldBorder">/de/dal33t/powerfolder/skin/origin/images/border.png</string>
       <defaultsProperty key="Synthetica.textField.border" type="idref" value="textFieldBorder"/>
       <defaultsProperty key="Synthetica.textField.border.insets" type="insets" value="3 3 3 3"/>
-      <defaultsProperty key="Synthetica.textField.border.opaqueBackground" type="boolean" value="true"/>
-      <defaultsProperty key="Synthetica.textField.border.disabled.opaqueBackground" type="boolean" value="true"/>
+      <defaultsProperty key="Synthetica.textField.border.opaqueBackground" type="boolean" value="false"/>
+      <defaultsProperty key="Synthetica.textField.border.disabled.opaqueBackground" type="boolean" value="false"/>
 
       <string id="textFieldBorderLocked">/de/dal33t/powerfolder/skin/origin/images/border_locked.png</string>
       <defaultsProperty key="Synthetica.textField.border.locked" type="idref" value="textFieldBorderLocked"/>
@@ -2880,8 +2881,8 @@ ToggleButton
 *******************************************************************************
 -->
   <style id="toggleButton">
-    <insets top="7" left="5" bottom="5" right="5"/>
-    <property key="ToggleButton.margin" type="insets" value="0 0 0 0"/>
+    <insets top="3" left="3" bottom="3" right="3"/>
+    <property key="ToggleButton.margin" type="insets" value="1 13 1 13"/>
     <property key="ToggleButton.textShiftOffset" type="integer" value="1"/>
 
     <state>
