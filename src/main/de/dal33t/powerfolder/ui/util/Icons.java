@@ -121,9 +121,6 @@ public class Icons {
     public static final String SORT_DOWN = "sort_down.icon";
     public static final String SORT_BLANK = "sort_blank.icon";
 
-    public static final String FILE_DETAILS = "file_details.icon";
-    public static final String FILE_VERSION = "file_version.icon";
-
     // Directories in navigation tree
     public static final String DIRECTORY = "directory.icon";
     public static final String DIRECTORY_OPEN = "directory_open.icon";
