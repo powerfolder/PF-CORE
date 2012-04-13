@@ -157,8 +157,10 @@ public class MainFrame extends PFUIComponent {
     }
 
     private JPanel createMiniPanel() {
-        FormLayout layout = new FormLayout("fill:pref:grow, pref", "pref");
+        FormLayout layout = new FormLayout("left:pref:grow, left:pref",
+            "top:pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("10dlu, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(createLeftMiniPanel(), cc.xy(1, 1));
@@ -170,44 +172,36 @@ public class MainFrame extends PFUIComponent {
     private Component createLeftMiniPanel() {
         CellConstraints cc = new CellConstraints();
 
-        FormLayout layoutUpper = new FormLayout("pref, 3dlu, 107dlu",
+        // UPPER PART
+        FormLayout layoutUpper = new FormLayout("pref, 3dlu, pref:grow",
             "pref, pref");
         DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
-        builderUpper.setBorder(Borders.createEmptyBorder("5dlu, 0, 0, 0"));
-
-        PanelBuilder b = new PanelBuilder(new FormLayout("center:pref:grow",
-            "center:pref:grow"));
+        PanelBuilder b = new PanelBuilder(new FormLayout("pref:grow",
+            "pref:grow"));
         b.add(allInSyncButton);
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(syncTextLabel, cc.xy(3, 1));
         builderUpper.add(syncDateLabel, cc.xy(3, 2));
+        // UPPER PART
 
-        // builderUpper.add(compactButton, cc.xywh(4, 1, 1, 2,
-        // "center, center"));
-
+        // LOWER PART
         FormLayout layoutLower = new FormLayout("pref, 100dlu", "pref, pref");
         DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
-        builderLower.setBorder(Borders.createEmptyBorder("3dlu, 0, 5dlu, 0"));
-
+        builderLower.setBorder(Borders.createEmptyBorder("5dlu, 0, 5dlu, 0"));
         // Include a spacer icon that lines up the pair with builderUpper
         // when allInSyncLabel has null icon.
         builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
         builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
+        // LOWER PART
 
-        // 7/8dlu spacer to line up the synced icon / button with the individual
-        // icons in the folder list. There is a very slight difference in icon
-        // position between JLabels and JButtonMinis.
-        FormLayout layoutMain;
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            layoutMain = new FormLayout("8dlu, pref", "pref, 3dlu, pref");
-        } else {
-            layoutMain = new FormLayout("7dlu, pref", "pref, 3dlu, pref");
-        }
-
+        // PUT TOGETHER
+        FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
-        builderMain.add(builderUpper.getPanel(), cc.xy(2, 1));
-        builderMain.add(builderLower.getPanel(), cc.xy(2, 3));
+        builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 0, 0"));
+        builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
+        builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
+        // PUT TOGETHER
 
         return builderMain.getPanel();
     }
@@ -216,7 +210,6 @@ public class MainFrame extends PFUIComponent {
         FormLayout layout = new FormLayout("pref:grow",
             "pref, pref, pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("0, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
