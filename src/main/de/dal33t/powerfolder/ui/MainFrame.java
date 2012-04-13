@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -75,6 +76,7 @@ import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
@@ -82,7 +84,6 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -124,7 +125,6 @@ public class MainFrame extends PFUIComponent {
     private JLabel syncTextLabel;
     private JLabel syncDateLabel;
     private ActionLabel loginActionLabel;
-    private JLabel allInSyncLabel;
     private JButtonMini allInSyncButton;
     private JProgressBar usagePB;
     private ActionLabel expandCollapseActionLabel;
@@ -175,11 +175,10 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
         builderUpper.setBorder(Borders.createEmptyBorder("5dlu, 0, 0, 0"));
 
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builderUpper.add(allInSyncButton, cc.xywh(1, 1, 1, 2));
-        } else {
-            builderUpper.add(allInSyncLabel, cc.xywh(1, 1, 1, 2));
-        }
+        PanelBuilder b = new PanelBuilder(new FormLayout("center:pref:grow",
+            "center:pref:grow"));
+        b.add(allInSyncButton);
+        builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(syncTextLabel, cc.xy(3, 1));
         builderUpper.add(syncDateLabel, cc.xy(3, 2));
 
@@ -363,12 +362,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         uiComponent.setBackground(Color.white);
 
-        allInSyncLabel = new JLabel(Icons.getIconById(Icons.SYNC_COMPLETE));
-        allInSyncLabel
-            .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        allInSyncLabel.addMouseListener(new SwitchCompactModeByMouse());
-
-        allInSyncButton = new JButtonMini(new MyShowFoldersAction(
+        allInSyncButton = new JButtonMini(new MyOpenFoldersBaseAction(
             getController()));
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);
@@ -495,9 +489,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void updateSyncStats() {
-        FolderRepositoryModel folderRepositoryModel =
-                getUIController().getApplicationModel()
-                        .getFolderRepositoryModel();
+        FolderRepositoryModel folderRepositoryModel = getUIController()
+            .getApplicationModel().getFolderRepositoryModel();
         boolean syncing = folderRepositoryModel.isSyncing();
         Date syncDate;
         if (syncing) {
@@ -505,8 +498,8 @@ public class MainFrame extends PFUIComponent {
         } else {
             syncDate = folderRepositoryModel.getLastSyncDate();
         }
-        double overallSyncPercentage =
-                folderRepositoryModel.getOverallSyncPercentage();
+        double overallSyncPercentage = folderRepositoryModel
+            .getOverallSyncPercentage();
 
         String syncStatsText;
         boolean synced = false;
@@ -523,9 +516,9 @@ public class MainFrame extends PFUIComponent {
                 .getTranslation("main_frame.never_synced");
         } else {
             if (syncing) {
-                syncStatsText = Translation
-                .getTranslation("main_frame.syncing",
-                        Format.formatDecimal(overallSyncPercentage));
+                syncStatsText = Translation.getTranslation(
+                    "main_frame.syncing",
+                    Format.formatDecimal(overallSyncPercentage));
             } else {
                 syncStatsText = Translation
                     .getTranslation("main_frame.in_sync");
@@ -548,7 +541,6 @@ public class MainFrame extends PFUIComponent {
         }
         syncDateLabel.setText(syncDateText);
         allInSyncButton.setVisible(synced);
-        allInSyncLabel.setVisible(synced);
     }
 
     /**
@@ -1252,7 +1244,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class MyOverallFolderStatListener implements
-        OverallFolderStatListener {
+        OverallFolderStatListener
+    {
         public void statCalculated() {
             updateSyncStats();
         }
