@@ -463,7 +463,7 @@ public class MainFrame extends PFUIComponent {
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
 
         // Init
-        setCompactMode(compact.get());
+        setCompactMode(compact.get(), true);
     }
 
     /**
@@ -1091,10 +1091,10 @@ public class MainFrame extends PFUIComponent {
 
     private void switchCompactMode() {
         boolean compactMe = !compact.getAndSet(!compact.get());
-        setCompactMode(compactMe);
+        setCompactMode(compactMe, false);
     }
 
-    private void setCompactMode(boolean compactMe) {
+    private void setCompactMode(boolean compactMe, boolean init) {
         int oldY = uiComponent.getY();
         int oldH = uiComponent.getHeight();
         if (compactMe) {
@@ -1102,8 +1102,10 @@ public class MainFrame extends PFUIComponent {
             if (isMaximized()) {
                 uiComponent.setExtendedState(Frame.NORMAL);
             }
-            closeInlineInfoPanel();
-            getUIController().hideChildPanels();
+            if (!init) {
+                closeInlineInfoPanel();
+                getUIController().hideChildPanels();
+            }
             mainTabbedPane.getUIComponent().setVisible(false);
             expandCollapseAction.setShowExpand(true);
             toFront();
