@@ -40,16 +40,16 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -73,17 +73,16 @@ public class FilesTable extends JTable {
     public FilesTable(FilesTableModel model) {
         super(model);
 
-        setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED)
-            .getIconHeight() + 3);
+        setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED).getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
 
         setupColumns();
 
-        setDefaultRenderer(FileInfo.class, new MyDefaultTreeCellRenderer(model
-            .getController()));
-        setDefaultRenderer(DirectoryInfo.class, new MyDefaultTreeCellRenderer(model
-            .getController()));
+        setDefaultRenderer(FileInfo.class,
+            new MyDefaultTreeCellRenderer(model.getController()));
+        setDefaultRenderer(DirectoryInfo.class, new MyDefaultTreeCellRenderer(
+            model.getController()));
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
@@ -152,11 +151,9 @@ public class FilesTable extends JTable {
         }
 
         public Component getTableCellRendererComponent(JTable table,
-                                                       Object value,
-                                                       boolean isSelected,
-                                                       boolean hasFocus,
-                                                       int row,
-                                                       int column) {
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column)
+        {
             DiskItem diskItem = (DiskItem) value;
             String myValue = "";
             boolean strikethrough = false;
@@ -166,12 +163,12 @@ public class FilesTable extends JTable {
                 myValue = "";
                 setIcon(null);
                 switch (column) {
-                    case 0: // file type
+                    case 0 : // file type
                         Icon icon = Icons.getIconById(Icons.DIRECTORY);
                         setIcon(icon);
                         setHorizontalAlignment(LEFT);
                         break;
-                    case 1: // dir name
+                    case 1 : // dir name
                         myValue = dir.getFilenameOnly();
                         if (folder.getDiskItemFilter().isExcluded(dir)) {
                             setForeground(NORMAL);
@@ -180,34 +177,37 @@ public class FilesTable extends JTable {
                         } else if (dir.isDeleted()) {
                             setForeground(DELETED);
                             setIcon(null);
-                        } else if (dir.isExpected(controller.getFolderRepository())) {
+                        } else if (dir.isExpected(controller
+                            .getFolderRepository()))
+                        {
                             setForeground(AVAILABLE);
                             setIcon(Icons.getIconById(Icons.EXPECTED));
                         } else {
                             setForeground(NORMAL);
                         }
+                        setHorizontalAlignment(LEFT);
 
                         break;
                 }
             } else if (diskItem instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) diskItem;
                 Folder folder = controller.getFolderRepository().getFolder(
-                        fileInfo.getFolderInfo());
+                    fileInfo.getFolderInfo());
                 setIcon(null);
                 setForeground(NORMAL);
                 switch (column) {
-                    case 0: // file type
+                    case 0 : // file type
                         Icon icon = Icons.getIconFor(fileInfo, controller);
                         setIcon(icon);
                         setHorizontalAlignment(LEFT);
                         break;
-                    case 1: // file name
+                    case 1 : // file name
 
                         myValue = fileInfo.getFilenameOnly();
 
                         // Prepare diskfile
                         File diskFile = fileInfo.getDiskFile(controller
-                                .getFolderRepository());
+                            .getFolderRepository());
                         if (diskFile != null) {
                             if (!diskFile.exists()) {
                                 diskFile = null;
@@ -216,22 +216,23 @@ public class FilesTable extends JTable {
                         String fileNameForTooltip;
                         if (diskFile != null) {
                             fileNameForTooltip = replaceSpacesWithNBSP(diskFile
-                                    .getAbsolutePath());
+                                .getAbsolutePath());
                         } else {
                             fileNameForTooltip = replaceSpacesWithNBSP(fileInfo
-                                    .getFilenameOnly());
+                                .getFilenameOnly());
                         }
                         // Obtain the newest version of this file
                         FileInfo newestVersion = null;
                         FileInfo newestDeletedVersion = null;
                         if (fileInfo
-                                .getFolder(controller.getFolderRepository()) != null) {
+                            .getFolder(controller.getFolderRepository()) != null)
+                        {
                             newestVersion = fileInfo
-                                    .getNewestNotDeletedVersion(controller
-                                            .getFolderRepository());
+                                .getNewestNotDeletedVersion(controller
+                                    .getFolderRepository());
                             newestDeletedVersion = fileInfo
-                                    .getNewestVersion(controller
-                                            .getFolderRepository());
+                                .getNewestVersion(controller
+                                    .getFolderRepository());
                         }
                         setIcon(null);
 
@@ -239,8 +240,8 @@ public class FilesTable extends JTable {
                         if (fileInfo.isDownloading(controller)) {
                             setForeground(DOWNLOADING);
                             DownloadManager dl = controller
-                                    .getTransferManager().getActiveDownload(
-                                            fileInfo);
+                                .getTransferManager().getActiveDownload(
+                                    fileInfo);
                             if (dl != null && dl.isStarted()) {
                                 StringBuilder b = new StringBuilder();
                                 for (Download d : dl.getSources()) {
@@ -250,14 +251,14 @@ public class FilesTable extends JTable {
                                     b.append(d.getPartner().getNick());
                                 }
                                 setIcon(Icons
-                                        .getIconById(Icons.DOWNLOAD_ACTIVE));
+                                    .getIconById(Icons.DOWNLOAD_ACTIVE));
                                 statusForTooltip = Translation.getTranslation(
-                                        "file_info.downloading_from_member", b
-                                                .toString());
+                                    "file_info.downloading_from_member",
+                                    b.toString());
                             } else {
                                 setIcon(Icons.getIconById(Icons.DOWNLOAD));
                                 statusForTooltip = Translation
-                                        .getTranslation("transfers.queued");
+                                    .getTranslation("transfers.queued");
                             }
                             // preference goes to deleted, then ignored then
                             // available icon
@@ -265,23 +266,26 @@ public class FilesTable extends JTable {
                             setForeground(DELETED);
                             setIcon(null);
                             statusForTooltip = Translation
-                                    .getTranslation("file_info.deleted");
+                                .getTranslation("file_info.deleted");
 
                         } else if (folder != null
-                                && folder.getDiskItemFilter().isExcluded(fileInfo)) {
+                            && folder.getDiskItemFilter().isExcluded(fileInfo))
+                        {
                             // File filtered out by blacklist.
                             statusForTooltip = replaceSpacesWithNBSP(Translation
-                                    .getTranslation("file_info.ignore"));
+                                .getTranslation("file_info.ignore"));
                             strikethrough = true;
                         } else if (fileInfo.isExpected(controller
-                                .getFolderRepository())) {
+                            .getFolderRepository()))
+                        {
                             setForeground(AVAILABLE);
                             setIcon(Icons.getIconById(Icons.EXPECTED));
                             statusForTooltip = Translation
-                                    .getTranslation("file_info.expected");
+                                .getTranslation("file_info.expected");
 
                         } else if (newestVersion != null
-                                && newestVersion.isNewerThan(fileInfo)) {
+                            && newestVersion.isNewerThan(fileInfo))
+                        {
                             // A newer version is available
                             // FIXME: If newest version (e.g. v10) is deleted,
                             // but a
@@ -290,47 +294,49 @@ public class FilesTable extends JTable {
                             // newer files
                             setForeground(NEWER_AVAILABLE);
                             if (newestVersion.isDeleted()) {
-                                if (newestVersion.equals(newestDeletedVersion)) {
+                                if (newestVersion.equals(newestDeletedVersion))
+                                {
                                     if (MANUAL_SYNCHRONIZATION.equals(folder
-                                            .getSyncProfile())) {
+                                        .getSyncProfile()))
+                                    {
                                         // Show remote deletions when in project
                                         // work sync
                                         setIcon(Icons.getIconById(Icons.DELETE));
                                         statusForTooltip = Translation
-                                                .getTranslation("file_info.remote_deleted");
+                                            .getTranslation("file_info.remote_deleted");
                                     }
                                 }
                             } else {
                                 setIcon(Icons.getIconById(Icons.EXPECTED));
                                 statusForTooltip = Translation
-                                        .getTranslation("file_info.new_version_available");
+                                    .getTranslation("file_info.new_version_available");
                             }
                         } else {
                             if (recentlyDownloaded(fileInfo)) {
                                 statusForTooltip = Translation
-                                        .getTranslation("file_info.recently_downloaded");
+                                    .getTranslation("file_info.recently_downloaded");
                             }
                         }
 
-                        setToolTipText(getToolTip(fileInfo,
-                                fileNameForTooltip, statusForTooltip));
+                        setToolTipText(getToolTip(fileInfo, fileNameForTooltip,
+                            statusForTooltip));
                         setHorizontalAlignment(LEFT);
                         break;
-                    case 2: // file size
+                    case 2 : // file size
                         myValue = Format.formatBytesShort(fileInfo.getSize());
                         setToolTipText(Format.formatBytes(fileInfo.getSize()));
                         setHorizontalAlignment(RIGHT);
                         break;
-                    case 3: // member nick
+                    case 3 : // member nick
                         MemberInfo member = fileInfo.getModifiedBy();
                         myValue = member.nick;
                         // setIcon(Icons.getSimpleIconFor(member.getNode(controller,
                         // false)));
                         setHorizontalAlignment(LEFT);
                         break;
-                    case 4: // modified date
+                    case 4 : // modified date
                         myValue = Format.formatDateShort(fileInfo
-                                .getModifiedDate());
+                            .getModifiedDate());
                         setHorizontalAlignment(RIGHT);
                         break;
                 }
@@ -350,7 +356,7 @@ public class FilesTable extends JTable {
             if (!isSelected) {
                 setBackground(row % 2 == 0
                     ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                        : ColorUtil.ODD_TABLE_ROW_COLOR);
+                    : ColorUtil.ODD_TABLE_ROW_COLOR);
             }
 
             if (strikethrough) {
