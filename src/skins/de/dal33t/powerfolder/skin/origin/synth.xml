@@ -1776,7 +1776,7 @@ ProgressBar
 
       <string id="progressBarX">/de/dal33t/powerfolder/skin/origin/images/progressBarX.png</string>
       <defaultsProperty key="Synthetica.progressBar.x" type="idref" value="progressBarX"/>
-      <defaultsProperty key="Synthetica.progressBar.x.insets" type="insets" value="2 0 2 0"/>
+      <defaultsProperty key="Synthetica.progressBar.x.insets" type="insets" value="0 0 0 0"/>
 
       <string id="progressBarY">/de/dal33t/powerfolder/skin/origin/images/progressBarY.png</string>
       <defaultsProperty key="Synthetica.progressBar.y" type="idref" value="progressBarY"/>
@@ -1788,9 +1788,10 @@ ProgressBar
 
 	  <painter method="progressBarForeground" idref="syntheticaPainter" />
 	  <painter method="progressBarBackground" idref="syntheticaPainter" />
-	    <opaque value="true"/>
+	    <opaque value="false"/>
          <color type="FOREGROUND" value="#fff000"/>
-          <color type="TEXT_FOREGROUND" value="#ffffff"/><!--  Primary Text color -->
+          <color type="TEXT_FOREGROUND" value="#000000"/><!--  Primary Text color -->
+		  <color type="TEXT_BACKGROUND" value="#000000"/><!--  Primary Text color -->
          <color type="BACKGROUND" value="#34495c"/> <!--  Primary color -->
     </state>
 
@@ -2494,13 +2495,14 @@ Table
       <insets top="3" left="3" bottom="3" right="3"/>
       <property key="Table.rendererUseUIBorder" type="boolean" value="true"/>
       <color type="BACKGROUND" value="#ffffff" />
-      <color type="FOREGROUND" value="#ffffff" />
+      <color type="FOREGROUND" value="#000000" />
+	   <color type="TEXT_FOREGROUND" value="#000000"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="hlBorderColor">
         <!-- #3680A3 -->
-        <int>54</int>
-        <int>128</int>
-        <int>163</int>
+        <int>0</int>
+        <int>0</int>
+        <int>0</int>
       </object>
       <defaultsProperty key="Synthetica.table.focusCellHighlightBorder.color" type="idref" value="hlBorderColor" />
 
@@ -2528,7 +2530,7 @@ Table
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
+      <color type="TEXT_BACKGROUND" value="#ffffff" />
       <color type="TEXT_FOREGROUND" value="#333333" />
     </state>    
   </style>
@@ -2538,7 +2540,7 @@ Table
     <state>
       <font name="Tahoma" size="11" style="BOLD"/>
       <color type="FOREGROUND" value="#333333" /> 
-      <color type="BACKGROUND" value="#a5b6c3" />
+      <color type="BACKGROUND" value="#ffffff" />
 
       <object class="javax.swing.plaf.ColorUIResource" id="gridColor">
         <!-- #AAAAAA -->
@@ -2690,6 +2692,7 @@ TextArea
 -->
   <style id="textArea">
     <state>
+	<insets top="3" left="3" bottom="3" right="3"/>
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #FFFFFF -->
@@ -2709,7 +2712,7 @@ TextArea
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
+      <color type="TEXT_BACKGROUND" value="#333333" />
       <color type="TEXT_FOREGROUND" value="#333333" /> 
   	</state>
 
@@ -2760,8 +2763,9 @@ TextField
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_BACKGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#ffffff" /> 
+	    
   	</state>
 
     <state value="DISABLED">
