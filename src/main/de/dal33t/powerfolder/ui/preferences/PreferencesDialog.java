@@ -44,11 +44,12 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.*;
-import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -108,8 +109,8 @@ public class PreferencesDialog extends BaseDialog {
     public void initComponents() {
         preferenceTabs.clear();
 
-        myDynDnsModel = new ValueHolder(ConfigurationEntry.HOSTNAME
-            .getValue(getController()));
+        myDynDnsModel = new ValueHolder(
+            ConfigurationEntry.HOSTNAME.getValue(getController()));
 
         tabbedPane = new JTabbedPane(SwingConstants.TOP,
             JTabbedPane.WRAP_TAB_LAYOUT);
@@ -117,29 +118,29 @@ public class PreferencesDialog extends BaseDialog {
         // Information tab
         informationTab = new InformationTab(getController());
         preferenceTabs.add(informationTab);
-        tabbedPane.addTab(informationTab.getTabName(), informationTab
-            .getUIPanel());
+        tabbedPane.addTab(informationTab.getTabName(),
+            informationTab.getUIPanel());
 
         // General tab
         generalSettingsTab = new GeneralSettingsTab(getController());
         preferenceTabs.add(generalSettingsTab);
-        tabbedPane.addTab(generalSettingsTab.getTabName(), generalSettingsTab
-            .getUIPanel());
+        tabbedPane.addTab(generalSettingsTab.getTabName(),
+            generalSettingsTab.getUIPanel());
 
         // UI tab
         uiSettingsTab = new UISettingsTab(getController());
         preferenceTabs.add(uiSettingsTab);
-        tabbedPane.addTab(uiSettingsTab.getTabName(), uiSettingsTab
-            .getUIPanel());
+        tabbedPane.addTab(uiSettingsTab.getTabName(),
+            uiSettingsTab.getUIPanel());
 
         // Dialog tab
         dialogsSettingsTab = new DialogsSettingsTab(getController());
         preferenceTabs.add(dialogsSettingsTab);
-        tabbedPane.addTab(dialogsSettingsTab.getTabName(), dialogsSettingsTab
-            .getUIPanel());
+        tabbedPane.addTab(dialogsSettingsTab.getTabName(),
+            dialogsSettingsTab.getUIPanel());
 
-        Boolean expertMode =
-                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
+        Boolean expertMode = PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController());
         if (expertMode) {
 
             // Expert tab
@@ -152,24 +153,23 @@ public class PreferencesDialog extends BaseDialog {
             networkSettingsTab = new NetworkSettingsTab(getController());
             preferenceTabs.add(networkSettingsTab);
             tabbedPane.addTab(networkSettingsTab.getTabName(),
-                    networkSettingsTab.getUIPanel());
+                networkSettingsTab.getUIPanel());
 
             // DynDns tab
             if (!getController().isBackupOnly()) {
                 dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
-                        myDynDnsModel);
+                    myDynDnsModel);
                 preferenceTabs.add(dynDnsSettingsTab);
                 tabbedPane.addTab(dynDnsSettingsTab.getTabName(),
-                        dynDnsSettingsTab.getUIPanel());
+                    dynDnsSettingsTab.getUIPanel());
             }
 
             // Plugins tab
             if (getController().getPluginManager().countPlugins() > 0) {
-                pluginSettingsTab = new PluginSettingsTab(getController(),
-                        this);
+                pluginSettingsTab = new PluginSettingsTab(getController(), this);
                 preferenceTabs.add(pluginSettingsTab);
                 tabbedPane.addTab(pluginSettingsTab.getTabName(),
-                        pluginSettingsTab.getUIPanel());
+                    pluginSettingsTab.getUIPanel());
             }
         }
 
@@ -186,7 +186,6 @@ public class PreferencesDialog extends BaseDialog {
             }
         });
 
-
         tabbedPane.setSelectedIndex(0);
 
         // Buttons
@@ -196,15 +195,15 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     private JButton createHelpButton() {
+        if (!Help.hasWiki(getController())) {
+            return null;
+        }
         Action action = new BaseAction("action_help", getController()) {
             public void actionPerformed(ActionEvent e) {
                 helpAction();
             }
         };
-        JButton b = new JButton(action);
-        b.setVisible(Help.hasWiki(getController()));
-        b.setEnabled(Help.hasWiki(getController()));
-        return b;
+        return new JButton(action);
     }
 
     /**
@@ -287,8 +286,12 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(helpButton, okButton,
-            cancelButton);
+        if (helpButton != null) {
+            return ButtonBarFactory.buildCenteredBar(helpButton, okButton,
+                cancelButton);
+        } else {
+            return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+        }
     }
 
     protected JButton getDefaultButton() {
