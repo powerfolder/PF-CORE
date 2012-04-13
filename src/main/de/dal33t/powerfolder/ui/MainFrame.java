@@ -461,15 +461,16 @@ public class MainFrame extends PFUIComponent {
 
         getApplicationModel().getFolderRepositoryModel()
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
+
+        // Init
+        setCompactMode(compact.get());
     }
 
     /**
-     * Force UI on top if pref or compact.
+     * Force UI on top if compact.
      */
     private void checkOnTop() {
-        boolean onTop = uiComponent.isAlwaysOnTopSupported()
-            && (PreferencesEntry.MAIN_ALWAYS_ON_TOP
-                .getValueBoolean(getController()) || compact.get());
+        boolean onTop = uiComponent.isAlwaysOnTopSupported() && compact.get();
         uiComponent.setAlwaysOnTop(onTop);
     }
 
@@ -1089,9 +1090,13 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void switchCompactMode() {
+        boolean compactMe = !compact.getAndSet(!compact.get());
+        setCompactMode(compactMe);
+    }
+
+    private void setCompactMode(boolean compactMe) {
         int oldY = uiComponent.getY();
         int oldH = uiComponent.getHeight();
-        boolean compactMe = !compact.getAndSet(!compact.get());
         if (compactMe) {
             // Need to hide the child windows when minimize.
             if (isMaximized()) {
