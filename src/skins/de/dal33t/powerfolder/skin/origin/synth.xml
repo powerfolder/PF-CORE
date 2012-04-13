@@ -1253,7 +1253,7 @@ Label
 *******************************************************************************
 -->
   <style id="label">
-    <insets top="4" left="1" bottom="1" right="1"/>
+    <insets top="1" left="1" bottom="1" right="1"/>
 
     <state>      
 	  <painter method="labelBackground" idref="syntheticaPainter" />
@@ -1946,7 +1946,7 @@ RootPane
     <defaultsProperty key="Synthetica.rootPane.border.light.selected" type="idref" value="rootPaneBorderLightSelected"/>
 
     <defaultsProperty key="Synthetica.rootPane.border.insets" type="insets" value="80 4 4 4"/>
-    <defaultsProperty key="Synthetica.rootPane.border.size" type="insets" value="4 4 4 4"/>
+    <defaultsProperty key="Synthetica.rootPane.border.size" type="insets" value="10 10 10 10"/>
 
     <state>
       <property key="RootPane.icon" value="rootPaneIcon"/>
