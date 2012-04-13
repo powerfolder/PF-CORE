@@ -34,12 +34,12 @@ import de.dal33t.powerfolder.util.Reject;
  * registry.
  */
 public enum PreferencesEntry {
-    
+
     /**
      * #2427: The last node ID this preferences ran on.
      */
-    LAST_NODE_ID("last_nodeID_obf",""),
-    
+    LAST_NODE_ID("last_nodeID_obf", ""),
+
     /**
      * Show offline members
      */
@@ -127,11 +127,9 @@ public enum PreferencesEntry {
 
     SHOW_ASK_FOR_PAUSE("show.ask.for.pause", true),
 
-    /** Main frame always on top. */
-    MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
     /**
-     * Show the information tab with the mainframe 0=free, 1=docked. info
-     * on the right.
+     * Show the information tab with the mainframe 0=free, 1=docked. info on the
+     * right.
      */
     INLINE_INFO_MODE("inline.info.mode", 1),
 
@@ -144,7 +142,7 @@ public enum PreferencesEntry {
     MAIN_FRAME_X("mainframe4.x", -1),
 
     MAIN_FRAME_Y("mainframe4.y", -1),
-    
+
     MAIN_FRAME_MAXIMIZED("mainframe.maximized", false),
 
     FILE_SEARCH_MODE("file.search.mode",
