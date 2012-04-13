@@ -321,7 +321,7 @@ Button
 
     <state>
       <insets top="3" left="3" bottom="3" right="3"/>
-      <property key="Button.margin" type="insets" value="1 13 1 13"/>
+      <property key="Button.margin" type="insets" value="1 20 1 20"/>
       <font name="Tahoma" size="11" style="NORMAL"/>
       <color type="FOREGROUND" value="#333333" /> 
 	  
