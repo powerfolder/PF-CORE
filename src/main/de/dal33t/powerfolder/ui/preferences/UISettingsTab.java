@@ -32,8 +32,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.ComboBoxAdapter;
@@ -48,9 +46,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.Skin;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -67,7 +65,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
     private JCheckBox infoDockedBox;
-    private JCheckBox mainAlwaysOnTopCB;
     private JCheckBox autoExpandCB;
     private boolean wasDocked;
     private JCheckBox updateCheck;
@@ -160,18 +157,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             .getValueInt(getController()) > 0;
         infoDockedBox.setSelected(wasDocked);
 
-        ValueModel onTopModel = new ValueHolder(
-            PreferencesEntry.MAIN_ALWAYS_ON_TOP
-                .getValueBoolean(getController()));
-        mainAlwaysOnTopCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(onTopModel, writeTrigger),
-            Translation.getTranslation("preferences.dialog.main_on_top"));
-        mainAlwaysOnTopCB.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                doMainOnTop(mainAlwaysOnTopCB.isSelected());
-            }
-        });
-
         ValueModel aeModel = new ValueHolder(
             PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController()));
         autoExpandCB = BasicComponentFactory.createCheckBox(
@@ -257,7 +242,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -315,13 +300,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(autoExpandCB, cc.xyw(3, row, 2));
 
-            if (getUIController().getMainFrame().getUIComponent()
-                .isAlwaysOnTopSupported())
-            {
-                row += 2;
-                builder.add(mainAlwaysOnTopCB, cc.xyw(3, row, 2));
-            }
-
             panel = builder.getPanel();
 
         }
@@ -365,9 +343,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         // Use inline info
         PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
             infoDockedBox.isSelected() ? 2 : 0);
-
-        PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
-            mainAlwaysOnTopCB.isSelected());
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
