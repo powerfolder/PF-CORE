@@ -320,8 +320,8 @@ Button
     <property key="Button.textShiftOffset" type="integer" value="1"/>
 
     <state>
-      <insets top="7" left="5" bottom="5" right="5"/>
-      <property key="Button.margin" type="insets" value="0 0 0 0"/>
+      <insets top="3" left="3" bottom="3" right="3"/>
+      <property key="Button.margin" type="insets" value="1 13 1 13"/>
       <font name="Tahoma" size="11" style="NORMAL"/>
       <color type="FOREGROUND" value="#333333" /> 
 	  
@@ -444,7 +444,7 @@ Button
 	  <painter method="buttonBackground" idref="syntheticaPainter" />
 	      <opaque value="false"/>
          <color type="FOREGROUND" value="#fff000"/>
-         <color type="TEXT_FOREGROUND" value="#000000"/><!--  Text color -->
+         <color type="TEXT_FOREGROUND" value="#b7b7b7"/><!--  Text color -->
          <color type="BACKGROUND" value="#34495c"/> <!--  Primary color -->
     </state>
 
@@ -497,7 +497,7 @@ Button
                     sourceInsets="0 0 0 0" paintCenter="true" stretch="true"/>
 					    <opaque value="false"/>
          <color type="FOREGROUND" value="#fff000"/>
-         <color type="TEXT_FOREGROUND" value="#000000"/><!--  Text color -->
+         <color type="TEXT_FOREGROUND" value="#b7b7b7"/><!--  Text color -->
         <color type="BACKGROUND" value="#34495c"/> <!--  Primary color -->
     </state>
 
@@ -507,7 +507,7 @@ Button
 	  <painter method="buttonBackground" idref="syntheticaPainter" />
 	      <opaque value="false"/>
          <color type="FOREGROUND" value="#fff000"/>
-         <color type="TEXT_FOREGROUND" value="#ffffff"/><!--  Text color -->
+         <color type="TEXT_FOREGROUND" value="#000000"/><!--  Text color -->
       <color type="BACKGROUND" value="#34495c"/> <!--  Primary color -->
     </state>
 
@@ -515,7 +515,7 @@ Button
 	  <painter method="buttonBackground" idref="syntheticaPainter" />
 	      <opaque value="false"/>
          <color type="FOREGROUND" value="#fff000"/>
-         <color type="TEXT_FOREGROUND" value="#ffffff"/><!--  Text color -->
+         <color type="TEXT_FOREGROUND" value="#000000"/><!--  Text color -->
          <color type="BACKGROUND" value="#34495c"/> <!--  Primary color -->
     </state>
 
@@ -614,17 +614,17 @@ Note: editable ComboBox contains TextField and ArrowButton
 
       <object class="javax.swing.plaf.ColorUIResource" id="lockedBackgroundColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.comboBox.locked.backgroundColor" type="idref" value="lockedBackgroundColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.comboBox.lockedColor" type="idref" value="lockedColor"/>
 
@@ -668,17 +668,17 @@ Note: editable ComboBox contains TextField and ArrowButton
 
       <object class="javax.swing.plaf.ColorUIResource" id="focusedBackgroundColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.comboBox.focused.backgroundColor" type="idref" value="focusedBackgroundColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="focusedColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.comboBox.focusedColor" type="idref" value="focusedColor"/>
 
@@ -700,17 +700,17 @@ Note: editable ComboBox contains TextField and ArrowButton
 
       <object class="javax.swing.plaf.ColorUIResource" id="disabledBackgroundColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.comboBox.disabled.backgroundColor" type="idref" value="disabledBackgroundColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.comboBox.disabledColor" type="idref" value="disabledColor"/>
 
@@ -763,9 +763,9 @@ EditorPane
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #ffffff -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.editorPane.lockedColor" type="idref" value="lockedColor"/>
       <defaultsProperty key="Synthetica.editorPane.border.opaqueBackground" type="boolean" value="false"/>
@@ -779,7 +779,7 @@ EditorPane
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
+      <color type="TEXT_BACKGROUND" value="#cccccc" />
       <color type="TEXT_FOREGROUND" value="#333333" /> 
   	</state>
 
@@ -787,9 +787,9 @@ EditorPane
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.editorPane.disabledColor" type="idref" value="disabledColor"/>
 	  <painter method="editorPaneBackground" idref="syntheticaPainter" />
@@ -1071,9 +1071,9 @@ FormattedTextField
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.formattedTextField.lockedColor" type="idref" value="lockedColor"/>
 
@@ -1091,7 +1091,7 @@ FormattedTextField
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
+      <color type="TEXT_BACKGROUND" value="#cccccc" />
       <color type="TEXT_FOREGROUND" value="#333333" /> 
   	</state>
 
@@ -1099,9 +1099,9 @@ FormattedTextField
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.formattedTextField.disabledColor" type="idref" value="disabledColor"/>
 
@@ -1286,7 +1286,7 @@ List
     <!-- Note: Opaque has to be set to true for region Label.selected -->
     <state value="SELECTED">
       <color type="TEXT_FOREGROUND" value="#333333" /> 
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" /> 
+      <color type="TEXT_BACKGROUND" value="#cccccc" /> 
     </state>
   </style>
   <bind style="list" type="region" key="List"/>
@@ -1361,7 +1361,7 @@ Menu
 
     <state value="SELECTED">
       <opaque value="true" />
-      <color type="BACKGROUND" value="#a5b6c3" />
+      <color type="BACKGROUND" value="#cccccc" />
       <color type="TEXT_FOREGROUND" value="#333333" />
       <property key="Menu.arrowIcon" value="arrowIconSelected"/>
 
@@ -1523,12 +1523,12 @@ MenuItemAccelerator
   <style id="menuItemAccelerator">
     <state>
       <opaque value="true" />
-      <color type="BACKGROUND" value="#a5b6c3" />
+      <color type="BACKGROUND" value="#cccccc" />
       <color type="TEXT_FOREGROUND" value="#808080" />
     </state>
     <state value="MOUSE_OVER">
       <opaque value="true" />
-      <color type="BACKGROUND" value="#a5b6c3" />
+      <color type="BACKGROUND" value="#cccccc" />
       <color type="TEXT_FOREGROUND" value="#606060" />
     </state>
   </style>
@@ -1655,9 +1655,9 @@ PasswordField
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.passwordField.lockedColor" type="idref" value="lockedColor"/>
 
@@ -1675,7 +1675,7 @@ PasswordField
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
+      <color type="TEXT_BACKGROUND" value="#cccccc" />
       <color type="TEXT_FOREGROUND" value="#333333" /> 
   	</state>
 
@@ -1776,7 +1776,7 @@ ProgressBar
 
       <string id="progressBarX">/de/dal33t/powerfolder/skin/origin/images/progressBarX.png</string>
       <defaultsProperty key="Synthetica.progressBar.x" type="idref" value="progressBarX"/>
-      <defaultsProperty key="Synthetica.progressBar.x.insets" type="insets" value="0 0 0 0"/>
+      <defaultsProperty key="Synthetica.progressBar.x.insets" type="insets" value="2 0 2 0"/>
 
       <string id="progressBarY">/de/dal33t/powerfolder/skin/origin/images/progressBarY.png</string>
       <defaultsProperty key="Synthetica.progressBar.y" type="idref" value="progressBarY"/>
@@ -1788,10 +1788,9 @@ ProgressBar
 
 	  <painter method="progressBarForeground" idref="syntheticaPainter" />
 	  <painter method="progressBarBackground" idref="syntheticaPainter" />
-	    <opaque value="false"/>
+	    <opaque value="true"/>
          <color type="FOREGROUND" value="#fff000"/>
-          <color type="TEXT_FOREGROUND" value="#000000"/><!--  Primary Text color -->
-		  <color type="TEXT_BACKGROUND" value="#000000"/><!--  Primary Text color -->
+          <color type="TEXT_FOREGROUND" value="#ffffff"/><!--  Primary Text color -->
          <color type="BACKGROUND" value="#34495c"/> <!--  Primary color -->
     </state>
 
@@ -2379,7 +2378,7 @@ TabbedPane
   <bind style="tabbedPaneTabArea" type="region" key="TabbedPaneTabArea"/>
 
   <style id="tabbedPaneTab">
-    <insets top="5" left="10" bottom="5" right="10"/>
+    <insets top="4" left="10" bottom="4" right="10"/>
     <defaultsProperty key="Synthetica.tabbedPane.tab.selected.bold" type="boolean" value="false"/>
 
     <state>
@@ -2496,7 +2495,7 @@ Table
       <property key="Table.rendererUseUIBorder" type="boolean" value="true"/>
       <color type="BACKGROUND" value="#ffffff" />
       <color type="FOREGROUND" value="#000000" />
-	   <color type="TEXT_FOREGROUND" value="#000000"/>
+	   <color type="TEXT_FOREGROUND" value="#ffffff"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="hlBorderColor">
         <!-- #3680A3 -->
@@ -2508,17 +2507,17 @@ Table
 
       <object class="javax.swing.plaf.ColorUIResource" id="scrollPaneBorderColor">
         <!-- #AAAAAA -->
-        <int>170</int>
-        <int>170</int>
-        <int>170</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.table.scrollPane.border.color" type="idref" value="scrollPaneBorderColor" />
 
       <object class="javax.swing.plaf.ColorUIResource" id="gridColor">
         <!-- D0D0D0 -->
-        <int>208</int>
-        <int>208</int>
-        <int>208</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <property key="Table.gridColor" type="idref" value="gridColor"/>
 
@@ -2530,8 +2529,8 @@ Table
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#ffffff" />
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="TEXT_BACKGROUND" value="#CCCCCC" />
+      <color type="TEXT_FOREGROUND" value="#000000" />
     </state>    
   </style>
   <bind style="table" type="region" key="Table"/>
@@ -2543,10 +2542,10 @@ Table
       <color type="BACKGROUND" value="#ffffff" />
 
       <object class="javax.swing.plaf.ColorUIResource" id="gridColor">
-        <!-- #AAAAAA -->
-        <int>170</int>
-        <int>170</int>
-        <int>170</int>
+        <!-- #FFFFFF -->
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.tableHeader.gridColor" type="idref" value="gridColor"/>
 
@@ -2696,9 +2695,9 @@ TextArea
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.textArea.lockedColor" type="idref" value="lockedColor"/>
       <defaultsProperty key="Synthetica.textArea.border.opaqueBackground" type="boolean" value="false"/>
@@ -2712,17 +2711,17 @@ TextArea
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#333333" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_BACKGROUND" value="#CCCCCC" />
+      <color type="TEXT_FOREGROUND" value="#CCCCCC" /> 
   	</state>
 
     <state value="DISABLED">
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.textArea.disabledColor" type="idref" value="disabledColor"/>
 	  <painter method="textAreaBackground" idref="syntheticaPainter" />
@@ -2743,9 +2742,9 @@ TextField
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.textField.lockedColor" type="idref" value="lockedColor"/>
       
@@ -2763,7 +2762,7 @@ TextField
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#333333" />
+      <color type="TEXT_BACKGROUND" value="#ffffff" />
       <color type="TEXT_FOREGROUND" value="#ffffff" /> 
 	    
   	</state>
@@ -2789,9 +2788,9 @@ TextPane
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.textPane.lockedColor" type="idref" value="lockedColor"/>
       <defaultsProperty key="Synthetica.textPane.border.opaqueBackground" type="boolean" value="false"/>
@@ -2805,17 +2804,17 @@ TextPane
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_BACKGROUND" value="#cccccc" />
+      <color type="TEXT_FOREGROUND" value="#cccccc" /> 
   	</state>
 
     <state value="DISABLED">
       <color value="#FFFFFF" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
         <!-- #FFFFFF -->
-        <int>243</int>
-        <int>243</int>
-        <int>243</int>
+        <int>255</int>
+        <int>255</int>
+        <int>255</int>
       </object>
       <defaultsProperty key="Synthetica.textPane.disabledColor" type="idref" value="disabledColor"/>
 	  <painter method="textPaneBackground" idref="syntheticaPainter" />
@@ -3222,7 +3221,7 @@ Tree
     </state>
     <state value="SELECTED">
       <color type="TEXT_FOREGROUND" value="#333333" />
-      <color type="TEXT_BACKGROUND" value="#a5b6c3" />
+      <color type="TEXT_BACKGROUND" value="#cccccc" />
     </state>
   </style>
   <bind style="treeCell" type="region" key="TreeCell"/>
