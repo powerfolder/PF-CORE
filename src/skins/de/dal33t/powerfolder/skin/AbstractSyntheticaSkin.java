@@ -22,6 +22,9 @@ package de.dal33t.powerfolder.skin;
 import java.text.ParseException;
 import java.util.Properties;
 
+import javax.swing.Icon;
+import javax.swing.JComponent;
+
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 import de.javasoft.util.IVersion;
 
@@ -69,13 +72,28 @@ public abstract class AbstractSyntheticaSkin implements Skin {
             return AbstractSyntheticaSkin.this.getName();
         }
 
+        public Icon getDisabledIcon(JComponent component, Icon icon) {
+            // We don't do it.
+            return null;
+
+            // if (icon instanceof ImageIcon) {
+            // ImageIcon i = (ImageIcon) icon;
+            // GrayFilter filter = new GrayFilter(true, 100);
+            // ImageProducer prod = new FilteredImageSource(i.getImage()
+            // .getSource(), filter);
+            // Image grayImage = Toolkit.getDefaultToolkit().createImage(prod);
+            // return new ImageIconUIResource(grayImage);
+            // }
+            // return null;
+        }
+
         @Override
         public IVersion getVersion() {
             final int major = 1;
             final int minor = 0;
             final int revision = 0;
             final int build = 1;
-            
+
             return new IVersion() {
                 public int getMajor() {
                     return major;
