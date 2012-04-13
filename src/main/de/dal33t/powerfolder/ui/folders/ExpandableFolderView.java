@@ -36,7 +36,13 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -45,13 +51,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.ui.event.ExpansionEvent;
-import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -70,15 +73,20 @@ import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.ExpandableView;
-import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
-import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
+import de.dal33t.powerfolder.ui.event.ExpansionEvent;
+import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -92,7 +100,6 @@ import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.ui.util.*;
 
 /**
  * Class to render expandable view of a folder.
@@ -311,13 +318,13 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private synchronized boolean isInCloud() {
-        if (!serverClient.isConnected()) {
+        if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
             return false;
         }
-        // Cache 5 mins.
+        // Cache 10 secs.
         if (lastFetch == null
             || lastFetch.before(new Date(
-                System.currentTimeMillis() - 1000L * 300)))
+                System.currentTimeMillis() - 1000L * 10)))
         {
             folderInCloud = serverClient.joinedByCloud(folderInfo);
             lastFetch = new Date();
@@ -342,7 +349,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name #-files webdav open
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref");
+            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+            "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         updateIconAndOS();
@@ -838,8 +846,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                         String.valueOf(count));
                 }
                 if (sync >= 0 && sync < 100) {
-                    upperSyncPercentageLabel.setText(Format.formatDecimal(sync)
-                            + '%');
+                    upperSyncPercentageLabel
+                        .setText(Format.formatDecimal(sync) + '%');
                 } else {
                     upperSyncPercentageLabel.setText("");
                 }
@@ -1060,47 +1068,46 @@ public class ExpandableFolderView extends PFUIComponent implements
         JPopupMenu contextMenu = new JPopupMenu();
         if (type == ExpandableFolderModel.Type.CloudOnly) {
             // Cloud-only folder popup
-            contextMenu.add(removeFolderAction);
+            contextMenu.add(removeFolderAction).setIcon(null);
+
+            if (isInCloud()) {
+                if (serverClient.supportsWebDAV() && OSUtil.isWindowsSystem()) {
+                    contextMenu.add(webdavAction).setIcon(null);
+                }
+                if (serverClient.supportsWebLogin()) {
+                    contextMenu.add(webViewAction).setIcon(null);
+                }
+            }
         } else {
             // Local folder popup
-            contextMenu.add(openExplorerAction);
+            contextMenu.add(openExplorerAction).setIcon(null);
             contextMenu.addSeparator();
             boolean expert = PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController());
             if (expert) {
-                contextMenu.add(syncFolderAction);
-                contextMenu.add(openFilesInformationAction);
-                contextMenu.add(mostRecentChangesAction);
-                contextMenu.add(clearCompletedDownloadsAction);
+                contextMenu.add(syncFolderAction).setIcon(null);
+                contextMenu.add(openFilesInformationAction).setIcon(null);
+                contextMenu.add(mostRecentChangesAction).setIcon(null);
+                contextMenu.add(clearCompletedDownloadsAction).setIcon(null);
             }
             if (!getController().isBackupOnly()) {
                 contextMenu.addSeparator();
-                contextMenu.add(inviteAction);
+                contextMenu.add(inviteAction).setIcon(null);
                 if (expert) {
-                    contextMenu.add(openMembersInformationAction);
+                    contextMenu.add(openMembersInformationAction).setIcon(null);
                 }
             }
             contextMenu.addSeparator();
-            contextMenu.add(openSettingsInformationAction);
-            contextMenu.add(removeFolderAction);
+            contextMenu.add(openSettingsInformationAction).setIcon(null);
+            contextMenu.add(removeFolderAction).setIcon(null);
             if (expert && serverClient.isConnected()
                 && serverClient.isLoggedIn())
             {
                 boolean osConfigured = serverClient.joinedByCloud(folder);
                 if (osConfigured) {
-                    contextMenu.add(stopOnlineStorageAction);
+                    contextMenu.add(stopOnlineStorageAction).setIcon(null);
                 } else {
-                    contextMenu.add(backupOnlineStorageAction);
-                }
-            }
-        }
-        if (type == ExpandableFolderModel.Type.CloudOnly) {
-            if (isInCloud()) {
-                if (serverClient.supportsWebDAV() && OSUtil.isWindowsSystem()) {
-                    contextMenu.add(webdavAction);
-                }
-                if (serverClient.supportsWebLogin()) {
-                    contextMenu.add(webViewAction);
+                    contextMenu.add(backupOnlineStorageAction).setIcon(null);
                 }
             }
         }
