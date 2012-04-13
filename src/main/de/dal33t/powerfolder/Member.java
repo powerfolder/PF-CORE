@@ -824,7 +824,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!isConnected()) {
             return ConnectResult.failure("Not connected");
         }
-        if (peer == null) {
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer == null) {
             return ConnectResult.failure("Peer is not set");
         }
 
@@ -833,7 +834,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         boolean wasHandshaked = handshaked;
-        Identity identity = peer.getIdentity();
+        Identity identity = thisPeer.getIdentity();
 
         boolean receivedFolderList = false;
         // #2569: Server waits for client list of folders first.
