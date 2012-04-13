@@ -20,12 +20,9 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
@@ -42,7 +39,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.AbstractBorder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -56,6 +52,7 @@ import de.dal33t.powerfolder.util.Waiter;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.16 $
  */
+@SuppressWarnings("serial")
 public class SplashScreen extends JWindow {
 
     private static final Logger log = Logger.getLogger(SplashScreen.class
@@ -96,8 +93,6 @@ public class SplashScreen extends JWindow {
         getContentPane().add(bar, BorderLayout.SOUTH);
 
         pack();
-
-        getRootPane().setBorder(new SplashBorder());
 
         timer = new Timer("Splash barupdater", true);
         timer.schedule(new BarUpdater(), 0,
@@ -223,29 +218,5 @@ public class SplashScreen extends JWindow {
         }
         timer.purge();
         timer.cancel();
-    }
-
-    /**
-     * Adds a custom border to the splashscreen
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.16 $
-     */
-    private static class SplashBorder extends AbstractBorder {
-
-        public void paintBorder(Component c, Graphics g, int x, int y,
-            int width, int height)
-        {
-            g.setColor(SystemColor.controlDkShadow);
-            g.drawRect(x, y, width - 1, height - 1);
-        }
-
-        public Insets getBorderInsets(Component c) {
-            return new Insets(1, 1, 1, 1);
-        }
-
-        public boolean isBorderOpaque() {
-            return true;
-        }
     }
 }
