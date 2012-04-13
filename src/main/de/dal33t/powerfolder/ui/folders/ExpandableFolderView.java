@@ -663,9 +663,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                     upperSyncFolderButton.setVisible(true);
                     upperSyncFolderButton.spin(true);
                 } else {
+                    primaryButton.setVisible(true);
                     upperSyncFolderButton.setVisible(false);
                     upperSyncFolderButton.spin(false);
-                    primaryButton.setVisible(true);
                 }
             }
         });
