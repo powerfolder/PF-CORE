@@ -86,6 +86,7 @@ public class SplashScreen extends JWindow {
             "lastStartTookMS", 1000);
 
         image = new JLabel(Icons.getIconById(Icons.SPLASH));
+        image.setBorder(BorderFactory.createEmptyBorder());
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
         bar.setBorder(BorderFactory.createEmptyBorder());
 
