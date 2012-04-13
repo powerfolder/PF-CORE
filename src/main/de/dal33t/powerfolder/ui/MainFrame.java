@@ -53,6 +53,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -137,6 +138,8 @@ public class MainFrame extends PFUIComponent {
 
     private AtomicBoolean compact = new AtomicBoolean();
     private JButton3Icons closeButton;
+    private JButton3Icons plusButton;
+    private JButton3Icons minusButton;
 
     /**
      * @param controller
@@ -242,7 +245,12 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(logoLabel, cc.xyw(1, 1, 3));
-        builder.add(closeButton, cc.xywh(4, 1, 1, 1, "right, top"));
+        
+        ButtonBarBuilder b = new ButtonBarBuilder();
+        b.addFixed(minusButton);
+        b.addFixed(plusButton);
+        b.addFixed(closeButton);
+        builder.add(b.getPanel(), cc.xywh(4, 1, 1, 1, "right, top"));
 
         builder.add(inlineInfoLabel,
             cc.xy(2, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
@@ -427,6 +435,16 @@ public class MainFrame extends PFUIComponent {
                 doCloseOperation();
             }
         });
+
+        plusButton = new JButton3Icons(
+            Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
+            Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
+            Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
+
+        minusButton = new JButton3Icons(
+            Icons.getIconById(Icons.WINDOW_MINUS_NORMAL),
+            Icons.getIconById(Icons.WINDOW_MINUS_HOVER),
+            Icons.getIconById(Icons.WINDOW_MINUS_PUSH));
 
         centralPanel = new JPanel(new BorderLayout(0, 0));
 

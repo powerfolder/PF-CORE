@@ -84,7 +84,17 @@ public class Icons {
     public static final String FILTER_TEXT_FIELD_GLASS = "filter_text_field_glass.icon";
     public static final String FILTER_TEXT_FIELD_GLASS_ARROW = "filter_text_field_glass_arrow.icon";
 
-    public static final String CLOSE = "close.icon";
+    public static final String WINDOW_MAXIMIZE_NORMAL = "window_maximize_normal.icon";
+    public static final String WINDOW_MAXIMIZE_HOVER = "window_maximize_hover.icon";
+    public static final String WINDOW_MAXIMIZE_PUSH = "window_maximize_push.icon";
+
+    public static final String WINDOW_PLUS_NORMAL = "window_plus_normal.icon";
+    public static final String WINDOW_PLUS_HOVER = "window_plus_hover.icon";
+    public static final String WINDOW_PLUS_PUSH = "window_plus_push.icon";
+
+    public static final String WINDOW_MINUS_NORMAL = "window_minus_normal.icon";
+    public static final String WINDOW_MINUS_HOVER = "window_minus_hover.icon";
+    public static final String WINDOW_MINUS_PUSH = "window_minus_push.icon";
 
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";
@@ -167,14 +177,14 @@ public class Icons {
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
         "sync09.icon", "sync10.icon", "sync11.icon"};
-    
+
     public static final String SYSTRAY_ALL_OK = "systray_sync_complete.icon";
     public static final String[] SYSTRAY_SYNC_ANIMATION = {
         "systray_sync00.icon", "systray_sync01.icon", "systray_sync02.icon",
         "systray_sync03.icon", "systray_sync04.icon", "systray_sync05.icon",
         "systray_sync06.icon", "systray_sync07.icon", "systray_sync08.icon",
         "systray_sync09.icon", "systray_sync10.icon", "systray_sync11.icon"};
-    
+
     public static final String SYSTRAY_WARNING = "systray_warning.icon";
 
     // Online state icons
