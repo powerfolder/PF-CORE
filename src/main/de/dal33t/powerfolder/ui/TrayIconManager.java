@@ -177,6 +177,12 @@ public class TrayIconManager extends PFComponent {
             }
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.syncing"));
+            double overallSyncPercentage = getController().getUIController()
+                .getApplicationModel().getFolderRepositoryModel()
+                .getOverallSyncPercentage();
+            if (overallSyncPercentage >= 0) {
+                tooltip.append(Format.formatPercent(overallSyncPercentage));
+            }
         } else if (getController().isPaused()) {
             image = Icons.getImageById(Icons.PAUSE);
             tooltip
@@ -198,36 +204,6 @@ public class TrayIconManager extends PFComponent {
             image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
         }
 
-        // Only update the up/down rates intermittantly.
-        if (angle == 0) {
-            TransferManager transferManager = getController()
-                .getTransferManager();
-            double totalCPSdownKB = transferManager.getDownloadCounter()
-                .calculateCurrentKBS();
-            double totalCPSupKB = transferManager.getUploadCounter()
-                .calculateCurrentKBS();
-
-            if (totalCPSdownKB > 1024) {
-                downText = " - "
-                    + Translation.getTranslation("systray.tooltip.down.mb",
-                        Format.formatDecimal(totalCPSdownKB / 1024));
-            } else {
-                downText = " - "
-                    + Translation.getTranslation("systray.tooltip.down",
-                        Format.formatDecimal(totalCPSdownKB));
-            }
-
-            if (totalCPSupKB > 1024) {
-                upText = " - "
-                    + Translation.getTranslation("systray.tooltip.up.mb",
-                        Format.formatDecimal(totalCPSupKB / 1024));
-            } else {
-                upText = " - "
-                    + Translation.getTranslation("systray.tooltip.up",
-                        Format.formatDecimal(totalCPSupKB));
-            }
-        }
-        tooltip.append(upText + downText);
         // }
 
         trayIcon.setImage(image);
