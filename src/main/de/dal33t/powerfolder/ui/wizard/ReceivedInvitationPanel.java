@@ -40,6 +40,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
@@ -93,9 +94,10 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
     private boolean createPreviewFolder() {
 
-        FolderSettings folderSettings = new FolderSettings(invitation
-            .getSuggestedLocalBase(getController()), syncProfileSelectorPanel
-            .getSyncProfile(), false, ArchiveMode.NO_BACKUP, true, null, 0, true);
+        FolderSettings folderSettings = new FolderSettings(
+            invitation.getSuggestedLocalBase(getController()),
+            syncProfileSelectorPanel.getSyncProfile(), false,
+            ArchiveMode.NO_BACKUP, true, null, 0, true);
 
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);
@@ -113,8 +115,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
 
         // Set folder permission
-        getWizardContext()
-            .setAttribute(FOLDER_PERMISSION_ATTRIBUTE, invitation.getPermission());
+        getWizardContext().setAttribute(FOLDER_PERMISSION_ATTRIBUTE,
+            invitation.getPermission());
 
         // Do not prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
@@ -135,8 +137,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.success_join"));
+            Translation.getTranslation("wizard.setup_success"),
+            Translation.getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         // If preview, validateNext has created the folder, so all done.
@@ -208,33 +210,33 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     @Override
     protected void initComponents() {
         // Folder name label
-        folderHintLabel = new JLabel(Translation
-            .getTranslation("general.folder"));
+        folderHintLabel = new JLabel(
+            Translation.getTranslation("general.folder"));
         folderHintLabel.setEnabled(false);
         folderNameLabel = SimpleComponentFactory.createLabel();
 
         // Invitor label
-        invitorHintLabel = new JLabel(Translation
-            .getTranslation("general.inviter"));
+        invitorHintLabel = new JLabel(
+            Translation.getTranslation("general.inviter"));
         invitorHintLabel.setEnabled(false);
         invitorLabel = SimpleComponentFactory.createLabel();
 
         // Invitation messages
-        invitationMessageHintLabel = new JLabel(Translation
-            .getTranslation("general.message"));
+        invitationMessageHintLabel = new JLabel(
+            Translation.getTranslation("general.message"));
         invitationMessageHintLabel.setEnabled(false);
         invitationMessageLabel = new JTextField();
         invitationMessageLabel.setEditable(false);
 
         // Estimated size
-        estimatedSizeHintLabel = new JLabel(Translation
-            .getTranslation("general.estimated_size"));
+        estimatedSizeHintLabel = new JLabel(
+            Translation.getTranslation("general.estimated_size"));
         estimatedSizeHintLabel.setEnabled(false);
         estimatedSize = SimpleComponentFactory.createLabel();
 
         // Sync profile
-        syncProfileHintLabel = new JLabel(Translation
-            .getTranslation("general.synchonisation"));
+        syncProfileHintLabel = new JLabel(
+            Translation.getTranslation("general.synchonisation"));
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
@@ -244,12 +246,13 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             .getTranslation("general.preview_folder"));
         previewOnlyCB.setOpaque(false);
         previewOnlyCB.setEnabled(false);
+        previewOnlyCB.setVisible(PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController()));
 
         // Do not let user select profile if preview.
         previewOnlyCB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                syncProfileSelectorPanel
-                    .setEnabled(!previewOnlyCB.isSelected());
+                syncProfileSelectorPanel.setEnabled(!previewOnlyCB.isSelected());
             }
         });
 
