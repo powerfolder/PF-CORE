@@ -32,8 +32,7 @@ public class FolderRepositoryModel extends PFUIComponent {
      * List of folders where the user has requested a scan. Used to advise the
      * UI when the next scan arrives so that the user can be notified.
      */
-    private final List<FolderInfo> interestedFolders =
-            new ArrayList<FolderInfo>();
+    private final List<FolderInfo> interestedFolders = new ArrayList<FolderInfo>();
 
     FolderRepositoryModel(Controller controller) {
         super(controller);
@@ -91,41 +90,47 @@ public class FolderRepositoryModel extends PFUIComponent {
         boolean localSyncing = false;
         Date localLastSyncDate = null;
         Date localEstimatedSyncDate = null;
-        int count = 0;
         double localOverallSyncPercentage = 0;
-        for (Folder folder :
-                getController().getFolderRepository().getFolders(true)) {
+        long totalSize = 0;
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
+        {
 
             if (folder.isSyncing()) {
                 localSyncing = true;
             }
             Date tmpLastSync = folder.getLastSyncDate();
-            Date tmpEstimatedDate = folder.getStatistic().getEstimatedSyncDate();
+            Date tmpEstimatedDate = folder.getStatistic()
+                .getEstimatedSyncDate();
 
             if (tmpLastSync != null) {
-                if (localLastSyncDate == null || tmpLastSync.after(localLastSyncDate)) {
+                if (localLastSyncDate == null
+                    || tmpLastSync.after(localLastSyncDate))
+                {
                     localLastSyncDate = tmpLastSync;
                 }
             }
 
             if (tmpEstimatedDate != null) {
-                if (localEstimatedSyncDate == null ||
-                        tmpEstimatedDate.after(localEstimatedSyncDate)) {
+                if (localEstimatedSyncDate == null
+                    || tmpEstimatedDate.after(localEstimatedSyncDate))
+                {
                     localEstimatedSyncDate = tmpEstimatedDate;
                 }
             }
-            double syncPercentage =
-                    folder.getStatistic().getHarmonizedSyncPercentage();
+            double syncPercentage = folder.getStatistic()
+                .getHarmonizedSyncPercentage();
             if (syncPercentage > 0) {
-                localOverallSyncPercentage += syncPercentage;
-                count++;
+                totalSize += folder.getStatistic().getTotalSize();
+                localOverallSyncPercentage += syncPercentage
+                    * folder.getStatistic().getTotalSize();
             }
         }
 
-        if (count == 0) {
+        if (totalSize == 0) {
             localOverallSyncPercentage = 0;
         } else {
-            localOverallSyncPercentage /= count;
+            localOverallSyncPercentage /= totalSize;
         }
 
         // Upate with the lastest values.
@@ -192,13 +197,12 @@ public class FolderRepositoryModel extends PFUIComponent {
         public void scanResultCommited(final FolderEvent folderEvent) {
             FolderInfo folderInfo = folderEvent.getFolder().getInfo();
             synchronized (interestedFolders) {
-                if (interestedFolders.contains(
-                        folderInfo)) {
+                if (interestedFolders.contains(folderInfo)) {
                     // Give user feedback on this scan result.
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             getUIController().scanResultCreated(
-                                    folderEvent.getScanResult());
+                                folderEvent.getScanResult());
                         }
                     });
                     interestedFolders.remove(folderInfo);
