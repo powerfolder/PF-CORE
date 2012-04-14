@@ -19,16 +19,21 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.DIALOG_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.USE_CLOUD_STORAGE;
 
-import javax.swing.*;
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import jwf.WizardPanel;
 
@@ -37,14 +42,19 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.Translation;
-
-import java.awt.event.ActionEvent;
-import java.awt.*;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -107,8 +117,8 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout("right:pref, 3dlu, pref, pref:grow",
-            "pref, 30dlu, pref, 3dlu, pref, 3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref, 3dlu, pref, "
+                + "3dlu, pref, 15dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -116,24 +126,20 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
 
         int row = 1;
 
-        // Info
-        builder.addLabel(Translation.getTranslation(
-                "wizard.folder_auto_create.info"),
-                cc.xy(3, row));
-         row += 2;
-
         // Name
         builder.addLabel(Translation.getTranslation("general.folder"),
-                cc.xy(1, row));
+            cc.xy(1, row));
         builder.add(folderNameLabel, cc.xy(3, row));
         row += 2;
 
         // Sync
-        builder.addLabel(Translation.getTranslation("general.synchonisation"),
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder.addLabel(
+                Translation.getTranslation("general.synchonisation"),
                 cc.xy(1, row));
-        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
-        p.setOpaque(false);
-        builder.add(p, cc.xyw(3, row, 2));
+            JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
+            builder.add(p, cc.xyw(3, row, 2));
+        }
         row += 2;
 
         // Cloud space
@@ -143,8 +149,8 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         // Invite
         if (!getController().isBackupOnly()) {
             builder.add(inviteCB, cc.xyw(3, row, 2));
-            row += 2;
         }
+        row += 2;
 
         // Undo
         builder.add(undoLabel.getUIComponent(), cc.xyw(3, row, 2));
