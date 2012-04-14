@@ -96,6 +96,7 @@ public class Icons {
     public static final String WINDOW_MINUS_HOVER = "window_minus_hover.icon";
     public static final String WINDOW_MINUS_PUSH = "window_minus_push.icon";
 
+    public static final String ACTION_ARROW = "action_arrow.icon";
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";
     public static final String DEBUG = "bug.icon";
