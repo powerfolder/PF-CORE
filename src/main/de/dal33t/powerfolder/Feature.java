@@ -112,7 +112,7 @@ public enum Feature {
     /**
      * Remove after #2336
      */
-    MISSING_OWNER_OBTAIN(true),
+    MISSING_OWNER_OBTAIN(false),
 
     /**
      * TRAC #1962 For later use
