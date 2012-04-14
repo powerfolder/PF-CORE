@@ -37,9 +37,6 @@ public class ActionModel extends PFComponent {
     private NewFolderAction newFolderAction;
     private FindComputersAction findComputersAction;
     private OpenPreferencesAction openPreferencesAction;
-    private OpenDownloadsInformationAction openDownloadsInformationAction;
-    private OpenUploadsInformationAction openUploadsInformationAction;
-    private ViewNoticesAction viewNoticesAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -71,28 +68,5 @@ public class ActionModel extends PFComponent {
                 .allowWith(ChangePreferencesPermission.INSTANCE);
         }
         return openPreferencesAction;
-    }
-
-    public OpenDownloadsInformationAction getOpenDownloadsInformationAction() {
-        if (openDownloadsInformationAction == null) {
-            openDownloadsInformationAction = new OpenDownloadsInformationAction(
-                getController());
-        }
-        return openDownloadsInformationAction;
-    }
-
-    public OpenUploadsInformationAction getOpenUploadsInformationAction() {
-        if (openUploadsInformationAction == null) {
-            openUploadsInformationAction = new OpenUploadsInformationAction(
-                getController());
-        }
-        return openUploadsInformationAction;
-    }
-
-    public ViewNoticesAction getViewNoticesAction() {
-        if (viewNoticesAction == null) {
-            viewNoticesAction = new ViewNoticesAction(getController());
-        }
-        return viewNoticesAction;
     }
 }

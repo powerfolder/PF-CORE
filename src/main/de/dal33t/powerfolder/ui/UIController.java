@@ -967,13 +967,8 @@ public class UIController extends PFComponent {
         chatFrame.getUIComponent().setVisible(true);
     }
 
-    public void openDownloadsInformation() {
-        informationFrame.displayDownloads();
-        displayInformationWindow();
-    }
-
-    public void openUploadsInformation() {
-        informationFrame.displayUploads();
+    public void openTransfersInformation() {
+        informationFrame.displayTransfers();
         displayInformationWindow();
     }
 

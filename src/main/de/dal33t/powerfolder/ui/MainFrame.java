@@ -148,6 +148,7 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel pauseResumeActionLabel;
     private ActionLabel configurationActionLabel;
     private ActionLabel openDebugActionLabel;
+    private ActionLabel openTransfersActionLabel;
 
     private AtomicBoolean compact = new AtomicBoolean();
     private JButton3Icons closeButton;
@@ -227,7 +228,7 @@ public class MainFrame extends PFUIComponent {
 
     private Component createRightMiniPanel() {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref, pref, pref, pref, pref");
+            "pref, pref, pref, pref, pref, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -243,6 +244,9 @@ public class MainFrame extends PFUIComponent {
         builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 5));
         if (getController().isVerbose()) {
             builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 6));
+        }
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 7));
         }
 
         return builder.getPanel();
@@ -431,6 +435,8 @@ public class MainFrame extends PFUIComponent {
             getApplicationModel().getActionModel().getOpenPreferencesAction());
         openDebugActionLabel = new ActionLabel(getController(),
             new MyOpenDebugAction(getController()));
+        openTransfersActionLabel = new ActionLabel(getController(),
+            new MyOpenTransfersAction(getController()));
 
         // add window listener, checks if exit is needed on pressing X
         MyWindowListener myWindowListener = new MyWindowListener();
@@ -1262,6 +1268,17 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getUIController().askToPauseResume();
+        }
+    }
+
+    private static class MyOpenTransfersAction extends BaseAction {
+
+        private MyOpenTransfersAction(Controller controller) {
+            super("action_open_tansfers_information", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getUIController().openTransfersInformation();
         }
     }
 

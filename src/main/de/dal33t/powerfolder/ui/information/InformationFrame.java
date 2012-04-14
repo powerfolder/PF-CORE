@@ -25,12 +25,12 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.prefs.Preferences;
 
-import javax.swing.JFrame;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.plaf.RootPaneUI;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -56,7 +56,6 @@ public class InformationFrame extends PFUIComponent {
     private UploadsInformationCard uploadsInformationCard;
     private DebugInformationCard debugInformationCard;
     private NoticesInformationCard noticesCard;
-    //private StatsInformationCard statsCard;
 
     private boolean showingFolder;
 
@@ -279,15 +278,21 @@ public class InformationFrame extends PFUIComponent {
         currentFolderInfo = folderInfo;
     }
 
-    public void displayDownloads() {
+    /**
+     * Display downloads and uploads in two tabs.
+     */
+    public void displayTransfers() {
         buildDownloadsInformationCard();
-        displayCard(downloadsInformationCard);
-        showingFolder = false;
-    }
-
-    public void displayUploads() {
         buildUploadsInformationCard();
-        displayCard(uploadsInformationCard);
+        getUIComponent().getContentPane().removeAll();
+        getUIComponent().setTitle(
+                Translation.getTranslation("information_frame.transfers.text"));
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab(downloadsInformationCard.getCardTitle(),
+                downloadsInformationCard.getUIComponent());
+        tabbedPane.add(uploadsInformationCard.getCardTitle(),
+                uploadsInformationCard.getUIComponent());
+        getUIComponent().getContentPane().add(tabbedPane);
         showingFolder = false;
     }
 
@@ -302,12 +307,6 @@ public class InformationFrame extends PFUIComponent {
         displayCard(noticesCard);
         showingFolder = false;
     }
-
-//    public void displayStats() {
-//        buildStatsCard();
-//        displayCard(statsCard);
-//        showingFolder = false;
-//    }
 
     /**
      * Displays a card with tile and icon.
