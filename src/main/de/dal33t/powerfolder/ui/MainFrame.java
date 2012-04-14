@@ -41,6 +41,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -69,6 +70,8 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
@@ -80,6 +83,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
+import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
@@ -122,12 +126,21 @@ public class MainFrame extends PFUIComponent {
     private JButton inlineInfoCloseButton;
     private JSplitPane split;
     private ServerClient client;
+    private MyNodeManagerListener nodeManagerListener;
 
-    private JLabel syncTextLabel;
-    private JLabel syncDateLabel;
-    private ActionLabel loginActionLabel;
+    // Left mini panel
     private JButtonMini allInSyncButton;
+    private SyncIconButtonMini syncingButton;
+    private JButtonMini setupButton;
+
+    private ActionLabel upperMainTextLabel;
+    private ActionLabel syncDateLabel;
+    private ActionLabel setupLabel;
+
+    private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
+
+    // Right mini panel
     private ActionLabel expandCollapseActionLabel;
     private MyExpandCollapseAction expandCollapseAction;
     private ActionLabel openWebInterfaceActionLabel;
@@ -181,11 +194,14 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builderUpper = new DefaultFormBuilder(layoutUpper);
         PanelBuilder b = new PanelBuilder(new FormLayout("pref:grow",
             "pref:grow"));
-        b.add(allInSyncButton);
+        b.add(allInSyncButton, cc.xy(1, 1));
+        b.add(syncingButton, cc.xy(1, 1));
+        b.add(setupButton, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
-        builderUpper.add(syncTextLabel, cc.xy(3, 1));
-        builderUpper.add(syncDateLabel, cc.xy(3, 2));
-        // UPPER PART
+        builderUpper.add(upperMainTextLabel.getUIComponent(), cc.xy(3, 1));
+        builderUpper.add(syncDateLabel.getUIComponent(), cc.xy(3, 2));
+        builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
+        // UPPER PART END
 
         // LOWER PART
         FormLayout layoutLower = new FormLayout("pref, 100dlu", "pref, pref");
@@ -196,7 +212,7 @@ public class MainFrame extends PFUIComponent {
         builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
         builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
-        // LOWER PART
+        // LOWER PART END
 
         // PUT TOGETHER
         FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
@@ -204,7 +220,7 @@ public class MainFrame extends PFUIComponent {
         builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 0, 0"));
         builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
         builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
-        // PUT TOGETHER
+        // PUT TOGETHER END
 
         return builderMain.getPanel();
     }
@@ -245,7 +261,7 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(logoLabel, cc.xyw(1, 1, 3));
-        
+
         ButtonBarBuilder b = new ButtonBarBuilder();
         b.addFixed(minusButton);
         b.addFixed(plusButton);
@@ -288,7 +304,7 @@ public class MainFrame extends PFUIComponent {
 
         relocateIfNecessary();
         configureInlineInfo();
-        updateSyncStats();
+        updateMainStatus();
 
         // Never start maximized
         //
@@ -368,13 +384,26 @@ public class MainFrame extends PFUIComponent {
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);
 
-        syncTextLabel = new JLabel(" ");
-        syncTextLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        syncTextLabel.addMouseListener(new SwitchCompactModeByMouse());
+        syncingButton = new SyncIconButtonMini(getController());
+        syncingButton.addActionListener(new MyOpenFoldersBaseAction(
+            getController()));
+        syncingButton.setVisible(false);
 
-        syncDateLabel = new JLabel(" ");
-        syncDateLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        syncDateLabel.addMouseListener(new SwitchCompactModeByMouse());
+        setupButton = new JButtonMini(new MySetupAction(getController()));
+        setupButton.setIcon(Icons.getIconById(Icons.ACTION_ARROW));
+        setupButton.setText(null);
+
+        upperMainTextLabel = new ActionLabel(getController(),
+            new SwitchCompactMode());
+        // syncTextLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // syncTextLabel.addMouseListener(new SwitchCompactMode());
+
+        syncDateLabel = new ActionLabel(getController(),
+            new SwitchCompactMode());
+        setupLabel = new ActionLabel(getController(), new MySetupAction(
+            getController()));
+        // syncDateLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // syncDateLabel.addMouseListener(new SwitchCompactModeByMouse());
 
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
@@ -473,6 +502,13 @@ public class MainFrame extends PFUIComponent {
         getApplicationModel().getFolderRepositoryModel()
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
 
+        nodeManagerListener = new MyNodeManagerListener();
+        getController().getNodeManager().addWeakNodeManagerListener(
+            nodeManagerListener);
+
+        getController().getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepoListener());
+
         // Init
         setCompactMode(compact.get(), true);
     }
@@ -480,7 +516,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * Force UI on top if compact.
      */
-    private void checkOnTop() {
+    public void checkOnTop() {
         boolean onTop = uiComponent.isAlwaysOnTopSupported() && compact.get();
         uiComponent.setAlwaysOnTop(onTop);
     }
@@ -500,9 +536,10 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private void updateSyncStats() {
+    private void updateMainStatus() {
         FolderRepositoryModel folderRepositoryModel = getUIController()
             .getApplicationModel().getFolderRepositoryModel();
+        boolean setup = false;
         boolean syncing = folderRepositoryModel.isSyncing();
         Date syncDate;
         if (syncing) {
@@ -513,46 +550,63 @@ public class MainFrame extends PFUIComponent {
         double overallSyncPercentage = folderRepositoryModel
             .getOverallSyncPercentage();
 
-        String syncStatsText;
+        String upperText;
+        String setupText = null;
         boolean synced = false;
         if (!getController().getNodeManager().isStarted()) {
             // Not started
-            syncStatsText = Translation
-                .getTranslation("main_frame.not_running");
+            upperText = Translation.getTranslation("main_frame.not_running");
+            setup = true;
+            setupText = Translation.getTranslation("main_frame.activate_now");
         } else if (getController().getFolderRepository().getFoldersCount() == 0)
         {
             // No folders
-            syncStatsText = Translation.getTranslation("main_frame.no_folders");
+            upperText = Translation.getTranslation("main_frame.no_folders");
+            setup = true;
+            setupText = getApplicationModel().getActionModel()
+                .getNewFolderAction().getName();
         } else if (syncDate == null && !syncing) { // Never synced
-            syncStatsText = Translation
-                .getTranslation("main_frame.never_synced");
+            upperText = Translation.getTranslation("main_frame.never_synced");
         } else {
             if (syncing) {
-                syncStatsText = Translation.getTranslation(
-                    "main_frame.syncing",
+                upperText = Translation.getTranslation("main_frame.syncing",
                     Format.formatDecimal(overallSyncPercentage));
             } else {
-                syncStatsText = Translation
-                    .getTranslation("main_frame.in_sync");
+                upperText = Translation.getTranslation("main_frame.in_sync");
                 synced = true;
             }
         }
-        syncTextLabel.setText(syncStatsText);
+        upperMainTextLabel.setText(upperText);
+        if (setupText != null) {
+            setupLabel.setText(setupText);
+        }
 
-        String syncDateText = " ";
+        String dateText = " ";
         if (syncDate != null) {
-            if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
-                syncDateText = Translation
-                    .getTranslation("main_frame.sync_unknown");
-            } else {
+            if (!DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
                 String date = Format.formatDateShort(syncDate);
-                syncDateText = syncing ? Translation.getTranslation(
+                boolean inFuture = syncDate.after(new Date());
+                dateText = inFuture ? Translation.getTranslation(
                     "main_frame.sync_eta", date) : Translation.getTranslation(
                     "main_frame.last_synced", date);
             }
         }
-        syncDateLabel.setText(syncDateText);
-        allInSyncButton.setVisible(synced);
+        syncDateLabel.setText(dateText);
+
+        syncDateLabel.setVisible(!setup);
+        setupLabel.setVisible(setup);
+
+        if (setup) {
+            setupButton.setVisible(true);
+            syncingButton.setVisible(false);
+            syncingButton.spin(false);
+            allInSyncButton.setVisible(false);
+        } else {
+            setupButton.setVisible(false);
+            syncingButton.setVisible(!synced);
+            syncingButton.spin(!synced);
+            allInSyncButton.setVisible(synced);
+        }
     }
 
     /**
@@ -934,12 +988,10 @@ public class MainFrame extends PFUIComponent {
     // Inner Classes //
     // ////////////////
 
-    private final class SwitchCompactModeByMouse extends MouseAdapter {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 1) {
-                switchCompactMode();
-            }
+    @SuppressWarnings("serial")
+    private final class SwitchCompactMode extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            switchCompactMode();
         }
     }
 
@@ -1212,6 +1264,23 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private class MySetupAction extends AbstractAction {
+
+        private MySetupAction(Controller controller) {
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!getController().getNodeManager().isStarted()) {
+                getApplicationModel().getLicenseModel().getActivationAction()
+                    .actionPerformed(e);
+            } else if (getController().getFolderRepository().getFoldersCount() == 0)
+            {
+                getApplicationModel().getActionModel().getNewFolderAction()
+                    .actionPerformed(e);
+            }
+        }
+    }
+
     private static class MyPauseResumeAction extends BaseAction {
 
         private MyPauseResumeAction(Controller controller) {
@@ -1265,12 +1334,48 @@ public class MainFrame extends PFUIComponent {
         OverallFolderStatListener
     {
         public void statCalculated() {
-            updateSyncStats();
+            updateMainStatus();
         }
 
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+
+    private class MyNodeManagerListener extends NodeManagerAdapter {
+
+        @Override
+        public void startStop(NodeManagerEvent e) {
+            updateMainStatus();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+    }
+
+    private class MyFolderRepoListener implements FolderRepositoryListener {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+            updateMainStatus();
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            updateMainStatus();
+
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+        }
+
     }
 
     private class MyShowFoldersAction extends BaseAction {
