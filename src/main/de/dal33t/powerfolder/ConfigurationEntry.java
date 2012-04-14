@@ -869,7 +869,7 @@ public enum ConfigurationEntry {
 
     REMOVED_FOLDER_FILES("removed.folder.files", ""),
 
-    PAUSE_RESUME_SECONDS("pause.resume.seconds", Integer.MAX_VALUE);
+    PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600); // One hour default.
 
     // Methods/Constructors ***************************************************
 
