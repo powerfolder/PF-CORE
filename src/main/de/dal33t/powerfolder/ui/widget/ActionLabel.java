@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * A Label which executes the action when clicked.
@@ -58,6 +59,7 @@ public class ActionLabel extends PFComponent {
 
     public ActionLabel(Controller controller, final Action action) {
         super(controller);
+        Reject.ifNull(action, "Action");
         this.action = action;
         uiComponent = new JLabel();
         text = (String) action.getValue(Action.NAME);
@@ -150,16 +152,34 @@ public class ActionLabel extends PFComponent {
                 || PreferencesEntry.UNDERLINE_LINKS
                     .getValueBoolean(getController()))
             {
-                Color color = ColorUtil.getTextForegroundColor();
-                String rgb = ColorUtil.getRgbForColor(color);
-                uiComponent.setText("<html><font color=\"" + rgb
-                    + "\"><a href=\"#\">" + text + "</a></font></html>");
+                if (StringUtils.isNotBlank(text)) {
+                    Color color = ColorUtil.getTextForegroundColor();
+                    String rgb = ColorUtil.getRgbForColor(color);
+                    putText("<html><font color=\"" + rgb + "\"><a href=\"#\">"
+                        + text + "</a></font></html>");
+                } else {
+                    putText(" ");
+                }
+
             } else {
                 uiComponent.setForeground(SystemColor.textText);
-                uiComponent.setText(text);
+                putText(text);
             }
         } else {
             uiComponent.setForeground(SystemColor.textInactiveText);
+            putText(text);
+        }
+    }
+    
+    private void putText(String text) {
+        String oldTest = uiComponent.getText();
+        if (oldTest == null) {
+            if (text != null) {
+                uiComponent.setText(text);
+            }
+            return;
+        }
+        if (!oldTest.equals(text)) {
             uiComponent.setText(text);
         }
     }

@@ -33,7 +33,6 @@ import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.event.WeakActionListener;
 import de.dal33t.powerfolder.event.WeakPropertyChangeListener;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
 
 /**
@@ -74,13 +73,13 @@ public class JButtonMini extends JButton {
         setBorder(null);
         setBorder(Borders.createEmptyBorder("0dlu, 0dlu, 0dlu, 0dlu"));
         setMargin(new Insets(0, 0, 0, 0));
-        setBorderPainted(false                     );
+        setBorderPainted(false);
         if (toolTipText != null && toolTipText.trim().length() > 0) {
             setToolTipText(toolTipText);
         }
     }
 
-    public void configureFromAction(BaseAction action) {
+    public void configureFromAction(Action action) {
         Object value = action.getValue(Action.SMALL_ICON);
         if (value != null && value instanceof Icon) {
             Icon icon = (Icon) value;
