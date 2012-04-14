@@ -95,7 +95,6 @@ import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.notification.PreviewNotificationHandler;
-import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -312,13 +311,6 @@ public class UIController extends PFComponent {
                 }
             });
         }
-
-        // Start the blinkers later, so the UI is fully displayed first.
-        UIUtil.invokeLaterInEDT(new Runnable() {
-            public void run() {
-                new MainFrameBlinkManager(UIController.this);
-            }
-        });
 
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);

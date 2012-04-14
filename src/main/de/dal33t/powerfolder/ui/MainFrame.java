@@ -730,33 +730,6 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Set the Icon for the sttus tab.
-     * 
-     * @param statusIcon
-     */
-    public void setStatusTabIcon(Icon statusIcon) {
-        mainTabbedPane.setStatusIcon(statusIcon);
-    }
-
-    /**
-     * Set the Icon for the folders tab.
-     * 
-     * @param foldersIcon
-     */
-    public void setFoldersTabIcon(Icon foldersIcon) {
-        mainTabbedPane.setFoldersIcon(foldersIcon);
-    }
-
-    /**
-     * Set the Icon for the computers tab.
-     * 
-     * @param computersIcon
-     */
-    public void setComputersTabIcon(Icon computersIcon) {
-        mainTabbedPane.setComputersIcon(computersIcon);
-    }
-
-    /**
      * @return the selected main tab index.
      */
     public int getSelectedMainTabIndex() {

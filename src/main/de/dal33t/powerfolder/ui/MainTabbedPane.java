@@ -30,13 +30,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
-import de.dal33t.powerfolder.ui.status.StatusTab;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.DefaultFormBuilder;
 
 /**
  * This is the main tabbed pain component in the PowerFolder GUI. In expert
@@ -45,11 +40,9 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
  */
 public class MainTabbedPane extends PFUIComponent {
 
-    public static final int STATUS_INDEX = 0;
-    public static final int FOLDERS_INDEX = 1;
-    public static final int COMPUTERS_INDEX = 2;
+    public static final int FOLDERS_INDEX = 0;
+    public static final int COMPUTERS_INDEX = 1;
 
-    private StatusTab statusTab;
     private FoldersTab foldersTab;
     private ComputersTab computersTab;
 
@@ -83,13 +76,8 @@ public class MainTabbedPane extends PFUIComponent {
 
             if (expertMode) {
 
-                tabbedPane.add(
-                    Translation.getTranslation("main_tabbed_pane.status.name"),
-                    statusTab.getUIComponent());
-
-                tabbedPane
-                    .add(Translation
-                        .getTranslation("main_tabbed_pane.folders.name"),
+                tabbedPane.add(Translation.getTranslation(
+                        "main_tabbed_pane.folders.name"),
                         foldersTab.getUIComponent());
 
                 if (showComputersTab) {
@@ -103,15 +91,6 @@ public class MainTabbedPane extends PFUIComponent {
                 }
 
                 String key = Translation
-                    .getTranslation("main_tabbed_pane.status.key");
-                tabbedPane.setMnemonicAt(STATUS_INDEX,
-                    (int) Character.toUpperCase(key.charAt(0)));
-                tabbedPane.setToolTipTextAt(STATUS_INDEX, Translation
-                    .getTranslation("main_tabbed_pane.status.description"));
-                // tabbedPane.setIconAt(STATUS_INDEX,
-                // Icons.getIconById(Icons.STATUS));
-
-                key = Translation
                     .getTranslation("main_tabbed_pane.folders.key");
                 tabbedPane.setMnemonicAt(FOLDERS_INDEX,
                     (int) Character.toUpperCase(key.charAt(0)));
@@ -141,7 +120,6 @@ public class MainTabbedPane extends PFUIComponent {
                 tabbedPane.setMinimumSize(new Dimension(minWidth, minHeight));
 
                 CursorUtils.setHandCursor(tabbedPane);
-                CursorUtils.setDefaultCursor(statusTab.getUIComponent());
                 CursorUtils.setDefaultCursor(foldersTab.getUIComponent());
                 CursorUtils.setDefaultCursor(computersTab.getUIComponent());
 
@@ -176,7 +154,6 @@ public class MainTabbedPane extends PFUIComponent {
         if (expertMode) {
             tabbedPane = new JTabbedPane();
             tabbedPane.setOpaque(false);
-            statusTab = new StatusTab(getController());
             computersTab = new ComputersTab(getController());
         }
     }
@@ -204,50 +181,12 @@ public class MainTabbedPane extends PFUIComponent {
     }
 
     /**
-     * Set the status tab icon.
-     * 
-     * @param statusIcon
-     */
-    public void setStatusIcon(Icon statusIcon) {
-        if (expertMode) {
-            // tabbedPane.setIconAt(STATUS_INDEX, statusIcon);
-        }
-    }
-
-    /**
-     * Set the folders tab icon.
-     * 
-     * @param foldersIcon
-     */
-    public void setFoldersIcon(Icon foldersIcon) {
-        if (expertMode) {
-            //tabbedPane.setIconAt(FOLDERS_INDEX, foldersIcon);
-        }
-    }
-
-    /**
      * @param tabIndex
      *            the select tab index
      */
     public void setActiveTab(int tabIndex) {
         if (expertMode) {
             tabbedPane.setSelectedIndex(tabIndex);
-        }
-    }
-
-    /**
-     * Set the computers tab icon.
-     * 
-     * @param computersIcon
-     */
-    public void setComputersIcon(Icon computersIcon) {
-        if (showComputersTab && expertMode) {
-            try {
-                //tabbedPane.setIconAt(COMPUTERS_INDEX, computersIcon);
-            } catch (Exception e) {
-                // Ignore. This will fail on preference setting change,
-                // just before restart.
-            }
         }
     }
 
