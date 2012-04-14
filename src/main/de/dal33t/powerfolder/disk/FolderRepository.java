@@ -794,10 +794,16 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings metaFolderSettings = new FolderSettings(new TFile(
             systemSubdir, Constants.METAFOLDER_SUBDIR),
             SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.NO_BACKUP, 0);
-        metaFolderSettings.getLocalBaseDir().mkdirs();
+        boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
+        if (!deviceDisconnected) {
+            metaFolderSettings.getLocalBaseDir().mkdirs();
+        }
         Folder metaFolder = new Folder(getController(), metaFolderInfo,
             metaFolderSettings);
-        metaFolder.getSystemSubDir().mkdirs();
+        if (!deviceDisconnected) {
+            metaFolder.getSystemSubDir().mkdirs();
+        }
+
         metaFolders.put(folderInfo, metaFolder);
         if (!metaFolder.hasOwnDatabase()) {
             // Scan once. To get it working.
