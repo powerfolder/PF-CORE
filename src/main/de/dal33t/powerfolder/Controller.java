@@ -146,7 +146,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.9.5"; // 5.0.36
+    public static final String PROGRAM_VERSION = "5.9.7"; // 5.0.36
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1006,7 +1006,7 @@ public class Controller extends PFComponent {
                 public void run() {
                     folderRepository.lookForNewFolders();
                 }
-            }, 30L, 10L, TimeUnit.SECONDS);
+            }, 10L, 10L, TimeUnit.SECONDS);
         }
 
         // ============
