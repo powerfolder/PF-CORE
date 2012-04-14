@@ -20,8 +20,6 @@
 package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.skin.SnowlandBasic;
 
 public class PowerFolderBasic extends AbstractDistribution {
 
@@ -52,9 +50,6 @@ public class PowerFolderBasic extends AbstractDistribution {
         {
             resetServer(controller);
         }
-
-        // Deprecated. Already set in and overriden from Default.config
-        PreferencesEntry.SKIN_NAME.setValue(controller, SnowlandBasic.NAME);
     }
 
     public boolean allowSkinChange() {
