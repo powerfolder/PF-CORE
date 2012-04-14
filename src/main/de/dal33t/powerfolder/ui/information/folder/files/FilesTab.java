@@ -153,12 +153,12 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        // filterSelectionComboBox
-        // .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
-
-        directoryFilter.setFileFilterMode(filterSelectionComboBox
-            .getSelectedIndex());
-        directoryFilter.scheduleFiltering();
+        filterSelectionComboBox
+            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
+        filterTextField.reset();
+//        directoryFilter.setFileFilterMode(filterSelectionComboBox
+//            .getSelectedIndex());
+//        directoryFilter.scheduleFiltering();
     }
 
     /**
@@ -180,6 +180,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         filterSelectionComboBox
             .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
+        filterTextField.reset();
     }
 
     public void setFolderInfoDeleted(FolderInfo folderInfo) {
@@ -194,6 +195,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         filterSelectionComboBox
             .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
+        filterTextField.reset();
     }
 
     public void setFolderInfoUnsynced(FolderInfo folderInfo) {
@@ -209,6 +211,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         filterSelectionComboBox
             .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED);
+        filterTextField.reset();
     }
 
     /**
@@ -228,6 +231,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         filterSelectionComboBox
             .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
+        filterTextField.reset();
     }
 
     /**
