@@ -25,23 +25,10 @@
 	<classpathentry exported="true" kind="lib" path="lib/binding-2.0.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/synthetica.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaAddons.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlackMoon.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlackStar.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlueIce.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlueMoon.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlueSteel.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaGreenDream.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaMauveMetallic.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaOrangeMetallic.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaSilverMoon.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaSkyMetallic.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaWhiteVision.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="src/distribution/PowerFolderBasic"/>
 	<classpathentry kind="lib" path="lib/jfreechart/jcommon-1.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate3-stripped.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaClassy.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaSimple2D.jar"/>
 	<classpathentry kind="lib" path="lib/annotations-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-jdk16-1.46.jar"/>
 	<classpathentry kind="lib" path="lib/commons-compress-1.3.jar"/>

@@ -109,23 +109,7 @@ For creation of the installer:
 			<!--<include name="synthetica/swingx.jar" />-->
 			<include name="synthetica/synthetica.jar" />
 			<include name="synthetica/syntheticaAddons.jar" />
-			<include name="synthetica/syntheticaBlackMoon.jar" />
-			<include name="synthetica/syntheticaBlackStar.jar" />
-			<!-- Text not readable:
-			<include name="synthetica/syntheticaBlackEye.jar" />
-			-->
-			<include name="synthetica/syntheticaBlueIce.jar" />
-			<include name="synthetica/syntheticaBlueMoon.jar" />
-			<include name="synthetica/syntheticaBlueSteel.jar" />
-			<include name="synthetica/syntheticaGreenDream.jar" />
-			<include name="synthetica/syntheticaMauveMetallic.jar" />
-			<include name="synthetica/syntheticaOrangeMetallic.jar" />
-			<include name="synthetica/syntheticaClassy.jar" />
-			<include name="synthetica/syntheticaSilverMoon.jar" />
-			<include name="synthetica/syntheticaSkyMetallic.jar" />
-			<include name="synthetica/syntheticaSimple2D.jar" />
-			<include name="synthetica/syntheticaWhiteVision.jar" />
-			
+
 			<!-- TrueZIP -->
 			<include name="annotations-1.0.0.jar" />
 			<include name="bcprov-jdk16-1.46.jar" />
