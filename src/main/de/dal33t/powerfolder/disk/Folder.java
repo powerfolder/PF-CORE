@@ -3473,7 +3473,24 @@ public class Folder extends PFComponent {
         if (addProblem) {
             logInfo("Device disconnected. Folder disappeared from "
                 + getLocalBase());
-            addProblem(new DeviceDisconnectedProblem(currentInfo));
+            String bd = getController().getFolderRepository()
+                .getFoldersBasedir();
+            boolean inBaseDir = false;
+            if (bd != null) {
+                inBaseDir = getLocalBase().getAbsolutePath().startsWith(bd);
+            }
+
+            if (inBaseDir && !currentInfo.isMetaFolder()) {
+                // Schedule for removal
+                getController().schedule(new Runnable() {
+                    public void run() {
+                        getController().getFolderRepository().removeFolder(
+                            Folder.this, false);
+                    }
+                }, 5000L);
+            } else {
+                addProblem(new DeviceDisconnectedProblem(currentInfo));
+            }
         }
 
         return deviceDisconnected;
