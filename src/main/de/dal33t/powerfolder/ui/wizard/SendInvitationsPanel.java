@@ -28,7 +28,6 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -65,14 +64,11 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
-import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -97,7 +93,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private ActionLabel addMessageLink;
     private ValueModel locationModel;
     private ValueModel permissionsModel;
-    private ActionLabel inviteInfoLabel;
     private DefaultListModel inviteesListModel;
     private Invitation invitation;
     private ValueModel messageModel;
@@ -150,7 +145,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * Send an invite to a friend. The invitee must be in the list of friends or
      * be a valid email.
      * 
-     * @param friends
+     * @param candidates
      * @param invitee
      */
     private void sendInvite(Collection<Member> candidates, String invitee) {
@@ -229,7 +224,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "140dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 20dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 20dlu, pref");
         // inv join text inv fdl hint1 hint2 auto list remove adv
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -279,9 +274,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         } else {
             advancedLink.getUIComponent();
         }
-        row += 2;
-
-        builder.add(inviteInfoLabel.getUIComponent(), cc.xyw(1, row, 2));
 
         return builder.getPanel();
     }
@@ -304,23 +296,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         addButton = new JButtonMini(new MyAddAction(getController()));
         removeButton = new JButtonMini(new MyRemoveAction(getController()));
         searchButton = new JButtonMini(new MySearchAction(getController()));
-
-        inviteInfoLabel = new ActionLabel(getController(), new AbstractAction()
-        {
-            public void actionPerformed(ActionEvent e) {
-                String wikiArticleURL = Help.getWikiArticleURL(getController(),
-                    WikiLinks.INVITATIONS);
-                try {
-                    BrowserLauncher.openURL(wikiArticleURL);
-                } catch (IOException e1) {
-                    // Hmmm.
-                }
-            }
-        });
-
-        inviteInfoLabel.setText(Translation
-            .getTranslation("wizard.send_invitations.information"));
-        inviteInfoLabel.setVisible(Help.hasWiki(getController()));
 
         viaPowerFolderText = new AutoTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());

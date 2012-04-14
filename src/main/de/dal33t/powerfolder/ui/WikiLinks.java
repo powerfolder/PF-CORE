@@ -46,7 +46,6 @@ public interface WikiLinks {
     String PROBLEM_FILE_CONFLICT = "Conflict_handling";
     String SCRIPT_EXECUTION = "Script_execution";
     String DEFAULT_FOLDER = "Default_Folder";
-    String INVITATIONS = "Invitations";
     String TRANSFER_MODES = "Transfer_Modes";
     String SECURITY_PERMISSION = "Security_Permissions";
     String SERVER_CLIENT_DEPLOYMENT = "Server_client_deployment";
