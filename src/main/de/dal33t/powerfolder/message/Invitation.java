@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -66,6 +67,15 @@ public class Invitation extends FolderRelatedMessage {
     private long size;
     private int filesCount;
 
+    // Since 6.0:
+    private String username;
+
+    /**
+     * Constructor
+     *
+     * @param folder
+     * @param invitor
+     */
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
         this.invitor = invitor;
@@ -189,6 +199,21 @@ public class Invitation extends FolderRelatedMessage {
         }
     }
 
+    // Return the user name if not blank, else the invitor nick. 
+    public String getBestUsername() {
+        if (StringUtils.isBlank(username)) {
+            if (invitor == null) {
+                return "";
+            }
+            return invitor.getNick();
+        }
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public MemberInfo getInvitor() {
         return invitor;
     }
@@ -242,24 +267,25 @@ public class Invitation extends FolderRelatedMessage {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
+        int prime = 31;
         int result = 1;
         result = prime * result
-            + ((invitationText == null) ? 0 : invitationText.hashCode());
-        result = prime * result + ((invitor == null) ? 0 : invitor.hashCode());
+            + (invitationText == null ? 0 : invitationText.hashCode());
+        result = prime * result + (invitor == null ? 0 : invitor.hashCode());
         result = prime * result
-            + ((permission == null) ? 0 : permission.hashCode());
+            + (permission == null ? 0 : permission.hashCode());
         result = prime * result + relative;
+        result = prime * result + (username == null ? 0 : username.hashCode());
         result = prime
             * result
-            + ((suggestedLocalBase == null) ? 0 : suggestedLocalBase.hashCode());
+            + (suggestedLocalBase == null ? 0 : suggestedLocalBase.hashCode());
         result = prime
             * result
-            + ((suggestedLocalBasePath == null) ? 0 : suggestedLocalBasePath
+            + (suggestedLocalBasePath == null ? 0 : suggestedLocalBasePath
                 .hashCode());
         result = prime
             * result
-            + ((suggestedSyncProfileConfig == null)
+            + (suggestedSyncProfileConfig == null
                 ? 0
                 : suggestedSyncProfileConfig.hashCode());
         return result;
@@ -267,46 +293,69 @@ public class Invitation extends FolderRelatedMessage {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Invitation other = (Invitation) obj;
         if (invitationText == null) {
-            if (other.invitationText != null)
+            if (other.invitationText != null) {
                 return false;
-        } else if (!invitationText.equals(other.invitationText))
+            }
+        } else if (!invitationText.equals(other.invitationText)) {
             return false;
+        }
         if (invitor == null) {
-            if (other.invitor != null)
+            if (other.invitor != null) {
                 return false;
-        } else if (!invitor.equals(other.invitor))
+            }
+        } else if (!invitor.equals(other.invitor)) {
             return false;
+        }
+        if (username == null) {
+            if (other.username != null) {
+                return false;
+            }
+        } else if (!username.equals(other.username)) {
+            return false;
+        }
         if (permission == null) {
-            if (other.permission != null)
+            if (other.permission != null) {
                 return false;
-        } else if (!permission.equals(other.permission))
+            }
+        } else if (!permission.equals(other.permission)) {
             return false;
-        if (relative != other.relative)
+        }
+        if (relative != other.relative) {
             return false;
+        }
         if (suggestedLocalBase == null) {
-            if (other.suggestedLocalBase != null)
+            if (other.suggestedLocalBase != null) {
                 return false;
-        } else if (!suggestedLocalBase.equals(other.suggestedLocalBase))
+            }
+        } else if (!suggestedLocalBase.equals(other.suggestedLocalBase)) {
             return false;
+        }
         if (suggestedLocalBasePath == null) {
-            if (other.suggestedLocalBasePath != null)
+            if (other.suggestedLocalBasePath != null) {
                 return false;
-        } else if (!suggestedLocalBasePath.equals(other.suggestedLocalBasePath))
+            }
+        } else if (!suggestedLocalBasePath.equals(other.suggestedLocalBasePath)) {
             return false;
+        }
         if (suggestedSyncProfileConfig == null) {
-            if (other.suggestedSyncProfileConfig != null)
+            if (other.suggestedSyncProfileConfig != null) {
                 return false;
+            }
         } else if (!suggestedSyncProfileConfig
-            .equals(other.suggestedSyncProfileConfig))
+            .equals(other.suggestedSyncProfileConfig)) {
             return false;
+        }
         return true;
     }
 }

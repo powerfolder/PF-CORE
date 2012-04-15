@@ -172,7 +172,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         // Invite info
 
         builder.addLabel(Translation.getTranslation(
-            "wizard.folder_invitation.intro", invitation.getInvitor().nick,
+            "wizard.folder_invitation.intro", invitation.getBestUsername(),
             invitation.folder.name), cc.xyw(1, 1, 4));
 
         // Message
@@ -271,10 +271,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             folderNameLabel.setText(invitation.folder.name);
 
             invitorHintLabel.setEnabled(true);
-            Member node = invitation.getInvitor()
-                .getNode(getController(), true);
-            invitorLabel.setText(node != null ? node.getNick() : invitation
-                .getInvitor().nick);
+            invitorLabel.setText(invitation.getBestUsername());
 
             invitationMessageHintLabel.setEnabled(true);
             invitationMessageLabel

@@ -293,10 +293,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             folderNameLabel.setText(invitation.folder.name);
 
             invitorHintLabel.setEnabled(true);
-            Member node = invitation.getInvitor()
-                .getNode(getController(), true);
-            invitorLabel.setText(node != null ? node.getNick() : invitation
-                .getInvitor().nick);
+            invitorLabel.setText(invitation.getBestUsername());
 
             invitationMessageHintLabel.setEnabled(true);
             invitationMessageLabel
