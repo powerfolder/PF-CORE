@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -139,6 +141,7 @@ public class MainFrame extends PFUIComponent {
 
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
+    private ActionLabel noticesActionLabel;
 
     // Right mini panel
     private ActionLabel expandCollapseActionLabel;
@@ -205,22 +208,22 @@ public class MainFrame extends PFUIComponent {
         // UPPER PART END
 
         // LOWER PART
-        FormLayout layoutLower = new FormLayout("pref, 100dlu", "pref, pref");
+        FormLayout layoutLower = new FormLayout("pref, 100dlu",
+                "pref, pref, pref");
         DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
-        builderLower.setBorder(Borders.createEmptyBorder("5dlu, 0, 5dlu, 0"));
         // Include a spacer icon that lines up the pair with builderUpper
         // when allInSyncLabel has null icon.
         builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
         builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
+        builderLower.add(noticesActionLabel.getUIComponent(), cc.xy(2, 3));
         // LOWER PART END
 
         // PUT TOGETHER
-        FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
+        FormLayout layoutMain = new FormLayout("pref", "pref, pref");
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
-        builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 0, 0"));
         builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
-        builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
+        builderMain.add(builderLower.getPanel(), cc.xy(1, 2));
         // PUT TOGETHER END
 
         return builderMain.getPanel();
@@ -309,6 +312,7 @@ public class MainFrame extends PFUIComponent {
         relocateIfNecessary();
         configureInlineInfo();
         updateMainStatus();
+        updateNoticesLabel();
 
         // Never start maximized
         //
@@ -323,6 +327,30 @@ public class MainFrame extends PFUIComponent {
         // }
         // uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
         // }
+    }
+
+    /**
+     * Show notices link if there are notices available.
+     */
+    private void updateNoticesLabel() {
+        int unreadCount = (Integer) getController().getUIController()
+                .getApplicationModel().getNoticesModel()
+                .getUnreadNoticesCountVM().getValue();
+        int allCount = (Integer) getController().getUIController()
+                .getApplicationModel().getNoticesModel()
+                .getAllNoticesCountVM().getValue();
+        if (allCount == 0) {
+            noticesActionLabel.setVisible(false);
+        } else if (unreadCount == 1) {
+            noticesActionLabel.setVisible(true);
+            noticesActionLabel.setText(Translation.getTranslation(
+                    "main_frame.unread_notices.single.text"));
+        } else {
+            noticesActionLabel.setVisible(true);
+            noticesActionLabel.setText(Translation.getTranslation(
+                    "main_frame.unread_notices.plural.text",
+                    String.valueOf(unreadCount)));
+        }
     }
 
     /**
@@ -411,6 +439,8 @@ public class MainFrame extends PFUIComponent {
 
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
+        noticesActionLabel = new ActionLabel(getController(),
+                new MyShowNoticesAction(getController()));
         usagePB = new JProgressBar();
         usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(new MouseAdapter() {
@@ -517,6 +547,15 @@ public class MainFrame extends PFUIComponent {
 
         // Init
         setCompactMode(compact.get(), true);
+
+        // Start listening to notice changes.
+        getController().getUIController().getApplicationModel()
+                .getNoticesModel().getAllNoticesCountVM()
+                .addValueChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        updateNoticesLabel();
+                    }
+                });
     }
 
     /**
@@ -1386,6 +1425,17 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             PFWizard.openLoginWizard(getController(), client);
+        }
+    }
+
+    private class MyShowNoticesAction extends BaseAction {
+
+        MyShowNoticesAction(Controller controller) {
+            super("action_show_notices", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().openNoticesCard();
         }
     }
 
