@@ -38,9 +38,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.ui.FileDropTransferHandler;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
@@ -101,8 +99,6 @@ public class FoldersTab extends PFUIComponent {
         if (uiComponent == null) {
             buildUI();
         }
-        uiComponent.setTransferHandler(new FileDropTransferHandler(
-            getController()));
         return uiComponent;
     }
 

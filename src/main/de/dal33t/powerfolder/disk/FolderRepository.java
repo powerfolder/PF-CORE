@@ -1618,6 +1618,23 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    /**
+     * Do we already have a folder that has this file as its base?
+     *
+     * @param file
+     */
+    public boolean doesFolderAlreadyExist(File file) {
+        if (!file.isDirectory()) {
+            return false;
+        }
+        for (Folder folder : folders.values()) {
+            if (file.equals(folder.getBaseDirectoryInfo().getDiskFile(this))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class CheckSyncTask implements Runnable {
         public void run() {
             for (Folder folder : getController().getFolderRepository()

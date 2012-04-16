@@ -29,6 +29,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -37,22 +40,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.IOException;
+import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
@@ -406,6 +402,7 @@ public class MainFrame extends PFUIComponent {
                 customPack();
             }
         };
+        uiComponent.setTransferHandler(new MyTransferHandler());
         checkOnTop();
         uiComponent.addWindowFocusListener(new MyWindowFocusListner());
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
@@ -1484,6 +1481,48 @@ public class MainFrame extends PFUIComponent {
                 Point l = uiComponent.getLocation();
                 uiComponent.setLocation(l.x + dx, l.y + dy);
             }
+        }
+    }
+
+    /**
+     * Handle drag-n-drops of Folders direct into the application.
+     */
+    private class MyTransferHandler extends TransferHandler {
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+        }
+
+        @SuppressWarnings({"unchecked"})
+        public boolean importData(TransferSupport support) {
+            try {
+                Transferable t = support.getTransferable();
+                List<File> fileList = (List<File>)
+                        t.getTransferData(DataFlavor.javaFileListFlavor);
+
+                // One at a time!
+                if (fileList == null || fileList.size() != 1) {
+                    return false;
+                }
+
+                // Directories only.
+                File file = fileList.get(0);
+                if (!file.isDirectory()) {
+                    return false;
+                }
+                
+                // Make sure we do not already have this as a folder.
+                if (!getController().getFolderRepository()
+                        .doesFolderAlreadyExist(file)) {
+                    PFWizard.openExistingDirectoryWizard(getController(), file);
+                }
+            } catch (UnsupportedFlavorException e) {
+                logSevere(e);
+                return false;
+            } catch (IOException e) {
+                logSevere(e);
+                return false;
+            }
+            return true;
         }
     }
 
