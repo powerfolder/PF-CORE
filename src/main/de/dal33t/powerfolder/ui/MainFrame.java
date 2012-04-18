@@ -174,7 +174,7 @@ public class MainFrame extends PFUIComponent {
 
     private JPanel createMiniPanel() {
         FormLayout layout = new FormLayout("left:pref:grow, left:pref",
-            "top:pref");
+            "top:pref:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("10dlu, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
@@ -216,10 +216,10 @@ public class MainFrame extends PFUIComponent {
         // LOWER PART END
 
         // PUT TOGETHER
-        FormLayout layoutMain = new FormLayout("pref", "pref, pref");
+        FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
         builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
-        builderMain.add(builderLower.getPanel(), cc.xy(1, 2));
+        builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
         // PUT TOGETHER END
 
         return builderMain.getPanel();
