@@ -19,6 +19,14 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -26,16 +34,11 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * The Sync action panel. User can input his sync actions. e.g. scan. scan &
@@ -93,11 +96,11 @@ public class SyncFolderDialog extends BaseDialog {
 
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation
-            .getTranslation("dialog.synchronization.choose"), cc.xy(1, 1));
+        builder.addLabel(
+            Translation.getTranslation("dialog.synchronization.choose"),
+            cc.xy(1, 1));
         // Add iconed label
-        JLabel folderLabel = builder.addLabel(folder.getName(), cc.xy(1, 3));
-        folderLabel.setIcon(Icons.getIconById(Icons.FOLDER));
+        builder.addLabel(folder.getName(), cc.xy(1, 3));
 
         builder.add(sendChangesButton, cc.xy(1, 5));
         builder.add(receiveChangesButton, cc.xy(1, 6));
@@ -118,9 +121,9 @@ public class SyncFolderDialog extends BaseDialog {
         JButton cancelButton = createCancelButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Don't want to be notified when the scan completes.
-                getController().getUIController().getApplicationModel().
-                        getFolderRepositoryModel().removeInterestedFolderInfo(
-                        folder.getInfo());
+                getController().getUIController().getApplicationModel()
+                    .getFolderRepositoryModel()
+                    .removeInterestedFolderInfo(folder.getInfo());
                 close();
             }
         });
