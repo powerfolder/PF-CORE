@@ -79,6 +79,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
@@ -138,6 +139,8 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
     private ActionLabel noticesActionLabel;
+    
+    private DelayedUpdater mainStatusUpdater;
 
     // Right mini panel
     private ActionLabel expandCollapseActionLabel;
@@ -218,6 +221,7 @@ public class MainFrame extends PFUIComponent {
         // PUT TOGETHER
         FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
+        builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 0, 0"));
         builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
         builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
         // PUT TOGETHER END
@@ -307,8 +311,10 @@ public class MainFrame extends PFUIComponent {
 
         relocateIfNecessary();
         configureInlineInfo();
-        updateMainStatus();
+        updateMainStatus0();
         updateNoticesLabel();
+
+        mainStatusUpdater = new DelayedUpdater(getController());
 
         // Never start maximized
         //
@@ -335,7 +341,7 @@ public class MainFrame extends PFUIComponent {
         int allCount = (Integer) getController().getUIController()
                 .getApplicationModel().getNoticesModel()
                 .getAllNoticesCountVM().getValue();
-        if (allCount == 0) {
+        if (unreadCount == 0) {
             noticesActionLabel.setVisible(false);
         } else if (unreadCount == 1) {
             noticesActionLabel.setVisible(true);
@@ -579,6 +585,14 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void updateMainStatus() {
+        mainStatusUpdater.schedule(new Runnable() {
+            public void run() {
+                updateMainStatus0();
+            }
+        });
+    }
+
+    private void updateMainStatus0() {
         FolderRepositoryModel folderRepositoryModel = getUIController()
             .getApplicationModel().getFolderRepositoryModel();
         boolean setup = false;
