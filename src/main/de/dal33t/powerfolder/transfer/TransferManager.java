@@ -2641,32 +2641,40 @@ public class TransferManager extends PFComponent {
                     logFiner("Checking uploads/downloads");
                 }
 
-                // Check queued uploads
-                checkQueuedUploads();
+                if (getController().isPaused()) {
+                    logFine("Paused.");
+                } else {
 
-                // Check pending downloads
-                checkPendingDownloads();
+                    // Check queued uploads
+                    checkQueuedUploads();
 
-                // Checking downloads
-                checkDownloads();
+                    // Check pending downloads
+                    checkPendingDownloads();
 
-                // log upload / donwloads
-                if (count % 2 == 0) {
-                    logFine("Transfers: "
-                        + countActiveDownloads()
-                        + " download(s), "
-                        + Format.formatDecimal(getDownloadCounter()
-                            .calculateCurrentKBS())
-                        + " KByte/s, "
-                        + activeUploads.size()
-                        + " active upload(s), "
-                        + queuedUploads.size()
-                        + " in queue, "
-                        + Format.formatDecimal(getUploadCounter()
-                            .calculateCurrentKBS()) + " KByte/s");
+                    // Checking downloads
+                    checkDownloads();
+
+                    // log upload / donwloads
+                    if (count % 2 == 0) { // @todo huh? why % 2 ?
+                        if (isFine()) {
+                            logFine("Transfers: "
+                                + countActiveDownloads()
+                                + " download(s), "
+                                + Format.formatDecimal(getDownloadCounter()
+                                    .calculateCurrentKBS())
+                                + " KByte/s, "
+                                + activeUploads.size()
+                                + " active upload(s), "
+                                + queuedUploads.size()
+                                + " in queue, "
+                                + Format.formatDecimal(getUploadCounter()
+                                    .calculateCurrentKBS()) + " KByte/s");
+                        }
+                    }
+
+                    count++;
+
                 }
-
-                count++;
 
                 // wait a bit to next work
                 try {
