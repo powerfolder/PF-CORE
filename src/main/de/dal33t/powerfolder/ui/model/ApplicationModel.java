@@ -19,14 +19,16 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Date;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -34,6 +36,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.security.AdminPermission;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
@@ -63,6 +66,8 @@ public class ApplicationModel extends PFUIComponent {
     private ValueModel useOSModel;
     private LicenseModel licenseModel;
     private NoticesModel noticesModel;
+    private Date lastMouseAction;
+    private Point lastMouseLocation;
 
     /**
      * Constructs a non-initialized application model. Before the model can be
@@ -155,6 +160,26 @@ public class ApplicationModel extends PFUIComponent {
         metaFolder.getStatistic().scheduleCalculate();
 
         folder.getStatistic().scheduleCalculate();
+    }
+
+    public boolean isUserActive() {
+        Point nowMouseLocation = MouseInfo.getPointerInfo().getLocation();
+        if (lastMouseLocation == null) {
+            // Init
+            lastMouseLocation = nowMouseLocation;
+            lastMouseAction = new Date();
+            return true;
+        }
+        // Mouse was moved.
+        if (!nowMouseLocation.equals(lastMouseLocation)) {
+            lastMouseLocation = nowMouseLocation;
+            lastMouseAction = new Date();
+            return true;
+        }
+        // Mouse was not moved.
+        long forSeconds = (System.currentTimeMillis() - lastMouseAction
+            .getTime()) / 1000;
+        return forSeconds <= 10;
     }
 
     // Exposing ***************************************************************
