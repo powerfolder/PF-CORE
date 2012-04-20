@@ -189,8 +189,13 @@ public class Upload extends Transfer {
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
                 try {
+                    if (isAborted() || isBroken()) {
+                        throw new TransferException(
+                            "Upload broken/aborted while starting. "
+                                + Upload.this);
+                    }
+                    
                     debugState = "Opening file";
-
                     if (!getFile().getFolder(
                         getController().getFolderRepository()).isEncrypted())
                     {
