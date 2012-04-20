@@ -2702,6 +2702,15 @@ public class TransferManager extends PFComponent {
         }
     }
 
+    public void abortAllUploads() {
+        for (Upload upload : activeUploads) {
+            uploadBroken(upload, TransferProblem.PAUSED);
+        }
+        for (Upload upload : queuedUploads) {
+            uploadBroken(upload, TransferProblem.PAUSED);
+        }
+    }
+
     public void checkActiveTranfersForExcludes() {
 
         for (DownloadManager dlManager : dlManagers.values()) {
@@ -2894,9 +2903,13 @@ public class TransferManager extends PFComponent {
                 }
                 // Get times.
                 Date startDate = new Date();
+                long downloadRate = 0;
                 long downloadSize = 1047552; // @todo, why 1023 * 1024 bytes?
-                boolean downloadOk = countActiveDownloads() == 0
-                    && testAvailabilityDownload(downloadSize);
+                boolean downloadOk = false;
+
+                // downloadOk = countActiveDownloads() == 0
+                // && testAvailabilityDownload(downloadSize);
+
                 Date afterDownload = new Date();
                 // @todo please explain why / 4 ?
                 long uploadSize = 1047552 / 4;
@@ -2912,9 +2925,11 @@ public class TransferManager extends PFComponent {
                 // logWarning("Test availability download time " +
                 // downloadTime);
                 // logWarning("Test availability upload time " + uploadTime);
-                // Calculate rates in KiB/s.
-                long downloadRate = downloadTime > 0 ? downloadSize * 1000
-                    / downloadTime : 0;
+                // Calculate rates in KiB/s.#
+                if (downloadOk) {
+                    downloadRate = downloadTime > 0 ? downloadSize * 1000
+                        / downloadTime : 0;
+                }
                 long uploadRate = uploadTime > 0 ? uploadSize * 1000
                     / uploadTime : 0;
                 if (downloadOk) {
@@ -2947,6 +2962,9 @@ public class TransferManager extends PFComponent {
 
                 if (downloadOk) {
                     setDownloadCPSForWAN(modifiedDownloadRate);
+                } else {
+                    // Set unlimited
+                    setDownloadCPSForWAN(0);
                 }
                 if (uploadOk) {
                     setUploadCPSForWAN(modifiedUploadRate);
