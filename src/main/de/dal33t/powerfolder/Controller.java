@@ -103,6 +103,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ByteSerializer;
@@ -146,7 +147,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.9.7"; // 5.0.36
+    public static final String PROGRAM_VERSION = "5.9.8"; // 5.0.37
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -447,9 +448,9 @@ public class Controller extends PFComponent {
         ConfigurationLoader.loadAndMergeFromInstaller(this);
 
         // Init paused only if user expects pause to be permanent.
-        paused = PreferencesEntry.PAUSED.getValueBoolean(this) &&
-                ConfigurationEntry.PAUSE_RESUME_SECONDS
-                        .getValueInt(getController()) == Integer.MAX_VALUE;
+        paused = PreferencesEntry.PAUSED.getValueBoolean(this)
+            && ConfigurationEntry.PAUSE_RESUME_SECONDS
+                .getValueInt(getController()) == Integer.MAX_VALUE;
 
         // Now set it, just in case it was paused in permanent mode.
         PreferencesEntry.PAUSED.setValue(this, paused);
@@ -1041,9 +1042,11 @@ public class Controller extends PFComponent {
                 // logWarning("" + cpuUsage + "% " + cpu.getValue() + " / " +
                 // cpu.getMaxValue());
                 // if (cpuUsage > 1) {
-                String dump = Debug.dumpCurrentStacktraces(true);
+                String dump = Debug.dumpCurrentStacktraces(false);
                 if (StringUtils.isNotBlank(dump) && isInfo()) {
                     logFine("Active threads:\n\n" + dump);
+                } else {
+                    logFine("No active threads");
                 }
                 // }
             }
@@ -1431,17 +1434,26 @@ public class Controller extends PFComponent {
                 logSevere(e);
             }
         }
+        int delay = ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(this);
         if (newPausedValue) {
-            int delay = ConfigurationEntry.PAUSE_RESUME_SECONDS.getValueInt(
-                    this);
-            if (delay  < Integer.MAX_VALUE) {
-                pauseResumeTask = new PauseResumeTask();
+            if (delay == 0) {
+                // User adaptive. Check for user inactivity
+                pauseResumeTask = new PauseResumeTask(true);
+                scheduleAndRepeat(pauseResumeTask, 1000);
+            } else if (delay < Integer.MAX_VALUE) {
+                pauseResumeTask = new PauseResumeTask(false);
                 schedule(pauseResumeTask, delay * 1000);
-                log.info("Scheduled resume task in " + delay * 1000 +
-                        " seconds.");
+                log.info("Scheduled resume task in " + delay * 1000
+                    + " seconds.");
             }
         } else {
-            pauseResumeTask = null;
+            if (delay == 0) {
+                // Turn on pause again when user gets active
+                pauseResumeTask = new PauseResumeTask(true);
+                scheduleAndRepeat(pauseResumeTask, 1000);
+            } else {
+                pauseResumeTask = null;
+            }
         }
     }
 
@@ -2516,8 +2528,8 @@ public class Controller extends PFComponent {
 
         // Expert mode ? ask the expert : just accept the friendship
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(this)) {
-            for (AskForFriendshipListener listener :
-                    askForFriendshipListeners) {
+            for (AskForFriendshipListener listener : askForFriendshipListeners)
+            {
                 listener.askForFriendship(event);
             }
         } else {
@@ -2699,10 +2711,36 @@ public class Controller extends PFComponent {
         }, 1000L * secWait, 10000);
     }
 
+    /**
+     * #2485
+     */
     private class PauseResumeTask implements Runnable {
+        private boolean userAdaptive;
+
+        public PauseResumeTask(boolean whenUserIsInactive) {
+            this.userAdaptive = whenUserIsInactive;
+        }
+
         public void run() {
-            setPaused(false);
-            log.info("Executed resume task.");
+            if (userAdaptive && isUIOpen()) {
+                ApplicationModel appModel = uiController.getApplicationModel();
+                if (appModel.isUserActive()) {
+                    if (!isPaused()) {
+                        setPaused(true);
+                        log.info("User active. Executed pause task.");
+                    }
+                } else {
+                    // Resume if user is not active
+                    if (isPaused()) {
+                        setPaused(false);
+                        log.info("User inactive. Executed resume task.");
+                    }
+                }
+            } else {
+                // Simply unpause after X seconds
+                setPaused(false);
+                log.info("Executed resume task.");
+            }
         }
     }
 }
