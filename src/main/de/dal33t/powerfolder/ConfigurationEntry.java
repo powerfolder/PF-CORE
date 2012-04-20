@@ -869,6 +869,10 @@ public enum ConfigurationEntry {
 
     REMOVED_FOLDER_FILES("removed.folder.files", ""),
 
+    /**
+     * #2485: {@link Integer#MAX_VALUE} for never resume. 0 for adaptive resume
+     * = resume when user is not working on his PC
+     */
     PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600); // One hour default.
 
     // Methods/Constructors ***************************************************
