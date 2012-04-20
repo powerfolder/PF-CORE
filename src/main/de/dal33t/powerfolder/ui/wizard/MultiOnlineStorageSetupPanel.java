@@ -31,12 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -71,6 +66,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     private JTextField folderInfoField;
     private DefaultComboBoxModel folderInfoComboModel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
+    private JCheckBox manualSyncCB;
     private boolean changingSelecton;
 
     private JTextField localFolderField;
@@ -91,10 +87,22 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     public WizardPanel next() {
 
-        List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
+        List<FolderCreateItem> folderCreateItems =
+                new ArrayList<FolderCreateItem>();
 
         for (FolderInfo folderInfo : folderProfileMap.keySet()) {
-            SyncProfile sp = folderProfileMap.get(folderInfo);
+            SyncProfile sp;
+            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+                sp = folderProfileMap.get(folderInfo);
+            } else {
+                // Non-expert mode - choose between manual and default.
+                if (manualSyncCB.isSelected()) {
+                    sp = SyncProfile.MANUAL_SYNCHRONIZATION;
+                } else {
+                    sp = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+                }
+            }
+
             File localBase = folderLocalBaseMap.get(folderInfo);
             FolderCreateItem fci = new FolderCreateItem(localBase);
             fci.setSyncProfile(sp);
@@ -140,7 +148,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             p.setOpaque(false);
             builder.add(p, cc.xyw(3, 5, 4));
         } else {
+            // Create it anyway, so we do not get NPEs elsewhere.
             syncProfileSelectorPanel.getUIComponent();
+            builder.add(manualSyncCB, cc.xyw(3, 5, 4));
         }
 
         return builder.getPanel();
@@ -159,6 +169,10 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 .getTranslation("wizard.multi_online_storage_setup.select_directory"));
         MyActionListener myActionListener = new MyActionListener();
         localFolderButton.addActionListener(myActionListener);
+
+        // For non-experts - just choose between auto sync and manual.
+        manualSyncCB = new JCheckBox(Translation.getTranslation(
+                "transfer_mode.manual_synchronization.name"));
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel
