@@ -124,9 +124,8 @@ public class MainTabbedPane extends PFUIComponent {
                 CursorUtils.setDefaultCursor(computersTab.getUIComponent());
 
                 setActiveTab(FOLDERS_INDEX);
-            } else {
-                foldersTab.populate();
             }
+            foldersTab.populate();
         }
 
         if (expertMode) {
