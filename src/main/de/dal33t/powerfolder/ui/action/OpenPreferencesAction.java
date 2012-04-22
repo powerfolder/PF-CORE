@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 import java.awt.event.ActionEvent;
 

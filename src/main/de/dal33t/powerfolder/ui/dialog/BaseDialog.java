@@ -34,6 +34,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -194,6 +195,7 @@ public abstract class BaseDialog extends PFUIComponent {
         Cursor c = CursorUtils.setWaitCursor(window);
         try {
             createUIComponent();
+            UIUtil.putOnScreen(dialog);
             dialog.setVisible(true);
             return dialog;
         } finally {
@@ -281,7 +283,7 @@ public abstract class BaseDialog extends PFUIComponent {
         int ownerHeight;
 
         if (owner != null && owner.isVisible() &&
-                (senior == Senior.MAIN_FRAME)) {
+                senior == Senior.MAIN_FRAME) {
             ownerX = owner.getX();
             ownerY = owner.getY();
             ownerWidth = owner.getWidth();

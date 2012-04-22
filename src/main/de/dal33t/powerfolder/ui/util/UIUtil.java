@@ -38,12 +38,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -55,6 +50,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.ui.UIConstants;
 
 /**
  * Offers helper/utility method for UI related stuff.
@@ -320,10 +316,23 @@ public class UIUtil {
 
     /**
      * This forces a frame to be on screen, with all of its edges visible
-     * 
+     *
      * @param frame
      */
     public static void putOnScreen(JFrame frame) {
+
+        if (frame.getWidth() <= 0 || frame.getHeight() <= 0) {
+            // Something has gone very wrong with the size.
+            // Apply default size.
+            frame.pack();
+            int targetWidth = Math.max(frame.getWidth(),
+                    UIConstants.DEFAULT_FRAME_WIDTH);
+            int targetHeight = Math.max(frame.getHeight(),
+                    UIConstants.DEFAULT_FRAME_HEIGHT);
+            frame.setSize(targetWidth, targetHeight);
+        }
+
+        // Make sure the location is on the screen.
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         if (frame.getX() < 0) {
             frame.setLocation(0, frame.getY());
@@ -337,6 +346,30 @@ public class UIUtil {
         }
         if (frame.getY() > screenSize.height) {
             frame.setLocation(0, screenSize.height - frame.getHeight());
+        }
+    }
+
+    /**
+     * This forces a frame to be on screen, with all of its edges visible
+     *
+     * @param dialog
+     */
+    public static void putOnScreen(JDialog dialog) {
+
+        // Make sure the location is on the screen.
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        if (dialog.getX() < 0) {
+            dialog.setLocation(0, dialog.getY());
+        }
+        if (dialog.getY() < 0) {
+            dialog.setLocation(dialog.getX(), 0);
+        }
+        if (dialog.getX() > screenSize.width) {
+            dialog
+                .setLocation(screenSize.width - dialog.getWidth(), dialog.getY());
+        }
+        if (dialog.getY() > screenSize.height) {
+            dialog.setLocation(0, screenSize.height - dialog.getHeight());
         }
     }
 

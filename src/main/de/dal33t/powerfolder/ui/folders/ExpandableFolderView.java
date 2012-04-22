@@ -121,7 +121,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
     private ActionLabel membersLabel;
-    private JLabel upperSyncPercentageLabel;
+    private ActionLabel upperSyncPercentageLabel;
 
     private JPanel uiComponent;
     private JPanel borderPanel;
@@ -348,7 +348,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         nameLabel.addMouseListener(moa);
         nameLabel.addMouseListener(mca); // Because this is the biggest blank
                                          // area where the user might click.
-        upperBuilder.add(upperSyncPercentageLabel, cc.xy(5, 1));
+        upperBuilder.add(upperSyncPercentageLabel.getUIComponent(),
+                cc.xy(5, 1));
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(7, 1));
         filesAvailableLabel.getUIComponent().addMouseListener(moa);
 
@@ -489,12 +490,14 @@ public class ExpandableFolderView extends PFUIComponent implements
         openFilesInformationAction = new MyOpenFilesInformationAction(
             getController());
         inviteAction = new MyInviteAction(getController());
+        MyOpenFilesUnsyncedAction openFilesUnsyncedAction =
+                new MyOpenFilesUnsyncedAction(getController());
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
         openSettingsInformationAction.setEnabled(!getController()
             .isBackupOnly());
-        MyMoveLocalFolderAction moveLocalFolderAction = new MyMoveLocalFolderAction(
-            getController());
+        MyMoveLocalFolderAction moveLocalFolderAction =
+                new MyMoveLocalFolderAction(getController());
         moveLocalFolderAction.setEnabled(!getController().isBackupOnly());
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
@@ -524,7 +527,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         openSettingsInformationButton = new JButtonMini(
             openSettingsInformationAction);
 
-        upperSyncPercentageLabel = new JLabel("...");
+        upperSyncPercentageLabel = new ActionLabel(getController(),
+                new MyOpenFilesUnsyncedAction(getController()));
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
 
         inviteButton = new JButtonMini(inviteAction);
@@ -1562,6 +1566,18 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformation(folderInfo);
+        }
+    }
+
+    private class MyOpenFilesUnsyncedAction extends BaseAction {
+
+        MyOpenFilesUnsyncedAction(Controller controller) {
+            super("action_open_files_unsynced", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().openFilesInformationUnsynced(
+                    folderInfo);
         }
     }
 
