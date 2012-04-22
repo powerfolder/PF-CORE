@@ -87,8 +87,8 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.*;
-import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
+import de.dal33t.powerfolder.ui.information.InformationCardType;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notices.*;
@@ -855,9 +855,10 @@ public class UIController extends PFComponent {
             if (frame.getExtendedState() == Frame.ICONIFIED) {
                 frame.setExtendedState(Frame.NORMAL);
             }
-            if (frame.getWidth() < MainFrame.MIN_INFO_WIDTH) {
-                frame.setSize(MainFrame.MIN_INFO_WIDTH, frame.getHeight());
-            }
+
+            // Card-specific location of the info frae.
+            informationFrame.relocate();
+
             UIUtil.putOnScreen(frame);
             frame.setVisible(true);
         }
@@ -977,11 +978,6 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
-    public void openInformationCard(InformationCard card) {
-        informationFrame.displayCard(card);
-        displayInformationWindow();
-    }
-
     public void openNoticesCard() {
         informationFrame.displayNotices();
         displayInformationWindow();
@@ -1068,7 +1064,6 @@ public class UIController extends PFComponent {
         hideSplash();
 
         if (started) {
-            informationFrame.storeValues();
             informationFrame.getUIComponent().setVisible(false);
             informationFrame.getUIComponent().dispose();
 

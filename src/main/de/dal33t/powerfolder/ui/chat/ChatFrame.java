@@ -39,7 +39,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.RootPaneUI;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -52,14 +51,22 @@ import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.UIConstants;
 import de.dal33t.powerfolder.util.Translation;
-import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
  * The information window.
  */
 public class ChatFrame extends PFUIComponent {
+
+    private static final String CHATFRAME_X = "chatframe.x";
+    private static final String CHATFRAME_Y = "chatframe.y";
+    private static final String CHATFRAME_WIDTH = "chatframe.width";
+    private static final String CHATFRAME_HEIGHT = "chatframe.height";
+    private static final String CHATFRAME_MAXIMIZED = "chatframe.maximized";
+    private static final String CHATFRAME_SET = "chatframe.set";
 
     private JFrame uiComponent;
     private final JTabbedPane tabbedPane;
@@ -103,31 +110,38 @@ public class ChatFrame extends PFUIComponent {
      */
     private void buildUIComponent() {
         Preferences prefs = getController().getPreferences();
-        uiComponent.setLocation(prefs.getInt("chatframe4.x", 50), prefs.getInt(
-            "chatframe4.y", 50));
 
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("chatframe4.width", 700);
-        int height = prefs.getInt("chatframe4.height", 500);
-        if (width < 50) {
-            width = 50;
-        }
-        if (height < 50) {
-            height = 50;
-        }
-        uiComponent.setSize(width, height);
+        if (prefs.getBoolean(CHATFRAME_SET, false)) {
 
-        if (prefs.getBoolean("chatframe4.maximized", false)) {
-            // Fix Synthetica maximization, otherwise it covers the task bar.
-            // See http://www.javasoft.de/jsf/public/products/synthetica/faq#q13
-            RootPaneUI ui = uiComponent.getRootPane().getUI();
-            if (ui instanceof SyntheticaRootPaneUI) {
-                ((SyntheticaRootPaneUI) ui).setMaximizedBounds(uiComponent);
+            uiComponent.setLocation(prefs.getInt(CHATFRAME_X,
+                    UIConstants.DEFAULT_FRAME_X),
+                    prefs.getInt(CHATFRAME_Y, UIConstants.DEFAULT_FRAME_Y));
+            uiComponent.setSize(prefs.getInt(CHATFRAME_WIDTH,
+                    UIConstants.DEFAULT_FRAME_WIDTH),
+                    prefs.getInt(CHATFRAME_HEIGHT,
+                            UIConstants.DEFAULT_FRAME_HEIGHT));
+
+            if (prefs.getBoolean(CHATFRAME_MAXIMIZED,
+                    UIConstants.DEFAULT_FRAME_MAXIMIZED)) {
+                uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
             }
-            uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
+        } else {
+
+            // First time displayed, use sensible defaults.
+            getUIComponent().setLocation(UIConstants.DEFAULT_FRAME_X,
+                    UIConstants.DEFAULT_FRAME_Y);
+            getUIComponent().setSize(UIConstants.DEFAULT_FRAME_WIDTH,
+                    UIConstants.DEFAULT_FRAME_HEIGHT);
+            getUIComponent().setExtendedState(
+                    UIConstants.DEFAULT_FRAME_EXTENDED_STATE);
+            prefs.putBoolean(CHATFRAME_SET, true);
         }
+
+        UIUtil.putOnScreen(uiComponent);
+
     }
 
     /**
@@ -175,17 +189,13 @@ public class ChatFrame extends PFUIComponent {
         }
         if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH)
         {
-            prefs.putBoolean("chatframe4.maximized", true);
+            prefs.putBoolean(CHATFRAME_MAXIMIZED, true);
         } else {
-            prefs.putInt("chatframe4.x", uiComponent.getX());
-            if (uiComponent.getWidth() > 0) {
-                prefs.putInt("chatframe4.width", uiComponent.getWidth());
-            }
-            prefs.putInt("chatframe4.y", uiComponent.getY());
-            if (uiComponent.getHeight() > 0) {
-                prefs.putInt("chatframe4.height", uiComponent.getHeight());
-            }
-            prefs.putBoolean("chatframe4.maximized", false);
+            prefs.putInt(CHATFRAME_X, uiComponent.getX());
+            prefs.putInt(CHATFRAME_WIDTH, uiComponent.getWidth());
+            prefs.putInt(CHATFRAME_Y, uiComponent.getY());
+            prefs.putInt(CHATFRAME_HEIGHT, uiComponent.getHeight());
+            prefs.putBoolean(CHATFRAME_MAXIMIZED, false);
         }
     }
 

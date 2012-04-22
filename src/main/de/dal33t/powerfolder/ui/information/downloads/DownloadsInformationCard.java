@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.InformationCardType;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -78,6 +79,10 @@ public class DownloadsInformationCard extends InformationCard implements
     public DownloadsInformationCard(Controller controller) {
         super(controller);
         updater = new DelayedUpdater(controller);
+    }
+
+    public InformationCardType getInformationCardType() {
+        return InformationCardType.TRANSFERS;
     }
 
     /**

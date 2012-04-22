@@ -44,8 +44,8 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.information.debug.TextPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.InformationCardType;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -98,6 +98,10 @@ public class DebugInformationCard extends InformationCard {
 
     public DebugInformationCard(Controller controller) {
         super(controller);
+    }
+
+    public InformationCardType getInformationCardType() {
+        return InformationCardType.DEBUG;
     }
 
     @Override

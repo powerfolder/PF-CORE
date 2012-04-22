@@ -52,4 +52,12 @@ public abstract class InformationCard extends PFUIComponent {
      */
     public abstract JComponent getUIComponent();
 
+    /**
+     * The type of the information card.
+     * Used to set the individual location of each panel type.
+     *  
+     * @return
+     */
+    public abstract InformationCardType getInformationCardType();
+
 }

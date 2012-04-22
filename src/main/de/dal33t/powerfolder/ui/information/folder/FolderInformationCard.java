@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.InformationCardType;
 import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
 import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
 import de.dal33t.powerfolder.ui.information.folder.problems.ProblemsTab;
@@ -69,6 +70,10 @@ public class FolderInformationCard extends InformationCard {
         buildUIComponent();
 
         updateProblems();
+    }
+
+    public InformationCardType getInformationCardType() {
+        return InformationCardType.FOLDER;
     }
 
     /**

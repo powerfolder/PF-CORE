@@ -381,7 +381,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     }
 
                     // If dir does not exist or is not writable,
-                    // give user a choice to locate in an alternate location.
+                    // give user a choice to relocate in an alternate location.
                     boolean ok = true;
                     if (!f.exists()) {
                         ok = false;
