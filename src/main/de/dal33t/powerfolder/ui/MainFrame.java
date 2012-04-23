@@ -104,11 +104,6 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  */
 public class MainFrame extends PFUIComponent {
 
-    public static final int MIN_HEIGHT_UNCOMPACT = 500;
-    public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
-        .getDefaultValueInt();
-    public static final int MIN_INFO_WIDTH = 500;
-
     /**
      * The width of the main tabbed pane when in NORMAL state
      */
@@ -288,8 +283,11 @@ public class MainFrame extends PFUIComponent {
 
         Controller c = getController();
 
-        // Pack elements
+        // Pack elements and set to default size.
         uiComponent.pack();
+        uiComponent.setSize(uiComponent.getWidth(),
+                    UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
+
         mainWidth = uiComponent.getWidth();
         logFine("Main/Info width: " + mainWidth + " / ?");
 
@@ -313,20 +311,6 @@ public class MainFrame extends PFUIComponent {
         updateNoticesLabel();
 
         mainStatusUpdater = new DelayedUpdater(getController());
-
-        // Never start maximized
-        //
-        // if (PreferencesEntry.MAIN_FRAME_MAXIMIZED
-        // .getValueBoolean(getController()))
-        // {
-        // if (uiComponent.getRootPane().getUI() instanceof
-        // SyntheticaRootPaneUI)
-        // {
-        // ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
-        // .setMaximizedBounds(uiComponent);
-        // }
-        // uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
-        // }
     }
 
     /**
@@ -395,14 +379,7 @@ public class MainFrame extends PFUIComponent {
             + " / Width over all monitors: "
             + UIUtil.getScreenWidthAllMonitors());
 
-        uiComponent = new JFrame() {
-            // Add own pack method to pack for compact / uncompact mode.
-            @Override
-            public void pack() {
-                super.pack();
-                customPack();
-            }
-        };
+        uiComponent = new JFrame();
         uiComponent.setTransferHandler(new MyTransferHandler());
         checkOnTop();
         uiComponent.addWindowFocusListener(new MyWindowFocusListner());
@@ -561,21 +538,6 @@ public class MainFrame extends PFUIComponent {
     public void checkOnTop() {
         boolean onTop = uiComponent.isAlwaysOnTopSupported() && compact.get();
         uiComponent.setAlwaysOnTop(onTop);
-    }
-
-    /**
-     * Nice default sizes for compact and uncompact mode.
-     */
-    private void customPack() {
-        if (compact.get()) {
-            // Default pack height is okay in compact mode.
-            uiComponent.setSize(MIN_WIDTH, uiComponent.getHeight());
-            uiComponent.setResizable(false);
-        } else {
-            // Include space for the central content.
-            uiComponent.setSize(MIN_WIDTH, MIN_HEIGHT_UNCOMPACT);
-            uiComponent.setResizable(true);
-        }
     }
 
     private void updateMainStatus() {
@@ -1096,38 +1058,41 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void setCompactMode(boolean compactMe, boolean init) {
+
+        // @todo this will need some rework when the main frame is maximizable.
+
+        expandCollapseAction.setShowExpand(compactMe);
+
         int oldY = uiComponent.getY();
         int oldH = uiComponent.getHeight();
+
         if (compactMe) {
+
             // Need to hide the child windows when minimize.
-            if (isMaximized()) {
-                uiComponent.setExtendedState(Frame.NORMAL);
-            }
             if (!init) {
                 closeInlineInfoPanel();
                 getUIController().hideChildPanels();
             }
-            mainTabbedPane.getUIComponent().setVisible(false);
-            expandCollapseAction.setShowExpand(true);
+
+            uiComponent.setSize(uiComponent.getMinimumSize());
+            uiComponent.setResizable(false);
+
             toFront();
         } else {
-            mainTabbedPane.getUIComponent().setVisible(true);
-            expandCollapseAction.setShowExpand(false);
+            uiComponent.setSize(uiComponent.getWidth(),
+                    UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
+            uiComponent.setResizable(true);
         }
 
-        if (uiComponent.getExtendedState() == Frame.NORMAL) {
-            uiComponent.pack();
-
-            // Try to maintain the lower window location,
-            // as this is where the user clicked open / collapse.
-            int oldB = oldY + oldH;
-            int newY = uiComponent.getY();
-            int newH = uiComponent.getHeight();
-            int newB = newY + newH;
-            int diff = newB - oldB;
-            int targetY = newY - diff;
-            uiComponent.setLocation(uiComponent.getX(), Math.max(targetY, 0));
-        }
+        // Try to maintain the lower window location,
+        // as this is where the user clicked open / collapse.
+        int oldB = oldY + oldH;
+        int newY = uiComponent.getY();
+        int newH = uiComponent.getHeight();
+        int newB = newY + newH;
+        int diff = newB - oldB;
+        int targetY = newY - diff;
+        uiComponent.setLocation(uiComponent.getX(), Math.max(targetY, 0));
 
         checkOnTop();
     }

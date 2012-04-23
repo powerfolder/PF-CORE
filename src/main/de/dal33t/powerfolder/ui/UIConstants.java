@@ -23,10 +23,16 @@ import java.awt.*;
 
 public interface UIConstants {
 
-    int DEFAULT_FRAME_X = 20;
-    int DEFAULT_FRAME_Y = 20;
+    // Info frame sizes
+    int DEFAULT_FRAME_X = 50;
+    int DEFAULT_FRAME_Y = 50;
     int DEFAULT_FRAME_WIDTH = 600;
     int DEFAULT_FRAME_HEIGHT = 400;
     boolean DEFAULT_FRAME_MAXIMIZED = false;
     int DEFAULT_FRAME_EXTENDED_STATE = Frame.NORMAL;
+
+    // Main frame sizes
+    int MAIN_FRAME_DEFAULT_HEIGHT = 500;
+
+
 }
