@@ -112,7 +112,7 @@ For creation of the installer:
 
 			<!-- TrueZIP -->
 			<include name="annotations-1.0.0.jar" />
-			<include name="bcprov-jdk16-1.46.jar" />
+			<include name="bcprov-jdk15-1.44.jar" />
 			<include name="commons-compress-1.3.jar" />
 			<include name="truezip-driver-file-7.4.3.jar" />
 			<!--<include name="truezip-driver-tzp-7.4.3.jar" />-->
