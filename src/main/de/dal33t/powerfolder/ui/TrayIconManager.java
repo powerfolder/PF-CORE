@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Format;
@@ -61,10 +60,6 @@ public class TrayIconManager extends PFComponent {
     private TrayIcon trayIcon;
     private volatile int angle = 0;
     private volatile TrayIconState state;
-    // private volatile boolean blink;
-    // private volatile String blinkText;
-    private volatile String downText = "";
-    private volatile String upText = "";
     private volatile boolean connectedAndLoggedIn;
 
     public TrayIconManager(UIController uiController) {
@@ -181,6 +176,7 @@ public class TrayIconManager extends PFComponent {
                 .getApplicationModel().getFolderRepositoryModel()
                 .getOverallSyncPercentage();
             if (overallSyncPercentage >= 0) {
+                tooltip.append(" ");
                 tooltip.append(Format.formatPercent(overallSyncPercentage));
             }
         } else if (getController().isPaused()) {
