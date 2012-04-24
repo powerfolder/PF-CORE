@@ -77,6 +77,7 @@ import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
@@ -533,10 +534,12 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Force UI on top if compact.
+     * Force UI on top if compact,
+     * but only if there are no wizards or dialogs open.
      */
     public void checkOnTop() {
-        boolean onTop = uiComponent.isAlwaysOnTopSupported() && compact.get();
+        boolean onTop = uiComponent.isAlwaysOnTopSupported() && compact.get()
+                && !PFWizard.isWizardOpen() && !BaseDialog.isDialogOpen();
         uiComponent.setAlwaysOnTop(onTop);
     }
 

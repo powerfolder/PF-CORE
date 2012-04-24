@@ -81,6 +81,7 @@ public class PFWizard extends PFUIComponent {
         super(controller);
         this.title = title;
         NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
+        controller.getUIController().getMainFrame().checkOnTop();
         setSuspendNewFolderSearch(true);
         wizard = new Wizard();
     }
@@ -102,6 +103,7 @@ public class PFWizard extends PFUIComponent {
     private void decrementOpenWizards() {
         if (!doneWizardClose.getAndSet(true)) {
             NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
+            getController().getUIController().getMainFrame().checkOnTop();
             setSuspendNewFolderSearch(false);
         }
     }
