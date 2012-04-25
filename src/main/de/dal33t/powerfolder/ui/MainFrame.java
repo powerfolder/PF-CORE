@@ -39,16 +39,26 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.io.IOException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
@@ -75,9 +85,9 @@ import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
@@ -133,7 +143,7 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
     private ActionLabel noticesActionLabel;
-    
+
     private DelayedUpdater mainStatusUpdater;
 
     // Right mini panel
@@ -166,12 +176,12 @@ public class MainFrame extends PFUIComponent {
         initComponents();
         configureUi();
         updateOnlineStorageDetails();
-
+        setCompactMode(compact.get(), true);
     }
 
     private JPanel createMiniPanel() {
         FormLayout layout = new FormLayout("left:pref:grow, left:pref",
-            "top:pref:grow");
+            "top:pref:grow, 7dlu" /* 7dlu WTF for what? Too tired to get it */);
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("10dlu, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
@@ -215,7 +225,7 @@ public class MainFrame extends PFUIComponent {
         // PUT TOGETHER
         FormLayout layoutMain = new FormLayout("pref", "pref, 5dlu, pref");
         DefaultFormBuilder builderMain = new DefaultFormBuilder(layoutMain);
-        builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 0, 0"));
+        builderMain.setBorder(Borders.createEmptyBorder("0, 5dlu, 5dlu, 0"));
         builderMain.add(builderUpper.getPanel(), cc.xy(1, 1));
         builderMain.add(builderLower.getPanel(), cc.xy(1, 3));
         // PUT TOGETHER END
@@ -415,7 +425,9 @@ public class MainFrame extends PFUIComponent {
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
         noticesActionLabel = new ActionLabel(getController(),
-                new MyShowNoticesAction(getController()));
+            new MyShowNoticesAction(getController()));
+        updateNoticesLabel();
+
         usagePB = new JProgressBar();
         usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(new MouseAdapter() {
@@ -480,11 +492,13 @@ public class MainFrame extends PFUIComponent {
             Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
             Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
             Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
+        plusButton.setVisible(false);
 
         minusButton = new JButton3Icons(
             Icons.getIconById(Icons.WINDOW_MINUS_NORMAL),
             Icons.getIconById(Icons.WINDOW_MINUS_HOVER),
             Icons.getIconById(Icons.WINDOW_MINUS_PUSH));
+        minusButton.setVisible(false);
 
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
@@ -525,17 +539,24 @@ public class MainFrame extends PFUIComponent {
 
         // Start listening to notice changes.
         getController().getUIController().getApplicationModel()
-                .getNoticesModel().getAllNoticesCountVM()
-                .addValueChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        updateNoticesLabel();
-                    }
-                });
+            .getNoticesModel().getAllNoticesCountVM()
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateNoticesLabel();
+                }
+            });
+        getController().getUIController().getApplicationModel()
+            .getNoticesModel().getUnreadNoticesCountVM()
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateNoticesLabel();
+                }
+            });
     }
 
     /**
-     * Force UI on top if compact,
-     * but only if there are no wizards or dialogs open.
+     * Force UI on top if compact, but only if there are no wizards or dialogs
+     * open.
      */
     public void checkOnTop() {
         boolean onTop = uiComponent.isAlwaysOnTopSupported() && compact.get()
@@ -1089,13 +1110,15 @@ public class MainFrame extends PFUIComponent {
 
         // Try to maintain the lower window location,
         // as this is where the user clicked open / collapse.
-        int oldB = oldY + oldH;
-        int newY = uiComponent.getY();
-        int newH = uiComponent.getHeight();
-        int newB = newY + newH;
-        int diff = newB - oldB;
-        int targetY = newY - diff;
-        uiComponent.setLocation(uiComponent.getX(), Math.max(targetY, 0));
+        if (!init) {
+            int oldB = oldY + oldH;
+            int newY = uiComponent.getY();
+            int newH = uiComponent.getHeight();
+            int newB = newY + newH;
+            int diff = newB - oldB;
+            int targetY = newY - diff;
+            uiComponent.setLocation(uiComponent.getX(), Math.max(targetY, 0));
+        }
 
         checkOnTop();
     }
