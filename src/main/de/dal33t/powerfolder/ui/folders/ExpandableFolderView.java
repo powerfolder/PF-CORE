@@ -1189,10 +1189,16 @@ public class ExpandableFolderView extends PFUIComponent implements
                 if (result != null) {
                     if (result.startsWith("Y")) {
                         String[] parts = result.substring(1).split("\\s");
-                        for (String part : parts) {
+                        for (final String part : parts) {
                             if (part.length() == 2 && part.charAt(1) == ':') {
                                 // Probably the new drive name, so open it.
-                                FileUtils.openFile(new File(part));
+                                getController().getIOProvider().startIO(
+                                    new Runnable() {
+                                        public void run() {
+                                            FileUtils.openFile(new File(part));
+                                        }
+                                    });
+
                                 break;
                             }
                         }
