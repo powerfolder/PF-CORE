@@ -57,7 +57,8 @@ public class TellFriendPanel extends PFWizardPanel {
 
     protected JComponent buildContent() {
         FormLayout layout = new FormLayout(
-            "pref, 7dlu, pref, 7dlu, pref, 7dlu, pref", "pref, 30dlu, pref");
+            "pref, 7dlu, pref, 7dlu, pref, 7dlu, pref",
+                "pref, 30dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
@@ -65,7 +66,6 @@ public class TellFriendPanel extends PFWizardPanel {
         builder.add(fbLabel.getUIComponent(), cc.xy(1, 1));
         builder.add(twitterLabel.getUIComponent(), cc.xy(3, 1));
         builder.add(linkedInLabel.getUIComponent(), cc.xy(5, 1));
-        builder.add(emailLabel.getUIComponent(), cc.xy(7, 1));
         builder.add(emailLabel.getUIComponent(), cc.xy(7, 1));
 
         builder.add(infoLabel.getUIComponent(), cc.xyw(1, 3, 7));
