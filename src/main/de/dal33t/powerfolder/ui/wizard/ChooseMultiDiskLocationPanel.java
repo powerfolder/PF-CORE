@@ -614,15 +614,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                                 .getSpaceUsed();
                             if (spaceUsed + totalDirectorySize > totalStorage) {
                                 warningLabel.setVisible(true);
-                                warningLabel.setText(Translation.getTranslation(
-                                        "wizard.choose_disk_location.os_over_size"));
+                                warningLabel
+                                    .setText(Translation
+                                        .getTranslation("wizard.choose_disk_location.os_over_size"));
                                 warningLabel.setIcon(Icons
                                     .getIconById(Icons.WARNING));
-                                JDialog dialog = (JDialog) getWizardContext()
-                                    .getAttribute(
-                                        WizardContextAttributes.DIALOG_ATTRIBUTE);
-                                getController().getUIController().showPromoGFX(
-                                    dialog);
                             }
                         }
                     }
