@@ -26,10 +26,7 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.swing.*;
 
@@ -41,16 +38,18 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.util.UserDirectories;
-import de.dal33t.powerfolder.util.UserDirectory;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * Class to do sync profile configuration for OS joins.
@@ -72,6 +71,11 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     private JTextField localFolderField;
     private JButton localFolderButton;
 
+    private ActionLabel mountAsWebDavLabel;
+    private ServerClient serverClient;
+    private Date lastFetch;
+    private String webDAVURL;
+
     /**
      * Constuctor
      * 
@@ -79,6 +83,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      */
     public MultiOnlineStorageSetupPanel(Controller controller) {
         super(controller);
+        serverClient = controller.getOSClient();
     }
 
     public boolean hasNext() {
@@ -122,7 +127,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, 140dlu, 3dlu, 15dlu, pref:grow",
-            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref");
+            "pref, 6dlu, pref, 6dlu, pref, 30dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -152,6 +157,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel.getUIComponent();
             builder.add(manualSyncCB, cc.xyw(3, 5, 4));
         }
+
+        builder.add(mountAsWebDavLabel.getUIComponent(), cc.xy(3, 7));
 
         return builder.getPanel();
     }
@@ -184,6 +191,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         folderInfoCombo.addItemListener(new MyItemListener());
         folderInfoField = new JTextField();
         folderInfoField.setEditable(false);
+
+        mountAsWebDavLabel = new ActionLabel(getController(),
+                new MyMountAsWebDavAction(getController()));
     }
 
     /**
@@ -275,6 +285,120 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         }
     }
 
+    private synchronized void createWebDAVURL() {
+        if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
+            return;
+        }
+        // Cache 10 secs.
+        if (lastFetch == null
+            || lastFetch.before(new Date(
+                System.currentTimeMillis() - 1000L * 10)))
+        {
+            FolderInfo fi = null;
+            if (folderLocalBaseMap.size() == 1) {
+                fi = folderLocalBaseMap.keySet().iterator().next();
+            } else {
+                int index = folderInfoCombo.getSelectedIndex();
+                int pointer = 0;
+                for (FolderInfo folderInfo : folderProfileMap.keySet()) {
+                    if (pointer++ == index) {
+                        fi = folderInfo;
+                        break;
+                    }
+                }
+            }
+            if (fi != null) {
+                webDAVURL = serverClient.getFolderService()
+                    .getWebDAVURL(fi);
+            }
+            lastFetch = new Date();
+        }
+    }
+
+    /**
+     * Create a WebDAV connection to this folder. Should be something like 'net
+     * use * "https://access.powerfolder.com/node/os004/webdav/afolder"
+     * /User:bob@powerfolder.com pazzword'
+     */
+    private void createWebdavConnection() {
+        ActivityVisualizationWorker worker = new ActivityVisualizationWorker(
+            getController().getUIController())
+        {
+            protected String getTitle() {
+                return Translation
+                    .getTranslation("exp_folder_view.webdav_title");
+            }
+
+            protected String getWorkingText() {
+                return Translation
+                    .getTranslation("exp_folder_view.webdav_working_text");
+            }
+
+            public Object construct() throws Throwable {
+                try {
+                    createWebDAVURL();
+                    Process process = Runtime.getRuntime().exec(
+                        "net use * \"" + webDAVURL + "\" /User:"
+                            + serverClient.getUsername() + ' '
+                            + serverClient.getPasswordClearText());
+                    byte[] out = StreamUtils.readIntoByteArray(process
+                        .getInputStream());
+                    String output = new String(out);
+                    byte[] err = StreamUtils.readIntoByteArray(process
+                        .getErrorStream());
+                    String error = new String(err);
+                    if (StringUtils.isEmpty(error)) {
+                        if (!StringUtils.isEmpty(output)) {
+                            // Looks like the link succeeded :-)
+                            return 'Y' + output;
+                        }
+                    } else {
+                        // Looks like the link failed :-(
+                        return 'N' + error;
+                    }
+                } catch (Exception e) {
+                    // Looks like the link failed, badly :-(
+                    return 'N' + e.getMessage();
+                }
+                // Huh?
+                return null;
+            }
+
+            public void finished() {
+
+                // See what happened.
+                String result = (String) get();
+                if (result != null) {
+                    if (result.startsWith("Y")) {
+                        String[] parts = result.substring(1).split("\\s");
+                        for (String part : parts) {
+                            if (part.length() == 2 && part.charAt(1) == ':') {
+                                // Probably the new drive name, so open it.
+                                FileUtils.openFile(new File(part));
+                                break;
+                            }
+                        }
+                    } else if (result.startsWith("N")) {
+                        DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("exp_folder_view.webdav_failure_title"),
+                                Translation.getTranslation(
+                                    "exp_folder_view.webdav_failure_text",
+                                    result.substring(1)),
+                                GenericDialogType.ERROR);
+                    }
+                }
+            }
+        };
+        worker.start();
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
     private class MyItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
             folderInfoComboSelectionChange();
@@ -317,5 +441,17 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 configureLocalFolder();
             }
         }
+    }
+
+    private class MyMountAsWebDavAction extends BaseAction {
+
+        private MyMountAsWebDavAction(Controller controller) {
+            super("action_webdav", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            createWebdavConnection();
+        }
+
     }
 }

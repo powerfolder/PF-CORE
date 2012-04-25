@@ -293,15 +293,16 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateWebDAVURL() {
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
-                return getWebDAVURL();
+                createWebDAVURL();
+                return null;
             }
         };
         worker.execute();
     }
 
-    private synchronized String getWebDAVURL() {
+    private synchronized void createWebDAVURL() {
         if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
-            return null;
+            return;
         }
         // Cache 10 secs.
         if (lastFetch == null
@@ -312,7 +313,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 .getWebDAVURL(folderInfo);
             lastFetch = new Date();
         }
-        return webDAVURL;
     }
 
     /**
@@ -1044,7 +1044,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         JPopupMenu contextMenu = new JPopupMenu();
         if (type == ExpandableFolderModel.Type.CloudOnly) {
             // Cloud-only folder popup
-            String webDAVURL = getWebDAVURL();
+            createWebDAVURL();
             if (StringUtils.isNotBlank(webDAVURL)) {
                 if (serverClient.supportsWebDAV() && OSUtil.isWindowsSystem()) {
                     contextMenu.add(webdavAction).setIcon(null);
@@ -1153,7 +1153,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             public Object construct() throws Throwable {
                 try {
-                    String webDAVURL = getWebDAVURL();
+                    createWebDAVURL();
                     Process process = Runtime.getRuntime().exec(
                         "net use * \"" + webDAVURL + "\" /User:"
                             + serverClient.getUsername() + ' '
