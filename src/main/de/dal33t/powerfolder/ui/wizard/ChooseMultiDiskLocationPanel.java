@@ -47,7 +47,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -74,16 +73,24 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
-import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.LinkFolderOnlineDialog;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.UserDirectory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -638,10 +645,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                             .setText(Translation
                                 .getTranslation("wizard.choose_disk_location.os_over_size"));
                         warningLabel.setIcon(Icons.getIconById(Icons.WARNING));
-                        JDialog dialog = (JDialog) getWizardContext()
-                            .getAttribute(
-                                WizardContextAttributes.DIALOG_ATTRIBUTE);
-                        getController().getUIController().showPromoGFX(dialog);
                     }
 
                 } catch (Exception e) {
