@@ -19,11 +19,8 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
-import java.awt.MediaTracker;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -34,18 +31,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
@@ -53,8 +54,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -63,15 +62,12 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.Border;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -80,30 +76,58 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
+import de.dal33t.powerfolder.event.FolderAutoCreateListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.PausedModeEvent;
+import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
-import de.dal33t.powerfolder.ui.dialog.*;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.FreeLimitationDialog;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.dialog.PauseDialog;
+import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
-import de.dal33t.powerfolder.ui.information.InformationCardType;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.notices.*;
+import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
+import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
+import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
-import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.notification.PreviewNotificationHandler;
+import de.dal33t.powerfolder.ui.notification.Slider;
+import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
-import de.dal33t.powerfolder.ui.util.*;
-import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+import de.dal33t.powerfolder.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
-import de.dal33t.powerfolder.util.update.UIUpdateHandler;
 
 /**
  * The ui controller.
@@ -397,41 +421,6 @@ public class UIController extends PFComponent {
         return totalSize;
     }
 
-    public void showPromoGFX(Window parent) {
-        if (StringUtils.isBlank(ProUtil.getBuyNowURL(getController()))) {
-            return;
-        }
-        try {
-            ImageIcon icon = new ImageIcon(new URL(
-                Constants.PROVIDER_CLIENT_PROMO_URL));
-            if (icon.getImageLoadStatus() == MediaTracker.COMPLETE) {
-                JLabel promoLabel = new JLabel(icon);
-                promoLabel.setSize(new Dimension(230, 230));
-                Border border = BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(Color.DARK_GRAY),
-                    Borders.createEmptyBorder("15, 15, 15, 15"));
-                promoLabel.setBorder(border);
-                CursorUtils.setHandCursor(promoLabel);
-                promoLabel.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        try {
-                            BrowserLauncher.openURL(ProUtil
-                                .getBuyNowURL(getController()));
-                        } catch (IOException e1) {
-                            logWarning("Unable to goto homepage", e1);
-                        }
-                    }
-                });
-                notifyComponent(promoLabel, parent, 20);
-            } else {
-                logWarning("Failed to downlaod PROVIDER_CLIENT_PROMO_URL");
-            }
-        } catch (MalformedURLException e) {
-            logWarning("Unable to show promo gfx. " + e, e);
-        }
-    }
-
     public void askToPauseResume() {
         boolean silent = getController().isPaused();
         if (silent) {
@@ -447,52 +436,6 @@ public class UIController extends PFComponent {
             }
         }
 
-    }
-
-    private void handlePromo() {
-        String prefKey = "startCount" + Controller.PROGRAM_VERSION;
-        int thisVersionStartCount = getController().getPreferences().getInt(
-            prefKey, 0);
-
-        // #1838 Ads in trial
-        if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
-        {
-            // Go to HP every 5 starts
-            if (thisVersionStartCount % 5 == 4) {
-                try {
-                    BrowserLauncher.openURL(ProUtil
-                        .getBuyNowURL(getController()));
-                } catch (IOException e1) {
-                    logWarning("Unable to goto homepage", e1);
-                }
-            }
-        }
-
-        // Show promo after 10 seconds
-        if (getController().getDistribution().showClientPromo()
-            && thisVersionStartCount >= 6)
-        {
-            getController().scheduleAndRepeat(new TimerTask() {
-                @Override
-                public void run() {
-                    UIUtil.invokeLaterInEDT(new Runnable() {
-                        public void run() {
-                            if (!ProUtil.isRunningProVersion()
-                                || ProUtil.isTrial(getController()))
-                            {
-                                if (!PFWizard.isWizardOpen()) {
-                                    showPromoGFX(getMainFrame()
-                                        .getUIComponent());
-                                }
-                            }
-                        }
-                    });
-                }
-            }, 10 * 1000L, 1000L * 60 * 60);
-        }
-
-        thisVersionStartCount++;
-        getController().getPreferences().putInt(prefKey, thisVersionStartCount);
     }
 
     private void initalizeSystray() {
