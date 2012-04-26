@@ -50,6 +50,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -147,7 +148,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.9.8"; // 5.0.37
+    public static final String PROGRAM_VERSION = "5.9.11"; // 5.0.50
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -290,7 +291,7 @@ public class Controller extends PFComponent {
 
     private LimitedConnectivityListener limitedConnectivityListenerSupport;
 
-    private PauseResumeTask pauseResumeTask;
+    private ScheduledFuture<?> pauseResumeFuture;
 
     private Controller() {
         // Do some TTL fixing for dyndns resolving
@@ -886,11 +887,12 @@ public class Controller extends PFComponent {
      * @param period
      *            the time in ms between executions
      */
-    public void scheduleAndRepeat(Runnable task, long period) {
+    public ScheduledFuture<?> scheduleAndRepeat(Runnable task, long period) {
         if (!shuttingDown) {
-            threadPool.scheduleWithFixedDelay(task, 0, period,
+            return threadPool.scheduleWithFixedDelay(task, 0, period,
                 TimeUnit.MILLISECONDS);
         }
+        return null;
     }
 
     /**
@@ -920,10 +922,11 @@ public class Controller extends PFComponent {
      * @param delay
      *            the initial delay in ms
      */
-    public void schedule(Runnable task, long delay) {
+    public ScheduledFuture<?> schedule(Runnable task, long delay) {
         if (!shuttingDown) {
-            threadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
+            return threadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
         }
+        return null;
     }
 
     /**
@@ -935,11 +938,29 @@ public class Controller extends PFComponent {
         if (!shuttingDown) {
             if (threadPool instanceof ScheduledThreadPoolExecutor) {
                 ((ScheduledThreadPoolExecutor) threadPool).remove(task);
+                ((ScheduledThreadPoolExecutor) threadPool).purge();
             } else {
                 logSevere("Unable to remove scheduled task. Wrong threadpool. "
                     + task);
             }
         }
+    }
+    
+    /**
+     * Removes a schduled task for the threadpool
+     * 
+     * @param task
+     */
+    public boolean removeScheduled(ScheduledFuture<?> future) {
+        if (!shuttingDown) {
+            if (threadPool instanceof ScheduledThreadPoolExecutor) {
+                return ((ScheduledThreadPoolExecutor) threadPool).remove((Runnable) future);
+            } else {
+                logSevere("Unable to remove scheduled task. Wrong threadpool. "
+                    + future);
+            }
+        }
+        return false;
     }
 
     /**
@@ -1412,12 +1433,21 @@ public class Controller extends PFComponent {
      * @param newPausedValue
      */
     public void setPaused(boolean newPausedValue) {
+        setPaused0(newPausedValue, false);
+    }
+    /**
+     * Sets the paused mode.
+     * 
+     * @param newPausedValue
+     */
+    private synchronized void setPaused0(boolean newPausedValue, boolean changedByAdaptiveLogic) {
         boolean oldPausedValue = paused;
         paused = newPausedValue;
 
         if (newPausedValue) {
             folderRepository.getFolderScanner().abortScan();
             transferManager.abortAllDownloads();
+            transferManager.abortAllUploads();
         }
         if (oldPausedValue != newPausedValue) {
             transferManager.updateSpeedLimits();
@@ -1426,9 +1456,12 @@ public class Controller extends PFComponent {
         pausedModeListenerSupport.setPausedMode(new PausedModeEvent(
             newPausedValue));
 
-        if (pauseResumeTask != null) {
+        if (pauseResumeFuture != null) {
             try {
-                removeScheduled(pauseResumeTask);
+                System.err.println("Removed: " + pauseResumeFuture);
+                if (!removeScheduled(pauseResumeFuture)) {
+                    System.err.println("UNABLE TO REMOVE: " + pauseResumeFuture);    
+                }
                 logInfo("Cancelled resume task");
             } catch (Exception e) {
                 logSevere(e);
@@ -1438,21 +1471,22 @@ public class Controller extends PFComponent {
         if (newPausedValue) {
             if (delay == 0) {
                 // User adaptive. Check for user inactivity
-                pauseResumeTask = new PauseResumeTask(true);
-                scheduleAndRepeat(pauseResumeTask, 1000);
+                pauseResumeFuture = scheduleAndRepeat(
+                    new PauseResumeTask(true), 1000);
+                System.err.println("Schduled: " + pauseResumeFuture);
             } else if (delay < Integer.MAX_VALUE) {
-                pauseResumeTask = new PauseResumeTask(false);
-                schedule(pauseResumeTask, delay * 1000);
-                log.info("Scheduled resume task in " + delay * 1000
-                    + " seconds.");
+                pauseResumeFuture = schedule(new PauseResumeTask(false),
+                    delay * 1000);
+                log.info("Scheduled resume task in " + delay + " seconds.");
             }
         } else {
-            if (delay == 0) {
+            if (delay == 0 && changedByAdaptiveLogic) {
                 // Turn on pause again when user gets active
-                pauseResumeTask = new PauseResumeTask(true);
-                scheduleAndRepeat(pauseResumeTask, 1000);
+                // pauseResumeFuture = scheduleAndRepeat(
+//                    new PauseResumeTask(true), 1000);
+                System.err.println("Would Schduled: new ");
             } else {
-                pauseResumeTask = null;
+                pauseResumeFuture = null;
             }
         }
     }
@@ -2714,7 +2748,7 @@ public class Controller extends PFComponent {
     /**
      * #2485
      */
-    private class PauseResumeTask implements Runnable {
+    private class PauseResumeTask extends TimerTask {
         private boolean userAdaptive;
 
         public PauseResumeTask(boolean whenUserIsInactive) {
@@ -2722,23 +2756,24 @@ public class Controller extends PFComponent {
         }
 
         public void run() {
+            System.err.println("execute: " + this);
             if (userAdaptive && isUIOpen()) {
                 ApplicationModel appModel = uiController.getApplicationModel();
                 if (appModel.isUserActive()) {
                     if (!isPaused()) {
-                        setPaused(true);
+                        setPaused0(true, true);
                         log.info("User active. Executed pause task.");
                     }
                 } else {
                     // Resume if user is not active
                     if (isPaused()) {
-                        setPaused(false);
+                        setPaused0(false, true);
                         log.info("User inactive. Executed resume task.");
                     }
                 }
             } else {
                 // Simply unpause after X seconds
-                setPaused(false);
+                setPaused0(false, true);
                 log.info("Executed resume task.");
             }
         }
