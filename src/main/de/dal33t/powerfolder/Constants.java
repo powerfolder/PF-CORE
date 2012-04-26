@@ -94,11 +94,6 @@ public class Constants {
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
 
     /**
-     * The URL for the client promo
-     */
-    public static final String PROVIDER_CLIENT_PROMO_URL = "http://www.powerfolder.com/fileadmin/clientimages/clientpromo.gif";
-
-    /**
      * Check for updates every hour.
      */
     public static final int UPDATE_CHECK_PERIOD_MINUTES = 60;
