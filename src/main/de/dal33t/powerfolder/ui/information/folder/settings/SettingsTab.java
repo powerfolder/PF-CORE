@@ -629,8 +629,8 @@ public class SettingsTab extends PFUIComponent {
                 .getUIController(), originalDirectory, false);
             if (!files.isEmpty()) {
                 File newDirectory = files.get(0);
-                boolean accessible = folder.checkIfDeviceDisconnected();
-                if (accessible
+                boolean disconnected = folder.checkIfDeviceDisconnected();
+                if (!disconnected
                     && FileUtils
                         .isSubdirectory(originalDirectory, newDirectory))
                 {
