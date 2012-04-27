@@ -169,6 +169,7 @@ public class MainFrame extends PFUIComponent {
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
 
+        mainStatusUpdater = new DelayedUpdater(getController());
         compact.set(!PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController()));
         controller.getFolderRepository().addFolderRepositoryListener(
@@ -320,8 +321,6 @@ public class MainFrame extends PFUIComponent {
         configureInlineInfo();
         updateMainStatus0();
         updateNoticesLabel();
-
-        mainStatusUpdater = new DelayedUpdater(getController());
     }
 
     /**
