@@ -498,7 +498,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         criteria.setPath(directoryInfo);
         criteria.setRecursive(true);
         criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
-        criteria.addConnectedAndMyself(folder);
+        criteria.addWriteMembersAndMyself(folder);
         Collection<FileInfo> infoCollection = folder.getDAO().findFiles(
             criteria);
         for (FileInfo fileInfo : infoCollection) {
