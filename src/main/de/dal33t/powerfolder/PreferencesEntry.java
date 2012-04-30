@@ -69,12 +69,20 @@ public enum PreferencesEntry {
     /**
      * Whether to show chat notifications when minimized.
      */
-    SHOW_CHAT_NOTIFICATIONS("show.chat.notifications", true),
+    SHOW_CHAT_NOTIFICATIONS("show.chat.notifications", true) {
+        protected Object getDefaultValue(Controller controller) {
+            return PreferencesEntry.EXPERT_MODE.getValueBoolean(controller);
+        }
+    },
 
     /**
      * Whether to show system notifications when minimized.
      */
-    SHOW_SYSTEM_NOTIFICATIONS("show.system.notifications", true),
+    SHOW_SYSTEM_NOTIFICATIONS("show.system.notifications", true) {
+        protected Object getDefaultValue(Controller controller) {
+            return PreferencesEntry.EXPERT_MODE.getValueBoolean(controller);
+        }
+    },
 
     @Deprecated
     MASS_DELETE_PROTECTION("mass.delete.protection", true),
@@ -199,15 +207,15 @@ public enum PreferencesEntry {
                 + type.getName() + " cannot acces as String");
         }
         return controller.getPreferences().get(preferencesKey,
-            (String) defaultValue);
-    }
-
-    public String getDefaultValue() {
-        return (String) defaultValue;
+            (String) getDefaultValue(controller));
     }
 
     public Integer getDefaultValueInt() {
         return (Integer) defaultValue;
+    }
+
+    protected Object getDefaultValue(Controller controller) {
+        return defaultValue;
     }
 
     /**
@@ -224,7 +232,7 @@ public enum PreferencesEntry {
                 + type.getName() + " cannot access as Integer");
         }
         return controller.getPreferences().getInt(preferencesKey,
-            (Integer) defaultValue);
+            (Integer) getDefaultValue(controller));
     }
 
     /**
@@ -241,7 +249,7 @@ public enum PreferencesEntry {
                 + type.getName() + " cannot access as Boolean");
         }
         return controller.getPreferences().getBoolean(preferencesKey,
-            (Boolean) defaultValue);
+            (Boolean) getDefaultValue(controller));
     }
 
     /**
@@ -255,7 +263,7 @@ public enum PreferencesEntry {
     public ValueModel getModel(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         return new PreferencesAdapter(controller.getPreferences(),
-            preferencesKey, defaultValue);
+            preferencesKey, getDefaultValue(controller));
     }
 
     /**
