@@ -96,6 +96,23 @@ public class FileInfoCriteria {
     }
 
     /**
+     * Adds all fully connected {@link Member}s, that have right to write and
+     * myself to the selection criteria.
+     * 
+     * @param folder
+     */
+    public void addWriteMembersAndMyself(Folder folder) {
+        addMySelf(folder);
+        for (Member member : folder.getMembersAsCollection()) {
+            if (member.isCompletelyConnected()
+                && folder.hasWritePermission(member))
+            {
+                addMember(member);
+            }
+        }
+    }
+
+    /**
      * Clears all selected domains.
      */
     public void clearDomains() {
