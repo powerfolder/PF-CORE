@@ -348,7 +348,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 if (diskItem instanceof DirectoryInfo) {
                     DirectoryInfo di = (DirectoryInfo) diskItem;
                     FileInfoCriteria criteria = new FileInfoCriteria();
-                    criteria.addConnectedAndMyself(folder);
+                    criteria.addWriteMembersAndMyself(folder);
                     criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
                     criteria.setPath(di);
                     criteria.setRecursive(true);

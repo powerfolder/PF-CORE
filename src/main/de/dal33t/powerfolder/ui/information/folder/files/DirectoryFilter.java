@@ -341,7 +341,7 @@ public class DirectoryFilter extends FilterModel {
                 .equals(directoryInfo.getRelativeName());
 
         FileInfoCriteria criteria = new FileInfoCriteria();
-        criteria.addConnectedAndMyself(folder);
+        criteria.addWriteMembersAndMyself(folder);
         criteria.setPath(directoryInfo);
         Collection<FileInfo> infoCollection = dao.findFiles(criteria);
         for (FileInfo fileInfo : infoCollection) {
@@ -383,7 +383,7 @@ public class DirectoryFilter extends FilterModel {
         boolean target = currentDirectoryInfo.getRelativeName()
                 .equals(directoryInfo.getRelativeName());
         FileInfoCriteria criteria = new FileInfoCriteria();
-        criteria.addConnectedAndMyself(folder);
+        criteria.addWriteMembersAndMyself(folder);
         criteria.setPath(directoryInfo);
         Collection<FileInfo> infoCollection = dao.findFiles(criteria);
         for (FileInfo fileInfo : infoCollection) {
