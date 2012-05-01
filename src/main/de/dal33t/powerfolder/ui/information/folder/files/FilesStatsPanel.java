@@ -34,15 +34,12 @@ public class FilesStatsPanel extends PFUIComponent {
     private JPanel uiComponent;
 
     private JLabel localLabel;
-    private JLabel incomingLabel;
     private JLabel deletedLabel;
 
     public FilesStatsPanel(Controller controller) {
         super(controller);
         localLabel = new JLabel(Translation.getTranslation(
             "files_stats_panel.local_label", ""));
-        incomingLabel = new JLabel(Translation.getTranslation(
-            "files_stats_panel.incoming_label", ""));
         deletedLabel = new JLabel(Translation.getTranslation(
             "files_stats_panel.deleted_label", ""));
     }
@@ -54,18 +51,16 @@ public class FilesStatsPanel extends PFUIComponent {
         return uiComponent;
     }
 
-    public void setStats(long local, long incoming, long deleted) {
+    public void setStats(long local, long deleted) {
         localLabel.setText(Translation.getTranslation(
             "files_stats_panel.local_label", String.valueOf(local)));
-        incomingLabel.setText(Translation.getTranslation(
-            "files_stats_panel.incoming_label", String.valueOf(incoming)));
         deletedLabel.setText(Translation.getTranslation(
             "files_stats_panel.deleted_label", String.valueOf(deleted)));
     }
 
     private void buildUiComponent() {
         FormLayout layout = new FormLayout(
-            "fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+            "fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -81,9 +76,7 @@ public class FilesStatsPanel extends PFUIComponent {
 
         builder.add(localLabel, cc.xy(2, 1));
         builder.add(sep1, cc.xy(4, 1));
-        builder.add(incomingLabel, cc.xy(6, 1));
-        builder.add(sep2, cc.xy(8, 1));
-        builder.add(deletedLabel, cc.xy(10, 1));
+        builder.add(deletedLabel, cc.xy(6, 1));
 
         uiComponent = builder.getPanel();
     }

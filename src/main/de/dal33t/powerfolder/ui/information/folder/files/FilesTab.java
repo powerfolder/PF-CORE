@@ -307,7 +307,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     }
 
     public void adviseOfChange(FilteredDirectoryEvent event) {
-        statsPanel.setStats(event.getLocalFiles(), event.getIncomingFiles(),
+        statsPanel.setStats(event.getLocalFiles(),
             event.getDeletedFiles());
     }
 
@@ -315,7 +315,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     }
 
     public void invalidate() {
-        statsPanel.setStats(0, 0, 0);
+        statsPanel.setStats(0, 0);
     }
 
     /**
