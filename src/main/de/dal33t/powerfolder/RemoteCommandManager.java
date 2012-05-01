@@ -602,8 +602,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     .getValueInt(getController()), true);
             repo.createFolder(foInfo, settings);
             if (backupByServer) {
-                new CreateFolderOnServerTask(foInfo,
-                    SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT)
+                new CreateFolderOnServerTask(foInfo, null)
                     .scheduleTask(getController());
             }
         }
