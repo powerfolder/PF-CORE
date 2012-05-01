@@ -119,11 +119,8 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         } else {
             task = new Runnable() {
                 public void run() {
-                    getController()
-                        .getOSClient()
-                        .getFolderService()
-                        .createFolder(foInfo,
-                            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                    getController().getOSClient().getFolderService()
+                        .createFolder(foInfo, null);
                 }
             };
 
