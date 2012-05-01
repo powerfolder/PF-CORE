@@ -203,14 +203,14 @@ public class InformationFrame extends PFUIComponent {
      * 
      * @param folderInfo
      */
-    public void displayFolderFilesIncoming(FolderInfo folderInfo) {
-        buildFolderInformationCard();
-        folderInformationCard.setFolderInfoIncoming(folderInfo);
-        folderInformationCard.showFiles();
-        displayCard(folderInformationCard);
-        showingFolder = true;
-        currentFolderInfo = folderInfo;
-    }
+//    public void displayFolderFilesIncoming(FolderInfo folderInfo) {
+//        buildFolderInformationCard();
+//        folderInformationCard.setFolderInfoIncoming(folderInfo);
+//        folderInformationCard.showFiles();
+//        displayCard(folderInformationCard);
+//        showingFolder = true;
+//        currentFolderInfo = folderInfo;
+//    }
 
     /**
      * Displays settings info for a folder

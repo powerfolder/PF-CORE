@@ -263,11 +263,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     .setText(Translation
                         .getTranslation("files_table_panel.no_files_available.local_only"));
                 break;
-            case DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY :
-                emptyLabel
-                    .setText(Translation
-                        .getTranslation("files_table_panel.no_files_available.incoming_only"));
-                break;
+//            case DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY :
+//                emptyLabel
+//                    .setText(Translation
+//                        .getTranslation("files_table_panel.no_files_available.incoming_only"));
+//                break;
             case DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY :
                 emptyLabel
                     .setText(Translation

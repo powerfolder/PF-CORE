@@ -50,10 +50,10 @@ public class DirectoryFilter extends FilterModel {
 
     public static final int FILE_FILTER_MODE_LOCAL_AND_INCOMING = 0;
     public static final int FILE_FILTER_MODE_LOCAL_ONLY = 1;
-    public static final int FILE_FILTER_MODE_INCOMING_ONLY = 2;
-    public static final int FILE_FILTER_MODE_NEW_ONLY = 3;
-    public static final int FILE_FILTER_MODE_DELETED_PREVIOUS = 4;
-    public static final int FILE_FILTER_MODE_UNSYNCHRONIZED = 5;
+    //public static final int FILE_FILTER_MODE_INCOMING_ONLY = 2;
+    public static final int FILE_FILTER_MODE_NEW_ONLY = 2;
+    public static final int FILE_FILTER_MODE_DELETED_PREVIOUS = 3;
+    public static final int FILE_FILTER_MODE_UNSYNCHRONIZED = 4;
 
     public static final int SEARCH_MODE_FILE_NAME_DIRECTORY_NAME = 10;
     public static final int SEARCH_MODE_FILE_NAME_ONLY = 11;
@@ -463,9 +463,9 @@ public class DirectoryFilter extends FilterModel {
             case FILE_FILTER_MODE_LOCAL_ONLY:
                 showFile = !isIncoming && !isDeleted;
                 break;
-            case FILE_FILTER_MODE_INCOMING_ONLY:
-                showFile = isIncoming;
-                break;
+//            case FILE_FILTER_MODE_INCOMING_ONLY:
+//                showFile = isIncoming;
+//                break;
             case FILE_FILTER_MODE_NEW_ONLY:
                 showFile = isNew;
                 break;

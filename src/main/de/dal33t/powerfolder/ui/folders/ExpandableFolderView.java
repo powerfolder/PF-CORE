@@ -137,7 +137,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private ActionLabel syncDateLabel;
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
-    private ActionLabel filesAvailableLabel;
+//    private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JButtonMini primaryButton;
     private SyncIconButtonMini upperSyncFolderButton;
@@ -332,7 +332,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name #-files webdav open
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu", "pref");
+//                "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu", "pref");
+            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         updateIconAndOS();
@@ -350,8 +351,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                                          // area where the user might click.
         upperBuilder.add(upperSyncPercentageLabel.getUIComponent(),
                 cc.xy(5, 1));
-        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(7, 1));
-        filesAvailableLabel.getUIComponent().addMouseListener(moa);
+//        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(7, 1));
+//        filesAvailableLabel.getUIComponent().addMouseListener(moa);
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -561,8 +562,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         totalSizeLabel = new JLabel();
         membersLabel = new ActionLabel(getController(),
             openMembersInformationAction);
-        filesAvailableLabel = new ActionLabel(getController(),
-            new MyFilesAvailableAction());
+//        filesAvailableLabel = new ActionLabel(getController(),
+//            new MyFilesAvailableAction());
         deletedFilesLabel = new ActionLabel(getController(),
             new MyDeletedFilesAction());
         updateNumberOfFiles();
@@ -854,13 +855,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             "exp_folder_view.local", localSizeString));
         totalSizeLabel.setText(Translation.getTranslation(
             "exp_folder_view.total", totalSizeString));
-        filesAvailableLabel.setText(filesAvailableLabelText);
-        if (filesAvailableLabelText.length() == 0) {
-            filesAvailableLabel.setToolTipText(null);
-        } else {
-            filesAvailableLabel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.files_available_tip"));
-        }
+//        filesAvailableLabel.setText(filesAvailableLabelText);
+//        if (filesAvailableLabelText.length() == 0) {
+//            filesAvailableLabel.setToolTipText(null);
+//        } else {
+//            filesAvailableLabel.setToolTipText(Translation
+//                .getTranslation("exp_folder_view.files_available_tip"));
+//        }
         // Maybe change visibility of upperSyncLink.
         updateWebDAVURL();
     }
@@ -1678,13 +1679,13 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    private class MyFilesAvailableAction extends AbstractAction {
-
-        public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openFilesInformationIncoming(
-                folderInfo);
-        }
-    }
+//    private class MyFilesAvailableAction extends AbstractAction {
+//
+//        public void actionPerformed(ActionEvent e) {
+//            getController().getUIController().openFilesInformationIncoming(
+//                folderInfo);
+//        }
+//    }
 
     private class MyDeletedFilesAction extends AbstractAction {
 

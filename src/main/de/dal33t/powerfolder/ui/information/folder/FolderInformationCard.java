@@ -135,13 +135,13 @@ public class FolderInformationCard extends InformationCard {
      * 
      * @param folderInfo
      */
-    public void setFolderInfoIncoming(FolderInfo folderInfo) {
-        detachProblemListener();
-        setFolderInfo0(folderInfo);
-        filesTab.setFolderInfoIncoming(folderInfo);
-        atachProblemListener();
-        updateProblems();
-    }
+//    public void setFolderInfoIncoming(FolderInfo folderInfo) {
+//        detachProblemListener();
+//        setFolderInfo0(folderInfo);
+//        filesTab.setFolderInfoIncoming(folderInfo);
+//        atachProblemListener();
+//        updateProblems();
+//    }
 
     private void detachProblemListener() {
 

@@ -824,10 +824,10 @@ public class UIController extends PFComponent {
      * @param folderInfo
      *            info of the folder to display files information for.
      */
-    public void openFilesInformationIncoming(FolderInfo folderInfo) {
-        informationFrame.displayFolderFilesIncoming(folderInfo);
-        displayInformationWindow();
-    }
+//    public void openFilesInformationIncoming(FolderInfo folderInfo) {
+//        informationFrame.displayFolderFilesIncoming(folderInfo);
+//        displayInformationWindow();
+//    }
 
     public void openFilesInformationDeleted(FolderInfo folderInfo) {
         informationFrame.displayFolderFilesDeleted(folderInfo);

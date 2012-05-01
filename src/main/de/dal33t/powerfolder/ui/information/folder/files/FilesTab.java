@@ -216,23 +216,23 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Set the tab with details for a folder with incoming files.
-     * 
+     *
      * @param folderInfo
      */
-    public void setFolderInfoIncoming(FolderInfo folderInfo) {
-        folder = getController().getFolderRepository().getFolder(folderInfo);
-        updateNodes();
-        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-            folder.getInfo(), ""));
-        tablePanel.setFolder(folder);
-        flatViewCB.setSelected(true);
-        flatMode.setValue(flatViewCB.isSelected());
-
-        // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox
-            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
-        filterTextField.reset();
-    }
+//    public void setFolderInfoIncoming(FolderInfo folderInfo) {
+//        folder = getController().getFolderRepository().getFolder(folderInfo);
+//        updateNodes();
+//        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
+//            folder.getInfo(), ""));
+//        tablePanel.setFolder(folder);
+//        flatViewCB.setSelected(true);
+//        flatMode.setValue(flatViewCB.isSelected());
+//
+//        // Triggers mode change and schedule filtering (MyActionListener).
+//        filterSelectionComboBox
+//            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
+//        filterTextField.reset();
+//    }
 
     /**
      * Gets the ui component
