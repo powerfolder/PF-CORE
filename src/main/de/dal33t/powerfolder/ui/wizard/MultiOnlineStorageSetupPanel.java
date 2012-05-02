@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Class to do sync profile configuration for OS joins.
@@ -193,7 +194,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         folderInfoField.setEditable(false);
 
         mountAsWebDavLabel = new ActionLabel(getController(),
-                new MyMountAsWebDavAction(getController()));
+            new MyMountAsWebDavAction(getController()));
+        mountAsWebDavLabel.setVisible(serverClient.supportsWebDAV()
+            && OSUtil.isWindowsSystem());
     }
 
     /**
@@ -315,6 +318,19 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         }
     }
 
+    
+
+    private void closeWizard() {
+        JDialog diag = getWizardDialog();
+        diag.setVisible(false);
+        diag.dispose();
+    }
+
+    private JDialog getWizardDialog() {
+        return (JDialog) getWizardContext().getAttribute(
+            WizardContextAttributes.DIALOG_ATTRIBUTE);
+    }
+    
     /**
      * Create a WebDAV connection to this folder. Should be something like 'net
      * use * "https://access.powerfolder.com/node/os004/webdav/afolder"
@@ -371,10 +387,18 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 if (result != null) {
                     if (result.startsWith("Y")) {
                         String[] parts = result.substring(1).split("\\s");
-                        for (String part : parts) {
+                        for (final String part : parts) {
                             if (part.length() == 2 && part.charAt(1) == ':') {
                                 // Probably the new drive name, so open it.
-                                FileUtils.openFile(new File(part));
+                                // Probably the new drive name, so open it.
+                                getController().getIOProvider().startIO(
+                                    new Runnable() {
+                                        public void run() {
+                                            FileUtils.openFile(new File(part));
+                                        }
+                                    });
+
+                                closeWizard();
                                 break;
                             }
                         }
