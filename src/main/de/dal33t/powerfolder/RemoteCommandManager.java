@@ -451,8 +451,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 return;
             }
         }
-        System.err.println("File not in a folder: " + file);
-
+        logWarning("Unable to copy file link. File not contained in a shared older");
+        Util.setClipboardContents("Unable to copy file link. File not contained in a shared older");
     }
 
     /**
