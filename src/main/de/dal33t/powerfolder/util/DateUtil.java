@@ -102,6 +102,58 @@ public class DateUtil {
     }
 
     /**
+     * Returns true is a date is more than n minutes in the future.
+     *
+     * @param date
+     * @param n
+     * @return
+     */
+    public static boolean isDateMoreThanNHoursInFuture(Date date, int n) {
+        Reject.ifNull(date, "No date");
+        Calendar cal = new GregorianCalendar();
+        cal.add(Calendar.HOUR, n);
+        return date.after(cal.getTime());
+    }
+
+    /**
+     * Returns true is a date is more than n minutes in the future.
+     *
+     * @param date
+     * @param n
+     * @return
+     */
+    public static boolean isDateMoreThanNMinutesInFuture(Date date, int n) {
+        Reject.ifNull(date, "No date");
+        Calendar cal = new GregorianCalendar();
+        cal.add(Calendar.MINUTE, n);
+        return date.after(cal.getTime());
+    }
+
+    public static int getDaysInFuture(Date date) {
+        Reject.ifNull(date, "No date");
+        Calendar cal = new GregorianCalendar();
+        Date now = cal.getTime();
+        long diff = date.getTime() - now.getTime();
+        return (int) (diff / 1000 / 3660 / 24);
+    }
+
+    public static int getHoursInFuture(Date date) {
+        Reject.ifNull(date, "No date");
+        Calendar cal = new GregorianCalendar();
+        Date now = cal.getTime();
+        long diff = date.getTime() - now.getTime();
+        return (int) (diff / 1000 / 3660);
+    }
+
+    public static int getMinutesInFuture(Date date) {
+        Reject.ifNull(date, "No date");
+        Calendar cal = new GregorianCalendar();
+        Date now = cal.getTime();
+        long diff = date.getTime() - now.getTime();
+        return (int) (diff / 1000 / 60);        
+    }
+
+    /**
      * Is the subject date before the end of the predicate date?
      * '5 December 2009 21:15:45' is before end of '5 December 2009'.
      * Actually tests that subject is before day-after-predicate.

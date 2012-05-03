@@ -45,7 +45,7 @@ public class DateUtilTest extends TestCase {
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(1146605870000L), new Date(1146605868805L)));
     }
 
-    public void testDateInFuture() {
+    public void testDateDaysInFuture() {
         Calendar cal = new GregorianCalendar();
         // Today is not more than 15 days ahead.
         assertFalse("Future date fault 0", DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15));
@@ -55,6 +55,30 @@ public class DateUtilTest extends TestCase {
         cal.add(Calendar.DATE, 10);
         // Twenty days in the future is more than 15 days ahead.
         assertTrue("Future date fault 20", DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15));
+    }
+
+    public void testDateHoursInFuture() {
+        Calendar cal = new GregorianCalendar();
+        // Today is not more than 15 hours ahead.
+        assertFalse("Future date fault 0", DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15));
+        cal.add(Calendar.HOUR, 10);
+        // Ten hours in the future is not more than 15 hours ahead.
+        assertFalse("Future date fault 10", DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15));
+        cal.add(Calendar.HOUR, 10);
+        // Twenty hours in the future is more than 15 hours ahead.
+        assertTrue("Future date fault 20", DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15));
+    }
+
+    public void testDateMinutesInFuture() {
+        Calendar cal = new GregorianCalendar();
+        // Today is not more than 15 minutes ahead.
+        assertFalse("Future date fault 0", DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15));
+        cal.add(Calendar.MINUTE, 10);
+        // Ten minutes in the future is not more than 15 minuts ahead.
+        assertFalse("Future date fault 10", DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15));
+        cal.add(Calendar.MINUTE, 10);
+        // Twenty minuts in the future is more than 15 minuts ahead.
+        assertTrue("Future date fault 20", DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15));
     }
 
     public void testBeforeEndOfDate() {
