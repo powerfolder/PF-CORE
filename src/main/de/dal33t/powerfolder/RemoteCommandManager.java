@@ -68,6 +68,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -116,6 +117,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     public static final String OPEN = "OPEN;";
     public static final String MAKEFOLDER = "MAKEFOLDER;";
     public static final String REMOVEFOLDER = "REMOVEFOLDER;";
+    public static final String COPYLINK = "COPYLINK;";
 
     // Private vars
     private ServerSocket serverSocket;
@@ -357,7 +359,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             logInfo("Opening file: " + file);
             FileUtils.openFile(file);
         }
-        
+
         w.flush();
         w.close();
     }
@@ -424,9 +426,33 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     removeFolder(folderConfig);
                 }
             }, 0);
+        } else if (command.startsWith(COPYLINK)) {
+            final String filename = command.substring(COPYLINK.length());
+            getController().schedule(new Runnable() {
+                public void run() {
+                    copyLink(filename);
+                }
+            }, 0);
         } else {
             log.warning("Remote command not recognizable '" + command + '\'');
         }
+    }
+
+    protected void copyLink(String filename) {
+        File file = new File(filename);
+        String absPath = file.getAbsolutePath();
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            if (absPath.startsWith(folder.getLocalBase().getAbsolutePath())) {
+                FileInfo fInfo = FileInfoFactory.lookupInstance(folder, file);
+                String openLink = getController().getOSClient().getFileOpenURL(
+                    fInfo);
+                Util.setClipboardContents(openLink);
+                return;
+            }
+        }
+        System.err.println("File not in a folder: " + file);
+
     }
 
     /**
