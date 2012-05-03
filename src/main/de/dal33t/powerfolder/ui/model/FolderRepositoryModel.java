@@ -1,12 +1,12 @@
 package de.dal33t.powerfolder.ui.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
+
+import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -15,8 +15,11 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
-
-import javax.swing.*;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 
 public class FolderRepositoryModel extends PFUIComponent {
 
@@ -41,13 +44,15 @@ public class FolderRepositoryModel extends PFUIComponent {
             .createListenerSupport(OverallFolderStatListener.class);
 
         calculateOverallStats();
-        FolderRepository repo = controller.getController()
-            .getFolderRepository();
+        FolderRepository repo = controller.getFolderRepository();
         for (Folder folder : repo.getFolders(true)) {
             folder.addFolderListener(folderListener);
         }
-        controller.getController().getFolderRepository()
-            .addFolderRepositoryListener(new MyFolderRepositoryListener());
+        controller.getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
+
+        controller.getTransferManager().addListener(
+            new MyTransferManagerListener());
     }
 
     public void addOverallFolderStatListener(OverallFolderStatListener listener)
@@ -220,5 +225,67 @@ public class FolderRepositoryModel extends PFUIComponent {
             return false;
         }
     }
+    
+    private class MyTransferManagerListener implements TransferManagerListener {
+        private TransferManager tm;
 
+        public MyTransferManagerListener() {
+            super();
+            this.tm = getController().getTransferManager();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        public void downloadRequested(TransferManagerEvent event) {
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            calculateOverallStats();
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            calculateOverallStats();
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            calculateOverallStats();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            calculateOverallStats();
+        }
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+        }
+
+        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            calculateOverallStats(); 
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            calculateOverallStats();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            calculateOverallStats();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            calculateOverallStats();
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+        }
+    }
 }
