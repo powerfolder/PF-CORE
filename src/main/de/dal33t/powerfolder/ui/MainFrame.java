@@ -642,11 +642,17 @@ public class MainFrame extends PFUIComponent {
                     // If ETA sync > 45 minutes show text: "Estimated sync: in X hours"
                     // If ETA sync < 45 minutes show text: "Estimated sync: in X minutes"
                     if (DateUtil.isDateMoreThanNHoursInFuture(syncDate, 20)) {
-                        dateText = Translation.getTranslation("main_frame.sync_eta_days", String.valueOf(DateUtil.getDaysInFuture(syncDate)));
+                        dateText = Translation.getTranslation(
+                                "main_frame.sync_eta_days", String.valueOf(
+                                        DateUtil.getDaysInFuture(syncDate)));
                     } else if (DateUtil.isDateMoreThanNMinutesInFuture(syncDate, 45)) {
-                        dateText = Translation.getTranslation("main_frame.sync_eta_hours", String.valueOf(DateUtil.getHoursInFuture(syncDate)));
+                        dateText = Translation.getTranslation(
+                                "main_frame.sync_eta_hours", String.valueOf(
+                                        DateUtil.getHoursInFuture(syncDate)));
                     } else {
-                        dateText = Translation.getTranslation("main_frame.sync_eta_minutes", String.valueOf(DateUtil.getMinutesInFuture(syncDate)));
+                        dateText = Translation.getTranslation(
+                                "main_frame.sync_eta_minutes", String.valueOf(
+                                        DateUtil.getMinutesInFuture(syncDate)));
                     }
                 } else if (synced) {
                     dateText = Translation.getTranslation(
