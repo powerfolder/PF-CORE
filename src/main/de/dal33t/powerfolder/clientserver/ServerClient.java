@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -486,6 +487,22 @@ public class ServerClient extends PFComponent {
         loginURL += "=";
         loginURL += folderURI;
         return loginURL;
+    }
+
+    /**
+     * #2675: Shell integration.
+     * 
+     * @param fInfo
+     * @return
+     */
+    public String getFileOpenURL(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "fileinfo");
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL() + "/open/"
+            + Base64.encode4URL(fInfo.getFolderInfo().id) + "/"
+            + fInfo.getRelativeName();
     }
 
     /**
