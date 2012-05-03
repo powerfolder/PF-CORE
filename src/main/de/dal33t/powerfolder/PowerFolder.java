@@ -95,6 +95,8 @@ public class PowerFolder {
             "<createfolder> Creates a new Folder");
         options.addOption("r", "removefolder", true,
             "<removefolder> Removes a existing Folder");
+        options.addOption("l", "copylink", true,
+            "<copylink> Copies the PowerFolder link of that file to clipboard");
         options.addOption("y", "notifyleft", false,
             "Show notification at left of screen");
         options.addOption("z", "nowarn", false,
@@ -196,7 +198,7 @@ public class PowerFolder {
 
         boolean commandContainsRemoteCommands = files != null
             && files.length >= 1 || commandLine.hasOption("p")
-            || commandLine.hasOption("r");
+            || commandLine.hasOption("r") || commandLine.hasOption("l");
         // Try to start controller
         boolean startController = !commandContainsRemoteCommands
             || !runningInstanceFound;
@@ -232,6 +234,11 @@ public class PowerFolder {
                 RemoteCommandManager
                     .sendCommand(RemoteCommandManager.REMOVEFOLDER
                         + commandLine.getOptionValue("r"));
+            }
+            if (commandLine.hasOption("l")) {
+                RemoteCommandManager
+                    .sendCommand(RemoteCommandManager.COPYLINK
+                        + commandLine.getOptionValue("l"));
             }
         } catch (Throwable t) {
             t.printStackTrace();
