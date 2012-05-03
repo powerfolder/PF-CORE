@@ -141,6 +141,7 @@ public class MainFrame extends PFUIComponent {
     private JButtonMini allInSyncButton;
     private SyncIconButtonMini syncingButton;
     private JButtonMini setupButton;
+    private JButtonMini pauseButton;
 
     private ActionLabel upperMainTextLabel;
     private ActionLabel syncDateLabel;
@@ -211,6 +212,7 @@ public class MainFrame extends PFUIComponent {
         b.add(allInSyncButton, cc.xy(1, 1));
         b.add(syncingButton, cc.xy(1, 1));
         b.add(setupButton, cc.xy(1, 1));
+        b.add(pauseButton, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper.add(syncDateLabel.getUIComponent(), cc.xy(3, 2));
@@ -407,6 +409,10 @@ public class MainFrame extends PFUIComponent {
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);
 
+        pauseButton = new JButtonMini(new MyPauseResumeAction(getController()));
+        pauseButton.setIcon(Icons.getIconById(Icons.PAUSE));
+        pauseButton.setText(null);
+
         syncingButton = new SyncIconButtonMini(getController());
         syncingButton.addActionListener(new MyOpenFoldersBaseAction(
             getController()));
@@ -592,6 +598,7 @@ public class MainFrame extends PFUIComponent {
 
         String upperText;
         String setupText = null;
+        boolean paused = getController().isPaused();
         boolean synced = false;
         boolean setup = false;
         if (!getController().getNodeManager().isStarted()) {
@@ -606,17 +613,20 @@ public class MainFrame extends PFUIComponent {
             setup = true;
             setupText = getApplicationModel().getActionModel()
                 .getNewFolderAction().getName();
-        } else if (syncDate == null && !syncing) { // Never synced
+        } else if (paused) {
+            // Paused
+            upperText = Translation.getTranslation("main_frame.paused");
+            synced = true;
+        } else if (syncing) {
+            upperText = Translation.getTranslation("main_frame.syncing",
+                Format.formatDecimal(overallSyncPercentage));
+        } else if (syncDate == null) {
             upperText = Translation.getTranslation("main_frame.never_synced");
         } else {
-            if (syncing) {
-                upperText = Translation.getTranslation("main_frame.syncing",
-                    Format.formatDecimal(overallSyncPercentage));
-            } else {
-                upperText = Translation.getTranslation("main_frame.in_sync");
-                synced = true;
-            }
+            upperText = Translation.getTranslation("main_frame.in_sync");
+            synced = true;
         }
+
         upperMainTextLabel.setText(upperText);
         if (setupText != null) {
             setupLabel.setText(setupText);
@@ -627,9 +637,13 @@ public class MainFrame extends PFUIComponent {
             if (!DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
                 String date = Format.formatDateShort(syncDate);
                 boolean inFuture = syncDate.after(new Date());
-                dateText = inFuture ? Translation.getTranslation(
-                    "main_frame.sync_eta", date) : Translation.getTranslation(
-                    "main_frame.last_synced", date);
+                if (inFuture) {
+                    dateText = Translation.getTranslation(
+                        "main_frame.sync_eta", date);
+                } else if (synced) {
+                    dateText = Translation.getTranslation(
+                        "main_frame.last_synced", date);
+                }
             }
         }
         syncDateLabel.setText(dateText);
@@ -644,9 +658,10 @@ public class MainFrame extends PFUIComponent {
             allInSyncButton.setVisible(false);
         } else {
             setupButton.setVisible(false);
-            syncingButton.setVisible(!synced);
-            syncingButton.spin(!synced);
-            allInSyncButton.setVisible(synced);
+            syncingButton.setVisible(!synced && !paused);
+            syncingButton.spin(!synced && !paused);
+            allInSyncButton.setVisible(synced && !paused);
+            pauseButton.setVisible(paused);
         }
     }
 
@@ -1005,7 +1020,12 @@ public class MainFrame extends PFUIComponent {
     @SuppressWarnings("serial")
     private class SwitchCompactMode extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            switchCompactMode();
+            if (getController().isPaused()) {
+                // HACK(tm)
+                getController().setPaused(false);
+            } else { 
+                switchCompactMode();
+            }
         }
     }
 
@@ -1234,6 +1254,7 @@ public class MainFrame extends PFUIComponent {
 
         public void setPausedMode(PausedModeEvent event) {
             configurePauseResumeLink();
+            updateMainStatus();
         }
     }
 
