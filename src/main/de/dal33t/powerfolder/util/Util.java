@@ -488,21 +488,7 @@ public class Util {
         }
         return result;
     }
-
-    public static String encodeURI(String string) {
-        StringBuilder b = new StringBuilder();
-        byte[] bin = string.getBytes(Charset.forName("UTF8"));
-        for (byte aBin : bin) {
-            if (Character.isLetterOrDigit(aBin & 0xff)) {
-                b.append((char) (aBin & 0xff));
-            } else {
-                b.append('%').append(DIGITS[aBin >> 4])
-                    .append(DIGITS[aBin & 0xf]);
-            }
-        }
-        return b.toString();
-    }
-
+    
     /**
      * Removes the last '/' from an URI and trims the string. Example:
      * http://www.powerfolder.com/ gets converted into
