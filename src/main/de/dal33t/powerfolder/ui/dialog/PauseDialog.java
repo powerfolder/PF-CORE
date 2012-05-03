@@ -102,7 +102,7 @@ public class PauseDialog extends BaseDialog {
             i++;
         }
 
-        FormLayout layout = new FormLayout("pref, 3dlu, pref",
+        FormLayout layout = new FormLayout("pref, 3dlu, pref:grow",
             "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
