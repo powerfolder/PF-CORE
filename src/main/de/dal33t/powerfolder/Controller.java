@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.9.11"; // 5.0.50
+    public static final String PROGRAM_VERSION = "5.9.12"; // 5.0.55
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -448,10 +448,12 @@ public class Controller extends PFComponent {
         ConfigurationLoader.loadAndMergeConfigURL(this);
         ConfigurationLoader.loadAndMergeFromInstaller(this);
 
-        // Init paused only if user expects pause to be permanent.
+        // Init paused only if user expects pause to be permanent or
+        // "while I work"
+        int pauseSecs = ConfigurationEntry.PAUSE_RESUME_SECONDS
+            .getValueInt(getController());
         paused = PreferencesEntry.PAUSED.getValueBoolean(this)
-            && ConfigurationEntry.PAUSE_RESUME_SECONDS
-                .getValueInt(getController()) == Integer.MAX_VALUE;
+            && (pauseSecs == Integer.MAX_VALUE || pauseSecs == 0);
 
         // Now set it, just in case it was paused in permanent mode.
         PreferencesEntry.PAUSED.setValue(this, paused);
@@ -639,6 +641,8 @@ public class Controller extends PFComponent {
                 logWarning("Unable to setup auto start: " + e);
             }
         }
+        
+        setPaused(paused);
     }
 
     private void clearPreferencesOnConfigSwitch() {
@@ -1448,6 +1452,9 @@ public class Controller extends PFComponent {
             folderRepository.getFolderScanner().abortScan();
             transferManager.abortAllDownloads();
             transferManager.abortAllUploads();
+        } else {
+            folderRepository.getFileRequestor().triggerFileRequesting();
+            folderRepository.triggerMaintenance();
         }
         if (oldPausedValue != newPausedValue) {
             transferManager.updateSpeedLimits();
@@ -1458,12 +1465,15 @@ public class Controller extends PFComponent {
 
         if (pauseResumeFuture != null) {
             try {
-                System.err.println("Removed: " + pauseResumeFuture);
+                pauseResumeFuture.cancel(true);
                 if (!removeScheduled(pauseResumeFuture)) {
-                    System.err.println("UNABLE TO REMOVE: " + pauseResumeFuture);    
+                    logSevere("Unable to remove pause task: "
+                        + pauseResumeFuture, new RuntimeException(
+                        "Unable to remove pause task: " + pauseResumeFuture));
                 }
-                logInfo("Cancelled resume task");
+                logFine("Cancelled resume task");
             } catch (Exception e) {
+                e.printStackTrace();
                 logSevere(e);
             }
         }
@@ -1473,7 +1483,6 @@ public class Controller extends PFComponent {
                 // User adaptive. Check for user inactivity
                 pauseResumeFuture = scheduleAndRepeat(
                     new PauseResumeTask(true), 1000);
-                System.err.println("Schduled: " + pauseResumeFuture);
             } else if (delay < Integer.MAX_VALUE) {
                 pauseResumeFuture = schedule(new PauseResumeTask(false),
                     delay * 1000);
@@ -1482,9 +1491,8 @@ public class Controller extends PFComponent {
         } else {
             if (delay == 0 && changedByAdaptiveLogic) {
                 // Turn on pause again when user gets active
-                // pauseResumeFuture = scheduleAndRepeat(
-//                    new PauseResumeTask(true), 1000);
-                System.err.println("Would Schduled: new ");
+                pauseResumeFuture = scheduleAndRepeat(
+                    new PauseResumeTask(true), 1000);
             } else {
                 pauseResumeFuture = null;
             }
@@ -2389,7 +2397,6 @@ public class Controller extends PFComponent {
     public static File getTempFilesLocation() {
         File base = new File(System.getProperty("java.io.tmpdir"));
         if (!base.exists()) {
-            System.err.println("temp dir does not exsits");
             base.mkdirs();
         }
         return base;
@@ -2756,19 +2763,26 @@ public class Controller extends PFComponent {
         }
 
         public void run() {
-            System.err.println("execute: " + this);
             if (userAdaptive && isUIOpen()) {
                 ApplicationModel appModel = uiController.getApplicationModel();
                 if (appModel.isUserActive()) {
                     if (!isPaused()) {
-                        setPaused0(true, true);
-                        log.info("User active. Executed pause task.");
+                        getController().schedule(new Runnable() {
+                            public void run() {
+                                setPaused0(true, true);
+                                log.info("User active. Executed pause task.");
+                            }
+                        }, 50);
                     }
                 } else {
                     // Resume if user is not active
                     if (isPaused()) {
-                        setPaused0(false, true);
-                        log.info("User inactive. Executed resume task.");
+                        getController().schedule(new Runnable() {
+                            public void run() {
+                                setPaused0(false, true);
+                                log.info("User inactive. Executed resume task.");
+                            }
+                        }, 50);
                     }
                 }
             } else {
