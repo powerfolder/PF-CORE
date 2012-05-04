@@ -165,8 +165,8 @@ public class FileRequestor extends PFComponent {
      */
     private void requestMissingFilesForAutodownload(Folder folder) {
         if (getController().isPaused()) {
-            if (isFine()) {
-                logFine("Paused: Skipping request of new files.");
+            if (isFiner()) {
+                logFiner("Paused: Skipping request of new files.");
             }
             return;
         }
