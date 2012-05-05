@@ -642,17 +642,36 @@ public class MainFrame extends PFUIComponent {
                     // If ETA sync > 45 minutes show text: "Estimated sync: in X hours"
                     // If ETA sync < 45 minutes show text: "Estimated sync: in X minutes"
                     if (DateUtil.isDateMoreThanNHoursInFuture(syncDate, 20)) {
+                        int days = DateUtil.getDaysInFuture(syncDate);
+                        if (days <= 1) {
                         dateText = Translation.getTranslation(
-                                "main_frame.sync_eta_days", String.valueOf(
-                                        DateUtil.getDaysInFuture(syncDate)));
-                    } else if (DateUtil.isDateMoreThanNMinutesInFuture(syncDate, 45)) {
+                                "main_frame.sync_eta_one_day");
+                        } else {
+                            dateText = Translation.getTranslation(
+                                    "main_frame.sync_eta_days", String.valueOf(
+                                            days));
+                        }
+                    } else if (DateUtil.isDateMoreThanNMinutesInFuture(syncDate,
+                            45)) {
+                        int hours = DateUtil.getHoursInFuture(syncDate);
+                        if (hours <= 1) {
                         dateText = Translation.getTranslation(
-                                "main_frame.sync_eta_hours", String.valueOf(
-                                        DateUtil.getHoursInFuture(syncDate)));
+                                "main_frame.sync_eta_one_hour");
+                        } else {
+                            dateText = Translation.getTranslation(
+                                    "main_frame.sync_eta_hours", String.valueOf(
+                                            hours));
+                        }
                     } else {
+                        int minutes = DateUtil.getMinutesInFuture(syncDate);
+                        if (minutes <= 1) {
                         dateText = Translation.getTranslation(
-                                "main_frame.sync_eta_minutes", String.valueOf(
-                                        DateUtil.getMinutesInFuture(syncDate)));
+                                "main_frame.sync_eta_one_minute");
+                        } else {
+                            dateText = Translation.getTranslation(
+                                    "main_frame.sync_eta_minutes",
+                                    String.valueOf(minutes));
+                        }
                     }
                 } else if (synced) {
                     dateText = Translation.getTranslation(

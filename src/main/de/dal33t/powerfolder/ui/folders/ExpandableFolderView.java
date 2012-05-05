@@ -764,14 +764,46 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
+                        //If ETA sync > 2 days show text: "Estimated sync: Unknown"
+                        //If ETA sync > 20 hours show text: "Estimated sync: in X days"
+                        //If ETA sync > 45 minutes show text: "Estimated sync: in X hours"
+                        //If ETA sync < 45 minutes show text: "Estimated sync: in X minutes"
                         if (DateUtil.isDateMoreThanNDaysInFuture(date, 2)) {
-                            syncDateText = Translation
-                                .getTranslation("exp_folder_view.estimated_unknown");
-                        } else {
-                            String formattedDate = Format.formatDateShort(date);
                             syncDateText = Translation.getTranslation(
-                                "exp_folder_view.estimated_synchronized",
-                                formattedDate);
+                                    "main_frame.sync_eta_unknown");
+                        } else if (DateUtil.isDateMoreThanNHoursInFuture(date,
+                                20)) {
+                            int days = DateUtil.getDaysInFuture(date);
+                            if (days <= 1) {
+                                syncDateText = Translation.getTranslation(
+                                        "exp_folder_view.sync_eta_one_day");
+                            } else {
+                                syncDateText = Translation.getTranslation(
+                                        "exp_folder_view.sync_eta_days",
+                                        String.valueOf(days));
+                            }
+                        } else if (DateUtil.isDateMoreThanNMinutesInFuture(date,
+                                45)) {
+                            int hours = DateUtil.getDaysInFuture(date);
+                            if (hours <= 1) {
+                            syncDateText = Translation.getTranslation(
+                                    "exp_folder_view.sync_eta_one_hour");
+                            } else {
+                                syncDateText = Translation.getTranslation(
+                                        "exp_folder_view.sync_eta_hours",
+                                        String.valueOf(hours));
+                            }
+                        } else {
+                            int minutes = DateUtil.getHoursInFuture(date);
+                            if (minutes <= 1) {
+                                syncDateText = Translation.getTranslation(
+                                        "exp_folder_view.sync_eta_one_minute");
+                            } else {
+                                syncDateText = Translation.getTranslation(
+                                        "exp_folder_view.sync_eta_minutes",
+                                        String.valueOf(minutes));
+
+                            }
                         }
                     }
                 }
