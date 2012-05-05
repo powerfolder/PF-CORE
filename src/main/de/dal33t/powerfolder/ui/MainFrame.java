@@ -634,6 +634,7 @@ public class MainFrame extends PFUIComponent {
 
         String dateText = " ";
         if (syncDate != null) {
+            //If ETA sync > 2 days: no text.
             if (!DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
                 String date = Format.formatDateShort(syncDate);
                 boolean inFuture = syncDate.after(new Date());
