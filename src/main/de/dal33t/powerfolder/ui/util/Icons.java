@@ -103,7 +103,7 @@ public class Icons {
     public static final String SYSTEM_MONITOR = "system_monitor.icon";
     public static final String STOP = "stop.icon";
     public static final String RUN = "run.icon";
-    public static final String PAUSE = "sleep.icon";
+    public static final String PAUSE = "pause.icon";
     public static final String STATUS = "status.icon";
 
     public static final String ADD = "add.icon";
@@ -187,6 +187,7 @@ public class Icons {
         "systray_sync09.icon", "systray_sync10.icon", "systray_sync11.icon"};
 
     public static final String SYSTRAY_WARNING = "systray_warning.icon";
+    public static final String SYSTRAY_PAUSE = "systray_pause.icon";
 
     // Online state icons
     public static final String CONNECTION_GOOD = "connection_good.icon";
