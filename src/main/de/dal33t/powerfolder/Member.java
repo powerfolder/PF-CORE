@@ -51,6 +51,8 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FileHistoryReply;
 import de.dal33t.powerfolder.message.FileHistoryRequest;
 import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FileRequestCommand;
+import de.dal33t.powerfolder.message.FolderDBMaintCommando;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.FolderListExt;
@@ -1445,27 +1447,58 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
                 expectedTime = 50;
 
+            } else if (message instanceof FileRequestCommand) {
+                if (targetFolder != null) {
+                    if (targetFolder.getSyncProfile().isAutodownload()) {
+                        getController().getFolderRepository()
+                            .getFileRequestor()
+                            .triggerFileRequesting(targetedFolderInfo);
+                    }
+                }
+                expectedTime = 50;
+
+            } else if (message instanceof FolderDBMaintCommando) {
+                final FolderDBMaintCommando m = (FolderDBMaintCommando) message;
+                if (targetFolder != null) {
+                    getController().getIOProvider().startIO(new Runnable() {
+                        public void run() {
+                            targetFolder
+                                .maintainFolderDB(m.getDate().getTime());
+                        }
+                    });
+                }
+                expectedTime = 50;
+
             } else if (message instanceof RequestDownload) {
+                final RequestDownload dlReq = (RequestDownload) message;
                 // a download is requested. Put handling in background thread
                 // for faster processing.
-                Runnable runner = new Runnable() {
-                    public void run() {
-                        RequestDownload dlReq = (RequestDownload) message;
-                        Upload ul = getController().getTransferManager()
-                            .queueUpload(Member.this, dlReq);
-                        if (ul == null && isCompletelyConnected()) {
-                            // Send abort
-                            logWarning("Sending abort of " + dlReq.file);
-                            sendMessagesAsynchron(new AbortUpload(dlReq.file));
+                if (getController().isPaused()) {
+                    // Send abort
+                    logWarning("Sending abort (paused) of " + dlReq.file);
+                    sendMessagesAsynchron(new AbortUpload(dlReq.file));
+                } else {
+                    Runnable runner = new Runnable() {
+                        public void run() {
+                            Upload ul = getController().getTransferManager()
+                                .queueUpload(Member.this, dlReq);
+                            if (ul == null && isCompletelyConnected()) {
+                                // Send abort
+                                logWarning("Sending abort of " + dlReq.file);
+                                sendMessagesAsynchron(new AbortUpload(
+                                    dlReq.file));
+                            }
+                            if (getController().isPaused()) {
+                                // Send abort
+                                logWarning("Sending abort (paused) of "
+                                    + dlReq.file);
+                                sendMessagesAsynchron(new AbortUpload(
+                                    dlReq.file));
+                            }
                         }
-                        if (getController().isPaused()) {
-                            // Send abort
-                            logWarning("Sending abort (paused) of " + dlReq.file);
-                            sendMessagesAsynchron(new AbortUpload(dlReq.file));
-                        }
-                    }
-                };
-                getController().getIOProvider().startIO(runner);
+                    };
+                    getController().getIOProvider().startIO(runner);
+                }
                 expectedTime = 100;
 
             } else if (message instanceof DownloadQueued) {
