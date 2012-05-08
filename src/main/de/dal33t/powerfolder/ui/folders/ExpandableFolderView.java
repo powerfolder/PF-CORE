@@ -176,7 +176,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private DelayedUpdater folderDetailsUpdater;
 
     private String webDAVURL;
-    private Date lastFetch;
 
     /**
      * Constructor
@@ -304,15 +303,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
             return;
         }
-        // Cache 10 secs.
-        if (lastFetch == null
-            || lastFetch.before(new Date(
-                System.currentTimeMillis() - 1000L * 10)))
-        {
-            webDAVURL = serverClient.getFolderService()
-                .getWebDAVURL(folderInfo);
-            lastFetch = new Date();
-        }
+        webDAVURL = folder.getWebDAVURL();
     }
 
     /**
