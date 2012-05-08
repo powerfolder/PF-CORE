@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.9.12"; // 5.0.55
+    public static final String PROGRAM_VERSION = "5.9.16"; // 5.0.56
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -642,7 +642,10 @@ public class Controller extends PFComponent {
             }
         }
         
-        setPaused(paused);
+        if (pauseSecs == 0) {
+            // Activate adaptive logic
+            setPaused(paused);
+        }
     }
 
     private void clearPreferencesOnConfigSwitch() {
@@ -1067,8 +1070,8 @@ public class Controller extends PFComponent {
                 // logWarning("" + cpuUsage + "% " + cpu.getValue() + " / " +
                 // cpu.getMaxValue());
                 // if (cpuUsage > 1) {
-                String dump = Debug.dumpCurrentStacktraces(false);
-                if (StringUtils.isNotBlank(dump) && isInfo()) {
+                String dump = Debug.dumpCurrentStacktraces(true);
+                if (StringUtils.isNotBlank(dump) && isFine()) {
                     logFine("Active threads:\n\n" + dump);
                 } else {
                     logFine("No active threads");
@@ -1453,8 +1456,11 @@ public class Controller extends PFComponent {
             transferManager.abortAllDownloads();
             transferManager.abortAllUploads();
         } else {
-            folderRepository.getFileRequestor().triggerFileRequesting();
             folderRepository.triggerMaintenance();
+            folderRepository.getFileRequestor().triggerFileRequesting();
+            for (Folder folder : folderRepository.getFolders()) {
+                folder.broadcastFileRequestCommand();
+            }
         }
         if (oldPausedValue != newPausedValue) {
             transferManager.updateSpeedLimits();
