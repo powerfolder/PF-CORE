@@ -111,8 +111,8 @@ public final class FileInfoFactory {
                 return original;
             }
             if (original.isFile()) {
-                if (LOG.isLoggable(Level.WARNING)) {
-                    LOG.warning("Corrected FolderInfo on "
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Corrected FolderInfo on "
                         + original.toDetailString());
                 }
                 return new FileInfo(original.getRelativeName(),
