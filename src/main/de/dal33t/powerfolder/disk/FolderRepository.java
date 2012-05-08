@@ -1233,8 +1233,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 {
                     continue;
                 }
-                // Only create if user has entered some files.
-                if (file.isDirectory() && FileUtils.hasFiles(file)) {
+                if (file.getName().equals("BACKUP_REMOVE")) {
+                    continue;
+                }
+                if (file.isDirectory()) {
                     // Don't autocreate if it has been removed previously.
                     if (removedFolderDirectories.contains(file)) {
                         continue;
@@ -1254,7 +1256,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             break;
                         }
                     }
-                    if (!known) {
+                    if (!known && FileUtils.hasFiles(file)) {
                         handleNewFolder(file);
                     }
                 }
