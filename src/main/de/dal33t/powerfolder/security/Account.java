@@ -73,7 +73,7 @@ import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
  * A access to the system indentified by username & password.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -179,6 +179,12 @@ public class Account implements Serializable {
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
+    @ManyToMany
+    @JoinTable(name = "Account_Groups", joinColumns = @JoinColumn(name = "Account_oid"), inverseJoinColumns = @JoinColumn(name = "AGroup_oid"))
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private Collection<Group> groups;
+
     @Embedded
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
@@ -196,6 +202,7 @@ public class Account implements Serializable {
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
         this.computers = new CopyOnWriteArrayList<MemberInfo>();
         this.licenseKeyFileList = new CopyOnWriteArrayList<String>();
+        this.groups = new CopyOnWriteArrayList<Group>();
     }
 
     /**
@@ -240,7 +247,7 @@ public class Account implements Serializable {
 
     /**
      * Revokes any permission to a folders.
-     * 
+     *
      * @param foInfo
      *            the folder.
      */
@@ -288,6 +295,11 @@ public class Account implements Serializable {
                 return true;
             }
         }
+        for (Group g : groups) {
+            if (g.hasPermission(permission)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -305,6 +317,16 @@ public class Account implements Serializable {
                 FolderPermission fp = (FolderPermission) p;
                 if (fp.folder.equals(folder)) {
                     return fp.getMode();
+                }
+            }
+        }
+        for (Group g : groups) {
+            for (Permission p : g.getPermission()) {
+                if (p instanceof FolderPermission) {
+                    FolderPermission fp = (FolderPermission) p;
+                    if (fp.folder.equals(folder)) {
+                        return fp.getMode();
+                    }
                 }
             }
         }
@@ -326,6 +348,14 @@ public class Account implements Serializable {
                 folders.add(fp.getFolder());
             }
         }
+        for (Group g : groups) {
+            for (Permission p : g.getPermission()) {
+                if (p instanceof FolderOwnerPermission) {
+                    FolderPermission fp = (FolderPermission) p;
+                    folders.add(fp.getFolder());
+                }
+            }
+        }
         return folders;
     }
 
@@ -342,6 +372,14 @@ public class Account implements Serializable {
                 folderInfos.add(fp.getFolder());
             }
         }
+        for (Group g : groups) {
+            for (Permission p : g.getPermission()) {
+                if (p instanceof FolderPermission) {
+                    FolderPermission fp = (FolderPermission) p;
+                    folderInfos.add(fp.getFolder());
+                }
+            }
+        }
         return folderInfos;
     }
 
@@ -351,6 +389,20 @@ public class Account implements Serializable {
                 FolderPermission fp = (FolderPermission) permission;
                 fp.folder = fp.folder.intern();
             }
+        }
+    }
+
+    public void addGroup(Group... group) {
+        Reject.ifNull(group, "Group is null");
+        for (Group g : group) {
+            groups.add(g);
+        }
+    }
+
+    public void removeGroup(Group... group) {
+        Reject.ifNull(group, "Group is null");
+        for (Group g : group) {
+            groups.remove(g);
         }
     }
 
@@ -394,7 +446,7 @@ public class Account implements Serializable {
 
     /**
      * setLanguage Set account language
-     * 
+     *
      * @return Selected language
      */
 
@@ -404,7 +456,7 @@ public class Account implements Serializable {
 
     /**
      * setLanguage Set account language
-     * 
+     *
      * @param lang
      *            New language
      */
@@ -443,7 +495,7 @@ public class Account implements Serializable {
 
     /**
      * Adds a line of info with the current date to the notes of that account.
-     * 
+     *
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
@@ -517,6 +569,10 @@ public class Account implements Serializable {
      */
     public Collection<MemberInfo> getComputers() {
         return computers;
+    }
+
+    public Collection<Group> getGroups() {
+        return Collections.unmodifiableCollection(groups);
     }
 
     public List<String> getLicenseKeyFiles() {
@@ -648,7 +704,7 @@ public class Account implements Serializable {
      * FIXME: Does only set the folders hosted on the CURRENT server to backup.
      * <p>
      * Account needs to be stored afterwards!!
-     * 
+     *
      * @param controller
      *            the controller
      */
@@ -666,7 +722,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that have SyncProfile.DISABLED to
      * SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT.
-     * 
+     *
      * @param controller
      * @return the number of folder the sync was re-enabled.
      */
@@ -690,7 +746,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that don't have SyncProfile.DISABLED to
      * SyncProfile.DISABLED.
-     * 
+     *
      * @param controller
      * @return the number of folder the sync was disabled.
      */
@@ -722,7 +778,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to read the folder contents.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to read the folder contents
@@ -734,7 +790,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -746,7 +802,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -794,6 +850,12 @@ public class Account implements Serializable {
             permissions = newPermissions;
         }
 
+        if (!(groups instanceof CopyOnWriteArrayList<?>)) {
+            Collection<Group> newGroups = new CopyOnWriteArrayList<Group>(
+                groups);
+            groups = newGroups;
+        }
+
         if (!(computers instanceof CopyOnWriteArrayList<?>)) {
             Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(
                 computers);
@@ -811,6 +873,9 @@ public class Account implements Serializable {
         if (licenseKeyFiles != null) {
             licenseKeyFileList = new CopyOnWriteArrayList<String>(
                 licenseKeyFiles);
+        }
+        if (groups == null) {
+            groups = new CopyOnWriteArrayList<Group>();
         }
         if (server != null) {
             server.migrateId();
@@ -831,6 +896,9 @@ public class Account implements Serializable {
         if (oid == null) {
             // Migration.
             oid = IdGenerator.makeId();
+        }
+        if (groups == null) {
+            groups = new CopyOnWriteArrayList<Group>();
         }
     }
 }
