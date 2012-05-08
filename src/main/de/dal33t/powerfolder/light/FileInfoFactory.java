@@ -120,8 +120,8 @@ public final class FileInfoFactory {
                     original.getModifiedDate(), original.getVersion(),
                     original.isDeleted(), fi.intern());
             } else if (original.isDiretory()) {
-                if (LOG.isLoggable(Level.WARNING)) {
-                    LOG.warning("Corrected DirectoryInfo on "
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Corrected DirectoryInfo on "
                         + original.toDetailString());
                 }
                 return new DirectoryInfo(original.getRelativeName(),
