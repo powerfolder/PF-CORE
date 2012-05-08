@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
@@ -81,6 +82,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FileRequestCommand;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
@@ -89,7 +91,18 @@ import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Visitor;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -259,6 +272,11 @@ public class Folder extends PFComponent {
      * {@link ConfigurationEntry#FOLDER_SYNC_WARN_DAYS}.
      */
     private int syncWarnSeconds;
+    
+    /**
+     * The WebDAV url (cached)
+     */
+    private String webDAVURL;
 
     /**
      * Constructor for folder.
@@ -682,6 +700,16 @@ public class Folder extends PFComponent {
      */
     public TransferPriorities getTransferPriorities() {
         return transferPriorities;
+    }
+
+    public synchronized String getWebDAVURL() {
+        if (webDAVURL != null) {
+            ServerClient client = getController().getOSClient();
+            if (client.isConnected()) {
+                webDAVURL = client.getFolderService().getWebDAVURL(currentInfo);
+            }
+        }
+        return webDAVURL;
     }
 
     public ScanResult.ResultState getLastScanResultState() {
@@ -1870,6 +1898,7 @@ public class Folder extends PFComponent {
                 + expired
                 + " expired FileInfos. Expiring deleted files older than "
                 + removeBeforeDate);
+            statistic.scheduleCalculate();
         } else if (isFiner()) {
             logFiner("Maintained folder db, " + nFilesBefore + " known files, "
                 + expired
@@ -2816,8 +2845,19 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Broadcasting remote scan command");
         }
-        Message scanCommand = new ScanCommand(currentInfo);
-        broadcastMessages(scanCommand);
+        Message commando = new ScanCommand(currentInfo);
+        broadcastMessages(commando);
+    }
+
+    /**
+     * Broadcasts the remote command to requests files of the folder.
+     */
+    public void broadcastFileRequestCommand() {
+        if (isFiner()) {
+            logFiner("Broadcasting remote file request command");
+        }
+        Message commando = new FileRequestCommand(currentInfo);
+        broadcastMessages(commando);
     }
 
     private void broadcastFolderChanges(final ScanResult scanResult) {
