@@ -80,6 +80,8 @@ import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
 import de.dal33t.powerfolder.event.FolderAutoCreateListener;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -88,6 +90,8 @@ import de.dal33t.powerfolder.event.MassDeletionHandler;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -113,6 +117,7 @@ import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.PreviewNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
@@ -175,8 +180,11 @@ public class UIController extends PFComponent {
     private boolean seenOome;
 
     private TransferManagerModel transferManagerModel;
+    private FolderListener folderListener;
 
     private final AtomicInteger activeFrame;
+    private final AtomicBoolean synchronizing = new AtomicBoolean();
+    private final DelayedUpdater statusUpdater;
 
     /**
      * The UI distribution running.
@@ -196,6 +204,7 @@ public class UIController extends PFComponent {
         super(controller);
 
         activeFrame = new AtomicInteger();
+        statusUpdater = new DelayedUpdater(getController());
 
         configureOomeHandler();
 
@@ -275,8 +284,14 @@ public class UIController extends PFComponent {
         mainFrame = new MainFrame(getController());
 
         // create the models
+        folderListener = new MyFolderListener();
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            folder.addFolderListener(folderListener);
+        }
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
+        getController().getTransferManager().addListener(new MyTransferManagerListner());
 
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
@@ -1249,93 +1264,183 @@ public class UIController extends PFComponent {
         }
     }
 
+    private void checkStatus() {
+        statusUpdater.schedule(new Runnable() {
+            public void run() {
+                checkStatus0();
+            }
+        });
+    }
+    /**
+     * Display folder synchronization info. A copy of the MyFolders quick info
+     * panel text.
+     */
+    private void checkStatus0() {
+        long nTotalBytes = 0;
+        FolderRepository repo = getController().getFolderRepository();
+        Collection<Folder> folders = repo.getFolders(true);
+
+        int synchronizingFolders = 0;
+        for (Folder folder : folders) {
+            if (folder.isTransferring()
+                || Double.compare(folder.getStatistic()
+                    .getAverageSyncPercentage(), 100.0d) != 0)
+            {
+                synchronizingFolders++;
+            }
+            nTotalBytes += folder.getStatistic().getTotalSize();
+        }
+
+        String text1;
+        boolean changed = false;
+        synchronized (synchronizing) {
+            if (synchronizingFolders == 0) {
+                text1 = Translation.getTranslation("check_status.in_sync_all");
+                if (synchronizing.get()) {
+                    changed = true;
+                    synchronizing.set(false);
+                }
+            }
+
+            else {
+                text1 = Translation.getTranslation("check_status.syncing",
+                    String.valueOf(synchronizingFolders));
+                if (!synchronizing.get()) {
+                    changed = true;
+                    synchronizing.set(true);
+                }
+            }
+        }
+
+        // Disabled popup of sync start.
+        if (changed) {
+            String text2 = Translation.getTranslation(
+                "check_status.powerfolders", Format.formatBytes(nTotalBytes),
+                String.valueOf(folders.size()));
+
+            applicationModel.getNoticesModel().handleNotice(
+                new SimpleNotificationNotice(Translation
+                    .getTranslation("check_status.title"), text1 + "\n\n"
+                    + text2));
+        }
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
 
     private class MyFolderRepositoryListener implements
-            FolderRepositoryListener {
-
-        private final AtomicBoolean synchronizing = new AtomicBoolean();
-
+        FolderRepositoryListener
+    {
         public void folderRemoved(FolderRepositoryEvent e) {
             removeFolderFromSysTray(e.getFolder());
+            e.getFolder().removeFolderListener(folderListener);
             checkStatus();
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
             addFolderToSysTray(e.getFolder());
+            e.getFolder().addFolderListener(folderListener);
             checkStatus();
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
-            checkStatus();
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
-            checkStatus();
         }
 
         public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        /**
-         * Display folder synchronization info. A copy of the MyFolders quick
-         * info panel text.
-         */
-        private void checkStatus() {
-            long nTotalBytes = 0;
-            FolderRepository repo = getController().getFolderRepository();
-            Collection<Folder> folders = repo.getFolders(true);
-
-            int synchronizingFolders = 0;
-            for (Folder folder : folders) {
-                if (folder.isTransferring()
-                    || Double.compare(folder.getStatistic()
-                        .getAverageSyncPercentage(), 100.0d) != 0)
-                {
-                    synchronizingFolders++;
-                }
-                nTotalBytes += folder.getStatistic().getTotalSize();
-            }
-
-            String text1;
-            boolean changed = false;
-            synchronized (synchronizing) {
-                if (synchronizingFolders == 0) {
-                    text1 = Translation
-                        .getTranslation("check_status.in_sync_all");
-                    if (synchronizing.get()) {
-                        changed = true;
-                        synchronizing.set(false);
-                    }
-                }
-
-                else {
-                    text1 = Translation.getTranslation("check_status.syncing",
-                        String.valueOf(synchronizingFolders));
-                    if (!synchronizing.get()) {
-                        changed = true;
-                        synchronizing.set(true);
-                    }
-                }
-            }
-
-            // Disabled popup of sync start.
-            if (changed) {
-                String text2 = Translation.getTranslation(
-                    "check_status.powerfolders",
-                    Format.formatBytes(nTotalBytes),
-                    String.valueOf(folders.size()));
-
-                applicationModel.getNoticesModel().handleNotice(
-                    new SimpleNotificationNotice(Translation
-                        .getTranslation("check_status.title"), text1 + "\n\n"
-                        + text2));
-            }
+            return false;
         }
     }
+
+    private class MyFolderListener implements FolderListener {
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            checkStatus();
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+        }
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+
+        public void fileChanged(FolderEvent folderEvent) {
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+        }
+    }
+    
+    private class MyTransferManagerListner implements TransferManagerListener {
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        public void downloadRequested(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+        }
+
+        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            checkStatus();
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+        }
+    }
+  
 
     /**
      * Class to handle local and remote mass deletion events. This pushes
