@@ -2763,8 +2763,8 @@ TextField
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_BACKGROUND" value="#ffffff" />
-      <color type="TEXT_FOREGROUND" value="#ffffff" /> 
+      <color type="TEXT_BACKGROUND" value="#cccccc" />
+      <color type="TEXT_FOREGROUND" value="#000000" /> 
 	    
   	</state>
 
