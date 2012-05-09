@@ -29,11 +29,15 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
-                Folder folder = controller.getFolderRepository().getFolder(
-                    folderInfo);
+                final Folder folder = controller.getFolderRepository()
+                    .getFolder(folderInfo);
                 if (folder != null) {
-                    controller.getFolderRepository()
-                        .removeFolder(folder, false);
+                    controller.getIOProvider().startIO(new Runnable() {
+                        public void run() {
+                            controller.getFolderRepository().removeFolder(
+                                folder, false);
+                        }
+                    });
                 }
             }
         };
