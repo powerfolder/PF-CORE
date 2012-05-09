@@ -35,6 +35,7 @@ public interface WikiLinks {
     String SETTINGS_INFO = "Information";
 
     String PROBLEM_UNSYNCED_FOLDER = "Unsynchronized-Folder";
+    String PROBLEM_FOLDER_DATABASE = "Folder-Database";
     String PROBLEM_DEVICE_DISCONNECTED = "Disconnected-Device";
     String PROBLEM_DUPLICATE_FILENAME = "Duplicate-Filename";
     String PROBLEM_ILLEGAL_END_CHARS = "Illegal-End-Chars";
