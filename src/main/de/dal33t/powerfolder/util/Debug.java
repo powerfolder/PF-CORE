@@ -80,6 +80,17 @@ public class Debug {
         // No instance allowed
     }
 
+    public static long countDataitems(Controller controller) {
+        long dbSize = 0;
+        for (Folder folder : controller.getFolderRepository().getFolders(true))
+        {
+            for (Member member : folder.getMembersAsCollection()) {
+                dbSize += folder.getDAO().count(member.getId(), true, false);
+            }
+        }
+        return dbSize;
+    }
+
     /**
      * Dumps the system properties into the debug directory.
      */
