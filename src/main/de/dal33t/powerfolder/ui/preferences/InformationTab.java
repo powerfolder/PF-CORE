@@ -19,37 +19,47 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.jar.Attributes;
-import java.text.SimpleDateFormat;
 
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.factories.ButtonBarFactory;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.util.*;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.TextLinesPanelBuilder;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.JavaVersion;
-import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.update.ManuallyInvokedUpdateHandler;
 import de.dal33t.powerfolder.util.update.Updater;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class InformationTab extends PFComponent implements PreferenceTab {
 
@@ -208,14 +218,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 
-        long dbSize = 0;
-        for (Folder folder : getController().getFolderRepository().getFolders(
-            true))
-        {
-            for (Member member : folder.getMembersAsCollection()) {
-                dbSize += folder.getDAO().count(member.getId(), true, false);
-            }
-        }
+        long dbSize = Debug.countDataitems(getController());
 
         return createTextBox(
             Translation.getTranslation("about_dialog.your_system.title"),
