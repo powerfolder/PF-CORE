@@ -1070,6 +1070,10 @@ public class Controller extends PFComponent {
                 // logWarning("" + cpuUsage + "% " + cpu.getValue() + " / " +
                 // cpu.getMaxValue());
                 // if (cpuUsage > 1) {
+                if (isInfo()) {
+                    logInfo("Dataitems: "
+                        + Debug.countDataitems(Controller.this));
+                }
                 String dump = Debug.dumpCurrentStacktraces(true);
                 if (StringUtils.isNotBlank(dump) && isFine()) {
                     logFine("Active threads:\n\n" + dump);
