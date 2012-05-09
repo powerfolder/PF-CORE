@@ -71,9 +71,9 @@ public class FolderDatabaseProblem extends ResolvableProblem {
                 controller.getIOProvider().startIO(new Runnable() {
                     public void run() {
                         folder.removeProblem(FolderDatabaseProblem.this);
-                        folder.maintainFolderDB(System.currentTimeMillis());
                         folder.broadcastMessages(new FolderDBMaintCommando(
                             folderInfo, new Date()));
+                        folder.maintainFolderDB(System.currentTimeMillis()); 
                     }
                 });
             }
