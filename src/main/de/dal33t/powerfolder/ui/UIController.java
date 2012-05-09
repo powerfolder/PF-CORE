@@ -204,7 +204,7 @@ public class UIController extends PFComponent {
         super(controller);
 
         activeFrame = new AtomicInteger();
-        statusUpdater = new DelayedUpdater(getController());
+        statusUpdater = new DelayedUpdater(getController(), 1000L);
 
         configureOomeHandler();
 
@@ -1265,6 +1265,7 @@ public class UIController extends PFComponent {
     }
 
     private void checkStatus() {
+      //  logInfo("From", new RuntimeException());
         statusUpdater.schedule(new Runnable() {
             public void run() {
                 checkStatus0();
@@ -1362,6 +1363,7 @@ public class UIController extends PFComponent {
         }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
+            //logWarning("Stats calced for " + folderEvent.getFolder(), new RuntimeException());
             checkStatus();
         }
 
@@ -1388,7 +1390,7 @@ public class UIController extends PFComponent {
         }
 
         public void downloadRequested(TransferManagerEvent event) {
-            checkStatus();
+            //checkStatus();
         }
 
         public void downloadQueued(TransferManagerEvent event) {
@@ -1418,7 +1420,7 @@ public class UIController extends PFComponent {
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            checkStatus();
+            //checkStatus();
         }
 
         public void uploadStarted(TransferManagerEvent event) {
