@@ -755,10 +755,10 @@ public enum ConfigurationEntry {
 
     /**
      * The age of a deleted file until it gets removed by the folder db
-     * maintenance. In Seconds! Default: 6 month
+     * maintenance. In Seconds! Default: 1 month
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30
-        * 6),
+        * 1),
 
     /**
      * The http proxy to use for HTTP tunneled connections
