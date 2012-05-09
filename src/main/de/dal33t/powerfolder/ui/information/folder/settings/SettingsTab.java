@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -1162,11 +1163,19 @@ public class SettingsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            folder.maintainFolderDB(System.currentTimeMillis());
-            folder.broadcastMessages(new FolderDBMaintCommando(
-                folder.getInfo(), new Date()));
-            getController().getUIController().openFilesInformation(
-                folder.getInfo());
+            MaintainFolderAction.this.setEnabled(false);
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    folder.broadcastMessages(new FolderDBMaintCommando(folder
+                        .getInfo(), new Date()));
+                    folder.maintainFolderDB(System.currentTimeMillis());
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            MaintainFolderAction.this.setEnabled(true);
+                        }
+                    });
+                }
+            });
         }
     }
 
