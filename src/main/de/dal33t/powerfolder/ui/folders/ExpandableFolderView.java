@@ -1326,7 +1326,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent.getFolder());
+            if (folderEvent.getMember().hasCompleteFileListFor(
+                folderEvent.getFolder().getInfo()))
+            {
+                doFolderChanges(folderEvent.getFolder());
+            }
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
