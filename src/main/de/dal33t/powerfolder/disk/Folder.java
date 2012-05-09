@@ -66,6 +66,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
 import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.problem.FolderDatabaseProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
@@ -1872,7 +1873,10 @@ public class Folder extends PFComponent {
                 + ". Expiring deleted files older than " + removeBeforeDate);
         }
         int expired = 0;
+        int keepDeleted = 0;
+        int total = 0;
         for (FileInfo file : dao.findAllFiles(null)) {
+            total++;
             if (!file.isDeleted()) {
                 continue;
             }
@@ -1890,6 +1894,8 @@ public class Folder extends PFComponent {
                 if (isFiner()) {
                     logFiner("FileInfo expired: " + file.toDetailString());
                 }
+            } else {
+                keepDeleted++;
             }
         }
         if (expired > 0) {
@@ -1906,6 +1912,10 @@ public class Folder extends PFComponent {
                 + removeBeforeDate);
         }
         lastDBMaintenance = new Date();
+
+        if (total > 50000 && total - keepDeleted * 2 < 0) {
+            addProblem(new FolderDatabaseProblem(currentInfo));
+        }
     }
 
     /**
