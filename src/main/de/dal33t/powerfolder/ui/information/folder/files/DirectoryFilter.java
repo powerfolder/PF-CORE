@@ -635,7 +635,11 @@ public class DirectoryFilter extends FilterModel {
         }
 
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            checkAndQueue(folderEvent);
+            if (folderEvent.getMember().hasCompleteFileListFor(
+                folderEvent.getFolder().getInfo()))
+            {
+                checkAndQueue(folderEvent);
+            }
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
