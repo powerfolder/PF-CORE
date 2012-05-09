@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "5.9.16"; // 5.0.56
+    public static final String PROGRAM_VERSION = "5.9.18"; // 5.0.56
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1074,7 +1074,7 @@ public class Controller extends PFComponent {
                     logFine("Dataitems: "
                         + Debug.countDataitems(Controller.this));
                 }
-                String dump = Debug.dumpCurrentStacktraces(true);
+                String dump = Debug.dumpCurrentStacktraces(false);
                 if (StringUtils.isNotBlank(dump) && isFine()) {
                     logFine("Active threads:\n\n" + dump);
                 } else {
