@@ -1913,7 +1913,7 @@ public class Folder extends PFComponent {
         }
         lastDBMaintenance = new Date();
 
-        if (total > 50000 && total - keepDeleted * 2 < 0) {
+        if (total > 75025 && total - keepDeleted * 2 < 0) {
             addProblem(new FolderDatabaseProblem(currentInfo));
         }
     }
