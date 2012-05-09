@@ -113,6 +113,7 @@ public class FolderStatistic extends PFComponent {
             logWarning("Unable to calc stats. Folder not joined");
             return;
         }
+        //logInfo("Sched Calc from: ", new RuntimeException());
         // long millisPast = System.currentTimeMillis() - lastCalc;
         if (calculatorTask != null) {
             return;
@@ -623,10 +624,7 @@ public class FolderStatistic extends PFComponent {
         }
 
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            if (folderEvent.getMember().isCompletelyConnected()) {
-                // Recalculate statistics
-                scheduleCalculate();
-            }
+            calculateIfRequired(folderEvent);
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
@@ -664,6 +662,21 @@ public class FolderStatistic extends PFComponent {
         }
 
         public void patternRemoved(PatternChangedEvent e) {
+            scheduleCalculate();
+        }
+
+        private void calculateIfRequired(FolderEvent e) {
+            if (e.getMember() != null && !e.getMember().isCompletelyConnected())
+            {
+                // Member not completely connected.
+                return;
+            }
+            if (e.getMember() != null
+                && !e.getMember().hasCompleteFileListFor(folder.getInfo()))
+            {
+                // Not full filelist yet.
+                return;
+            }
             scheduleCalculate();
         }
     }
