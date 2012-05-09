@@ -174,11 +174,9 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
-            calculateOverallStats();
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
-            calculateOverallStats();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -200,6 +198,9 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
 
         public void scanResultCommited(final FolderEvent folderEvent) {
+            if (folderEvent.getScanResult().isChangeDetected()) {
+                calculateOverallStats();
+            }
             FolderInfo folderInfo = folderEvent.getFolder().getInfo();
             synchronized (interestedFolders) {
                 if (interestedFolders.contains(folderInfo)) {
