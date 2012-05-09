@@ -1070,8 +1070,8 @@ public class Controller extends PFComponent {
                 // logWarning("" + cpuUsage + "% " + cpu.getValue() + " / " +
                 // cpu.getMaxValue());
                 // if (cpuUsage > 1) {
-                if (isInfo()) {
-                    logInfo("Dataitems: "
+                if (isFine()) {
+                    logFine("Dataitems: "
                         + Debug.countDataitems(Controller.this));
                 }
                 String dump = Debug.dumpCurrentStacktraces(true);
