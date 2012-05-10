@@ -113,11 +113,12 @@ public class FolderStatistic extends PFComponent {
             logWarning("Unable to calc stats. Folder not joined");
             return;
         }
-        //logInfo("Sched Calc from: ", new RuntimeException());
+      
         // long millisPast = System.currentTimeMillis() - lastCalc;
         if (calculatorTask != null) {
             return;
         }
+       // logInfo("Sched NEW Calc from: ", new RuntimeException());
         if (current.getAnalyzedFiles() < MAX_ITEMS) {
             setCalculateIn(2000);
         } else {
@@ -129,7 +130,7 @@ public class FolderStatistic extends PFComponent {
     // Calculator timer code
     // *************************************************************
 
-    private void setCalculateIn(long timeToWait) {
+    private synchronized void setCalculateIn(long timeToWait) {
         if (calculatorTask != null) {
             return;
         }
