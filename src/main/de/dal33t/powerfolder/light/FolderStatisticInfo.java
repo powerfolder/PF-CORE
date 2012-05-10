@@ -181,7 +181,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
                     + ". map: " + map);
             }
             if (Double.compare(sync, 100.0) > 0) {
-                logFine("Sync percentage > 100% - folder=" + folder.name
+                logFiner("Sync percentage > 100% - folder=" + folder.name
                     + ", member=" + memberInfo.nick + ", sync=" + sync);
                 sync = 100.0;
             }
