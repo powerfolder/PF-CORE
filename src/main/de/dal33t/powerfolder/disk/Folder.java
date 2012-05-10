@@ -1634,7 +1634,11 @@ public class Folder extends PFComponent {
                 // Do not load members
                 logFiner("Loading " + members1.length + " members");
                 for (MemberInfo memberInfo : members1) {
-                    join0(memberInfo);
+                    Member member = memberInfo.getNode(getController(), true);
+                    if (member.isMySelf()) {
+                        continue;
+                    }
+                    join0(member, true);
                 }
 
                 // Old blacklist explicit items.
@@ -2201,37 +2205,40 @@ public class Folder extends PFComponent {
             }
             return false;
         }
-        join0(member);
+        join0(member, false);
         return true;
     }
 
     /**
-     * Joins a member to the folder. Does fire the event
+     * Joins a member to the folder.
      * 
      * @param member
      */
-    private void join0(Member member) {
+    private boolean join0(Member member, boolean init) {
         Reject.ifNull(member, "Member is null, unable to join");
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
-        if (isFiner()) {
-            logFiner("Member joined " + member);
+        if (!wasMember && isInfo() && !init) {
+            logInfo("Member joined " + member);
         }
-        if (!wasMember && member.isCompletelyConnected()) {
-            // FIX for #924
-            waitForScan();
+        if (!init) {
+            if (!wasMember && member.isCompletelyConnected()) {
+                // FIX for #924
+                waitForScan();
 
-            Message[] filelistMsgs = FileList.create(this,
-                supportExternalizable(member));
-            member.sendMessagesAsynchron(filelistMsgs);
+                Message[] filelistMsgs = FileList.create(this,
+                    supportExternalizable(member));
+                member.sendMessagesAsynchron(filelistMsgs);
+            }
+            if (!wasMember) {
+                // Fire event if this member is new
+                fireMemberJoined(member);
+                updateMetaFolderMembers();
+                // Persist new members list
+                setDBDirty();
+            }
         }
-        if (!wasMember) {
-            // Fire event if this member is new
-            fireMemberJoined(member);
-            updateMetaFolderMembers();
-            // Persist new members list
-            setDBDirty();
-        }
+        return !wasMember;
     }
 
     /**
@@ -2478,7 +2485,10 @@ public class Folder extends PFComponent {
      * @return if this folder is currently synchronizing.
      */
     public boolean isSyncing() {
-        return isScanning() || isTransferring();
+        return isScanning()
+            || isTransferring()
+            || getController().getFolderRepository()
+                .getCurrentlyMaintainingFolder() == this;
     }
 
     /**
@@ -3328,7 +3338,7 @@ public class Folder extends PFComponent {
      */
     private void setDBDirty() {
         dirty = true;
-        // logWarning("DB dirty", new RuntimeException());
+        //logWarning("DB dirty", new RuntimeException());
     }
 
     /**
