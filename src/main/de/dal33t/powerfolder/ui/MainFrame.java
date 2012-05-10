@@ -618,8 +618,13 @@ public class MainFrame extends PFUIComponent {
             upperText = Translation.getTranslation("main_frame.paused");
             synced = true;
         } else if (syncing) {
-            upperText = Translation.getTranslation("main_frame.syncing",
-                Format.formatDecimal(overallSyncPercentage));
+            String s;
+            if (overallSyncPercentage >= 0) {
+                s = Format.formatDecimal(overallSyncPercentage) + "%";
+            } else {
+                s = "...";
+            }
+            upperText = Translation.getTranslation("main_frame.syncing", s);
         } else if (syncDate == null) {
             upperText = Translation.getTranslation("main_frame.never_synced");
         } else {

@@ -177,7 +177,8 @@ public class TrayIconManager extends PFComponent {
                 .getOverallSyncPercentage();
             if (overallSyncPercentage >= 0) {
                 tooltip.append(" ");
-                tooltip.append(Format.formatPercent(overallSyncPercentage));
+                tooltip.append(Format.formatDecimal(overallSyncPercentage)
+                    + "%");
             }
         } else if (getController().isPaused()) {
             image = Icons.getImageById(Icons.PAUSE);
