@@ -14,6 +14,8 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -53,6 +55,9 @@ public class FolderRepositoryModel extends PFUIComponent {
 
         controller.getTransferManager().addListener(
             new MyTransferManagerListener());
+
+        controller.getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
     }
 
     public void addOverallFolderStatListener(OverallFolderStatListener listener)
@@ -80,6 +85,9 @@ public class FolderRepositoryModel extends PFUIComponent {
         return estimatedSyncDate;
     }
 
+    /**
+     * @return -1 for not known yet
+     */
     public double getOverallSyncPercentage() {
         return overallSyncPercentage;
     }
@@ -100,7 +108,6 @@ public class FolderRepositoryModel extends PFUIComponent {
         for (Folder folder : getController().getFolderRepository().getFolders(
             true))
         {
-
             if (folder.isSyncing()) {
                 localSyncing = true;
             }
@@ -136,6 +143,10 @@ public class FolderRepositoryModel extends PFUIComponent {
             localOverallSyncPercentage = 0;
         } else {
             localOverallSyncPercentage /= totalSize;
+        }
+        if (!getController().getOSClient().getServer().isCompletelyConnected())
+        {
+            localOverallSyncPercentage = -1;
         }
 
         // Upate with the lastest values.
@@ -174,9 +185,11 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
+            calculateOverallStats();
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
+            calculateOverallStats();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -226,7 +239,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             return false;
         }
     }
-    
+
     private class MyTransferManagerListener implements TransferManagerListener {
         private TransferManager tm;
 
@@ -271,7 +284,7 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            calculateOverallStats(); 
+            calculateOverallStats();
         }
 
         public void uploadAborted(TransferManagerEvent event) {
@@ -288,5 +301,27 @@ public class FolderRepositoryModel extends PFUIComponent {
 
         public void completedUploadRemoved(TransferManagerEvent event) {
         }
+    }
+
+    private class MyNodeManagerListener extends NodeManagerAdapter {
+
+        @Override
+        public void nodeConnecting(NodeManagerEvent e) {
+            if (e.getNode().hasJoinedAnyFolder()) {
+                calculateOverallStats();
+            }
+        }
+
+        @Override
+        public void nodeDisconnected(NodeManagerEvent e) {
+            if (e.getNode().hasJoinedAnyFolder()) {
+                calculateOverallStats();
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
     }
 }
