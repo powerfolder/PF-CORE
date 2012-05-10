@@ -2090,7 +2090,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
                             if (isFiner()) {
-                                logFiner("Joined folder: " + secretFolder);
+                                logFiner("Joined " + folder);
                             }
                             joinedFolders.add(folder.getInfo());
                             if (folderList.joinedMetaFolders) {
