@@ -24,12 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +71,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JScrollPane scrollPane;
     private final RestoreFilesTableModel tableModel;
     private final List<FileInfo> fileInfosToRestore;
+    private final List<FileInfo> deletedFilesToRestore;
     private JDateChooser dateChooser;
     private JSpinner hourSpinner;
     private JSpinner minuteSpinner;
@@ -93,12 +89,13 @@ public class MultiFileRestorePanel extends PFWizardPanel {
      * @param filesToRestore
      */
     public MultiFileRestorePanel(Controller controller, Folder folder,
-        List<FileInfo> filesToRestore)
+        List<FileInfo> filesToRestore, List<FileInfo> deletedFilesToRestore)
     {
         super(controller);
         infoLabel = new JLabel();
         this.folder = folder;
         this.filesToRestore = filesToRestore;
+        this.deletedFilesToRestore = deletedFilesToRestore;
         tableModel = new RestoreFilesTableModel(controller);
         fileInfosToRestore = new ArrayList<FileInfo>();
     }
@@ -195,6 +192,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         includeDeletedCB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateIncludeDeletedFilesPreference();
+                loadVersions();
             }
         });
 
@@ -301,7 +299,18 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                     targetDate = cal.getTime();
                 }
 
-                for (FileInfo fileInfo : filesToRestore) {
+                List<FileInfo> fileInfos = new ArrayList<FileInfo>();
+                fileInfos.addAll(filesToRestore);
+                // Merge files and deleted files if necessary.
+                if (includeDeletedCB.isSelected()) {
+                    for (FileInfo fileInfo : deletedFilesToRestore) {
+                        if (fileInfos.contains(fileInfo)) {
+                            fileInfos.add(fileInfo);
+                        }
+                    }
+                }
+
+                for (FileInfo fileInfo : fileInfos) {
                     if (isCancelled()) {
                         return Collections.emptyList();
                     }
@@ -342,9 +351,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 }
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Exception", e);
-                infoLabel
-                    .setText(Translation
-                        .getTranslation("wizard.multi_file_restore_panel.retrieving_failure"));
+                infoLabel.setText(Translation.getTranslation(
+                        "wizard.multi_file_restore_panel.retrieving_failure"));
             }
             return versions;
         }
@@ -356,17 +364,14 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             tableModel.addVersions(versions);
             hasNext = false;
             if (versions.isEmpty()) {
-                infoLabel
-                    .setText(Translation
-                        .getTranslation("wizard.multi_file_restore_panel.retrieving_none"));
+                infoLabel.setText(Translation.getTranslation(
+                        "wizard.multi_file_restore_panel.retrieving_none"));
             } else {
                 infoLabel.setText(Translation.getTranslation(
                     "wizard.multi_file_restore_panel.retrieving",
                     Format.formatLong(count++),
-                    Format.formatLong(filesToRestore.size())));
-                // infoLabel
-                // .setText(Translation
-                // .getTranslation("wizard.multi_file_restore_panel.retrieving_success"));
+                    Format.formatLong(filesToRestore.size() +
+                            deletedFilesToRestore.size())));
             }
             bar.setVisible(false);
             updateButtons();

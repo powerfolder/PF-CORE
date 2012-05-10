@@ -360,11 +360,16 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                     fileInfosToRestore.add((FileInfo) diskItem);
                 }
             }
+
+            // @todo hghg populate deleted file infos.
+            List<FileInfo> deletedFileInfosToRestore = new ArrayList<FileInfo>();
+
             PFWizard wizard = new PFWizard(getController(), Translation
                 .getTranslation("wizard.pfwizard.restore_title"));
 
             MultiFileRestorePanel panel = new MultiFileRestorePanel(
-                getController(), folder, fileInfosToRestore);
+                getController(), folder, fileInfosToRestore,
+                    deletedFileInfosToRestore);
             wizard.open(panel);
         }
     }
