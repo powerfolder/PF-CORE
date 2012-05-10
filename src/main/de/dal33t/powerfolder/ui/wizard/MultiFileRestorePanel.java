@@ -34,15 +34,7 @@ import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -54,6 +46,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.toedter.calendar.JDateChooser;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileArchiver;
@@ -87,6 +80,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JSpinner minuteSpinner;
     private JRadioButton latestVersionButton;
     private JRadioButton dateVersionButton;
+    private JCheckBox includeDeletedCB;
 
     private SwingWorker worker;
 
@@ -109,15 +103,27 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     protected JComponent buildContent() {
-        FormLayout layout = new FormLayout(
-            "140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
-            "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout;
+        if (Feature.RESTORE_DELETED.isEnabled()) {
+            layout = new FormLayout(
+                "140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
+                "pref, 10dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
+        } else {
+            layout = new FormLayout(
+                "140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
+                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
+        }
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
+
+        if (Feature.RESTORE_DELETED.isEnabled()) {
+            builder.add(includeDeletedCB, cc.xy(1, row));
+            row += 2;
+        }
 
         builder.add(latestVersionButton, cc.xy(1, row));
 
@@ -179,6 +185,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         ButtonGroup bg = new ButtonGroup();
         bg.add(latestVersionButton);
         bg.add(dateVersionButton);
+
+        includeDeletedCB = new JCheckBox(Translation.getTranslation("wizard.multi_file_restore_panel.include_deleted_cb"));
 
         dateChooser = new JDateChooser();
         Calendar cal = new GregorianCalendar();
