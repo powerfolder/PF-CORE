@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
@@ -4417,7 +4418,10 @@ public class Folder extends PFComponent {
                         break;
                     }
                 }
-                if (ufp == null) {
+                if (ufp == null
+                    && PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(getController()))
+                {
                     if (new Date().before(lastSyncDate)) {
                         logWarning("Last sync date in future: " + lastSyncDate);
                     }
