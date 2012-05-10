@@ -167,7 +167,9 @@ public enum PreferencesEntry {
 
     DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true),
 
-    PAUSED("paused", false);
+    PAUSED("paused", false),
+
+    INCLUDE_DELETED_FILES("include.deleted.files", false);
 
     /** String, Boolean, Integer */
     private Class type;

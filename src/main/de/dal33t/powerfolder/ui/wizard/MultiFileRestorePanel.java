@@ -47,6 +47,7 @@ import com.toedter.calendar.JDateChooser;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileArchiver;
@@ -186,7 +187,16 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         bg.add(latestVersionButton);
         bg.add(dateVersionButton);
 
-        includeDeletedCB = new JCheckBox(Translation.getTranslation("wizard.multi_file_restore_panel.include_deleted_cb"));
+        includeDeletedCB = new JCheckBox(Translation.getTranslation(
+                "wizard.multi_file_restore_panel.include_deleted_cb"));
+        includeDeletedCB.setSelected(
+                PreferencesEntry.INCLUDE_DELETED_FILES.getValueBoolean(
+                        getController()));
+        includeDeletedCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateIncludeDeletedFilesPreference();
+            }
+        });
 
         dateChooser = new JDateChooser();
         Calendar cal = new GregorianCalendar();
@@ -211,6 +221,11 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         dateVersionButton.setOpaque(false);
 
         updateDateChooser();
+    }
+
+    private void updateIncludeDeletedFilesPreference() {
+        PreferencesEntry.INCLUDE_DELETED_FILES.setValue(getController(),
+                includeDeletedCB.isSelected());
     }
 
     public boolean hasNext() {
