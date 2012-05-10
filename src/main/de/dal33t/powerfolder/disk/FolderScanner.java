@@ -722,7 +722,12 @@ public class FolderScanner extends PFComponent {
                 "current scanning folder must not be null");
             String currentDirName = getCurrentDirName(currentScanningFolder,
                 dirToScan);
-
+            try {
+                // Give CPU room to breath. Don't consume 100% CPU.
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             scanDirectory(dirToScan, currentDirName);
             File[] files = dirToScan.listFiles();
             if (files == null) { // hardware failure
