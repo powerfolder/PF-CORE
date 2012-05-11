@@ -78,7 +78,7 @@ public class RequestExecutor extends PFComponent {
         // Listen to receive the response
         getController().getNodeManager().addNodeManagerListener(discoListener);
         node.addMessageListener(messageListener);
-        node.sendMessagesAsynchron(request);
+        node.sendMessage(request);
 
         try {
             waitForResponse(Constants.REQUEST_RESPONSE_TIMEOUT);
