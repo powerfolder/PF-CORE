@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
@@ -51,6 +53,7 @@ import de.dal33t.powerfolder.util.SimpleTimeEstimator;
  * @version $Revision: 1.22 $
  */
 public class FolderStatistic extends PFComponent {
+    private static final Logger LOG = Logger.getLogger(FolderStatistic.class.getName());
 
     public static final int UNKNOWN_SYNC_STATUS = -1;
 
@@ -215,7 +218,7 @@ public class FolderStatistic extends PFComponent {
         return lastFileChangeDate;
     }
 
-    private static boolean inSync(FileInfo fileInfo, FileInfo newestFileInfo) {
+    private static boolean inSync(Member member, FileInfo fileInfo, FileInfo newestFileInfo) {
         if (newestFileInfo == null) {
             // It is intended not to use Reject.ifNull for performance reasons.
             throw new NullPointerException("Newest FileInfo not found of "
@@ -224,8 +227,16 @@ public class FolderStatistic extends PFComponent {
         if (fileInfo == null) {
             return false;
         }
-        return !newestFileInfo.isNewerThan(fileInfo)
+        boolean insync = !newestFileInfo.isNewerThan(fileInfo)
             && !fileInfo.isNewerThan(newestFileInfo);
+        if (insync && newestFileInfo.getSize() != fileInfo.getSize()
+            && LOG.isLoggable(Level.WARNING))
+        {
+            LOG.warning("File in sync, but size differs.\n" + "Newest: "
+                + newestFileInfo.toDetailString() + "\n@" + member.getNick()
+                + ":" + fileInfo.toDetailString());
+        }
+        return insync;
     }
 
     /**
@@ -273,7 +284,7 @@ public class FolderStatistic extends PFComponent {
                 // newestFileInfo = fileInfo;
                 continue;
             }
-            boolean inSync = inSync(fileInfo, newestFileInfo);
+            boolean inSync = inSync(member, fileInfo, newestFileInfo);
 
             if (inSync) {
                 // Remove partial stat for this member / file, if it exists.
@@ -300,7 +311,7 @@ public class FolderStatistic extends PFComponent {
                         continue;
                     }
 
-                    boolean otherInSync = inSync(otherMemberFile,
+                    boolean otherInSync = inSync(alreadyMember, otherMemberFile,
                         newestFileInfo);
                     if (otherInSync) {
                         incoming = false;
@@ -335,7 +346,7 @@ public class FolderStatistic extends PFComponent {
                 if (otherMemberFile == null) {
                     continue;
                 }
-                boolean otherInSync = inSync(otherMemberFile, newestFileInfo);
+                boolean otherInSync = inSync(alreadyM, otherMemberFile, newestFileInfo);
                 if (otherInSync) {
                     // File already added to totals
                     addToTotals = false;
