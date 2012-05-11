@@ -1478,7 +1478,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // for faster processing.
                 if (getController().isPaused()) {
                     // Send abort
-                    logWarning("Sending abort (paused) of " + dlReq.file);
+                    logFine("Sending abort (paused) of " + dlReq.file);
                     sendMessagesAsynchron(new AbortUpload(dlReq.file));
                 } else {
                     Runnable runner = new Runnable() {
