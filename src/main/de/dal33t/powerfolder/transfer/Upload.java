@@ -283,29 +283,8 @@ public class Upload extends Transfer {
                     getTransferManager().uploadBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 } finally {
+                    closeIO();
                     debugState = "DONE";
-                }
-            }
-
-            private void closeIO() {
-                if (in != null) {
-                    try {
-                        in.close();
-                        in = null;
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
-                }
-                if (raf != null) {
-                    try {
-                        if (isFiner()) {
-                            logFiner("Closing raf for "
-                                + getFile().toDetailString());
-                        }
-                        raf.close();
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
                 }
             }
 
@@ -317,6 +296,29 @@ public class Upload extends Transfer {
 
         // Perfom upload in threadpool
         getTransferManager().perfomUpload(uploadPerfomer);
+    }
+    
+    private synchronized void closeIO() {
+        if (in != null) {
+            try {
+                in.close();
+                in = null;
+            } catch (IOException e) {
+                logSevere("IOException", e);
+            }
+        }
+        if (raf != null) {
+            try {
+                if (isFiner()) {
+                    logFiner("Closing raf for "
+                        + getFile().toDetailString());
+                }
+                raf.close();
+                raf = null;
+            } catch (IOException e) {
+                logSevere("IOException", e);
+            }
+        }
     }
 
     protected boolean checkForFilePartsRecordRequest() throws TransferException
@@ -521,6 +523,7 @@ public class Upload extends Transfer {
         super.shutdown();
         // "Forget" all requests from the client
         stopUploads();
+        closeIO();
     }
 
     private void stopUploads() {
