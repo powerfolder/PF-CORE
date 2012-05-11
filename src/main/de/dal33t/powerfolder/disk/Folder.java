@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1867,6 +1868,8 @@ public class Folder extends PFComponent {
      * Creates a list of fileinfos of deleted files that are old than the
      * configured max age. These files do not get written to the DB. So files
      * deleted long ago do not stay in DB for ever.
+     * <p>
+     * Also: #2759 Check sync consistency
      * 
      * @param removeBefore
      */
@@ -1880,9 +1883,42 @@ public class Folder extends PFComponent {
         int expired = 0;
         int keepDeleted = 0;
         int total = 0;
+        List<FileInfo> brokenExisting = new LinkedList<FileInfo>();
         for (FileInfo file : dao.findAllFiles(null)) {
             total++;
             if (!file.isDeleted()) {
+                // #2759 Check sync consistency
+                for (Member member : members.keySet()) {
+                    FileInfo remoteFile = member.getFile(file);
+                    if (remoteFile == null
+                        || remoteFile.getVersion() != file.getVersion())
+                    {
+                        continue;
+                    }
+                    // Same version
+                    if (remoteFile.isVersionDateAndSizeIdentical(file)) {
+                        // File is ok
+                        continue;
+                    }
+                    boolean sameDate = remoteFile.getModifiedDate().equals(
+                        file.getModifiedDate());
+                    boolean remoteOlder = !sameDate
+                        && remoteFile.getModifiedDate().before(
+                            file.getModifiedDate());
+                    boolean remoteSmaller = remoteFile.getSize() < file
+                        .getSize();
+                    if (remoteOlder || (sameDate && remoteSmaller)) {
+                        // Our version is "better" newer or bigger.
+                        // Increase version to force re-sync
+                        if (!brokenExisting.contains(file)) {
+                            logWarning("Fixing file entry. Local: "
+                                + file.toDetailString() + ".\n@"
+                                + member.getNick() + ": "
+                                + remoteFile.toDetailString());
+                            brokenExisting.add(file);
+                        }
+                    }
+                }
                 continue;
             }
             if (file.getModifiedDate().before(removeBeforeDate)) {
@@ -1903,11 +1939,25 @@ public class Folder extends PFComponent {
                 keepDeleted++;
             }
         }
-        if (expired > 0) {
+        if (!brokenExisting.isEmpty()) {
+            for (int i = 0; i < brokenExisting.size(); i++) {
+                FileInfo fileInfo = brokenExisting.get(i);
+                FileInfo newFileInfo = FileInfoFactory.unmarshallExistingFile(
+                    currentInfo, fileInfo.getRelativeName(),
+                    fileInfo.getSize(), fileInfo.getModifiedBy(),
+                    fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
+                    fileInfo.isDiretory());
+                brokenExisting.set(i, newFileInfo);
+            }
+            store(getController().getMySelf(), brokenExisting);
+            filesChanged(brokenExisting);
+        }
+
+        if (expired > 0 || brokenExisting.size() > 0) {
             setDBDirty();
             logInfo("Maintained folder db, " + nFilesBefore + " known files, "
-                + expired
-                + " expired FileInfos. Expiring deleted files older than "
+                + expired + " expired FileInfos, " + brokenExisting.size()
+                + " fixed entries. Expiring deleted files older than "
                 + removeBeforeDate);
             statistic.scheduleCalculate();
         } else if (isFiner()) {
@@ -1920,6 +1970,13 @@ public class Folder extends PFComponent {
 
         if (total > 75025 && total - keepDeleted * 2 < 0) {
             addProblem(new FolderDatabaseProblem(currentInfo));
+        }
+
+        // Also maintain meta folder
+        Folder mFolder = getController().getFolderRepository()
+            .getMetaFolderForParent(currentInfo);
+        if (mFolder != null) {
+            mFolder.maintainFolderDB(removeBefore);
         }
     }
 
@@ -3195,6 +3252,7 @@ public class Folder extends PFComponent {
         }
 
         Boolean hasWrite = null;
+        List<FileInfo> found = new LinkedList<FileInfo>();
         for (FileInfo remoteFileInfo : remoteFileInfos) {
             FileInfo localFileInfo = getFile(remoteFileInfo);
             if (localFileInfo == null) {
@@ -3240,11 +3298,7 @@ public class Folder extends PFComponent {
                     }
 
                     // localFileInfo.copyFrom(remoteFileInfo);
-                    store(getController().getMySelf(), remoteFileInfo);
-                    // FIXME That might produce a LOT of traffic! Single update
-                    // message per file! This also might intefere with FileList
-                    // exchange at beginning of communication
-                    fileChanged(remoteFileInfo);
+                    found.add(remoteFileInfo);
                 }
                 // Disabled because of TRAC #999. Causes strange behavior.
                 // if (localFileNewer) {
@@ -3293,16 +3347,14 @@ public class Folder extends PFComponent {
                     }
 
                     remoteFileInfo = correctFolderInfo(remoteFileInfo);
-                    store(getController().getMySelf(), remoteFileInfo);
-
-                    // FIXME That might produce a LOT of traffic! Single
-                    // update
-                    // message per file! This also might intefere with
-                    // FileList
-                    // exchange at beginning of communication
-                    fileChanged(remoteFileInfo);
+                    found.add(remoteFileInfo);
                 }
             }
+        }
+
+        if (!found.isEmpty()) {
+            store(getController().getMySelf(), found);
+            filesChanged(found);
         }
     }
 
@@ -4281,18 +4333,30 @@ public class Folder extends PFComponent {
         folderMembershipListenerSupport.memberLeft(folderMembershipEvent);
     }
 
-    private void fileChanged(FileInfo fileInfo) {
-        Reject.ifNull(fileInfo, "FileInfo is null");
+    private void fileChanged(FileInfo... fileInfos) {
+        filesChanged(Arrays.asList(fileInfos));
+    }
 
-        fireFileChanged(fileInfo);
+    private void filesChanged(final List<FileInfo> fileInfosList) {
+        Reject.ifNull(fileInfosList, "FileInfo is null");
+
+        for (int i = 0; i < fileInfosList.size(); i++) {
+            FileInfo fileInfo = fileInfosList.get(i);
+            // TODO Bulk fire event
+            fireFileChanged(fileInfo);
+            final FileInfo localInfo = getFile(fileInfo);
+            fileInfosList.set(i, localInfo);
+        }
+
         setDBDirty();
 
-        final FileInfo localInfo = getFile(fileInfo);
-        if (diskItemFilter.isRetained(localInfo)) {
+        if (fileInfosList.size() >= 1
+            || diskItemFilter.isRetained(fileInfosList.get(0)))
+        {
             broadcastMessages(new MessageProducer() {
                 public Message[] getMessages(boolean useExt) {
-                    return new Message[]{FolderFilesChanged.create(localInfo,
-                        useExt)};
+                    return FolderFilesChanged.create(getInfo(), fileInfosList,
+                        diskItemFilter, useExt);
                 }
             });
         }
