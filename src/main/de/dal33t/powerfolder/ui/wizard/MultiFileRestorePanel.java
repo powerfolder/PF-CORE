@@ -71,7 +71,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JScrollPane scrollPane;
     private final RestoreFilesTableModel tableModel;
     private final List<FileInfo> fileInfosToRestore;
-    private final List<FileInfo> deletedFilesToRestore;
     private JDateChooser dateChooser;
     private JSpinner hourSpinner;
     private JSpinner minuteSpinner;
@@ -89,13 +88,12 @@ public class MultiFileRestorePanel extends PFWizardPanel {
      * @param filesToRestore
      */
     public MultiFileRestorePanel(Controller controller, Folder folder,
-        List<FileInfo> filesToRestore, List<FileInfo> deletedFilesToRestore)
+        List<FileInfo> filesToRestore)
     {
         super(controller);
         infoLabel = new JLabel();
         this.folder = folder;
         this.filesToRestore = filesToRestore;
-        this.deletedFilesToRestore = deletedFilesToRestore;
         tableModel = new RestoreFilesTableModel(controller);
         fileInfosToRestore = new ArrayList<FileInfo>();
     }
@@ -301,11 +299,17 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
                 List<FileInfo> fileInfos = new ArrayList<FileInfo>();
                 fileInfos.addAll(filesToRestore);
-                // Merge files and deleted files if necessary.
+
                 if (includeDeletedCB.isSelected()) {
-                    for (FileInfo fileInfo : deletedFilesToRestore) {
-                        if (fileInfos.contains(fileInfo)) {
-                            fileInfos.add(fileInfo);
+                    // Merge deleted files if necessary.
+                    Collection<FileInfo> allFiles =
+                            folder.getDAO().findAllFiles(
+                                    getController().getMySelf().getId());
+                    for (FileInfo fileInfo : allFiles) {
+                        if (fileInfo.isDeleted()) {
+                            if (!fileInfos.contains(fileInfo)) {
+                                fileInfos.add(fileInfo);
+                            }
                         }
                     }
                 }
@@ -370,8 +374,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 infoLabel.setText(Translation.getTranslation(
                     "wizard.multi_file_restore_panel.retrieving",
                     Format.formatLong(count++),
-                    Format.formatLong(filesToRestore.size() +
-                            deletedFilesToRestore.size())));
+                    Format.formatLong(filesToRestore.size())));
             }
             bar.setVisible(false);
             updateButtons();

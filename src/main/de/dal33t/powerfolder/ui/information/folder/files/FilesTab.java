@@ -122,8 +122,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             .getTranslation("files_tab.combo.local_and_incoming"));
         filterSelectionComboBox.addItem(Translation
             .getTranslation("files_tab.combo.local_files_only"));
-        filterSelectionComboBox.addItem(Translation
-            .getTranslation("files_tab.combo.incoming_files_only"));
+//        filterSelectionComboBox.addItem(Translation
+//            .getTranslation("files_tab.combo.incoming_files_only"));
         filterSelectionComboBox.addItem(Translation
             .getTranslation("files_tab.combo.new_files_only"));
         filterSelectionComboBox.addItem(Translation
@@ -361,15 +361,11 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 }
             }
 
-            // @todo hghg populate deleted file infos.
-            List<FileInfo> deletedFileInfosToRestore = new ArrayList<FileInfo>();
-
             PFWizard wizard = new PFWizard(getController(), Translation
                 .getTranslation("wizard.pfwizard.restore_title"));
 
             MultiFileRestorePanel panel = new MultiFileRestorePanel(
-                getController(), folder, fileInfosToRestore,
-                    deletedFileInfosToRestore);
+                getController(), folder, fileInfosToRestore);
             wizard.open(panel);
         }
     }
