@@ -46,14 +46,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -98,7 +96,6 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.FreeLimitationDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PauseDialog;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
@@ -141,8 +138,6 @@ import de.dal33t.powerfolder.util.update.UpdaterHandler;
  * @version $Revision: 1.86 $
  */
 public class UIController extends PFComponent {
-
-    private static final long FIVE_GIG = 5L << 30;
 
     public static final int MAIN_FRAME_ID = 0;
     public static final int INFO_FRAME_ID = 1;
@@ -354,25 +349,6 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        // Handle promo stuff
-        // #2259: handlePromo();
-
-        // Check limits
-        if (!ProUtil.isRunningProVersion()) {
-            getController().scheduleAndRepeat(new TimerTask() {
-                @Override
-                public void run() {
-                    checkLimits(false);
-                }
-            }, 30L * 1000);
-            applicationModel.getLicenseModel().setActivationAction(
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        checkLimits(true);
-                    }
-                });
-        }
-
         configureDesktopShortcut(false);
 
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
@@ -407,34 +383,6 @@ public class UIController extends PFComponent {
         }
     }
 
-    private void checkLimits(boolean forceOpen) {
-        long totalFolderSize = calculateTotalLocalSharedSize();
-        logFine("Local shared folder size: "
-            + Format.formatBytes(totalFolderSize));
-        boolean limitHit = totalFolderSize > FIVE_GIG
-            || getController().getFolderRepository().getFoldersCount() > 3;
-        if (limitHit) {
-            getController().getNodeManager().shutdown();
-            if (!limitDialogShown || forceOpen) {
-                limitDialogShown = true;
-                new FreeLimitationDialog(getController()).open();
-            }
-        } else {
-            if (!getController().getNodeManager().isStarted()) {
-                getController().getNodeManager().start();
-            }
-        }
-    }
-
-    private long calculateTotalLocalSharedSize() {
-        long totalSize = 0L;
-        for (Folder folder : getController().getFolderRepository().getFolders())
-        {
-            totalSize += folder.getStatistic().getSize(
-                getController().getMySelf());
-        }
-        return totalSize;
-    }
 
     public void askToPauseResume() {
         boolean silent = getController().isPaused();
