@@ -240,7 +240,7 @@ public class LoginPanel extends PFWizardPanel {
 
         useOSBox = new JCheckBox(Translation.getTranslation(
                 "wizard.login_online_storage.no_os"));
-        useOSBox.setSelected(PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
+        useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
                         getController()));
         useOSBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
