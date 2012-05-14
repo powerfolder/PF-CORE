@@ -63,7 +63,6 @@ public class ApplicationModel extends PFUIComponent {
     private ServerClientModel serverClientModel;
     private ValueModel chatNotificationsValueModel;
     private ValueModel systemNotificationsValueModel;
-    private ValueModel useOSModel;
     private LicenseModel licenseModel;
     private NoticesModel noticesModel;
     private Date lastMouseAction;
@@ -111,8 +110,6 @@ public class ApplicationModel extends PFUIComponent {
                 }
             });
 
-        useOSModel = PreferencesEntry.USE_ONLINE_STORAGE
-            .getModel(getController());
         licenseModel = new LicenseModel();
         noticesModel = new NoticesModel(getController());
     }
@@ -214,10 +211,6 @@ public class ApplicationModel extends PFUIComponent {
 
     public ValueModel getSystemNotificationsValueModel() {
         return systemNotificationsValueModel;
-    }
-
-    public ValueModel getUseOSModel() {
-        return useOSModel;
     }
 
     public LicenseModel getLicenseModel() {

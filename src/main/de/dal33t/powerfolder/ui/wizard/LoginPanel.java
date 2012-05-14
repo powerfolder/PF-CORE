@@ -238,10 +238,10 @@ public class LoginPanel extends PFWizardPanel {
         rememberPasswordBox.setVisible(changeLoginAllowed
             && rememberPasswordAllowed);
 
-        useOSBox = BasicComponentFactory.createCheckBox(
-            new BooleanNotConverter(getController().getUIController()
-                .getApplicationModel().getUseOSModel()),
-            Translation.getTranslation("wizard.login_online_storage.no_os"));
+        useOSBox = new JCheckBox(Translation.getTranslation(
+                "wizard.login_online_storage.no_os"));
+        useOSBox.setSelected(PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
+                        getController()));
         useOSBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));

@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.model;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -51,9 +52,9 @@ public class ServerClientModel extends PFUIComponent {
      * problem occurs.
      */
     public void checkAndSetupAccount() {
-        if (Boolean.FALSE.equals(getApplicationModel().getUseOSModel()
-            .getValue()))
-        {
+        if (Boolean.FALSE.equals(
+                PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
+                        getController()))) {
             return;
         }
         if (client.isLoggedIn()) {
