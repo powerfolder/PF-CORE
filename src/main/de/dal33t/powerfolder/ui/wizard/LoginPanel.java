@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.wizard;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -239,9 +240,15 @@ public class LoginPanel extends PFWizardPanel {
             && rememberPasswordAllowed);
 
         useOSBox = new JCheckBox(Translation.getTranslation(
-                "wizard.login_online_storage.no_os"));
+                "wizard.login_online_storage.no_os")); // @todo Why negative? Why not "Use online storage"?
         useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
                         getController()));
+        useOSBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
+                        !useOSBox.isSelected());
+            }
+        });
         useOSBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
