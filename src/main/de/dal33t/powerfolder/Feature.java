@@ -124,12 +124,7 @@ public enum Feature {
     /**
      * #2533 By default disabled to save memory. Otherwise swingx.jar would be required.
      */
-    SYSTEM_MONITOR(false),
-
-    /**
-     * #2584 - Filebrowser: Pressing "Restore" should collect also deleted files
-     */
-    RESTORE_DELETED(false);
+    SYSTEM_MONITOR(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

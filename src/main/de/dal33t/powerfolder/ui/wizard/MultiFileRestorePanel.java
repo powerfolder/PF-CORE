@@ -41,7 +41,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.toedter.calendar.JDateChooser;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -99,16 +98,9 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     protected JComponent buildContent() {
-        FormLayout layout;
-        if (Feature.RESTORE_DELETED.isEnabled()) {
-            layout = new FormLayout(
+        FormLayout layout = new FormLayout(
                 "140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
                 "pref, 10dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
-        } else {
-            layout = new FormLayout(
-                "140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
-        }
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -116,10 +108,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         int row = 1;
 
-        if (Feature.RESTORE_DELETED.isEnabled()) {
-            builder.add(includeDeletedCB, cc.xy(1, row));
-            row += 2;
-        }
+        builder.add(includeDeletedCB, cc.xy(1, row));
+        row += 2;
 
         builder.add(latestVersionButton, cc.xy(1, row));
 
