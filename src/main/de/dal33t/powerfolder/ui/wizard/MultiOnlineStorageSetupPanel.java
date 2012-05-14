@@ -38,6 +38,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -147,7 +148,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.add(localFolderField, cc.xy(3, 3));
         builder.add(localFolderButton, cc.xy(5, 3));
 
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        // manualSyncCB is disabled for Luna (6.0) - #2726.
+        if (Feature.MANUAL_SYNC_CB.isDisabled() ||
+                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.add(new JLabel(Translation
                         .getTranslation("general.transfer_mode")), cc.xy(1, 5));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();

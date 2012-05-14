@@ -124,7 +124,12 @@ public enum Feature {
     /**
      * #2533 By default disabled to save memory. Otherwise swingx.jar would be required.
      */
-    SYSTEM_MONITOR(false);
+    SYSTEM_MONITOR(false),
+
+    /**
+     * #2726 - disable manual sync check box for now.
+     */
+    MANUAL_SYNC_CB(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
