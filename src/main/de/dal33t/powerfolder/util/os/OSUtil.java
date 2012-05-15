@@ -178,6 +178,16 @@ public class OSUtil {
     }
 
     /**
+     * #2751: java.vm.name=Excelsior JET
+     * 
+     * @return
+     */
+    public static boolean isSystemServiceSupported() {
+        return !System.getProperty("java.vm.name", "Oracle VM").toLowerCase()
+            .contains("jet");
+    }
+
+    /**
      * Systray only on win2000 and newer. win 98/ME gives a "could not create
      * main-window error"
      * 
