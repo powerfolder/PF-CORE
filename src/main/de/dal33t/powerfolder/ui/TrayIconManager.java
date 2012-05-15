@@ -74,7 +74,7 @@ public class TrayIconManager extends PFComponent {
             return;
         }
         trayIcon = new TrayIcon(image);
-        trayIcon.setImageAutoSize(true);
+      //  trayIcon.setImageAutoSize(true);
         updateConnectionStatus();
         updateIcon();
         Controller controller = getController();
@@ -181,7 +181,7 @@ public class TrayIconManager extends PFComponent {
                     + "%");
             }
         } else if (getController().isPaused()) {
-            image = Icons.getImageById(Icons.PAUSE);
+            image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
             tooltip
                 .append(Translation.getTranslation("systray.tooltip.paused"));
         } else if (state == TrayIconState.ALL_OK) {
