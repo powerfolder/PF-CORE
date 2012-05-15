@@ -182,8 +182,8 @@ public class OSUtil {
      * 
      * @return
      */
-    public static boolean isSystemServiceSupported() {
-        return !System.getProperty("java.vm.name", "Oracle VM").toLowerCase()
+    public static boolean isJETRuntime() {
+        return System.getProperty("java.vm.name", "Oracle VM").toLowerCase()
             .contains("jet");
     }
 
