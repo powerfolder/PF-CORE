@@ -203,6 +203,13 @@ public class FileInfoCriteria {
         this.recursive = recursive;
     }
 
+    @Override
+    public String toString() {
+        return "FileInfoCriteria [domains=" + domains + ", type=" + type
+            + ", path=" + path + ", keyWords=" + keyWords + ", recursive="
+            + recursive + ", maxResults=" + maxResults + "]";
+    }
+
     public enum Type {
         FILES_AND_DIRECTORIES, FILES_ONLY, DIRECTORIES_ONLY
     }
