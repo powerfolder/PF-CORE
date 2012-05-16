@@ -173,10 +173,13 @@ public class ConnectionListener extends PFComponent implements Runnable {
         try {
             networkInterfaces = NetworkInterface.getNetworkInterfaces();
         } catch (SocketException e) {
-            logSevere("Unable to get local network interfaces");
-            logFiner(e);
+            logWarning("Unable to get local network interfaces. " + e);
+            return null;
+        } catch (Error e) {
+            logWarning("Unable to get local network interfaces. " + e);
             return null;
         }
+
 
         while (networkInterfaces.hasMoreElements()) {
             getLocalNI.add(networkInterfaces.nextElement());
