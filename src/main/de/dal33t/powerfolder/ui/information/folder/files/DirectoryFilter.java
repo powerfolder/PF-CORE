@@ -134,32 +134,39 @@ public class DirectoryFilter extends FilterModel {
      * @param currentDirectoryInfo
      */
     public void setFolder(Folder folder, DirectoryInfo currentDirectoryInfo) {
-        boolean changed = this.folder == null || !this.folder.equals(folder);
-        if (changed && this.folder != null) {
+        boolean changedFolder = this.folder == null || !this.folder.equals(folder);
+        if (changedFolder && this.folder != null) {
             this.folder.removeFolderListener(folderListener);
         }
         this.folder = folder;
+        boolean changedDir = this.currentDirectoryInfo != null && !this.currentDirectoryInfo.equals(currentDirectoryInfo);
         this.currentDirectoryInfo = currentDirectoryInfo;
-        refilter.set(true);
-        if (changed) {
+        
+        if (changedFolder) {
             folder.addFolderListener(folderListener);
             for (DirectoryFilterListener listener : listeners) {
                 listener.invalidate();
             }
         }
-        queueFilterEvent();
+        if (changedDir || changedFolder) {
+            refilter.set(true);
+            queueFilterEvent();
+        }
     }
 
     /**
      * Sets the mode of the filter. See the MODE constants.
-     *
+     * 
      * @param fileFilterMode
      */
     public void setFileFilterMode(int fileFilterMode) {
-        refilter.set(true);
-        this.fileFilterMode = fileFilterMode;
-        logFine("Set filter mode to " + fileFilterMode);
-        queueFilterEvent();
+        int oldValue = fileFilterMode;
+        if (oldValue != fileFilterMode) {
+            this.fileFilterMode = fileFilterMode;
+            refilter.set(true);
+            logFine("Set filter mode to " + fileFilterMode);
+            queueFilterEvent();
+        }
     }
 
     /**
