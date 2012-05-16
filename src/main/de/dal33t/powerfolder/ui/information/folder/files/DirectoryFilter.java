@@ -344,6 +344,12 @@ public class DirectoryFilter extends FilterModel {
         criteria.addWriteMembersAndMyself(folder);
         criteria.setPath(directoryInfo);
         Collection<FileInfo> infoCollection = dao.findFiles(criteria);
+        try {
+            // Give CPU time to breath
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         for (FileInfo fileInfo : infoCollection) {
 
             if (fileInfo instanceof DirectoryInfo) {
