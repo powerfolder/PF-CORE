@@ -168,7 +168,7 @@ public class DebugInformationCard extends InformationCard {
                 {
                     logLevelCombo.setSelectedItem(Level.INFO);
                 }
-                String dump = Debug.dumpCurrentStacktraces(false);
+                String dump = Debug.dumpCurrentStacktraces(true);
                 if (StringUtils.isNotBlank(dump)) {
                     logInfo("Active threads:\n\n" + dump);
                 } else if (isInfo()) {
