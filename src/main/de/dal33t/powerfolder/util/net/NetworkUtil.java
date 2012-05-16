@@ -201,14 +201,17 @@ public class NetworkUtil {
         throws SocketException
     {
         Map<InterfaceAddress, NetworkInterface> res = new HashMap<InterfaceAddress, NetworkInterface>();
-
-        for (Enumeration<NetworkInterface> eni = NetworkInterface
-            .getNetworkInterfaces(); eni.hasMoreElements();)
-        {
-            NetworkInterface ni = eni.nextElement();
-            for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
-                res.put(ia, ni);
+        try {
+            for (Enumeration<NetworkInterface> eni = NetworkInterface
+                .getNetworkInterfaces(); eni.hasMoreElements();)
+            {
+                NetworkInterface ni = eni.nextElement();
+                for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
+                    res.put(ia, ni);
+                }
             }
+        } catch (Error e) {
+            LOG.warning("Unable to get network interface configuration: " + e);
         }
         return res;
     }
