@@ -150,10 +150,11 @@ public class UIController extends PFComponent {
     private static final String COMMAND_EXIT = "exit";
     private static final String COMMAND_SYNC_SHUTDOWN = "sync-shutdown";
     private static final String COMMAND_SYNC_EXIT = "sync-exit";
-    private static final String COMMAND_GOTOHP = "gotohp";
+    private static final String COMMAND_WEB = "web";
     private static final String COMMAND_PAUSE = "pause";
     private static final String COMMAND_RESUME = "resume";
     private static final String COMMAND_PREFERENCES = "preferences";
+    private static final String COMMAND_BROWSE = "browse";
 
     private boolean started;
     private SplashScreen splash;
@@ -464,15 +465,19 @@ public class UIController extends PFComponent {
                             getController().performFullSync();
                         }
                     });
-                } else if (COMMAND_GOTOHP.equals(e.getActionCommand())) {
+                } else if (COMMAND_WEB.equals(e.getActionCommand())) {
                     try {
-                        BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
-                            .getValue(getController()));
+                        BrowserLauncher.openURL(getController().getOSClient()
+                            .getLoginURLWithCredentials());
                     } catch (IOException e1) {
-                        logWarning("Unable to goto PowerFolder homepage", e1);
+                        logWarning("Unable to goto web portal", e1);
                     }
-                } else if (COMMAND_PAUSE.equals(e.getActionCommand()) ||
-                        COMMAND_RESUME.equals(e.getActionCommand())) {
+                } else if (COMMAND_BROWSE.equals(e.getActionCommand())) {
+                    FileUtils.openFile(getController().getFolderRepository()
+                        .getFoldersAbsoluteDir());
+                } else if (COMMAND_PAUSE.equals(e.getActionCommand())
+                    || COMMAND_RESUME.equals(e.getActionCommand()))
+                {
                     askToPauseResume();
                 } else if (COMMAND_PREFERENCES.equals(e.getActionCommand())) {
                     new PreferencesDialog(getController()).open();
@@ -492,9 +497,9 @@ public class UIController extends PFComponent {
         // //////
         // Web //
         // //////
-        MenuItem item = menu.add(new MenuItem(Translation.getTranslation(
-                "general.application.name")));
-        item.setActionCommand(COMMAND_GOTOHP);
+        MenuItem item = menu.add(new MenuItem(Translation
+            .getTranslation("action_open_web_interface.name")));
+        item.setActionCommand(COMMAND_WEB);
         item.addActionListener(systrayActionHandler);
 
         // //////////
@@ -503,8 +508,19 @@ public class UIController extends PFComponent {
         sysTrayFoldersMenu = new Menu(
             Translation.getTranslation("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
-        menu.add(sysTrayFoldersMenu);
+        if (Feature.SYSTRAY_ALL_FOLDERS.isEnabled()) {
+            menu.add(sysTrayFoldersMenu);
+        }
 
+        // //////////
+        // Browse //
+        // /////////
+        item = menu.add(new MenuItem(Translation
+            .getTranslation("action_open_folders_base.name")));
+        item.setActionCommand(COMMAND_BROWSE);
+        item.addActionListener(systrayActionHandler);
+        menu.add(item);
+        
         // /////////////////
         // Pause / Resume //
         // /////////////////
