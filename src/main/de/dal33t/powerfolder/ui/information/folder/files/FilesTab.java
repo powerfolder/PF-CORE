@@ -153,8 +153,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox
-            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
+        setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
         filterTextField.reset();
 //        directoryFilter.setFileFilterMode(filterSelectionComboBox
 //            .getSelectedIndex());
@@ -178,8 +177,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox
-            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
+        setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
         filterTextField.reset();
     }
 
@@ -193,8 +191,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox
-            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
+        setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
         filterTextField.reset();
     }
 
@@ -209,8 +206,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox
-            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED);
+        setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED);
         filterTextField.reset();
     }
 
@@ -229,8 +225,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 //        flatMode.setValue(flatViewCB.isSelected());
 //
 //        // Triggers mode change and schedule filtering (MyActionListener).
-//        filterSelectionComboBox
-//            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
+//    setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
 //        filterTextField.reset();
 //    }
 
@@ -331,8 +326,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     }
 
     public void selectionChanged(String relativeName) {
-        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-            folder.getInfo(), relativeName));
+        DirectoryInfo dir = FileInfoFactory.lookupDirectory(folder.getInfo(),
+            relativeName);
+        directoryFilter.setFolder(folder, dir);
     }
 
     public void fileArchive() {
@@ -373,8 +369,14 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void resetFilters() {
         filterTextField.reset();
         flatViewCB.setSelected(false);
-        filterSelectionComboBox.setSelectedIndex(
-                DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
+        setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
+    }
+
+    private void setFilterComboBox(int index) {
+        int oldValue = filterSelectionComboBox.getSelectedIndex();
+        if (oldValue != index) {
+            filterSelectionComboBox.setSelectedIndex(index);
+        }
     }
 
     // ////////////////
