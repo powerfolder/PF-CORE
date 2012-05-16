@@ -129,7 +129,7 @@ public enum Feature {
     /**
      * #2726 - disable manual sync check box for now.
      */
-    MANUAL_SYNC_CB(false);
+    MANUAL_SYNC_CB(false), SYSTRAY_ALL_FOLDERS(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
