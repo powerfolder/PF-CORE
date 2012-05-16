@@ -422,8 +422,6 @@ public class DirectoryFilter extends FilterModel {
                 // Add/remove dir to tree.
                 if (fileFilterMode == FILE_FILTER_MODE_DELETED_PREVIOUS) {
                     filteredDirectory.getList().add(fd);
-                    filteredDirectory.setDeletedFiles(fd.isDeleted()
-                        || fd.hasDeletedFilesDeep());
                 } else {
                     if (fd.isDeleted()) {
                         filteredDirectory.getList().remove(fd);

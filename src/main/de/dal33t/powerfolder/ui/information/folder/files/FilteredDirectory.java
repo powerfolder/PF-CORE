@@ -11,7 +11,6 @@ public class FilteredDirectory implements Comparable<FilteredDirectory> {
     private boolean files;
     private boolean newFiles;
     private boolean deleted;
-    private boolean deletedFiles;
 
     public FilteredDirectory(String displayName, String relativeName,
         boolean deleted)
@@ -43,22 +42,6 @@ public class FilteredDirectory implements Comparable<FilteredDirectory> {
         }
         for (FilteredDirectory directory : list) {
             if (directory.hasFilesDeep()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void setDeletedFiles(boolean deletedFiles) {
-        this.deletedFiles = deletedFiles;
-    }
-
-    public boolean hasDeletedFilesDeep() {
-        if (deletedFiles) {
-            return true;
-        }
-        for (FilteredDirectory directory : list) {
-            if (directory.hasDeletedFilesDeep()) {
                 return true;
             }
         }
