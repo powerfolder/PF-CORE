@@ -167,7 +167,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 }
             }
         } catch (SocketException e1) {
-            logSevere("SocketException", e1);
+            logWarning("SocketException. " + e1);
+        } catch (Error e1) {
+            logWarning("Error. " + e1);
         }
 
         ValueModel backupOnlyClientModel = new ValueHolder(
