@@ -1368,24 +1368,30 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private static class MyOpenTransfersAction extends BaseAction {
+    private class MyOpenTransfersAction extends BaseAction {
 
         private MyOpenTransfersAction(Controller controller) {
             super("action_open_tansfers_information", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
+            if (compact.get()) {
+                switchCompactMode();
+            }
             getUIController().openTransfersInformation();
         }
     }
 
-    private static class MyOpenDebugAction extends BaseAction {
+    private class MyOpenDebugAction extends BaseAction {
 
         private MyOpenDebugAction(Controller controller) {
             super("action_open_debug_information", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
+            if (compact.get()) {
+                switchCompactMode();
+            }
             getUIController().openDebugInformation();
         }
     }
