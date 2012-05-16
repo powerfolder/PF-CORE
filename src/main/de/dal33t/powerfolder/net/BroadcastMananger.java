@@ -487,10 +487,12 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         try {
             en = NetworkInterface.getNetworkInterfaces();
-
+        } catch (Error e) {
+            logWarning("Unable to get local network interfaces. " + e);
+            logFiner("Error", e);
+            return;
         } catch (SocketException e) {
-            logSevere("Unable to get local network interfaces");
-            logFiner("SocketException", e);
+            logSevere("Unable to get local network interfaces. " + e);
             return;
         }
 
