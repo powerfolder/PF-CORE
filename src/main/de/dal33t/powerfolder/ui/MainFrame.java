@@ -615,7 +615,13 @@ public class MainFrame extends PFUIComponent {
                 .getNewFolderAction().getName();
         } else if (paused) {
             // Paused
-            upperText = Translation.getTranslation("main_frame.paused");
+            String s;
+            if (overallSyncPercentage >= 0) {
+                s = Format.formatDecimal(overallSyncPercentage) + "%";
+            } else {
+                s = "";
+            }
+            upperText = Translation.getTranslation("main_frame.paused", s);
             synced = true;
         } else if (syncing) {
             String s;
