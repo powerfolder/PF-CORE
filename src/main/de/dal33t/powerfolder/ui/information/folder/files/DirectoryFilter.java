@@ -149,7 +149,7 @@ public class DirectoryFilter extends FilterModel {
             }
         }
         if (changedDir || changedFolder) {
-            refilter.set(true);
+            //refilter.set(true);
             queueFilterEvent();
         }
     }
@@ -160,7 +160,7 @@ public class DirectoryFilter extends FilterModel {
      * @param fileFilterMode
      */
     public void setFileFilterMode(int fileFilterMode) {
-        int oldValue = fileFilterMode;
+        int oldValue = this.fileFilterMode;
         if (oldValue != fileFilterMode) {
             this.fileFilterMode = fileFilterMode;
             refilter.set(true);
