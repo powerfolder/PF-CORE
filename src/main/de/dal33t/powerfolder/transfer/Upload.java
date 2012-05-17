@@ -418,7 +418,7 @@ public class Upload extends Transfer {
             long startOffset = pr.getRange().getStart();
             if (raf != null) {
                 raf.seek(startOffset);
-            } else {
+            } else if (in != null) {
                 long skip = startOffset - inpos;
                 if (skip >= 0) {
                     inpos += in.skip(skip);
@@ -445,9 +445,11 @@ public class Upload extends Transfer {
                 int readLen = data.length - pos;
                 if (raf != null) {
                     read = raf.read(data, pos, readLen);
-                } else {
+                } else if (in != null) {
                     read = in.read(data, pos, readLen);
                     inpos += read;
+                } else {
+                    throw new TransferException("I/O already closed");
                 }
                 if (read < 0) {
                     logWarning("Requested part exceeds filesize!");
