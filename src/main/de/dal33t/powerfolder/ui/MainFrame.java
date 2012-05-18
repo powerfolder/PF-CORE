@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -115,6 +114,8 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  */
 public class MainFrame extends PFUIComponent {
 
+    private enum FrameMode {MAXIMIZED, NORMAL, COMPACT}
+
     public static final int MIN_HEIGHT_UNCOMPACT = 500;
     public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
         .getDefaultValueInt();
@@ -143,8 +144,8 @@ public class MainFrame extends PFUIComponent {
     private JButtonMini setupButton;
     private JButtonMini pauseButton;
 
-    private ActionLabel upperMainTextLabel;
-    private ActionLabel syncDateLabel;
+    private JLabel upperMainTextLabel;
+    private JLabel syncDateLabel;
     private ActionLabel setupLabel;
 
     private ActionLabel loginActionLabel;
@@ -154,8 +155,6 @@ public class MainFrame extends PFUIComponent {
     private DelayedUpdater mainStatusUpdater;
 
     // Right mini panel
-    private ActionLabel expandCollapseActionLabel;
-    private MyExpandCollapseAction expandCollapseAction;
     private ActionLabel openWebInterfaceActionLabel;
     private ActionLabel openFoldersBaseActionLabel;
     private ActionLabel pauseResumeActionLabel;
@@ -163,7 +162,7 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel openDebugActionLabel;
     private ActionLabel openTransfersActionLabel;
 
-    private AtomicBoolean compact = new AtomicBoolean();
+    private FrameMode frameMode = FrameMode.NORMAL;
     private JButton3Icons closeButton;
     private JButton3Icons plusButton;
     private JButton3Icons minusButton;
@@ -177,19 +176,25 @@ public class MainFrame extends PFUIComponent {
         super(controller);
 
         mainStatusUpdater = new DelayedUpdater(getController());
-        compact.set(!PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController()));
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
+
         initComponents();
         configureUi();
         updateOnlineStorageDetails();
-        setCompactMode(compact.get(), true);
+
+        // Start COMPACT for basic users and NORMAL for experts.
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            frameMode = FrameMode.NORMAL;
+        } else {
+            frameMode = FrameMode.COMPACT;
+        }
+        setFrameMode(frameMode, true);
     }
 
     private JPanel createMiniPanel() {
         FormLayout layout = new FormLayout("left:pref:grow, left:pref",
-            "top:pref:grow, 7dlu" /* 7dlu WTF for what? Too tired to get it */);
+            "top:pref:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("10dlu, 0, 0, 3dlu"));
         CellConstraints cc = new CellConstraints();
@@ -214,8 +219,8 @@ public class MainFrame extends PFUIComponent {
         b.add(setupButton, cc.xy(1, 1));
         b.add(pauseButton, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
-        builderUpper.add(upperMainTextLabel.getUIComponent(), cc.xy(3, 1));
-        builderUpper.add(syncDateLabel.getUIComponent(), cc.xy(3, 2));
+        builderUpper.add(upperMainTextLabel, cc.xy(3, 1));
+        builderUpper.add(syncDateLabel, cc.xy(3, 2));
         builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         // UPPER PART END
 
@@ -248,21 +253,20 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
             builder.add(openWebInterfaceActionLabel.getUIComponent(),
-                cc.xy(1, 2));
+                cc.xy(1, 1));
         }
-        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 3));
-        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 4));
-        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 5));
+        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 2));
+        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4));
         if (getController().isVerbose()) {
-            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 6));
+            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5));
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 7));
+            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6));
         }
 
         return builder.getPanel();
@@ -422,16 +426,10 @@ public class MainFrame extends PFUIComponent {
         setupButton.setIcon(Icons.getIconById(Icons.ACTION_ARROW));
         setupButton.setText(null);
 
-        upperMainTextLabel = new ActionLabel(getController(),
-            new SwitchCompactMode());
-        // syncTextLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        // syncTextLabel.addMouseListener(new SwitchCompactMode());
+        upperMainTextLabel = new JLabel();
+        syncDateLabel = new JLabel();
 
-        syncDateLabel = new ActionLabel(getController(),
-            new SwitchCompactMode());
         setupLabel = new ActionLabel(getController(), new MySetupAction());
-        // syncDateLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        // syncDateLabel.addMouseListener(new SwitchCompactModeByMouse());
 
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
@@ -450,9 +448,6 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
-        expandCollapseAction = new MyExpandCollapseAction(getController());
-        expandCollapseActionLabel = new ActionLabel(getController(),
-            expandCollapseAction);
         openWebInterfaceActionLabel = new ActionLabel(getController(),
             new MyOpenWebInterfaceAction(getController()));
         openFoldersBaseActionLabel = new ActionLabel(getController(),
@@ -503,14 +498,21 @@ public class MainFrame extends PFUIComponent {
             Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
             Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
             Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
-        plusButton.setVisible(false);
+        plusButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                doPlusOperation();
+            }
+        });
 
         minusButton = new JButton3Icons(
             Icons.getIconById(Icons.WINDOW_MINUS_NORMAL),
             Icons.getIconById(Icons.WINDOW_MINUS_HOVER),
             Icons.getIconById(Icons.WINDOW_MINUS_PUSH));
-        minusButton.setVisible(false);
-
+        minusButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                doMinusOperation();
+            }
+        });
         centralPanel = new JPanel(new BorderLayout(0, 0));
 
         mainTabbedPane = new MainTabbedPane(getController());
@@ -545,9 +547,6 @@ public class MainFrame extends PFUIComponent {
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepoListener());
 
-        // Init
-        setCompactMode(compact.get(), true);
-
         // Start listening to notice changes.
         getController().getUIController().getApplicationModel()
             .getNoticesModel().getAllNoticesCountVM()
@@ -570,7 +569,8 @@ public class MainFrame extends PFUIComponent {
      * open.
      */
     public void checkOnTop() {
-        boolean onTop = uiComponent.isAlwaysOnTopSupported() && compact.get()
+        boolean onTop = uiComponent.isAlwaysOnTopSupported()
+                && frameMode == FrameMode.COMPACT
                 && !PFWizard.isWizardOpen() && !BaseDialog.isDialogOpen();
         uiComponent.setAlwaysOnTop(onTop);
     }
@@ -617,7 +617,7 @@ public class MainFrame extends PFUIComponent {
             // Paused
             String s;
             if (overallSyncPercentage >= 0 && overallSyncPercentage < 100.0d) {
-                s = Format.formatDecimal(overallSyncPercentage) + "%";
+                s = Format.formatDecimal(overallSyncPercentage) + '%';
             } else {
                 s = "";
             }
@@ -626,7 +626,7 @@ public class MainFrame extends PFUIComponent {
         } else if (syncing) {
             String s;
             if (overallSyncPercentage >= 0) {
-                s = Format.formatDecimal(overallSyncPercentage) + "%";
+                s = Format.formatDecimal(overallSyncPercentage) + '%';
             } else {
                 s = "...";
             }
@@ -771,18 +771,18 @@ public class MainFrame extends PFUIComponent {
      */
     public void storeValues() {
         // Store main window preferences
-        Controller c = getController();
+        Controller controller = getController();
 
-        PreferencesEntry.MAIN_FRAME_WIDTH.setValue(c, mainWidth);
+        PreferencesEntry.MAIN_FRAME_WIDTH.setValue(controller, mainWidth);
         PreferencesEntry.INFO_WIDTH.setValue(getController(), infoWidth);
 
         if (isMaximized()) {
-            PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(c, true);
+            PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(controller, true);
         } else {
-            PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(c, false);
+            PreferencesEntry.MAIN_FRAME_MAXIMIZED.setValue(controller, false);
 
-            PreferencesEntry.MAIN_FRAME_X.setValue(c, uiComponent.getX());
-            PreferencesEntry.MAIN_FRAME_Y.setValue(c, uiComponent.getY());
+            PreferencesEntry.MAIN_FRAME_X.setValue(controller, uiComponent.getX());
+            PreferencesEntry.MAIN_FRAME_Y.setValue(controller, uiComponent.getY());
 
             // If info is inline and info is showing, do not store width because
             // info will not show at start up and the frame will be W-I-D-E.
@@ -790,12 +790,12 @@ public class MainFrame extends PFUIComponent {
             if (uiComponent.getWidth() > 0
                 && (!shouldShowInfoInline() || !isShowingInfoInline()))
             {
-                PreferencesEntry.MAIN_FRAME_WIDTH.setValue(c,
+                PreferencesEntry.MAIN_FRAME_WIDTH.setValue(controller,
                     uiComponent.getWidth());
             }
 
             if (uiComponent.getHeight() > 0) {
-                PreferencesEntry.MAIN_FRAME_HEIGHT.setValue(c,
+                PreferencesEntry.MAIN_FRAME_HEIGHT.setValue(controller,
                     uiComponent.getHeight());
             }
 
@@ -1042,6 +1042,32 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private void doMinusOperation() {
+        if (frameMode == FrameMode.MAXIMIZED) {
+            // To COMPACT mode.
+            setFrameMode(FrameMode.COMPACT);
+        } else if (frameMode == FrameMode.NORMAL) {
+            // To COMPACT mode.
+            setFrameMode(FrameMode.COMPACT);
+        } else {
+            // Should never be here - no Minus Button!
+            logSevere("Should not be doing doMinusOperation in COMPACT mode.");
+        }
+    }
+
+    private void doPlusOperation() {
+        if (frameMode == FrameMode.MAXIMIZED) {
+            // To NORMAL mode.
+            setFrameMode(FrameMode.NORMAL);
+        } else if (frameMode == FrameMode.NORMAL) {
+            // To MAXIMIZED mode.
+            setFrameMode(FrameMode.MAXIMIZED);
+        } else {
+            // To NORMAL mode.
+            setFrameMode(FrameMode.NORMAL);
+        }
+    }
+
     /**
      * Shuts down the program
      */
@@ -1062,18 +1088,18 @@ public class MainFrame extends PFUIComponent {
     // Inner Classes //
     // ////////////////
 
-    @SuppressWarnings("serial")
-    private class SwitchCompactMode extends AbstractAction {
-        public void actionPerformed(ActionEvent e) {
-            if (getController().isPaused()) {
-                // HACK(tm)
-                getController().setPaused(false);
-            } else { 
-                switchCompactMode();
-            }
-        }
-    }
-
+//    @SuppressWarnings("serial")
+//    private class SwitchCompactMode extends AbstractAction {
+//        public void actionPerformed(ActionEvent e) {
+//            if (getController().isPaused()) {
+//                // HACK(tm)
+//                getController().setPaused(false);
+//            } else {
+//                setFrameMode(!compact.get(), false);
+//            }
+//        }
+//    }
+//
     private class MyWindowFocusListner implements WindowFocusListener {
         public void windowGainedFocus(WindowEvent e) {
             getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
@@ -1231,48 +1257,68 @@ public class MainFrame extends PFUIComponent {
             + Format.formatBytesShort(totalStorage));
     }
 
-    private void switchCompactMode() {
-        boolean compactMe = !compact.getAndSet(!compact.get());
-        setCompactMode(compactMe, false);
+    private void setFrameMode(FrameMode frameMode) {
+        setFrameMode(frameMode, false);
     }
 
-    private void setCompactMode(boolean compactMe, boolean init) {
+    private void setFrameMode(FrameMode frameMode, boolean init) {
 
-        // @todo this will need some rework when the main frame is maximizable.
+        this.frameMode = frameMode;
+        switch (frameMode) {
+            case MAXIMIZED:
+                uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
+                plusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.restore.tips"));
+                plusButton.setIcons(Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
+                        Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
+                        Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
+                minusButton.setVisible(true);
+                minusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.compact.tips"));
+                break;
+            case NORMAL:
+                uiComponent.setExtendedState(Frame.NORMAL);
+                uiComponent.setSize(uiComponent.getWidth(),
+                        UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
+                uiComponent.setResizable(true);
+                plusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.maximize.tips"));
+                plusButton.setIcons(Icons.getIconById(
+                        Icons.WINDOW_MAXIMIZE_NORMAL), 
+                        Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
+                        Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
+                minusButton.setVisible(true);
+                minusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.compact.tips"));
 
-        expandCollapseAction.setShowExpand(compactMe);
+                // Make sure we are on screen - include a bit for the start bar.
+                if (uiComponent.getY() + uiComponent.getHeight() >
+                        Toolkit.getDefaultToolkit().getScreenSize().height
+                                - 30) {
+                    uiComponent.setLocation(uiComponent.getX(),
+                            Toolkit.getDefaultToolkit().getScreenSize().height
+                                    - 30 - uiComponent.getHeight());
+                }
+                
+                break;
+            case COMPACT:
+                uiComponent.setExtendedState(Frame.NORMAL);
+                // Need to hide the child windows when minimizing.
+                if (!init) {
+                    closeInlineInfoPanel();
+                    getUIController().hideChildPanels();
+                }
 
-        int oldY = uiComponent.getY();
-        int oldH = uiComponent.getHeight();
-
-        if (compactMe) {
-
-            // Need to hide the child windows when minimize.
-            if (!init) {
-                closeInlineInfoPanel();
-                getUIController().hideChildPanels();
-            }
-
-            uiComponent.setSize(uiComponent.getMinimumSize());
-            uiComponent.setResizable(false);
-
-            toFront();
-        } else {
-            uiComponent.setSize(uiComponent.getWidth(),
-                    UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
-            uiComponent.setResizable(true);
-        }
-
-        // Try to maintain the lower window location,
-        // as this is where the user clicked open / collapse.
-        if (!init) {
-            int oldB = oldY + oldH;
-            int newY = uiComponent.getY();
-            int newH = uiComponent.getHeight();
-            int newB = newY + newH;
-            int diff = newB - oldB;
-            int targetY = newY - diff;
-            uiComponent.setLocation(uiComponent.getX(), Math.max(targetY, 0));
+                uiComponent.setSize(uiComponent.getMinimumSize());
+                uiComponent.setResizable(false);
+                plusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.restore.tips"));
+                plusButton.setIcons(Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
+                        Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
+                        Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
+                minusButton.setVisible(false);
+                toFront();
+                break;
         }
 
         checkOnTop();
@@ -1314,25 +1360,6 @@ public class MainFrame extends PFUIComponent {
                 BrowserLauncher.openURL(client.getLoginURLWithCredentials());
             } catch (IOException e1) {
                 logWarning("Unable to open web portal", e1);
-            }
-        }
-    }
-
-    private class MyExpandCollapseAction extends BaseAction {
-
-        private MyExpandCollapseAction(Controller controller) {
-            super("action_expand_interface", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            switchCompactMode();
-        }
-
-        public void setShowExpand(boolean expand) {
-            if (expand) {
-                configureFromActionId("action_expand_interface");
-            } else {
-                configureFromActionId("action_collapse_interface");
             }
         }
     }
@@ -1381,8 +1408,8 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (compact.get()) {
-                switchCompactMode();
+            if (frameMode == FrameMode.COMPACT) {
+                setFrameMode(FrameMode.NORMAL);
             }
             getUIController().openTransfersInformation();
         }
@@ -1395,8 +1422,8 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (compact.get()) {
-                switchCompactMode();
+            if (frameMode == FrameMode.COMPACT) {
+                setFrameMode(FrameMode.NORMAL);
             }
             getUIController().openDebugInformation();
         }
@@ -1516,8 +1543,6 @@ public class MainFrame extends PFUIComponent {
                     if (!isMaximized()) {
                         uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
                     }
-                } else {
-                    switchCompactMode();
                 }
             }
         }

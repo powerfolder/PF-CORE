@@ -35,4 +35,10 @@ public class JButton3Icons extends JButton {
         setRolloverIcon(hoverIcon);
         setMargin(new Insets(0, 0, 0, 0));
     }
+
+    public void setIcons(Icon normalIcon, Icon hoverIcon, Icon pushIcon) {
+        setIcon(normalIcon);
+        setPressedIcon(pushIcon);
+        setRolloverIcon(hoverIcon);
+    }
 }
