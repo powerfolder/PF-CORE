@@ -40,6 +40,10 @@ public class ProUtil {
     private ProUtil() {
     }
 
+    public static final boolean isServerConfig(Controller controller) {
+        return controller.getConfig().get("plugin.server.maintenancefolderid") != null;
+    }
+
     /**
      * @param controller
      * @return the primary buy now URL

@@ -69,6 +69,7 @@ import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
@@ -1418,6 +1419,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (getController().getMySelf().isServer()) {
             return;
         }
+
         accountSyncLock.lock();
         try {
             logInfo("Syncing folder setup with account permissions("
@@ -1427,6 +1429,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController()))
             {
+                if (ProUtil.isServerConfig(getController())) {
+                    logSevere("Found server config running with client installation. "
+                        + "Won't delete local folders.");
+                    return;
+                }
                 removeLocalFolders(a, created);
             }
         } finally {
@@ -1622,7 +1629,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Do we already have a folder that has this file as its base?
-     *
+     * 
      * @param file
      */
     public boolean doesFolderAlreadyExist(File file) {

@@ -29,22 +29,34 @@ public class FolderConfigRestore {
         Properties config = new Properties();
         File searchBaseDir = new File(args[0]);
         for (File folderDir : searchBaseDir.listFiles()) {
-
             File sysDir = new File(folderDir,
                 Constants.POWERFOLDER_SYSTEM_SUBDIR);
+            LOG.info("Processing directory: " + folderDir);
             if (sysDir.exists()) {
-                // Folder directly under PowerFolders/
-                restoreFolderConfig(folderDir, config);
+                try {
+                    // Folder directly under PowerFolders/
+                    restoreFolderConfig(folderDir, config);
+                } catch (Exception e) {
+                    LOG.warning("Problem with " + folderDir + ". " + e);
+                }
             } else if (folderDir.isDirectory()) {
-                // PowerFolders/username/foldername
-                // Try harder. Subdirs:
-                for (File folderDir2 : folderDir.listFiles()) {
-                    if (folderDir2.isDirectory()) {
-                        restoreFolderConfig(folderDir2, config);
+                try {
+                    // PowerFolders/username/foldername
+                    // Try harder. Subdirs:
+                    for (File folderDir2 : folderDir.listFiles()) {
+                        if (folderDir2.isDirectory()) {
+                            try {
+                                restoreFolderConfig(folderDir2, config);
+                            } catch (Exception e) {
+                                LOG.warning("Problem with " + folderDir2 + ". "
+                                    + e);
+                            }
+                        }
                     }
+                } catch (Exception e) {
+                    LOG.warning("Problem with " + folderDir + ". " + e);
                 }
             }
-
         }
         PropertiesUtil.saveConfig(new File("PowerFolder_restored.config"),
             config, "");
@@ -64,7 +76,7 @@ public class FolderConfigRestore {
             return;
         }
         FolderSettings foSettings = new FolderSettings(baseDir,
-            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT, false,
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
             ArchiveMode.FULL_BACKUP, 0);
         foSettings.set(foInfo, config);
         LOG.info("Restored folder " + foInfo.getName() + " @ " + baseDir);
