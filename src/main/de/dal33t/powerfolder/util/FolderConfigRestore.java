@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.util;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -28,7 +29,22 @@ public class FolderConfigRestore {
         Properties config = new Properties();
         File searchBaseDir = new File(args[0]);
         for (File folderDir : searchBaseDir.listFiles()) {
-            restoreFolderConfig(folderDir, config);
+
+            File sysDir = new File(folderDir,
+                Constants.POWERFOLDER_SYSTEM_SUBDIR);
+            if (sysDir.exists()) {
+                // Folder directly under PowerFolders/
+                restoreFolderConfig(folderDir, config);
+            } else if (folderDir.isDirectory()) {
+                // PowerFolders/username/foldername
+                // Try harder. Subdirs:
+                for (File folderDir2 : folderDir.listFiles()) {
+                    if (folderDir2.isDirectory()) {
+                        restoreFolderConfig(folderDir2, config);
+                    }
+                }
+            }
+
         }
         PropertiesUtil.saveConfig(new File("PowerFolder_restored.config"),
             config, "");
@@ -39,8 +55,8 @@ public class FolderConfigRestore {
         try {
             foInfo = readFolderInfo(baseDir);
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Error while reading folderinfo from "
-                + baseDir + ". " + e, e);
+            LOG.log(Level.WARNING, "Unable to read folder info from " + baseDir
+                + ". " + e);
             return;
         }
         if (foInfo == null) {
@@ -51,12 +67,16 @@ public class FolderConfigRestore {
             SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT, false,
             ArchiveMode.FULL_BACKUP, 0);
         foSettings.set(foInfo, config);
+        LOG.info("Restored folder " + foInfo.getName() + " @ " + baseDir);
     }
 
     private static FolderInfo readFolderInfo(File baseDir) throws IOException,
         ClassNotFoundException
     {
         File sysDir = new File(baseDir, Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        if (!baseDir.exists()) {
+            throw new FileNotFoundException("No folder found at " + sysDir);
+        }
         File dbFile = new File(sysDir, Constants.DB_FILENAME);
         // load files and scan in
         InputStream fIn = new BufferedInputStream(new FileInputStream(dbFile));
