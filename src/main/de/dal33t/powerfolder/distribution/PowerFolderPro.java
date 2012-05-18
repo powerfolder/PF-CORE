@@ -71,16 +71,6 @@ public class PowerFolderPro extends AbstractDistribution {
         return true;
     }
 
-    @Override
-    public boolean showCredentials() {
-        return true;
-    }
-
-    @Override
-    public boolean showClientPromo() {
-        return true;
-    }
-
     private class PublicRelayFinder implements RelayFinder {
         private static final String RELAY_1ST_CHOICE_ID = "WEBSERVICE005";
         private static final String RELAY_2ST_CHOICE_ID = "WEBSERVICE006";

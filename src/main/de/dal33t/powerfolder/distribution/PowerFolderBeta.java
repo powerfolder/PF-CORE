@@ -58,16 +58,6 @@ public class PowerFolderBeta extends AbstractDistribution {
         return true;
     }
 
-    @Override
-    public boolean showCredentials() {
-        return true;
-    }
-
-    @Override
-    public boolean showClientPromo() {
-        return true;
-    }
-
     // Internal ***************************************************************
 
     private void resetToBetaServer(Controller c) {

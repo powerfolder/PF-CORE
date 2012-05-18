@@ -60,10 +60,4 @@ public class PowerFolderBasic extends AbstractDistribution {
     public boolean showCredentials() {
         return true;
     }
-
-    @Override
-    public boolean showClientPromo() {
-        return true;
-    }
-
 }
