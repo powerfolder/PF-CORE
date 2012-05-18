@@ -616,7 +616,7 @@ public class MainFrame extends PFUIComponent {
         } else if (paused) {
             // Paused
             String s;
-            if (overallSyncPercentage >= 0) {
+            if (overallSyncPercentage >= 0 && overallSyncPercentage < 100.0d) {
                 s = Format.formatDecimal(overallSyncPercentage) + "%";
             } else {
                 s = "";
