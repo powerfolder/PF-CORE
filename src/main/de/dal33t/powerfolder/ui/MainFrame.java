@@ -1515,13 +1515,16 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private static class MyShowNoticesAction extends BaseAction {
+    private class MyShowNoticesAction extends BaseAction {
 
         MyShowNoticesAction(Controller controller) {
             super("action_show_notices", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
+            if (frameMode == FrameMode.COMPACT) {
+                setFrameMode(FrameMode.NORMAL);
+            }
             getController().getUIController().openNoticesCard();
         }
     }
