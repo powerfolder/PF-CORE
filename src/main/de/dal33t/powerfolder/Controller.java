@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "6.0.0 - 5.1.0"; // 5.1.0
+    public static final String PROGRAM_VERSION = "6.0.1 - 5.1.9"; // 5.1.3
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1370,7 +1370,9 @@ public class Controller extends PFComponent {
             PropertiesUtil.saveConfig(file, config,
                 "PowerFolder config file (v" + PROGRAM_VERSION + ')');
         } catch (IOException e) {
-            logSevere("Unable to save config", e);
+            // FATAL 
+            logSevere("Unable to save config. " + e, e);
+            exit(1);
         } catch (Exception e) {
             // major problem , setting code is wrong
             System.out.println("major problem , setting code is wrong");
