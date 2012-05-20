@@ -435,17 +435,13 @@ public class MainFrame extends PFUIComponent {
                 handleSyncTextClick();
             }
         });
-        upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                "action_show_folders_tab.name"));
-        
+
         syncDateActionLabel = new ActionLabel(getController(),
                 new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 handleSyncTextClick();
             }
         });
-        syncDateActionLabel.setToolTipText(Translation.getTranslation(
-                "action_show_folders_tab.name"));
 
         setupLabel = new ActionLabel(getController(), new MySetupAction());
 
@@ -612,6 +608,7 @@ public class MainFrame extends PFUIComponent {
         } else {
             setFrameMode(FrameMode.COMPACT);
         }
+        setLinkTooltips();
     }
 
     private void updateMainStatus0() {
@@ -1351,7 +1348,27 @@ public class MainFrame extends PFUIComponent {
                 break;
         }
 
+        setLinkTooltips();
         checkOnTop();
+    }
+
+    private void setLinkTooltips() {
+        if (getController().isPaused()) {
+            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
+                    "action_resume_sync.description"));
+            syncDateActionLabel.setToolTipText(Translation.getTranslation(
+                    "action_resume_sync.description"));
+        } else if (frameMode == FrameMode.COMPACT) {
+            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
+                    "action_expand_interface.name"));
+            syncDateActionLabel.setToolTipText(Translation.getTranslation(
+                    "action_expand_interface.name"));
+        } else {
+            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
+                    "action_collapse_interface.name"));
+            syncDateActionLabel.setToolTipText(Translation.getTranslation(
+                    "action_collapse_interface.name"));
+        }
     }
 
     // ////////////////
@@ -1443,7 +1460,7 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private static class MyPauseResumeAction extends BaseAction {
+    private class MyPauseResumeAction extends BaseAction {
 
         private MyPauseResumeAction(Controller controller) {
             super("action_pause_sync", controller);
@@ -1451,6 +1468,7 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getUIController().askToPauseResume();
+            setLinkTooltips();
         }
     }
 
