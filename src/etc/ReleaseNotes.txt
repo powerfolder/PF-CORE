@@ -24,7 +24,7 @@ PowerFolder Version 6.0 - http://www.powerfolder.com
 
 = Bugfixes =
  * Now correctly detects computers in subnetwork with actual (non private) IP address.
- * Fixes silent update in background. 
+ * Fixes several update bugs, e.g. corrected upgrade in background. 
  * Fixed bug, that prevented the excludes list from not being the same on all computers.
  * Fixed problem, that client exists too early during "Exit after sync"
  * Fixed file and directory transition. 
