@@ -146,6 +146,8 @@ public class MainFrame extends PFUIComponent {
 
     private JLabel upperMainTextLabel;
     private JLabel syncDateLabel;
+    private ActionLabel upperMainTextActionLabel;
+    private ActionLabel syncDateActionLabel;
     private ActionLabel setupLabel;
 
     private ActionLabel loginActionLabel;
@@ -222,7 +224,9 @@ public class MainFrame extends PFUIComponent {
         b.add(pauseButton, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextLabel, cc.xy(3, 1));
+        builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper.add(syncDateLabel, cc.xy(3, 2));
+        builderUpper.add(syncDateActionLabel.getUIComponent(), cc.xy(3, 2));
         builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         // UPPER PART END
 
@@ -430,7 +434,17 @@ public class MainFrame extends PFUIComponent {
         setupButton.setText(null);
 
         upperMainTextLabel = new JLabel();
+        upperMainTextActionLabel = new ActionLabel(getController(), new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                setFrameMode(FrameMode.NORMAL);
+            }
+        });
         syncDateLabel = new JLabel();
+        syncDateActionLabel = new ActionLabel(getController(), new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                setFrameMode(FrameMode.NORMAL);
+            }
+        });
 
         setupLabel = new ActionLabel(getController(), new MySetupAction());
 
@@ -645,6 +659,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         upperMainTextLabel.setText(upperText);
+        upperMainTextActionLabel.setText(upperText);
         if (setupText != null) {
             setupLabel.setText(setupText);
         }
@@ -698,8 +713,13 @@ public class MainFrame extends PFUIComponent {
             }
         }
         syncDateLabel.setText(dateText);
+        syncDateActionLabel.setText(dateText);
 
-        syncDateLabel.setVisible(!setup);
+        syncDateLabel.setVisible(!setup &&
+                frameMode != FrameMode.COMPACT);
+        syncDateActionLabel.setVisible(!setup &&
+                frameMode == FrameMode.COMPACT);
+
         setupLabel.setVisible(setup);
 
         if (setup) {
@@ -1280,6 +1300,10 @@ public class MainFrame extends PFUIComponent {
                 minusButton.setVisible(true);
                 minusButton.setToolTipText(
                         Translation.getTranslation("main_frame.compact.tips"));
+                upperMainTextLabel.setVisible(true);
+                upperMainTextActionLabel.setVisible(false);
+                syncDateLabel.setVisible(true);
+                syncDateActionLabel.setVisible(false);
                 break;
             case NORMAL:
                 uiComponent.setExtendedState(Frame.NORMAL);
@@ -1304,7 +1328,10 @@ public class MainFrame extends PFUIComponent {
                             Toolkit.getDefaultToolkit().getScreenSize().height
                                     - 30 - uiComponent.getHeight());
                 }
-                
+                upperMainTextLabel.setVisible(true);
+                upperMainTextActionLabel.setVisible(false);
+                syncDateLabel.setVisible(true);
+                syncDateActionLabel.setVisible(false);
                 break;
             case COMPACT:
                 uiComponent.setExtendedState(Frame.NORMAL);
@@ -1322,6 +1349,10 @@ public class MainFrame extends PFUIComponent {
                         Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
                         Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
                 minusButton.setVisible(false);
+                upperMainTextLabel.setVisible(false);
+                upperMainTextActionLabel.setVisible(true);
+                syncDateLabel.setVisible(false);
+                syncDateActionLabel.setVisible(true);
                 toFront();
                 break;
         }
