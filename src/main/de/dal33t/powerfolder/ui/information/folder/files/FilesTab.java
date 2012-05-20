@@ -88,9 +88,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         statsPanel = new FilesStatsPanel(getController());
 
         filterTextField = new FileFilterTextField(getController());
-        directoryFilter = new DirectoryFilter(controller, filterTextField
-            .getSearchTextValueModel(), filterTextField
-            .getSearchModeValueModel());
+        directoryFilter = new DirectoryFilter(controller,
+            filterTextField.getSearchTextValueModel(),
+            filterTextField.getSearchModeValueModel());
         directoryFilter.addListener(this);
 
         FilesTreePanel treePanel = new FilesTreePanel(controller);
@@ -104,8 +104,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
 
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel
-            .getUIComponent(), tablePanel.getUIComponent());
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+            treePanel.getUIComponent(), tablePanel.getUIComponent());
         final int dividerLocation = getController().getPreferences().getInt(
             "files.tab.location", 150);
         splitPane.setDividerLocation(dividerLocation);
@@ -122,8 +122,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             .getTranslation("files_tab.combo.local_and_incoming"));
         filterSelectionComboBox.addItem(Translation
             .getTranslation("files_tab.combo.local_files_only"));
-//        filterSelectionComboBox.addItem(Translation
-//            .getTranslation("files_tab.combo.incoming_files_only"));
+        // filterSelectionComboBox.addItem(Translation
+        // .getTranslation("files_tab.combo.incoming_files_only"));
         filterSelectionComboBox.addItem(Translation
             .getTranslation("files_tab.combo.new_files_only"));
         filterSelectionComboBox.addItem(Translation
@@ -146,8 +146,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void setFolderInfo(FolderInfo folderInfo) {
         folder = getController().getFolderRepository().getFolder(folderInfo);
         updateNodes();
-        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-            folder.getInfo(), ""));
+        directoryFilter.setFolder(folder,
+            FileInfoFactory.lookupDirectory(folder.getInfo(), ""));
         tablePanel.setFolder(folder);
         flatViewCB.setSelected(false);
         flatMode.setValue(flatViewCB.isSelected());
@@ -155,9 +155,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
         filterTextField.reset();
-//        directoryFilter.setFileFilterMode(filterSelectionComboBox
-//            .getSelectedIndex());
-//        directoryFilter.scheduleFiltering();
+        // directoryFilter.setFileFilterMode(filterSelectionComboBox
+        // .getSelectedIndex());
+        // directoryFilter.scheduleFiltering();
     }
 
     /**
@@ -169,8 +169,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void setFolderInfoLatest(FolderInfo folderInfo) {
         folder = getController().getFolderRepository().getFolder(folderInfo);
         updateNodes();
-        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-            folder.getInfo(), ""));
+        directoryFilter.setFolder(folder,
+            FileInfoFactory.lookupDirectory(folder.getInfo(), ""));
         tablePanel.setFolder(folder);
         tablePanel.sortLatestDate();
         flatViewCB.setSelected(true);
@@ -184,8 +184,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void setFolderInfoDeleted(FolderInfo folderInfo) {
         folder = getController().getFolderRepository().getFolder(folderInfo);
         updateNodes();
-        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-            folder.getInfo(), ""));
+        directoryFilter.setFolder(folder,
+            FileInfoFactory.lookupDirectory(folder.getInfo(), ""));
         tablePanel.setFolder(folder);
         tablePanel.sortLatestDate();
         flatMode.setValue(flatViewCB.isSelected());
@@ -198,8 +198,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void setFolderInfoUnsynced(FolderInfo folderInfo) {
         folder = getController().getFolderRepository().getFolder(folderInfo);
         updateNodes();
-        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-            folder.getInfo(), ""));
+        directoryFilter.setFolder(folder,
+            FileInfoFactory.lookupDirectory(folder.getInfo(), ""));
         tablePanel.setFolder(folder);
         tablePanel.sortLatestDate();
         flatViewCB.setSelected(true);
@@ -212,22 +212,22 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Set the tab with details for a folder with incoming files.
-     *
+     * 
      * @param folderInfo
      */
-//    public void setFolderInfoIncoming(FolderInfo folderInfo) {
-//        folder = getController().getFolderRepository().getFolder(folderInfo);
-//        updateNodes();
-//        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-//            folder.getInfo(), ""));
-//        tablePanel.setFolder(folder);
-//        flatViewCB.setSelected(true);
-//        flatMode.setValue(flatViewCB.isSelected());
-//
-//        // Triggers mode change and schedule filtering (MyActionListener).
-//    setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
-//        filterTextField.reset();
-//    }
+    // public void setFolderInfoIncoming(FolderInfo folderInfo) {
+    // folder = getController().getFolderRepository().getFolder(folderInfo);
+    // updateNodes();
+    // directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
+    // folder.getInfo(), ""));
+    // tablePanel.setFolder(folder);
+    // flatViewCB.setSelected(true);
+    // flatMode.setValue(flatViewCB.isSelected());
+    //
+    // // Triggers mode change and schedule filtering (MyActionListener).
+    // setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
+    // filterTextField.reset();
+    // }
 
     /**
      * Gets the ui component
@@ -269,12 +269,12 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         JToggleButton detailsButton = new JToggleButton(detailsAction);
         detailsButton.setIcon(null);
 
-        JButton fileArchiveButton = new JButton(
-            new MyFileArchiveAction(getController()));
+        JButton fileArchiveButton = new JButton(new MyFileArchiveAction(
+            getController()));
         fileArchiveButton.setIcon(null);
 
-        flatViewCB = new JCheckBox(Translation
-            .getTranslation("files_tab.flat_view.text"));
+        flatViewCB = new JCheckBox(
+            Translation.getTranslation("files_tab.flat_view.text"));
         flatViewCB.setToolTipText(Translation
             .getTranslation("files_tab.flat_view.tip"));
         flatViewCB.addActionListener(new ActionListener() {
@@ -302,8 +302,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     }
 
     public void adviseOfChange(FilteredDirectoryEvent event) {
-        statsPanel.setStats(event.getLocalFiles(),
-            event.getDeletedFiles());
+        statsPanel.setStats(event.getLocalFiles(), event.getDeletedFiles());
     }
 
     public void adviseOfFilteringBegin() {
@@ -334,32 +333,41 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void fileArchive() {
         if (folder != null) {
             DiskItem[] diskItems = tablePanel.getSelectedRows();
-            if (diskItems.length == 0) {
-                // Nothing selected, use everything.
-                diskItems = tablePanel.getAllRows();
-            }
-
             List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
-            for (DiskItem diskItem : diskItems) {
-                if (diskItem instanceof DirectoryInfo) {
-                    DirectoryInfo di = (DirectoryInfo) diskItem;
-                    FileInfoCriteria criteria = new FileInfoCriteria();
-                    criteria.addWriteMembersAndMyself(folder);
-                    criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
-                    criteria.setPath(di);
-                    criteria.setRecursive(true);
-                    Collection<FileInfo> infoCollection = folder.getDAO().findFiles(criteria);
-                    for (FileInfo fileInfo : infoCollection) {
-                        fileInfosToRestore.add(fileInfo);
+            if (diskItems.length > 0) {
+                for (DiskItem diskItem : diskItems) {
+                    if (diskItem instanceof DirectoryInfo) {
+                        DirectoryInfo di = (DirectoryInfo) diskItem;
+                        FileInfoCriteria criteria = new FileInfoCriteria();
+                        criteria.addWriteMembersAndMyself(folder);
+                        criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
+                        criteria.setPath(di);
+                        criteria.setRecursive(true);
+                        Collection<FileInfo> infoCollection = folder.getDAO()
+                            .findFiles(criteria);
+                        for (FileInfo fileInfo : infoCollection) {
+                            fileInfosToRestore.add(fileInfo);
+                        }
+                    } else if (diskItem instanceof FileInfo) {
+                        fileInfosToRestore.add((FileInfo) diskItem);
                     }
-                } else if (diskItem instanceof FileInfo) {
-                    fileInfosToRestore.add((FileInfo) diskItem);
+                }
+            } else {
+                // Nothing selected. Do include everything also deleted
+                FileInfoCriteria criteria = new FileInfoCriteria();
+                criteria.addWriteMembersAndMyself(folder);
+                criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
+                criteria.setPath(folder.getBaseDirectoryInfo());
+                criteria.setRecursive(true);
+                Collection<FileInfo> infoCollection = folder.getDAO()
+                    .findFiles(criteria);
+                for (FileInfo fileInfo : infoCollection) {
+                    fileInfosToRestore.add(fileInfo);
                 }
             }
 
-            PFWizard wizard = new PFWizard(getController(), Translation
-                .getTranslation("wizard.pfwizard.restore_title"));
-
+            PFWizard wizard = new PFWizard(getController(),
+                Translation.getTranslation("wizard.pfwizard.restore_title"));
             MultiFileRestorePanel panel = new MultiFileRestorePanel(
                 getController(), folder, fileInfosToRestore);
             wizard.open(panel);

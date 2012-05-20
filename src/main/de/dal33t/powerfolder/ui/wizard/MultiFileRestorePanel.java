@@ -24,12 +24,25 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -41,18 +54,17 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.toedter.calendar.JDateChooser;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTable;
 import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTableModel;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Dialog for selecting a number of users.
@@ -75,7 +87,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JSpinner minuteSpinner;
     private JRadioButton latestVersionButton;
     private JRadioButton dateVersionButton;
-    private JCheckBox includeDeletedCB;
 
     private SwingWorker worker;
 
@@ -100,21 +111,16 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     protected JComponent buildContent() {
         FormLayout layout = new FormLayout(
                 "140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
-                "pref, 10dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-
-        builder.add(includeDeletedCB, cc.xy(1, row));
-        row += 2;
-
         builder.add(latestVersionButton, cc.xy(1, row));
 
         row += 2;
-
         builder.add(dateVersionButton, cc.xy(1, row));
         builder.add(dateChooser, cc.xy(3, row));
         builder.add(hourSpinner, cc.xy(5, row));
@@ -172,18 +178,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         bg.add(latestVersionButton);
         bg.add(dateVersionButton);
 
-        includeDeletedCB = new JCheckBox(Translation.getTranslation(
-                "wizard.multi_file_restore_panel.include_deleted_cb"));
-        includeDeletedCB.setSelected(
-                PreferencesEntry.INCLUDE_DELETED_FILES.getValueBoolean(
-                        getController()));
-        includeDeletedCB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                updateIncludeDeletedFilesPreference();
-                loadVersions();
-            }
-        });
-
         dateChooser = new JDateChooser();
         Calendar cal = new GregorianCalendar();
         hourSpinner = new JSpinner(new SpinnerNumberModel(
@@ -207,11 +201,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         dateVersionButton.setOpaque(false);
 
         updateDateChooser();
-    }
-
-    private void updateIncludeDeletedFilesPreference() {
-        PreferencesEntry.INCLUDE_DELETED_FILES.setValue(getController(),
-                includeDeletedCB.isSelected());
     }
 
     public boolean hasNext() {
@@ -289,20 +278,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
                 List<FileInfo> fileInfos = new ArrayList<FileInfo>();
                 fileInfos.addAll(filesToRestore);
-
-                if (includeDeletedCB.isSelected()) {
-                    // Merge deleted files if necessary.
-                    Collection<FileInfo> allFiles =
-                            folder.getDAO().findAllFiles(
-                                    getController().getMySelf().getId());
-                    for (FileInfo fileInfo : allFiles) {
-                        if (fileInfo.isDeleted()) {
-                            if (!fileInfos.contains(fileInfo)) {
-                                fileInfos.add(fileInfo);
-                            }
-                        }
-                    }
-                }
 
                 for (FileInfo fileInfo : fileInfos) {
                     if (isCancelled()) {
