@@ -1,28 +1,34 @@
-PowerFolder Version 5.6 - http://www.powerfolder.com
+PowerFolder Version 6.0 - http://www.powerfolder.com
 
-= Improvements/New features =
- * Free edition can now sync up to 2 GB of data.
- * New skins: PowerFolder 2012 "Blue Globe" and "Storm"
- * System tray icon improvement: Shows a "OK" icons instead of "P" icon when the sync is ok.
- * PowerFolders base path will fall back to default if not available, e.g. network drive.
- * File browser shows better feedback messages if no files matches the search input.
- * Chat popups now show the message and have a reply button.
- * Improved and corrected LAN/VPN/Internet connection in complex network scenarios.
- * Program update dialog now clearly indicates that the update is for PowerFolder.
- * Activation by file not longer supported. Please always use online activation.
- * Directory chooser now shows drive names.
- * Debug log panel: CPU activity dump button added. 
- * Folderlist: Not longer shows icons on mouse hover.
- 
+= New features =
+ * Brand new, simplified user interface. PowerFolder now starts in "Compact mode", which
+   shows the most important information only. An "Expert mode" still offers detailed information.
+ * Drastically reduced memory usage (60% reduction in average) and reduced CPU usage through
+   new bundled java virtual machine (JET). No additional Java runtime required anymore.
+ * Copy file link to clipboard feature added. Right click any file in Windows-Explorer to
+   grab a link to that file, which can be send e.g. via instant messenger or social networks.
+ * Pause mode with human adaptive behavior: PowerFolder keeps silent as long as you work or
+   for a certain amount of time, e.g. 5 minutes, 1 hour, forever.
+ * Many more features and improvements. Find them out!
+
+= Improvements =
+ * Drag and drop support for new directory to be shared. Simply drop a directory onto
+   the new PowerFolder user interface to backup, sync or share it.
+ * Most important functions are now available directly from system tray menu.
+ * Direct links to personal web portal added.
+ * Reworked estimated sync time calculation.
+ * File index database cleanup added to save memory and CPU.
+ * Removed non-maintained translations from client.
+ * New Italian translation added.
+ * Removed status tab.
+
 = Bugfixes =
- * Security: Fixed bug, which causes the client to sync if not yet logged in.
- * Corrected handling of non-default paths of recommended folders.
- * Information section now correctly opens in multi screen environment.
- * It's now possible to change the physical directory if it's not accessible.
- * Mac: Minimize to system tray also hides the icon in the program bar.
- * Up- and downloads now break when files get excluded from sync.
- * Corrected several wizard texts.
- * Fixed UDT connection bug.
+ * Now correctly detects computers in subnetwork with actual (non private) IP address.
+ * Fixes silent update in background. 
+ * Fixed bug, that prevented the excludes list from not being the same on all computers.
+ * Fixed problem, that client exists too early during "Exit after sync"
+ * Fixed file and directory transition. 
+ * Explorer shell extensions now get correctly preserved during upgrade.
 
 
 Please give us feedback and request improvements:
@@ -48,8 +54,35 @@ Support    : http://www.powerfolder.com/support.html
 Development: http://www.powerfolder.com/about_us.html
 Email      : contact (at) powerfolder.com
 
+Version 5.6.0
+-------------
 
 == Version History ==
+
+= Improvements/New features =
+ * Free edition can now sync up to 2 GB of data.
+ * New skins: PowerFolder 2012 "Blue Globe" and "Storm"
+ * System tray icon improvement: Shows a "OK" icons instead of "P" icon when the sync is ok.
+ * PowerFolders base path will fall back to default if not available, e.g. network drive.
+ * File browser shows better feedback messages if no files matches the search input.
+ * Chat popups now show the message and have a reply button.
+ * Improved and corrected LAN/VPN/Internet connection in complex network scenarios.
+ * Program update dialog now clearly indicates that the update is for PowerFolder.
+ * Activation by file not longer supported. Please always use online activation.
+ * Directory chooser now shows drive names.
+ * Debug log panel: CPU activity dump button added. 
+ * Folderlist: Not longer shows icons on mouse hover.
+ 
+= Bugfixes =
+ * Security: Fixed bug, which causes the client to sync if not yet logged in.
+ * Corrected handling of non-default paths of recommended folders.
+ * Information section now correctly opens in multi screen environment.
+ * It's now possible to change the physical directory if it's not accessible.
+ * Mac: Minimize to system tray also hides the icon in the program bar.
+ * Up- and downloads now break when files get excluded from sync.
+ * Corrected several wizard texts.
+ * Fixed UDT connection bug.
+
 
 Version 5.0.0
 -------------
