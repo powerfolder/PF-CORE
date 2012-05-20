@@ -434,17 +434,23 @@ public class MainFrame extends PFUIComponent {
         setupButton.setText(null);
 
         upperMainTextLabel = new JLabel();
-        upperMainTextActionLabel = new ActionLabel(getController(), new AbstractAction() {
+        upperMainTextActionLabel = new ActionLabel(getController(),
+                new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 setFrameMode(FrameMode.NORMAL);
             }
         });
+        upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
+                "action_show_folders_tab.name"));
         syncDateLabel = new JLabel();
-        syncDateActionLabel = new ActionLabel(getController(), new AbstractAction() {
+        syncDateActionLabel = new ActionLabel(getController(),
+                new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 setFrameMode(FrameMode.NORMAL);
             }
         });
+        syncDateActionLabel.setToolTipText(Translation.getTranslation(
+                "action_show_folders_tab.name"));
 
         setupLabel = new ActionLabel(getController(), new MySetupAction());
 
