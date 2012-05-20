@@ -25,7 +25,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
@@ -92,9 +91,6 @@ public class FileSelectorFactory {
         // The button
         final JButton button = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
                 Translation.getTranslation("folder_create.dialog.select_directory.text"));
-        Dimension d = button.getPreferredSize();
-        d.height = textField.getPreferredSize().height;
-        button.setPreferredSize(d);
 
         // Button logic
         button.addActionListener(new ActionListener() {
