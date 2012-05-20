@@ -155,6 +155,8 @@ public class MainFrame extends PFUIComponent {
     private DelayedUpdater mainStatusUpdater;
 
     // Right mini panel
+    private ActionLabel expandCollapseActionLabel;
+    private MyExpandCollapseAction expandCollapseAction;
     private ActionLabel openWebInterfaceActionLabel;
     private ActionLabel openFoldersBaseActionLabel;
     private ActionLabel pauseResumeActionLabel;
@@ -253,20 +255,21 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
+        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
             builder.add(openWebInterfaceActionLabel.getUIComponent(),
-                cc.xy(1, 1));
+                cc.xy(1, 2));
         }
-        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 2));
-        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
-        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4));
+        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 4));
+        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 5));
         if (getController().isVerbose()) {
-            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5));
+            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 6));
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6));
+            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 7));
         }
 
         return builder.getPanel();
@@ -448,6 +451,9 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
+        expandCollapseAction = new MyExpandCollapseAction(getController());
+        expandCollapseActionLabel = new ActionLabel(getController(),
+            expandCollapseAction);
         openWebInterfaceActionLabel = new ActionLabel(getController(),
             new MyOpenWebInterfaceAction(getController()));
         openFoldersBaseActionLabel = new ActionLabel(getController(),
@@ -1262,13 +1268,12 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void setFrameMode(FrameMode frameMode, boolean init) {
-
+        expandCollapseAction.setShowExpand(frameMode == FrameMode.COMPACT);
         this.frameMode = frameMode;
         switch (frameMode) {
-            case MAXIMIZED:
+            case MAXIMIZED :
                 uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
-                plusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.restore.tips"));
+                plusButton.setToolTipText(Translation.getTranslation("main_frame.restore.tips"));
                 plusButton.setIcons(Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
                         Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
                         Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
@@ -1360,6 +1365,29 @@ public class MainFrame extends PFUIComponent {
                 BrowserLauncher.openURL(client.getLoginURLWithCredentials());
             } catch (IOException e1) {
                 logWarning("Unable to open web portal", e1);
+            }
+        }
+    }
+
+    private class MyExpandCollapseAction extends BaseAction {
+
+        private MyExpandCollapseAction(Controller controller) {
+            super("action_expand_interface", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
+                setFrameMode(FrameMode.COMPACT);    
+            } else {
+                setFrameMode(FrameMode.NORMAL);
+            }
+        }
+
+        public void setShowExpand(boolean expand) {
+            if (expand) {
+                configureFromActionId("action_expand_interface");
+            } else {
+                configureFromActionId("action_collapse_interface");
             }
         }
     }
