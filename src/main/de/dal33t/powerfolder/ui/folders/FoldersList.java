@@ -19,17 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.BoxLayout;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -240,9 +235,8 @@ public class FoldersList extends PFUIComponent {
 
         synchronized (views) {
 
-            // Remember expanded view.
+            // Remember the expanded and focussed views.
             FolderInfo expandedFolderInfo = null;
-            // Remember focussed view.
             FolderInfo focussedFolderInfo = null;
             for (ExpandableFolderView view : views) {
                 if (expandedFolderInfo == null && view.isExpanded()) {
@@ -253,14 +247,30 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
-            // Remove all folder views.
+            // Remove all folder views, but keep a list to see if any can be
+            // recycled in the new display.
+            List<ExpandableFolderView> oldViews =
+                    new ArrayList<ExpandableFolderView>();
             for (ExpandableFolderView view : views) {
-                view.dispose();
+                oldViews.add(view);
                 views.remove(view);
-                view.removeExpansionListener(expansionListener);
-                view.unregisterListeners();
             }
-            folderListPanel.removeAll();
+
+            // Add new folder views.
+            for (ExpandableFolderModel folderBean : localFolders) {
+                addView(folderBean, expandedFolderInfo, focussedFolderInfo,
+                        oldViews);
+            }
+
+            // Is anything left in the old list? Decommission.
+            for (ExpandableFolderView oldView : oldViews) {
+                oldView.dispose();
+                oldView.removeExpansionListener(expansionListener);
+                oldView.unregisterListeners();
+            }
+
+            // Redraw UI with everything gone.
+            folderListPanel.invalidate();
             if (uiComponent != null) {
                 uiComponent.invalidate();
             }
@@ -268,58 +278,60 @@ public class FoldersList extends PFUIComponent {
                 scrollPane.repaint();
             }
 
-            // Add new folder views.
-            for (ExpandableFolderModel folderBean : localFolders) {
-                addView(folderBean, expandedFolderInfo, focussedFolderInfo);
-            }
-
         }
         foldersTab.updateEmptyLabel();
     }
 
-    private void addSeparator(JLabel label) {
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
-            "pref, 4dlu");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(label, cc.xy(2, 1));
-        builder.add(new JSeparator(), cc.xy(4, 1));
-        JPanel panel = builder.getPanel();
-        panel.setOpaque(false);
-        folderListPanel.add(panel);
-    }
-
     private void addView(ExpandableFolderModel folderBean,
-        FolderInfo expandedFolderInfo, FolderInfo focussedFolderInfo)
-    {
-        ExpandableFolderView newView = new ExpandableFolderView(
-            getController(), folderBean.getFolderInfo());
+                         FolderInfo expandedFolderInfo,
+                         FolderInfo focussedFolderInfo,
+                         List<ExpandableFolderView> oldViews) {
+
+
+        // See if we already have this view.
+        ExpandableFolderView newView = null;
+        Iterator<ExpandableFolderView> iter = oldViews.iterator();
+        while (iter.hasNext()) {
+            ExpandableFolderView oldView = iter.next();
+            if (oldView.getFolderInfo().equals(folderBean.getFolderInfo())) {
+                newView = oldView;
+
+                // Remove from the list so it does not get decommissioned.
+                iter.remove();
+                break;
+            }
+        }
+
+        // Do not have it? Create a new one.
+        boolean viewCreated = false;
+        if (newView == null) {
+            newView = new ExpandableFolderView(getController(),
+                    folderBean.getFolderInfo());
+            viewCreated = true;
+        }
+
+        // Update details.
         newView.configure(folderBean);
+
+        // Add to views.
         folderListPanel.add(newView.getUIComponent());
-        folderListPanel.invalidate();
-        if (uiComponent != null) {
-            uiComponent.invalidate();
-        }
-        if (scrollPane != null) {
-            scrollPane.repaint();
-        }
         views.add(newView);
 
         // Was view expanded before?
         if (expandedFolderInfo != null
-            && folderBean.getFolderInfo().equals(expandedFolderInfo))
-        {
+                && folderBean.getFolderInfo().equals(expandedFolderInfo)) {
             newView.expand();
         }
 
         // Was view focussed before?
         if (focussedFolderInfo != null
-            && folderBean.getFolderInfo().equals(focussedFolderInfo))
-        {
+                && folderBean.getFolderInfo().equals(focussedFolderInfo)) {
             newView.setFocus(true);
         }
 
-        newView.addExpansionListener(expansionListener);
+        if (viewCreated) {
+            newView.addExpansionListener(expansionListener);
+        }
     }
 
     /**
