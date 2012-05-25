@@ -128,7 +128,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, 140dlu, 3dlu, 15dlu, pref:grow",
+            "right:pref, 3dlu, 140dlu, 3dlu, pref, pref:grow",
             "pref, 6dlu, pref, 6dlu, pref, 30dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
