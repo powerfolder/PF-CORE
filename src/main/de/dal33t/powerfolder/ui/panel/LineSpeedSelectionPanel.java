@@ -194,13 +194,29 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
 
         recalculateAutoButton.setVisible(automaticSelected);
         if (automaticSelected) {
-            TransferManager transferManager = getController().getTransferManager();
-            customUploadSpeedText.setText(
-                    transferManager.getUploadCPSForWAN() / 1024 + " " +
-                            Translation.getTranslation("general.kbPerS"));
-            customDownloadSpeedText.setText(
+            TransferManager transferManager = getController()
+                .getTransferManager();
+
+            if (transferManager.getUploadCPSForWAN() > 0) {
+                customUploadSpeedText.setText(transferManager
+                    .getUploadCPSForWAN()
+                    / 1024
+                    + " "
+                    + Translation.getTranslation("general.kbPerS"));
+            } else {
+                customUploadSpeedText.setText(Translation
+                    .getTranslation("line_speed.unlimited"));
+            }
+
+            if (transferManager.getDownloadCPSForWAN() > 0) {
+                customDownloadSpeedText.setText(
                     transferManager.getDownloadCPSForWAN() / 1024 + " " +
-                            Translation.getTranslation("general.kbPerS"));
+                    Translation.getTranslation("general.kbPerS"));
+            } else {
+                customDownloadSpeedText.setText(Translation
+                    .getTranslation("line_speed.unlimited"));
+            }
+
         }
     }
 
