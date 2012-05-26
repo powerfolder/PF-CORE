@@ -38,7 +38,7 @@ public class SkinTest extends TestCase {
         for (Iterator<Skin> it = skinLoader.iterator(); it.hasNext();) {
             skins.add(it.next());
         }
-        assertEquals(18, skins.size());
+        assertEquals(2, skins.size());
     }
 
     public void testIcons() {
