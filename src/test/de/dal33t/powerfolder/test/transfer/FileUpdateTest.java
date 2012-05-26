@@ -106,7 +106,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // Test barts file (=newer)
         FileInfo fileInfoAtBart = getFolderAtBart().getFile(
             FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart));
-        assertEquals(0, fileInfoAtBart.getVersion());
+        assertEquals(1, fileInfoAtBart.getVersion());
         assertEquals(fileAtBart.getName(), fileInfoAtBart.getFilenameOnly());
         assertEquals(fileAtBart.length(), fileInfoAtBart.getSize());
         assertEquals(fileAtBart.lastModified(), fileInfoAtBart
