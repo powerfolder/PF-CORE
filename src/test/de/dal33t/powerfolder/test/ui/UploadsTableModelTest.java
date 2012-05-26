@@ -48,8 +48,6 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        getContollerLisa().setPaused(true);
-        getContollerBart().setPaused(true);
         connectBartAndLisa();
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
