@@ -271,7 +271,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         final Folder folderLisa = getContollerLisa().getFolderRepository()
             .createFolder(testFolder, folderSettingsLisa);
 
-        TestHelper.waitForCondition(50, new Condition() {
+        getContollerLisa().setPaused(false);
+        TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return folderLisa.getKnownFiles().size() >= 3;
             }
