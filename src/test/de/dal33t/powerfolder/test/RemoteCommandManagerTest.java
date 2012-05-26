@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.test;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -28,6 +29,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -185,6 +187,9 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
     }
 
     public void testCopyLink() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
         assertEquals(1, getFolderAtLisa().getMembersCount());
         File dir = new File(getFolderAtLisa().getLocalBase(), "subdir/xxß@äääx/de  ep");
         File file = TestHelper.createRandomFile(dir);
