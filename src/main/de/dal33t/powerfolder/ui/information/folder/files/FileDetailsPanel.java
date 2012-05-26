@@ -182,7 +182,6 @@ public class FileDetailsPanel extends PFUIComponent {
 
         MemberInfo modifiedBy = fileInfo.getModifiedBy();
         modifiedByField.setText(modifiedBy.nick);
-        modifiedByField.setIcon(Icons.getIconById(Icons.COMPUTER));
         modifiedDateField.setText(Format.formatDateShort(fileInfo
             .getModifiedDate()));
 
