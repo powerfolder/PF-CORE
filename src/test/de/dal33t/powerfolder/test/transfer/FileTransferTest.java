@@ -1412,7 +1412,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
-        getContollerBart().setPaused(true);
 
         // Now change the file
         TestHelper.changeFile(testFile);
@@ -1767,8 +1766,6 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testSwitchSyncProfile() {
 
-        getContollerBart().setPaused(true);
-        getContollerLisa().setPaused(true);
         getContollerBart().getTransferManager().setUploadCPSForLAN(1000000);
         getContollerLisa().getTransferManager().setUploadCPSForLAN(1000000);
 
