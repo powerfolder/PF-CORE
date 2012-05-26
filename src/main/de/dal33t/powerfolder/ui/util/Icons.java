@@ -119,7 +119,6 @@ public class Icons {
     public static final String SETTINGS = "settings.icon";
     public static final String PROBLEMS = "problems.icon";
     public static final String INFORMATION = "information.icon";
-    public static final String COMPUTER = "computer.icon";
 
     // Wizard Arrows
     public static final String ARROW_LEFT = "arrow_left.icon";
@@ -200,9 +199,6 @@ public class Icons {
     public static final String LOGO400UI = "power_folder_logo_400_ui.icon";
     public static final String SMALL_LOGO = "powerfolder_32.icon";
     public static final String SPLASH = "splash.icon";
-
-    // About stuff
-    public static final String ABOUT_ANIMATION = "about_animation.icon";
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
