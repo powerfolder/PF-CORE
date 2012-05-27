@@ -475,7 +475,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals("Lisa downloadStarted " + lisasListener.downloadStarted,
             1, lisasListener.downloadStarted);
         assertEquals("Lisa downloadCompleted "
-            + lisasListener.downloadCompleted, 1,
+            + lisasListener.downloadCompleted + ": " + lisasListener.downloadsRequested, 1,
             lisasListener.downloadCompleted);
         assertEquals("Lisa downloadAborted " + lisasListener.downloadAborted,
             0, lisasListener.downloadAborted);
