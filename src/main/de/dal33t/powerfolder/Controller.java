@@ -1498,7 +1498,7 @@ public class Controller extends PFComponent {
             } else if (delay < Integer.MAX_VALUE) {
                 pauseResumeFuture = schedule(new PauseResumeTask(false),
                     delay * 1000);
-                log.fine("Scheduled resume task in " + delay + " seconds.");
+                logFine("Scheduled resume task in " + delay + " seconds.");
             }
         } else {
             if (delay == 0 && changedByAdaptiveLogic) {
