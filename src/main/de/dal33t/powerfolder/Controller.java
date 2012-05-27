@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "6.0.3"; // 5.1.9
+    public static final String PROGRAM_VERSION = "6.0.3 - 5.1.10"; // 5.1.9
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1498,7 +1498,7 @@ public class Controller extends PFComponent {
             } else if (delay < Integer.MAX_VALUE) {
                 pauseResumeFuture = schedule(new PauseResumeTask(false),
                     delay * 1000);
-                log.info("Scheduled resume task in " + delay + " seconds.");
+                log.fine("Scheduled resume task in " + delay + " seconds.");
             }
         } else {
             if (delay == 0 && changedByAdaptiveLogic) {
