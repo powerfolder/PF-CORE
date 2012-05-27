@@ -62,6 +62,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
      * Ticket #345
      */
     public void testInitalSync() {
+        TestHelper.waitMilliSeconds(500);
         File fileAtBart = TestHelper.createTestFile(getFolderAtBart()
             .getLocalBase(), "TestInitalFile.bin",
             "A older version of the file".getBytes());
@@ -85,6 +86,10 @@ public class FileUpdateTest extends TwoControllerTestCase {
                     && getFolderAtLisa().getKnownItemCount() == 1;
             }
         });
+        // W8 4 filelist
+        TestHelper.waitMilliSeconds(500);
+        getFolderAtBart().maintainFolderDB(0);
+        getFolderAtLisa().maintainFolderDB(0);
 
         assertFileMatch(fileAtBart, getFolderAtBart().getKnownFiles()
             .iterator().next(), getContollerBart());
