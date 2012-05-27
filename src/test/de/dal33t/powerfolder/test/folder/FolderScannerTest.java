@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import de.schlichtherle.truezip.file.TFile;
 
 public class FolderScannerTest extends ControllerTestCase {
 
@@ -47,15 +48,15 @@ public class FolderScannerTest extends ControllerTestCase {
     }
 
     public void testScanFiles() throws Exception {
-        getController().setPaused(true);
+        // getController().setPaused(true);
         final FolderScanner folderScanner = getController()
             .getFolderRepository().getFolderScanner();
-        getController().setPaused(false);
+        // getController().setPaused(false);
 
         File file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
         assertTrue(file1.exists());
         File file2 = TestHelper
-            .createRandomFile(new File(
+            .createRandomFile(new TFile(
                 getFolder().getLocalBase(),
                 "deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore"));
         assertTrue(file2.exists());
@@ -63,6 +64,7 @@ public class FolderScannerTest extends ControllerTestCase {
         File file4 = TestHelper.createRandomFile(getFolder().getLocalBase());
 
         ScanResult result = scanFolderWaitIfBusy(folderScanner);
+        getController().setPaused(true);
 
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
@@ -78,7 +80,8 @@ public class FolderScannerTest extends ControllerTestCase {
         // delete a file
         file1.delete();
 
-        result = folderScanner.scanFolder(getFolder());
+        getController().setPaused(false);
+        result = scanFolderWaitIfBusy(folderScanner);
         assertTrue(result.getResultState().toString(),
             ScanResult.ResultState.SCANNED == result.getResultState());
 
