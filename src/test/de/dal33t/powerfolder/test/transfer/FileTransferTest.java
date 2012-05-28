@@ -435,7 +435,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
-        final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
+        final MyTransferManagerListener lisasListener = new MyTransferManagerListener(true);
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
         // 12 Meg testfile
