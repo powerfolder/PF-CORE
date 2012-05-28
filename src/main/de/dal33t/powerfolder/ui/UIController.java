@@ -38,14 +38,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
@@ -92,7 +85,9 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -144,6 +139,8 @@ public class UIController extends PFComponent {
     public static final int CHAT_FRAME_ID = 2;
     public static final int WIZARD_DIALOG_ID = 3;
 
+    public static final int MAX_RECENTLY_CHANGED_FILES = 20;
+
     private static final String COMMAND_OPENUI = "openui";
     private static final String COMMAND_HIDEUI = "hideui";
     private static final String COMMAND_SYNCALL = "syncall";
@@ -183,6 +180,9 @@ public class UIController extends PFComponent {
     private final AtomicInteger activeFrame;
     private final AtomicBoolean synchronizing = new AtomicBoolean();
     private final DelayedUpdater statusUpdater;
+
+    private final Map<FileInfo, Date> recentlyChangedFiles = new HashMap<FileInfo, Date>();
+    private final AtomicBoolean recentFileMenuUptoDate = new AtomicBoolean();
 
     /**
      * The UI distribution running.
@@ -1300,6 +1300,42 @@ public class UIController extends PFComponent {
         }
     }
 
+    /**
+     * Maintain a list of the mmost recently changed files.
+     *
+     * @param fileInfo
+     */
+    private void addRecentFileChange(FileInfo fileInfo) {
+        synchronized (recentlyChangedFiles) {
+            recentlyChangedFiles.put(fileInfo, new Date());
+
+            // Find the earliest change.
+            if (recentlyChangedFiles.size() > MAX_RECENTLY_CHANGED_FILES) {
+                Date date = null;
+                for (Date date1 : recentlyChangedFiles.values()) {
+                    if (date == null || date.compareTo(date1) > 0) {
+                        date = date1;
+                    }
+                }
+
+                // Delete the earliest change.
+                if (date != null) {
+                    Iterator<FileInfo> iter =
+                            recentlyChangedFiles.keySet().iterator();
+                    while (iter.hasNext()) {
+                        FileInfo fileInfo1 = iter.next();
+                        Date date1 = recentlyChangedFiles.get(fileInfo1);
+                        if (date1.equals(date)) {
+                            iter.remove();
+                        }
+                    }
+                }
+            }
+
+            // Invalidate menu.
+        }
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -1351,9 +1387,25 @@ public class UIController extends PFComponent {
         }
 
         public void fileChanged(FolderEvent folderEvent) {
+            Collection<FileInfo> collection = folderEvent.getScannedFileInfos();
+            if (collection != null) {
+                for (FileInfo fileInfo : collection) {
+                    if (!fileInfo.isDiretory()) {
+                        addRecentFileChange(fileInfo);
+                    }
+                }
+            }
         }
 
         public void filesDeleted(FolderEvent folderEvent) {
+            Collection<FileInfo> collection = folderEvent.getDeletedFileInfos();
+            if (collection != null) {
+                for (FileInfo fileInfo : collection) {
+                    if (!fileInfo.isDiretory()) {
+                        addRecentFileChange(fileInfo);
+                    }
+                }
+            }
         }
     }
     
