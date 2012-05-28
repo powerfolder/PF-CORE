@@ -155,6 +155,7 @@ public class UIController extends PFComponent {
     private static final String COMMAND_RESUME = "resume";
     private static final String COMMAND_PREFERENCES = "preferences";
     private static final String COMMAND_BROWSE = "browse";
+    private static final String COMMAND_RECENTLY_CHANGED = "recently-changed";
 
     private boolean started;
     private SplashScreen splash;
@@ -169,6 +170,7 @@ public class UIController extends PFComponent {
     private final List<Runnable> pendingJobs;
     private Menu sysTrayFoldersMenu;
     private MenuItem pauseResumeMenu;
+    private Menu recentlyChangedMenu;
 
     // The root of all models
     private ApplicationModel applicationModel;
@@ -519,8 +521,7 @@ public class UIController extends PFComponent {
             .getTranslation("action_open_folders_base.name")));
         item.setActionCommand(COMMAND_BROWSE);
         item.addActionListener(systrayActionHandler);
-        menu.add(item);
-        
+
         // /////////////////
         // Pause / Resume //
         // /////////////////
@@ -530,6 +531,15 @@ public class UIController extends PFComponent {
         pauseResumeMenu.addActionListener(systrayActionHandler);
         getController().addPausedModeListener(new MyPausedModeListener());
         configurePauseResumeLink();
+
+        // /////////
+        // Recent //
+        // /////////
+        if (Feature.SHOW_RECENTLY_CHANGED.isEnabled()) {
+            recentlyChangedMenu = new Menu(Translation.getTranslation("uicontroller.recently_changed"));
+            recentlyChangedMenu.setActionCommand(COMMAND_RECENTLY_CHANGED);
+            menu.add(recentlyChangedMenu);
+        }
 
         // //////////////
         // Preferences //
