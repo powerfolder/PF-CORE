@@ -26,12 +26,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.prefs.Preferences;
 
-import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -47,8 +44,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.UIUtil;
@@ -71,7 +66,6 @@ public class ChatFrame extends PFUIComponent {
     private JFrame uiComponent;
     private final JTabbedPane tabbedPane;
     private final Map<MemberInfo, ChatPanel> memberPanels;
-    private final List<MemberInfo> newMessages;
 
     /**
      * Constructor.
@@ -81,11 +75,8 @@ public class ChatFrame extends PFUIComponent {
     public ChatFrame(Controller controller) {
         super(controller);
         tabbedPane = new JTabbedPane();
-        controller.getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
         memberPanels = new HashMap<MemberInfo, ChatPanel>();
         tabbedPane.addChangeListener(new MyChangeListener());
-        newMessages = new CopyOnWriteArrayList<MemberInfo>();
     }
 
     public void initializeChatModelListener(ChatModel chatModel) {
@@ -214,7 +205,6 @@ public class ChatFrame extends PFUIComponent {
                 if (autoSelect) {
                     tabbedPane.setSelectedIndex(i);
                 }
-                clearMessagesIcon();
                 return memberPanels.get(memberInfo);
             }
         }
@@ -223,44 +213,12 @@ public class ChatFrame extends PFUIComponent {
         Member member = getController().getNodeManager().getNode(memberInfo);
         ChatPanel chatPanel = new ChatPanel(getController(), this, member);
         memberPanels.put(memberInfo, chatPanel);
-        tabbedPane.addTab(memberInfo.nick, Icons.getIconFor(member), chatPanel
-            .getUiComponent(), Translation.getTranslation(
-            "chat_frame.tool_tip", member.getNick()));
+        tabbedPane.addTab(memberInfo.nick, chatPanel.getUiComponent());
         if (autoSelect) {
             tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
         }
 
-        clearMessagesIcon();
         return chatPanel;
-    }
-
-    /**
-     * Update the icons on the tabs as members come and go.
-     * 
-     * @param member
-     */
-    private void updateTabIcons(Member member) {
-        if (!memberPanels.containsKey(member.getInfo())) {
-            return;
-        }
-        for (MemberInfo memberInfo : memberPanels.keySet()) {
-            if (member.getInfo().equals(memberInfo)) {
-                Icon icon;
-                if (newMessages.contains(member.getInfo())) {
-                    icon = Icons.getIconById(Icons.CHAT_PENDING);
-                } else {
-                    icon = Icons.getIconFor(member);
-                }
-                Component component = memberPanels.get(memberInfo)
-                    .getUiComponent();
-                int count = tabbedPane.getComponentCount();
-                for (int i = 0; i < count; i++) {
-                    if (tabbedPane.getComponentAt(i).equals(component)) {
-                        tabbedPane.setIconAt(i, icon);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -342,82 +300,14 @@ public class ChatFrame extends PFUIComponent {
                 panel = displayChat(fromMember.getInfo(), false);
             }
 
-            if (!showingTabForMember(fromMember.getInfo())) {
-                newMessages.add(fromMember.getInfo());
-                updateTabIcons(fromMember);
-            }
-
             // Now display message.
             panel.updateChat();
-        }
-    }
-
-    /**
-     * Clear the message icon for the currently selected tab.
-     */
-    private void clearMessagesIcon() {
-        Component component = tabbedPane.getSelectedComponent();
-        for (MemberInfo memberInfo : memberPanels.keySet()) {
-            ChatPanel panel = memberPanels.get(memberInfo);
-            if (panel.getUiComponent() == component) {
-                newMessages.remove(memberInfo);
-                Member member = getController().getNodeManager().getNode(
-                    memberInfo);
-                updateTabIcons(member);
-            }
         }
     }
 
     // /////////////////
     // INNER CLASSES //
     // /////////////////
-
-    /**
-     * Listens on changes in the online state and update the ui components
-     */
-    private class MyNodeManagerListener extends NodeManagerAdapter {
-
-        public void nodeRemoved(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void nodeConnected(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void nodeDisconnected(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void nodeOffline(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void nodeOnline(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void friendAdded(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-            updateTabIcons(e.getNode());
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-    }
 
     private class MyChatModelListener implements ChatModelListener {
         public void chatChanged(ChatModelEvent event) {
@@ -438,7 +328,6 @@ public class ChatFrame extends PFUIComponent {
             // Avoid race for memberPanels
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    clearMessagesIcon();
 
                     Component component = tabbedPane.getSelectedComponent();
                     for (ChatPanel chatPanel : memberPanels.values()) {
