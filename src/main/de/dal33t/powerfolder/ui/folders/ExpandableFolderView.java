@@ -304,7 +304,15 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
             return;
         }
-        webDAVURL = folder.getWebDAVURL();
+        if (webDAVURL == null) {
+            webDAVURL = serverClient.getFolderService()
+                .getWebDAVURL(folderInfo);
+            if (webDAVURL == null) {
+                // Don't fetch again. It's simply not available.
+                webDAVURL = "";
+            }
+        }
+
     }
 
     /**

@@ -1323,6 +1323,9 @@ public class UIController extends PFComponent {
      * @param fileInfo
      */
     private void addRecentFileChange(FileInfo fileInfo) {
+        if (Feature.SHOW_RECENTLY_CHANGED.isDisabled()) {
+            return;
+        }
         synchronized (recentlyChangedFiles) {
             Long time = new Date().getTime();
             while (recentlyChangedFiles.containsKey(time)) {

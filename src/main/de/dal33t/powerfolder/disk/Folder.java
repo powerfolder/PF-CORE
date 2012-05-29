@@ -61,7 +61,6 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
@@ -275,11 +274,6 @@ public class Folder extends PFComponent {
      * {@link ConfigurationEntry#FOLDER_SYNC_WARN_DAYS}.
      */
     private int syncWarnSeconds;
-    
-    /**
-     * The WebDAV url (cached)
-     */
-    private String webDAVURL;
 
     /**
      * Constructor for folder.
@@ -703,16 +697,6 @@ public class Folder extends PFComponent {
      */
     public TransferPriorities getTransferPriorities() {
         return transferPriorities;
-    }
-
-    public synchronized String getWebDAVURL() {
-        if (webDAVURL != null) {
-            ServerClient client = getController().getOSClient();
-            if (client.isConnected()) {
-                webDAVURL = client.getFolderService().getWebDAVURL(currentInfo);
-            }
-        }
-        return webDAVURL;
     }
 
     public ScanResult.ResultState getLastScanResultState() {
