@@ -167,7 +167,6 @@ public class SettingsTab extends PFUIComponent {
         patternChangeListener = new MyPatternChangeListener();
         patternsListModel = new DefaultListModel();
         removeFolderAction = new RemoveFolderAction(getController());
-        removeFolderAction.allowWith(FolderRemovePermission.INSTANCE);
         maintainDBAction = new MaintainFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
         membershipListner = new MyFolderMembershipListener();

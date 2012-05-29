@@ -164,7 +164,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyMostRecentChangesAction mostRecentChangesAction;
     private MyClearCompletedDownloadsAction clearCompletedDownloadsAction;
     private MyOpenExplorerAction openExplorerAction;
-    private FolderRemoveAction removeFolderAction;
+    private FolderRemoveAction removeFolderLocalAction;
+    private FolderRemoveAction removeFolderOnlineAction;
     private BackupOnlineStorageAction backupOnlineStorageAction;
     private StopOnlineStorageAction stopOnlineStorageAction;
     private WebdavAction webdavAction;
@@ -497,8 +498,13 @@ public class ExpandableFolderView extends PFUIComponent implements
         clearCompletedDownloadsAction = new MyClearCompletedDownloadsAction(
             getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
-        removeFolderAction = new FolderRemoveAction(getController());
-        removeFolderAction.allowWith(FolderRemovePermission.INSTANCE);
+        
+        // Allow to stop local sync even if no folder remove permissions was given.
+        removeFolderLocalAction = new FolderRemoveAction(getController());
+        
+        // Don't allow to choose action at all if online folder only.
+        removeFolderOnlineAction = new FolderRemoveAction(getController());
+        removeFolderOnlineAction.allowWith(FolderRemovePermission.INSTANCE);
 
         backupOnlineStorageAction = new BackupOnlineStorageAction(
             getController());
@@ -1077,7 +1083,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     contextMenu.add(webViewAction).setIcon(null);
                 }
             }
-            contextMenu.add(removeFolderAction).setIcon(null);
+            contextMenu.add(removeFolderOnlineAction).setIcon(null);
         } else {
             // Local folder popup
             contextMenu.add(openExplorerAction).setIcon(null);
@@ -1099,7 +1105,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
             contextMenu.addSeparator();
             contextMenu.add(openSettingsInformationAction).setIcon(null);
-            contextMenu.add(removeFolderAction).setIcon(null);
+            contextMenu.add(removeFolderLocalAction).setIcon(null);
             if (expert && serverClient.isConnected()
                 && serverClient.isLoggedIn())
             {
@@ -1823,7 +1829,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     void dispose() {
-        removeFolderAction.dispose();
+        removeFolderLocalAction.dispose();
+        removeFolderOnlineAction.dispose();
         backupOnlineStorageAction.dispose();
         stopOnlineStorageAction.dispose();
         inviteAction.dispose();

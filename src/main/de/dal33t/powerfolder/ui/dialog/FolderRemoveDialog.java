@@ -35,12 +35,14 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
@@ -89,20 +91,26 @@ public class FolderRemoveDialog extends BaseDialog {
      * Initalizes all ui components
      */
     private void initComponents() {
+        boolean allowRemove = !ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            || getController().getOSClient().getAccount()
+                .hasPermission(FolderRemovePermission.INSTANCE);
+        
         // Create folder leave dialog message
         boolean syncFlag = folder != null && folder.isTransferring();
         String folderLeaveText;
-        String removeKey = onlineFolder && !localFolder  ?
-                "folder_remove.dialog.online_text" :
-                "folder_remove.dialog.text";
+        String removeKey = onlineFolder && !localFolder
+            ? "folder_remove.dialog.online_text"
+            : "folder_remove.dialog.text";
         if (syncFlag) {
-            folderLeaveText = Translation.getTranslation(
-                removeKey, foInfo.name) + '\n'
+            folderLeaveText = Translation
+                .getTranslation(removeKey, foInfo.name)
+                + '\n'
                 + Translation
                     .getTranslation("folder_remove.dialog.sync_warning");
         } else {
-            folderLeaveText = Translation.getTranslation(removeKey,
-                    foInfo.name);
+            folderLeaveText = Translation
+                .getTranslation(removeKey, foInfo.name);
         }
         messageLabel = new JLabel(folderLeaveText);
 
@@ -114,6 +122,7 @@ public class FolderRemoveDialog extends BaseDialog {
         deleteSystemSubFolderBox = SimpleComponentFactory
             .createCheckBox(Translation
                 .getTranslation("folder_remove.dialog.delete"));
+        deleteSystemSubFolderBox.setEnabled(allowRemove);
 
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.remove_from_os"));
@@ -125,6 +134,7 @@ public class FolderRemoveDialog extends BaseDialog {
             }
         });
         removeFromServerBox.setSelected(!localFolder && onlineFolder);
+        removeFromServerBox.setEnabled(allowRemove);
 
         // Buttons
         createRemoveButton(new ActionListener() {
