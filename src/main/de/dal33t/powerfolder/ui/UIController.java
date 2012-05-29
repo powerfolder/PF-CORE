@@ -480,6 +480,19 @@ public class UIController extends PFComponent {
                     askToPauseResume();
                 } else if (COMMAND_PREFERENCES.equals(e.getActionCommand())) {
                     new PreferencesDialog(getController()).open();
+                } else if(e.getActionCommand().startsWith(COMMAND_RECENTLY_CHANGED)) {
+                    int index = e.getActionCommand().lastIndexOf('-');
+                    String suffix = e.getActionCommand().substring(index + 1);
+                    int item = Integer.valueOf(suffix);
+                    synchronized (recentlyChangedFiles) {
+                        int i = 0;
+                        for (FileInfo fileInfo : recentlyChangedFiles.values()) {
+                            if (i++ == item) {
+                                // todo ..........
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         };
@@ -541,6 +554,7 @@ public class UIController extends PFComponent {
                 recentMenuItems[i] = new MenuItem();
                 recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
                         i);
+                recentMenuItems[i].addActionListener(systrayActionHandler);
             }
         }
 
