@@ -653,7 +653,7 @@ public class MainFrame extends PFUIComponent {
             synced = true;
         } else if (syncing) {
             String s;
-            if (overallSyncPercentage >= 0) {
+            if (overallSyncPercentage >= 0 && overallSyncPercentage < 100.0d) {
                 s = Format.formatDecimal(overallSyncPercentage) + '%';
             } else {
                 s = "...";
