@@ -87,7 +87,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -152,7 +151,7 @@ public class UIController extends PFComponent {
     private static final String COMMAND_RESUME = "resume";
     private static final String COMMAND_PREFERENCES = "preferences";
     private static final String COMMAND_BROWSE = "browse";
-    private static final String COMMAND_RECENTLY_CHANGED = "recently-changed";
+    private static final String COMMAND_RECENTLY_CHANGED = "recently-changed-";
 
     private boolean started;
     private SplashScreen splash;
@@ -181,8 +180,8 @@ public class UIController extends PFComponent {
     private final AtomicBoolean synchronizing = new AtomicBoolean();
     private final DelayedUpdater statusUpdater;
 
-    private final Map<FileInfo, Date> recentlyChangedFiles = new HashMap<FileInfo, Date>();
-    private final AtomicBoolean recentFileMenuUptoDate = new AtomicBoolean();
+    private final Map<Long, FileInfo> recentlyChangedFiles = new HashMap<Long, FileInfo>();
+    private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
 
     /**
      * The UI distribution running.
@@ -190,8 +189,6 @@ public class UIController extends PFComponent {
     private Skin[] skins;
 
     private Skin activeSkin;
-
-    private boolean limitDialogShown = false;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -536,9 +533,15 @@ public class UIController extends PFComponent {
         // Recent //
         // /////////
         if (Feature.SHOW_RECENTLY_CHANGED.isEnabled()) {
-            recentlyChangedMenu = new Menu(Translation.getTranslation("uicontroller.recently_changed"));
-            recentlyChangedMenu.setActionCommand(COMMAND_RECENTLY_CHANGED);
+            recentlyChangedMenu = new Menu(Translation.getTranslation(
+                    "uicontroller.recently_changed"));
+            recentlyChangedMenu.setEnabled(false);
             menu.add(recentlyChangedMenu);
+            for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
+                recentMenuItems[i] = new MenuItem();
+                recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
+                        i);
+            }
         }
 
         // //////////////
@@ -1307,32 +1310,27 @@ public class UIController extends PFComponent {
      */
     private void addRecentFileChange(FileInfo fileInfo) {
         synchronized (recentlyChangedFiles) {
-            recentlyChangedFiles.put(fileInfo, new Date());
+            Long time = new Date().getTime();
+            while (recentlyChangedFiles.containsKey(time)) {
+                // Get a unique time for the key.
+                time += 1;
+            }
+            recentlyChangedFiles.put(time, fileInfo);
 
             // Find the earliest change.
             if (recentlyChangedFiles.size() > MAX_RECENTLY_CHANGED_FILES) {
-                Date date = null;
-                for (Date date1 : recentlyChangedFiles.values()) {
-                    if (date == null || date.compareTo(date1) > 0) {
-                        date = date1;
-                    }
-                }
-
-                // Delete the earliest change.
-                if (date != null) {
-                    Iterator<FileInfo> iter =
-                            recentlyChangedFiles.keySet().iterator();
-                    while (iter.hasNext()) {
-                        FileInfo fileInfo1 = iter.next();
-                        Date date1 = recentlyChangedFiles.get(fileInfo1);
-                        if (date1.equals(date)) {
-                            iter.remove();
-                        }
-                    }
-                }
+                recentlyChangedFiles.keySet().iterator().remove();
             }
 
-            // Invalidate menu.
+            // Update menu.
+            recentlyChangedMenu.removeAll();
+            int i = 0;
+            for (FileInfo info : recentlyChangedFiles.values()) {
+                MenuItem menuItem = recentMenuItems[i++];
+                recentlyChangedMenu.add(menuItem);
+                menuItem.setLabel(info.getFilenameOnly());
+            }
+            recentlyChangedMenu.setEnabled(!recentlyChangedFiles.isEmpty());
         }
     }
 
@@ -1469,7 +1467,6 @@ public class UIController extends PFComponent {
         }
     }
   
-
     /**
      * Class to handle local and remote mass deletion events. This pushes
      * warnings into the app model.
