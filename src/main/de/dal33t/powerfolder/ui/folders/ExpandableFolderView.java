@@ -1001,6 +1001,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             .isBackupByDefault() && !getController().isBackupOnly();
         if (type == ExpandableFolderModel.Type.Local) {
 
+            double sync = folder.getStatistic().getHarmonizedSyncPercentage();
             if (folder != null && folder.countProblems() > 0) {
                 // Got a problem.
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
@@ -1011,6 +1012,13 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_preview_text"));
+            } else if (getController().isPaused() && sync < 100.0d
+                && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
+            {
+                // Sync is in pause
+                primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
+                primaryButton.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.folder_sync_paused"));
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
@@ -1391,6 +1399,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 return;
             }
             updateSyncButton();
+            updateIconAndOS();
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
@@ -1422,6 +1431,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 return;
             }
             updateSyncButton();
+            updateIconAndOS();
         }
 
         @Override
