@@ -87,6 +87,8 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.ChangePreferencesPermission;
+import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -95,6 +97,7 @@ import de.dal33t.powerfolder.ui.dialog.PauseDialog;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
 import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
@@ -167,6 +170,8 @@ public class UIController extends PFComponent {
     private Menu sysTrayFoldersMenu;
     private MenuItem pauseResumeMenu;
     private Menu recentlyChangedMenu;
+    @SuppressWarnings("unused")
+    private BoundPermission changePrefsPermission;
 
     // The root of all models
     private ApplicationModel applicationModel;
@@ -509,11 +514,16 @@ public class UIController extends PFComponent {
         // //////
         // Web //
         // //////
-        MenuItem item = menu.add(new MenuItem(Translation
-            .getTranslation("action_open_web_interface.name")));
-        item.setActionCommand(COMMAND_WEB);
-        item.addActionListener(systrayActionHandler);
-
+        MenuItem item;
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+            .getValueBoolean(getController()))
+        {
+            item = menu.add(new MenuItem(Translation
+                .getTranslation("action_open_web_interface.name")));
+            item.setActionCommand(COMMAND_WEB);
+            item.addActionListener(systrayActionHandler);
+        }
+        
         // //////////
         // Folders //
         // //////////
@@ -561,10 +571,19 @@ public class UIController extends PFComponent {
         // //////////////
         // Preferences //
         // //////////////
-        item = menu.add(new MenuItem(Translation.getTranslation(
-                "action_open_preferences.name")));
-        item.setActionCommand(COMMAND_PREFERENCES);
-        item.addActionListener(systrayActionHandler);
+        final MenuItem prefItem = menu.add(new MenuItem(Translation
+            .getTranslation("action_open_preferences.name")));
+        prefItem.setActionCommand(COMMAND_PREFERENCES);
+        prefItem.addActionListener(systrayActionHandler);
+        changePrefsPermission = new BoundPermission(getController(),
+            ChangePreferencesPermission.INSTANCE)
+        {
+            @Override
+            public void hasPermission(boolean hasPermission) {
+                prefItem.setEnabled(hasPermission);
+            }
+        };
+       
 
         menu.addSeparator();
 
