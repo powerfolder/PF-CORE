@@ -574,6 +574,13 @@ public class Account implements Serializable {
     public Collection<Group> getGroups() {
         return Collections.unmodifiableCollection(groups);
     }
+    
+    public void addLicenseKeyFile(String filename) {
+        if (licenseKeyFileList.contains(filename)) {
+            return;
+        }
+        licenseKeyFileList.add(filename);
+    }
 
     public List<String> getLicenseKeyFiles() {
         return licenseKeyFileList;
