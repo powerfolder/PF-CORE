@@ -556,17 +556,15 @@ public class UIController extends PFComponent {
         // /////////
         // Recent //
         // /////////
-        if (Feature.SHOW_RECENTLY_CHANGED.isEnabled()) {
-            recentlyChangedMenu = new Menu(Translation.getTranslation(
-                    "uicontroller.recently_changed"));
-            recentlyChangedMenu.setEnabled(false);
-            menu.add(recentlyChangedMenu);
-            for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
-                recentMenuItems[i] = new MenuItem();
-                recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
-                        i);
-                recentMenuItems[i].addActionListener(systrayActionHandler);
-            }
+        recentlyChangedMenu = new Menu(Translation.getTranslation(
+                "uicontroller.recently_changed"));
+        recentlyChangedMenu.setEnabled(false);
+        menu.add(recentlyChangedMenu);
+        for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
+            recentMenuItems[i] = new MenuItem();
+            recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
+                    i);
+            recentMenuItems[i].addActionListener(systrayActionHandler);
         }
 
         // //////////////
@@ -1334,9 +1332,6 @@ public class UIController extends PFComponent {
      * @param fileInfo
      */
     private void addRecentFileChange(FileInfo fileInfo) {
-        if (Feature.SHOW_RECENTLY_CHANGED.isDisabled()) {
-            return;
-        }
         synchronized (recentlyChangedFiles) {
             Long time = new Date().getTime();
             while (recentlyChangedFiles.containsKey(time)) {
