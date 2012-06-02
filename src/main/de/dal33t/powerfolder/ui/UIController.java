@@ -88,7 +88,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
-import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -116,6 +115,7 @@ import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -493,7 +493,10 @@ public class UIController extends PFComponent {
                         int i = 0;
                         for (FileInfo fileInfo : recentlyChangedFiles.values()) {
                             if (i++ == item) {
-                                // todo ..........
+                                MultiFileRestorePanel p = new MultiFileRestorePanel(getController(), fileInfo.getFolder(getController().getFolderRepository()), Collections.singletonList(fileInfo));
+                                PFWizard wizard = new PFWizard(getController(),
+                                    Translation.getTranslation("wizard.pfwizard.restore_title"));
+                                wizard.open(p);
                                 break;
                             }
                         }
@@ -534,7 +537,7 @@ public class UIController extends PFComponent {
             menu.add(sysTrayFoldersMenu);
         }
 
-        // //////////
+        // /////////
         // Browse //
         // /////////
         item = menu.add(new MenuItem(Translation
@@ -1171,15 +1174,6 @@ public class UIController extends PFComponent {
                 notificationHandler.show();
             }
         }
-    }
-
-    private void notifyComponent(JComponent content, Window owner,
-        int secondsToDisplay)
-    {
-        Slider slider = new Slider(content, owner, secondsToDisplay,
-            PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                .getValueInt(getController()), getController().isNotifyLeft());
-        slider.show();
     }
 
     private void handleFolderAutoCreate(FolderAutoCreateEvent event) {
