@@ -1233,6 +1233,7 @@ public class Folder extends PFComponent {
      */
     void scanChangedFiles(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo collection is null");
+        boolean revert = isRevertLocalChanges();
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = (FileInfo) it.next();
@@ -1243,6 +1244,9 @@ public class Folder extends PFComponent {
             } else {
                 fileInfos.set(i, localFileInfo);
                 i++;
+                if (revert) {
+                    checkRevertLocalChanges(localFileInfo);
+                }
             }
         }
         if (!fileInfos.isEmpty()) {
@@ -1965,6 +1969,61 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * #2311: Revert local changes.
+     * 
+     * @return
+     */
+    private boolean isRevertLocalChanges() {
+        boolean mySelfReadOnly = hasReadPermission(getController().getMySelf())
+            && !hasWritePermission(getController().getMySelf());
+        return mySelfReadOnly || syncProfile.equals(SyncProfile.BACKUP_TARGET);
+    }
+
+    private void checkRevertLocalChanges() {
+        if (!isRevertLocalChanges()) {
+            return;
+        }
+        if (isFine()) {
+            logFine("Checking revert on my files");
+        }
+        boolean reverted = false;
+        for (FileInfo fileInfo : dao.findAllFiles(null)) {
+            if (checkRevertLocalChanges(fileInfo)) {
+                reverted = true;
+            }
+        }
+        if (reverted) {
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(currentInfo);
+            syncRemoteDeletedFiles(false);
+        }
+    }
+
+    private boolean checkRevertLocalChanges(FileInfo fileInfo) {
+        FileInfo newestVersion = fileInfo.getNewestVersion(getController()
+            .getFolderRepository());
+        if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
+            // Ok in sync
+            return false;
+        }
+        getFolderWatcher().addIgnoreFile(fileInfo);
+        try {
+            logWarning("Reverting local change: " + fileInfo.toDetailString());
+            File file = fileInfo.getDiskFile(getController()
+                .getFolderRepository());
+            if (file.exists() && !file.delete()) {
+                logWarning("Unable to revert changes on file " + file
+                    + ". Cannot overwrite local change");
+                return false;
+            }
+            dao.delete(null, fileInfo);
+            return true;
+        } finally {
+            getFolderWatcher().removeIgnoreFile(fileInfo);
+        }
+    }
+
+    /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
      * 
@@ -2154,7 +2213,9 @@ public class Folder extends PFComponent {
         boolean forcedNow = scanForced;
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
-            scanLocalFiles();
+            if (scanLocalFiles()) {
+                checkRevertLocalChanges();
+            }
         }
         if (maintainFolderDBrequired()) {
             long removeBefore = System.currentTimeMillis()
@@ -3707,6 +3768,7 @@ public class Folder extends PFComponent {
         Map<Member, Integer> incomingCount = maxPerMember > 0
             ? new HashMap<Member, Integer>(getMembersCount())
             : null;
+        boolean revert = isRevertLocalChanges();
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompletelyConnected()) {
                 // disconnected or myself (=skip)
@@ -3744,6 +3806,17 @@ public class Folder extends PFComponent {
 
                     // Check if remote file is newer
                     FileInfo localFile = getFile(remoteFile);
+                    if (revert && localFile != null) {
+                        FileInfo newestFileInfo = remoteFile
+                            .getNewestVersion(getController()
+                                .getFolderRepository());
+                        if (localFile.isNewerThan(newestFileInfo)) {
+                            // Ignore/Rever local files
+                            logWarning("Local change detected, but has no write permission: "
+                                + localFile.toDetailString());
+                            localFile = null;
+                        }
+                    }
                     FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
                     boolean notLocal = localFile == null;
                     boolean newerThanLocal = localFile != null
