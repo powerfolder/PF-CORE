@@ -509,6 +509,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         ArrayList<String> domains = new ArrayList<String>(
             folder.getMembersCount());
         for (Member member : folder.getMembersAsCollection()) {
+            if (!folder.hasWritePermission(member)) {
+                continue;
+            }
             if (member.isCompletelyConnected()) {
                 domains.add(member.getId());
             } else if (member.isMySelf()) {
