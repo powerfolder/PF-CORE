@@ -62,7 +62,7 @@ public class ActionLabel extends PFComponent {
         super(controller);
         Reject.ifNull(action, "Action");
         this.action = action;
-        this.underline = PreferencesEntry.UNDERLINE_LINKS
+        underline = PreferencesEntry.UNDERLINE_LINKS
             .getValueBoolean(getController());
         uiComponent = new JLabel();
         text = (String) action.getValue(Action.NAME);

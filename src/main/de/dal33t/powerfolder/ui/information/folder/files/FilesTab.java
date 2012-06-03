@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -89,7 +90,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         directoryFilter.addListener(tablePanel);
         directoryFilter.setFlatMode(flatMode);
 
-        breadcrumbPanel = new FilesBreadcrumbPanel(getController());
+        breadcrumbPanel = new FilesBreadcrumbPanel(getController(), this);
 
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
@@ -134,7 +135,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
         filterTextField.reset();
-        breadcrumbPanel.setRoot(folderInfo.getName());
+        breadcrumbPanel.setRoot(folderInfo);
     }
 
     /**
@@ -227,7 +228,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(breadcrumbPanel.getUiComponent(), cc.xy(2, 2));
+        builder.add(padBreadcrumb(), cc.xy(2, 2));
         builder.add(createToolBar(), cc.xy(2, 4));
         builder.addSeparator(null, cc.xyw(1, 6, 3));
 
@@ -235,6 +236,15 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         builder.addSeparator(null, cc.xy(2, 10));
         builder.add(statsPanel.getUiComponent(), cc.xy(2, 11));
         uiComponent = builder.getPanel();
+    }
+
+    private Component padBreadcrumb() {
+        FormLayout layout = new FormLayout("pref, pref:grow",
+            "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(breadcrumbPanel.getUiComponent(), cc.xy(1, 1));
+        return builder.getPanel();
     }
 
     /**
@@ -305,7 +315,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         DirectoryInfo dir = FileInfoFactory.lookupDirectory(folder.getInfo(),
             relativeName);
         directoryFilter.setFolder(folder, dir);
-        breadcrumbPanel.setDirectory(folder, dir);
+        breadcrumbPanel.setDirectory(folder.getInfo(), dir);
     }
 
     public void fileArchive() {
