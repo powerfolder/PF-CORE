@@ -269,7 +269,13 @@ public class FileUtils {
 
         if (Desktop.isDesktopSupported()) {
             try {
-                Desktop.getDesktop().open(file);
+                if (OSUtil.isWindowsSystem()) {
+                    Runtime.getRuntime().exec(
+                        "rundll32 SHELL32.DLL,ShellExec_RunDLL \""
+                            + file.toString() + "\"");
+                } else {
+                    Desktop.getDesktop().open(file);
+                }
                 return true;
             } catch (IOException e) {
                 log.warning("Unable to open file " + file + ". " + e);
