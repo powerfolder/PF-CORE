@@ -482,6 +482,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             .getTranslation("files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation
             .getTranslation("files_table_panel.file_versions_tab.tip"));
+        
+        tabbedPane.setSelectedIndex(1);
 
         return builder.getPanel();
     }

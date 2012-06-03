@@ -41,9 +41,9 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
         SortedTableModel {
 
     private String[] columns = {"",
+            Translation.getTranslation("file_versions_table_model.date"),
             Translation.getTranslation("file_versions_table_model.version"),
-            Translation.getTranslation("file_versions_table_model.size"),
-            Translation.getTranslation("file_versions_table_model.date")};
+            Translation.getTranslation("file_versions_table_model.size")};
 
     private final List<FileInfoVersionTypeHolder> versionInfos;
     private int comparatorType = -1;

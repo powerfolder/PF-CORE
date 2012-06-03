@@ -143,16 +143,16 @@ public class FileVersionsTable extends JTable {
                             "file_versions_table_model.online") : Translation
                             .getTranslation("file_versions_table_model.local");
                     break;
-                case 1:  // version
+                case 1:  // date
+                    myValue = Format.formatDateShort(info.getFileInfo().getModifiedDate());
+                    setHorizontalAlignment(RIGHT);
+                    break;
+                case 2:  // version
                     myValue = String.valueOf(info.getFileInfo().getVersion());
                     setHorizontalAlignment(RIGHT);
                     break;
-                case 2:  // size
+                case 3:  // size
                     myValue = Format.formatBytesShort(info.getFileInfo().getSize());
-                    setHorizontalAlignment(RIGHT);
-                    break;
-                case 3:  // date
-                    myValue = Format.formatDateShort(info.getFileInfo().getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
             }
