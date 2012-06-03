@@ -320,7 +320,7 @@ Button
     <property key="Button.textShiftOffset" type="integer" value="1"/>
 
     <state>
-      <insets top="3" left="3" bottom="3" right="3"/>
+      <insets top="3" left="15" bottom="3" right="15"/>
       <property key="Button.margin" type="insets" value="1 20 1 20"/>
       <font name="Tahoma" size="11" style="NORMAL"/>
       <color type="FOREGROUND" value="#333333" /> 
