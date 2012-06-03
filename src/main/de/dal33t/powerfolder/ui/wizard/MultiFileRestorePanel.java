@@ -114,7 +114,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
