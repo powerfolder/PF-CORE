@@ -131,9 +131,7 @@ public enum Feature {
      */
     MANUAL_SYNC_CB(false),
 
-    SYSTRAY_ALL_FOLDERS(false),
-
-    SHOW_RECENTLY_CHANGED(false);
+    SYSTRAY_ALL_FOLDERS(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
