@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Table to display files of a folder.
  */
+@SuppressWarnings("serial")
 public class FilesTable extends JTable {
 
     private static final Color AVAILABLE = Color.GRAY;
