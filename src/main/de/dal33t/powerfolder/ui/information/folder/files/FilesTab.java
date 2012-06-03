@@ -21,19 +21,12 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JToggleButton;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -52,12 +45,11 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
-import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
+import de.dal33t.powerfolder.ui.information.folder.files.breadcrumb.FilesBreadcrumbPanel;
 import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
 import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * UI component for the folder files tab
@@ -65,7 +57,6 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     private JPanel uiComponent;
-    private JSplitPane splitPane;
     private FilesTablePanel tablePanel;
     private FileFilterTextField filterTextField;
     private JComboBox filterSelectionComboBox;
@@ -74,6 +65,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private ValueModel flatMode;
     private Folder folder;
     private JCheckBox flatViewCB;
+    private FilesBreadcrumbPanel breadcrumbPanel;
 
     /**
      * Constructor
@@ -93,28 +85,15 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             filterTextField.getSearchModeValueModel());
         directoryFilter.addListener(this);
 
-        FilesTreePanel treePanel = new FilesTreePanel(controller);
-        directoryFilter.addListener(treePanel);
-
         tablePanel = new FilesTablePanel(controller, this);
         directoryFilter.addListener(tablePanel);
         directoryFilter.setFlatMode(flatMode);
-        treePanel.addTreeSelectionListener(tablePanel);
+
+        breadcrumbPanel = new FilesBreadcrumbPanel(getController());
 
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
 
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-            treePanel.getUIComponent(), tablePanel.getUIComponent());
-        final int dividerLocation = getController().getPreferences().getInt(
-            "files.tab.location", 150);
-        splitPane.setDividerLocation(dividerLocation);
-        UIUtil.invokeLaterInEDT(new Runnable() {
-            public void run() {
-                splitPane.setDividerLocation(dividerLocation);
-            }
-        });
-        splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
         filterSelectionComboBox = new JComboBox();
         filterSelectionComboBox.setToolTipText(Translation
             .getTranslation("files_tab.combo.tool_tip"));
@@ -155,9 +134,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
         filterTextField.reset();
-        // directoryFilter.setFileFilterMode(filterSelectionComboBox
-        // .getSelectedIndex());
-        // directoryFilter.scheduleFiltering();
+        breadcrumbPanel.setRoot(folderInfo.getName());
     }
 
     /**
@@ -246,17 +223,17 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref");
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(createToolBar(), cc.xy(2, 2));
-        builder.addSeparator(null, cc.xyw(1, 4, 3));
+        builder.add(breadcrumbPanel.getUiComponent(), cc.xy(2, 2));
+        builder.add(createToolBar(), cc.xy(2, 4));
+        builder.addSeparator(null, cc.xyw(1, 6, 3));
 
-        splitPane.setOneTouchExpandable(false);
-        builder.add(splitPane, cc.xy(2, 6));
-        builder.addSeparator(null, cc.xy(2, 8));
-        builder.add(statsPanel.getUiComponent(), cc.xy(2, 9));
+        builder.add(tablePanel.getUIComponent(), cc.xy(2, 8));
+        builder.addSeparator(null, cc.xy(2, 10));
+        builder.add(statsPanel.getUiComponent(), cc.xy(2, 11));
         uiComponent = builder.getPanel();
     }
 
@@ -390,21 +367,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     // ////////////////
     // Inner Classes //
     // ////////////////
-
-    /**
-     * Detect changes to the split pane location.
-     */
-    private class MyPropertyChangeListner implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource().equals(splitPane)
-                && evt.getPropertyName().equals("dividerLocation"))
-            {
-                getController().getPreferences().putInt("files.tab.location",
-                    splitPane.getDividerLocation());
-            }
-        }
-    }
 
     /**
      * Fire filter event for changes to dropdown selection.

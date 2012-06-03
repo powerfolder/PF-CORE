@@ -40,9 +40,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -66,9 +63,9 @@ import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
-import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -76,7 +73,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
-    TreeSelectionListener, DirectoryFilterListener
+    DirectoryFilterListener
 {
 
     private JPanel uiComponent;
@@ -306,27 +303,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         emptyResetLink.setVisible(false);
     }
 
-    /**
-     * Handle tree selection changes, which determine the table entries to
-     * display.
-     * 
-     * @param e
-     */
-    public void valueChanged(TreeSelectionEvent e) {
-        if (e.isAddedPath()) {
-            Object[] path = e.getPath().getPath();
-            Object lastItem = path[path.length - 1];
-            if (lastItem instanceof DefaultMutableTreeNode) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) lastItem;
-                Object userObject = node.getUserObject();
-                if (userObject instanceof DirectoryTreeNodeUserObject) {
-                    DirectoryTreeNodeUserObject dtnuo = (DirectoryTreeNodeUserObject) userObject;
-                    parent.selectionChanged(dtnuo.getRelativeName());
-                }
-            }
-        }
-    }
-
     public void setFolder(Folder folder) {
         tableModel.setFolder(folder);
     }
@@ -370,7 +346,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
         int[] rows = table.getSelectedRows();
         final DiskItem[] diskItems = tableModel.getDiskItemsAtRows(rows);
-        de.dal33t.powerfolder.ui.util.SwingWorker worker = new ActivityVisualizationWorker(getUIController())
+        SwingWorker worker = new ActivityVisualizationWorker(getUIController())
         {
             public Object construct() {
                 FolderRepository repo = getController().getFolderRepository();
@@ -521,7 +497,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            de.dal33t.powerfolder.ui.util.SwingWorker worker = new ActivityVisualizationWorker(
+            SwingWorker worker = new ActivityVisualizationWorker(
                 getUIController())
             {
 
