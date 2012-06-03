@@ -2712,7 +2712,6 @@ public class TransferManager extends PFComponent {
     }
 
     public void checkActiveTranfersForExcludes() {
-
         for (DownloadManager dlManager : dlManagers.values()) {
             FileInfo fInfo = dlManager.getFileInfo();
             Folder folder = fInfo.getFolder(getController()
@@ -2725,7 +2724,18 @@ public class TransferManager extends PFComponent {
                 }
             }
         }
-
+        for (Upload upload : queuedUploads) {
+            FileInfo fInfo = upload.getFile();
+            Folder folder = fInfo.getFolder(getController()
+                .getFolderRepository());
+            if (folder != null) {
+                if (folder.getDiskItemFilter().isExcluded(fInfo)) {
+                    logInfo("Aborting upload, file is now excluded from sync: "
+                        + fInfo);
+                    breakTransfers(fInfo);
+                }
+            }
+        }
         for (Upload upload : activeUploads) {
             FileInfo fInfo = upload.getFile();
             Folder folder = fInfo.getFolder(getController()
