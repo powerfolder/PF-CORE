@@ -14,6 +14,8 @@ PowerFolder Version 6.0 - http://www.powerfolder.com
 = Improvements =
  * Drag and drop support for new directory to be shared. Simply drop a directory onto
    the new PowerFolder user interface to backup, sync or share it.
+ * Local file changes get reverted if user lacks sufficient permissions or is backup target.
+   Reverted files are moved into the file archive on the local computer.
  * Most important functions are now available directly from system tray menu.
  * Direct links to personal web portal added.
  * Reworked estimated sync time calculation.
