@@ -640,6 +640,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Do Local updates later.
         syncUpdater.schedule(new Runnable() {
             public void run() {
+                if (folder == null) {
+                    return;
+                }
                 if (folder.isSyncing()) {
                     primaryButton.setVisible(false);
                     upperSyncFolderButton.setVisible(true);
