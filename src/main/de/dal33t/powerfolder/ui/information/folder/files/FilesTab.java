@@ -305,6 +305,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         DirectoryInfo dir = FileInfoFactory.lookupDirectory(folder.getInfo(),
             relativeName);
         directoryFilter.setFolder(folder, dir);
+        breadcrumbPanel.setDirectory(folder, dir);
     }
 
     public void fileArchive() {

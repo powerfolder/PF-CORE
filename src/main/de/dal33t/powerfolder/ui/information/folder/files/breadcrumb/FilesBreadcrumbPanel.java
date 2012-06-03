@@ -2,10 +2,13 @@ package de.dal33t.powerfolder.ui.information.folder.files.breadcrumb;
 
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Reject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 public class FilesBreadcrumbPanel extends PFUIComponent {
 
@@ -40,5 +43,20 @@ public class FilesBreadcrumbPanel extends PFUIComponent {
     private void rebuild() {
         breadcrumbPanel.removeAll();
         breadcrumbPanel.add(new JLabel(root));
+    }
+
+    /**
+     * Set the directory path that is being displayed.
+     * 
+     * @param folder
+     * @param dir
+     */
+    public void setDirectory(Folder folder, DirectoryInfo dir) {
+        setRoot(folder.getName());
+        String[] filePathParts = dir.getRelativeName().split("/");
+        for (String filePathPart : filePathParts) {
+            breadcrumbPanel.add(new JLabel(">"));
+            breadcrumbPanel.add(new JLabel(filePathPart));
+        }
     }
 }
