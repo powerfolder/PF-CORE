@@ -19,10 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import de.dal33t.powerfolder.light.FileInfo;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Lightwight model of a filtered directory. The contains
@@ -61,9 +61,5 @@ public class FilteredDirectoryModel {
 
     public FilteredDirectory getFilteredDirectory() {
         return filteredDirectory;
-    }
-
-    public boolean hasFilesDeep() {
-        return filteredDirectory.hasFilesDeep();
     }
 }

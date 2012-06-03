@@ -403,19 +403,18 @@ public class DirectoryFilter extends FilterModel {
 
             if (fileInfo instanceof DirectoryInfo) {
                 DirectoryInfo di = (DirectoryInfo) fileInfo;
-                FilteredDirectory fd = new FilteredDirectory(di.getFilenameOnly(),
-                        di.getRelativeName(), di.isDeleted());
+                FilteredDirectory fd = new FilteredDirectory(
+                    di.getFilenameOnly(), di.getRelativeName(), di.isDeleted());
 
-                filterDirectory(dao, di, filteredDirectoryModel, fd, keywords, result);
+                filterDirectory(dao, di, filteredDirectoryModel, fd, keywords,
+                    result);
 
                 // Add local files to table list.
                 if (target) {
-                    if (fd.hasFilesDeep()) {
-                        if (fileFilterMode != FILE_FILTER_MODE_DELETED_PREVIOUS
-                            ^ di.isDeleted())
-                        {
-                            filteredDirectoryModel.getFileInfos().add(di);
-                        }
+                    if (fileFilterMode != FILE_FILTER_MODE_DELETED_PREVIOUS
+                        ^ di.isDeleted())
+                    {
+                        filteredDirectoryModel.getFileInfos().add(di);
                     }
                 }
 
@@ -502,9 +501,6 @@ public class DirectoryFilter extends FilterModel {
             if (addFiles) {
                 result.getFilteredCount().incrementAndGet();
                 filteredDirectoryModel.getFileInfos().add(fileInfo);
-            }
-            if (isNew) {
-                filteredDirectory.setNewFiles(true);
             }
         }
 

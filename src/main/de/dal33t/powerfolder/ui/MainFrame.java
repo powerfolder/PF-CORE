@@ -1608,21 +1608,21 @@ public class MainFrame extends PFUIComponent {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-
                 if (isMaximized()) {
-                    uiComponent.setExtendedState(Frame.NORMAL);
-                }
-
-                if (isShowingInfoInline()) {
-                    if (!isMaximized()) {
-                        uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
-                    }
+                    setFrameMode(FrameMode.NORMAL);
+                    // uiComponent.setExtendedState(Frame.NORMAL);
+                } else {
+                    setFrameMode(FrameMode.MAXIMIZED);
                 }
             }
         }
 
         /** Called when the mouse has been pressed. */
         public void mousePressed(MouseEvent e) {
+            if (isMaximized()) {
+                // No drag allowed if maximized
+                return;
+            }
             Point p = e.getPoint();
             startX = p.x;
             startY = p.y;
@@ -1631,11 +1631,19 @@ public class MainFrame extends PFUIComponent {
 
         /** Called when the mouse has been released. */
         public void mouseReleased(MouseEvent e) {
+            if (isMaximized()) {
+                // No drag allowed if maximized
+                return;
+            }
             inDrag = false;
         }
 
         // And two methods from MouseMotionListener:
         public void mouseDragged(MouseEvent e) {
+            if (isMaximized()) {
+                // No drag allowed if maximized
+                return;
+            }
             Point p = e.getPoint();
             if (inDrag) {
                 int dx = p.x - startX;
@@ -1649,6 +1657,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * Handle drag-n-drops of Folders direct into the application.
      */
+    @SuppressWarnings("serial")
     private class MyTransferHandler extends TransferHandler {
         public boolean canImport(TransferSupport support) {
             return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);

@@ -9,7 +9,6 @@ public class FilteredDirectory implements Comparable<FilteredDirectory> {
     private final String relativeName;
     private final Collection<FilteredDirectory> list = new TreeSet<FilteredDirectory>();
     private boolean files;
-    private boolean newFiles;
     private boolean deleted;
 
     public FilteredDirectory(String displayName, String relativeName,
@@ -30,34 +29,6 @@ public class FilteredDirectory implements Comparable<FilteredDirectory> {
 
     public boolean isDeleted() {
         return deleted;
-    }
-
-    public void setNewFiles(boolean newFiles) {
-        this.newFiles = newFiles;
-    }
-
-    public boolean hasFilesDeep() {
-        if (files) {
-            return true;
-        }
-        for (FilteredDirectory directory : list) {
-            if (directory.hasFilesDeep()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean hasNewFilesDeep() {
-        if (newFiles) {
-            return true;
-        }
-        for (FilteredDirectory directory : list) {
-            if (directory.hasNewFilesDeep()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public String getDisplayName() {
