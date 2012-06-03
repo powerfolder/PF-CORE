@@ -787,7 +787,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 logFine("Returned " + res);
                 if (!refreshFor.equals(folder)) {
                     // Folder has changed. discard result.
-                    logWarning("Folder has changed. discard result.");
+                    logFine("Folder has changed. discard result.");
                     return;
                 }
 
