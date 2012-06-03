@@ -372,6 +372,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void resetFilters() {
         filterTextField.reset();
         flatViewCB.setSelected(false);
+        flatMode.setValue(flatViewCB.isSelected());
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
     }
 
