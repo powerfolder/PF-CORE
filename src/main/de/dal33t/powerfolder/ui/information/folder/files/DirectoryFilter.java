@@ -451,23 +451,19 @@ public class DirectoryFilter extends FilterModel {
 
     private boolean isSynchronized(FileInfo fileInfo) {
         boolean isSynchronized = true;
-        if (!fileInfo.isDeleted()) {
-            Folder localFolder = fileInfo.getFolder(getController()
-                .getFolderRepository());
-            if (localFolder != null) {
-                for (Member member : localFolder.getConnectedMembers()) {
-                    if (member.hasFile(fileInfo)) {
-                        FileInfo memberFileInfo = member.getFile(fileInfo);
-                        if (memberFileInfo.getVersion() != fileInfo
-                            .getVersion())
-                        {
-                            isSynchronized = false;
-                            break;
-                        }
-                    } else {
+        Folder localFolder = fileInfo.getFolder(getController()
+            .getFolderRepository());
+        if (localFolder != null) {
+            for (Member member : localFolder.getConnectedMembers()) {
+                if (member.hasFile(fileInfo)) {
+                    FileInfo memberFileInfo = member.getFile(fileInfo);
+                    if (memberFileInfo.getVersion() != fileInfo.getVersion()) {
                         isSynchronized = false;
                         break;
                     }
+                } else {
+                    isSynchronized = false;
+                    break;
                 }
             }
         }
