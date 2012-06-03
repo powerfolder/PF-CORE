@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /**
@@ -233,9 +234,20 @@ public class DirectoryFilter extends FilterModel {
             return;
         }
 
-        for (DirectoryFilterListener listener : listeners) {
-            listener.adviseOfFilteringBegin();
+        Runnable runner = new Runnable() {
+            public void run() {
+                for (DirectoryFilterListener listener : listeners) {
+                    listener.adviseOfFilteringBegin();
+                }  
+            }
+        };
+        try {
+            UIUtil.invokeAndWaitInEDT(runner);
+        } catch (InterruptedException e) {
+            logWarning(e.toString());
+            return;
         }
+       
 
         Date start = new Date();
         if (isFiner()) {
@@ -249,8 +261,8 @@ public class DirectoryFilter extends FilterModel {
             keywords = textFilter.split("\\s+");
         }
 
-        DirectoryFilterResult result = new DirectoryFilterResult();
-        FilteredDirectoryModel filteredDirectoryModel;
+        final DirectoryFilterResult result = new DirectoryFilterResult();
+        final FilteredDirectoryModel filteredDirectoryModel;
         FilteredDirectory filteredDirectory;
 
         synchronized (refilter) {
@@ -272,18 +284,29 @@ public class DirectoryFilter extends FilterModel {
             }
         }
 
-        boolean changed = !folder.getName().equals(lastFolderName.getValue());
+        final boolean changed = !folder.getName().equals(lastFolderName.getValue());
         lastFolderName.setValue(folder.getName());
 
-        boolean defaultFilder = fileFilterMode == FILE_FILTER_MODE_LOCAL_AND_INCOMING
+        final boolean defaultFilder = fileFilterMode == FILE_FILTER_MODE_LOCAL_AND_INCOMING
             && !isFlatMode() && StringUtils.isBlank(textFilter);
 
-        FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
-            .getDeletedCount().get(), result.getIncomingCount().get(), result
-            .getLocalCount().get(), filteredDirectoryModel, changed,
-            fileFilterMode, defaultFilder);
-        for (DirectoryFilterListener listener : listeners) {
-            listener.adviseOfChange(event);
+        runner = new Runnable() {
+            public void run() {
+                FilteredDirectoryEvent event = new FilteredDirectoryEvent(
+                    result.getDeletedCount().get(), result.getIncomingCount()
+                        .get(), result.getLocalCount().get(),
+                    filteredDirectoryModel, changed, fileFilterMode,
+                    defaultFilder);
+                for (DirectoryFilterListener listener : listeners) {
+                    listener.adviseOfChange(event);
+                }
+            }
+        };
+        try {
+            UIUtil.invokeAndWaitInEDT(runner);
+        } catch (InterruptedException e) {
+            logWarning(e.toString());
+            return;
         }
 
         Date end = new Date();
@@ -457,13 +480,10 @@ public class DirectoryFilter extends FilterModel {
             return true;
         }
         for (Member member : localFolder.getConnectedMembers()) {
-            if (member.hasFile(fileInfo)) {
-                FileInfo memberFileInfo = member.getFile(fileInfo);
-                if (memberFileInfo.getVersion() != fileInfo.getVersion()) {
-                    isSynchronized = false;
-                    break;
-                }
-            } else {
+            FileInfo memberFileInfo = member.getFile(fileInfo);
+            if (memberFileInfo == null
+                || memberFileInfo.getVersion() != fileInfo.getVersion())
+            {
                 isSynchronized = false;
                 break;
             }
