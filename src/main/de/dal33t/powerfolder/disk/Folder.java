@@ -2011,10 +2011,14 @@ public class Folder extends PFComponent {
             logWarning("Reverting local change: " + fileInfo.toDetailString());
             File file = fileInfo.getDiskFile(getController()
                 .getFolderRepository());
-            if (file.exists() && !file.delete()) {
-                logWarning("Unable to revert changes on file " + file
-                    + ". Cannot overwrite local change");
-                return false;
+            if (file.exists()) {
+                try {
+                    archiver.archive(fileInfo, file, false);
+                } catch (IOException e) {
+                    logWarning("Unable to revert changes on file " + file
+                        + ". Cannot overwrite local change. " + e);
+                    return false;
+                }
             }
             dao.delete(null, fileInfo);
             return true;
