@@ -24,8 +24,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FO
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -41,8 +39,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -151,6 +152,8 @@ public class FolderSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(
                 getController());
         }
+        syncProfileSelectorPanel.getUIComponent().setVisible(
+            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
     }
 
     protected String getTitle() {

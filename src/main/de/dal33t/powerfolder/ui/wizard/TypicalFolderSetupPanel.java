@@ -128,6 +128,8 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
         localFolderField.setEditable(false);
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
+        syncProfileSelectorPanel.getUIComponent().setVisible(
+            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
     }
 
     /**

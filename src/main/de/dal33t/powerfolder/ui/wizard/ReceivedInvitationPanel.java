@@ -240,6 +240,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
+        syncProfileSelectorPanel.getUIComponent().setVisible(
+            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         // Preview
         previewOnlyCB = SimpleComponentFactory.createCheckBox(Translation

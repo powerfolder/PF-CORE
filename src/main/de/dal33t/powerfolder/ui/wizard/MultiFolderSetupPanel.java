@@ -19,27 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FolderInfo;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
-import jwf.WizardPanel;
 
-import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -48,6 +29,34 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class to do folder creations for optional specified FolderCreateItems.
@@ -157,6 +166,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel
             .addModelValueChangeListener(new MyPropertyValueChangeListener());
+        syncProfileSelectorPanel.getUIComponent().setVisible(
+            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         KeyListener myKeyListener = new MyKeyListener();
 

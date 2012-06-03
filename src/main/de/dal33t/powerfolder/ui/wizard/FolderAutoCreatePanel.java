@@ -169,12 +169,13 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         folderNameLabel.setText(folderInfo.getName());
 
         // Sync profile
-        syncProfileSelectorPanel =
-                new SyncProfileSelectorPanel(getController());
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         Folder folder = getController().getFolderRepository().getFolder(
-                folderInfo);
+            folderInfo);
         SyncProfile syncProfile = folder.getSyncProfile();
         syncProfileSelectorPanel.setSyncProfile(syncProfile, false);
+        syncProfileSelectorPanel.getUIComponent().setVisible(
+            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         // Cloud space
         useCloudCB = new JCheckBox(

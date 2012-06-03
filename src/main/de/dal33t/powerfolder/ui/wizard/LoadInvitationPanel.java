@@ -19,10 +19,13 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.util.FileSelectorFactory;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_PERMISSION_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,9 +50,13 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.util.FileSelectorFactory;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -260,6 +267,8 @@ public class LoadInvitationPanel extends PFWizardPanel {
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
+        syncProfileSelectorPanel.getUIComponent().setVisible(
+            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         // Preview
         previewOnlyCB = SimpleComponentFactory.createCheckBox(Translation
