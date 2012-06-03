@@ -544,7 +544,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             .addActionListener(new PrimaryButtonActionListener());
         upperSyncFolderButton.setVisible(false);
 
-        Icon pIcon = Icons.getIconById(Icons.LOCAL_FOLDER);
+        Icon pIcon = Icons.getIconById(Icons.SYNC_COMPLETE);
         Icon sIcon = Icons.getIconById(Icons.SYNC_ANIMATION[0]);
         if (pIcon.getIconHeight() > sIcon.getIconHeight()) {
             // HACK(tm) when mixing 16x16 sync icon with 24x24 icons
