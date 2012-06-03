@@ -19,15 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -37,16 +41,19 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.DiskItem;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.DiskItem;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.breadcrumb.FilesBreadcrumbPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
 import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -228,8 +235,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(padBreadcrumb(), cc.xy(2, 2));
-        builder.add(createToolBar(), cc.xy(2, 4));
+        builder.add(createToolBar(), cc.xy(2, 2));
+        builder.add(padBreadcrumb(), cc.xy(2, 4));
         builder.addSeparator(null, cc.xyw(1, 6, 3));
 
         builder.add(tablePanel.getUIComponent(), cc.xy(2, 8));
@@ -345,7 +352,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 FileInfoCriteria criteria = new FileInfoCriteria();
                 criteria.addWriteMembersAndMyself(folder);
                 criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
-                criteria.setPath(folder.getBaseDirectoryInfo());
+                criteria.setPath(directoryFilter.getCurrentDirectoryInfo());
                 criteria.setRecursive(true);
                 Collection<FileInfo> infoCollection = folder.getDAO()
                     .findFiles(criteria);
@@ -392,6 +399,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
     }
 
+    @SuppressWarnings("serial")
     private class DetailsAction extends BaseAction {
 
         DetailsAction(Controller controller) {
@@ -403,6 +411,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyFileArchiveAction extends BaseAction {
 
         private MyFileArchiveAction(Controller controller) {

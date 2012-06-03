@@ -40,7 +40,7 @@ public class FilteredDirectoryModel {
     public FilteredDirectoryModel(String rootFolderName, String directoryRelativeName) {
         this.rootFolderName = rootFolderName;
         this.directoryRelativeName = directoryRelativeName;
-        filteredDirectory = new FilteredDirectory(rootFolderName, "", false);
+        filteredDirectory = new FilteredDirectory(rootFolderName, "");
     }
 
     public String getRootFolderName() {
