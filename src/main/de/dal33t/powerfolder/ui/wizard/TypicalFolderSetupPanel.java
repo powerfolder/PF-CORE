@@ -102,17 +102,23 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
             cc.xy(1, 1));
         builder.add(folderTextField, cc.xy(3, 1));
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.multi_online_storage_setup.local_folder_location")),
+        builder
+            .add(
+                new JLabel(
+                    Translation
+                        .getTranslation("wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
 
-        builder.add(
-            new JLabel(Translation.getTranslation("general.transfer_mode")),
-            cc.xy(1, 5));
-        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
-        p.setOpaque(false);
-        builder.add(p, cc.xyw(3, 5, 4));
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder
+                .add(
+                    new JLabel(Translation
+                        .getTranslation("general.transfer_mode")), cc.xy(1, 5));
+            JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
+            p.setOpaque(false);
+            builder.add(p, cc.xyw(3, 5, 4));
+        }
 
         return builder.getPanel();
     }
@@ -128,8 +134,6 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
         localFolderField.setEditable(false);
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
-        syncProfileSelectorPanel.getUIComponent().setVisible(
-            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
     }
 
     /**

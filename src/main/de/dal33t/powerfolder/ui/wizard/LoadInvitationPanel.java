@@ -195,17 +195,19 @@ public class LoadInvitationPanel extends PFWizardPanel {
         builder.add(estimatedSize, cc.xy(3, 11));
 
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(1, 13));
-        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
-        p.setOpaque(false);
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder.add(syncProfileHintLabel, cc.xy(1, 13));
+            JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
+            p.setOpaque(false);
 
-        FormLayout layout2 = new FormLayout("pref, pref:grow", "pref");
-        PanelBuilder builder2 = new PanelBuilder(layout2);
-        builder2.add(p, cc.xy(1, 1));
+            FormLayout layout2 = new FormLayout("pref, pref:grow", "pref");
+            PanelBuilder builder2 = new PanelBuilder(layout2);
+            builder2.add(p, cc.xy(1, 1));
 
-        JPanel panel = builder2.getPanel();
-        builder.add(panel, cc.xyw(3, 13, 2));
-        panel.setOpaque(false);
+            JPanel panel = builder2.getPanel();
+            builder.add(panel, cc.xyw(3, 13, 2));
+            panel.setOpaque(false);
+        }
 
         // Preview
         builder.add(previewOnlyCB, cc.xy(3, 15));
@@ -267,8 +269,6 @@ public class LoadInvitationPanel extends PFWizardPanel {
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
-        syncProfileSelectorPanel.getUIComponent().setVisible(
-            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         // Preview
         previewOnlyCB = SimpleComponentFactory.createCheckBox(Translation

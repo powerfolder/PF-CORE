@@ -121,11 +121,15 @@ public class FolderSetupPanel extends PFWizardPanel {
         builder.add(folderNameTextField, cc.xy(3, 1));
 
         // Sync
-        builder.add(new JLabel(Translation
-            .getTranslation("general.transfer_mode")), cc.xy(1, 3));
-        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
-        p.setOpaque(false);
-        builder.add(p, cc.xyw(3, 3, 2));
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder
+                .add(
+                    new JLabel(Translation
+                        .getTranslation("general.transfer_mode")), cc.xy(1, 3));
+            JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
+            p.setOpaque(false);
+            builder.add(p, cc.xyw(3, 3, 2));
+        }
         return builder.getPanel();
     }
 
@@ -152,8 +156,6 @@ public class FolderSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(
                 getController());
         }
-        syncProfileSelectorPanel.getUIComponent().setVisible(
-            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
     }
 
     protected String getTitle() {

@@ -188,8 +188,6 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel
             .addModelValueChangeListener(new MyPropertyValueChangeListener());
-        syncProfileSelectorPanel.getUIComponent().setVisible(
-            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         folderInfoComboModel = new DefaultComboBoxModel();
         folderInfoCombo = new JComboBox(folderInfoComboModel);

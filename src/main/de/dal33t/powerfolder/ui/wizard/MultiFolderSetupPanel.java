@@ -141,15 +141,19 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
             .xy(1, 1));
         builder.add(localBaseCombo, cc.xy(3, 1));
 
-        builder.addLabel(Translation.getTranslation("general.folder_name"), cc
-            .xy(1, 3));
+        builder.addLabel(Translation.getTranslation("general.folder_name"),
+            cc.xy(1, 3));
         builder.add(nameField, cc.xy(3, 3));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("general.transfer_mode")), cc.xy(1, 5));
-        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
-        p.setOpaque(false);
-        builder.add(p, cc.xyw(3, 5, 2));
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder
+                .add(
+                    new JLabel(Translation
+                        .getTranslation("general.transfer_mode")), cc.xy(1, 5));
+            JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
+            p.setOpaque(false);
+            builder.add(p, cc.xyw(3, 5, 2));
+        }
 
         builder.add(new JLabel(Translation
             .getTranslation("general.local_archive_mode")), cc.xy(1, 7));
@@ -166,8 +170,6 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel
             .addModelValueChangeListener(new MyPropertyValueChangeListener());
-        syncProfileSelectorPanel.getUIComponent().setVisible(
-            PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         KeyListener myKeyListener = new MyKeyListener();
 
