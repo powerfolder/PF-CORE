@@ -213,7 +213,7 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                 }
                 successCount++;
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Exception: " + e);
+                log.log(Level.WARNING, "Exception: " + e);
                 log.log(Level.FINE, e.getMessage(), e);
             } finally {
                 totalCount++;
