@@ -24,15 +24,19 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -73,7 +77,7 @@ public class FileVersionsTable extends JTable {
 
         // Otherwise the table header is not visible:
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
-        Icon icon = Icons.getIconById(Icons.ONLINE_FOLDER);
+        Icon icon = Icons.getIconById(Icons.FOLDER);
         setRowHeight(icon.getIconHeight() + 2);
 
         TableColumn column = getColumn(getColumnName(0));
@@ -133,8 +137,8 @@ public class FileVersionsTable extends JTable {
             String toolTip = null;
             switch (column) {
                 case 0:  // version type
-                    setIcon(Icons.getIconById(info.isOnline() ?
-                            Icons.ONLINE_FOLDER : Icons.LOCAL_FOLDER));
+                    setIcon(null);
+                    myValue = "";
                     toolTip = info.isOnline() ? Translation.getTranslation(
                             "file_versions_table_model.online") : Translation
                             .getTranslation("file_versions_table_model.local");
