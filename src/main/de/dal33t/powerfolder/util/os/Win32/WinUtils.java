@@ -22,7 +22,9 @@ package de.dal33t.powerfolder.util.os.Win32;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
@@ -41,6 +43,12 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class WinUtils extends Loggable {
     private static final Logger LOG = Logger
         .getLogger(WinUtils.class.getName());
+    
+    private static final String REGQUERY_UTIL = "reg query ";
+    private static final String REGSTR_TOKEN = "REG_SZ";
+    private static final String DESKTOP_FOLDER_CMD = REGQUERY_UTIL 
+       + "\"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\" 
+       + "Explorer\\Shell Folders\" /v DESKTOP";
 
     /**
      * The file system directory that contains the programs that appear in the
@@ -363,6 +371,52 @@ public class WinUtils extends Loggable {
 
     public static void killProcess(String serviceName) throws Exception {
         Runtime.getRuntime().exec(KILL + serviceName);
+    }
+    
+    /**
+     * @return
+     */
+    private static String getCurrentUserDesktopPath() {
+        try {
+            Process process = Runtime.getRuntime().exec(DESKTOP_FOLDER_CMD);
+            StreamReader reader = new StreamReader(process.getInputStream());
+
+            reader.start();
+            process.waitFor();
+            reader.join();
+            String result = reader.getResult();
+            int p = result.indexOf(REGSTR_TOKEN);
+
+            if (p == -1)
+                return null;
+            return result.substring(p + REGSTR_TOKEN.length()).trim();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static class StreamReader extends Thread {
+        private InputStream is;
+        private StringWriter sw;
+
+        StreamReader(InputStream is) {
+            this.is = is;
+            sw = new StringWriter();
+        }
+
+        public void run() {
+            try {
+                int c;
+                while ((c = is.read()) != -1)
+                    sw.write(c);
+            } catch (IOException e) {
+                ;
+            }
+        }
+
+        String getResult() {
+            return sw.toString();
+        }
     }
 
 }
