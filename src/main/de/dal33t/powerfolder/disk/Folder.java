@@ -274,6 +274,7 @@ public class Folder extends PFComponent {
      * {@link ConfigurationEntry#FOLDER_SYNC_WARN_DAYS}.
      */
     private int syncWarnSeconds;
+    private Persister persister;
 
     /**
      * Constructor for folder.
@@ -433,10 +434,7 @@ public class Folder extends PFComponent {
             writeFilelist(getController().getMySelf());
         }
 
-        // Register persister
-        // FIXME: There is no way to remove the persister on shutdown.
-        // Only on controller shutdown
-        Persister persister = new Persister();
+        persister = new Persister();
         getController().scheduleAndRepeat(
             persister,
             1000L,
@@ -679,6 +677,7 @@ public class Folder extends PFComponent {
      */
     public void addPattern(String pattern) {
         diskItemFilter.addPattern(pattern);
+        triggerPersist();
     }
 
     /**
@@ -688,6 +687,7 @@ public class Folder extends PFComponent {
      */
     public void removePattern(String pattern) {
         diskItemFilter.removePattern(pattern);
+        triggerPersist();
     }
 
     /**
@@ -3436,7 +3436,13 @@ public class Folder extends PFComponent {
      */
     private void setDBDirty() {
         dirty = true;
-        //logWarning("DB dirty", new RuntimeException());
+    }
+
+    /**
+     * Triggers the persisting.
+     */
+    private void triggerPersist() {
+        getController().schedule(persister, 1000L);
     }
 
     /**
@@ -4664,7 +4670,7 @@ public class Folder extends PFComponent {
      */
     private class Persister extends TimerTask {
         @Override
-        public void run() {
+        public synchronized void run() {
             if (shutdown) {
                 return;
             }
