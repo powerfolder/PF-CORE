@@ -149,7 +149,7 @@ public class DirectoryFilter extends FilterModel {
             }
         }
         if (changedDir || changedFolder) {
-            //refilter.set(true);
+            refilter.set(true);
             queueFilterEvent();
         }
     }
