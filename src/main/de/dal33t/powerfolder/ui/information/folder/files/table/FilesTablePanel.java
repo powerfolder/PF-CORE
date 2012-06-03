@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -327,7 +328,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     .getFolderRepository());
                 if (file != null && file.exists()) {
                     // Open file ...
+                    table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     FileUtils.openFile(file);
+                    table.setCursor(Cursor.getDefaultCursor());
                     // ... and clear completed download status.
                     TransferManager transferManager = getController()
                         .getTransferManager();
