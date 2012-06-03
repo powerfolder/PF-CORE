@@ -147,8 +147,6 @@ public class Icons {
     public static final String FOLDER = "folder.icon";
     public static final String FILES = "files.icon";
 
-    public static final String LOCAL_FOLDER = "local_folder.icon";
-    public static final String LOCAL_AND_ONLINE_FOLDER = "local_and_online_folder.icon";
     public static final String ONLINE_FOLDER = "online_folder.icon";
     public static final String ONLINE_FOLDER_SMALL = "online_folder_small.icon";
     public static final String PREVIEW_FOLDER = "preview_folder.icon";
