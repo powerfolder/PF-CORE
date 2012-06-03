@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -501,25 +500,26 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                     + folderInfo);
             }
             return null;
-            // throw new IllegalStateException(
-            // "Unable to determine newest version. Folder not joined "
-            // + folderInfo);
         }
-        // TODO: Many temporary objects!!
-        ArrayList<String> domains = new ArrayList<String>(
-            folder.getMembersCount());
+        FileInfo newestVersion = null;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!folder.hasWritePermission(member)) {
+            FileInfo remoteFile = member.getFile(this);
+            if (remoteFile == null) {
                 continue;
             }
-            if (member.isCompletelyConnected()) {
-                domains.add(member.getId());
-            } else if (member.isMySelf()) {
-                domains.add(null);
+            if (!remoteFile.isValid()) {
+                continue;
+            }
+            // Check if remote file in newer
+            if (newestVersion == null || remoteFile.isNewerThan(newestVersion))
+            {
+                if (!folder.hasWritePermission(member)) {
+                    continue;
+                }
+                newestVersion = remoteFile;
             }
         }
-        return folder.getDAO().findNewestVersion(this,
-            domains.toArray(new String[domains.size()]));
+        return newestVersion;
     }
 
     /**
@@ -549,6 +549,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 if (newestVersion == null
                     || remoteFile.isNewerThan(newestVersion))
                 {
+                    if (!folder.hasWritePermission(member)) {
+                        continue;
+                    }
                     // log.finer("Newer version found at " + member);
                     newestVersion = remoteFile;
                 }
