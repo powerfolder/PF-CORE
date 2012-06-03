@@ -1056,7 +1056,9 @@ public class MainFrame extends PFUIComponent {
 
     private void doCloseOperation() {
         if (OSUtil.isSystraySupported()) {
-            handleExitFirstRequest();
+            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+                handleExitFirstRequest();
+            }
             boolean quitOnX = PreferencesEntry.QUIT_ON_X
                 .getValueBoolean(getController());
             if (quitOnX) {
@@ -1295,10 +1297,16 @@ public class MainFrame extends PFUIComponent {
         this.frameMode = frameMode;
         switch (frameMode) {
             case MAXIMIZED :
+                // http://www.javasoft.de/synthetica/faq/#general-7
+                if (uiComponent.getRootPane().getUI() instanceof SyntheticaRootPaneUI)
+                    ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
+                        .setMaximizedBounds(uiComponent);
                 uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
-                plusButton.setToolTipText(Translation.getTranslation("main_frame.restore.tips"));
-                plusButton.setIcons(Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
-                        Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
+                plusButton.setToolTipText(Translation
+                    .getTranslation("main_frame.restore.tips"));
+                plusButton.setIcons(
+                    Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
+                    Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
                         Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
                 minusButton.setVisible(true);
                 minusButton.setToolTipText(
