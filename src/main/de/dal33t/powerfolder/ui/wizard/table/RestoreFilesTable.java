@@ -24,21 +24,23 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.util.Format;
 
 /**
  * Table to display files of a folder.
  */
+@SuppressWarnings("serial")
 public class RestoreFilesTable extends JTable {
 
     /**
@@ -120,20 +122,20 @@ public class RestoreFilesTable extends JTable {
             setIcon(null);
             String myValue = "";
             switch (column) {
-                case 0:  // file name
+                case RestoreFilesTableModel.COL_FILE_NAME:  // file name
                     myValue = fileInfo.getFilenameOnly();
                     setHorizontalAlignment(LEFT);
                     break;
-                case 1:  // version
+                case RestoreFilesTableModel.COL_MODIFIED_DATE: // modified date
+                    myValue = Format.formatDateShort(fileInfo.getModifiedDate());
+                    setHorizontalAlignment(RIGHT);
+                    break;
+                case RestoreFilesTableModel.COL_VERSION:  // version
                     myValue = Format.formatLong(fileInfo.getVersion());
                     setHorizontalAlignment(RIGHT);
                     break;
-                case 2:  // size
+                case RestoreFilesTableModel.COL_SIZE:  // size
                     myValue = Format.formatBytesShort(fileInfo.getSize());
-                    setHorizontalAlignment(RIGHT);
-                    break;
-                case 3: // modified date
-                    myValue = Format.formatDateShort(fileInfo.getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
             }

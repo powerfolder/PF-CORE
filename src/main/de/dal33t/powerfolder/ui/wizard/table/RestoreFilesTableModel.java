@@ -44,14 +44,14 @@ public class RestoreFilesTableModel extends PFComponent implements TableModel,
 
     private String[] columns = {
             Translation.getTranslation("restore_files_table_model.file_name"),
-            Translation.getTranslation("restore_files_table_model.version"),
-            Translation.getTranslation("restore_files_table_model.size"),
-            Translation.getTranslation("restore_files_table_model.modified_date")};
+        Translation.getTranslation("restore_files_table_model.modified_date"),
+        Translation.getTranslation("restore_files_table_model.version"),
+        Translation.getTranslation("restore_files_table_model.size")};
 
-    private static final int COL_FILE_NAME = 0;
-    private static final int COL_VERION = 1;
-    private static final int COL_SIZE = 2;
-    private static final int COL_MODIFIED_DATE = 3;
+    static final int COL_FILE_NAME = 0;
+    static final int COL_MODIFIED_DATE = 1;
+    static final int COL_VERSION = 2;
+    static final int COL_SIZE = 3;
 
     private final List<FileInfo> versions;
     private int fileInfoComparatorType = -1;
@@ -158,7 +158,7 @@ public class RestoreFilesTableModel extends PFComponent implements TableModel,
         switch (columnIndex) {
             case COL_FILE_NAME:
                 return sortMe(FileInfoComparator.BY_NAME);
-            case COL_VERION:
+            case COL_VERSION:
                 return sortMe(FileInfoComparator.BY_VERSION);
             case COL_SIZE:
                 return sortMe(FileInfoComparator.BY_SIZE);
