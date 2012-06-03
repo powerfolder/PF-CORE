@@ -1192,6 +1192,10 @@ public class Folder extends PFComponent {
         Reject.ifNull(fileInfo, "FileInfo is null");
         FileInfo localFileInfo = scanChangedFile0(fileInfo);
         if (localFileInfo != null) {
+            FileInfo existinfFInfo = findSameFile(localFileInfo);
+            if (existinfFInfo != null) {
+                localFileInfo = existinfFInfo;
+            }
             fileChanged(localFileInfo);
         }
         return localFileInfo;
@@ -1233,7 +1237,7 @@ public class Folder extends PFComponent {
      */
     void scanChangedFiles(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo collection is null");
-        boolean revert = isRevertLocalChanges();
+        boolean checkRevert = isRevertLocalChanges();
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = (FileInfo) it.next();
@@ -1242,10 +1246,17 @@ public class Folder extends PFComponent {
                 // No change
                 it.remove();
             } else {
-                fileInfos.set(i, localFileInfo);
-                i++;
-                if (revert) {
-                    checkRevertLocalChanges(localFileInfo);
+                if (checkRevert && checkRevertLocalChanges(localFileInfo)) {
+                    // No change
+                    it.remove();
+                } else {
+                    // Allowed to change files
+                    FileInfo existinfFInfo = findSameFile(localFileInfo);
+                    if (existinfFInfo != null) {
+                        localFileInfo = existinfFInfo;
+                    }
+                    fileInfos.set(i, localFileInfo);
+                    i++;
                 }
             }
         }
@@ -3291,7 +3302,7 @@ public class Folder extends PFComponent {
      * 
      * @param remoteFileInfos
      */
-    private void findSameFiles(Member member,
+    private boolean findSameFiles(Member member,
         Collection<FileInfo> remoteFileInfos)
     {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
@@ -3336,7 +3347,7 @@ public class Folder extends PFComponent {
                                 + " / " + member.getAccountInfo()
                                 + " no write permission");
                         }
-                        return;
+                        return false;
                     }
 
                     if (isFine()) {
@@ -3378,7 +3389,7 @@ public class Folder extends PFComponent {
                                 + " / " + member.getAccountInfo()
                                 + " no write permission");
                         }
-                        return;
+                        return false;
                     }
 
                     // Skip this fileinfo. Compare by name is performed
@@ -3404,7 +3415,9 @@ public class Folder extends PFComponent {
         if (!found.isEmpty()) {
             store(getController().getMySelf(), found);
             filesChanged(found);
+            return true;
         }
+        return false;
     }
 
     /**
@@ -3421,6 +3434,23 @@ public class Folder extends PFComponent {
                 findSameFiles(member, lastFileList);
             }
         }
+    }
+
+    /**
+     * @param fInfo
+     * @return the remotely found better fileinfo. null if not found.
+     */
+    private FileInfo findSameFile(FileInfo fInfo) {
+        for (Member member : getConnectedMembers()) {
+            FileInfo remoteFInfo = member.getFile(fInfo);
+            if (remoteFInfo != null) {
+                if (findSameFiles(member, Collections.singleton(remoteFInfo))) {
+                    return fInfo.getLocalFileInfo(getController()
+                        .getFolderRepository());
+                }
+            }
+        }
+        return null;
     }
 
     /**
