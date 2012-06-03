@@ -1290,6 +1290,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                     .getValueInt(controller));
             Folder folder = createFolder(fi, fs);
+            folder.addDefaultExcludes();
 
             if (client.isBackupByDefault()) {
                 if (client.isConnected() && client.isLoggedIn()) {
@@ -1494,7 +1495,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Spawn/Create a new one.
                 foInfo = new FolderInfo(folderName,
                     '[' + IdGenerator.makeId() + ']');
-                createFolder(foInfo, settings);
+                Folder folder = createFolder(foInfo, settings);
+                folder.addDefaultExcludes();
                 logWarning("Folder NOT found on account " + a.getUsername()
                     + ". Created new: " + foInfo);
             }
