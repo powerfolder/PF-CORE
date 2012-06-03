@@ -19,28 +19,31 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.FolderService;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FileArchiver;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.ui.util.SwingWorker;
-
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
 
 import jwf.WizardPanel;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.PanelBuilder;
 
-import javax.swing.*;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Dialog for restoring file versions.
@@ -210,7 +213,8 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                 }
                 successCount++;
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Exception", e);
+                log.log(Level.SEVERE, "Exception: " + e);
+                log.log(Level.FINE, e.getMessage(), e);
             } finally {
                 totalCount++;
             }
