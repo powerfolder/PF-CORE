@@ -422,7 +422,7 @@ public class DirectoryFilter extends FilterModel {
                 if (folder.getDiskItemFilter().isExcluded(fileInfo)) {
                     showFile = false;
                 } else {
-                    showFile = !isSynchronized(fileInfo);
+                    showFile = isIncoming || !isSynchronized(fileInfo);
                 }
                 break;
             case FILE_FILTER_MODE_LOCAL_AND_INCOMING :
@@ -453,18 +453,19 @@ public class DirectoryFilter extends FilterModel {
         boolean isSynchronized = true;
         Folder localFolder = fileInfo.getFolder(getController()
             .getFolderRepository());
-        if (localFolder != null) {
-            for (Member member : localFolder.getConnectedMembers()) {
-                if (member.hasFile(fileInfo)) {
-                    FileInfo memberFileInfo = member.getFile(fileInfo);
-                    if (memberFileInfo.getVersion() != fileInfo.getVersion()) {
-                        isSynchronized = false;
-                        break;
-                    }
-                } else {
+        if (localFolder == null) {
+            return true;
+        }
+        for (Member member : localFolder.getConnectedMembers()) {
+            if (member.hasFile(fileInfo)) {
+                FileInfo memberFileInfo = member.getFile(fileInfo);
+                if (memberFileInfo.getVersion() != fileInfo.getVersion()) {
                     isSynchronized = false;
                     break;
                 }
+            } else {
+                isSynchronized = false;
+                break;
             }
         }
         return isSynchronized;
