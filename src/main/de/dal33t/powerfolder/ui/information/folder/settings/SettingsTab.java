@@ -1393,8 +1393,9 @@ public class SettingsTab extends PFUIComponent {
             try {
                 if (folder != null) {
                     FolderInfo folderInfo = folder.getInfo();
-                    FolderService folderService = serverClient
-                        .getFolderService();
+                    FolderService folderService = serverClient.isLoggedIn()
+                        && serverClient.isConnected() ? serverClient
+                        .getFolderService() : null;
                     if (folderService != null) {
                         ArchiveMode am = (ArchiveMode) onlineModeModel
                             .getValue();
