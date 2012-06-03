@@ -1411,7 +1411,7 @@ public class SettingsTab extends PFUIComponent {
                     }
                 }
             } catch (Exception e) {
-                logSevere(e);
+                logWarning(e);
             }
             return null;
         }
