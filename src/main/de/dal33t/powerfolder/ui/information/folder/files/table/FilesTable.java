@@ -346,7 +346,7 @@ public class FilesTable extends JTable {
                 isSelected, hasFocus, row, column);
 
             // Show new files in bold.
-            if (diskItem.isFile()) {
+            if (diskItem != null && diskItem.isFile()) {
                 if (recentlyDownloaded((FileInfo) diskItem)) {
                     c.setFont(new Font(getFont().getName(), Font.BOLD,
                         getFont().getSize()));
