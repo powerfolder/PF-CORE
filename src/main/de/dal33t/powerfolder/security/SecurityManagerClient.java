@@ -143,6 +143,12 @@ public class SecurityManagerClient extends PFComponent implements
                             hasPermission = Boolean.valueOf(retrievePermission(
                                 accountInfo, permission, cache));
                             source = "recvd";
+                            if (isFine()) {
+                                logFine("(" + source + ") "
+                                    + nullSafeGet(accountInfo) + " has "
+                                    + (hasPermission ? "" : "NOT ")
+                                    + permission);
+                            }
                         } else {
                             source = "cache";
                         }
@@ -153,10 +159,6 @@ public class SecurityManagerClient extends PFComponent implements
                 }
             } else {
                 source = "cache";
-            }
-            if (isFiner()) {
-                logFiner("(" + source + ") " + nullSafeGet(accountInfo)
-                    + " has " + (hasPermission ? "" : "NOT ") + permission);
             }
             return hasPermission;
         } catch (RemoteCallException e) {
