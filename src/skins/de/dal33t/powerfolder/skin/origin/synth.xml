@@ -1790,7 +1790,7 @@ ProgressBar
 	  <painter method="progressBarBackground" idref="syntheticaPainter" />
 	    <opaque value="true"/>
          <color type="FOREGROUND" value="#fff000"/>
-          <color type="TEXT_FOREGROUND" value="#ffffff"/><!--  Primary Text color -->
+          <color type="TEXT_FOREGROUND" value="#000000"/><!--  Primary Text color -->
          <color type="BACKGROUND" value="#34495c"/> <!--  Primary color -->
     </state>
 
