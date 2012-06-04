@@ -154,8 +154,8 @@ public class SecurityManagerClient extends PFComponent implements
             } else {
                 source = "cache";
             }
-            if (isFine()) {
-                logFine("(" + source + ") " + nullSafeGet(accountInfo)
+            if (isFiner()) {
+                logFiner("(" + source + ") " + nullSafeGet(accountInfo)
                     + " has " + (hasPermission ? "" : "NOT ") + permission);
             }
             return hasPermission;
