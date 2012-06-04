@@ -28,13 +28,13 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.DateUtil;
@@ -513,7 +513,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // Check if remote file in newer
             if (newestVersion == null || remoteFile.isNewerThan(newestVersion))
             {
-                if (!folder.hasWritePermission(member)) {
+                // HACK(tm)
+                if (!ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()
+                    && !folder.hasWritePermission(member))
+                {
                     continue;
                 }
                 newestVersion = remoteFile;
@@ -549,7 +552,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 if (newestVersion == null
                     || remoteFile.isNewerThan(newestVersion))
                 {
-                    if (!folder.hasWritePermission(member)) {
+                    // HACK(tm)
+                    if (!ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()
+                        && !folder.hasWritePermission(member))
+                    {
                         continue;
                     }
                     // log.finer("Newer version found at " + member);
