@@ -1,7 +1,7 @@
 PowerFolder Version 6.0 - http://www.powerfolder.com
 
 = New features =
- * Brand new, simplified user interface. PowerFolder now starts in "Compact mode", which
+ * Brand new simplified user interface. PowerFolder now starts in "Compact mode", which
    shows the most important information only. An "Expert mode" still offers detailed information.
  * Drastically reduced memory usage (60% reduction in average) and reduced CPU usage through
    new bundled java virtual machine (JET). No additional Java runtime required anymore.
