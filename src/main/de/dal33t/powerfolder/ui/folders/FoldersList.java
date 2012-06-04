@@ -264,9 +264,11 @@ public class FoldersList extends PFUIComponent {
 
             // Is anything left in the old list? Decommission.
             for (ExpandableFolderView oldView : oldViews) {
+                views.remove(oldView);
                 oldView.dispose();
                 oldView.removeExpansionListener(expansionListener);
                 oldView.unregisterListeners();
+                folderListPanel.remove(oldView.getUIComponent());
             }
 
             // Redraw UI with everything gone.
