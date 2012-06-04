@@ -112,6 +112,14 @@ public class SecurityManagerClient extends PFComponent implements
 
     public boolean hasPermission(AccountInfo accountInfo, Permission permission)
     {
+        if (accountInfo != null && client.isLoggedIn()
+            && client.getAccount().createInfo().equals(accountInfo))
+        {
+            if (client.getAccount().hasPermission(permission)) {
+                // Optimize. Local answer.
+                return true;
+            }
+        }
         try {
             Boolean hasPermission;
             PermissionsCacheSegment cache = permissionsCacheAccounts
