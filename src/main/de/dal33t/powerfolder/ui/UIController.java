@@ -183,7 +183,7 @@ public class UIController extends PFComponent {
     private final AtomicBoolean synchronizing = new AtomicBoolean();
     private final DelayedUpdater statusUpdater;
 
-    private final Map<Long, FileInfo> recentlyChangedFiles = new HashMap<Long, FileInfo>();
+    private final Map<Long, FileInfo> recentlyChangedFiles = Util.createConcurrentHashMap();
     private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
 
     /**
@@ -386,19 +386,27 @@ public class UIController extends PFComponent {
         }
     }
 
-
     public void askToPauseResume() {
-        boolean silent = getController().isPaused();
+        final boolean silent = getController().isPaused();
         if (silent) {
             // Resuming - nothing to ask.
-            getController().setPaused(!silent);
+            getController().schedule(new Runnable() {
+                public void run() {
+                    getController().setPaused(!silent);
+                }
+            }, 0);
         } else {
-            if (PreferencesEntry.SHOW_ASK_FOR_PAUSE.getValueBoolean(
-                    getController())) {
+            if (PreferencesEntry.SHOW_ASK_FOR_PAUSE
+                .getValueBoolean(getController()))
+            {
                 PauseDialog pd = new PauseDialog(getController());
                 pd.open();
             } else {
-                getController().setPaused(!silent);
+                getController().schedule(new Runnable() {
+                    public void run() {
+                        getController().setPaused(!silent);
+                    }
+                }, 0);
             }
         }
 
@@ -556,16 +564,16 @@ public class UIController extends PFComponent {
         // /////////
         // Recent //
         // /////////
-        recentlyChangedMenu = new Menu(Translation.getTranslation(
-                "uicontroller.recently_changed"));
-        recentlyChangedMenu.setEnabled(false);
-        menu.add(recentlyChangedMenu);
-        for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
-            recentMenuItems[i] = new MenuItem();
-            recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
-                    i);
-            recentMenuItems[i].addActionListener(systrayActionHandler);
-        }
+//        recentlyChangedMenu = new Menu(Translation.getTranslation(
+//                "uicontroller.recently_changed"));
+//        recentlyChangedMenu.setEnabled(false);
+//        menu.add(recentlyChangedMenu);
+//        for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
+//            recentMenuItems[i] = new MenuItem();
+//            recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
+//                    i);
+//            recentMenuItems[i].addActionListener(systrayActionHandler);
+//        }
 
         // //////////////
         // Preferences //
@@ -1408,25 +1416,25 @@ public class UIController extends PFComponent {
         }
 
         public void fileChanged(FolderEvent folderEvent) {
-            Collection<FileInfo> collection = folderEvent.getScannedFileInfos();
-            if (collection != null) {
-                for (FileInfo fileInfo : collection) {
-                    if (!fileInfo.isDiretory()) {
-                        addRecentFileChange(fileInfo);
-                    }
-                }
-            }
+//            Collection<FileInfo> collection = folderEvent.getScannedFileInfos();
+//            if (collection != null) {
+//                for (FileInfo fileInfo : collection) {
+//                    if (!fileInfo.isDiretory()) {
+//                        addRecentFileChange(fileInfo);
+//                    }
+//                }
+//            }
         }
 
         public void filesDeleted(FolderEvent folderEvent) {
-            Collection<FileInfo> collection = folderEvent.getDeletedFileInfos();
-            if (collection != null) {
-                for (FileInfo fileInfo : collection) {
-                    if (!fileInfo.isDiretory()) {
-                        addRecentFileChange(fileInfo);
-                    }
-                }
-            }
+//            Collection<FileInfo> collection = folderEvent.getDeletedFileInfos();
+//            if (collection != null) {
+//                for (FileInfo fileInfo : collection) {
+//                    if (!fileInfo.isDiretory()) {
+//                        addRecentFileChange(fileInfo);
+//                    }
+//                }
+//            }
         }
     }
     
