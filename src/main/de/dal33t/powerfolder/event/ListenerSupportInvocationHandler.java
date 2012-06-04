@@ -272,7 +272,11 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
             runner.run();
         } else {
             // Put runner in swingthread
-            SwingUtilities.invokeLater(runner);
+            try {
+                SwingUtilities.invokeLater(runner);
+            } catch (Exception e) {
+                LOG.fine(e.toString());
+            }
         }
     }
 
