@@ -67,7 +67,7 @@ public class DownloadManagersTable extends JTable {
             .getDownloadsTableModel(), getColumnModel(),
             DownloadManagersTableModel.COLPROGRESS, true);
 
-        addHierarchyListener(new MyDisplayabilityListener());
+        // addHierarchyListener(new MyDisplayabilityListener());
     }
 
     private class MyDisplayabilityListener implements HierarchyListener {

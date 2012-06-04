@@ -74,7 +74,7 @@ public class UploadsTable extends JTable {
             .getUploadsTableModel(), getColumnModel(),
             UploadsTableModel.COLPROGRESS, true);
 
-        addHierarchyListener(new MyDisplayabilityListener());
+        // addHierarchyListener(new MyDisplayabilityListener());
     }
 
     // Helper methods *********************************************************

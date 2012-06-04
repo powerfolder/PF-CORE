@@ -82,7 +82,7 @@ public class DownloadManagersTableModel extends PFComponent implements
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
-        periodicUpdate = false;
+        periodicUpdate = true;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
@@ -125,6 +125,7 @@ public class DownloadManagersTableModel extends PFComponent implements
     }
 
     public void setPeriodicUpdate(boolean periodicUpdate) {
+        logWarning("P: " + periodicUpdate);
         // Transition no update -> update.
         if (!this.periodicUpdate && periodicUpdate) {
             resortAndUpdate();

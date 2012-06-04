@@ -90,7 +90,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         model.getTransferManager().addListener(
             new UploadTransferManagerListener());
 
-        periodicUpdate = false;
+        periodicUpdate = true;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
