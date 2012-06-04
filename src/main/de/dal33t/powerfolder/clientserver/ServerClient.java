@@ -1037,7 +1037,6 @@ public class ServerClient extends PFComponent {
         Runnable retriever = new Runnable() {
             public void run() {
                 try {
-
                     if (!isConnected()) {
                         return;
                     }
@@ -1361,7 +1360,7 @@ public class ServerClient extends PFComponent {
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
                 login(username, passwordObf);
-                getController().schedule(new HostingServerRetriever(), 200L);
+                getController().schedule(new HostingServerRetriever(), 0);
             } catch (Exception ex) {
                 logWarning("Unable to login. " + ex);
                 logFine(ex);
