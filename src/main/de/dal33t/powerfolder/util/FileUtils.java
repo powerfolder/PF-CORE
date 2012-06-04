@@ -269,7 +269,7 @@ public class FileUtils {
 
         if (Desktop.isDesktopSupported()) {
             try {
-                if (OSUtil.isWindowsSystem()) {
+                if (OSUtil.isWindowsSystem() && !file.isDirectory()) {
                     Runtime.getRuntime().exec(
                         "rundll32 SHELL32.DLL,ShellExec_RunDLL \""
                             + file.toString() + "\"");
