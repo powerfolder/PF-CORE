@@ -27,6 +27,8 @@ import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import com.jgoodies.forms.factories.Borders;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -63,9 +65,9 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
         this.controller = controller;
 
         bar = new JProgressBar();
-        // bar.setBorderPainted(false);
-        // bar.setBorder(Borders.EMPTY_BORDER);
-        // bar.setStringPainted(true);
+        bar.setBorderPainted(false);
+        bar.setBorder(Borders.EMPTY_BORDER);
+        bar.setStringPainted(true);
 
         // Listen for ui l&f changes
         UIUtil.addUIChangeTask(new Runnable() {
@@ -88,7 +90,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             // Show bar
             bar.setValue((int) (Math.max(0, downloadManager.getState()
                 .getProgress()) * 100));
-            //bar.setBackground(defaultComp.getBackground());
+            // bar.setBackground(defaultComp.getBackground());
 
             Transfer.State state = downloadManager.getState();
             if (state == null) {
