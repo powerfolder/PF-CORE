@@ -61,7 +61,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JComboBox languageChooser;
     private JComboBox xBehaviorChooser;
-    private JCheckBox minToSysTrayCB;
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
     private JCheckBox infoDockedBox;
@@ -125,15 +124,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
             checkForUpdate);
-
-        ValueModel minToSysTrayModel = new ValueHolder(
-            PreferencesEntry.MIN_TO_SYS_TRAY.getValueBoolean(getController()));
-        if (!OSUtil.isMacOS()) {
-            minToSysTrayCB = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(minToSysTrayModel, writeTrigger),
-                Translation
-                    .getTranslation("preferences.dialog.min_to_sys_tray"));
-        }
 
         ValueModel lockedModel = new ValueHolder(
             ConfigurationEntry.USER_INTERFACE_LOCKED
@@ -270,13 +260,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                     .xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
-            if (minToSysTrayCB != null) {
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(minToSysTrayCB, cc.xy(3, row));
-            }
-
             // Links only available in Vista
             if (usePowerFolderLink != null) {
                 builder.appendRow("3dlu");
@@ -346,11 +329,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
-
-        if (minToSysTrayCB != null) {
-            PreferencesEntry.MIN_TO_SYS_TRAY.setValue(getController(),
-                minToSysTrayCB.isSelected());
-        }
 
         ConfigurationEntry.USER_INTERFACE_LOCKED.setValue(getController(),
             String.valueOf(lockUICB.isSelected()));

@@ -127,9 +127,6 @@ public enum PreferencesEntry {
     /** Skin name. */
     SKIN_NAME("skin.name", Origin.NAME),
 
-    /** Minimize to system tray */
-    MIN_TO_SYS_TRAY("min.to.sys.tray", false),
-
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
 

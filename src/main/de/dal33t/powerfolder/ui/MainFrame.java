@@ -1185,14 +1185,8 @@ public class MainFrame extends PFUIComponent {
          * @param e
          */
         public void windowIconified(WindowEvent e) {
-            boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
-                .getValueBoolean(getController());
-            if (minToSysTray) {
-                getUIController().hideChildPanels();
-                uiComponent.setVisible(false);
-            } else {
-                super.windowIconified(e);
-            }
+            getUIController().hideChildPanels();
+            uiComponent.setVisible(false);
         }
     }
 
@@ -1299,8 +1293,10 @@ public class MainFrame extends PFUIComponent {
             case MAXIMIZED :
                 // http://www.javasoft.de/synthetica/faq/#general-7
                 if (uiComponent.getRootPane().getUI() instanceof SyntheticaRootPaneUI)
+                {
                     ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
-                        .setMaximizedBounds(uiComponent);
+                            .setMaximizedBounds(uiComponent);
+                }
                 uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
                 plusButton.setToolTipText(Translation
                     .getTranslation("main_frame.restore.tips"));
