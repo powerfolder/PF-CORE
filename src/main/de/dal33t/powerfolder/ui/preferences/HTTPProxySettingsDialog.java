@@ -91,7 +91,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
         if (panel == null) {
             initComponents();
 
-            FormLayout layout = new FormLayout("r:p, 3dlu, 80dlu",
+            FormLayout layout = new FormLayout("r:p:grow, 3dlu, 80dlu",
                 "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 14dlu, p");
 
             PanelBuilder builder = new PanelBuilder(layout);
