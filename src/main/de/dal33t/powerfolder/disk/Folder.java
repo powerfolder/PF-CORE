@@ -2792,10 +2792,22 @@ public class Folder extends PFComponent {
             localFile = getFile(remoteFile);
             // File has been marked as removed at our side
             removedFiles.add(localFile);
-        }
-        if (localFile.isDeleted()) {
             return;
         }
+        if (localFile.isDeleted()) {
+            if (remoteFile.isNewerThan(localFile)) {
+                logWarning("Taking over deletion file info: "
+                    + remoteFile.toDetailString());
+                // Take over modification infos
+                remoteFile = correctFolderInfo(remoteFile);
+                store(getController().getMySelf(), remoteFile);
+                localFile = getFile(remoteFile);
+                removedFiles.add(localFile);
+            }
+            return;
+        }
+
+        // Local file NOT deleted / still existing. So do a local delete
         File localCopy = localFile.getDiskFile(getController()
             .getFolderRepository());
         if (!localFile.inSyncWithDisk(localCopy)) {
@@ -2826,8 +2838,8 @@ public class Folder extends PFComponent {
             getController().getTransferManager().breakTransfers(remoteFile);
         }
 
-        synchronized (scanLock) {
-            if (localCopy.exists()) {
+        if (localCopy.exists()) {
+            synchronized (scanLock) {
                 if (localFile.isDiretory()) {
                     if (isFine()) {
                         logFine("Deleting directory from remote: "
@@ -3319,7 +3331,7 @@ public class Folder extends PFComponent {
                 continue;
             }
 
-            if (localFileInfo.isDeleted() || remoteFileInfo.isDeleted()) {
+            if (localFileInfo.isDeleted() != remoteFileInfo.isDeleted()) {
                 continue;
             }
 
