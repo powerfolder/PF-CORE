@@ -105,7 +105,10 @@ public class DocumentHandler extends Handler {
                         logBuffer.insertString(logBuffer.getLength(),
                             formattedMessage, set);
                         if (logBuffer.getLength() > numberOfLogCharacters) {
-                            logBuffer.remove(0, formattedMessage.length());
+                            int rem = (logBuffer.getLength() - numberOfLogCharacters);
+                            if (rem > 0) {
+                                logBuffer.remove(0, rem);
+                            }
                         }
                     }
                 } catch (RuntimeException e) {
