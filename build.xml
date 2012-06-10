@@ -240,11 +240,10 @@ For creation of the installer:
 		<copy todir="${InstallerFilesLocation}\images" overwrite="true">
 			<fileset dir="${distribution.installer.dir}\images" />
 		</copy>
-		<copy todir="${InstallerFilesLocation}\files" overwrite="true">
+		<copy todir="${InstallerFilesLocation}\filesvar" overwrite="true">
 			<fileset dir="${distribution.installer.dir}\files" />
 		</copy>
-		<copy file="${dist.dir}\PowerFolder.jar" todir="${InstallerFilesLocation}\files" overwrite="true" />
-		<copy file="${etc.dir}\ReleaseNotes.txt" todir="${InstallerFilesLocation}\files" overwrite="true" />
+		<copy file="${dist.dir}\PowerFolder.jar" todir="${InstallerFilesLocation}\filesvar" overwrite="true" />
 	</target>
 
 	<target name="zip-source" depends="init" description="Zips all source code">
