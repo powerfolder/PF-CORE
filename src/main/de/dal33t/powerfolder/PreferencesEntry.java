@@ -99,6 +99,9 @@ public enum PreferencesEntry {
     /** Warn user if connection is poor. */
     WARN_POOR_QUALITY("warn.poor.quality", false),
 
+    /** Warn user if cloud space is getting full (90%+). */
+    WARN_FULL_CLOUD("warn.poor.quality", true),
+
     /**
      * Warn if changing a transfer mode for multiple folders
      */

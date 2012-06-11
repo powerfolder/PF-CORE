@@ -76,6 +76,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** warn if connection quality is poor */
     private JCheckBox warnOnPoorConnectionQualityCB;
 
+    /** warn if online storage more than 90% full. */
+    private JCheckBox warnIfCloudSpaceFullCB;
+
     private JPanel panel;
 
     private boolean needsRestart;
@@ -190,6 +193,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean poorConnection = PreferencesEntry.WARN_POOR_QUALITY
             .getValueBoolean(getController());
+        boolean cloudFull = PreferencesEntry.WARN_FULL_CLOUD
+            .getValueBoolean(getController());
         askForFriendshipCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
@@ -218,6 +223,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_poor_connection_quality"),
             poorConnection);
+        warnIfCloudSpaceFullCB = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.warn_ifcloud_space_full"),
+            cloudFull);
     }
 
     /**
@@ -229,7 +238,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -262,6 +271,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(warnOnPoorConnectionQualityCB, cc.xy(3, row));
+
+            row += 2;
+            builder.add(warnIfCloudSpaceFullCB, cc.xy(3, row));
 
             // //////////////////////////////////////
             // Notification stuff only below here //
@@ -336,6 +348,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean askFriendshipMessage = askForFriendshipMessageCB.isSelected();
         boolean duplicateFolders = warnOnDuplicateFoldersCB.isSelected();
         boolean poorConnection = warnOnPoorConnectionQualityCB.isSelected();
+        boolean fullColudSpace = warnIfCloudSpaceFullCB.isSelected();
 
         if (showChatNotificationBox != null) {
             applicationModel.getChatNotificationsValueModel().setValue(
@@ -366,6 +379,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         PreferencesEntry.TEST_CONNECTIVITY.setValue(getController(),
             testConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
+        PreferencesEntry.WARN_FULL_CLOUD.setValue(getController(),
+                fullColudSpace);
         PreferencesEntry.FILE_NAME_CHECK
             .setValue(getController(), filenamCheck);
         PreferencesEntry.DUPLICATE_FOLDER_USE.setValue(getController(),
