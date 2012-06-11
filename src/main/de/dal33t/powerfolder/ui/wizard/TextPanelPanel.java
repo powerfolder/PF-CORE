@@ -19,30 +19,31 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.util.List;
-import java.util.StringTokenizer;
-
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.SwingWorker;
-
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.awt.event.ActionEvent;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard
  * process. No next panel
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
@@ -57,8 +58,7 @@ public class TextPanelPanel extends PFWizardPanel {
     }
 
     public TextPanelPanel(Controller controller, String title, String text,
-        boolean autoFadeOut)
-    {
+                          boolean autoFadeOut) {
         super(controller);
         this.title = title;
         this.text = text;
@@ -77,10 +77,11 @@ public class TextPanelPanel extends PFWizardPanel {
 
         // If it's an invite, try to display it in the UI.
         Object o = getWizardContext().getAttribute(FOLDER_IS_INVITE);
-        if (o != null && o instanceof Boolean && (Boolean)o) {
+        if (o != null && o instanceof Boolean && (Boolean) o) {
             Object p = getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
             if (p != null && p instanceof FolderInfo) {
-                getController().getUIController().displayInviteFolderContents((FolderInfo)p);
+                getController().getUIController().displayInviteFolderContents(
+                        (FolderInfo) p);
             }
         }
     }
@@ -108,12 +109,41 @@ public class TextPanelPanel extends PFWizardPanel {
         // Add text as labels
         StringTokenizer nizer = new StringTokenizer(text, "\n");
         int y = 1;
+        boolean firstAddition = true;
         while (nizer.hasMoreTokens()) {
             String line = nizer.nextToken();
-            builder.appendRow("pref");
+            if (firstAddition) {
+                // Nothing to add. We already have the first line.
+                firstAddition = false;
+            } else {
+                builder.appendRow("pref");
+                y++;
+            }
+
             builder.addLabel(line, cc.xy(1, y));
-            y++;
         }
+
+        // If it is a locally synced folder,
+        // show link to open the folder in explorer.
+        if (!autoFadeOut) {
+
+            FolderInfo folderInfo = (FolderInfo) getWizardContext()
+                    .getAttribute(FOLDERINFO_ATTRIBUTE);
+            if (folderInfo != null) {
+                Folder folder = getController().getFolderRepository()
+                        .getFolder(folderInfo);
+                if (folder != null) {
+                    builder.appendRow("3dlu");
+                    y++;
+                    builder.appendRow("pref");
+                    y++;
+                    Action action = new OpenFolderAction(getController(), folderInfo);
+                    builder.add(new ActionLabel(getController(), action)
+                            .getUIComponent(), cc.xy(1, y));
+                }
+            }
+        }
+
         return builder.getPanel();
     }
 
@@ -126,6 +156,10 @@ public class TextPanelPanel extends PFWizardPanel {
     protected String getTitle() {
         return title;
     }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
 
     private class FadeOutWorker extends SwingWorker<Void, Integer> {
 
@@ -163,8 +197,26 @@ public class TextPanelPanel extends PFWizardPanel {
 
         private JDialog getWizardDialog() {
             return (JDialog) getWizardContext().getAttribute(
-                WizardContextAttributes.DIALOG_ATTRIBUTE);
+                    WizardContextAttributes.DIALOG_ATTRIBUTE);
         }
 
     }
+
+    private static class OpenFolderAction extends BaseAction {
+
+        private final FolderInfo folderInfo;
+
+        private OpenFolderAction(Controller controller, FolderInfo folderInfo) {
+            super("action_open_folder", controller);
+            this.folderInfo = folderInfo;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Folder folder = folderInfo.getFolder(getController());
+            DirectoryInfo directoryInfo = folder.getBaseDirectoryInfo();
+            FileUtils.openFile(directoryInfo.getDiskFile(
+                    getController().getFolderRepository()));
+        }
+    }
+
 }
