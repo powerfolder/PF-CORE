@@ -66,22 +66,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
-import de.dal33t.powerfolder.event.FolderAutoCreateListener;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.PausedModeEvent;
-import de.dal33t.powerfolder.event.PausedModeListener;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -355,6 +340,7 @@ public class UIController extends PFComponent {
         configureDesktopShortcut(false);
 
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
+        getController().addCloudStorageFullListeners(new MyCloudStorageFullListener());
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().addAskForFriendshipListener(
             new MyAskForFriendshipListener());
@@ -1495,6 +1481,22 @@ public class UIController extends PFComponent {
         }
 
         public void completedUploadRemoved(TransferManagerEvent event) {
+        }
+    }
+
+    // Class to handle notification that the cloud space is getting full (> 80%)
+    private class MyCloudStorageFullListener
+            implements CloudStorageFullListener {
+        public void cloudStorageFull() {
+            if (PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(
+                    getController())) {
+
+                WarningNotice notice = new WarningNotice(
+                        Translation.getTranslation("warning_notice.title"),
+                        Translation.getTranslation("warning_notice.cloud_full_summary"),
+                        Translation.getTranslation("warning_notice.cloud_full_message"));
+                applicationModel.getNoticesModel().handleNotice(notice);
+            }
         }
     }
   
