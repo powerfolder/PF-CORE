@@ -30,6 +30,11 @@ public class LoginUtilTest extends TestCase {
         obf = LoginUtil.obfuscate(password.toCharArray());
         assertEquals(password.length(), LoginUtil.deobfuscate(obf).length);
         assertEquals(password, new String(LoginUtil.deobfuscate(obf)));
+        
+        password = "EsJs3XngawbCkMurIibtzQD23+OVPFjh2+uB4A8LaEA=";
+        obf = LoginUtil.obfuscate(password.toCharArray());
+        assertEquals(password.length(), LoginUtil.deobfuscate(obf).length);
+        assertEquals(password, new String(LoginUtil.deobfuscate(obf)));
     }
 
     public void testHash() {
