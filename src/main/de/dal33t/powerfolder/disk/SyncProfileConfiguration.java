@@ -274,77 +274,57 @@ public class SyncProfileConfiguration implements Serializable {
         return regularTimeType;
     }
 
-    /**
-     * True if object is identical to this.
-     * 
-     * @param obj
-     * @return
-     */
-    public boolean equals(Object obj) {
-
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-
-        SyncProfileConfiguration that = (SyncProfileConfiguration) obj;
-
-        if (autoDownloadFromFriends != that.autoDownloadFromFriends) {
-            return false;
-        }
-        if (autoDownloadFromOthers != that.autoDownloadFromOthers) {
-            return false;
-        }
-        if (dailyDay != that.dailyDay) {
-            return false;
-        }
-        if (dailyHour != that.dailyHour) {
-            return false;
-        }
-        if (dailySync != that.dailySync) {
-            return false;
-        }
-        if (instantSync != that.instantSync) {
-            return false;
-        }
-        if (syncDeletionWithFriends != that.syncDeletionWithFriends) {
-            return false;
-        }
-        if (syncDeletionWithOthers != that.syncDeletionWithOthers) {
-            return false;
-        }
-        if (timeBetweenRegularScans != that.timeBetweenRegularScans) {
-            return false;
-        }
-        if (regularTimeType != null ? !regularTimeType
-            .equals(that.regularTimeType) : that.regularTimeType != null)
-        {
-            return false;
-        }
-
-        return true;
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (autoDownloadFromFriends ? 1231 : 1237);
+        result = prime * result + (autoDownloadFromOthers ? 1231 : 1237);
+        result = prime * result + dailyDay;
+        result = prime * result + dailyHour;
+        result = prime * result + (dailySync ? 1231 : 1237);
+        result = prime * result + (instantSync ? 1231 : 1237);
+        result = prime * result
+            + ((regularTimeType == null) ? 0 : regularTimeType.hashCode());
+        result = prime * result + (syncDeletionWithFriends ? 1231 : 1237);
+        result = prime * result + (syncDeletionWithOthers ? 1231 : 1237);
+        result = prime * result + timeBetweenRegularScans;
+        return result;
     }
 
-    /**
-     * Reasonably unique hash.
-     * 
-     * @return
-     */
-    public int hashCode() {
-        int result = autoDownloadFromFriends ? 1 : 0;
-        result = 31 * result + (autoDownloadFromOthers ? 1 : 0);
-        result = 31 * result + (syncDeletionWithFriends ? 1 : 0);
-        result = 31 * result + (syncDeletionWithOthers ? 1 : 0);
-        result = 31 * result + timeBetweenRegularScans;
-        result = 31 * result + (dailySync ? 1 : 0);
-        result = 31 * result + (instantSync ? 1 : 0);
-        result = 31 * result + dailyHour;
-        result = 31 * result + dailyDay;
-        result = 31 * result
-            + (regularTimeType != null ? regularTimeType.hashCode() : 0);
-        return result;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SyncProfileConfiguration other = (SyncProfileConfiguration) obj;
+        if (autoDownloadFromFriends != other.autoDownloadFromFriends)
+            return false;
+        if (autoDownloadFromOthers != other.autoDownloadFromOthers)
+            return false;
+        if (dailyDay != other.dailyDay)
+            return false;
+        if (dailyHour != other.dailyHour)
+            return false;
+        if (dailySync != other.dailySync)
+            return false;
+        if (instantSync != other.instantSync)
+            return false;
+        if (regularTimeType == null) {
+            if (other.regularTimeType != null)
+                return false;
+        } else if (!regularTimeType.equals(other.regularTimeType))
+            return false;
+        if (syncDeletionWithFriends != other.syncDeletionWithFriends)
+            return false;
+        if (syncDeletionWithOthers != other.syncDeletionWithOthers)
+            return false;
+        if (timeBetweenRegularScans != other.timeBetweenRegularScans)
+            return false;
+        return true;
     }
 
     @Override

@@ -394,7 +394,11 @@ public class SyncProfile implements Serializable {
         List<SyncProfile> list = new ArrayList<SyncProfile>();
         list.addAll(Arrays.asList(PRESET_SYNC_PROFILES));
         synchronized (customProfiles) {
-            list.addAll(customProfiles);
+            for (SyncProfile customProfile : customProfiles) {
+                if (!list.contains(customProfile)) {
+                    list.add(customProfile);
+                }
+            }
         }
         return list;
     }
