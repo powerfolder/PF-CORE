@@ -393,6 +393,11 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         if (archiveFile.exists()) {
             log.fine("Restoring " + versionInfo.getRelativeName() + " to "
                 + target.getAbsolutePath());
+            if (target.getParentFile() != null
+                && !target.getParentFile().exists())
+            {
+                target.getParentFile().mkdirs();
+            }
             archiveFile.cp(target);
             // FileUtils.copyFile(archiveFile, target);
             // #2256: New modification date. Otherwise conflict detection

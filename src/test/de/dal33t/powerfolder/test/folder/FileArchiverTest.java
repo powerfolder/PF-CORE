@@ -222,6 +222,20 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(nVersion + 1, archived.size());
     }
 
+    public void testRestoreInDeletedSubdir() throws IOException {
+        getFolderAtLisa().setArchiveVersions(1);
+        File f = TestHelper.createRandomFile(new File(getFolderAtLisa()
+            .getLocalBase(), "subdir"));
+        scanFolder(getFolderAtLisa());
+        FileInfo fInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), f);
+        FileInfo dInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(),
+            f.getParentFile());
+        getFolderAtLisa().removeFilesLocal(dInfo);
+
+        assertTrue(getFolderAtLisa().getFileArchiver().restore(fInfo, f));
+        assertTrue(f.exists());
+    }
+
     public void testNoConflictOnRestore() throws IOException {
         File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
