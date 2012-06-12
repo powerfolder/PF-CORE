@@ -439,11 +439,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             .bytesTransferred(size);
     }
 
-    private boolean isServer() {
-        return getMember() != null
-            && getMember().equals(getController().getOSClient().getServer());
-    }
-
     public void sendMessage(Message message) throws ConnectionException {
         if (message == null) {
             throw new NullPointerException("Message is null");
