@@ -2719,7 +2719,7 @@ public class Folder extends PFComponent {
                 }
 
                 for (FileInfo remoteFile : fileList) {
-                    handleFileDeletion(remoteFile, force, member, removedFiles);
+                    handleFileDeletion(remoteFile, force, member, removedFiles, 0);
                 }
             }
 
@@ -2735,11 +2735,10 @@ public class Folder extends PFComponent {
                     list,
                     new ReverseComparator<FileInfo>(FileInfoComparator
                         .getComparator(FileInfoComparator.BY_RELATIVE_NAME)));
-                // logWarning("" + list.size());
                 synchronized (scanLock) {
                     for (FileInfo remoteDir : list) {
                         handleFileDeletion(remoteDir, force, member,
-                            removedFiles);
+                            removedFiles, 0);
                     }
                 }
             }
@@ -2761,7 +2760,7 @@ public class Folder extends PFComponent {
     }
 
     private void handleFileDeletion(FileInfo remoteFile, boolean force,
-        Member member, List<FileInfo> removedFiles)
+        Member member, List<FileInfo> removedFiles, int nTried)
     {
         if (!remoteFile.isDeleted()) {
             // Not interesting...
@@ -2816,14 +2815,13 @@ public class Folder extends PFComponent {
                 + localFile.toDetailString() + " at "
                 + localCopy.getAbsolutePath());
 
-            if (scanAllowedNow()) {
-                if (scanChangedFile(localFile) != null) {
-                    // Scan an trigger a sync of deletions later (again).
-                    triggerSyncRemoteDeletedFiles(
-                        Collections.singleton(member), force);
-                }
+            if (scanAllowedNow() && scanChangedFile(localFile) != null
+                && nTried < 10)
+            {
+                // Scan an trigger a sync of deletions later (again).
+                handleFileDeletion(remoteFile, force, member, removedFiles,
+                    ++nTried);
             }
-            // recommendScanOnNextMaintenance();
             return;
         }
 
