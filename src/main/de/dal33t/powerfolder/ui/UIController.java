@@ -340,7 +340,6 @@ public class UIController extends PFComponent {
         configureDesktopShortcut(false);
 
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
-        getController().addCloudStorageFullListeners(new MyCloudStorageFullListener());
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().addAskForFriendshipListener(
             new MyAskForFriendshipListener());
@@ -1481,22 +1480,6 @@ public class UIController extends PFComponent {
         }
 
         public void completedUploadRemoved(TransferManagerEvent event) {
-        }
-    }
-
-    // Class to handle notification that the cloud space is getting full (> 80%)
-    private class MyCloudStorageFullListener
-            implements CloudStorageFullListener {
-        public void cloudStorageFull() {
-            if (PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(
-                    getController())) {
-
-                WarningNotice notice = new WarningNotice(
-                        Translation.getTranslation("warning_notice.title"),
-                        Translation.getTranslation("warning_notice.cloud_full_summary"),
-                        Translation.getTranslation("warning_notice.cloud_full_message"));
-                applicationModel.getNoticesModel().handleNotice(notice);
-            }
         }
     }
   

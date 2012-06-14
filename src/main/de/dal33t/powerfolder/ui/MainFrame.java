@@ -97,6 +97,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -1233,6 +1234,30 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private void checkCloudSpace() {
+        if (PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(getController())) {
+            if (client != null && client.isLoggedIn()) {
+                if (!client.getAccount().getOSSubscription().isDisabled()) {
+                    long storageSize = client.getAccount().getOSSubscription()
+                            .getStorageSize();
+                    long used = client.getAccountDetails().getSpaceUsed();
+                    if (used >= storageSize * 8 / 10) {
+                        // More than 80% used. Notify.
+                        WarningNotice notice = new WarningNotice(
+                                Translation.getTranslation(
+                                        "warning_notice.title"),
+                                Translation.getTranslation(
+                                        "warning_notice.cloud_full_summary"),
+                                Translation.getTranslation(
+                                        "warning_notice.cloud_full_message"));
+                        getUIController().getApplicationModel()
+                                .getNoticesModel().handleNotice(notice);
+                    }
+                }
+            }
+        }
+    }
+
     private void updateOnlineStorageDetails() {
         double percentageUsed = 0;
         long totalStorage = 0;
@@ -1512,10 +1537,12 @@ public class MainFrame extends PFUIComponent {
 
         public void accountUpdated(ServerClientEvent event) {
             updateOnlineStorageDetails();
+            checkCloudSpace();
         }
 
         public void login(ServerClientEvent event) {
             updateOnlineStorageDetails();
+            checkCloudSpace();
         }
 
         public void serverConnected(ServerClientEvent event) {

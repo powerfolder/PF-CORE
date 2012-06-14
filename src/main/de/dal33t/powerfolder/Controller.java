@@ -219,7 +219,6 @@ public class Controller extends PFComponent {
     private final List<AskForFriendshipListener> askForFriendshipListeners;
     private final List<InvitationHandler> invitationHandlers;
     private final List<MassDeletionHandler> massDeletionHandlers;
-    private final List<CloudStorageFullListener> cloudStorageFullListeners;
 
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
@@ -292,7 +291,6 @@ public class Controller extends PFComponent {
         askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
-        cloudStorageFullListeners = new CopyOnWriteArrayList<CloudStorageFullListener>();
         pausedModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(PausedModeListener.class);
         networkingModeListenerSupport = ListenerSupportFactory
@@ -753,14 +751,6 @@ public class Controller extends PFComponent {
         massDeletionHandlers.remove(l);
     }
 
-    public void addCloudStorageFullListeners(CloudStorageFullListener l) {
-        cloudStorageFullListeners.add(l);
-    }
-
-    public void removeCloudStorageFullListeners(CloudStorageFullListener l) {
-        cloudStorageFullListeners.remove(l);
-    }
-
     private void setupProPlugins() {
         String pluginConfig = ConfigurationEntry.PLUGINS.getValue(this);
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
@@ -1093,33 +1083,6 @@ public class Controller extends PFComponent {
             FutureTask<Object> recalculateRunnable = transferManager
                 .getRecalculateAutomaticRate();
             threadPool.execute(recalculateRunnable);
-        }
-
-        Runnable runnable = new Runnable() {
-            public void run() {
-                checkCloudSpaceFull();
-            }
-        };
-        threadPool.execute(runnable);
-    }
-
-    /**
-     * Task to see if cloud space is getting full, and warn the user.
-     */
-    private void checkCloudSpaceFull() {
-        if (osClient != null && osClient.isLoggedIn()) {
-            if (!osClient.getAccount().getOSSubscription().isDisabled()) {
-                long storageSize = osClient.getAccount().getOSSubscription()
-                        .getStorageSize();
-                long used = osClient.getAccountDetails().getSpaceUsed();
-                if (used >= storageSize * 8 / 10) {
-                    // More than 80% used. Notify.
-                    for (CloudStorageFullListener cloudStorageFullListener :
-                            cloudStorageFullListeners) {
-                        cloudStorageFullListener.cloudStorageFull();
-                    }
-                }
-            }
         }
     }
 
