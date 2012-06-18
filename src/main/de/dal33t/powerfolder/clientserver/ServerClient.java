@@ -1360,7 +1360,7 @@ public class ServerClient extends PFComponent {
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
                 login(username, passwordObf);
-                getController().schedule(new HostingServerRetriever(), 0);
+                getController().schedule(new HostingServerRetriever(), 50L);
             } catch (Exception ex) {
                 logWarning("Unable to login. " + ex);
                 logFine(ex);
