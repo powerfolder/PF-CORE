@@ -207,7 +207,7 @@ public class PluginManager extends PFComponent {
      */
     private void startEnabledPlugins() {
         for (Plugin plugin : plugins) {
-            logInfo("Starting plugin: " + plugin.getName());
+            logFine("Starting plugin: " + plugin.getName());
             try {
                 plugin.start();
             } catch (Exception e) {
