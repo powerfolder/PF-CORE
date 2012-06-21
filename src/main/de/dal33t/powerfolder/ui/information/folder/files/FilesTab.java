@@ -143,6 +143,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
         filterTextField.reset();
         breadcrumbPanel.setRoot(folderInfo);
+        statsPanel.setDirectory(folderInfo.getFolder(getController())
+                .getBaseDirectoryInfo());
+
     }
 
     /**
@@ -323,6 +326,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             relativeName);
         directoryFilter.setFolder(folder, dir);
         breadcrumbPanel.setDirectory(folder.getInfo(), dir);
+        statsPanel.setDirectory(dir);
     }
 
     public void fileArchive() {
