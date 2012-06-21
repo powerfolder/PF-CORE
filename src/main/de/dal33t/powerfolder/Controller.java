@@ -136,7 +136,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "6.0.7"; // 5.2.0
+    public static final String PROGRAM_VERSION = "6.0.10"; // 5.2.5
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -452,7 +452,7 @@ public class Controller extends PFComponent {
         // Initialize branding/preconfiguration of the client
         initDistribution();
         logFine("Build time: " + getBuildTime());
-        logInfo("PowerFolder v" + PROGRAM_VERSION);
+        logInfo("Program version " + PROGRAM_VERSION);
 
         Debug.writeSystemProperties();
 
@@ -2496,7 +2496,7 @@ public class Controller extends PFComponent {
                     + distribution.getName());
             }
             distribution.init(this);
-            logInfo("Running distribution: " + distribution.getName());
+            logFine("Running distribution: " + distribution.getName());
         } catch (Exception e) {
             logSevere("Failed to initialize distribution "
                 + (distribution == null ? "null" : distribution.getName()), e);
