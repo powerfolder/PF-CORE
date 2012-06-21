@@ -40,7 +40,7 @@ public class FilesStatsPanel extends PFUIComponent {
 
     public FilesStatsPanel(Controller controller) {
         super(controller);
-        pathLabel = new JLabel("C:\\afdsa\\asdfas.ffdg");
+        pathLabel = new JLabel("");
         localLabel = new JLabel(Translation.getTranslation(
             "files_stats_panel.local_label", ""));
         deletedLabel = new JLabel(Translation.getTranslation(
@@ -84,7 +84,12 @@ public class FilesStatsPanel extends PFUIComponent {
     }
 
     public void setDirectory(DirectoryInfo dir) {
-        pathLabel.setText(dir.getDiskFile(getController().getFolderRepository())
-                .getAbsolutePath());
+        String text = dir.getDiskFile(getController().getFolderRepository())
+                .getAbsolutePath();
+        if (text.length() > 100) {
+            pathLabel.setText(text.substring(0, 100));
+        } else {
+            pathLabel.setText(text);
+        }
     }
 }
