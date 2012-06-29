@@ -204,7 +204,7 @@ public class ServerClient extends PFComponent {
         if (theNode.getReconnectAddress() == null) {
             logSevere("Got server without reconnect address: " + theNode);
         }
-        logInfo("Using server from config: " + theNode + ", ID: " + theNodeId);
+        logInfo("Using server from config: " + theNode.getNick() + ", ID: " + theNodeId);
         init(theNode, allowServerChange);
     }
 
