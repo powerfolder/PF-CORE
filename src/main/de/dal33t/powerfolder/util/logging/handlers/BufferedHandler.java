@@ -95,6 +95,8 @@ public class BufferedHandler extends Handler {
                 }
                 String formattedMessage = formatter.format(record);
                 formattedMessage = buildLinks(formattedMessage);
+                formattedMessage = formattedMessage.replace(
+                    "de.dal33t.powerfolder.", "");
                 lines.add(formattedMessage);
             }
             return lines;
