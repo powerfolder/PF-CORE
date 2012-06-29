@@ -505,7 +505,7 @@ public enum ConfigurationEntry {
      * Setting to enable/disable swarming in an LAN environment. If swarming
      * below is set to false, this is ignored!
      */
-    USE_SWARMING_ON_LAN("swarming.lan.enabled", false),
+    USE_SWARMING_ON_LAN("swarming.lan.enabled", true),
 
     /**
      * Delta-sync: Enable/Disable it.
