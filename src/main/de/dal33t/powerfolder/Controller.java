@@ -136,7 +136,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "6.0.10"; // 5.2.5
+    public static final String PROGRAM_VERSION = "6.0.11 - 5.2.10"; // 5.2.10
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -454,7 +454,11 @@ public class Controller extends PFComponent {
         logFine("Build time: " + getBuildTime());
         logInfo("Program version " + PROGRAM_VERSION);
 
-        Debug.writeSystemProperties();
+        if (getDistribution().getBinaryName().toLowerCase()
+            .contains("powerfolder"))
+        {
+            Debug.writeSystemProperties();
+        }
 
         if (ConfigurationEntry.KILL_RUNNING_INSTANCE.getValueBoolean(this)) {
             killRunningInstance();
