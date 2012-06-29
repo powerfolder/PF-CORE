@@ -35,7 +35,7 @@ public class IdGenerator {
      * characters NOR url incompatible chars.
      * 
      * @see UUID
-     * @return the base64 encoded uuid
+     * @return the base58 encoded uuid
      */
     public static String makeId() {
         String id = Base58.encode(makeIdBytes());
