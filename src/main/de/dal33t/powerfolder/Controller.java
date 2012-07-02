@@ -1359,11 +1359,17 @@ public class Controller extends PFComponent {
             if (file.exists()) {
                 FileUtils.copyFile(file, backupFile);
             }
+            String confName = "PowerFolder";
+            if (distribution != null
+                && StringUtils.isNotBlank(distribution.getName()))
+            {
+                confName = distribution.getName();
+            }
             // Store config in misc base
-            PropertiesUtil.saveConfig(file, config,
-                "PowerFolder config file (v" + PROGRAM_VERSION + ')');
+            PropertiesUtil.saveConfig(file, config, confName
+                + " config file (v" + PROGRAM_VERSION + ')');
         } catch (IOException e) {
-            // FATAL 
+            // FATAL
             logSevere("Unable to save config. " + e, e);
             exit(1);
         } catch (Exception e) {
