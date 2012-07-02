@@ -471,8 +471,10 @@ public class SecurityManagerClient extends PFComponent implements
 
         public void run() {
             // The server connected!
+            boolean server = false;
             if (client.isServer(node) && node.isConnected()) {
                 prefetchAccountInfos();
+                server = true;
             }
 
             // Myself changed!
@@ -492,7 +494,7 @@ public class SecurityManagerClient extends PFComponent implements
             // This is required because of probably changed access
             // permissions to any folder.
             if (syncFolderMemberships) {
-                if (node.isMySelf()) {
+                if (node.isMySelf() || server) {
                     getController().getFolderRepository()
                         .triggerSynchronizeAllFolderMemberships();
                 } else if (node.isCompletelyConnected()) {
