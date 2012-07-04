@@ -809,83 +809,86 @@ public class Folder extends PFComponent {
             }
         }
 
-        // Prepare last modification date of tempfile.
-        if (!tempFile.setLastModified(fInfo.getModifiedDate().getTime())) {
-            logSevere("Failed to set modified date on " + tempFile + " for "
-                + fInfo.getModifiedDate().getTime());
-            return false;
-        }
+        synchronized (scanLock) {
+            // Prepare last modification date of tempfile.
+            if (!tempFile.setLastModified(fInfo.getModifiedDate().getTime())) {
+                logSevere("Failed to set modified date on " + tempFile
+                    + " for " + fInfo.getModifiedDate().getTime());
+                return false;
+            }
 
-        if (targetFile.exists()) {
-            // if file was a "newer file" the file already exists here
-            // Using local var because of possible race condition!!
-            FileArchiver arch = archiver;
-            if (arch != null) {
-                try {
-                    FileInfo oldLocalFileInfo = fInfo
-                        .getLocalFileInfo(getController().getFolderRepository());
-                    if (oldLocalFileInfo != null) {
-                        if (!currentInfo.isMetaFolder()
-                            && ConfigurationEntry.CONFLICT_DETECTION
-                                .getValueBoolean(getController()))
-                        {
-                            try {
-                                doSimpleConflictDetection(fInfo, targetFile,
-                                    oldLocalFileInfo);
-                            } catch (Exception e) {
-                                logSevere("Problem withe conflict detection. "
-                                    + e);
+            if (targetFile.exists()) {
+                // if file was a "newer file" the file already exists here
+                // Using local var because of possible race condition!!
+                FileArchiver arch = archiver;
+                if (arch != null) {
+                    try {
+                        FileInfo oldLocalFileInfo = fInfo
+                            .getLocalFileInfo(getController()
+                                .getFolderRepository());
+                        if (oldLocalFileInfo != null) {
+                            if (!currentInfo.isMetaFolder()
+                                && ConfigurationEntry.CONFLICT_DETECTION
+                                    .getValueBoolean(getController()))
+                            {
+                                try {
+                                    doSimpleConflictDetection(fInfo,
+                                        targetFile, oldLocalFileInfo);
+                                } catch (Exception e) {
+                                    logSevere("Problem withe conflict detection. "
+                                        + e);
+                                }
                             }
-                        }
 
-                        arch.archive(oldLocalFileInfo, targetFile, false);
+                            arch.archive(oldLocalFileInfo, targetFile, false);
+                        }
+                    } catch (IOException e) {
+                        // Same behavior as below, on failure drop out
+                        // TODO Maybe raise folder-problem....
+                        logWarning("Unable to archive old file!", e);
+                        return false;
                     }
-                } catch (IOException e) {
-                    // Same behavior as below, on failure drop out
-                    // TODO Maybe raise folder-problem....
-                    logWarning("Unable to archive old file!", e);
+                }
+                if (targetFile.exists() && !targetFile.delete()) {
+                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                        + targetFile.getAbsolutePath()
+                        + ". "
+                        + fInfo.toDetailString());
                     return false;
                 }
             }
-            if (targetFile.exists() && !targetFile.delete()) {
-                logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                    + targetFile.getAbsolutePath()
-                    + ". "
+            if (!tempFile.renameTo(targetFile)) {
+                logWarning("Was not able to rename tempfile, copiing "
+                    + tempFile.getAbsolutePath() + " to "
+                    + targetFile.getAbsolutePath() + ". "
                     + fInfo.toDetailString());
-                return false;
-            }
-        }
-        if (!tempFile.renameTo(targetFile)) {
-            logWarning("Was not able to rename tempfile, copiing "
-                + tempFile.getAbsolutePath() + " to "
-                + targetFile.getAbsolutePath() + ". " + fInfo.toDetailString());
 
-            try {
-                FileUtils.copyFile(tempFile, targetFile);
-            } catch (IOException e) {
-                // TODO give a diskfull warning?
-                logSevere("Unable to store completed download "
-                    + targetFile.getAbsolutePath() + ". " + e.getMessage()
-                    + ". " + fInfo.toDetailString());
-                logFiner(e);
-                return false;
+                try {
+                    FileUtils.copyFile(tempFile, targetFile);
+                } catch (IOException e) {
+                    // TODO give a diskfull warning?
+                    logSevere("Unable to store completed download "
+                        + targetFile.getAbsolutePath() + ". " + e.getMessage()
+                        + ". " + fInfo.toDetailString());
+                    logFiner(e);
+                    return false;
+                }
+
+                // Set modified date of remote
+                // TODO: Set last modified only if required
+                if (!targetFile.setLastModified(fInfo.getModifiedDate()
+                    .getTime()))
+                {
+                    logSevere("Failed to set modified date on " + targetFile
+                        + " to " + fInfo.getModifiedDate().getTime());
+                    return false;
+                }
+
+                if (tempFile.exists() && !tempFile.delete()) {
+                    logSevere("Unable to remove temp file: " + tempFile);
+                }
             }
 
-            // Set modified date of remote
-            // TODO: Set last modified only if required
-            if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime()))
-            {
-                logSevere("Failed to set modified date on " + targetFile
-                    + " to " + fInfo.getModifiedDate().getTime());
-                return false;
-            }
-
-            if (tempFile.exists() && !tempFile.delete()) {
-                logSevere("Unable to remove temp file: " + tempFile);
-            }
-        }
-
-        synchronized (scanLock) {
             synchronized (dbAccessLock) {
                 // Update internal database
                 store(getController().getMySelf(), correctFolderInfo(fInfo));
