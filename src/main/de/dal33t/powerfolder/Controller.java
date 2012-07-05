@@ -136,7 +136,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "6.0.11 - 5.2.10"; // 5.2.10
+    public static final String PROGRAM_VERSION = "6.0.12"; // 5.2.13
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1359,14 +1359,14 @@ public class Controller extends PFComponent {
             if (file.exists()) {
                 FileUtils.copyFile(file, backupFile);
             }
-            String confName = "PowerFolder";
+            String distName = "PowerFolder";
             if (distribution != null
                 && StringUtils.isNotBlank(distribution.getName()))
             {
-                confName = distribution.getName();
+                distName = distribution.getName();
             }
             // Store config in misc base
-            PropertiesUtil.saveConfig(file, config, confName
+            PropertiesUtil.saveConfig(file, config, distName
                 + " config file (v" + PROGRAM_VERSION + ')');
         } catch (IOException e) {
             // FATAL
