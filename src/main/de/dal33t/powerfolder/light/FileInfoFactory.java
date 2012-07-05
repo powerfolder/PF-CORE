@@ -348,8 +348,8 @@ public final class FileInfoFactory {
             // Crop off last /
             fn = fn.substring(0, fn.length() - 1);
         }
-        if (fn.startsWith("/")) {
-            // Crop off first /
+        while (fn.startsWith("/")) {
+            // Crop off first /s
             fn = fn.substring(1);
         }
         return fn;
