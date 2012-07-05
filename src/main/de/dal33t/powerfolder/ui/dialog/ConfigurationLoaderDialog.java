@@ -40,6 +40,7 @@ import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -57,11 +58,15 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.distribution.AbstractDistribution;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
+import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -78,6 +83,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
     private JProgressBar progressBar;
     private JLabel infoLabel;
     private JButton okButton;
+    private JCheckBox neverAskAgainBox;
     private Object haltLock = new Object();
     private Trigger finishedTrigger;
 
@@ -117,7 +123,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             initComponents();
 
             FormLayout layout = new FormLayout("p:g, 3dlu, p",
-                "p, 7dlu, p, 3dlu, p, 7dlu, 12dlu, 14dlu, p");
+                "p, 7dlu, p, 3dlu, p, 7dlu, p, 7dlu, 12dlu, 14dlu, p");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setDefaultDialogBorder();
             CellConstraints cc = new CellConstraints();
@@ -133,6 +139,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             row += 2;
             builder.add(proxySettingsLabel,
                 cc.xywh(1, row, 1, 1, "right, center"));
+
+            row += 2;
+            builder.add(neverAskAgainBox, cc.xy(1, row));
 
             row += 2;
             builder.add(progressBar, cc.xyw(1, row, 3));
@@ -223,6 +232,22 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         progressBar.setIndeterminate(true);
 
         infoLabel = SimpleComponentFactory.createLabel("X");
+
+        neverAskAgainBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("general.neverAskAgain"));
+        neverAskAgainBox.setVisible(false);
+        try {
+            boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
+                .getValueBoolean(getController());
+            boolean isPF = AbstractDistribution
+                .isPowerFolderServer(getController());
+            boolean branded = getController().getDistribution()
+                .isBrandedClient();
+            neverAskAgainBox.setVisible(prompt && isPF && !branded);
+        } catch (Exception e) {
+            logWarning(e.toString());
+        }
+
     }
 
     private String getTitle() {
@@ -258,8 +283,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             skipButton.setText(Translation.getTranslation("general.cancel"));
             bar = ButtonBarFactory.buildCenteredBar(okButton, skipButton);
         } else {
-            bar = ButtonBarFactory.buildCenteredBar(okButton, skipButton,
-                exitButton);
+            bar = ButtonBarFactory.buildCenteredBar(okButton, exitButton);
         }
 
         bar.setOpaque(false);
@@ -431,6 +455,15 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             frame.setVisible(false);
             frame.dispose();
             mainProgrammContinue();
+
+            if (neverAskAgainBox.isSelected()
+                && ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
+                    .getValueBoolean(getController()))
+            {
+                ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM.setValue(
+                    getController(), false);
+                getController().saveConfig();
+            }
 
             if (finishedTrigger != null) {
                 finishedTrigger.triggerCommit();
