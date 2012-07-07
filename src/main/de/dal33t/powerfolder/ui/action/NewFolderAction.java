@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderCreateItem;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
@@ -72,6 +73,10 @@ public class NewFolderAction extends BaseAction {
                         getUIController(),
                         folderRepository.getFoldersBasedir(), true);
                     if (files == null || files.isEmpty()) {
+                        return;
+                    }
+
+                    if (isPowerFolderRootSelected(files)) {
                         return;
                     }
 
@@ -151,5 +156,27 @@ public class NewFolderAction extends BaseAction {
                 }
             }
         });
+    }
+
+    /**
+     * Is one of the files the PowerFolder base directory?
+     * A bad thing if true. Should be managing a subdirectory of this.
+     *
+     * @param files
+     * @return
+     */
+    private boolean isPowerFolderRootSelected(List<File> files) {
+        String baseDir =
+                getController().getFolderRepository().getFoldersBasedir();
+        for (File file : files) {
+            if (file.getAbsolutePath().equals(baseDir)) {
+                String title = Translation.getTranslation("general.directory");
+                String message =  Translation.getTranslation("new_folder_action.basedir_error.text");
+                DialogFactory.genericDialog(getController(), title, message,
+                        GenericDialogType.ERROR);
+                return true;
+            }
+        }
+        return false;
     }
 }
