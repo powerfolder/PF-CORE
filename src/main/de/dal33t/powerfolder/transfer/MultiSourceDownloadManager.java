@@ -222,9 +222,11 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     protected void sendPartRequests() throws BrokenDownloadException {
-        // logFine("Sending part requests: " +
-        // filePartsState.countPartStates(filePartsState.getRange(),
-        // PartState.NEEDED));
+        if (isFiner()) {
+            logFiner("X Sending part requests: "
+                + filePartsState.countPartStates(filePartsState.getRange(),
+                    PartState.NEEDED));
+        }
 
         setTransferState(TransferState.DOWNLOADING);
 
@@ -244,6 +246,10 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             } else {
                 break;
             }
+        }
+
+        if (isFiner()) {
+            logFiner("X Sending part requests over");
         }
 
         long p = filePartsState.countPartStates(filePartsState.getRange(),
@@ -287,7 +293,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         throws BrokenDownloadException
     {
         assert range != null;
-
+        if (isFiner()) {
+            logFiner("X findAndRequestDownloadFor: " + range);
+        }
         for (Download d : downloads.values()) {
             if (!d.isStarted() || d.isBroken()) {
                 continue;
