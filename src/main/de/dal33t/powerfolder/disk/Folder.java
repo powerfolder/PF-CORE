@@ -3506,7 +3506,8 @@ public class Folder extends PFComponent {
         if ((hasOwnDatabase || getKnownItemCount() > 0)
             && !getSystemSubDir0().exists())
         {
-            logWarning("Not storting folder database. Local system directory does not exists.");
+            logWarning("Not storting folder database. Local system directory does not exists: "
+                + getLocalBase());
             return;
         }
 
