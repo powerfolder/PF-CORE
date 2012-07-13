@@ -1036,47 +1036,51 @@ public class ServerClient extends PFComponent {
         }
         Runnable retriever = new Runnable() {
             public void run() {
-                try {
-                    if (!isConnected()) {
-                        return;
-                    }
-                    Collection<FolderInfo> infos = getController()
-                        .getFolderRepository().getJoinedFolderInfos();
-                    FolderInfo[] folders = infos.toArray(new FolderInfo[infos
-                        .size()]);
-                    Collection<MemberInfo> servers = getFolderService()
-                        .getHostingServers(folders);
-                    logFine("Got " + servers.size() + " servers for our "
-                        + folders.length + " folders: " + servers);
-                    for (MemberInfo serverMInfo : servers) {
-                        Member hostingServer = serverMInfo.getNode(
-                            getController(), true);
-                        boolean wasServer = hostingServer.isServer();
-                        hostingServer.setServer(true);
-
-                        if (!wasServer) {
-                            listenerSupport
-                                .nodeServerStatusChanged(new ServerClientEvent(
-                                    ServerClient.this, hostingServer));
-                        }
-                        
-                        if (hostingServer.isConnected()
-                            || hostingServer.isConnecting()
-                            || hostingServer.equals(server))
-                        {
-                            // Already connected / reconnecting
-                            continue;
-                        }
-                        // Connect now
-                        hostingServer.markForImmediateConnect();
-                    }
-                } catch (Exception e) {
-                    logWarning("Unable to retrieve hosting servers of folders."
-                        + e);
-                }
+                retrieveCloudServers();
             }
         };
         getController().getIOProvider().startIO(retriever);
+    }
+    
+    private void retrieveCloudServers() {
+        try {
+            if (!isConnected()) {
+                return;
+            }
+            Collection<FolderInfo> infos = getController()
+                .getFolderRepository().getJoinedFolderInfos();
+            FolderInfo[] folders = infos.toArray(new FolderInfo[infos
+                .size()]);
+            Collection<MemberInfo> servers = getFolderService()
+                .getHostingServers(folders);
+            logFine("Got " + servers.size() + " servers for our "
+                + folders.length + " folders: " + servers);
+            for (MemberInfo serverMInfo : servers) {
+                Member hostingServer = serverMInfo.getNode(
+                    getController(), true);
+                boolean wasServer = hostingServer.isServer();
+                hostingServer.setServer(true);
+
+                if (!wasServer) {
+                    listenerSupport
+                        .nodeServerStatusChanged(new ServerClientEvent(
+                            ServerClient.this, hostingServer));
+                }
+                
+                if (hostingServer.isConnected()
+                    || hostingServer.isConnecting()
+                    || hostingServer.equals(server))
+                {
+                    // Already connected / reconnecting
+                    continue;
+                }
+                // Connect now
+                hostingServer.markForImmediateConnect();
+            }
+        } catch (Exception e) {
+            logWarning("Unable to retrieve hosting servers of folders."
+                + e);
+        }
     }
 
     /**
