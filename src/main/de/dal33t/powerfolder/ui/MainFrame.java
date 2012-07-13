@@ -1275,7 +1275,7 @@ public class MainFrame extends PFUIComponent {
                 AccountDetails ad = client.getAccountDetails();
                 if (storageSubscription.isDisabled()) {
                     loginActionLabel.setText(Translation
-                        .getTranslation("main_frame.account_disabled.text"));
+                        .getTranslation("main_frame.storage_subscription_disabled.text"));
                 } else {
                     totalStorage = storageSubscription.getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
