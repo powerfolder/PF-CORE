@@ -202,7 +202,13 @@ public class Download extends Transfer {
         if (pendingRequests.size() >= getTransferManager()
             .getMaxRequestsQueued())
         {
+            if (isFiner()) {
+                logFiner("X Skipping request. Already got too many pending requests: " + range);
+            }
             return false;
+        }
+        if (isFiner()) {
+            logFiner("X requestPart: " + range);
         }
         try {
             if (getPartner().getProtocolVersion() >= 100) {
@@ -393,6 +399,9 @@ public class Download extends Transfer {
         getTransferManager().downloadBroken(Download.this, problem, message);
     }
 
+    private long lastBrokenCheck;
+    private boolean brokenCache;
+    
     /**
      * @return if this download is broken. timed out or has no connection
      *         anymore or (on blacklist in folder and isRequestedAutomatic)
@@ -404,6 +413,13 @@ public class Download extends Transfer {
         if (super.isBroken()) {
             return true;
         }
+        if (System.currentTimeMillis() - lastBrokenCheck < 1000) {
+            // Check every second only
+            return brokenCache;
+        }
+
+        lastBrokenCheck = System.currentTimeMillis();
+
         // timeout is, when dl is not enqued at remote side,
         // and has timeout. Don't check timeout during filehasing of UPLOADER
         // and DOWNLOADER (#1829)
@@ -416,6 +432,7 @@ public class Download extends Transfer {
                     logFine("Break cause: Timeout. "
                         + getFile().toDetailString());
                 }
+                brokenCache = true;
                 return true;
             }
         }
@@ -425,18 +442,22 @@ public class Download extends Transfer {
             if (isFine()) {
                 logFine("Break cause: not queued.");
             }
+            brokenCache = true;
             return true;
         }
-        // check blacklist
-        Folder folder = getFile().getFolder(
-            getController().getFolderRepository());
-        boolean onBlacklist = folder.getDiskItemFilter().isExcluded(getFile());
-        if (onBlacklist) {
-            if (isFine()) {
-                logFine("Break cause: Excluded from sync.");
-            }
-            return true;
-        }
+
+        // Not done here, may cause too much CPU.
+        // #2532: Done in TransferManager.checkActiveTranfersForExcludes();
+        // Folder folder = getFile().getFolder(
+        // getController().getFolderRepository());
+        // boolean onBlacklist =
+        // folder.getDiskItemFilter().isExcluded(getFile());
+        // if (onBlacklist) {
+        // if (isFine()) {
+        // logFine("Break cause: Excluded from sync.");
+        // }
+        // return true;
+        // }
 
         /*
          * Wrong place to check, since we could actually want to load an old
@@ -451,9 +472,11 @@ public class Download extends Transfer {
                 logFine("Break cause: Newer version available. "
                     + getFile().toDetailString());
             }
+            brokenCache = true;
             return true;
         }
 
+        brokenCache = false;
         return false;
     }
 
