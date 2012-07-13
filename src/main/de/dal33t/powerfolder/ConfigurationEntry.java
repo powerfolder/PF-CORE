@@ -224,7 +224,7 @@ public enum ConfigurationEntry {
      * HTTP tunnel relay URL. TODO Change config key.
      */
     SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
-        "http://os005.node.powerfolder.com/rpc"),
+        "http://os005.powerfolder.com/rpc"),
 
     /**
      * #1687: How this computer should behave when the server is not connected.
@@ -758,7 +758,7 @@ public enum ConfigurationEntry {
      * maintenance. In Seconds! Default: 1 month
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30
-        * 1),
+        * 3),
 
     /**
      * The http proxy to use for HTTP tunneled connections
