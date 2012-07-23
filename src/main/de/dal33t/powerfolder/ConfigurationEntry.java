@@ -543,6 +543,12 @@ public enum ConfigurationEntry {
         }
     },
 
+    /**
+     * PFC-2165 Base directory does not longer change back to default directory
+     * if inaccessible during program start, e.g. USB- or Network-Drive
+     */
+    FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
+
     MASS_DELETE_PROTECTION("mass.delete.protection", false) {
 
         @Override
