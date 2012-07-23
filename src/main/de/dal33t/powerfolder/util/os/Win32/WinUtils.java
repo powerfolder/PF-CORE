@@ -223,6 +223,16 @@ public class WinUtils extends Loggable {
             logInfo("Deleting startup link.");
             pflnk.delete();
             pflnkAll.delete();
+
+            // PFC-2164: Fallback. Also delete binary name links
+            shortCutname = controller.getDistribution().getBinaryName()
+                + ".lnk";
+            pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
+                shortCutname);
+            pflnkAll = new File(
+                getSystemFolderPath(CSIDL_COMMON_STARTUP, false), shortCutname);
+            pflnk.delete();
+            pflnkAll.delete();
         }
     }
 
