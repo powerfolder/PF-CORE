@@ -279,7 +279,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Use default as fallback
-        if (!ok) {
+        if (!ok
+            && ConfigurationEntry.FOLDER_BASEDIR_FALLBACK_TO_DEFAULT
+                .getValueBoolean(getController()))
+        {
             foldersBasedir = new File(
                 ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
             if (!foldersBasedir.exists()) {
@@ -297,12 +300,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (ok) {
             logInfo("Using base path for folders: " + foldersBasedir);
+            FileUtils.maintainDesktopIni(getController(), foldersBasedir);
         } else {
             logWarning("Unable to access base path for folders: "
                 + foldersBasedir);
         }
-
-        FileUtils.maintainDesktopIni(getController(), foldersBasedir);
     }
 
     /**
