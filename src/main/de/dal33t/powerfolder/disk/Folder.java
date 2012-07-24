@@ -1483,7 +1483,7 @@ public class Folder extends PFComponent {
         }
         if (!isKnown(fInfo)) {
             if (isWarning()) {
-                logWarning("Tried to remove a not-known file: "
+                logWarning("Tried to remove a unknown file: "
                     + fInfo.toDetailString());
             }
             return false;
@@ -1718,7 +1718,8 @@ public class Folder extends PFComponent {
         }
 
         if (loadFolderDB(new TFile(localBase,
-            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + Constants.DB_BACKUP_FILENAME)))
+            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/'
+                + Constants.DB_BACKUP_FILENAME)))
         {
             return;
         }
@@ -1773,7 +1774,8 @@ public class Folder extends PFComponent {
      */
     private void storeFolderDB() {
         File dbFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME);
-        File dbFileBackup = new TFile(getSystemSubDir(), Constants.DB_BACKUP_FILENAME);
+        File dbFileBackup = new TFile(getSystemSubDir(),
+            Constants.DB_BACKUP_FILENAME);
         try {
             FileInfo[] diskItems;
             synchronized (dbAccessLock) {
@@ -1839,7 +1841,8 @@ public class Folder extends PFComponent {
             if (!oldDbFile.delete()) {
                 logFiner("Failed to delete 'old' database file: " + oldDbFile);
             }
-            File oldDbFileBackup = new TFile(localBase, Constants.DB_BACKUP_FILENAME);
+            File oldDbFileBackup = new TFile(localBase,
+                Constants.DB_BACKUP_FILENAME);
             if (!oldDbFileBackup.delete()) {
                 logFiner("Failed to delete backup of 'old' database file: "
                     + oldDbFileBackup);
@@ -2722,7 +2725,8 @@ public class Folder extends PFComponent {
                 }
 
                 for (FileInfo remoteFile : fileList) {
-                    handleFileDeletion(remoteFile, force, member, removedFiles, 0);
+                    handleFileDeletion(remoteFile, force, member, removedFiles,
+                        0);
                 }
             }
 
@@ -2813,10 +2817,12 @@ public class Folder extends PFComponent {
         File localCopy = localFile.getDiskFile(getController()
             .getFolderRepository());
         if (!localFile.inSyncWithDisk(localCopy)) {
-            logFine("Not deleting file from member " + member
-                + ", local file not in sync with disk: "
-                + localFile.toDetailString() + " at "
-                + localCopy.getAbsolutePath());
+            if (isFine()) {
+                logFine("Not deleting file from member " + member
+                    + ", local file not in sync with disk: "
+                    + localFile.toDetailString() + " at "
+                    + localCopy.getAbsolutePath());
+            }
 
             if (scanAllowedNow() && scanChangedFile(localFile) != null
                 && nTried < 10)
@@ -4383,7 +4389,7 @@ public class Folder extends PFComponent {
             return true;
         }
         return getController().getSecurityManager().hasPermission(
-            member.getAccountInfo(), permission);
+            member.getInfo(), permission);
     }
 
     private FolderInfo getParentFolderInfo() {
