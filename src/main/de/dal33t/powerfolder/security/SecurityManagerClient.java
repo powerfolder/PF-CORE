@@ -105,6 +105,19 @@ public class SecurityManagerClient extends PFComponent implements
 
     private final Object requestPermissionLock = new Object();
 
+    public boolean hasPermission(MemberInfo memberInfo, Permission permission) {
+        Member m = memberInfo.getNode(getController(), true);
+        if (client.isCloudServer(m)) {
+            return true;
+        }
+        AccountInfo a = m.getAccountInfo();
+        if (a == null) {
+            // Not logged in
+            return false;
+        }
+        return hasPermission(m.getAccountInfo(), permission);
+    }
+
     public boolean hasPermission(Account account, Permission permission) {
         return hasPermission(account != null ? account.createInfo() : null,
             permission);
