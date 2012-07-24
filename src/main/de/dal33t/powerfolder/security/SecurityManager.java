@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * A security manager handles the access control to a powerfolder security
@@ -85,6 +86,19 @@ public interface SecurityManager {
      * @return the account info for the given member.
      */
     AccountInfo getAccountInfo(Member node);
+    
+    /**
+     * Central method to check if a given computer/member has the permission.
+     * <p>
+     * This takes default permissions for folders into consideration. Also
+     * accepts null {@link AccountInfo} as parameter - then applies default
+     * permission of folder only.
+     * 
+     * @param accountInfo
+     * @param permission
+     * @return true if the account has the permission. false if not
+     */
+    boolean hasPermission(MemberInfo memberInfo, Permission permission);
 
     /**
      * Central method to check if a given account has the permission.
