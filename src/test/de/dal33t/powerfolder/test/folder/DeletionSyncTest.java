@@ -116,12 +116,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // has only auto-dl, no deletion sync)
         assertTrue(testFileBart.exists());
         assertTrue(testFileBart.canWrite());
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return testFileBart.delete();
-            }
-        });
-        scanFolder(getFolderAtBart());
+
+        getFolderAtBart().removeFilesLocal(
+            getFolderAtBart().getKnownFiles().iterator().next());
+
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()
             .iterator().next(), getContollerBart());
         assertEquals(2, getFolderAtBart().getKnownFiles().iterator().next()
@@ -158,7 +156,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         TestHelper.waitMilliSeconds(200);
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public String message() {
+                return "File version at lisa: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .getVersion();
+            }
+
             public boolean reached() {
                 return 2 == getFolderAtLisa().getKnownFiles().iterator().next()
                     .getVersion();
