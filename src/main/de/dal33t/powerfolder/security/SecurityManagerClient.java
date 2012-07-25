@@ -97,7 +97,6 @@ public class SecurityManagerClient extends PFComponent implements
             "Authentication with md5 encoded password not supported at client for "
                 + username);
     }
-    
 
     public void logout() {
         client.logout();
@@ -109,6 +108,9 @@ public class SecurityManagerClient extends PFComponent implements
         Member m = memberInfo.getNode(getController(), true);
         if (client.isCloudServer(m)) {
             return true;
+        }
+        if (!client.isConnected() || !client.isLoggedIn()) {
+            return hasPermissionDisconnected(permission);
         }
         AccountInfo a = m.getAccountInfo();
         if (a == null) {
