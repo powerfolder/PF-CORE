@@ -1474,9 +1474,9 @@ public class Folder extends PFComponent {
      * as deleted
      * 
      * @param fInfo
-     * @return true if the folder was changed
+     * @return The new deleted FileInfo, null if unchanged.
      */
-    private boolean removeFileLocal(FileInfo fInfo) {
+    private FileInfo removeFileLocal(FileInfo fInfo) {
         if (isFiner()) {
             logFiner("Remove file local: " + fInfo + ", Folder equal ? "
                 + Util.equals(fInfo.getFolderInfo(), currentInfo));
@@ -1486,7 +1486,7 @@ public class Folder extends PFComponent {
                 logWarning("Tried to remove a unknown file: "
                     + fInfo.toDetailString());
             }
-            return false;
+            return null;
         }
 
         // Abort transfers files
@@ -1504,7 +1504,7 @@ public class Folder extends PFComponent {
                         + ". "
                         + fInfo.toDetailString());
                     // Failure.
-                    return false;
+                    return null;
                 }
                 FileInfo localFile = getFile(fInfo);
                 FileInfo synced = localFile.syncFromDiskIfRequired(this,
@@ -1512,11 +1512,12 @@ public class Folder extends PFComponent {
                 folderChanged = synced != null;
                 if (folderChanged) {
                     store(getController().getMySelf(), synced);
+                    return synced;
                 }
             }
         }
 
-        return folderChanged;
+        return null;
     }
 
     /**
@@ -1549,8 +1550,9 @@ public class Folder extends PFComponent {
                     dirs.add(fileInfo);
                     continue;
                 }
-                if (removeFileLocal(fileInfo)) {
-                    removedFiles.add(fileInfo);
+                FileInfo deletedFileInfo = removeFileLocal(fileInfo);
+                if (deletedFileInfo != null) {
+                    removedFiles.add(deletedFileInfo);
                 }
             }
             for (FileInfo dirInfo : dirs) {
@@ -1559,7 +1561,10 @@ public class Folder extends PFComponent {
                 c.setPath((DirectoryInfo) dirInfo);
                 logInfo("Deleting directory: " + dirInfo);
                 removeFilesLocal(dao.findFiles(c));
-                removeFileLocal(dirInfo);
+                FileInfo deletedDirInfo = removeFileLocal(dirInfo);
+                if (deletedDirInfo != null) {
+                    removedFiles.add(deletedDirInfo);
+                }
             }
         }
 
