@@ -115,7 +115,7 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  */
 public class MainFrame extends PFUIComponent {
 
-    private enum FrameMode {MAXIMIZED, NORMAL, COMPACT}
+    private enum FrameMode {MAXIMIZED, NORMAL, COMPACT, MINIMIZED}
 
     public static final int MIN_HEIGHT_UNCOMPACT = 500;
     public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
@@ -1082,8 +1082,7 @@ public class MainFrame extends PFUIComponent {
             // To COMPACT mode.
             setFrameMode(FrameMode.COMPACT);
         } else {
-            // Should never be here - no Minus Button!
-            logSevere("Should not be doing doMinusOperation in COMPACT mode.");
+            setFrameMode(FrameMode.MINIMIZED);
         }
     }
 
@@ -1187,7 +1186,9 @@ public class MainFrame extends PFUIComponent {
          */
         public void windowIconified(WindowEvent e) {
             getUIController().hideChildPanels();
-            uiComponent.setVisible(false);
+            if (OSUtil.isSystraySupported()) {
+                uiComponent.setVisible(false);
+            }
         }
     }
 
@@ -1372,8 +1373,16 @@ public class MainFrame extends PFUIComponent {
                 plusButton.setIcons(Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
                         Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
                         Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
-                minusButton.setVisible(false);
+                minusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.minimize.tips"));
+                // Don't show minimize button if systray is available
+                // and the exit button uses minimize option.
+                minusButton.setVisible(!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 toFront();
+                break;
+            case MINIMIZED:
+                uiComponent.setExtendedState(Frame.ICONIFIED);
                 break;
         }
 

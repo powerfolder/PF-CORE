@@ -34,7 +34,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.adapter.ComboBoxAdapter;
 import com.jgoodies.binding.value.BufferedValueModel;
 import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.binding.value.ValueHolder;
@@ -71,6 +70,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JLabel skinLabel;
     private JComboBox skinCombo;
+    private boolean originalQuitOnX;
 
     private boolean needsRestart;
     // The triggers the writing into core
@@ -105,18 +105,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         // Language selector
         languageChooser = createLanguageChooser();
 
-        // Create xBehaviorchooser
-        ValueModel xBehaviorModel = PreferencesEntry.QUIT_ON_X
-            .getModel(getController());
         // Build behavior chooser
-        xBehaviorChooser = createXBehaviorChooser(new BufferedValueModel(
-            xBehaviorModel, writeTrigger));
-        // Only available on systems with system tray
-        xBehaviorChooser.setEnabled(OSUtil.isSystraySupported());
-        if (!xBehaviorChooser.isEnabled()) {
-            // Display exit on x if not enabled
-            xBehaviorModel.setValue(Boolean.TRUE);
-        }
+        xBehaviorChooser = createXBehaviorChooser();
 
         boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
             .getValueBoolean(getController());
@@ -221,10 +211,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         }
     }
 
-    private void doMainOnTop(Boolean onTop) {
-        getUIController().getMainFrame().getUIComponent().setAlwaysOnTop(onTop);
-    }
-
     /**
      * Builds general ui panel
      */
@@ -315,6 +301,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             needsRestart = true;
         }
 
+        PreferencesEntry.QUIT_ON_X.setValue(getController(),
+                xBehaviorChooser.getSelectedIndex() == 0); // Quit on exit.
+        if (xBehaviorChooser.getSelectedIndex() == 0 ^ originalQuitOnX) {
+            // Need to restart to redraw minimize button. 
+            needsRestart = true;
+        }
+
         if (usePowerFolderLink != null) {
             boolean newValue = usePowerFolderLink.isSelected();
             configureLinksPlances(newValue);
@@ -400,40 +393,29 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     /**
-     * Creates a X behavior chooser, writes settings into model
-     * 
-     * @param xBehaviorModel
-     *            the behavior model, writes true if should exit program, false
-     *            if minimize to system is choosen
-     * @return the combobox
+     * Creates a X behavior chooser.
+     * Option 0 is Exit program
+     * Option 1 is Minimize to system tray
      */
-    @SuppressWarnings("serial")
-    private JComboBox createXBehaviorChooser(ValueModel xBehaviorModel) {
-        // Build combobox model
-        ComboBoxAdapter<Boolean> model = new ComboBoxAdapter<Boolean>(
-            new Boolean[]{Boolean.FALSE, Boolean.TRUE}, xBehaviorModel);
+    private JComboBox createXBehaviorChooser() {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        model.addElement(Translation.getTranslation(
+                "preferences.dialog.exit_behavior.exit"));
+        if (OSUtil.isSystraySupported()) {
+            model.addElement(Translation.getTranslation(
+                    "preferences.dialog.exit_behavior.minimize"));
+        }
 
-        // Create combobox
-        JComboBox chooser = new JComboBox(model);
+        JComboBox combo = new JComboBox(model);
+        combo.setEnabled(OSUtil.isSystraySupported());
+        if (OSUtil.isSystraySupported() &&
+                !PreferencesEntry.QUIT_ON_X.getValueBoolean(
+                        getController())) {
+            combo.setSelectedIndex(1); // Minimize option.
+        }
 
-        // Add renderer
-        chooser.setRenderer(new DefaultListCellRenderer() {
-            public Component getListCellRendererComponent(JList list,
-                Object value, int index, boolean isSelected,
-                boolean cellHasFocus)
-            {
-                super.getListCellRendererComponent(list, value, index,
-                    isSelected, cellHasFocus);
-                if ((Boolean) value) {
-                    setText(Translation
-                        .getTranslation("preferences.dialog.exit_behavior.exit"));
-                } else {
-                    setText(Translation
-                        .getTranslation("preferences.dialog.exit_behavior.minimize"));
-                }
-                return this;
-            }
-        });
-        return chooser;
+        originalQuitOnX = combo.getSelectedIndex() == 0;
+
+        return combo;
     }
 }
