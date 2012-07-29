@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -63,6 +64,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     private Folder folder;
     private final List<FileInfo> fileInfos;
+
+    private final AtomicBoolean significantlyChanged;
+    private Folder previousFolder;
+    private final List<FileInfo> previousFileInfos;
+    private boolean previouslySorted;
+
     private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
@@ -77,8 +84,10 @@ public class FilesTableModel extends PFComponent implements TableModel,
     public FilesTableModel(Controller controller) {
         super(controller);
         fileInfos = new ArrayList<FileInfo>();
+        previousFileInfos = new ArrayList<FileInfo>();
         tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
         patternChangeListener = new MyPatternChangeListener();
+        significantlyChanged = new AtomicBoolean();
     }
 
     /**
@@ -126,11 +135,66 @@ public class FilesTableModel extends PFComponent implements TableModel,
             public void run() {
                 synchronized (fileInfos) {
                     sort();
+                    preprocessSignificantlyChanged();
                     fireModelChanged();
+                    postprocessSignificantlyChanged();
                 }
             }
         };
         UIUtil.invokeLaterInEDT(runnable);
+    }
+
+    /**
+     * Manually sorted?
+     * Folder changed?
+     * FileInfos different?
+     */
+    private void preprocessSignificantlyChanged() {
+        if (previouslySorted) {
+            significantlyChanged.set(true);
+            return;
+        }
+        if (folder == null || previousFolder == null || !folder.equals(previousFolder)) {
+            significantlyChanged.set(true);
+            return;
+        }
+        if (fileInfos.size() != previousFileInfos.size()) {
+            significantlyChanged.set(true);
+            return;
+        }
+        for (FileInfo fileInfo : fileInfos) {
+            boolean same = false;
+            for (FileInfo previousFileInfo : previousFileInfos) {
+                if (fileInfo.equals(previousFileInfo)) {
+                    same = true;
+                    break;
+                }
+            }
+            if (!same) {
+                significantlyChanged.set(true);
+                return;
+            }
+        }
+        significantlyChanged.set(false);
+    }
+
+    /**
+     * Remember state for next time.
+     */
+    private void postprocessSignificantlyChanged() {
+        previousFolder = folder;
+        previousFileInfos.clear();
+        previousFileInfos.addAll(fileInfos);
+        previouslySorted = false;
+    }
+
+    /**
+     * During an update, has the model data changed significantly?
+     * 
+     * @return
+     */
+    public boolean isSignificantlyChanged() {
+        return significantlyChanged.get();
     }
 
     public void addTableModelListener(TableModelListener l) {
@@ -210,6 +274,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public boolean sortBy(int columnIndex) {
+        previouslySorted = true;
         sortColumn = columnIndex;
         switch (columnIndex) {
             case COL_FILE_TYPE :

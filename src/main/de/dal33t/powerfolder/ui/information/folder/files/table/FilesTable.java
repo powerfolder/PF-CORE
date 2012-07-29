@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -115,6 +116,25 @@ public class FilesTable extends JTable {
         column.setPreferredWidth(60);
     }
 
+    @Override
+    public void tableChanged(TableModelEvent e) {
+
+        // Remember the previously selected row.
+        int[] rowsCount = getSelectedRows();
+
+        // Make the actual changes.
+        super.tableChanged(e);
+
+        // See if the model says things changed significantly.
+        // If not, try to keep row selection focus as is.
+        FilesTableModel model = (FilesTableModel) getModel();
+        if (!model.isSignificantlyChanged()) {
+            for (int i : rowsCount) {
+                getSelectionModel().setSelectionInterval(i, i);
+            }
+        }
+    }
+
     /**
      * Listener on table header, takes care about the sorting of table
      * 
@@ -133,7 +153,7 @@ public class FilesTable extends JTable {
                     FilesTableModel filesTableModel = (FilesTableModel) model;
                     boolean freshSorted = filesTableModel.sortBy(modelColumnNo);
                     if (!freshSorted) {
-                        // reverse list
+                        // Reverse list
                         filesTableModel.reverseList();
                     }
                 }
