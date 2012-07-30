@@ -2714,8 +2714,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!hasWritePermission(member)) {
-                if (isInfo()) {
-                    logInfo("Not syncing deletions. " + member + " / "
+                if (isFine()) {
+                    logFine("Not syncing deletions. " + member + " / "
                         + member.getAccountInfo() + " no write permission");
                 }
                 continue;
@@ -3366,8 +3366,8 @@ public class Folder extends PFComponent {
                         hasWrite = hasWritePermission(member);
                     }
                     if (!hasWrite) {
-                        if (isInfo()) {
-                            logInfo("Not searching same files. " + member
+                        if (isFine()) {
+                            logFine("Not searching same files. " + member
                                 + " / " + member.getAccountInfo()
                                 + " no write permission");
                         }
@@ -3981,8 +3981,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!hasWritePermission(member)) {
-                if (isWarning()) {
-                    logWarning("Not downloading files. " + member + " / "
+                if (isFine()) {
+                    logFine("Not downloading files. " + member + " / "
                         + member.getAccountInfo() + " no write permission");
                 }
                 continue;
