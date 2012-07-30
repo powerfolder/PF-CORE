@@ -306,6 +306,11 @@ public enum ConfigurationEntry {
      * #1715 If it should be possible to register at the server.
      */
     SERVER_REGISTER_ENABLED("server.register.enabled", true),
+    
+    /**
+     * PFS-485 If it should be possible to send invite others.
+     */
+    SERVER_INVITE_ENABLED("server.invite.enabled", true),
 
     /**
      * If "Password recovery" should be enabled. If not the server automatically
