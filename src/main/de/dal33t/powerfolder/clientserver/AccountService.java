@@ -48,11 +48,13 @@ public interface AccountService {
      *            The server to host the account on or null for default
      * @param referredBy
      *            the account OID this user was referred by.
+     * @param recommendWelcomeEmail
+     *            if a welcome mail is recommend to be sent
      * @return the Account if registration was successfully. null if not
      *         possible or already taken even if password match.
      */
     Account register(String username, String password, boolean newsLetter,
-        ServerInfo serverInfo, String referredBy);
+        ServerInfo serverInfo, String referredBy, boolean recommendWelcomeEmail);
 
     /**
      * Logs in from a remote location.
