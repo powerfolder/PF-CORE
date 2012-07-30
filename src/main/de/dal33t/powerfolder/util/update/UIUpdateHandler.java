@@ -46,7 +46,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
         String nothingNeverAsk = Translation
             .getTranslation("dialog.update_check.nothingNeverAsk");
 
-        boolean allowSilent = ConfigurationEntry.UPDATE_SILENT_UPDATE_ALLOWED
+        boolean allowSilent = ConfigurationEntry.UPDATE_SILENT_ALLOWED
             .getValueBoolean(getController());
 
         if (allowSilent

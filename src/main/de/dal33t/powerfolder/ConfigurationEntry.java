@@ -298,7 +298,7 @@ public enum ConfigurationEntry {
     /**
      * PFC-2167: Installer launches PowerFolder under the account used for elevation.
      */
-    UPDATE_SILENT_UPDATE_ALLOWED("update.silent_update.allowed", true),
+    UPDATE_SILENT_ALLOWED("update.silent.allowed", true),
 
     // Server connection ******************************************************
 
