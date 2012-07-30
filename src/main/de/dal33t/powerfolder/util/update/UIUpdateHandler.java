@@ -46,13 +46,20 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
         String nothingNeverAsk = Translation
             .getTranslation("dialog.update_check.nothingNeverAsk");
 
-        if (ConfigurationEntry.AUTO_UPDATE.getValueBoolean(getController())) {
+        boolean allowSilent = ConfigurationEntry.UPDATE_SILENT_UPDATE_ALLOWED
+            .getValueBoolean(getController());
+
+        if (allowSilent
+            && ConfigurationEntry.AUTO_UPDATE.getValueBoolean(getController()))
+        {
             // Directly update
             option = downloadAndUpdateSilent;
         } else {
             if (OSUtil.isWindowsSystem()) {
-                options.add(downloadAndUpdateSilent);
                 options.add(downloadAndUpdate);
+                if (allowSilent) {
+                    options.add(downloadAndUpdateSilent);
+                }
             }
             options.add(gotoHomepage);
             options.add(nothingNeverAsk);
