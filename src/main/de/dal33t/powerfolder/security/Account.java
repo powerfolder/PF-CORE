@@ -89,6 +89,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
+    public static final String PROPERTYNAME_LDAPDN = "ldapDN";
     public static final String PROPERTYNAME_LANGUAGE = "language";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
@@ -110,6 +111,9 @@ public class Account implements Serializable {
     private String username;
     private String password;
     private String language;
+    @Index(name = "IDX_LDAPDN")
+    @Column(length = 512)
+    private String ldapDN;
     private Date registerDate;
     private Date lastLoginDate;
     @ManyToOne
@@ -184,6 +188,18 @@ public class Account implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Group> groups;
+    
+    /**
+     * The possible email address of this account.
+     */
+    @CollectionOfElements
+    @IndexColumn(name = "IDX_EMAIL", base = 0, nullable = false)
+    @Cascade(value = {CascadeType.ALL})
+    @BatchSize(size = 1337)
+    @Column(name = "element", length = 512)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<String> emails;
 
     @Embedded
     @Fetch(FetchMode.JOIN)
@@ -203,6 +219,7 @@ public class Account implements Serializable {
         this.computers = new CopyOnWriteArrayList<MemberInfo>();
         this.licenseKeyFileList = new CopyOnWriteArrayList<String>();
         this.groups = new CopyOnWriteArrayList<Group>();
+        this.emails = new CopyOnWriteArrayList<String>();
     }
 
     /**
@@ -464,6 +481,15 @@ public class Account implements Serializable {
     public void setLanguage(String lang) {
         this.language = lang;
     }
+    
+    public String getLdapDN() {
+        return ldapDN;
+    }
+
+    public void setLdapDN(String ldapDN) {
+        System.err.println("Setting LDAP DN to: " + ldapDN);
+        this.ldapDN = ldapDN;
+    }
 
     public Date getRegisterDate() {
         return registerDate;
@@ -584,6 +610,25 @@ public class Account implements Serializable {
 
     public List<String> getLicenseKeyFiles() {
         return licenseKeyFileList;
+    }
+
+    public boolean addEmail(String email) {
+        Reject.ifBlank(email, "Email");
+        email = email.trim().toLowerCase();
+        if (emails.contains(email)) {
+            return false;
+        }
+        emails.add(email);
+        return true;
+    }
+
+    public boolean removeEmail(String email) {
+        Reject.ifBlank(email, "Email");
+        return emails.remove(email.toLowerCase().trim());
+    }
+
+    public List<String> getEmails() {
+        return emails;
     }
 
     public int getAutoRenewDevices() {
@@ -906,6 +951,9 @@ public class Account implements Serializable {
         }
         if (groups == null) {
             groups = new CopyOnWriteArrayList<Group>();
+        }
+        if (emails == null) {
+            emails = new CopyOnWriteArrayList<String>();
         }
     }
 }
