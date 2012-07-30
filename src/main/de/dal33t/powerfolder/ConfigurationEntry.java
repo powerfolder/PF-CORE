@@ -294,6 +294,11 @@ public enum ConfigurationEntry {
      * exe
      */
     UPDATE_WINDOWS_EXE_URL("update.windows_exe.url"),
+    
+    /**
+     * PFC-2167: Installer launches PowerFolder under the account used for elevation.
+     */
+    UPDATE_SILENT_UPDATE_ALLOWED("update.silent_update.allowed", true),
 
     // Server connection ******************************************************
 
@@ -311,7 +316,7 @@ public enum ConfigurationEntry {
     /**
      * #2401: If the login/usernames are Email addresses.
      */
-    SERVER_USERNAME_IS_EMAIL("server.username.isemail", true),
+    SERVER_USERNAME_IS_EMAIL("server.username.isemail", "both"),
 
     /**
      * Username for connection
