@@ -49,6 +49,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -206,7 +207,10 @@ public class MembersTab extends PFUIComponent {
         enableOnSelection();
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(inviteButton);
+        if (ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
+                getController())) {
+            bar.addGridded(inviteButton);
+        }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             bar.addRelatedGap();
             bar.addGridded(openChatButton);
@@ -261,23 +265,21 @@ public class MembersTab extends PFUIComponent {
         }
     }
 
-    private JComboBox createdEditComboBox(
-        SelectionInList<FolderPermission> model)
-    {
-        return BasicComponentFactory.createComboBox(model,
+    private static JComboBox createdEditComboBox(
+            SelectionInList<FolderPermission> folderPermissions) {
+        return BasicComponentFactory.createComboBox(folderPermissions,
             new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList list,
                     Object value, int index, boolean isSelected,
-                    boolean cellHasFocus)
-                {
+                    boolean cellHasFocus) {
                     Component comp = super.getListCellRendererComponent(list,
                         value, index, isSelected, cellHasFocus);
                     if (value instanceof FolderPermission) {
                         setText(((FolderPermission) value).getName());
                     } else {
-                        setText(Translation
-                            .getTranslation("permissions.folder.no_access"));
+                        setText(Translation.getTranslation(
+                                "permissions.folder.no_access"));
                     }
                     return comp;
                 }

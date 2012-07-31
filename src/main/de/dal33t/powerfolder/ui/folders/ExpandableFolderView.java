@@ -52,6 +52,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -491,8 +492,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         openFilesInformationAction = new MyOpenFilesInformationAction(
             getController());
         inviteAction = new MyInviteAction(getController());
-        MyOpenFilesUnsyncedAction openFilesUnsyncedAction =
-                new MyOpenFilesUnsyncedAction(getController());
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
         openSettingsInformationAction.setEnabled(!getController()
@@ -742,7 +741,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         String syncDateText;
         String localSizeString;
         String totalSizeString;
-        String filesAvailableLabelText;
+//        String filesAvailableLabelText;
         if (type == ExpandableFolderModel.Type.Local) {
 
             Date lastSyncDate = folder.getLastSyncDate();
@@ -855,13 +854,13 @@ public class ExpandableFolderView extends PFUIComponent implements
                 totalSizeString = Format.formatBytesShort(totalSize);
 
                 int count = statistic.getIncomingFilesCount();
-                if (count == 0) {
-                    filesAvailableLabelText = "";
-                } else {
-                    filesAvailableLabelText = Translation.getTranslation(
-                        "exp_folder_view.files_available",
-                        String.valueOf(count));
-                }
+//                if (count == 0) {
+//                    filesAvailableLabelText = "";
+//                } else {
+//                    filesAvailableLabelText = Translation.getTranslation(
+//                        "exp_folder_view.files_available",
+//                        String.valueOf(count));
+//                }
                 if (sync >= 0 && sync < 100) {
                     upperSyncPercentageLabel
                         .setText(Format.formatDecimal(sync) + '%');
@@ -875,7 +874,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getTranslation("exp_folder_view.not_yet_scanned");
                 localSizeString = "?";
                 totalSizeString = "?";
-                filesAvailableLabelText = "";
+//                filesAvailableLabelText = "";
             }
         } else {
             upperSyncPercentageLabel.setText("");
@@ -885,7 +884,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
             totalSizeString = "?";
-            filesAvailableLabelText = "";
+//            filesAvailableLabelText = "";
         }
 
         syncPercentLabel.setText(syncPercentText);
@@ -1116,9 +1115,17 @@ public class ExpandableFolderView extends PFUIComponent implements
                 contextMenu.add(clearCompletedDownloadsAction).setIcon(null);
             }
             if (!getController().isBackupOnly()) {
-                contextMenu.addSeparator();
-                contextMenu.add(inviteAction).setIcon(null);
+                boolean addedSeparator = false;
+                if (ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
+                        getController())) {
+                    contextMenu.addSeparator();
+                    addedSeparator = true;
+                    contextMenu.add(inviteAction).setIcon(null);
+                }
                 if (expert) {
+                    if (!addedSeparator) {
+                        contextMenu.addSeparator();
+                    }
                     contextMenu.add(openMembersInformationAction).setIcon(null);
                 }
             }

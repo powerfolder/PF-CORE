@@ -43,6 +43,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -147,7 +148,9 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         row += 2;
 
         // Invite
-        if (!getController().isBackupOnly()) {
+        if (!getController().isBackupOnly() &&
+                ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
+                        getController())) {
             builder.add(inviteCB, cc.xyw(3, row, 2));
         }
         row += 2;

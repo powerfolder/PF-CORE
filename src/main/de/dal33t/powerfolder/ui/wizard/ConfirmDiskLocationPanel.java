@@ -40,6 +40,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
@@ -109,8 +110,9 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         }
 
         // Send Invite
-        if (getController().isBackupOnly()) {
-            // Cannot invite in backup only mode
+        if (getController().isBackupOnly() ||
+                !ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
+                        getController())) {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;

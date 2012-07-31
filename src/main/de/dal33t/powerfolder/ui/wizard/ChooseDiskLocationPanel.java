@@ -60,6 +60,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -68,8 +69,6 @@ import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.util.SwingWorker;
-import de.dal33t.powerfolder.util.UserDirectories;
-import de.dal33t.powerfolder.util.UserDirectory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -237,8 +236,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         // Send Invite
-        if (getController().isBackupOnly()) {
-            // Cannot invite in backup only mode
+        if (getController().isBackupOnly() ||
+                !ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
+                        getController())) {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;

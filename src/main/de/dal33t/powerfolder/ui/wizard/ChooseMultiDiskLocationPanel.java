@@ -66,6 +66,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -311,8 +312,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         row += 2;
 
         // Send Invite
-        if (getController().isBackupOnly()) {
-            // Cannot invite in backup only mode
+        if (getController().isBackupOnly() ||
+                !ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
+                        getController())) {
             sendInviteAfterCB.setSelected(false);
         } else {
             builder.add(sendInviteAfterCB, cc.xyw(1, row, 3));
