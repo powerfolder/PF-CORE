@@ -427,7 +427,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         } else {
             lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
-            if (ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(getController())) {
+            if (ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
+                    getController())) {
                 lowerBuilder.add(inviteButton, cc.xy(5, row));
             }
 
