@@ -64,7 +64,7 @@ public abstract class AbstractPattern implements Pattern {
     }
 
     public final int hashCode() {
-        return patternText != null ? patternText.hashCode() : 0;
+        return patternText == null ? 0 : patternText.hashCode();
     }
 
     // Internal helper ********************************************************
