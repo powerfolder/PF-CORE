@@ -46,34 +46,45 @@ public abstract class AbstractPattern implements Pattern {
         return patternText;
     }
 
-    // Internal helper ********************************************************
+    public final boolean equals(Object obj) {
 
-    protected static boolean equalChar(char c1, char cl2, char cu2) {
-        if (c1 == cl2) {
-            return true;
-        }
-        if (c1 == cu2) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
-        if (obj == null || getClass() != obj.getClass()) {
+
+        if (obj == null || !(obj instanceof AbstractPattern)) {
             return false;
         }
 
         AbstractPattern that = (AbstractPattern) obj;
 
-        return !(patternText != null
-            ? !patternText.equals(that.patternText)
-            : that.patternText != null);
+        return  patternText == null
+                ? that.patternText == null
+                : patternText.equals(that.patternText);
     }
 
-    public int hashCode() {
+    public final int hashCode() {
         return patternText != null ? patternText.hashCode() : 0;
     }
+
+    // Internal helper ********************************************************
+
+    /**
+     * Used to see if a char is an upper or lower case.
+     *
+     * @param c
+     * @param cLower
+     * @param cUpper
+     * @return
+     */
+    protected static boolean equalChar(char c, char cLower, char cUpper) {
+        if (c == cLower) {
+            return true;
+        }
+        if (c == cUpper) {
+            return true;
+        }
+        return false;
+    }
+
 }

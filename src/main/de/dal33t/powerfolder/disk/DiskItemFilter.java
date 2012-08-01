@@ -23,10 +23,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
@@ -65,7 +63,7 @@ public class DiskItemFilter {
     /**
      * The patterns that will be used to match DiskItems with.
      */
-    private final List<Pattern> patterns = new CopyOnWriteArrayList<Pattern>();
+    private final Set<Pattern> patterns = new CopyOnWriteArraySet<Pattern>();
 
     /**
      * Whether the patterns have been modified since the last save.
@@ -111,7 +109,7 @@ public class DiskItemFilter {
         if (file.exists()) {
             BufferedReader reader = null;
             try {
-                List<Pattern> tempPatterns = new ArrayList<Pattern>();
+                Set<Pattern> tempPatterns = new HashSet<Pattern>();
                 reader = new BufferedReader(new TFileReader(new TFile(file)));
                 String readPattern;
                 while ((readPattern = reader.readLine()) != null) {
