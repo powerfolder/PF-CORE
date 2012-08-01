@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PowerFolder;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -276,6 +277,13 @@ public abstract class TwoControllerTestCase extends TestCase {
      * Connects both controllers.
      */
     protected void connectBartAndLisa() {
+        connectBartAndLisa(false);
+    }
+
+    /**
+     * Connects both controllers and optionally logs in lisa at bart.
+     */
+    protected void connectBartAndLisa(boolean loginLisa) {
         // Wait for connection between both controllers
         try {
             if (!connect(controllerLisa, controllerBart)) {
@@ -290,6 +298,16 @@ public abstract class TwoControllerTestCase extends TestCase {
             .getNodeManager().getConnectedNodes().iterator().next().isOnLAN());
         assertTrue("Lisa is not detected as local @ bart", controllerBart
             .getNodeManager().getConnectedNodes().iterator().next().isOnLAN());
+
+        if (loginLisa) {
+            Member bartAtLisa = controllerBart.getMySelf().getInfo()
+                .getNode(controllerLisa, true);
+            ServerClient client = getContollerLisa().getOSClient();
+            client.setServer(bartAtLisa, true);
+            client.getAccountService().register("lisa", "password", false,
+                null, null, false);
+            client.login("lisa", "password".toCharArray());
+        }
 
         // Bart should be supernode
         assertTrue(controllerBart.getMySelf().isSupernode());
