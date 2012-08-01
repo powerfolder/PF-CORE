@@ -435,7 +435,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
-        final MyTransferManagerListener lisasListener = new MyTransferManagerListener(true);
+        final MyTransferManagerListener lisasListener = new MyTransferManagerListener(
+            true);
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
         // 12 Meg testfile
@@ -475,7 +476,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals("Lisa downloadStarted " + lisasListener.downloadStarted,
             1, lisasListener.downloadStarted);
         assertEquals("Lisa downloadCompleted "
-            + lisasListener.downloadCompleted + ": " + lisasListener.downloadsRequested, 1,
+            + lisasListener.downloadCompleted + ": "
+            + lisasListener.downloadsRequested, 1,
             lisasListener.downloadCompleted);
         assertEquals("Lisa downloadAborted " + lisasListener.downloadAborted,
             0, lisasListener.downloadAborted);
@@ -1623,7 +1625,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
         FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertFileMatch(fbart, binfo, getContollerBart());
-        assertEquals(1, binfo.getVersion());
+        assertEquals("Bart version: " + binfo.getVersion(), 1,
+            binfo.getVersion());
         assertEquals(0, linfo.getVersion());
         assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
