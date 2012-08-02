@@ -477,7 +477,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             1, lisasListener.downloadStarted);
         assertEquals("Lisa downloadCompleted "
             + lisasListener.downloadCompleted + ": "
-            + lisasListener.downloadsRequested, 1,
+            + lisasListener.downloadsCompleted, 1,
             lisasListener.downloadCompleted);
         assertEquals("Lisa downloadAborted " + lisasListener.downloadAborted,
             0, lisasListener.downloadAborted);
@@ -1872,6 +1872,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
         public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
+        public List<FileInfo> downloadsCompleted = new ArrayList<FileInfo>();
         private final boolean failOnSecondRequest;
 
         public MyTransferManagerListener(boolean failOnSecondRequest) {
@@ -1934,6 +1935,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
             }
+            downloadsCompleted.add(event.getFile());
             downloadCompleted++;
             lastEvent = event;
         }
