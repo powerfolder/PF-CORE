@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -169,6 +170,9 @@ public class MainFrame extends PFUIComponent {
     private JButton3Icons closeButton;
     private JButton3Icons plusButton;
     private JButton3Icons minusButton;
+
+    /** Has the main frame state been set after init? */
+    private final AtomicBoolean frameStateSet = new AtomicBoolean();
 
     /**
      * @param controller
@@ -861,6 +865,32 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
+     * For non-experts, if they log in
+     * and only have online folders and no local folders,
+     * and if the user has not already changed the frame state manually
+     * then change from compact to normal,
+     * helping the user to see the online folders
+     * so they can do something about it.
+     */
+    private void showOSFolderList() {
+        if (frameStateSet.get()) {
+            return;
+        }
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            return;
+        }
+        if (!getController().getFolderRepository().getFolders().isEmpty()) {
+            return;
+        }
+        if (client.getAccountFolders().isEmpty()) {
+            return;
+        }
+        if (frameMode == FrameMode.COMPACT) {
+            setFrameMode(FrameMode.NORMAL);
+        }
+    }
+
+    /**
      * @return the selected main tab index.
      */
     public int getSelectedMainTabIndex() {
@@ -875,9 +905,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     public void showInlineInfoPanel(JPanel panel, String title) {
-        // Fix Synthetica maximization, otherwise it covers the task
-        // bar. See
-        // http://www.javasoft.de/jsf/public/products/synthetica/faq#q13
+        // Fix Synthetica maximization, otherwise it covers the task bar.
+        // See http://www.javasoft.de/jsf/public/products/synthetica/faq#q13
         RootPaneUI ui = uiComponent.getRootPane().getUI();
         if (ui instanceof SyntheticaRootPaneUI) {
             ((SyntheticaRootPaneUI) ui).setMaximizedBounds(uiComponent);
@@ -1309,6 +1338,10 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void setFrameMode(FrameMode frameMode) {
+
+        // Remember that the frame has been set manually.
+        frameStateSet.set(true);
+
         setFrameMode(frameMode, false);
     }
 
@@ -1550,6 +1583,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void login(ServerClientEvent event) {
+            showOSFolderList();
             updateOnlineStorageDetails();
             checkCloudSpace();
         }
