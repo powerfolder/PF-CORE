@@ -221,6 +221,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                 IOPoolLocator.SINGLETON)));
         TFile.setLenient(false);
 
+        // #1697
+        // if (getController().getNodeManager().getMySelf().getNick()
+        // .toLowerCase().equals("bart"))
+        // {
+        // TFile.setDefaultArchiveDetector(new TArchiveDetector(
+        // TArchiveDetector.NULL, "pfzip", new CustomZipRaesDriver(
+        // getController())));
+        // TFile.setLenient(false);
+        // }
+
         initFoldersBasedir();
 
         processV4Format();
@@ -745,6 +755,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                     removeFolder(folder, true);
                     break;
                 }
+                if (folder.getCommitOrLocalDir().equals(
+                    folderSettings.getLocalBaseDir()))
+                {
+                    logSevere("Tried to create duplicate folder "
+                        + folder.getName() + " at "
+                        + folder.getCommitOrLocalDir());
+                    throw new IllegalStateException(
+                        "Tried to create duplicate folder " + folder.getName()
+                            + " at " + folder.getCommitOrLocalDir());
+                }
             }
         }
 
@@ -783,10 +803,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         } else {
             folder = new Folder(getController(), folderInfo, folderSettings);
         }
-
         folder.addProblemListener(valveProblemListenerSupport);
-        folders.put(folder.getInfo(), folder);
-        saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         // Now create metaFolder and map to the same FolderInfo key.
         FolderInfo metaFolderInfo = new FolderInfo(
@@ -807,7 +824,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             metaFolder.getSystemSubDir().mkdirs();
         }
 
+        // Set datamodel
         metaFolders.put(folderInfo, metaFolder);
+        folders.put(folder.getInfo(), folder);
+        saveFolderConfig(folderInfo, folderSettings, saveConfig);
+        
         if (!metaFolder.hasOwnDatabase()) {
             // Scan once. To get it working.
             metaFolder.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
