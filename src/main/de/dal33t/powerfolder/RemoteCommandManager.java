@@ -280,7 +280,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     BufferedReader reader = new BufferedReader(
                         new InputStreamReader(socket.getInputStream(), ENCODING));
                     String line = reader.readLine();
-                    if (line.startsWith(REMOTECOMMAND_PREFIX)) {
+                    if (line == null) {
+                        logFine("Did not receive valid remote request");
+                    } else if (line.startsWith(REMOTECOMMAND_PREFIX)) {
                         processCommand(line.substring(REMOTECOMMAND_PREFIX
                             .length() + 1));
                     } else if (line.startsWith("GET")
