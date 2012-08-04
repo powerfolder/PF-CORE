@@ -359,8 +359,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             logInfo("Opening file: " + file);
             FileUtils.openFile(file);
         }
-
-        w.flush();
         w.close();
     }
 
