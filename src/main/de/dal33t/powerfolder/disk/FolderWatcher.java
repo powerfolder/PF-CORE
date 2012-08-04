@@ -103,7 +103,7 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         Reject.ifNull(fInfo, "FileInfo");
-        // Delay the removal by ~500 ms because file system events occur
+        // Delay the removal by ~1000 ms because file system events occur
         // delayed.
         getController().schedule(new TimerTask() {
             @Override
@@ -113,7 +113,7 @@ public class FolderWatcher extends PFComponent {
                     logFiner("Removed from ignore: " + fInfo.toDetailString());
                 }
             }
-        }, 500);
+        }, 1000);
     }
 
     /**
