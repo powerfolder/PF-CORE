@@ -1412,19 +1412,21 @@ public class Folder extends PFComponent {
 
         watcher.addIgnoreFile(dirInfo);
         try {
-            if (dirInfo.isDeleted()) {
-                if (!dir.delete()) {
-                    logSevere("Unable to deleted directory: " + dir + ". "
-                        + dirInfo.toDetailString());
-                    return;
+            synchronized (scanLock) {
+                if (dirInfo.isDeleted()) {
+                    if (!dir.delete()) {
+                        logSevere("Unable to deleted directory: " + dir + ". "
+                            + dirInfo.toDetailString());
+                        return;
+                    }
+                } else {
+                    // #2627 / ASR-771-79727
+                    if (dir.exists() && dir.isFile() && dir.length() == 0) {
+                        dir.delete();
+                    }
+                    dir.mkdirs();
+                    dir.setLastModified(dirInfo.getModifiedDate().getTime());
                 }
-            } else {
-                // #2627 / ASR-771-79727
-                if (dir.exists() && dir.isFile() && dir.length() == 0) {
-                    dir.delete();
-                }
-                dir.mkdirs();
-                dir.setLastModified(dirInfo.getModifiedDate().getTime());
             }
         } finally {
             watcher.removeIgnoreFile(dirInfo);
@@ -2030,19 +2032,28 @@ public class Folder extends PFComponent {
         }
         getFolderWatcher().addIgnoreFile(fileInfo);
         try {
-            logWarning("Reverting local change: " + fileInfo.toDetailString());
+            if (newestVersion == null) {
+                logWarning("Reverting local change: "
+                    + fileInfo.toDetailString() + ". File not in repository.");
+            } else {
+                logWarning("Reverting local change: "
+                    + fileInfo.toDetailString() + ". Found newer version: "
+                    + newestVersion.toDetailString());
+            }
             File file = fileInfo.getDiskFile(getController()
                 .getFolderRepository());
-            if (file.exists()) {
-                try {
-                    archiver.archive(fileInfo, file, false);
-                } catch (IOException e) {
-                    logWarning("Unable to revert changes on file " + file
-                        + ". Cannot overwrite local change. " + e);
-                    return false;
+            synchronized (scanLock) {
+                if (file.exists()) {
+                    try {
+                        archiver.archive(fileInfo, file, false);
+                    } catch (IOException e) {
+                        logWarning("Unable to revert changes on file " + file
+                            + ". Cannot overwrite local change. " + e);
+                        return false;
+                    }
                 }
+                dao.delete(null, fileInfo);
             }
-            dao.delete(null, fileInfo);
             return true;
         } finally {
             getFolderWatcher().removeIgnoreFile(fileInfo);
@@ -3766,17 +3777,19 @@ public class Folder extends PFComponent {
         }
         try {
             watcher.addIgnoreFile(newFileInfo);
-            if (fileInfo != null && fileInfo.isFile()) {
-                try {
-                    archiver.archive(fileInfo, file, false);
-                } catch (IOException e) {
-                    logSevere("Unable to move file to archive: " + file + ". "
-                        + e, e);
+            synchronized (scanLock) {
+                if (fileInfo != null && fileInfo.isFile()) {
+                    try {
+                        archiver.archive(fileInfo, file, false);
+                    } catch (IOException e) {
+                        logSevere("Unable to move file to archive: " + file
+                            + ". " + e, e);
+                    }
                 }
-            }
-            if (file.exists() && !file.delete()) {
-                logSevere("Unable to delete file " + file);
-                return false;
+                if (file.exists() && !file.delete()) {
+                    logSevere("Unable to delete file " + file);
+                    return false;
+                }
             }
             return true;
         } finally {
