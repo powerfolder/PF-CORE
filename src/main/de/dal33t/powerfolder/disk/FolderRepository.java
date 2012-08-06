@@ -288,6 +288,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                 && foldersBasedir.isDirectory();
         }
 
+        if (!OSUtil.isWindowsSystem() && winNetworkDrive) {
+            foldersBasedir = new File(
+                ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
+            if (!foldersBasedir.exists()) {
+                if (foldersBasedir.mkdirs()) {
+                    logInfo("Created base path for folders: " + foldersBasedir);
+                } else {
+                    logWarning("Unable to create base path for folders: "
+                        + foldersBasedir);
+                }
+            }
+            ok = foldersBasedir.exists() && foldersBasedir.canRead()
+                && foldersBasedir.isDirectory();
+        }
+
         // Use default as fallback
         if (!ok
             && ConfigurationEntry.FOLDER_BASEDIR_FALLBACK_TO_DEFAULT
