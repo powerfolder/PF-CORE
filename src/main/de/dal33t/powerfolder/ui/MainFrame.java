@@ -240,6 +240,8 @@ public class MainFrame extends PFUIComponent {
         builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
         builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
+        // Make sure the noticesActionLabel vertical space is maintained.
+        builderLower.add(new JLabel(" "), cc.xy(1, 3));
         builderLower.add(noticesActionLabel.getUIComponent(), cc.xy(2, 3));
         // LOWER PART END
 
