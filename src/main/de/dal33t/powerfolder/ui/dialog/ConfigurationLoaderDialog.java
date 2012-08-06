@@ -331,6 +331,19 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         }
     }
 
+    private void saveConfig() {
+        if (getController().isStarted()) {
+            getController().saveConfig();
+        } else {
+            // Not started. Try a delayed store
+            getController().schedule(new Runnable() {
+                public void run() {
+                    getController().saveConfig();
+                }
+            }, 5000L);
+        }
+    }
+
     private class LoadingWorking extends SwingWorker {
         @Override
         public Object construct() throws IOException {
@@ -388,7 +401,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 ConfigurationLoader.merge(preConfig, getController()
                     .getConfig(), getController().getPreferences(), true);
                 // Seems to be valid, store.
-                getController().saveConfig();
+                saveConfig();
             }
             return preConfig;
         }
@@ -396,7 +409,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         private Properties loadFromInput(String input) throws IOException {
             Properties preConfig;
             ConfigurationEntry.CONFIG_URL.setValue(getController(), input);
-            getController().saveConfig();
+            saveConfig();
             preConfig = ConfigurationLoader.loadPreConfiguration(input);
             if (preConfig != null && !containsServerWeb(preConfig)) {
                 String finalURL = Util.removeLastSlashFromURI(input);
@@ -462,7 +475,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             {
                 ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM.setValue(
                     getController(), false);
-                getController().saveConfig();
+                saveConfig();
             }
 
             if (finishedTrigger != null) {
