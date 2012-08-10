@@ -155,6 +155,7 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel noticesActionLabel;
 
     private DelayedUpdater mainStatusUpdater;
+    private DelayedUpdater osStatusUpdater;
 
     // Right mini panel
     private ActionLabel expandCollapseActionLabel;
@@ -183,6 +184,7 @@ public class MainFrame extends PFUIComponent {
         super(controller);
 
         mainStatusUpdater = new DelayedUpdater(getController());
+        osStatusUpdater = new DelayedUpdater(getController());
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
 
@@ -1273,8 +1275,8 @@ public class MainFrame extends PFUIComponent {
                     long storageSize = client.getAccount().getOSSubscription()
                             .getStorageSize();
                     long used = client.getAccountDetails().getSpaceUsed();
-                    if (used >= storageSize * 8 / 10) {
-                        // More than 80% used. Notify.
+                    if (used >= storageSize * 9 / 10) {
+                        // More than 90% used. Notify.
                         WarningNotice notice = new WarningNotice(
                                 Translation.getTranslation(
                                         "warning_notice.title"),
@@ -1291,6 +1293,14 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void updateOnlineStorageDetails() {
+        mainStatusUpdater.schedule(new Runnable() {
+            public void run() {
+                updateOnlineStorageDetails0();
+            }
+        });
+    }
+
+    private void updateOnlineStorageDetails0() {
         double percentageUsed = 0;
         long totalStorage = 0;
         long spaceUsed = 0;
