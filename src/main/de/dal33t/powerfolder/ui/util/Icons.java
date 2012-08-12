@@ -158,6 +158,7 @@ public class Icons {
     public static final String DOWNLOAD_ACTIVE = "download_active.icon";
     public static final String UPLOAD = "upload.icon";
     public static final String INACTIVE = "inactive.icon";
+    public static final String TRANSFERS = "transfers.icon";
     public static final String EXPECTED = "expected.icon";
     public static final String CHECKED = "checked.icon";
 
