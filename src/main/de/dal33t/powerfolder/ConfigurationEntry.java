@@ -276,6 +276,11 @@ public enum ConfigurationEntry {
      * #2248 Automatically assign client to server by IP address
      */
     CONFIG_ASSIGN_IP_LIST("config.assign.iplist"),
+    
+    /**
+     * PFC-2184 Specify server URL as installer command line parameter
+     */
+    INSTALLER_FILENAME("installer.file"),
 
     // Update settings ********************************************************
 
