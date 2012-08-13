@@ -176,9 +176,19 @@ public class ConfigurationLoader {
         boolean delete = false;
         try {
             in = new FileInputStream(initFile);
-            byte[] buf = StreamUtils.readIntoByteArray(in);
-            String contents = new String(buf, Convert.UTF8);
-            url = FileUtils.decodeURLFromFilename(contents);
+            Properties props = new Properties();
+            props.load(in);
+
+            url = props.getProperty(ConfigurationEntry.CONFIG_URL
+                .getConfigKey());
+            if (StringUtils.isBlank(url)) {
+                String fn = props
+                    .getProperty(ConfigurationEntry.INSTALLER_FILENAME
+                        .getConfigKey());
+                if (StringUtils.isNotBlank(fn)) {
+                    url = FileUtils.decodeURLFromFilename(fn);
+                }
+            }
             if (StringUtils.isBlank(url)) {
                 return false;
             }
