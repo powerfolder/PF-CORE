@@ -1067,7 +1067,7 @@ public class Controller extends PFComponent {
                     logFine("Dataitems: "
                         + Debug.countDataitems(Controller.this));
                 }
-                String dump = Debug.dumpCurrentStacktraces(false);
+                String dump = Debug.dumpCurrentStacktraces(true);
                 if (StringUtils.isNotBlank(dump) && isFine()) {
                     logFine("Active threads:\n\n" + dump);
                 } else {
@@ -1075,7 +1075,7 @@ public class Controller extends PFComponent {
                 }
                 // }
             }
-        }, 30, 60, TimeUnit.SECONDS);
+        }, 1, 5, TimeUnit.MINUTES);
     }
 
     /**
