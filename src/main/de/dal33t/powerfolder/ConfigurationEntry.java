@@ -564,6 +564,10 @@ public enum ConfigurationEntry {
      */
     FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
 
+    /**
+     * Note - as of PFC-2182, mass delete protection should only be applied
+     * if the user has expert mode.
+     */
     MASS_DELETE_PROTECTION("mass.delete.protection", false) {
 
         @Override

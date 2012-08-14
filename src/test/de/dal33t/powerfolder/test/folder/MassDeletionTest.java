@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -44,25 +45,47 @@ public class MassDeletionTest extends TwoControllerTestCase {
     public void testSmallMassDeletion() throws Exception {
 
         // Check with no protection
-        massDeletion(false, 100);
+        massDeletion(false, 100, true);
 
         tearDown();
         setUp();
 
         // Check with protection
-        massDeletion(true, 100);
+        massDeletion(true, 100, true);
+    }
+
+    /**
+     * Test that delete does not have mass delete protection if not expert mode.
+     *
+     * @throws Exception
+     */
+    public void testNonExpertMassDeletion() throws Exception {
+
+        // Check with no protection
+        massDeletion(false, 100, false);
+
+        tearDown();
+        setUp();
+
+        // Check with protection
+        try {
+            massDeletion(true, 100, false);
+            fail("Should not have mass delete protection in non-expert mode.");
+        } catch (RuntimeException e) {
+            // Assertion exception. Expecting this. No problem.
+        }
     }
 
     public void testLargeMassDeletion() throws Exception {
 
         // Check with no protection
-        massDeletion(false, 2000);
+        massDeletion(false, 2000, true);
 
         tearDown();
         setUp();
 
         // Check with protection
-        massDeletion(true, 2000);
+        massDeletion(true, 2000, true);
     }
 
     /**
@@ -73,7 +96,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
     public void testNotTriggerOnHistoricDeletion() throws Exception {
 
         // Check with no protection
-        massDeletion(false, 1000);
+        massDeletion(false, 1000, true);
 
         ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getFolderAtLisa()
             .getController(), 10);
@@ -89,9 +112,11 @@ public class MassDeletionTest extends TwoControllerTestCase {
             SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
-    public void massDeletion(boolean protection, final int nFiles)
-        throws Exception
-    {
+    public void massDeletion(boolean protection, final int nFiles,
+                             boolean expert) throws Exception {
+
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), expert);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), expert);
 
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 

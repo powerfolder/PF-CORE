@@ -364,32 +364,30 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(folderAutoSetupBox, cc.xyw(3, row, 2));
 
-            row += 2;
-            builder.add(massDeleteBox, cc.xyw(3, row, 2));
+            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
 
-            row += 2;
-            builder
-                .add(
-                    new JLabel(
-                        Translation
-                            .getTranslation("preferences.dialog.mass_delete_threshold")),
+                row += 2;
+                builder.add(massDeleteBox, cc.xyw(3, row, 2));
+
+                row += 2;
+                builder.add(new JLabel(Translation.getTranslation(
+                        "preferences.dialog.mass_delete_threshold")),
                     cc.xy(1, row));
-            builder.add(massDeleteSlider, cc.xy(3, row));
+                builder.add(massDeleteSlider, cc.xy(3, row));
+
+            }
 
             row += 2;
-            builder
-                .add(
-                    new JLabel(
-                        Translation
-                            .getTranslation("preferences.dialog.default_archive_mode.text")),
+            builder.add(new JLabel(Translation.getTranslation(
+                    "preferences.dialog.default_archive_mode.text")),
                     cc.xy(1, row));
             builder.add(
                 fourPanel(
                     archiveModeSelectorPanel.getUIComponent(),
                     new JLabel(Translation
                         .getTranslation("preferences.dialog.archive_cleanup")),
-                    archiveCleanupCombo, new JButton(cleanupAction)), cc.xyw(3,
-                    row, 2));
+                    archiveCleanupCombo, new JButton(cleanupAction)),
+                    cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(folderSyncCB, cc.xyw(3, row, 2));

@@ -606,6 +606,7 @@ public class Folder extends PFComponent {
             && getKnownItemCount() > 0
             && !scanResult.getDeletedFiles().isEmpty()
             && scanResult.getTotalFilesCount() == 0
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
             && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
@@ -3099,6 +3100,7 @@ public class Folder extends PFComponent {
         // a large percent of files would get deleted by another node.
         if (newList.files != null
             && syncProfile.isSyncDeletion()
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
             && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
@@ -3170,6 +3172,7 @@ public class Folder extends PFComponent {
         // a large percent of files would get deleted by another node.
         if (changes.getFiles() != null
             && syncProfile.isSyncDeletion()
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
             && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
@@ -3177,6 +3180,7 @@ public class Folder extends PFComponent {
         }
         if (changes.getRemoved() != null
             && syncProfile.isSyncDeletion()
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
             && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
