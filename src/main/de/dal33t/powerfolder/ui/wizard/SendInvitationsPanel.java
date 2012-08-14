@@ -23,27 +23,17 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -98,6 +88,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private ValueModel messageModel;
     private JPanel removeButtonPanel;
     private JComponent messageComp;
+    private JCheckBox adminCB;
 
     public SendInvitationsPanel(Controller controller) {
         super(controller);
@@ -272,7 +263,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.add(advancedLink.getUIComponent(), cc.xy(1, row));
         } else {
-            advancedLink.getUIComponent();
+            builder.add(adminCB, cc.xy(1, row));
         }
 
         return builder.getPanel();
@@ -284,7 +275,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected void initComponents() {
         messageModel = new ValueHolder();
 
-        FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
+        final FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
         Reject.ifNull(folder, "Unable to send invitation, folder is null");
 
@@ -311,6 +302,15 @@ public class SendInvitationsPanel extends PFWizardPanel {
         viaPowerFolderText.setDataList(candidateAddresses);
         advancedLink = new ActionLabel(getController(), new MyAdvanceAction(
             getController()));
+        adminCB = new JCheckBox(Translation.getTranslation(
+                "wizard.send_invitations.admin_privilege"));
+        adminCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                permissionsModel.setValue(adminCB.isSelected() ?
+                        FolderPermission.admin(folder) :
+                        FolderPermission.readWrite(folder));
+            }
+        });
 
         addMessageLink = new ActionLabel(getController(),
             new MyAttachMessageAction());
@@ -372,9 +372,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private Set<Member> getCandidates() {
         Set<Member> candidate = new TreeSet<Member>(MemberComparator.NICK);
-        for (Member friend : getController().getNodeManager().getFriends()) {
-            candidate.add(friend);
-        }
+        Collections.addAll(candidate, getController().getNodeManager().getFriends());
         for (Member node : getController().getNodeManager().getConnectedNodes())
         {
             if (!node.isOnLAN()) {
