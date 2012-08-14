@@ -172,6 +172,7 @@ public class Icons {
 
     // Sync icons
     public static final String SYNC_COMPLETE = "sync_complete.icon";
+    public static final String SYNC_INCOMPLETE = "sync_incomplete.icon";
     public static final String[] SYNC_ANIMATION = {"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",

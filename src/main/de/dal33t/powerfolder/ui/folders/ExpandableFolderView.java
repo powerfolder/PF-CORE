@@ -744,7 +744,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         String syncDateText;
         String localSizeString;
         String totalSizeString;
-//        String filesAvailableLabelText;
         if (type == ExpandableFolderModel.Type.Local) {
 
             Date lastSyncDate = folder.getLastSyncDate();
@@ -856,14 +855,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 long totalSize = statistic.getTotalSize();
                 totalSizeString = Format.formatBytesShort(totalSize);
 
-                int count = statistic.getIncomingFilesCount();
-//                if (count == 0) {
-//                    filesAvailableLabelText = "";
-//                } else {
-//                    filesAvailableLabelText = Translation.getTranslation(
-//                        "exp_folder_view.files_available",
-//                        String.valueOf(count));
-//                }
                 if (sync >= 0 && sync < 100) {
                     upperSyncPercentageLabel
                         .setText(Format.formatDecimal(sync) + '%');
@@ -877,7 +868,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getTranslation("exp_folder_view.not_yet_scanned");
                 localSizeString = "?";
                 totalSizeString = "?";
-//                filesAvailableLabelText = "";
             }
         } else {
             upperSyncPercentageLabel.setText("");
@@ -887,7 +877,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
             totalSizeString = "?";
-//            filesAvailableLabelText = "";
         }
 
         syncPercentLabel.setText(syncPercentText);
@@ -897,13 +886,6 @@ public class ExpandableFolderView extends PFUIComponent implements
             "exp_folder_view.local", localSizeString));
         totalSizeLabel.setText(Translation.getTranslation(
             "exp_folder_view.total", totalSizeString));
-//        filesAvailableLabel.setText(filesAvailableLabelText);
-//        if (filesAvailableLabelText.length() == 0) {
-//            filesAvailableLabel.setToolTipText(null);
-//        } else {
-//            filesAvailableLabel.setToolTipText(Translation
-//                .getTranslation("exp_folder_view.files_available_tip"));
-//        }
         // Maybe change visibility of upperSyncLink.
         updateWebDAVURL();
     }
@@ -1017,33 +999,25 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_preview_text"));
-            } else if (getController().isPaused() && sync < 100.0d
-                && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
+            } else if (getController().isPaused()
+                    && Double.compare(sync, 100.0d) < 0
+                    && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
             {
                 // Sync is in pause
                 primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_sync_paused"));
+            } else if (Double.compare(sync, 100.0d) < 0) {
+                // Not synced and not syncing.
+                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
+                primaryButton.setToolTipText(Translation.getTranslation(
+                        "exp_folder_view.folder_sync_incomplete"));
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_sync_complete"));
             }
-            // } else if (online) {
-            // // We are local and online.
-            // primaryButton.setIcon(Icons
-            // .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
-            // primaryButton
-            // .setToolTipText(Translation
-            // .getTranslation("exp_folder_view.folder_local_online_text"));
-            // osComponent.getUIComponent().setVisible(osComponentVisible);
-            // } else {
-            // // Just a local folder.
-            // primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
-            // primaryButton.setToolTipText(Translation
-            // .getTranslation("exp_folder_view.folder_local_text"));
-            // }
         } else if (type == ExpandableFolderModel.Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.TYPICAL_FOLDER));
             primaryButton.setToolTipText(Translation
