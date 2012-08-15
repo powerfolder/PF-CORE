@@ -1101,23 +1101,26 @@ public class NodeManager extends PFComponent {
         }
 
         if (acceptHandler) {
-            if (member.isConnected()) {
-                logWarning("Taking a better conHandler for " + member.getNick());
-            }
-            // Complete handshake
-            try {
-                int connectionTries = member.markConnecting();
-                if (connectionTries >= 2) {
-                    logFine("Multiple connection tries detected ("
-                        + connectionTries + ") to " + member);
+            if (member.getPeer() != handler) {
+                if (member.isConnected()) {
+                    logWarning("Taking a better conHandler for "
+                        + member.getNick());
                 }
-                ConnectResult res = member.setPeer(handler);
-                if (res.isFailure()) {
-                    throw new ConnectionException("Unable to connect to node "
-                        + member + ". " + res);
+                // Complete handshake
+                try {
+                    int connectionTries = member.markConnecting();
+                    if (connectionTries >= 2) {
+                        logFine("Multiple connection tries detected ("
+                            + connectionTries + ") to " + member);
+                    }
+                    ConnectResult res = member.setPeer(handler);
+                    if (res.isFailure()) {
+                        throw new ConnectionException(
+                            "Unable to connect to node " + member + ". " + res);
+                    }
+                } finally {
+                    member.unmarkConnecting();
                 }
-            } finally {
-                member.unmarkConnecting();
             }
         } else {
             if (isFine()) {
