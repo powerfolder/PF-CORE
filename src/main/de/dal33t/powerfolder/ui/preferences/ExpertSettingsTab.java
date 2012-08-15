@@ -29,8 +29,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -44,7 +44,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -58,10 +57,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.preferences.LANList;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -84,7 +82,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useDeltaSyncOnInternetCheckBox;
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
-    private JCheckBox backupOnlyClientBox;
 
     private JTextField locationTF;
     private ValueModel locationModel;
@@ -171,13 +168,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         } catch (Error e1) {
             logWarning("Error. " + e1);
         }
-
-        ValueModel backupOnlyClientModel = new ValueHolder(
-            ConfigurationEntry.BACKUP_ONLY_CLIENT
-                .getValueBoolean(getController()));
-        backupOnlyClientBox = BasicComponentFactory
-        .createCheckBox(backupOnlyClientModel, Translation
-            .getTranslation("preferences.dialog.backup_only_clinet"));
         
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.use_zip_on_lan"));
@@ -306,7 +296,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -388,9 +378,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(verboseBox, cc.xyw(3, row, 2));
 
-            row += 2;
-            builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
-
             panel = builder.getPanel();
         }
         return panel;
@@ -465,15 +452,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         if (!StringUtils.isEqual(oldFolderBase, newFolderbase)) {
             getController().getUIController().configureDesktopShortcut(true);
         }
-
-        // set bu only
-        if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValue(getController())
-            .equals(String.valueOf(backupOnlyClientBox.isSelected())))
-        {
-            needsRestart = true;
-        }
-        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(),
-            String.valueOf(backupOnlyClientBox.isSelected()));
 
         // zip on lan?
         boolean current = ConfigurationEntry.USE_ZIP_ON_LAN

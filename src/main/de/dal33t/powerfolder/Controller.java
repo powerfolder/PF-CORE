@@ -136,7 +136,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "6.0.34 - 5.2.34"; // 5.2.33
+    public static final String PROGRAM_VERSION = "6.0.35 - 5.2.35"; // 5.2.35
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1540,7 +1540,7 @@ public class Controller extends PFComponent {
      * @return true if running as backup only client.
      */
     public boolean isBackupOnly() {
-        return ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(this);
+        return false;
     }
 
     /**

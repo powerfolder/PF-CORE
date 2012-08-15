@@ -863,9 +863,6 @@ public enum ConfigurationEntry {
      */
     FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", false),
 
-    /** Online storage only client. */
-    BACKUP_ONLY_CLIENT("backup.only.client", false),
-
     /** The archive mode to use when creating a new folder. */
     DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name()),
 
