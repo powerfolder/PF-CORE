@@ -353,7 +353,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 preConfig = loadFromInput(input);
             } catch (IOException e) {
                 logWarning("Unable to load config from " + input + ": " + e);
-                if (StringUtils.isNotBlank(input)) {
+                if (StringUtils.isNotBlank(input) && input.indexOf(":", 7) < 0)
+                {
                     try {
                         // Try harder with default port of web portal
                         preConfig = loadFromInput(input + ":8080");
