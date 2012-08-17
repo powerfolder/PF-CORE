@@ -230,6 +230,7 @@ public class FolderStatistic extends PFComponent {
         boolean insync = !newestFileInfo.isNewerThan(fileInfo)
             && !fileInfo.isNewerThan(newestFileInfo);
         if (insync && newestFileInfo.getSize() != fileInfo.getSize()
+            && !fileInfo.getFolderInfo().isMetaFolder()
             && LOG.isLoggable(Level.WARNING))
         {
             LOG.warning("File in sync, but size differs.\n" + "Newest: "
