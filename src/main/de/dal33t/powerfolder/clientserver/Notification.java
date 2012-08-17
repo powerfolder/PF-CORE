@@ -81,7 +81,7 @@ public class Notification implements Serializable {
     /**
      * The OID of the target Account/User.
      */
-    @Index(name = "IDX_ACCOUNT_OID")
+    @Index(name = "IDX_NOT_ACCOUNT_OID")
     private String accountOID;
 
     /**
