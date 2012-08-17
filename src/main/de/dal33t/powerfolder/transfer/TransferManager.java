@@ -87,6 +87,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Validate;
+import de.dal33t.powerfolder.util.Visitor;
 import de.dal33t.powerfolder.util.WrapperExecutorService;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -2040,6 +2041,25 @@ public class TransferManager extends PFComponent {
             }
         }
         logFine("Aborted " + aborted + " downloads on " + folder);
+    }
+
+    /**
+     * Aborts all automatically enqueued download of a folder.
+     * 
+     * @param folder
+     *            the folder to break downloads on
+     */
+    public void abortDownloads(Visitor<DownloadManager> vistor) {
+        int aborted = 0;
+        for (DownloadManager dl : getActiveDownloads()) {
+            if (vistor.visit(dl)) {
+                dl.abortAndCleanup();
+                aborted++;
+            }
+        }
+        if (aborted > 0 && isFine()) {
+            logFine("Aborted " + aborted + " downloads");
+        }
     }
 
     void downloadManagerAborted(DownloadManager manager) {
