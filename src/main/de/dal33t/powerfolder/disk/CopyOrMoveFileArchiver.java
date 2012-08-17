@@ -450,7 +450,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         } else {
             Date age = new Date(file.lastModified());
             if (age.before(cleanupDate)) {
-                log.info("Deleting old archive file " + file + " (" + age + ')');
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Deleting old archive file " + file + " (" + age + ')');                    
+                }
                 try {
                     file.delete();
                 } catch (SecurityException e) {
