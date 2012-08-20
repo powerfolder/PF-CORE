@@ -177,9 +177,14 @@ public class FolderWatcher extends PFComponent {
             remove();
             return;
         }
+        String path = folder.getLocalBase().getAbsolutePath();
+        if (path.startsWith("\\")) {
+            // Don't watch on UNC paths
+            remove();
+            return;
+        }
         delay = 1000L * ConfigurationEntry.FOLDER_WATCHER_DELAY
             .getValueInt(getController());
-        String path = folder.getLocalBase().getAbsolutePath();
         boolean watchSubtree = true;
         try {
             watchID = JNotify.addWatch(path, JNotify.FILE_ANY, watchSubtree,
