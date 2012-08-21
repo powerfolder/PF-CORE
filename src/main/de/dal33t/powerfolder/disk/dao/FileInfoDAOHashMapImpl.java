@@ -133,8 +133,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         domains.remove(theDomain);
         if (newInitialSize > 0) {
             domains.put(theDomain, new Domain(newInitialSize));
-            if (isFine()) {
-                logFine("Created new domain (" + theDomain
+            if (isFiner()) {
+                logFiner("Created new domain (" + theDomain
                     + ") with initial capacity " + newInitialSize);
             }
         }
