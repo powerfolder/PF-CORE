@@ -2819,7 +2819,7 @@ public class Folder extends PFComponent {
         }
         if (localFile.isDeleted()) {
             if (remoteFile.isNewerThan(localFile)) {
-                logWarning("Taking over deletion file info: "
+                logFine("Taking over deletion file info: "
                     + remoteFile.toDetailString());
                 // Take over modification infos
                 remoteFile = correctFolderInfo(remoteFile);
