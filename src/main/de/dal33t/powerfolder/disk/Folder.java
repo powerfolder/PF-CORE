@@ -3710,7 +3710,9 @@ public class Folder extends PFComponent {
                 inBaseDir = getLocalBase().getAbsolutePath().startsWith(bd);
             }
 
-            if (inBaseDir && !currentInfo.isMetaFolder()) {
+            if (inBaseDir && !currentInfo.isMetaFolder()
+                && !getController().getMySelf().isServer())
+            {
                 // Schedule for removal
                 getController().schedule(new Runnable() {
                     public void run() {
