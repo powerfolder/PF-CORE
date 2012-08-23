@@ -600,7 +600,7 @@ public class Account implements Serializable {
     public Collection<Group> getGroups() {
         return Collections.unmodifiableCollection(groups);
     }
-    
+
     public void addLicenseKeyFile(String filename) {
         if (licenseKeyFileList.contains(filename)) {
             return;
@@ -628,7 +628,7 @@ public class Account implements Serializable {
     }
 
     public List<String> getEmails() {
-        return emails;
+        return Collections.unmodifiableList(emails);
     }
 
     public int getAutoRenewDevices() {
@@ -906,6 +906,9 @@ public class Account implements Serializable {
             Collection<Group> newGroups = new CopyOnWriteArrayList<Group>(
                 groups);
             groups = newGroups;
+            for (Group group : groups) {
+                group.convertCollections();
+            }
         }
 
         if (!(computers instanceof CopyOnWriteArrayList<?>)) {
@@ -918,6 +921,11 @@ public class Account implements Serializable {
             List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<String>(
                 licenseKeyFileList);
             licenseKeyFileList = newLicenseKeyFileList;
+        }
+
+        if (!(emails instanceof CopyOnWriteArrayList<?>)) {
+            List<String> newEmails = new CopyOnWriteArrayList<String>(emails);
+            emails = newEmails;
         }
     }
 

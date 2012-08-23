@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.security;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
@@ -37,6 +38,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -143,5 +145,13 @@ public class Group implements Serializable {
 
     public void setName(String newName) {
         name = newName;
+    }
+
+    synchronized void convertCollections() {
+        if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
+            Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
+                permissions);
+            permissions = newPermissions;
+        }
     }
 }
