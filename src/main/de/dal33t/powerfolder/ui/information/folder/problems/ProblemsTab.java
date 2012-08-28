@@ -145,14 +145,7 @@ public class ProblemsTab extends PFUIComponent {
      */
     public void updateProblems(List<Problem> problemList) {
         problemsTableModel.updateProblems(problemList);
-        if (problemList.isEmpty()) {
-            problemsTable.getSelectionModel().removeIndexInterval(0,
-                problemsTableModel.getRowCount());
-        } else {
-            problemsTable.getSelectionModel().setSelectionInterval(0, 0);
-        }
         enableOnSelection();
-
     }
 
     /**
