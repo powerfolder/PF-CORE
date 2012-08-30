@@ -595,10 +595,10 @@ public class MainFrame extends PFUIComponent {
      * open.
      */
     public void checkOnTop() {
-        boolean onTop = uiComponent.isAlwaysOnTopSupported()
-                && frameMode == FrameMode.COMPACT
-                && !PFWizard.isWizardOpen() && !BaseDialog.isDialogOpen();
-        uiComponent.setAlwaysOnTop(onTop);
+        // boolean onTop = uiComponent.isAlwaysOnTopSupported()
+        // && frameMode == FrameMode.COMPACT
+        // && !PFWizard.isWizardOpen() && !BaseDialog.isDialogOpen();
+        // uiComponent.setAlwaysOnTop(onTop);
     }
 
     private void updateMainStatus() {
