@@ -77,7 +77,7 @@ public class PowerFolder {
                 "<createfolder> Creates a new Folder");
         options.addOption("r", "removefolder", true,
                 "<removefolder> Removes a existing Folder");
-        options.addOption("l", "copylink", true,
+        options.addOption("a", "copylink", true,
                 "<copylink> Copies the PowerFolder link of that file to clipboard");
         options.addOption("y", "notifyleft", false,
                 "Show notification at left of screen");
