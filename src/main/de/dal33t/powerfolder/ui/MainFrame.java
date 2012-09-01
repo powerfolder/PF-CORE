@@ -75,6 +75,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
@@ -85,7 +86,6 @@ import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
@@ -116,6 +116,9 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  */
 public class MainFrame extends PFUIComponent {
 
+    private enum SyncStatus {NOT_STARTED, NO_FOLDERS, PAUSED, SYNCING,
+        SYNC_INCOMPLETE, SYNCHRONIZED}
+
     private enum FrameMode {MAXIMIZED, NORMAL, COMPACT, MINIMIZED}
 
     public static final int MIN_INFO_WIDTH = 500;
@@ -142,9 +145,10 @@ public class MainFrame extends PFUIComponent {
     private SyncIconButtonMini syncingButton;
     private JButtonMini setupButton;
     private JButtonMini pauseButton;
+    private JButtonMini syncIncompleteButton;
 
     private ActionLabel upperMainTextActionLabel;
-    private ActionLabel syncDateActionLabel;
+    private ActionLabel lowerMainTextActionLabel;
     private ActionLabel setupLabel;
 
     private ActionLabel loginActionLabel;
@@ -224,9 +228,10 @@ public class MainFrame extends PFUIComponent {
         b.add(syncingButton, cc.xy(1, 1));
         b.add(setupButton, cc.xy(1, 1));
         b.add(pauseButton, cc.xy(1, 1));
+        b.add(syncIncompleteButton, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
-        builderUpper.add(syncDateActionLabel.getUIComponent(), cc.xy(3, 2));
+        builderUpper.add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
         builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         // UPPER PART END
 
@@ -412,23 +417,26 @@ public class MainFrame extends PFUIComponent {
 
         uiComponent = new JFrame();
         uiComponent.setTransferHandler(new MyTransferHandler());
-        //checkOnTop();
         uiComponent.addWindowFocusListener(new MyWindowFocusListner());
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         uiComponent.setBackground(Color.white);
 
-        allInSyncButton = new JButtonMini(new MyOpenFoldersBaseAction(
-            getController()));
+        MyOpenFoldersBaseAction myOpenFoldersBaseAction =
+                new MyOpenFoldersBaseAction(getController());
+        allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);
+
+        syncIncompleteButton = new JButtonMini(myOpenFoldersBaseAction);
+        syncIncompleteButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
+        syncIncompleteButton.setText(null);
 
         pauseButton = new JButtonMini(new MyPauseResumeAction(getController()));
         pauseButton.setIcon(Icons.getIconById(Icons.PAUSE));
         pauseButton.setText(null);
 
         syncingButton = new SyncIconButtonMini(getController());
-        syncingButton.addActionListener(new MyOpenFoldersBaseAction(
-            getController()));
+        syncingButton.addActionListener(myOpenFoldersBaseAction);
         syncingButton.setVisible(false);
 
         setupButton = new JButtonMini(new MySetupAction());
@@ -442,7 +450,7 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
-        syncDateActionLabel = new ActionLabel(getController(),
+        lowerMainTextActionLabel = new ActionLabel(getController(),
                 new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 handleSyncTextClick();
@@ -474,7 +482,7 @@ public class MainFrame extends PFUIComponent {
         openWebInterfaceActionLabel = new ActionLabel(getController(),
             new MyOpenWebInterfaceAction(getController()));
         openFoldersBaseActionLabel = new ActionLabel(getController(),
-            new MyOpenFoldersBaseAction(getController()));
+                myOpenFoldersBaseAction);
         pauseResumeActionLabel = new ActionLabel(getController(),
             new MyPauseResumeAction(getController()));
         configurationActionLabel = new ActionLabel(getController(),
@@ -618,66 +626,92 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void updateMainStatus0() {
-        FolderRepositoryModel folderRepositoryModel = getUIController()
-            .getApplicationModel().getFolderRepositoryModel();
-        boolean syncing = folderRepositoryModel.isSyncing();
-        Date syncDate;
-        if (syncing) {
-            syncDate = folderRepositoryModel.getEstimatedSyncDate();
-        } else {
-            syncDate = folderRepositoryModel.getLastSyncDate();
-        }
-        double overallSyncPercentage = folderRepositoryModel
-            .getOverallSyncPercentage();
 
-        String upperText;
-        String setupText = null;
-        boolean paused = getController().isPaused();
-        boolean synced = false;
-        boolean setup = false;
-        if (!getController().getNodeManager().isStarted()) {
-            // Not started
-            upperText = Translation.getTranslation("main_frame.not_running");
-            setup = true;
-            setupText = Translation.getTranslation("main_frame.activate_now");
-        } else if (getController().getFolderRepository().getFoldersCount() == 0)
-        {
-            // No folders
-            upperText = Translation.getTranslation("main_frame.no_folders");
-            setup = true;
-            setupText = getApplicationModel().getActionModel()
-                .getNewFolderAction().getName();
-        } else if (paused) {
-            // Paused
-            String s;
-            if (overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d) {
-                s = Format.formatDecimal(overallSyncPercentage) + '%';
-            } else {
-                s = "";
-            }
-            upperText = Translation.getTranslation("main_frame.paused", s);
-            synced = true;
-        } else if (syncing) {
-            String s;
-            if (overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d) {
-                s = Format.formatDecimal(overallSyncPercentage) + '%';
-            } else {
-                s = "...";
-            }
-            upperText = Translation.getTranslation("main_frame.syncing", s);
-        } else if (syncDate == null) {
-            upperText = Translation.getTranslation("main_frame.never_synced");
-        } else {
-            upperText = Translation.getTranslation("main_frame.in_sync");
-            synced = true;
+        FolderRepository folderRepository =
+                getController().getFolderRepository();
+        FolderRepositoryModel folderRepositoryModel = getUIController()
+                .getApplicationModel().getFolderRepositoryModel();
+
+        // Work out status.
+        SyncStatus status = SyncStatus.SYNC_INCOMPLETE;
+        if (getController().isPaused()) {
+            status = SyncStatus.PAUSED;
+        } else if (!getController().getNodeManager().isStarted()) {
+            status = SyncStatus.NOT_STARTED;
+        } else if (folderRepository.getFoldersCount() == 0) {
+            status = SyncStatus.NO_FOLDERS;
+        } else if (folderRepositoryModel.isSyncing()) {
+            status = SyncStatus.SYNCING;
+        } else if (folderRepository.areAllFoldersInSync()) {
+            status = SyncStatus.SYNCHRONIZED;
+        }
+
+        // Set visibility of buttons and labels.
+        pauseButton.setVisible(status == SyncStatus.PAUSED);
+        setupLabel.setVisible(status == SyncStatus.NOT_STARTED);
+        setupButton.setVisible(status == SyncStatus.NOT_STARTED);
+        allInSyncButton.setVisible(status == SyncStatus.SYNCHRONIZED);
+        syncingButton.setVisible(status == SyncStatus.SYNCING);
+        syncIncompleteButton.setVisible(status == SyncStatus.SYNC_INCOMPLETE);
+
+        // Default sync date.
+        Date syncDate = folderRepositoryModel.getLastSyncDate();
+
+        // Upper text / setup text stuff.
+        double overallSyncPercentage =
+                folderRepositoryModel.getOverallSyncPercentage();
+        String upperText = "";
+        String setupText = "";
+
+        switch (status) {
+            case PAUSED:
+                String pausedTemp = (overallSyncPercentage >= 0 &&
+                        overallSyncPercentage < 99.5d) ?
+                        Format.formatDecimal(overallSyncPercentage) + '%' : "";
+                upperText = Translation.getTranslation("main_frame.paused",
+                        pausedTemp);
+                break;
+            case NOT_STARTED:
+                upperText = Translation.getTranslation(
+                        "main_frame.not_running");
+                setupText = Translation.getTranslation(
+                        "main_frame.activate_now");
+                break;
+            case NO_FOLDERS:
+                upperText = Translation.getTranslation("main_frame.no_folders");
+                setupText = getApplicationModel().getActionModel()
+                        .getNewFolderAction().getName();
+                break;
+            case SYNCING:
+                syncDate = folderRepositoryModel.getEstimatedSyncDate();
+                String syncingTemp = (overallSyncPercentage >= 0 &&
+                        overallSyncPercentage < 99.5d) ?
+                        Format.formatDecimal(overallSyncPercentage) + '%' :
+                        "...";
+                upperText = Translation.getTranslation("main_frame.syncing",
+                        syncingTemp);
+                break;
+            case SYNCHRONIZED:
+                upperText = Translation.getTranslation("main_frame.in_sync");
+                break;
+            case SYNC_INCOMPLETE:
+                upperText = Translation.getTranslation(
+                        "main_frame.sync_incomplete");
+                break;
         }
 
         upperMainTextActionLabel.setText(upperText);
-        if (setupText != null) {
-            setupLabel.setText(setupText);
-        }
+        setupLabel.setText(setupText);
 
-        String dateText = " ";
+        // The lowerMainTextActionLabel and setupLabel share the same slot,
+        // so visibility is mutually exclusive.
+        boolean notStartedOrNoFolders = status == SyncStatus.NOT_STARTED ||
+                status == SyncStatus.NO_FOLDERS;
+        setupLabel.setVisible(notStartedOrNoFolders);
+        lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
+
+        // Lower text - sync date stuff.
+        String lowerText = "";
         if (syncDate != null) {
             //If ETA sync > 3 days: no text.
             if (!DateUtil.isDateMoreThanNDaysInFuture(syncDate, 3)) {
@@ -690,10 +724,10 @@ public class MainFrame extends PFUIComponent {
                     if (DateUtil.isDateMoreThanNHoursInFuture(syncDate, 20)) {
                         int days = DateUtil.getDaysInFuture(syncDate);
                         if (days <= 1) {
-                        dateText = Translation.getTranslation(
+                        lowerText = Translation.getTranslation(
                                 "main_frame.sync_eta_one_day");
                         } else {
-                            dateText = Translation.getTranslation(
+                            lowerText = Translation.getTranslation(
                                     "main_frame.sync_eta_days", String.valueOf(
                                             days));
                         }
@@ -701,48 +735,31 @@ public class MainFrame extends PFUIComponent {
                             45)) {
                         int hours = DateUtil.getHoursInFuture(syncDate);
                         if (hours <= 1) {
-                        dateText = Translation.getTranslation(
+                        lowerText = Translation.getTranslation(
                                 "main_frame.sync_eta_one_hour");
                         } else {
-                            dateText = Translation.getTranslation(
+                            lowerText = Translation.getTranslation(
                                     "main_frame.sync_eta_hours", String.valueOf(
                                             hours));
                         }
                     } else {
                         int minutes = DateUtil.getMinutesInFuture(syncDate);
                         if (minutes <= 1) {
-                        dateText = Translation.getTranslation(
+                        lowerText = Translation.getTranslation(
                                 "main_frame.sync_eta_one_minute");
                         } else {
-                            dateText = Translation.getTranslation(
+                            lowerText = Translation.getTranslation(
                                     "main_frame.sync_eta_minutes",
                                     String.valueOf(minutes));
                         }
                     }
-                } else if (synced) {
-                    dateText = Translation.getTranslation(
+                } else {
+                    lowerText = Translation.getTranslation(
                         "main_frame.last_synced", date);
                 }
             }
         }
-        syncDateActionLabel.setText(dateText);
-
-        syncDateActionLabel.setVisible(!setup);
-
-        setupLabel.setVisible(setup);
-
-        if (setup) {
-            setupButton.setVisible(true);
-            syncingButton.setVisible(false);
-            syncingButton.spin(false);
-            allInSyncButton.setVisible(false);
-        } else {
-            setupButton.setVisible(false);
-            syncingButton.setVisible(!synced && !paused);
-            syncingButton.spin(!synced && !paused);
-            allInSyncButton.setVisible(synced && !paused);
-            pauseButton.setVisible(paused);
-        }
+        lowerMainTextActionLabel.setText(lowerText);
     }
 
     /**
@@ -752,7 +769,7 @@ public class MainFrame extends PFUIComponent {
         StringBuilder title = new StringBuilder();
 
         String appName = Translation.getTranslation("general.application.name");
-        // Urg
+        // @todo Unclear, please comment what this is about.
         if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
             appName = "PowerFolder";
         }
@@ -1436,17 +1453,17 @@ public class MainFrame extends PFUIComponent {
         if (getController().isPaused()) {
             upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_resume_sync.description"));
-            syncDateActionLabel.setToolTipText(Translation.getTranslation(
+            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_resume_sync.description"));
         } else if (frameMode == FrameMode.COMPACT) {
             upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_expand_interface.name"));
-            syncDateActionLabel.setToolTipText(Translation.getTranslation(
+            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_expand_interface.name"));
         } else {
             upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_collapse_interface.name"));
-            syncDateActionLabel.setToolTipText(Translation.getTranslation(
+            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_collapse_interface.name"));
         }
     }
@@ -1543,7 +1560,7 @@ public class MainFrame extends PFUIComponent {
     private class MyPauseResumeAction extends BaseAction {
 
         private MyPauseResumeAction(Controller controller) {
-            super("action_pause_sync", controller);
+            super("action_resume_sync", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1555,7 +1572,7 @@ public class MainFrame extends PFUIComponent {
     private class MyOpenTransfersAction extends BaseAction {
 
         private MyOpenTransfersAction(Controller controller) {
-            super("action_open_tansfers_information", controller);
+            super("action_open_transfers_information", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

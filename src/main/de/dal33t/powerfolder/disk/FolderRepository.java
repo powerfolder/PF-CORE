@@ -655,7 +655,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Finds an folder on the give target directory.
      * 
-     * @param folderName
+     * @param targetDir
      * @return the folder with the targetDir as local base or null if not found
      */
     public Folder findExistingFolder(File targetDir) {
@@ -1349,8 +1349,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * In sync = all folders are 100% synced and all syncing actions (
-     * {@link #isSyncing()}) have stopped.
+     * In sync = all folders are 100% synced and
+     * all syncing actions have stopped.
      * 
      * @return true if all folders are 100% in sync
      */
@@ -1682,6 +1682,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
         return false;
+    }
+
+    public boolean areAllFoldersInSync() {
+        for (Folder folder : folders.values()) {
+            if (Double.compare(folder.getStatistic().getHarmonizedSyncPercentage(), 100.0d) < 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private class CheckSyncTask implements Runnable {

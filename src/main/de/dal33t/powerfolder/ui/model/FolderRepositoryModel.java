@@ -149,7 +149,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             localOverallSyncPercentage = -1;
         }
 
-        // Upate with the lastest values.
+        // Update with the latest values.
         syncing = localSyncing;
         lastSyncDate = localLastSyncDate;
         estimatedSyncDate = localEstimatedSyncDate;
