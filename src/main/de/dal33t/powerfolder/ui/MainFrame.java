@@ -660,8 +660,8 @@ public class MainFrame extends PFUIComponent {
         // Upper text / setup text stuff.
         double overallSyncPercentage =
                 folderRepositoryModel.getOverallSyncPercentage();
-        String upperText = "";
-        String setupText = "";
+        String upperText = " ";
+        String setupText = " ";
 
         switch (status) {
             case PAUSED:
@@ -711,7 +711,7 @@ public class MainFrame extends PFUIComponent {
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
 
         // Lower text - sync date stuff.
-        String lowerText = "";
+        String lowerText = " ";
         if (syncDate != null) {
             //If ETA sync > 3 days: no text.
             if (!DateUtil.isDateMoreThanNDaysInFuture(syncDate, 3)) {
