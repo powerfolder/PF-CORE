@@ -163,7 +163,7 @@ public class UIUnLockDialog extends PFUIComponent {
             builder.getPanel().setBackground(Color.WHITE);
 
             frame = new JFrame(getTitle());
-            frame.setAlwaysOnTop(true);
+            //frame.setAlwaysOnTop(true);
             // frame.setUndecorated(true);
             frame.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
             frame.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));

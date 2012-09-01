@@ -118,9 +118,6 @@ public class MainFrame extends PFUIComponent {
 
     private enum FrameMode {MAXIMIZED, NORMAL, COMPACT, MINIMIZED}
 
-    public static final int MIN_HEIGHT_UNCOMPACT = 500;
-    public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
-        .getDefaultValueInt();
     public static final int MIN_INFO_WIDTH = 500;
 
     /**
@@ -415,7 +412,7 @@ public class MainFrame extends PFUIComponent {
 
         uiComponent = new JFrame();
         uiComponent.setTransferHandler(new MyTransferHandler());
-        checkOnTop();
+        //checkOnTop();
         uiComponent.addWindowFocusListener(new MyWindowFocusListner());
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         uiComponent.setBackground(Color.white);
@@ -594,12 +591,12 @@ public class MainFrame extends PFUIComponent {
      * Force UI on top if compact, but only if there are no wizards or dialogs
      * open.
      */
-    public void checkOnTop() {
+    //public void checkOnTop() {
         // boolean onTop = uiComponent.isAlwaysOnTopSupported()
         // && frameMode == FrameMode.COMPACT
         // && !PFWizard.isWizardOpen() && !BaseDialog.isDialogOpen();
         // uiComponent.setAlwaysOnTop(onTop);
-    }
+    //}
 
     private void updateMainStatus() {
         mainStatusUpdater.schedule(new Runnable() {
@@ -1082,10 +1079,10 @@ public class MainFrame extends PFUIComponent {
         state &= ~Frame.ICONIFIED;
         uiComponent.setExtendedState(state);
         boolean onTop = uiComponent.isAlwaysOnTop();
-        uiComponent.setAlwaysOnTop(true);
+        //uiComponent.setAlwaysOnTop(true);
         uiComponent.toFront();
         uiComponent.requestFocus();
-        uiComponent.setAlwaysOnTop(onTop);
+        //uiComponent.setAlwaysOnTop(onTop);
     }
 
     private void doCloseOperation() {
@@ -1432,7 +1429,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         setLinkTooltips();
-        checkOnTop();
+        //checkOnTop();
     }
 
     private void setLinkTooltips() {

@@ -96,7 +96,7 @@ public abstract class BaseDialog extends PFUIComponent {
         this.senior = senior;
         this.modal = modal;
         NUMBER_OF_OPEN_DIALOGS.incrementAndGet();
-        controller.getUIController().getMainFrame().checkOnTop();
+        //controller.getUIController().getMainFrame().checkOnTop();
     }
 
     /**
@@ -134,7 +134,7 @@ public abstract class BaseDialog extends PFUIComponent {
     private void decrementOpenDialogCount() {
         if (!doneWizardClose.getAndSet(true)) {
             NUMBER_OF_OPEN_DIALOGS.decrementAndGet();
-            getController().getUIController().getMainFrame().checkOnTop();
+            //getController().getUIController().getMainFrame().checkOnTop();
         }
     }
 

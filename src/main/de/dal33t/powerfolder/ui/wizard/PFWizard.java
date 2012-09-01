@@ -46,7 +46,6 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -81,7 +80,7 @@ public class PFWizard extends PFUIComponent {
         super(controller);
         this.title = title;
         NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
-        controller.getUIController().getMainFrame().checkOnTop();
+        //controller.getUIController().getMainFrame().checkOnTop();
         setSuspendNewFolderSearch(true);
         wizard = new Wizard();
     }
@@ -103,7 +102,7 @@ public class PFWizard extends PFUIComponent {
     private void decrementOpenWizards() {
         if (!doneWizardClose.getAndSet(true)) {
             NUMBER_OF_OPEN_WIZARDS.decrementAndGet();
-            getController().getUIController().getMainFrame().checkOnTop();
+            //getController().getUIController().getMainFrame().checkOnTop();
             setSuspendNewFolderSearch(false);
         }
     }
