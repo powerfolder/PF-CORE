@@ -265,7 +265,13 @@ public class ByteSerializer extends Loggable {
             try {
                 result = deserialize0(base, !expectCompression);
             } catch (StreamCorruptedException e2) {
-                LOG.log(Level.WARNING, "While deserializing: " + e2, e2);
+                Level lvl = Level.WARNING;
+                if (e2.toString().toLowerCase()
+                    .contains("invalid stream header"))
+                {
+                    lvl = Level.FINER;
+                }
+                LOG.log(lvl, "While deserializing: " + e2, e2);
                 throw e2;
             } catch (InvalidClassException e2) {
                 LOG.log(Level.WARNING, "While deserializing: " + e2, e2);
