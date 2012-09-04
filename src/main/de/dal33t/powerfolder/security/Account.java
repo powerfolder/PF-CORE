@@ -769,7 +769,7 @@ public class Account implements Serializable {
         }
         long took = System.currentTimeMillis() - start;
         if (took > 1000L * 20) {
-            LOG.severe("Calculating archive size for " + this + " took " + took
+            LOG.warning("Calculating archive size for " + this + " took " + took
                 + "ms");
         }
         return size;
