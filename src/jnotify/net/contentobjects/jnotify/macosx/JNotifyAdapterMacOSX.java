@@ -2,11 +2,11 @@ package net.contentobjects.jnotify.macosx;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -195,6 +195,16 @@ public class JNotifyAdapterMacOSX implements IJNotify
 		}
 	}
 
+	private static <T> T pollFirst(TreeSet<T> set)
+	{
+		T result = set.first();
+		if (result != null)
+		{
+			set.remove(result);
+		}
+		return result;
+	}
+
 	/**
 	 * Data associated with a watch.
 	 */
@@ -240,6 +250,67 @@ public class JNotifyAdapterMacOSX implements IJNotify
 			scan(new File(job.path), job.recursive, events);
 		}
 
+		private static TreeMap<String, TreeMap<String, JNFile>> groupByNextComponent(File root, Map<String, JNFile> input)
+		{
+			TreeMap<String, TreeMap<String, JNFile>> grouped = new TreeMap<String, TreeMap<String, JNFile>>();
+			String lastDir = null;
+			TreeMap<String, JNFile> lastGroup = null;
+			String rootPath = root.getAbsolutePath() + "/";
+
+			for (Map.Entry<String, JNFile> entry : input.entrySet())
+			{
+				if (!entry.getKey().startsWith(rootPath))
+				{
+					continue;
+				}
+				String dir = entry.getKey().substring(rootPath.length());
+				int slashIndex = dir.indexOf('/');
+				if (slashIndex != -1)
+				{
+					dir = dir.substring(0, slashIndex);
+				}
+				if (lastDir == null || !lastDir.equals(dir))
+				{
+					lastDir = dir;
+					lastGroup = grouped.get(dir);
+					if (lastGroup == null)
+					{
+						lastGroup = new TreeMap<String, JNFile>();
+						grouped.put(dir, lastGroup);
+					}
+				}
+				lastGroup.put(entry.getKey(), entry.getValue());
+			}
+			
+			return grouped;
+		}
+
+		@SuppressWarnings("unchecked")
+		private static <K, V> Map.Entry<K, V> floorEntry(TreeMap<K, V> map, K target)
+		{
+			Map.Entry<K, V> result = null;
+			Comparator<? super K> compare = map.comparator();
+			for (Map.Entry<K, V> entry : map.entrySet())
+			{
+				if (compare == null)
+				{
+					if (((Comparable<K>)target).compareTo(entry.getKey()) < 0)
+					{
+						break;
+					}
+				}
+				else
+				{
+					if (compare.compare(target, entry.getKey()) < 0)
+					{
+						break;
+					}
+				}
+				result = entry;
+			}
+			return result;
+		}
+
 		/**
 		 * Checks a directory for changes.
 		 * @param root the directory to scan
@@ -249,9 +320,9 @@ public class JNotifyAdapterMacOSX implements IJNotify
 		private void scan(File root, boolean recursive, JNEvents events)
 		{
 			File[] files = root.listFiles();
-			Set<Map.Entry<String, JNFile>> existingfiles = jnfiles.tailMap(root.getAbsolutePath(), false).entrySet();
+			Map<String, JNFile> existingfiles = jnfiles.tailMap(root.getAbsolutePath());
 			TreeSet<String> stillAlive = null;
-			String rootPath = root.getAbsolutePath();
+			String rootPath = root.getAbsolutePath() + "/";
 
 			// check for created/modified/recreated
 			if (files != null)
@@ -262,7 +333,7 @@ public class JNotifyAdapterMacOSX implements IJNotify
 				{
 					// get the path relative to rootPath
 					String filePath = files[i].getAbsolutePath();
-					filePath = filePath.substring(rootPath.length() + 1);
+					filePath = filePath.substring(rootPath.length());
 					// use only the next path component
 					int slashindex = filePath.indexOf("/"); //$NON-NLS-1$
 					if (slashindex >= 0)
@@ -276,7 +347,7 @@ public class JNotifyAdapterMacOSX implements IJNotify
 					{
 						JNFile jnf = new JNFile(files[i]);
 						// check if this inode is already known
-						Map.Entry<JNFile, TreeSet<String>> oldEntry = paths.floorEntry(jnf);
+						Map.Entry<JNFile, TreeSet<String>> oldEntry = floorEntry(paths, jnf);
 						TreeSet<String> plist;
 						if (oldEntry == null || !jnf.equals(oldEntry.getKey()))
 						{
@@ -306,7 +377,8 @@ public class JNotifyAdapterMacOSX implements IJNotify
 						}
 
 						String path = files[i].getAbsolutePath();
-						if (!plist.contains(path))
+						boolean isNewPath = !plist.contains(path);
+						if (isNewPath)
 						{
 							// new file
 							// might not be a new inode
@@ -361,9 +433,10 @@ public class JNotifyAdapterMacOSX implements IJNotify
 							}
 						}
 
-						if (watchSubtree && recursive && files[i].isDirectory())
+						boolean recurse = isNewPath || recursive;
+						if (watchSubtree && recurse && files[i].isDirectory())
 						{
-							scan(files[i], recursive, events);
+							scan(files[i], recurse, events);
 						}
 					}
 					catch(IOException e)
@@ -375,7 +448,7 @@ public class JNotifyAdapterMacOSX implements IJNotify
 			}
 
 			// check for deleted files
-			Iterator<Map.Entry<String, JNFile>> entryit = existingfiles.iterator();
+			TreeMap<String, TreeMap<String, JNFile>> grouped = groupByNextComponent(root, existingfiles);
 			Iterator<String> stillAliveit = null;
 			String lastAlive = null;
 			if (stillAlive != null)
@@ -386,28 +459,14 @@ public class JNotifyAdapterMacOSX implements IJNotify
 					lastAlive = stillAliveit.next();
 				}
 			}
-			Map.Entry<String, JNFile> entry;
-			while (entryit.hasNext())
+			for (Map.Entry<String, TreeMap<String, JNFile>> entry : grouped.entrySet())
 			{
-				entry = entryit.next();
 				String jnp = entry.getKey();
-				// only work on the contents of this directory
-				if (!jnp.startsWith(rootPath))
-					break;
 
 				if (lastAlive != null)
 				{
-					// get the next path component after rootPath
-					String oldFilePath = jnp;
-					oldFilePath = oldFilePath.substring(rootPath.length() + 1);
-					int slashindex = oldFilePath.indexOf("/"); //$NON-NLS-1$
-					if (slashindex >= 0)
-					{
-						oldFilePath = oldFilePath.substring(0, slashindex);
-					}
-
 					int compare = -1;
-					while (lastAlive != null && (compare = oldFilePath.compareTo(lastAlive)) > 0)
+					while (lastAlive != null && (compare = jnp.compareTo(lastAlive)) > 0)
 					{
 						if (stillAliveit.hasNext())
 						{
@@ -426,38 +485,40 @@ public class JNotifyAdapterMacOSX implements IJNotify
 				}
 
 				// file no longer exists
-				JNFile jnf = entry.getValue();
-				TreeSet<String> oldPaths = paths.get(jnf);
-				// remove this path from its inode
-				if (oldPaths == null)
+				for (Map.Entry<String, JNFile> jnf : entry.getValue().entrySet())
 				{
-					// this shouldn't happen!
-				}
-				else
-				{
-					if (!oldPaths.remove(jnp))
+					TreeSet<String> oldPaths = paths.get(jnf.getValue());
+					// remove this path from its inode
+					if (oldPaths == null)
 					{
 						// this shouldn't happen!
 					}
-					if (oldPaths.size() == 0) {
-						// inode is gone
-						paths.remove(jnf);
-					}
-				}
-
-				// remove this path from the map
-				entryit.remove();
-
-				// record this change in events
-				if (events != null && events.deleted != null)
-				{
-					TreeSet<String> eplist = events.deleted.get(jnf);
-					if (eplist == null)
+					else
 					{
-						eplist = new TreeSet<String>();
-						events.deleted.put(jnf, eplist);
+						if (!oldPaths.remove(jnf.getKey()))
+						{
+							// this shouldn't happen!
+						}
+						if (oldPaths.size() == 0) {
+							// inode is gone
+							paths.remove(jnf.getValue());
+						}
 					}
-					eplist.add(jnp);
+
+					// remove this path from the map
+					existingfiles.remove(jnf.getKey());
+
+					// record this change in events
+					if (events != null && events.deleted != null)
+					{
+						TreeSet<String> eplist = events.deleted.get(jnf.getValue());
+						if (eplist == null)
+						{
+							eplist = new TreeSet<String>();
+							events.deleted.put(jnf.getValue(), eplist);
+						}
+						eplist.add(jnf.getKey());
+					}
 				}
 			}
 		}
@@ -542,8 +603,8 @@ public class JNotifyAdapterMacOSX implements IJNotify
 
 					// a deleted file and a created file have the same inode
 					// merge into a rename event
-					String newpath = created.getValue().pollFirst();
-					String oldpath = deleted.getValue().pollFirst();
+					String newpath = pollFirst(created.getValue());
+					String oldpath = pollFirst(deleted.getValue());
 					e.renamed.put(oldpath, newpath);
 
 					// this inode is no longer associated with anything

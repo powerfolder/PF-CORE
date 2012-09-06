@@ -18,13 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  ******************************************************************************
+ * 
+ * You may also redistribute and/or modify this library under the terms of the
+ * Eclipse Public License. See epl.html.
+ * 
+ ******************************************************************************
  *
  * Content Objects, Inc., hereby disclaims all copyright interest in the
- * library `JNotify' (a Java library for file system events). 
+ * library `JNotify' (a Java library for file system events).
  * 
  * Yahali Sherman, 21 November 2005
  *    Content Objects, VP R&D.
- *    
+ * 
  ******************************************************************************
  * Author : Omry Yadan
  ******************************************************************************/

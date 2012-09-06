@@ -18,13 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  ******************************************************************************
+ * 
+ * You may also redistribute and/or modify this library under the terms of the
+ * Eclipse Public License. See epl.html.
+ * 
+ ******************************************************************************
  *
  * Content Objects, Inc., hereby disclaims all copyright interest in the
- * library `JNotify' (a Java library for file system events). 
+ * library `JNotify' (a Java library for file system events).
  * 
  * Yahali Sherman, 21 November 2005
  *    Content Objects, VP R&D.
- *    
+ * 
  ******************************************************************************
  * Author : Omry Yadan
  ******************************************************************************/
@@ -166,9 +171,9 @@ public class JNotifyAdapterWin32 implements IJNotify
 //		case JNotify_win32.FILE_ACTION_RENAMED_OLD_NAME:
 //			return "FILE_ACTION_RENAMED_OLD_NAME";
 //		default:
-//			return "UNKNOWN " + action; 
+//			return "UNKNOWN " + action;
 //		}
-//	}	
+//	}
 	
 	private int mapAction(int action)
 	{

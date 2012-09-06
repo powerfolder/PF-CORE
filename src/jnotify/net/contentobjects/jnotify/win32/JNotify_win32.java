@@ -18,13 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  ******************************************************************************
+ * 
+ * You may also redistribute and/or modify this library under the terms of the
+ * Eclipse Public License. See epl.html.
+ * 
+ ******************************************************************************
  *
  * Content Objects, Inc., hereby disclaims all copyright interest in the
- * library `JNotify' (a Java library for file system events). 
+ * library `JNotify' (a Java library for file system events).
  * 
  * Yahali Sherman, 21 November 2005
  *    Content Objects, VP R&D.
- *    
+ * 
  ******************************************************************************
  * Author : Omry Yadan
  ******************************************************************************/
@@ -57,14 +62,14 @@ public class JNotify_win32
 		}
 	}
 	
-	public static final int FILE_NOTIFY_CHANGE_FILE_NAME   = 0x00000001;   
-	public static final int FILE_NOTIFY_CHANGE_DIR_NAME    = 0x00000002;   
-	public static final int FILE_NOTIFY_CHANGE_ATTRIBUTES  = 0x00000004;   
-	public static final int FILE_NOTIFY_CHANGE_SIZE        = 0x00000008;   
-	public static final int FILE_NOTIFY_CHANGE_LAST_WRITE  = 0x00000010;   
-	public static final int FILE_NOTIFY_CHANGE_LAST_ACCESS = 0x00000020;   
-	public static final int FILE_NOTIFY_CHANGE_CREATION    = 0x00000040;   
-	public static final int FILE_NOTIFY_CHANGE_SECURITY    = 0x00000100;  	
+	public static final int FILE_NOTIFY_CHANGE_FILE_NAME   = 0x00000001;
+	public static final int FILE_NOTIFY_CHANGE_DIR_NAME    = 0x00000002;
+	public static final int FILE_NOTIFY_CHANGE_ATTRIBUTES  = 0x00000004;
+	public static final int FILE_NOTIFY_CHANGE_SIZE        = 0x00000008;
+	public static final int FILE_NOTIFY_CHANGE_LAST_WRITE  = 0x00000010;
+	public static final int FILE_NOTIFY_CHANGE_LAST_ACCESS = 0x00000020;
+	public static final int FILE_NOTIFY_CHANGE_CREATION    = 0x00000040;
+	public static final int FILE_NOTIFY_CHANGE_SECURITY    = 0x00000100;
 	
 	// Event action ids
 	public static final int FILE_ACTION_ADDED = 0x00000001;
@@ -75,7 +80,7 @@ public class JNotify_win32
 	
 	private static native int nativeInit();
 	private static native int nativeAddWatch(String path, long mask, boolean watchSubtree);
-	private static native String getErrorDesc(long errorCode); 
+	private static native String getErrorDesc(long errorCode);
 	private static native void nativeRemoveWatch(int wd);
 	
 	private static IWin32NotifyListener _notifyListener;

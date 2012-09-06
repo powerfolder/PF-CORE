@@ -18,13 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  ******************************************************************************
+ * 
+ * You may also redistribute and/or modify this library under the terms of the
+ * Eclipse Public License. See epl.html.
+ * 
+ ******************************************************************************
  *
  * Content Objects, Inc., hereby disclaims all copyright interest in the
- * library `JNotify' (a Java library for file system events). 
+ * library `JNotify' (a Java library for file system events).
  * 
  * Yahali Sherman, 21 November 2005
  *    Content Objects, VP R&D.
- *    
+ * 
  ******************************************************************************
  * Author : Omry Yadan
  ******************************************************************************/
@@ -46,14 +51,14 @@ public class JNotify
 	
 	private static IJNotify _instance;
 	
-	static 
+	static
 	{
-		String osName = System.getProperty("os.name").toLowerCase();
-		if (osName.equals("linux"))
+		String overrideClass = System.getProperty("jnotify.impl.override");
+		if (overrideClass != null)
 		{
 			try
 			{
-				_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.linux.JNotifyAdapterLinux").newInstance();
+				_instance = (IJNotify) Class.forName(overrideClass).newInstance();
 			}
 			catch (Exception e)
 			{
@@ -61,35 +66,49 @@ public class JNotify
 			}
 		}
 		else
-		if (osName.startsWith("windows"))
 		{
-			try
+			String osName = System.getProperty("os.name").toLowerCase();
+			if (osName.equals("linux"))
 			{
-				_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.win32.JNotifyAdapterWin32").newInstance();
+				try
+				{
+					_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.linux.JNotifyAdapterLinux").newInstance();
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException(e);
+				}
 			}
-			catch (Exception e)
+			else
+			if (osName.startsWith("windows"))
 			{
-				throw new RuntimeException(e);
+				try
+				{
+					_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.win32.JNotifyAdapterWin32").newInstance();
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException(e);
+				}
 			}
-		}
-		else
-                if (osName.startsWith("mac os x"))
-		{
-			try
+			else
+			if (osName.startsWith("mac os x"))
 			{
-				_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.macosx.JNotifyAdapterMacOSX").newInstance();
+				try
+				{
+					_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.macosx.JNotifyAdapterMacOSX").newInstance();
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException(e);
+				}
 			}
-			catch (Exception e)
+	        else
 			{
-				throw new RuntimeException(e);
+				throw new RuntimeException("Unsupported OS : " + osName);
 			}
-		}
-                else
-		{
-			throw new RuntimeException("Unsupported OS : " + osName);
 		}
 	}
-	
 	
 	public static int addWatch(String path, int mask, boolean watchSubtree, JNotifyListener listener) throws JNotifyException
 	{
@@ -101,34 +120,34 @@ public class JNotify
 		return _instance.removeWatch(watchId);
 	}
 	
-	public static void main(String[] args) throws InterruptedException, IOException 
+	public static void main(String[] args) throws InterruptedException, IOException
 	{
 		String dir = new File(args.length == 0 ? "." : args[0]).getCanonicalFile().getAbsolutePath();
-		JNotify.addWatch(dir, FILE_ANY, true, new JNotifyListener() 
+		JNotify.addWatch(dir, FILE_ANY, true, new JNotifyListener()
 		{
 			public void fileRenamed(int wd, String rootPath, String oldName,
-					String newName) 
+					String newName)
 			{
 				System.out.println("renamed " + rootPath + " : " + oldName + " -> " + newName);
 			}
 			
-			public void fileModified(int wd, String rootPath, String name) 
+			public void fileModified(int wd, String rootPath, String name)
 			{
 				System.out.println("modified " + rootPath + " : " + name);
 			}
 			
-			public void fileDeleted(int wd, String rootPath, String name) 
+			public void fileDeleted(int wd, String rootPath, String name)
 			{
 				System.out.println("deleted " + rootPath + " : " + name);
 			}
 			
-			public void fileCreated(int wd, String rootPath, String name) 
+			public void fileCreated(int wd, String rootPath, String name)
 			{
 				System.out.println("created " + rootPath + " : " + name);
 			}
 		});
 		
-		System.err.println("Monitoring " + dir + ", ctrl+c to stop");
+		System.out.println("Monitoring " + dir + ", ctrl+c to stop");
 		while (true) Thread.sleep(10000);
 	}
 }
