@@ -535,6 +535,7 @@ public class Controller extends PFComponent {
 
         // init repo (read folders)
         folderRepository.init();
+        logInfo("Dataitems: " + Debug.countDataitems(Controller.this));
         // init of folders takes rather long so a big difference with
         // last number to get smooth bar... ;-)
         setLoadingCompletion(60, 65);
