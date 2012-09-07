@@ -2877,6 +2877,8 @@ public class Folder extends PFComponent {
                             // #1977
                             String[] remaining = localCopy.list();
                             if (remaining != null) {
+                                // Basic cleanup stuff. Simply remove any caches
+                                // or meta info.
                                 for (String path : remaining) {
                                     String pathL = path.toLowerCase();
                                     if (pathL.endsWith("thumbs.db")
@@ -2886,6 +2888,16 @@ public class Folder extends PFComponent {
                                         new TFile(path).delete();
                                     }
                                 }
+
+                                // If structure is completely empty, just kill
+                                // it.
+                                // try {
+                                // removeEmptyDirectoryStructure(localCopy);
+                                // } catch (Exception e) {
+                                // logWarning("Unable remove empty directory structure at "
+                                // + localCopy + ". " + e.getMessage());
+                                // }
+
                                 if (!localCopy.delete()) {
                                     if (isWarning()) {
                                         remaining = localCopy.list();
@@ -2930,6 +2942,34 @@ public class Folder extends PFComponent {
         // Changed localFile -> remoteFile
         removedFiles.add(remoteFile);
         store(getController().getMySelf(), remoteFile);
+    }
+
+    private boolean removeEmptyDirectoryStructure(File dir) {
+        if (dir.isFile()) {
+            return false;
+        } else if (dir.isDirectory()) {
+            File[] list = dir.listFiles();
+            if (list.length == 0) {
+                FileInfo fileInfo = FileInfoFactory.lookupInstance(this, dir);
+                fileInfo = fileInfo.getNewestVersion(getController()
+                    .getFolderRepository());
+                if (fileInfo != null && !fileInfo.isDeleted()) {
+                    // Meta info not matching. Directory not deleted.
+                    return false;
+                }
+                // Remove empty directory
+                return dir.delete();
+            } else {
+                for (File file : list) {
+                    if (!removeEmptyDirectoryStructure(file)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
