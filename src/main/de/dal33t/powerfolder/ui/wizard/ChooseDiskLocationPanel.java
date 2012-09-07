@@ -36,6 +36,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -242,14 +243,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;
-            builder.add(sendInviteAfterCB, cc.xyw(1, row, 7));
+            builder.add(sendInviteAfterCB, cc.xyw(1, row, 8));
         }
 
-        Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
-        if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
-            row += 2;
-            builder.add(manualSyncCheckBox, cc.xyw(1, row, 7));
-        }
+        // Object object =
+        // getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
+        // if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
+        // row += 2;
+        // builder.add(manualSyncCheckBox, cc.xyw(1, row, 7));
+        // }
 
         return builder.getPanel();
     }
@@ -268,9 +270,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     protected void initComponents() {
 
-        userDirectories = UserDirectories.getUserDirectoriesFiltered(
-            getController(), PreferencesEntry.EXPERT_MODE
-                .getValueBoolean(getController()));
+        if (initialLocation == null) {
+            userDirectories = UserDirectories.getUserDirectoriesFiltered(
+                getController(),
+                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
+        } else {
+            userDirectories = Collections.emptyMap();
+        }
 
         FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
@@ -300,6 +306,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             Translation.getTranslation("user.dir.custom"));
         customRB.setSelected(true);
         customRB.addItemListener(myItemListener);
+        customRB.setVisible(initialLocation == null);
 
         locationModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
