@@ -46,6 +46,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jwf.WizardPanel;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -57,8 +58,10 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
+import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Base64;
@@ -612,13 +615,19 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
 
-            FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
+            WizardPanel nextPanel = new FolderSetupPanel(getController());
+            nextPanel = new FolderCreatePanel(getController());
+            // Setup sucess panel of this wizard path
+            TextPanelPanel successPanel = new TextPanelPanel(getController(),
+                Translation.getTranslation("wizard.setup_success"),
+                Translation.getTranslation("wizard.success_join"));
+            wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
             ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
-                getController(), dir.getAbsolutePath(), setupPanel);
+                getController(), dir.getAbsolutePath(), nextPanel);
             wizard.open(panel);
         } else {
             if (syncProfile == null) {
-                syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+                syncProfile = SyncProfile.getDefault(getController());
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
                 createInvitationFile,
