@@ -920,7 +920,7 @@ public class SettingsTab extends PFUIComponent {
         previewFolderActionLabel.getUIComponent().setVisible(enabled);
     }
 
-    private void updateLocalArchiveMode(Object oldValue, Object newValue) {
+    private void updateLocalArchiveMode(Object oldValue, final Object newValue) {
         ArchiveMode am = (ArchiveMode) localModeModel.getValue();
         if (am == ArchiveMode.NO_BACKUP) {
             folder.setArchiveMode(ArchiveMode.NO_BACKUP);
@@ -932,7 +932,8 @@ public class SettingsTab extends PFUIComponent {
             // If the versions is reduced, offer to delete excess.
             if (newValue != null && oldValue != null
                 && newValue instanceof Integer && oldValue instanceof Integer
-                && (Integer) newValue < (Integer) oldValue)
+                && (Integer) newValue < (Integer) oldValue
+                && (Integer) newValue > -1)
             {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -1391,25 +1392,27 @@ public class SettingsTab extends PFUIComponent {
     private class MyUpdaterSwingWorker extends SwingWorker {
         public Object construct() {
             try {
-                if (folder != null) {
-                    FolderInfo folderInfo = folder.getInfo();
-                    FolderService folderService = serverClient.isLoggedIn()
-                        && serverClient.isConnected() ? serverClient
-                        .getFolderService() : null;
-                    if (folderService != null) {
-                        ArchiveMode am = (ArchiveMode) onlineModeModel
+                if (folder == null || settingFolder) {
+                    return null;
+                }
+                FolderInfo folderInfo = folder.getInfo();
+                FolderService folderService = serverClient.isLoggedIn()
+                    && serverClient.isConnected() ? serverClient
+                    .getFolderService() : null;
+                if (folderService != null && serverClient.joinedByCloud(folder))
+                {
+                    ArchiveMode am = (ArchiveMode) onlineModeModel.getValue();
+                    if (am == ArchiveMode.NO_BACKUP) {
+                        folderService.setArchiveMode(folderInfo,
+                            ArchiveMode.NO_BACKUP, 0);
+                    } else {
+                        Integer versions = (Integer) onlineVersionModel
                             .getValue();
-                        if (am == ArchiveMode.NO_BACKUP) {
-                            folderService.setArchiveMode(folderInfo,
-                                ArchiveMode.NO_BACKUP, 0);
-                        } else {
-                            Integer versions = (Integer) onlineVersionModel
-                                .getValue();
-                            folderService.setArchiveMode(folderInfo,
-                                ArchiveMode.FULL_BACKUP, versions);
-                        }
+                        folderService.setArchiveMode(folderInfo,
+                            ArchiveMode.FULL_BACKUP, versions);
                     }
                 }
+
             } catch (Exception e) {
                 logWarning(e);
             }
