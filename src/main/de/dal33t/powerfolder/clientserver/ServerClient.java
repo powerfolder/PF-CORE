@@ -57,7 +57,6 @@ import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -204,7 +203,8 @@ public class ServerClient extends PFComponent {
         if (theNode.getReconnectAddress() == null) {
             logSevere("Got server without reconnect address: " + theNode);
         }
-        logInfo("Using server from config: " + theNode.getNick() + ", ID: " + theNodeId);
+        logInfo("Using server from config: " + theNode.getNick() + ", ID: "
+            + theNodeId);
         init(theNode, allowServerChange);
     }
 
@@ -599,7 +599,9 @@ public class ServerClient extends PFComponent {
      */
     public boolean isBackupByDefault() {
         return PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()) || getController().isBackupOnly();
+            .getValueBoolean(getController())
+            || getController().isBackupOnly()
+            || !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
     }
 
     // Login ******************************************************************
@@ -610,7 +612,8 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLastLoginKnown() {
         return ConfigurationEntry.SERVER_CONNECT_USERNAME
-            .hasValue(getController());
+            .hasValue(getController())
+            || StringUtils.isNotBlank(getController().getCLIUsername());
     }
 
     /**
@@ -625,7 +628,10 @@ public class ServerClient extends PFComponent {
         String un;
         char[] pw;
 
-        if (ConfigurationEntry.SERVER_CONNECT_USERNAME
+        if (StringUtils.isNotBlank(getController().getCLIUsername())) {
+            un = getController().getCLIUsername();
+            pw = Util.toCharArray(getController().getCLIPassword());
+        } else if (ConfigurationEntry.SERVER_CONNECT_USERNAME
             .hasValue(getController()))
         {
             un = ConfigurationEntry.SERVER_CONNECT_USERNAME
@@ -642,30 +648,8 @@ public class ServerClient extends PFComponent {
                 }
             }
         } else {
-            // Old
-            un = getController().getPreferences().get(
-                PREFS_PREFIX + '.' + server.getIP() + ".username", null);
-            pw = LoginUtil.deobfuscate(getController().getPreferences().get(
-                PREFS_PREFIX + '.' + server.getIP() + ".info3", null));
-        }
-
-        logFine("Logging into server " + getServerString() + ". Username: "
-            + username);
-
-        if (pw == null) {
-            String pwOld = getController().getPreferences().get(
-                PREFS_PREFIX + '.' + server.getIP() + ".info2", null);
-            if (StringUtils.isNotBlank(pwOld)) {
-                // Fallback (TRAC #1921)
-                pwOld = new String(Base64.decode(pwOld), Convert.UTF8);
-            } else {
-                // Fallback (TRAC #1291)
-                pwOld = getController().getPreferences().get(
-                    PREFS_PREFIX + '.' + server.getIP() + ".info", null);
-            }
-            if (StringUtils.isNotBlank(pwOld)) {
-                pw = pwOld.toCharArray();
-            }
+            un = null;
+            pw = null;
         }
 
         if (ConfigurationEntry.SERVER_CONNECT_NO_PASSWORD_ALLOWED
@@ -688,6 +672,8 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
         } else {
+            logFine("Logging into server " + getServerString() + ". Username: "
+                + un);
             return login(un, pw);
         }
         // Failed!
@@ -767,16 +753,18 @@ public class ServerClient extends PFComponent {
                 }
 
                 if (!loginOk) {
-                    logWarning("Login to server " + server.getReconnectAddress()
-                            + " (user " + theUsername + ") failed!");
+                    logWarning("Login to server "
+                        + server.getReconnectAddress() + " (user "
+                        + theUsername + ") failed!");
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                     return accountDetails.getAccount();
                 }
                 AccountDetails newAccountDetails = securityService
-                        .getAccountDetails();
+                    .getAccountDetails();
                 logInfo("Login to server " + server.getReconnectAddress()
-                        + " (user " + theUsername + ") result: " + newAccountDetails);
+                    + " (user " + theUsername + ") result: "
+                    + newAccountDetails);
                 if (newAccountDetails != null) {
                     accountDetails = newAccountDetails;
 
@@ -784,14 +772,14 @@ public class ServerClient extends PFComponent {
                         boolean configChanged;
                         if (accountDetails.getAccount().getServer() != null) {
                             configChanged = setServerWebURLInConfig(accountDetails
-                                    .getAccount().getServer().getWebUrl());
+                                .getAccount().getServer().getWebUrl());
                             configChanged = setServerHTTPTunnelURLInConfig(accountDetails
-                                    .getAccount().getServer().getHTTPTunnelUrl())
-                                    || configChanged;
+                                .getAccount().getServer().getHTTPTunnelUrl())
+                                || configChanged;
                         } else {
                             configChanged = setServerWebURLInConfig(null);
                             configChanged = setServerHTTPTunnelURLInConfig(null)
-                                    || configChanged;
+                                || configChanged;
                         }
                         if (configChanged) {
                             getController().saveConfig();
@@ -808,11 +796,11 @@ public class ServerClient extends PFComponent {
 
                     // Possible switch to new server
                     ServerInfo targetServer = accountDetails.getAccount()
-                            .getServer();
+                        .getServer();
                     if (targetServer != null && allowServerChange) {
                         // Not hosted on the server we just have logged into.
                         boolean changeServer = !server.getInfo().equals(
-                                targetServer.getNode());
+                            targetServer.getNode());
                         if (changeServer) {
                             changeToServer(targetServer);
                         }
@@ -830,7 +818,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Are we currently logging in?
-     *
+     * 
      * @return
      */
     public boolean isLoggingIn() {
@@ -1041,7 +1029,7 @@ public class ServerClient extends PFComponent {
         };
         getController().getIOProvider().startIO(retriever);
     }
-    
+
     private void retrieveCloudServers() {
         try {
             if (!isConnected()) {
@@ -1049,15 +1037,14 @@ public class ServerClient extends PFComponent {
             }
             Collection<FolderInfo> infos = getController()
                 .getFolderRepository().getJoinedFolderInfos();
-            FolderInfo[] folders = infos.toArray(new FolderInfo[infos
-                .size()]);
+            FolderInfo[] folders = infos.toArray(new FolderInfo[infos.size()]);
             Collection<MemberInfo> servers = getFolderService()
                 .getHostingServers(folders);
             logFine("Got " + servers.size() + " servers for our "
                 + folders.length + " folders: " + servers);
             for (MemberInfo serverMInfo : servers) {
-                Member hostingServer = serverMInfo.getNode(
-                    getController(), true);
+                Member hostingServer = serverMInfo.getNode(getController(),
+                    true);
                 boolean wasServer = hostingServer.isServer();
                 hostingServer.setServer(true);
 
@@ -1066,9 +1053,8 @@ public class ServerClient extends PFComponent {
                         .nodeServerStatusChanged(new ServerClientEvent(
                             ServerClient.this, hostingServer));
                 }
-                
-                if (hostingServer.isConnected()
-                    || hostingServer.isConnecting()
+
+                if (hostingServer.isConnected() || hostingServer.isConnecting()
                     || hostingServer.equals(server))
                 {
                     // Already connected / reconnecting
@@ -1078,8 +1064,7 @@ public class ServerClient extends PFComponent {
                 hostingServer.markForImmediateConnect();
             }
         } catch (Exception e) {
-            logWarning("Unable to retrieve hosting servers of folders."
-                + e);
+            logWarning("Unable to retrieve hosting servers of folders." + e);
         }
     }
 
