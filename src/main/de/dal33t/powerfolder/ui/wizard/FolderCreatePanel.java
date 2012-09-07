@@ -61,9 +61,9 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.UserDirectories;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -130,11 +130,13 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             // Mandatory - save invite locally
             Boolean saveLocalInvite = (Boolean) getWizardContext()
                 .getAttribute(SAVE_INVITE_LOCALLY);
-            Reject.ifNull(saveLocalInvite,
-                "Save invite locally attribute is null/not set");
+            if (saveLocalInvite == null) {
+                saveLocalInvite = Boolean.FALSE;
+            }
 
             // Preview folder
-            Object attribute = getWizardContext().getAttribute(PREVIEW_FOLDER_ATTIRBUTE);
+            Object attribute = getWizardContext().getAttribute(
+                PREVIEW_FOLDER_ATTIRBUTE);
             boolean previewFolder = false;
             if (attribute != null && attribute instanceof Boolean) {
                 previewFolder = (Boolean) attribute;
@@ -168,8 +170,9 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     Reject.ifNull(localBase,
                         "Local base for folder is null/not set");
                     SyncProfile syncProfile = folderCreateItem.getSyncProfile();
-                    Reject.ifNull(syncProfile,
-                        "Sync profile for folder is null/not set");
+                    if (syncProfile == null) {
+                        syncProfile = SyncProfile.getDefault(getController());
+                    }
                     FolderInfo folderInfo = folderCreateItem.getFolderInfo();
                     if (folderInfo == null) {
                         folderInfo = createFolderInfo(localBase);
@@ -197,8 +200,10 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     "Local base for folder is null/not set");
                 SyncProfile syncProfile = (SyncProfile) getWizardContext()
                     .getAttribute(SYNC_PROFILE_ATTRIBUTE);
-                Reject.ifNull(syncProfile,
-                    "Sync profile for folder is null/not set");
+                
+                if (syncProfile == null) {
+                    syncProfile = SyncProfile.getDefault(getController());
+                }
 
                 // Optional
                 FolderInfo folderInfo = (FolderInfo) getWizardContext()
