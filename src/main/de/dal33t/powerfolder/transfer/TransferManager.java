@@ -1861,7 +1861,7 @@ public class TransferManager extends PFComponent {
                 getController().getFolderRepository()).getFile(fInfo)))
             {
                 // Skip exact same version etc.
-                logWarning("Aborting download, already have latest file version: "
+                logInfo("Aborting download, already have latest file version: "
                     + fInfo.toDetailString());
                 man.abort();
                 return;
