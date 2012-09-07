@@ -1760,7 +1760,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (dl != null) {
                     dl.uploadStarted(su.getFile());
                 } else if (downloadRecentlyCompleted(su.getFile())) {
-                    logInfo("Download invalid or obsolete:" + su.getFile());
+                    logFine("Download invalid or obsolete:" + su.getFile());
                     sendMessageAsynchron(new AbortDownload(su.getFile()));
                 }
                 expectedTime = 100;
