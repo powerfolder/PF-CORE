@@ -356,7 +356,7 @@ public class TransferManager extends PFComponent {
         for (DownloadManager completedDownload : completedDownloads.values()) {
             long numberOfDays = calcDays(completedDownload.getCompletedDate());
             if (completedDownload.getCompletedDate() == null && isSevere()) {
-                logSevere("Completed download misses completed date: "
+                logFine("Completed download misses completed date: "
                     + completedDownload.getCompletedDate());
             }
             if (numberOfDays >= trueDownloadCleanupFrequency) {
