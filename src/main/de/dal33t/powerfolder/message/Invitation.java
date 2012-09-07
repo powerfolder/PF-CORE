@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -175,7 +176,8 @@ public class Invitation extends FolderRelatedMessage {
 
         if (suggestedLocalBasePath == null) {
             return new File(controller.getFolderRepository()
-                .getFoldersBasedir());
+                .getFoldersBasedir(),
+                FileUtils.removeInvalidFilenameChars(folder.name));
         }
 
         if (OSUtil.isLinux() || OSUtil.isMacOS()) {
