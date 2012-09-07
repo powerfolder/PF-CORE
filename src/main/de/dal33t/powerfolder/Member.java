@@ -562,13 +562,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     {
         Reject.ifNull(newPeer, "Illegal call of setPeer(null)");
 
-        if (!newPeer.isConnected()) {
-            logWarning("Peer disconnected while initializing connection: "
-                + newPeer);
-            return ConnectResult
-                .failure("Peer disconnected while initializing connection");
-        }
-
         if (isFiner()) {
             logFiner("Setting peer to " + newPeer);
         }
@@ -576,6 +569,36 @@ public class Member extends PFComponent implements Comparable<Member> {
         Identity identity = newPeer.getIdentity();
         MemberInfo remoteMemberInfo = identity != null ? identity
             .getMemberInfo() : null;
+
+        // #1373
+        if (remoteMemberInfo != null
+            && !remoteMemberInfo.isOnSameNetwork(getController()))
+        {
+            if (isFine()) {
+                logFine("Closing connection to node with diffrent network ID. Our netID: "
+                    + getController().getNodeManager().getNetworkId()
+                    + ", remote netID: "
+                    + remoteMemberInfo.networkId
+                    + " on "
+                    + remoteMemberInfo);
+            }
+            newPeer.shutdown();
+            setConnectedToNetwork(false);
+            lastProblem = new Problem("Network ID mismatch", true,
+                Problem.NETWORK_ID_MISMATCH);
+            throw new InvalidIdentityException(
+                "Closing connection to node with diffrent network ID. Our netID: "
+                    + getController().getNodeManager().getNetworkId()
+                    + ", remote netID: " + remoteMemberInfo.networkId + " on "
+                    + remoteMemberInfo, newPeer);
+        }
+
+        if (!newPeer.isConnected()) {
+            logWarning("Peer disconnected while initializing connection: "
+                + newPeer);
+            return ConnectResult
+                .failure("Peer disconnected while initializing connection");
+        }
 
         // check if identity is valid and matches the this member
         if (identity == null || !identity.isValid()
@@ -603,26 +626,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + ", expected ID: " + getId(), newPeer);
         }
 
-        // #1373
-        if (!remoteMemberInfo.isOnSameNetwork(getController())) {
-            if (isFine()) {
-                logFine("Closing connection to node with diffrent network ID. Our netID: "
-                    + getController().getNodeManager().getNetworkId()
-                    + ", remote netID: "
-                    + remoteMemberInfo.networkId
-                    + " on "
-                    + remoteMemberInfo);
-            }
-            newPeer.shutdown();
-            setConnectedToNetwork(false);
-            lastProblem = new Problem("Network ID mismatch", true,
-                Problem.NETWORK_ID_MISMATCH);
-            throw new InvalidIdentityException(
-                "Closing connection to node with diffrent network ID. Our netID: "
-                    + getController().getNodeManager().getNetworkId()
-                    + ", remote netID: " + remoteMemberInfo.networkId + " on "
-                    + remoteMemberInfo, newPeer);
-        }
+     
 
         // Complete low-level handshake
         // FIXME: Problematic situation: Now we probably accept the new peer.
