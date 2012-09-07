@@ -58,6 +58,7 @@ import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.FileSelectorFactory;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
@@ -135,7 +136,9 @@ public class LoadInvitationPanel extends PFWizardPanel {
             File base = invitation.getSuggestedLocalBase(getController());
             if (base == null) {
                 base = new File(getController().getFolderRepository()
-                    .getFoldersBasedir());
+                    .getFoldersBasedir(),
+                    FileUtils.removeInvalidFilenameChars(invitation.folder
+                        .getName()));
             }
 
             getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
