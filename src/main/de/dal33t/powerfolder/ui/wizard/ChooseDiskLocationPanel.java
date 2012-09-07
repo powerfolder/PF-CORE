@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
@@ -59,17 +58,24 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.util.SwingWorker;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.UserDirectory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -231,15 +237,18 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         row += 2;
         builder.add(folderSizeLabel, cc.xyw(1, row, 8));
 
-        if (getController().getOSClient().isBackupByDefault()) {
+        if (getController().getOSClient().isBackupByDefault()
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 8));
         }
 
         // Send Invite
-        if (getController().isBackupOnly() ||
-                !ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
-                        getController())) {
+        if (getController().isBackupOnly()
+            || !ConfigurationEntry.SERVER_INVITE_ENABLED
+                .getValueBoolean(getController()))
+        {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;
