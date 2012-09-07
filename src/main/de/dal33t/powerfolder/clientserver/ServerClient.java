@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -612,8 +613,7 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLastLoginKnown() {
         return ConfigurationEntry.SERVER_CONNECT_USERNAME
-            .hasValue(getController())
-            || StringUtils.isNotBlank(getController().getCLIUsername());
+            .hasValue(getController());
     }
 
     /**
@@ -628,10 +628,7 @@ public class ServerClient extends PFComponent {
         String un;
         char[] pw;
 
-        if (StringUtils.isNotBlank(getController().getCLIUsername())) {
-            un = getController().getCLIUsername();
-            pw = Util.toCharArray(getController().getCLIPassword());
-        } else if (ConfigurationEntry.SERVER_CONNECT_USERNAME
+        if (ConfigurationEntry.SERVER_CONNECT_USERNAME
             .hasValue(getController()))
         {
             un = ConfigurationEntry.SERVER_CONNECT_USERNAME
@@ -648,8 +645,30 @@ public class ServerClient extends PFComponent {
                 }
             }
         } else {
-            un = null;
-            pw = null;
+            // Old
+            un = getController().getPreferences().get(
+                PREFS_PREFIX + '.' + server.getIP() + ".username", null);
+            pw = LoginUtil.deobfuscate(getController().getPreferences().get(
+                PREFS_PREFIX + '.' + server.getIP() + ".info3", null));
+        }
+
+        logFine("Logging into server " + getServerString() + ". Username: "
+            + username);
+
+        if (pw == null) {
+            String pwOld = getController().getPreferences().get(
+                PREFS_PREFIX + '.' + server.getIP() + ".info2", null);
+            if (StringUtils.isNotBlank(pwOld)) {
+                // Fallback (TRAC #1921)
+                pwOld = new String(Base64.decode(pwOld), Convert.UTF8);
+            } else {
+                // Fallback (TRAC #1291)
+                pwOld = getController().getPreferences().get(
+                    PREFS_PREFIX + '.' + server.getIP() + ".info", null);
+            }
+            if (StringUtils.isNotBlank(pwOld)) {
+                pw = pwOld.toCharArray();
+            }
         }
 
         if (ConfigurationEntry.SERVER_CONNECT_NO_PASSWORD_ALLOWED
