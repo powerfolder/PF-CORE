@@ -84,6 +84,7 @@ import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -1772,20 +1773,37 @@ public class MainFrame extends PFUIComponent {
 
                 // One at a time!
                 if (fileList == null || fileList.size() != 1) {
+                    logInfo("Skipping importData (multiple).");
                     return false;
                 }
 
                 // Directories only.
                 File file = fileList.get(0);
                 if (!file.isDirectory()) {
+                    logInfo("Skipping importData (not directory).");
                     return false;
                 }
-                
-                // Make sure we do not already have this as a folder.
-                if (!getController().getFolderRepository()
-                        .doesFolderAlreadyExist(file)) {
-                    PFWizard.openExistingDirectoryWizard(getController(), file);
+
+                // Does user have folder create permission?
+                if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+                        .getValueBoolean(getController())
+                        && !getController().getOSClient().getAccount()
+                        .hasPermission(FolderCreatePermission.INSTANCE))
+                {
+                    logInfo("Skipping importData (no folder create permission).");
+                    return false;
                 }
+
+                // Make sure we do not already have this as a folder.
+                if (getController().getFolderRepository()
+                        .doesFolderAlreadyExist(file)) {
+                    logInfo("Skipping importData (already have).");
+                    return false;
+                }
+
+                // All good then...
+                PFWizard.openExistingDirectoryWizard(getController(), file);
+
             } catch (UnsupportedFlavorException e) {
                 logSevere(e);
                 return false;

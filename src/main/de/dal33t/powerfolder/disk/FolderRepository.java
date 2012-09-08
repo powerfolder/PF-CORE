@@ -153,7 +153,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         onLoginFolderEntryIds = new HashSet<String>();
         fileRequestor = new FileRequestor(controller);
         started = false;
-        loadRemovdFolderDirectories();
+        loadRemovedFolderDirectories();
 
         folderScanner = new FolderScanner(getController());
 
@@ -166,7 +166,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .createListenerSupport(FolderAutoCreateListener.class);
     }
 
-    private void loadRemovdFolderDirectories() {
+    private void loadRemovedFolderDirectories() {
         String list = ConfigurationEntry.REMOVED_FOLDER_FILES
             .getValue(getController());
         String[] parts = list.split("\\$");
