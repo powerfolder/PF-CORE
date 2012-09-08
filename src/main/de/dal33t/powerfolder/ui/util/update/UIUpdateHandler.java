@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.util.update;
+package de.dal33t.powerfolder.ui.util.update;
 
 import java.io.IOException;
 import java.net.URL;
@@ -13,12 +13,14 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.update.UpdaterEvent;
+import de.dal33t.powerfolder.util.update.UpdaterHandler;
 
 public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
     private static volatile boolean updateDialogOpen = false;
@@ -69,9 +71,9 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                 UIUtil.invokeAndWaitInEDT(new Runnable() {
                     public void run() {
                         option = JOptionPane.showInputDialog(getParentFrame(),
-                            text, Translation
+                                text, Translation
                                 .getTranslation("dialog.update_check.title"),
-                            JOptionPane.OK_CANCEL_OPTION, null, options
+                                JOptionPane.OK_CANCEL_OPTION, null, options
                                 .toArray(), options.get(0));
                     }
                 });
@@ -88,6 +90,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
             if (releaseURL == null) {
                 return;
             }
+            getController().getUIController().closePreferencesDialog();
             DownloadUpdateDialog dlDiag = new DownloadUpdateDialog(
                 getController(), event.getNewReleaseVersion());
             dlDiag.openInEDT();

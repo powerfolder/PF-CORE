@@ -107,7 +107,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
-import de.dal33t.powerfolder.util.update.UIUpdateHandler;
+import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
 
@@ -170,7 +170,7 @@ public class UIController extends PFComponent {
 
     private final Map<Long, FileInfo> recentlyChangedFiles = Util.createConcurrentHashMap();
     private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
-
+    private final PreferencesDialog preferencesDialog;
     /**
      * The UI distribution running.
      */
@@ -188,6 +188,8 @@ public class UIController extends PFComponent {
 
         activeFrame = new AtomicInteger();
         statusUpdater = new DelayedUpdater(getController(), 1000L);
+
+        preferencesDialog = new PreferencesDialog(controller);
 
         configureOomeHandler();
 
@@ -475,7 +477,7 @@ public class UIController extends PFComponent {
                 {
                     askToPauseResume();
                 } else if (COMMAND_PREFERENCES.equals(e.getActionCommand())) {
-                    new PreferencesDialog(getController()).open();
+                    preferencesDialog.open();
                 } else if(e.getActionCommand().startsWith(COMMAND_RECENTLY_CHANGED)) {
                     int index = e.getActionCommand().lastIndexOf('-');
                     String suffix = e.getActionCommand().substring(index + 1);
@@ -1320,7 +1322,7 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Maintain a list of the mmost recently changed files.
+     * Maintain a list of the most recently changed files.
      *
      * @param fileInfo
      */
@@ -1347,6 +1349,18 @@ public class UIController extends PFComponent {
                 menuItem.setLabel(info.getFilenameOnly());
             }
             recentlyChangedMenu.setEnabled(!recentlyChangedFiles.isEmpty());
+        }
+    }
+
+    public void closePreferencesDialog() {
+        if (preferencesDialog != null) {
+            preferencesDialog.close();
+        }
+    }
+
+    public void openPreferences() {
+        if (preferencesDialog != null) {
+            preferencesDialog.open();
         }
     }
 

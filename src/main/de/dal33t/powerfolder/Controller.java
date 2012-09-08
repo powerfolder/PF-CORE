@@ -269,7 +269,7 @@ public class Controller extends PFComponent {
     private boolean portWasOpened = false;
 
     /**
-     * If we have limited connecvitiy
+     * If we have limited connectivity
      */
     private boolean limitedConnectivity;
 
@@ -829,7 +829,7 @@ public class Controller extends PFComponent {
      * Loads a config file (located in "getConfigLocationBase()")
      * 
      * @param theFilename
-     * @return false if unsuccesfull, true if file found and reading succeded.
+     * @return false if unsuccessful, true if file found and reading succeeded.
      */
     private boolean loadConfigFile(String theFilename) {
         String filename = theFilename;
@@ -947,9 +947,9 @@ public class Controller extends PFComponent {
     }
     
     /**
-     * Removes a schduled task for the threadpool
+     * Removes a scheduled task for the threadpool
      * 
-     * @param task
+     * @param future
      */
     public boolean removeScheduled(ScheduledFuture<?> future) {
         if (!shuttingDown) {

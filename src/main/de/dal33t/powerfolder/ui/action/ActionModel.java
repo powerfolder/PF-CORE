@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 
 /**
@@ -36,7 +35,6 @@ public class ActionModel extends PFComponent {
     private FolderWizardAction folderWizardAction;
     private NewFolderAction newFolderAction;
     private FindComputersAction findComputersAction;
-    private OpenPreferencesAction openPreferencesAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -59,14 +57,5 @@ public class ActionModel extends PFComponent {
             findComputersAction = new FindComputersAction(getController());
         }
         return findComputersAction;
-    }
-
-    public OpenPreferencesAction getOpenPreferencesAction() {
-        if (openPreferencesAction == null) {
-            openPreferencesAction = new OpenPreferencesAction(getController());
-            openPreferencesAction
-                .allowWith(ChangePreferencesPermission.INSTANCE);
-        }
-        return openPreferencesAction;
     }
 }

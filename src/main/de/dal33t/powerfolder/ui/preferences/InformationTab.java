@@ -58,7 +58,7 @@ import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.update.ManuallyInvokedUpdateHandler;
+import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
 import de.dal33t.powerfolder.util.update.Updater;
 
 public class InformationTab extends PFComponent implements PreferenceTab {

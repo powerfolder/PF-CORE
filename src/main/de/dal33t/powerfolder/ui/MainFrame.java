@@ -486,7 +486,7 @@ public class MainFrame extends PFUIComponent {
         pauseResumeActionLabel = new ActionLabel(getController(),
             new MyPauseResumeAction(getController()));
         configurationActionLabel = new ActionLabel(getController(),
-            getApplicationModel().getActionModel().getOpenPreferencesAction());
+                new MyOpenPreferencesAction(getController()));
         openDebugActionLabel = new ActionLabel(getController(),
             new MyOpenDebugAction(getController()));
         openTransfersActionLabel = new ActionLabel(getController(),
@@ -1095,7 +1095,7 @@ public class MainFrame extends PFUIComponent {
         int state = uiComponent.getExtendedState();
         state &= ~Frame.ICONIFIED;
         uiComponent.setExtendedState(state);
-        boolean onTop = uiComponent.isAlwaysOnTop();
+        //boolean onTop = uiComponent.isAlwaysOnTop();
         //uiComponent.setAlwaysOnTop(true);
         uiComponent.toFront();
         uiComponent.requestFocus();
@@ -1797,4 +1797,14 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
+    private class MyOpenPreferencesAction extends BaseAction {
+
+        public MyOpenPreferencesAction(Controller controller) {
+            super("action_open_preferences", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getUIController().openPreferences();
+        }
+    }
 }
