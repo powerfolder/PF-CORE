@@ -663,7 +663,8 @@ public class MainFrame extends PFUIComponent {
                 folderRepositoryModel.getOverallSyncPercentage();
         String upperText = " ";
         String setupText = " ";
-
+		syncingButton.spin(false);
+		
         switch (status) {
             case PAUSED:
                 String pausedTemp = (overallSyncPercentage >= 0 &&
@@ -691,6 +692,7 @@ public class MainFrame extends PFUIComponent {
                         "...";
                 upperText = Translation.getTranslation("main_frame.syncing",
                         syncingTemp);
+                syncingButton.spin(true);  
                 break;
             case SYNCHRONIZED:
                 upperText = Translation.getTranslation("main_frame.in_sync");
