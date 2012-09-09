@@ -294,6 +294,10 @@ public class FolderWatcher extends PFComponent {
             if (ignoreAll) {
                 return;
             }
+            if (OSUtil.isMacOS() && name.contains("?")) {
+                // Skip
+                return;
+            }
             // For linux
             if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
@@ -331,6 +335,12 @@ public class FolderWatcher extends PFComponent {
             String name = rawName;
             if (name.contains("\\")) {
                 name = name.replace('\\', '/');
+            }
+            if (name.contains("//")) {
+                name = name.replace("//", "/");
+            }
+            if (name.startsWith("/")) {
+                name = name.substring(1);
             }
             return FileInfoFactory.lookupInstance(folder.getInfo(), name);
         }
