@@ -1968,7 +1968,7 @@ public class Folder extends PFComponent {
 
         if (expired > 0 || brokenExisting.size() > 0) {
             setDBDirty();
-            logInfo("Maintained folder db, " + nFilesBefore + " known files, "
+            logFine("Maintained folder db, " + nFilesBefore + " known files, "
                 + expired + " expired FileInfos, " + brokenExisting.size()
                 + " fixed entries. Expiring deleted files older than "
                 + removeBeforeDate);
@@ -2905,7 +2905,7 @@ public class Folder extends PFComponent {
                                             ? Arrays.asList(remaining)
                                                 .toString()
                                             : "(unable to access)";
-                                        logWarning("Unable to delete directory locally: "
+                                        logFine("Unable to delete directory locally: "
                                             + localCopy
                                             + ". Info: "
                                             + localFile.toDetailString()
