@@ -131,14 +131,12 @@ public class UIUnLockDialog extends PFUIComponent {
                 cc.xyw(1, row, 3));
             row += 2;
 
-            if (getController().getOSClient().showServerInfo()) {
-                serverLabel.setBorder(Borders
-                    .createEmptyBorder("0, 0, 3dlu, 0"));
-                builder.add(serverLabel, cc.xy(1, row));
-                serverInfoLabel.getUIComponent().setBorder(
-                    Borders.createEmptyBorder("0, 0, 3dlu, 0"));
-                builder.add(serverInfoLabel.getUIComponent(), cc.xy(3, row));
-            }
+            serverLabel.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
+            builder.add(serverLabel, cc.xy(1, row));
+            serverInfoLabel.getUIComponent().setBorder(
+                Borders.createEmptyBorder("0, 0, 3dlu, 0"));
+            builder.add(serverInfoLabel.getUIComponent(), cc.xy(3, row));
+
             row += 2;
             builder.addLabel(LoginUtil.getUsernameLabel(getController()),
                 cc.xy(1, row));
