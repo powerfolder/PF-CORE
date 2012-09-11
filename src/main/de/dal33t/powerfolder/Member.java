@@ -2478,7 +2478,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (!server) {
                 logFine("Unsetting server status: " + this);
             } else {
-                logWarning("Setting server status: " + this);
+                logFine("Setting server status: " + this);
             }
             
             // #2569: Server 2 server connection. don't wait for folder lists
