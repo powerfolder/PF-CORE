@@ -2135,6 +2135,10 @@ public class Folder extends PFComponent {
      *            the new
      */
     public void setDownloadScript(String downloadScript) {
+        if (Util.equals(this.downloadScript, downloadScript)) {
+            // Not changed
+            return;
+        }
         this.downloadScript = downloadScript;
         String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
             + FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
