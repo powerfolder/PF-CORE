@@ -2483,7 +2483,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
 
-            getController().getNodeManager().fireNodeSettingsChanged(this);
+            getController().getNodeManager().serverStateChanged(this, server);
         }
     }
 

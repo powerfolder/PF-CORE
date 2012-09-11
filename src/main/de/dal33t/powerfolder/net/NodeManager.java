@@ -632,7 +632,29 @@ public class NodeManager extends PFComponent {
 
     /**
      * Called by member. Not getting this event from event handling because we
-     * have to handle things definitivily before other elements work on that.
+     * have to handle things definitively before other elements work on that.
+     * 
+     * @param node
+     * @param server
+     */
+    public void serverStateChanged(final Member node, boolean server) {
+        if (node.isMySelf()) {
+            // Ignore change on myself
+            return;
+        }
+
+        fireNodeSettingsChanged(node);
+
+        if (nodefileLoaded) {
+            // Only store after start
+            // Store nodes
+            storeNodes();
+        }
+    }
+
+    /**
+     * Called by member. Not getting this event from event handling because we
+     * have to handle things definitively before other elements work on that.
      * 
      * @param node
      * @param friend
@@ -1408,6 +1430,11 @@ public class NodeManager extends PFComponent {
                     this.friends.put(node.getId(), node);
                 }
             }
+            for (MemberInfo server : nodeList.getServersSet()) {
+                Member node = server.getNode(getController(), true);
+                node.setServer(true);
+                logFine("Loaded server: " + node);
+            }
             return !nodeList.getNodeList().isEmpty();
         } catch (IOException e) {
             logWarning("Unable to load nodes from file '" + filename + "'. "
@@ -1456,13 +1483,23 @@ public class NodeManager extends PFComponent {
         // Add myself to know nodes
         Collection<MemberInfo> friendInfos = Convert.asMemberInfos(friends
             .values());
-        NodeList nodeList = new NodeList(allNodesInfos, friendInfos);
+        NodeList nodeList = new NodeList(allNodesInfos, friendInfos, getServers());
 
-        if (storeNodes0(getController().getConfigName() + ".nodes", nodeList)) {
-            // Store backup if file could be written.
-            storeNodes0(getController().getConfigName() + ".nodes.backup",
-                nodeList);
+        if (!storeNodes0(getController().getConfigName() + ".nodes", nodeList))
+        {
+            logFine("Nodes file could not be written");
         }
+    }
+    
+    private Collection<MemberInfo> getServers() {
+        Collection<MemberInfo> servers = new LinkedList<MemberInfo>();
+        for (Member member : knownNodes.values()) {
+            if (member.isServer()) {
+                logFine("Server: " + member);
+                servers.add(member.getInfo());
+            }
+        }
+        return servers;
     }
 
     /**
@@ -1489,9 +1526,6 @@ public class NodeManager extends PFComponent {
         if (getController().isVerbose()) {
             Debug.writeNodeListCSV(latestSupernodes, "SupernodesOnline.csv");
         }
-        NodeList nodeList = new NodeList(latestSupernodesInfos, null);
-        storeNodes0(getController().getConfigName() + "-Supernodes.nodes",
-            nodeList);
     }
 
     /**

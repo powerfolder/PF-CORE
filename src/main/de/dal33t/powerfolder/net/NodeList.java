@@ -1,25 +1,26 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.net;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -49,6 +50,7 @@ import de.dal33t.powerfolder.util.Reject;
 public class NodeList {
     private List<MemberInfo> nodeList;
     private Set<MemberInfo> friendsSet;
+    private Set<MemberInfo> serversSet;
 
     public NodeList() {
     }
@@ -61,11 +63,15 @@ public class NodeList {
      * @param friends
      *            the friends to include.
      */
-    public NodeList(Collection<MemberInfo> nodes, Collection<MemberInfo> friends)
+    public NodeList(Collection<MemberInfo> nodes,
+        Collection<MemberInfo> friends, Collection<MemberInfo> servers)
     {
         nodeList = new ArrayList<MemberInfo>(nodes);
         if (friends != null) {
             friendsSet = new HashSet<MemberInfo>(friends);
+        }
+        if (servers != null) {
+            serversSet = new HashSet<MemberInfo>(servers);
         }
     }
 
@@ -80,6 +86,19 @@ public class NodeList {
         }
 
         return friendsSet;
+    }
+
+    /**
+     * Returns the Set containing the servers.
+     * 
+     * @return
+     */
+    public Set<MemberInfo> getServersSet() {
+        if (serversSet == null) {
+            serversSet = new HashSet<MemberInfo>();
+        }
+
+        return serversSet;
     }
 
     /**
@@ -110,14 +129,22 @@ public class NodeList {
             // Create new Lists/Sets instead of using those loaded.
             // This makes the use of this class independed from the
             // implementation of the saved objects.
-            nodeList = new ArrayList<MemberInfo>((List<MemberInfo>) oin
-                .readObject());
+            nodeList = new ArrayList<MemberInfo>(
+                (List<MemberInfo>) oin.readObject());
 
             // Friendlist is optional
             Object next = oin.readObject();
             if (next != null) {
                 friendsSet = new HashSet<MemberInfo>((Set<MemberInfo>) next);
             }
+
+            // Servers are optional
+            next = oin.readObject();
+            if (next != null) {
+                serversSet = new HashSet<MemberInfo>((Set<MemberInfo>) next);
+            }
+        } catch (EOFException e) {
+            // Ignore
         } finally {
             try {
                 oin.close();
@@ -137,6 +164,7 @@ public class NodeList {
 
         oout.writeObject(nodeList);
         oout.writeObject(friendsSet);
+        oout.writeObject(serversSet);
 
         oout.flush();
     }
