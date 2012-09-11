@@ -2472,10 +2472,15 @@ public class Member extends PFComponent implements Comparable<Member> {
     public void setServer(boolean server) {
         boolean oldValue = this.server;
         this.server = server;
-
-        // Fire event on nodemanager
+        // Notify nodemanager
         if (oldValue != server) {
-
+            
+            if (!server) {
+                logFine("Unsetting server status: " + this);
+            } else {
+                logWarning("Setting server status: " + this);
+            }
+            
             // #2569: Server 2 server connection. don't wait for folder lists
             if (getController().getMySelf().isServer() && server) {
                 synchronized (folderListWaiter) {

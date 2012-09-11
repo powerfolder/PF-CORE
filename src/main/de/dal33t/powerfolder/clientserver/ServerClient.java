@@ -1061,6 +1061,20 @@ public class ServerClient extends PFComponent {
                 .getHostingServers(folders);
             logFine("Got " + servers.size() + " servers for our "
                 + folders.length + " folders: " + servers);
+            for (Member node : getController().getNodeManager()
+                .getNodesAsCollection())
+            {
+                if (node.isMySelf()
+                    || getController().getOSClient().isServer(node))
+                {
+                    // never unmark myserver or our primary server.
+                    continue;
+                }
+                if (servers.contains(node.getInfo())) {
+                    continue;
+                }
+                node.setServer(false);                    
+            }
             for (MemberInfo serverMInfo : servers) {
                 Member hostingServer = serverMInfo.getNode(getController(),
                     true);
