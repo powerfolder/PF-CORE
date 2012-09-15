@@ -217,7 +217,7 @@ public interface FolderService {
     long[] calculateSizes(Collection<FolderInfo> foInfos);
 
     /**
-     * Returns stats for all folders which are available in the cloud.
+     * Returns stats for all folders which are available in the cluster.
      * 
      * @param foInfos
      * @return the {@link FolderStatisticInfo} for the given {@link FolderInfo}
@@ -227,7 +227,7 @@ public interface FolderService {
         Collection<FolderInfo> foInfos);
 
     /**
-     * Returns stats only for the known/joined folders.
+     * Returns stats only for the locally synced folders.
      * 
      * @param foInfos
      * @return the {@link FolderStatisticInfo} for the given {@link FolderInfo}
@@ -235,5 +235,7 @@ public interface FolderService {
      */
     Map<FolderInfo, FolderStatisticInfo> getLocalStatisticInfo(
         Collection<FolderInfo> foInfos);
+    
+    
 
 }
