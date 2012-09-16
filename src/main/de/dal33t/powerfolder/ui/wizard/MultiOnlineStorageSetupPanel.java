@@ -149,9 +149,10 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.add(localFolderButton, cc.xy(5, 3));
 
         // manualSyncCB is disabled for Luna (6.0) - #2726.
-        if (Feature.MANUAL_SYNC_CB.isDisabled() ||
-                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(new JLabel(Translation
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builder
+                .add(
+                    new JLabel(Translation
                         .getTranslation("general.transfer_mode")), cc.xy(1, 5));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
             p.setOpaque(false);
@@ -159,7 +160,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         } else {
             // Create it anyway, so we do not get NPEs elsewhere.
             syncProfileSelectorPanel.getUIComponent();
-            builder.add(manualSyncCB, cc.xyw(3, 5, 4));
+            if (Feature.MANUAL_SYNC_CB.isEnabled()) {
+                builder.add(manualSyncCB, cc.xyw(3, 5, 4));
+            }
         }
 
         builder.add(mountAsWebDavLabel.getUIComponent(), cc.xy(3, 7));
