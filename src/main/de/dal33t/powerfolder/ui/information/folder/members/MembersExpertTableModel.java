@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2012 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -74,7 +74,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
  * Class to model a folder's members. provides columns for image, name, sync
  * status, folder size, local size.
  */
-public class MembersTableModel extends PFUIComponent implements TableModel,
+public class MembersExpertTableModel extends PFUIComponent implements TableModel,
     SortedTableModel
 {
 
@@ -134,7 +134,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * 
      * @param controller
      */
-    public MembersTableModel(Controller controller) {
+    public MembersExpertTableModel(Controller controller) {
         super(controller);
 
         folderRepository = controller.getFolderRepository();
@@ -579,7 +579,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
-            modelChanged(new TableModelEvent(MembersTableModel.this, 0, members
+            modelChanged(new TableModelEvent(MembersExpertTableModel.this, 0, members
                 .size() - 1));
         }
 
@@ -610,7 +610,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private class RefreshAction extends BaseAction {
 
         protected RefreshAction() {
-            super("action_members_refresh", MembersTableModel.this
+            super("action_members_refresh", MembersExpertTableModel.this
                 .getController());
             refreshingModel.addValueChangeListener(new PropertyChangeListener()
             {

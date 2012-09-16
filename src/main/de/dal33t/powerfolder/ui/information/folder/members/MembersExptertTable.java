@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2012 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 /**
  * Table to display members of a folder.
  */
-public class MembersTable extends JTable {
+public class MembersExptertTable extends JTable {
 
     private DefaultCellEditor cellEditor;
 
@@ -59,7 +59,7 @@ public class MembersTable extends JTable {
      * 
      * @param model
      */
-    public MembersTable(MembersTableModel model) {
+    public MembersExptertTable(MembersExpertTableModel model) {
         super(model);
 
         setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED)
@@ -79,7 +79,7 @@ public class MembersTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(model,
-            getColumnModel(), MembersTableModel.COL_COMPUTER_NAME, true);
+            getColumnModel(), MembersExpertTableModel.COL_COMPUTER_NAME, true);
 
         cellEditor = new DefaultCellEditor(createdEditComboBox(model));
         setDefaultEditor(FolderPermission.class, cellEditor);
@@ -100,22 +100,22 @@ public class MembersTable extends JTable {
         // Otherwise the table header is not visible:
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
-        TableColumn column = getColumn(getColumnName(MembersTableModel.COL_TYPE));
+        TableColumn column = getColumn(getColumnName(MembersExpertTableModel.COL_TYPE));
         column.setPreferredWidth(28);
         column.setMinWidth(28);
         column.setMaxWidth(28);
-        column = getColumn(getColumnName(MembersTableModel.COL_COMPUTER_NAME));
+        column = getColumn(getColumnName(MembersExpertTableModel.COL_COMPUTER_NAME));
         column.setPreferredWidth(100);
-        column = getColumn(getColumnName(MembersTableModel.COL_USERNAME));
+        column = getColumn(getColumnName(MembersExpertTableModel.COL_USERNAME));
         column.setPreferredWidth(100);
 
-        column = getColumn(getColumnName(MembersTableModel.COL_SYNC_STATUS));
+        column = getColumn(getColumnName(MembersExpertTableModel.COL_SYNC_STATUS));
         column.setPreferredWidth(20);
 
-        column = getColumn(getColumnName(MembersTableModel.COL_PERMISSION));
+        column = getColumn(getColumnName(MembersExpertTableModel.COL_PERMISSION));
         column.setPreferredWidth(100);
 
-        column = getColumn(getColumnName(MembersTableModel.COL_LOCAL_SIZE));
+        column = getColumn(getColumnName(MembersExpertTableModel.COL_LOCAL_SIZE));
         column.setPreferredWidth(100);
     }
 
@@ -133,8 +133,8 @@ public class MembersTable extends JTable {
                     columnNo);
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof MembersTableModel) {
-                    MembersTableModel membersTableModel = (MembersTableModel) model;
+                if (model instanceof MembersExpertTableModel) {
+                    MembersExpertTableModel membersTableModel = (MembersExpertTableModel) model;
                     membersTableModel.sortBy(modelColumnNo);
                 }
             }
@@ -148,7 +148,7 @@ public class MembersTable extends JTable {
             int column)
         {
             int actualColumn = UIUtil.toModel(table, column);
-            MembersTableModel model = (MembersTableModel) getModel();
+            MembersExpertTableModel model = (MembersExpertTableModel) getModel();
             FolderMember folderMember = model.getFolderMemberAt(row);
 
             Component defaultComp = super.getTableCellRendererComponent(table,
@@ -163,13 +163,13 @@ public class MembersTable extends JTable {
                 && (model.getController().getOSClient()
                     .isCloudServer(folderMember.getMember()));
 
-            if (actualColumn == MembersTableModel.COL_TYPE) {
+            if (actualColumn == MembersExpertTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
                 Icon icon = member != null ? Icons.getIconFor(member) : Icons
                     .getIconById(Icons.NODE_DISCONNECTED);
                 setIcon(icon);
                 setText("");
-            } else if (actualColumn == MembersTableModel.COL_COMPUTER_NAME) {
+            } else if (actualColumn == MembersExpertTableModel.COL_COMPUTER_NAME) {
                 if (folderMember.getMember() != null) {
                     setText(folderMember.getMember().getNick());
                 } else {
@@ -177,7 +177,7 @@ public class MembersTable extends JTable {
                         .getTranslation("folder_member.not_syncing"));
                     setForeground(Color.GRAY);
                 }
-            } else if (actualColumn == MembersTableModel.COL_USERNAME) {
+            } else if (actualColumn == MembersExpertTableModel.COL_USERNAME) {
                 if (!model.getController().getOSClient().isConnected()) {
                     setText(Translation
                         .getTranslation("folder_member.not_connected_to_server"));
@@ -192,7 +192,7 @@ public class MembersTable extends JTable {
                         .getTranslation("folder_member.not_logged_in"));
                     setForeground(Color.GRAY);
                 }
-            } else if (actualColumn == MembersTableModel.COL_PERMISSION) {
+            } else if (actualColumn == MembersExpertTableModel.COL_PERMISSION) {
                 boolean editable = model.isCellEditable(row, column);
                 if (!editable) {
                     setForeground(Color.GRAY);
@@ -232,7 +232,7 @@ public class MembersTable extends JTable {
         }
     }
 
-    private JComboBox createdEditComboBox(final MembersTableModel model) {
+    private JComboBox createdEditComboBox(final MembersExpertTableModel model) {
         return BasicComponentFactory.createComboBox(model
             .getPermissionsListModel(), new DefaultListCellRenderer() {
             @Override
