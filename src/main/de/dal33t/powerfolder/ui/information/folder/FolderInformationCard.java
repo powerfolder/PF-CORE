@@ -26,17 +26,20 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationCardType;
 import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
+import de.dal33t.powerfolder.ui.information.folder.members.MembersExpertTab;
+import de.dal33t.powerfolder.ui.information.folder.members.MembersSimpleTab;
 import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
 import de.dal33t.powerfolder.ui.information.folder.problems.ProblemsTab;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -61,7 +64,11 @@ public class FolderInformationCard extends InformationCard {
     public FolderInformationCard(Controller controller) {
         super(controller);
         filesTab = new FilesTab(getController());
-        membersTab = new MembersTab(getController());
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            membersTab = new MembersExpertTab(getController());
+        } else {
+            membersTab = new MembersSimpleTab(getController());
+        }
         settingsTab = new SettingsTab(getController());
         problemsTab = new ProblemsTab(getController());
         problemListener = new MyProblemListener();
