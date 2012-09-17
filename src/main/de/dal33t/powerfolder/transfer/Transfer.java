@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Abstract version of a Transfer.<BR>
@@ -382,22 +381,10 @@ public abstract class Transfer extends Loggable implements Serializable {
      *         transfer should be set broken
      */
     protected boolean stillQueuedAtPartner() {
-        // FIXME: Find a better way to determine queued status
         if (getPartner() == null) {
             return false;
         }
-        if (OSUtil.isMacOS()) {
-            // Hack. last connect date seems to be in the future under mac. Why that?
-            return getPartner().isConnected();
-        }
-        boolean stillQueuedAtPartner = getPartner().isConnected();
-        if (stillQueuedAtPartner && getPartner().getLastConnectTime() != null) {
-            // if peer has reconnected in the meanwhile.
-            // we need to break this dl, and re-request it
-            stillQueuedAtPartner = getPartner().getLastConnectTime().before(
-                getInitTime());
-        }
-        return stillQueuedAtPartner;
+        return getPartner().isConnected();
     }
 
     /**
