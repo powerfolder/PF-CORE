@@ -804,7 +804,7 @@ public class Folder extends PFComponent {
                 }
             }
             if (!ok) {
-                logSevere("Unable to scan downloaded file. Parent dir is not a directory: "
+                logWarning("Unable to scan downloaded file. Parent dir is not a directory: "
                     + targetFile + ". " + fInfo.toDetailString());
                 return false;
             }
