@@ -198,7 +198,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             if (!pendingPartRecordFrom.isBroken()) {
                 return;
             }
-            logSevere("Source should have been removed: "
+            logWarning("Source should have been removed: "
                 + pendingPartRecordFrom);
             pendingPartRecordFrom = null;
         }
