@@ -3830,7 +3830,7 @@ public class Folder extends PFComponent {
         try {
             watcher.addIgnoreFile(newFileInfo);
             synchronized (scanLock) {
-                if (fileInfo != null && fileInfo.isFile()) {
+                if (fileInfo != null && fileInfo.isFile() && file.exists()) {
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
