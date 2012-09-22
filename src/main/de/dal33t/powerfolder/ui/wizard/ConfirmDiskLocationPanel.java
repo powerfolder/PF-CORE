@@ -41,6 +41,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
@@ -104,7 +105,8 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         row += 2;
         builder.add(folderSizeLabel, cc.xyw(1, row, 5));
 
-        if (getController().getOSClient().isBackupByDefault()) {
+        if (getController().getOSClient().isBackupByDefault()
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 5));
         }

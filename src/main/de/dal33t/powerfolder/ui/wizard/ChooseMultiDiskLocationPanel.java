@@ -301,7 +301,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         row += 2;
 
         if (getController().getOSClient().isBackupByDefault()
-            && !getController().isBackupOnly())
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
         }
