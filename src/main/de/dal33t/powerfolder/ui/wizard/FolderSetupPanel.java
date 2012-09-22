@@ -81,6 +81,8 @@ public class FolderSetupPanel extends PFWizardPanel {
     public WizardPanel next() {
 
         // Set FolderInfo
+        // NOTE this is more or less a copy of ConfirmDiskLocationPanel next(), for experts.
+        // Changes may need to be applied to both.
         FolderInfo folderInfo = new FolderInfo(folderNameTextField.getText()
             .trim(), '[' + IdGenerator.makeId() + ']');
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
@@ -90,16 +92,14 @@ public class FolderSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel.getSyncProfile());
 
         // Setup choose disk location panel
-        getWizardContext()
-            .setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
-                Translation
-                    .getTranslation("wizard.what_to_do.invite.select_local"));
+        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
+                Translation.getTranslation(
+                        "wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.success_join"));
+                Translation.getTranslation("wizard.setup_success"),
+                Translation.getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);

@@ -19,11 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -42,9 +37,13 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -68,9 +67,37 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
     public WizardPanel next() {
         getWizardContext().setAttribute(FOLDER_LOCAL_BASE, localBase);
-        getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
-            FileUtils.getSuggestedFolderName(localBase));
-        return new FolderSetupPanel(getController());
+        String initialFolderName = FileUtils.getSuggestedFolderName(localBase);
+        getWizardContext().setAttribute(INITIAL_FOLDER_NAME, initialFolderName);
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            return new FolderSetupPanel(getController());
+        } else {
+            // Set FolderInfo
+            // NOTE: this is more or less a copy of FolderSetupPanel next(), for non experts.
+            // Changes may need to be applied to both.
+            FolderInfo folderInfo = new FolderInfo(initialFolderName,
+                    '[' + IdGenerator.makeId() + ']');
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
+
+            // Set sync profile
+            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+                    SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+            // Setup choose disk location panel
+            getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
+                    Translation.getTranslation(
+                            "wizard.what_to_do.invite.select_local"));
+
+            // Setup sucess panel of this wizard path
+            TextPanelPanel successPanel = new TextPanelPanel(getController(),
+                    Translation.getTranslation("wizard.setup_success"),
+                    Translation.getTranslation("wizard.success_join"));
+            getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+
+            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
+
+            return new FolderCreatePanel(getController());
+        }
     }
 
     public boolean hasNext() {

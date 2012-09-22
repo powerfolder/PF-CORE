@@ -615,8 +615,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
 
-            WizardPanel nextPanel = new FolderSetupPanel(getController());
-            nextPanel = new FolderCreatePanel(getController());
+            WizardPanel nextPanel = new FolderCreatePanel(getController());
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setup_success"),
