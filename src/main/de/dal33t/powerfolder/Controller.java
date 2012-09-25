@@ -70,7 +70,19 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.LimitedConnectivityEvent;
+import de.dal33t.powerfolder.event.LimitedConnectivityListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.NetworkingModeEvent;
+import de.dal33t.powerfolder.event.NetworkingModeListener;
+import de.dal33t.powerfolder.event.PausedModeEvent;
+import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -133,10 +145,15 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
 
+    private static final int MAJOR_VERSION = 7;
+    private static final int MINOR_VERSION = 0;
+    private static final int REVISION_VERSION = 10;
+
     /**
-     * Program version. include "dev" if its a development version.
+     * Program version.
      */
-    public static final String PROGRAM_VERSION = "7.0.9";
+    public static final String PROGRAM_VERSION = MAJOR_VERSION + "."
+        + MINOR_VERSION + "." + REVISION_VERSION;
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
