@@ -156,11 +156,6 @@ public enum PreferencesEntry {
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
 
-    /**
-     * If the "Tell a friend" / Referral system should be visible.
-     */
-    SHOW_TELL_A_FRIEND("show.tell-a-friend", false),
-
     SHOW_AUTO_CREATED_FOLDERS("show.auto.created.folders", true),
 
     SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
