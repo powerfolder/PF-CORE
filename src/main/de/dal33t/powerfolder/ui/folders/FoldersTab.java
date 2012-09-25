@@ -27,22 +27,20 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Class to display the forders tab.
@@ -106,13 +104,6 @@ public class FoldersTab extends PFUIComponent {
      * Builds the ui component.
      */
     private void buildUI() {
-
-        ActionLabel tellFriendLabel = SimpleComponentFactory
-            .createTellAFriendLabel(getController());
-        tellFriendLabel.getUIComponent().setOpaque(false);
-        tellFriendLabel.getUIComponent().setBorder(
-            Borders.createEmptyBorder("3dlu, 6px, 4px, 3dlu"));
-
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
             "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow");
@@ -133,18 +124,10 @@ public class FoldersTab extends PFUIComponent {
         builder.add(scrollPane, cc.xywh(1, 6, 1, 1));
         int row = 6;
 
-        if (PreferencesEntry.SHOW_TELL_A_FRIEND
-            .getValueBoolean(getController()))
-        {
-            builder.appendRow("pref");
-            row++;
-            builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
-        }
-
         if (!PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.appendRow("3dlu");
             builder.appendRow("pref");
-            row+=2;
+            row += 2;
             builder.addSeparator("", cc.xy(1, row));
         }
 
