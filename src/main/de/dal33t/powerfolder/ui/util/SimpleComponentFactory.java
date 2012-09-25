@@ -20,11 +20,9 @@
 package de.dal33t.powerfolder.ui.util;
 
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -38,12 +36,7 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
-import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Simple factory for creating PowerFolder ui elements
@@ -200,25 +193,5 @@ public class SimpleComponentFactory {
         });
 
         return box;
-    }
-
-    public static final ActionLabel createTellAFriendLabel(
-        final Controller controller)
-    {
-        ActionLabel tellFriendLabel = new ActionLabel(controller,
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    PFWizard wizard = new PFWizard(controller, Translation
-                        .getTranslation("wizard.pfwizard.tell_friend_title"));
-                    wizard.open(new TellFriendPanel(controller));
-                }
-            });
-        tellFriendLabel.setText(Translation
-            .getTranslation("status_tab.tell_friend.text"));
-        tellFriendLabel.setToolTipText(Translation
-            .getTranslation("status_tab.tell_friend.tip"));
-        tellFriendLabel.setIcon(Icons
-            .getIconById(Icons.STATUS_TAB_TELL_A_FRIEND));
-        return tellFriendLabel;
     }
 }
