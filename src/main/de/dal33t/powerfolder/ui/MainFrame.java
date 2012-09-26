@@ -649,8 +649,10 @@ public class MainFrame extends PFUIComponent {
 
         // Set visibility of buttons and labels.
         pauseButton.setVisible(status == SyncStatus.PAUSED);
-        setupLabel.setVisible(status == SyncStatus.NOT_STARTED);
-        setupButton.setVisible(status == SyncStatus.NOT_STARTED);
+        setupLabel.setVisible(status == SyncStatus.NOT_STARTED
+            || status == SyncStatus.NO_FOLDERS);
+        setupButton.setVisible(status == SyncStatus.NOT_STARTED
+            || status == SyncStatus.NO_FOLDERS);
         allInSyncButton.setVisible(status == SyncStatus.SYNCHRONIZED);
         syncingButton.setVisible(status == SyncStatus.SYNCING);
         syncingButton.spin(status == SyncStatus.SYNCING);
@@ -1309,7 +1311,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void updateOnlineStorageDetails() {
-        mainStatusUpdater.schedule(new Runnable() {
+        osStatusUpdater.schedule(new Runnable() {
             public void run() {
                 updateOnlineStorageDetails0();
             }
