@@ -119,8 +119,7 @@ public class LoginPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return new SwingWorkerPanel(getController(),
-            new LoginTask(),
+        return new SwingWorkerPanel(getController(), new LoginTask(),
             Translation
                 .getTranslation("wizard.login_online_storage.logging_in"),
             Translation
@@ -239,14 +238,14 @@ public class LoginPanel extends PFWizardPanel {
         rememberPasswordBox.setVisible(changeLoginAllowed
             && rememberPasswordAllowed);
 
-        useOSBox = new JCheckBox(Translation.getTranslation(
-                "wizard.login_online_storage.no_os")); // @todo Why negative? Why not "Use online storage"?
-        useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
-                        getController()));
+        useOSBox = new JCheckBox(
+            Translation.getTranslation("wizard.login_online_storage.no_os")); // @todo                                                     // "Use online storage"?
+        useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController()));
         useOSBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
-                        !useOSBox.isSelected());
+                    !useOSBox.isSelected());
             }
         });
         useOSBox.setOpaque(false);
@@ -256,6 +255,15 @@ public class LoginPanel extends PFWizardPanel {
         workingBar.setIndeterminate(true);
         updateOnlineStatus();
         client.addListener(new MyServerClientListner());
+
+        // Never run forever
+        getController().scheduleAndRepeat(new Runnable() {
+            public void run() {
+                if (!client.isConnected()) {
+                    getWizard().next();
+                }
+            }
+        }, 60000L, 10000L);
     }
 
     protected String getTitle() {
@@ -296,8 +304,15 @@ public class LoginPanel extends PFWizardPanel {
     private class LoginTask implements Runnable {
         public void run() {
             try {
+                if (!client.isConnected()) {
+                    LOG.log(Level.WARNING, "Unable to connect");
+                    throw new SecurityException(
+                        Translation
+                            .getTranslation("wizard.webservice.connect_failed"));
+                }
                 char[] pw = passwordField.getPassword();
-                boolean loginOk = client.login(usernameField.getText(), pw).isValid();
+                boolean loginOk = client.login(usernameField.getText(), pw)
+                    .isValid();
                 LoginUtil.clear(pw);
                 if (!loginOk) {
                     throw new SecurityException(
