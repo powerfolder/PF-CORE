@@ -1924,11 +1924,13 @@ public class Folder extends PFComponent {
                         // Our version is "better" newer or bigger.
                         // Increase version to force re-sync
                         if (!brokenExisting.contains(file)) {
-                            logWarning("Fixing file entry. Local: "
-                                + file.toDetailString() + ".\n@"
-                                + member.getNick() + ": "
-                                + remoteFile.toDetailString());
                             brokenExisting.add(file);
+                            if (isWarning() && !currentInfo.isMetaFolder()) {
+                                logWarning("Fixing file entry. Local: "
+                                    + file.toDetailString() + ".\n@"
+                                    + member.getNick() + ": "
+                                    + remoteFile.toDetailString());
+                            }
                         }
                     }
                 }
