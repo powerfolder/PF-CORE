@@ -983,7 +983,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             // Simply break. Already disconnected
                             break;
                         } else {
-                            logSevere("Connection closed, message received, before peer identified itself: "
+                            logWarning("Connection closed, message received, before peer identified itself: "
                                 + obj);
                             // connection closed
                             break;
