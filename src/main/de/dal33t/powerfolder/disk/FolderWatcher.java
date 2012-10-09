@@ -70,9 +70,8 @@ public class FolderWatcher extends PFComponent {
     }
 
     public boolean isSupported() {
-        return isLibLoaded()
-            && ConfigurationEntry.FOLDER_WATCHER_ENABLED
-                .getValueBoolean(getController());
+        return ConfigurationEntry.FOLDER_WATCHER_ENABLED
+            .getValueBoolean(getController()) && isLibLoaded();
     }
 
     /**
