@@ -1056,8 +1056,10 @@ public class NodeManager extends PFComponent {
                 + handler + ", disconnecting").with(handler);
         }
         if (!remoteIdentity.getMemberInfo().isOnSameNetwork(getController())) {
-            if (getController().getOSClient().isServer(handler)) {
-                logSevere("Server not on same network " + handler
+            if (getController().getOSClient().isServer(handler)
+                && !mySelf.isServer())
+            {
+                logWarning("Server not on same network " + handler
                     + ", disconnecting. remote network ID: "
                     + remoteIdentity.getMemberInfo().networkId
                     + ". Expected/Ours: " + getNetworkId());
@@ -1071,7 +1073,7 @@ public class NodeManager extends PFComponent {
             throw new ConnectionException("Remote client not on same network "
                 + handler + ", disconnecting. remote network ID: "
                 + remoteIdentity.getMemberInfo().networkId
-                + ". Expected/Ours: " + getNetworkId()).with(handler);
+  + ". Expected/Ours: " + getNetworkId()).with(handler);
         }
 
         Member member;
@@ -1125,7 +1127,10 @@ public class NodeManager extends PFComponent {
             if (member.getPeer() != handler) {
                 if (member.isConnected()) {
                     logWarning("Taking a better conHandler for "
-                        + member.getNick());
+                        + member.getNick() + ". current: " + member.getPeer()
+                        + ", onLAN? " + member.isOnLAN() + "/"
+                        + member.getPeer().isOnLAN() + ". new: " + handler
+                        + ", onLAN? " + handler.isOnLAN());
                 }
                 // Complete handshake
                 try {
@@ -1193,7 +1198,7 @@ public class NodeManager extends PFComponent {
         knownNodes.put(node.getId(), node);
 
         if (!node.isOnSameNetwork()) {
-            logWarning("Corrected node with diffrent network id. Our netID: "
+            logInfo("Corrected node with diffrent network id. Our netID: "
                 + getNetworkId() + ", node netID: " + node.getInfo().networkId
                 + ". " + node);
             node.getInfo().networkId = getNetworkId();
