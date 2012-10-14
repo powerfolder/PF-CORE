@@ -159,8 +159,7 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
          */
         private void restore0(Folder folder, FileInfo fileInfoToRestore) {
             try {
-                File restoreTo = fileInfoToRestore.getDiskFile(getController()
-                    .getFolderRepository());
+                File restoreTo = fileInfoToRestore.getDiskFile(getController().getFolderRepository());
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 boolean restored = false;
                 FileInfo onlineRestoredFileInfo = null;

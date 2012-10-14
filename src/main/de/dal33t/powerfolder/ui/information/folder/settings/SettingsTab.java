@@ -31,20 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -89,7 +76,6 @@ import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -248,7 +234,7 @@ public class SettingsTab extends PFUIComponent {
         if (folder.hasMember(serverClient.getServer())
             && serverClient.isConnected())
         {
-            new MyServerModeSwingWorker(fi).start();
+            new MyServerModeSwingWorker(fi).execute();
         } else {
             onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
             onlineLabel.setVisible(false);
@@ -950,7 +936,7 @@ public class SettingsTab extends PFUIComponent {
                             0, GenericDialogType.QUESTION);
                         if (i == 0) {
                             SwingWorker worker = new MyMaintainSwingWorker();
-                            worker.start();
+                            worker.execute();
                         }
                     }
                 });
@@ -1366,7 +1352,7 @@ public class SettingsTab extends PFUIComponent {
             {
                 if (!updateingOnlineArchiveMode) {
                     SwingWorker worker = new MyUpdaterSwingWorker();
-                    worker.start();
+                    worker.execute();
                 }
             }
         }
@@ -1376,7 +1362,7 @@ public class SettingsTab extends PFUIComponent {
      * Maintain the folder archive.
      */
     private class MyMaintainSwingWorker extends SwingWorker {
-        public Object construct() {
+        public Object doInBackground() {
             try {
                 return folder.getFileArchiver().maintain();
             } catch (Exception e) {
@@ -1390,7 +1376,7 @@ public class SettingsTab extends PFUIComponent {
      * Update the online archive version details.
      */
     private class MyUpdaterSwingWorker extends SwingWorker {
-        public Object construct() {
+        protected Object doInBackground() throws Exception {
             try {
                 if (folder == null || settingFolder) {
                     return null;
@@ -1431,7 +1417,7 @@ public class SettingsTab extends PFUIComponent {
             this.folderInfo = folderInfo;
         }
 
-        public Object construct() {
+        public Object doInBackground() {
             try {
                 onlineArchiveModeSelectorPanel.getUIComponent().setVisible(
                     false);
@@ -1469,12 +1455,11 @@ public class SettingsTab extends PFUIComponent {
     private class OnlinePurgeListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             new SwingWorker() {
-                @Override
-                public Object construct() throws Throwable {
+                protected Object doInBackground() throws Exception {
                     purgeOnlineArchive();
                     return null;
                 }
-            }.start();
+            }.execute();
         }
     }
 }

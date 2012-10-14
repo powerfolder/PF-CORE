@@ -82,6 +82,7 @@ import de.dal33t.powerfolder.util.UserDirectory;
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
+ * @deprecated use ChooseMultiDiskLocationPanel
  */
 @Deprecated
 public class ChooseDiskLocationPanel extends PFWizardPanel {

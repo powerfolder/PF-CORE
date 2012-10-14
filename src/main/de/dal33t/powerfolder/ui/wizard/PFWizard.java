@@ -42,8 +42,10 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.information.folder.files.versions.FileInfoVersionTypeHolder;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.Reject;
@@ -386,5 +388,22 @@ public class PFWizard extends PFUIComponent {
                 Translation.getTranslation("wizard.pfwizard.folder_title"));
             wizard.open(panel);
         }
+    }
+
+    public static void openMultiFileRestoreWizard(Controller controller, Folder folder,
+                                                  List<FileInfo> fileInfosToRestore) {
+        PFWizard wizard = new PFWizard(controller, Translation.getTranslation("wizard.pfwizard.restore_title"));
+        if (fileInfosToRestore.size() == 1) {
+            // Just one file? Process it singley.
+            wizard.open(new SingleFileRestorePanel(controller, folder, fileInfosToRestore.get(0)));
+        } else {
+            wizard.open(new MultiFileRestorePanel(controller, folder, fileInfosToRestore));
+        }
+    }
+
+    public static void openSingleFileRestoreWizard(Controller controller, Folder folder, FileInfo fileInfoToRestore,
+                                                   FileInfoVersionTypeHolder selectedInfo) {
+        PFWizard wizard = new PFWizard(controller, Translation.getTranslation("wizard.pfwizard.restore_title"));
+        wizard.open(new SingleFileRestorePanel(controller, folder, fileInfoToRestore, selectedInfo));
     }
 }

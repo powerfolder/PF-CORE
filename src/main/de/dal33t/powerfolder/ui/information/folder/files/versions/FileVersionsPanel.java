@@ -20,11 +20,11 @@
 package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.RestoreArchiveDialog;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.util.Translation;
@@ -321,9 +321,8 @@ public class FileVersionsPanel extends PFUIComponent {
     private void restoreFile() {
         if (fileInfo != null) {
             FileInfoVersionTypeHolder selectedInfo = fileVersionsTable.getSelectedInfo();
-            RestoreArchiveDialog dialog = new RestoreArchiveDialog(
-                getController(), fileInfo, selectedInfo);
-            dialog.open();
+            PFWizard.openSingleFileRestoreWizard(getController(), 
+                    fileInfo.getFolder(getController().getFolderRepository()), fileInfo, selectedInfo);
         }
     }
 

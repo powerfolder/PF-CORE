@@ -98,7 +98,6 @@ import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -137,7 +136,6 @@ public class UIController extends PFComponent {
     private static final String COMMAND_RESUME = "resume";
     private static final String COMMAND_PREFERENCES = "preferences";
     private static final String COMMAND_BROWSE = "browse";
-    private static final String COMMAND_RECENTLY_CHANGED = "recently-changed-";
 
     private boolean started;
     private SplashScreen splash;
@@ -478,22 +476,22 @@ public class UIController extends PFComponent {
                     askToPauseResume();
                 } else if (COMMAND_PREFERENCES.equals(e.getActionCommand())) {
                     preferencesDialog.open();
-                } else if(e.getActionCommand().startsWith(COMMAND_RECENTLY_CHANGED)) {
-                    int index = e.getActionCommand().lastIndexOf('-');
-                    String suffix = e.getActionCommand().substring(index + 1);
-                    int item = Integer.valueOf(suffix);
-                    synchronized (recentlyChangedFiles) {
-                        int i = 0;
-                        for (FileInfo fileInfo : recentlyChangedFiles.values()) {
-                            if (i++ == item) {
-                                MultiFileRestorePanel p = new MultiFileRestorePanel(getController(), fileInfo.getFolder(getController().getFolderRepository()), Collections.singletonList(fileInfo));
-                                PFWizard wizard = new PFWizard(getController(),
-                                    Translation.getTranslation("wizard.pfwizard.restore_title"));
-                                wizard.open(p);
-                                break;
-                            }
-                        }
-                    }
+//                } else if(e.getActionCommand().startsWith(COMMAND_RECENTLY_CHANGED)) {
+//                    int index = e.getActionCommand().lastIndexOf('-');
+//                    String suffix = e.getActionCommand().substring(index + 1);
+//                    int item = Integer.valueOf(suffix);
+//                    synchronized (recentlyChangedFiles) {
+//                        int i = 0;
+//                        for (FileInfo fileInfo : recentlyChangedFiles.values()) {
+//                            if (i++ == item) {
+//                                MultiFileRestorePanel p = new MultiFileRestorePanel(getController(), fileInfo.getFolder(getController().getFolderRepository()), Collections.singletonList(fileInfo));
+//                                PFWizard wizard = new PFWizard(getController(),
+//                                    Translation.getTranslation("wizard.pfwizard.restore_title"));
+//                                wizard.open(p);
+//                                break;
+//                            }
+//                        }
+//                    }
                 }
             }
         };

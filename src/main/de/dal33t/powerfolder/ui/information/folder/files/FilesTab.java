@@ -55,7 +55,6 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.folder.files.breadcrumb.FilesBreadcrumbPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
-import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -365,11 +364,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 }
             }
 
-            PFWizard wizard = new PFWizard(getController(),
-                Translation.getTranslation("wizard.pfwizard.restore_title"));
-            MultiFileRestorePanel panel = new MultiFileRestorePanel(
-                getController(), folder, fileInfosToRestore);
-            wizard.open(panel);
+            PFWizard.openMultiFileRestoreWizard(getController(),folder, fileInfosToRestore);
         }
     }
 
