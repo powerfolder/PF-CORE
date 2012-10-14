@@ -20,61 +20,187 @@
 package de.dal33t.powerfolder.ui.wizard.table;
 
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SingleFileRestoreTableModel  extends PFComponent implements TableModel, SortedTableModel {
+
+    private String[] columns = {
+            Translation.getTranslation("single_file_restore_table_model.modified_date"),
+        Translation.getTranslation("single_file_restore_table_model.version"),
+        Translation.getTranslation("single_file_restore_table_model.size")};
+
+    static final int COL_MODIFIED_DATE = 0;
+    static final int COL_VERSION = 1;
+    static final int COL_SIZE = 2;
+
+    private final List<FileInfo> fileInfos;
+    private int fileInfoComparatorType = -1;
+    private boolean sortAscending = true;
+    private int sortColumn;
+    private final List<TableModelListener> listeners;
+
+    public SingleFileRestoreTableModel(Controller controller) {
+        super(controller);
+        fileInfos = new ArrayList<FileInfo>();
+        listeners = new CopyOnWriteArrayList<TableModelListener>();
+    }
+
     public int getRowCount() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return fileInfos.size();
     }
 
     public int getColumnCount() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return columns.length;
     }
 
     public String getColumnName(int columnIndex) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return columns[columnIndex];
     }
 
     public Class<?> getColumnClass(int columnIndex) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return FileInfo.class;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return fileInfos.get(rowIndex);
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        throw new UnsupportedOperationException("Cannot modify MultiFileRestoreTableModel");
     }
 
     public void addTableModelListener(TableModelListener l) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        listeners.add(l);
     }
 
     public void removeTableModelListener(TableModelListener l) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        listeners.remove(l);
     }
 
     public int getSortColumn() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return sortColumn;
     }
 
     public boolean isSortAscending() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return sortAscending;
     }
 
     public boolean sortBy(int columnIndex) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        sortColumn = columnIndex;
+        switch (columnIndex) {
+            case COL_VERSION:
+                return sortMe(FileInfoComparator.BY_VERSION);
+            case COL_SIZE:
+                return sortMe(FileInfoComparator.BY_SIZE);
+            case COL_MODIFIED_DATE:
+                return sortMe(FileInfoComparator.BY_MODIFIED_DATE);
+        }
+
+        sortColumn = -1;
+        return false;
+    }
+
+    /**
+     * Re-sorts the file list with the new comparator only if comparator differs
+     * from old one
+     *
+     * @param newComparatorType
+     * @return if the table was freshly sorted
+     */
+    public boolean sortMe(int newComparatorType) {
+        if (fileInfos.isEmpty()) {
+            return false;
+        }
+        int oldComparatorType = fileInfoComparatorType;
+        fileInfoComparatorType = newComparatorType;
+        if (oldComparatorType != newComparatorType) {
+            boolean sorted = sort();
+            if (sorted) {
+                fireModelChanged();
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private boolean sort() {
+        if (fileInfoComparatorType != -1) {
+            FileInfoComparator comparator = new FileInfoComparator(
+                fileInfoComparatorType);
+            synchronized (fileInfos) {
+                if (sortAscending) {
+                    Collections.sort(fileInfos, comparator);
+                } else {
+                    Collections.sort(fileInfos, new ReverseComparator<FileInfo>(
+                        comparator));
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public void reverseList() {
+        sortAscending = !sortAscending;
+        synchronized (fileInfos) {
+            Collections.reverse(fileInfos);
+        }
+        fireModelChanged();
+    }
+
+    private void fireModelChanged() {
+        TableModelEvent e = new TableModelEvent(this);
+        for (TableModelListener listener : listeners) {
+            listener.tableChanged(e);
+        }
     }
 
     public void setAscending(boolean ascending) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        sortAscending = ascending;
+    }
+
+    public void setFileInfos(List<FileInfo> fileInfos) {
+        synchronized (this.fileInfos) {
+            this.fileInfos.clear();
+            this.fileInfos.addAll(fileInfos);
+        }
+        update();
+    }
+
+    /**
+     * Update the model in response to a change.
+     */
+    private void update() {
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                sort();
+                fireModelChanged();
+            }
+        };
+        UIUtil.invokeLaterInEDT(runnable);
+    }
+
+    public List<FileInfo> getFileInfos() {
+        return Collections.unmodifiableList(fileInfos);
     }
 }

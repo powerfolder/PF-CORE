@@ -24,6 +24,9 @@ import jwf.WizardPanel;
 import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTableModel;
+import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTable;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.util.Translation;
@@ -35,7 +38,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.CancellationException;
+import java.awt.*;
 
 /**
  * Call this class via PFWizard.
@@ -44,12 +51,15 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
     private final Folder folder;
     private final FileInfo fileInfoToRestore;
-    private final FileInfo selectedFileInfo; // Note - this may be null.
+    private final FileInfo selectedFileInfo;
 
     private final JLabel infoLabel;
     private boolean hasNext;
     private SwingWorker worker;
     private final JProgressBar bar;
+    private JScrollPane scrollPane;
+    private final SingleFileRestoreTableModel tableModel;
+    private final SingleFileRestoreTable table;
 
     public SingleFileRestorePanel(Controller controller, Folder folder, FileInfo fileInfoToRestore) {
         this(controller, folder, fileInfoToRestore, null);
@@ -60,10 +70,12 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         super(controller);
         this.folder = folder;
         this.fileInfoToRestore = fileInfoToRestore;
-        this.selectedFileInfo = selectedFileInfo; // Note - this may be null.
+        this.selectedFileInfo = selectedFileInfo;
 
         infoLabel = new JLabel();
         bar = new JProgressBar();
+        tableModel = new SingleFileRestoreTableModel(getController());
+        table = new SingleFileRestoreTable(tableModel);
     }
 
     protected JComponent buildContent() {
@@ -75,6 +87,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         builder.add(infoLabel, cc.xyw(1, 1, 2));
 
         builder.add(bar, cc.xy(1, 3));
+        builder.add(scrollPane, cc.xyw(1, 3, 2));
 
         return builder.getPanel();
     }
@@ -85,6 +98,11 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
     protected void initComponents() {
         bar.setIndeterminate(true);
+        scrollPane = new JScrollPane(table);
+        scrollPane.setPreferredSize(new Dimension(400, 200));
+        scrollPane.setVisible(false);
+        UIUtil.removeBorder(scrollPane);
+        UIUtil.setZeroWidth(scrollPane);
     }
 
     @Override
@@ -99,9 +117,9 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         if (worker != null) {
             worker.cancel(false);
         }
-//        tableModel.setFileInfos(new ArrayList<FileInfo>());
+        tableModel.setFileInfos(new ArrayList<FileInfo>());
         bar.setVisible(true);
-//        scrollPane.setVisible(false);
+        scrollPane.setVisible(false);
 
         worker = new VersionLoaderWorker();
         worker.execute();
@@ -167,10 +185,23 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                     infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved_none.text",
                             fileInfoToRestore.getFilenameOnly()));
                 } else {
-                    //hasNext = true; @todo
+                    hasNext = true;
                     infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved.text",
                             String.valueOf(get().size())));
                 }
+                List<FileInfo> fileInfoList = get();
+                Collections.sort(fileInfoList, new Comparator<FileInfo>() {
+                    public int compare(FileInfo o1, FileInfo o2) {
+                        return o1.getVersion() - o2.getVersion();
+                    }
+                });
+                tableModel.setFileInfos(fileInfoList);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        table.setSelectedFileInfo(selectedFileInfo);
+                        updateButtons();
+                    }
+                });
             } catch (CancellationException e) {
                 infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieve_cancelled.text"));
             } catch (Exception e) {
@@ -178,6 +209,8 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                         e.getMessage()));
             }
             bar.setVisible(false);
+            scrollPane.setVisible(true);
+            updateButtons();
         }
     }
 }
