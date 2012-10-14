@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.ui.wizard;
 import jwf.WizardPanel;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTableModel;
@@ -103,6 +105,8 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         scrollPane.setVisible(false);
         UIUtil.removeBorder(scrollPane);
         UIUtil.setZeroWidth(scrollPane);
+        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
     }
 
     @Override
@@ -131,6 +135,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
+        // @todo - multi-restoring-panel.
         return null;
     }
 
@@ -185,7 +190,6 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                     infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved_none.text",
                             fileInfoToRestore.getFilenameOnly()));
                 } else {
-                    hasNext = true;
                     infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved.text",
                             String.valueOf(get().size())));
                 }
@@ -199,7 +203,6 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         table.setSelectedFileInfo(selectedFileInfo);
-                        updateButtons();
                     }
                 });
             } catch (CancellationException e) {
@@ -210,6 +213,12 @@ public class SingleFileRestorePanel extends PFWizardPanel {
             }
             bar.setVisible(false);
             scrollPane.setVisible(true);
+        }
+    }
+
+    private class MyListSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            hasNext = table.getSelectedRow() >= 0;
             updateButtons();
         }
     }
