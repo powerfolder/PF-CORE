@@ -45,7 +45,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.information.folder.files.versions.FileInfoVersionTypeHolder;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.Reject;
@@ -402,8 +401,8 @@ public class PFWizard extends PFUIComponent {
     }
 
     public static void openSingleFileRestoreWizard(Controller controller, Folder folder, FileInfo fileInfoToRestore,
-                                                   FileInfoVersionTypeHolder selectedInfo) {
+                                                   FileInfo selectedFileInfo) {
         PFWizard wizard = new PFWizard(controller, Translation.getTranslation("wizard.pfwizard.restore_title"));
-        wizard.open(new SingleFileRestorePanel(controller, folder, fileInfoToRestore, selectedInfo));
+        wizard.open(new SingleFileRestorePanel(controller, folder, fileInfoToRestore, selectedFileInfo));
     }
 }

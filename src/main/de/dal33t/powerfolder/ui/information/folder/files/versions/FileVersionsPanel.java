@@ -322,7 +322,7 @@ public class FileVersionsPanel extends PFUIComponent {
         if (fileInfo != null) {
             FileInfoVersionTypeHolder selectedInfo = fileVersionsTable.getSelectedInfo();
             PFWizard.openSingleFileRestoreWizard(getController(), 
-                    fileInfo.getFolder(getController().getFolderRepository()), fileInfo, selectedInfo);
+                    fileInfo.getFolder(getController().getFolderRepository()), fileInfo, selectedInfo.getFileInfo());
         }
     }
 
