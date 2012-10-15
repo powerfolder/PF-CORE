@@ -135,8 +135,13 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        // @todo - multi-restoring-panel.
-        return null;
+        FileInfo fileInfo = table.getSelectedFileInfo();
+        if (fileInfo != null) {
+            List<FileInfo> list = new ArrayList<FileInfo>();
+            list.add(fileInfo);
+            return new FileRestoringPanel(getController(), folder, list);
+        }
+        throw new IllegalStateException("Could not find the selected file info.");
     }
 
     // ////////////////

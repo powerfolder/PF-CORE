@@ -81,6 +81,14 @@ public class SingleFileRestoreTable extends JTable {
         }
     }
 
+    public FileInfo getSelectedFileInfo() {
+        int row = getSelectedRow();
+        if (row < 0) {
+            return null;
+        }
+        return (FileInfo) getValueAt(row, 0);
+    }
+
     /**
      * Listener on table header, takes care about the sorting of table
      *
