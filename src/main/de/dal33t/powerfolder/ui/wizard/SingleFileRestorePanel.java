@@ -57,7 +57,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
     private final JLabel infoLabel;
     private boolean hasNext;
-    private SwingWorker worker;
+    private SwingWorker<List<FileInfo>, FileInfo> worker;
     private final JProgressBar bar;
     private JScrollPane scrollPane;
     private final SingleFileRestoreTableModel tableModel;
@@ -150,7 +150,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
     private class VersionLoaderWorker extends SwingWorker<List<FileInfo>, FileInfo> {
 
-        protected List<FileInfo> doInBackground() throws Exception {
+        protected List<FileInfo> doInBackground() {
 
             // Also try getting versions from OnlineStorage.
             boolean online = folder.hasMember(getController().getOSClient().getServer());
@@ -191,7 +191,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         @Override
         protected void done() {
             try {
-                if (get().size() == 0) {
+                if (get().isEmpty()) {
                     infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved_none.text",
                             fileInfoToRestore.getFilenameOnly()));
                 } else {

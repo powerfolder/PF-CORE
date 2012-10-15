@@ -38,7 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MultiFileRestoreTableModel extends PFComponent implements TableModel, SortedTableModel {
 
-    private String[] columns = {
+    private static final String[] COLUMNS = {
             Translation.getTranslation("multi_file_restore_table_model.file_name"),
         Translation.getTranslation("multi_file_restore_table_model.modified_date"),
         Translation.getTranslation("multi_file_restore_table_model.version"),
@@ -71,11 +71,11 @@ public class MultiFileRestoreTableModel extends PFComponent implements TableMode
     }
 
     public int getColumnCount() {
-        return columns.length;
+        return COLUMNS.length;
     }
 
     public String getColumnName(int columnIndex) {
-        return columns[columnIndex];
+        return COLUMNS[columnIndex];
     }
 
     public Class<?> getColumnClass(int columnIndex) {

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MultiFileRestorePanel.java 19932 2012-10-14 06:01:18Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -56,7 +56,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JProgressBar bar;
     private JScrollPane scrollPane;
     private boolean hasNext;
-    private SwingWorker worker;
+    private SwingWorker<List<FileInfo>, FileInfo> worker;
     private MultiFileRestoreTableModel tableModel = new MultiFileRestoreTableModel(getController());
 
     public MultiFileRestorePanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
@@ -134,7 +134,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     private class VersionLoaderWorker extends SwingWorker<List<FileInfo>, FileInfo> {
 
-        private int fileInfosProcessed = 0;
+        private int fileInfosProcessed;
 
         public List<FileInfo> doInBackground() {
             bar.setIndeterminate(true);
@@ -210,7 +210,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
          */
         protected void process(List<FileInfo> chunks) {
             fileInfosProcessed += chunks.size();
-            if (fileInfosToRestore.size() == 0) {
+            if (fileInfosToRestore.isEmpty()) {
                 bar.setIndeterminate(true);
             } else {
                 bar.setIndeterminate(false);
@@ -226,7 +226,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             hasNext = false;
             try {
                 tableModel.setFileInfos(get());
-                if (get().size() == 0) {
+                if (get().isEmpty()) {
                     infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieved_none.text"));
                 } else {
                     infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieved.text"));

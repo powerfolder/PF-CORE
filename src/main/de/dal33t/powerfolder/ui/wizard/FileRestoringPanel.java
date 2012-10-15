@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.wizard;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import javax.swing.SwingWorker;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -50,8 +49,8 @@ public class FileRestoringPanel extends PFWizardPanel {
     private final List<FileInfo> fileInfosToRestore;
     private final JLabel statusLabel;
     private final JProgressBar bar;
-    private SwingWorker worker;
-    private int filesProcessedSuccessfully = 0;
+    private SwingWorker<List<FileInfo>, FileInfo> worker;
+    private int filesProcessedSuccessfully;
 
     public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
         super(controller);
@@ -120,9 +119,9 @@ public class FileRestoringPanel extends PFWizardPanel {
 
     private class RestoreWorker extends SwingWorker<List<FileInfo>, FileInfo> {
 
-        private int fileInfosProcessed = 0;
+        private int fileInfosProcessed;
 
-        protected List<FileInfo> doInBackground() throws Exception {
+        protected List<FileInfo> doInBackground() {
             filesProcessedSuccessfully = 0;
             List<FileInfo> results = new ArrayList<FileInfo>();
             for (FileInfo fileInfo : fileInfosToRestore) {

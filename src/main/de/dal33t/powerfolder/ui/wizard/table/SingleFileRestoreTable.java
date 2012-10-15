@@ -73,8 +73,8 @@ public class SingleFileRestoreTable extends JTable {
             for (int i = 0; i < getModel().getRowCount(); i++) {
                 FileInfo value = (FileInfo) getModel().getValueAt(i, 1);
                 if (value.isVersionDateAndSizeIdentical(selectedFileInfo)) {
-                    ListSelectionModel selectionModel = getSelectionModel();
-                    selectionModel.setSelectionInterval(i, i);
+                    ListSelectionModel model = getSelectionModel();
+                    model.setSelectionInterval(i, i);
                     break;
                 }
             }
