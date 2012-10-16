@@ -262,7 +262,7 @@ public class LimitedConnectivityChecker {
             return false;
         } catch (IOException e) {
             log.log(Level.WARNING, "Limited connectivity check failed for "
-                + host + ':' + port + ". " + e, e);
+                + host + ':' + port + ". " + e);
             return false;
         } finally {
             if (in != null) {
