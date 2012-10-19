@@ -248,8 +248,9 @@ public class ConfigurationLoader {
             }
             int i = merge(serverConfig, controller.getConfig(),
                 controller.getPreferences(), overWrite);
-            LOG.fine("Loaded " + i + " settings (overwrite? " + overWrite
+            LOG.info("Loaded " + i + " settings (overwrite? " + overWrite
                 + ") from server: " + configURL);
+            
             if (i > 0) {
                 controller.saveConfig();
             }
