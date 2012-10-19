@@ -682,10 +682,11 @@ public class ServerClient extends PFComponent {
             }
         }
 
+        String systemUserName = System.getProperty("user.name");
         if (StringUtils.isBlank(un)
-            && !LoginUtil.isUsernameEmailOnly(getController()))
+            && LoginUtil.isValidUsername(getController(), systemUserName))
         {
-            un = System.getProperty("user.name");
+            un = systemUserName;
         }
 
         if (StringUtils.isBlank(un)) {
@@ -1073,7 +1074,7 @@ public class ServerClient extends PFComponent {
                 if (servers.contains(node.getInfo())) {
                     continue;
                 }
-                node.setServer(false);                    
+                node.setServer(false);
             }
             for (MemberInfo serverMInfo : servers) {
                 Member hostingServer = serverMInfo.getNode(getController(),

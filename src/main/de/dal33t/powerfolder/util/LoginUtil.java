@@ -41,8 +41,8 @@ import de.dal33t.powerfolder.Controller;
  */
 public class LoginUtil {
     private LoginUtil() {
-
     }
+
     private final static int OBF_BYTE = 0xAA;
     public final static String HASH_DIGEST = "MD5";
 
@@ -229,6 +229,19 @@ public class LoginUtil {
     }
 
     /**
+     * PFS-569: Hack alert!
+     * 
+     * @param controller
+     * @return
+     */
+    public static String getInviteUsernameLabel(Controller controller) {
+        if (isUsernameShibboleth(controller)) {
+            return Translation.getTranslation("general.email") + ":";
+        }
+        return getUsernameLabel(controller);
+    }
+
+    /**
      * #2401: Texts: "Email" should not be shown if using AD username, e.g. on
      * login
      * 
@@ -247,14 +260,60 @@ public class LoginUtil {
      * @return
      */
     public static String getUsernameText(Controller controller) {
-        if (controller != null && isUsernameEmailOnly(controller)) {
+        Reject.ifNull(controller, "Controller");
+        if (isUsernameEmailOnly(controller)) {
             return Translation.getTranslation("general.email");
         } else if (isUsernameAny(controller)) {
             return Translation.getTranslation("general.username") + "/"
                 + Translation.getTranslation("general.email");
         } else {
-            return Translation.getTranslation("general.username");
+            if (isBoolConfValue(controller)) {
+                return Translation.getTranslation("general.username");
+            }
+            // Otherwise return text of config entry.
+            return ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+                .getValue(controller);
         }
+    }
+
+    public static boolean isValidUsername(Controller controller, String username)
+    {
+        if (StringUtils.isBlank(username)) {
+            return false;
+        }
+        if (isUsernameAny(controller)) {
+            return true;
+        }
+        // PFS-569
+        if (isUsernameShibboleth(controller)) {
+            return username.contains("!");
+        }
+        if (ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+            .getValueBoolean(controller))
+        {
+            return Util.isValidEmail(username);
+        }
+        return true;
+    }
+
+    private static boolean isUsernameShibboleth(Controller controller) {
+        String v = ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+            .getValue(controller);
+        if (v == null) {
+            return false;
+        }
+        return v.toLowerCase().contains("shibboleth");
+    }
+
+    private static boolean isUsernameEmailOnly(Controller controller) {
+        if (isUsernameAny(controller)) {
+            return false;
+        }
+        if (!isBoolConfValue(controller)) {
+            return false;
+        }
+        return ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+            .getValueBoolean(controller);
     }
 
     private static boolean isUsernameAny(Controller controller) {
@@ -263,12 +322,14 @@ public class LoginUtil {
         return "both".equalsIgnoreCase(v);
     }
 
-    public static boolean isUsernameEmailOnly(Controller controller) {
-        if (isUsernameAny(controller)) {
+    private static boolean isBoolConfValue(Controller controller) {
+        String value = ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
+            .getValue(controller);
+        if (value == null) {
             return false;
         }
-        return ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
-            .getValueBoolean(controller);
+        return value.equalsIgnoreCase("true")
+            || value.equalsIgnoreCase("false");
     }
 
     /**
@@ -279,7 +340,7 @@ public class LoginUtil {
      *            Data to digest
      * @return digest
      */
-    public static byte[] digest(byte[] data) {
+    private static byte[] digest(byte[] data) {
         return getDigest().digest(data);
     }
 

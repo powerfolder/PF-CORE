@@ -222,7 +222,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
         int row = 1;
 
-        builder.addLabel(LoginUtil.getUsernameLabel(getController()),
+        builder.addLabel(LoginUtil.getInviteUsernameLabel(getController()),
             cc.xyw(1, row, 2));
         row += 2;
 
