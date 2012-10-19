@@ -302,7 +302,8 @@ public class LoginUtil {
         if (v == null) {
             return false;
         }
-        return v.toLowerCase().contains("shibboleth");
+        return v.toLowerCase().contains("shibboleth")
+            || v.toLowerCase().contains("bwidm");
     }
 
     private static boolean isUsernameEmailOnly(Controller controller) {
