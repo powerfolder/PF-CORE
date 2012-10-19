@@ -29,6 +29,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTableModel;
 import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTable;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.util.Translation;
@@ -45,6 +47,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.CancellationException;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Call this class via PFWizard.
@@ -63,6 +67,13 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     private final SingleFileRestoreTableModel tableModel;
     private final SingleFileRestoreTable table;
 
+    private final JRadioButton originalRadio;
+    private final JLabel originalLabel;
+
+    private final JRadioButton alternateRadio;
+    private final JTextField alternateTF;
+    private final JButton alternateButton;
+
     public SingleFileRestorePanel(Controller controller, Folder folder, FileInfo fileInfoToRestore) {
         this(controller, folder, fileInfoToRestore, null);
     }
@@ -78,6 +89,14 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         bar = new JProgressBar();
         tableModel = new SingleFileRestoreTableModel(getController());
         table = new SingleFileRestoreTable(tableModel);
+
+        originalRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.original.text"));
+        originalLabel = new JLabel();
+
+        alternateRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.alternate.text"));
+        alternateTF = new JTextField();
+        alternateButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
+                Translation.getTranslation("wizard.single_file_restore.select_directory.tip"));
     }
 
     protected JComponent buildContent() {
@@ -88,8 +107,25 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
         builder.add(infoLabel, cc.xyw(1, 1, 2));
 
-        builder.add(bar, cc.xy(1, 3));
-        builder.add(scrollPane, cc.xyw(1, 3, 2));
+        builder.add(buildLocationPanel(), cc.xyw(1, 3, 2));
+
+        builder.add(bar, cc.xy(1, 5));
+        builder.add(scrollPane, cc.xyw(1, 5, 2));
+
+        return builder.getPanel();
+    }
+
+    private JComponent buildLocationPanel() {
+        FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, 3dlu, pref", "pref, 3dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(originalRadio, cc.xy(1, 1));
+        builder.add(originalLabel, cc.xyw(3, 1, 3));
+        
+        builder.add(alternateRadio, cc.xy(1, 3));
+        builder.add(alternateTF, cc.xy(3, 3));
+        builder.add(alternateButton, cc.xy(5, 3));
 
         return builder.getPanel();
     }
@@ -107,6 +143,29 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         UIUtil.setZeroWidth(scrollPane);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(originalRadio);
+        bg.add(alternateRadio);
+        originalRadio.setSelected(true);
+        originalLabel.setText(fileInfoToRestore.getDiskFile(getController().getFolderRepository()).getParent());
+        alternateTF.setEditable(false);
+        originalRadio.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updteLocations();
+            }
+        });
+        alternateRadio.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updteLocations();
+            }
+        });
+        updteLocations();
+    }
+
+    private void updteLocations() {
+        originalLabel.setEnabled(originalRadio.isSelected());
+        alternateButton.setEnabled(alternateRadio.isSelected());
+        alternateTF.setEnabled(alternateButton.isSelected());
     }
 
     @Override
@@ -196,7 +255,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                             fileInfoToRestore.getFilenameOnly()));
                 } else {
                     infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved.text",
-                            String.valueOf(get().size())));
+                            String.valueOf(get().size()), fileInfoToRestore.getFilenameOnly()));
                 }
                 List<FileInfo> fileInfoList = get();
                 Collections.sort(fileInfoList, new Comparator<FileInfo>() {
