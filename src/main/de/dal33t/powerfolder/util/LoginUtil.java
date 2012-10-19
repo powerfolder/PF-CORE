@@ -286,7 +286,7 @@ public class LoginUtil {
         }
         // PFS-569
         if (isUsernameShibboleth(controller)) {
-            return username.contains("!");
+            return username.contains("!") || username.contains("@");
         }
         if (ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
             .getValueBoolean(controller))
