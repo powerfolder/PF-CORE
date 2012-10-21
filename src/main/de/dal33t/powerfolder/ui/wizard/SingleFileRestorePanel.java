@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTable;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.util.Translation;
@@ -49,6 +50,7 @@ import java.util.concurrent.CancellationException;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 /**
  * Call this class via PFWizard.
@@ -126,6 +128,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         builder.add(alternateRadio, cc.xy(1, 3));
         builder.add(alternateTF, cc.xy(3, 3));
         builder.add(alternateButton, cc.xy(5, 3));
+        alternateButton.addActionListener(new MyActionListener());
 
         return builder.getPanel();
     }
@@ -164,7 +167,6 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
     private void updteLocations() {
         originalLabel.setEnabled(originalRadio.isSelected());
-        alternateButton.setEnabled(alternateRadio.isSelected());
         alternateTF.setEnabled(alternateButton.isSelected());
     }
 
@@ -198,6 +200,15 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         if (fileInfo != null) {
             List<FileInfo> list = new ArrayList<FileInfo>();
             list.add(fileInfo);
+            if (alternateRadio.isSelected()) {
+                String alternateDirectory = alternateTF.getText();
+                if (alternateDirectory != null && alternateDirectory.trim().length() > 0) {
+                    File alternateFile = new File(alternateDirectory.trim());
+                    if (alternateFile.isDirectory() && alternateFile.canWrite()) {
+                        return new FileRestoringPanel(getController(), folder, list, alternateFile);
+                    }
+                }
+            }
             return new FileRestoringPanel(getController(), folder, list);
         }
         throw new IllegalStateException("Could not find the selected file info.");
@@ -284,6 +295,26 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         public void valueChanged(ListSelectionEvent e) {
             hasNext = table.getSelectedRow() >= 0;
             updateButtons();
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+
+            // Help the user by ensuring alternate set is selected if the button is clicked.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    alternateRadio.setSelected(true);
+                }
+            });
+            List<File> files = DialogFactory.chooseDirectory(getController().getUIController(), alternateTF.getText(),
+                    false);
+            if (files.isEmpty()) {
+                return;
+            }
+
+            File file = files.get(0);
+            alternateTF.setText(file.getPath());
         }
     }
 }

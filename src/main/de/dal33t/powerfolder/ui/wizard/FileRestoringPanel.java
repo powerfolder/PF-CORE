@@ -49,15 +49,22 @@ public class FileRestoringPanel extends PFWizardPanel {
     private final List<FileInfo> fileInfosToRestore;
     private final JLabel statusLabel;
     private final JProgressBar bar;
+    private final File alternateDirectory;
     private SwingWorker<List<FileInfo>, FileInfo> worker;
     private int filesProcessedSuccessfully;
 
-    public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
+    public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore,
+                              File alternateDirectory) {
         super(controller);
         this.folder = folder;
         this.fileInfosToRestore = fileInfosToRestore;
         bar = new JProgressBar(0, 100);
         statusLabel = new JLabel();
+        this.alternateDirectory = alternateDirectory;
+    }
+
+    public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
+        this(controller, folder, fileInfosToRestore, null);
     }
 
     protected JComponent buildContent() {
@@ -133,7 +140,12 @@ public class FileRestoringPanel extends PFWizardPanel {
 
         private void restore(FileInfo fileInfo) {
             try {
-                File restoreTo = fileInfo.getDiskFile(getController().getFolderRepository());
+                File restoreTo;
+                if (alternateDirectory != null && alternateDirectory.exists() && alternateDirectory.canWrite()) {
+                    restoreTo = new File(alternateDirectory, fileInfo.getFilenameOnly());
+                } else {
+                    restoreTo = fileInfo.getDiskFile(getController().getFolderRepository());
+                }
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 if (fileArchiver.restore(fileInfo, restoreTo)) {
                     folder.scanChangedFile(fileInfo);
