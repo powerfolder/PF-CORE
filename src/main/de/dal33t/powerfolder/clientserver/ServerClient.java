@@ -38,6 +38,8 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.distribution.AbstractDistribution;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
@@ -219,6 +221,8 @@ public class ServerClient extends PFComponent {
         setAnonAccount();
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
+        getController().getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
     }
 
     private boolean isRememberPassword() {
@@ -1033,10 +1037,7 @@ public class ServerClient extends PFComponent {
      * background task to retrieve and connect those servers.
      */
     private void connectHostingServers() {
-        if (!isConnected()) {
-            return;
-        }
-        if (!isLoggedIn()) {
+        if (!isConnected() || !isLoggedIn()) {
             return;
         }
         if (isFiner()) {
@@ -1052,7 +1053,7 @@ public class ServerClient extends PFComponent {
 
     private void retrieveCloudServers() {
         try {
-            if (!isConnected()) {
+            if (!isConnected() || !isLoggedIn()) {
                 return;
             }
             Collection<FolderInfo> infos = getController()
@@ -1430,6 +1431,31 @@ public class ServerClient extends PFComponent {
 
         public boolean fireInEventDispatchThread() {
             return false;
+        }
+    }
+
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            if (!getController().isStarted()) {
+                return;
+            }
+            retrieveCloudServers();
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
         }
     }
 
