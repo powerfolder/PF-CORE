@@ -63,7 +63,7 @@ public class DownloadManagersTableModel extends PFComponent implements
     public static final int COLFOLDER = 4;
     public static final int COLFROM = 5;
 
-    private static final int UPDATE_TIME = 2000;
+    private static final int UPDATE_TIME = 1000;
     private final Collection<TableModelListener> listeners;
     private final List<DownloadManager> downloadManagers;
     private int fileInfoComparatorType = -1;
@@ -82,7 +82,7 @@ public class DownloadManagersTableModel extends PFComponent implements
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
-        periodicUpdate = true;
+        periodicUpdate = false;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
@@ -125,7 +125,6 @@ public class DownloadManagersTableModel extends PFComponent implements
     }
 
     public void setPeriodicUpdate(boolean periodicUpdate) {
-        logWarning("P: " + periodicUpdate);
         // Transition no update -> update.
         if (!this.periodicUpdate && periodicUpdate) {
             resortAndUpdate();
@@ -557,6 +556,9 @@ public class DownloadManagersTableModel extends PFComponent implements
     private void resortAndUpdate() {
         Runnable wrapper = new Runnable() {
             public void run() {
+                dirty = dirty
+                    || getController().getTransferManager()
+                        .countActiveDownloads() > 0;
                 if (dirty) {
                     if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
                     {
@@ -566,7 +568,6 @@ public class DownloadManagersTableModel extends PFComponent implements
                     }
                     rowsUpdatedAll();
                 }
-               
                 dirty = false;
             }
         };
