@@ -424,23 +424,23 @@ public enum ConfigurationEntry {
      * The TCP/IP socket buffer size for TCP/UDT connections over Internet.
      */
     NET_SOCKET_INTERNET_BUFFER_SIZE("net.socket.internet.buffer.size",
-        16 * 1024),
+        1024 * 1024),
 
     /**
      * The TCP/IP socket buffer size for TCP/UDT connections in LAN.
      */
-    NET_SOCKET_LAN_BUFFER_SIZE("net.socket.lan.buffer.size", 64 * 1024),
+    NET_SOCKET_LAN_BUFFER_SIZE("net.socket.lan.buffer.size", 4 * 1024 * 1024),
 
     /**
      * The TCP/IP socket buffer size limit for UDT connections over Internet.
      */
     NET_SOCKET_INTERNET_BUFFER_LIMIT("net.socket.internet.buffer.limit",
-        256 * 1024),
+        8 * 1024 * 1024),
 
     /**
      * The TCP/IP socket buffer size limit for UDT connections in LAN.
      */
-    NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", 1024 * 1024),
+    NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", 32 * 1024 * 1024),
 
     /**
      * Auto detect WAN speeds

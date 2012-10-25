@@ -92,13 +92,17 @@ public class NetworkUtil {
         if (onLan) {
             int bufferSize = ConfigurationEntry.NET_SOCKET_LAN_BUFFER_SIZE
                 .getValueInt(controller);
-            socket.setReceiveBufferSize(bufferSize);
-            socket.setSendBufferSize(bufferSize);
+            if (bufferSize > 0) {
+                socket.setReceiveBufferSize(bufferSize);
+                socket.setSendBufferSize(bufferSize);                
+            }
         } else {
             int bufferSize = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_SIZE
                 .getValueInt(controller);
-            socket.setReceiveBufferSize(bufferSize);
-            socket.setSendBufferSize(bufferSize);
+            if (bufferSize > 0) {                
+                socket.setReceiveBufferSize(bufferSize);
+                socket.setSendBufferSize(bufferSize);
+            }
         }
         // socket.setTcpNoDelay(true);
         LOG.finer("Socket setup: (" + socket.getSendBufferSize() + "/"
@@ -133,23 +137,31 @@ public class NetworkUtil {
         if (onLan) {
             int bufferSize = ConfigurationEntry.NET_SOCKET_LAN_BUFFER_SIZE
                 .getValueInt(controller);
-            socket.setSoUDPReceiverBufferSize(bufferSize);
-            socket.setSoUDPSenderBufferSize(bufferSize);
+            if (bufferSize > 0) {
+                socket.setSoUDPReceiverBufferSize(bufferSize);
+                socket.setSoUDPSenderBufferSize(bufferSize);                
+            }
 
             int bufferLimit = ConfigurationEntry.NET_SOCKET_LAN_BUFFER_LIMIT
                 .getValueInt(controller);
-            socket.setSoSenderBufferLimit(bufferLimit);
-            socket.setSoReceiverBufferLimit(bufferLimit);
+            if (bufferLimit > 0) {
+                socket.setSoSenderBufferLimit(bufferLimit);
+                socket.setSoReceiverBufferLimit(bufferLimit);                
+            }
         } else {
             int bufferSize = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_SIZE
                 .getValueInt(controller);
-            socket.setSoUDPReceiverBufferSize(bufferSize);
-            socket.setSoUDPSenderBufferSize(bufferSize);
+            if (bufferSize > 0) {
+                socket.setSoUDPReceiverBufferSize(bufferSize);
+                socket.setSoUDPSenderBufferSize(bufferSize);                
+            }
 
             int bufferLimit = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_LIMIT
                 .getValueInt(controller);
-            socket.setSoSenderBufferLimit(bufferLimit);
-            socket.setSoReceiverBufferLimit(bufferLimit);
+            if (bufferLimit > 0) {
+                socket.setSoSenderBufferLimit(bufferLimit);
+                socket.setSoReceiverBufferLimit(bufferLimit);                
+            }
         }
 
         LOG.finer("Socket setup: (" + socket.getSoUDPSenderBufferSize() + "/"
@@ -201,17 +213,28 @@ public class NetworkUtil {
         throws SocketException
     {
         Map<InterfaceAddress, NetworkInterface> res = new HashMap<InterfaceAddress, NetworkInterface>();
+        NetworkInterface ni = null;
+        InterfaceAddress ia = null;
         try {
             for (Enumeration<NetworkInterface> eni = NetworkInterface
                 .getNetworkInterfaces(); eni.hasMoreElements();)
             {
-                NetworkInterface ni = eni.nextElement();
-                for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
-                    res.put(ia, ni);
+                ni = eni.nextElement();
+                for (InterfaceAddress ia0 : ni.getInterfaceAddresses()) {
+                    try {
+                        ia = ia0;
+                        if (ia != null) {
+                            res.put(ia, ni);
+                        }
+                    } catch (Throwable e) {
+                        LOG.warning("Unable to get network interface configuration of "
+                            + ni + " address: " + ia + ": " + e);
+                    }
                 }
             }
         } catch (Error e) {
-            LOG.warning("Unable to get network interface configuration: " + e);
+            LOG.warning("Unable to get network interface configuration of "
+                + ni + " address: " + ia + ": " + e);
         }
         return res;
     }
