@@ -288,6 +288,31 @@ public class LoggingManager {
             return documentLoggingLevel;
         }
     }
+    
+    public static Level getMinimumLoggingLevel() {
+        Level min = Level.OFF;
+        if (documentLoggingLevel != null
+            && documentLoggingLevel.intValue() < min.intValue())
+        {
+            min = documentLoggingLevel;
+        }
+        if (consoleLoggingLevel != null
+            && consoleLoggingLevel.intValue() < min.intValue())
+        {
+            min = consoleLoggingLevel;
+        }
+        if (fileLoggingLevel != null
+            && fileLoggingLevel.intValue() < min.intValue())
+        {
+            min = fileLoggingLevel;
+        }
+        if (bufferedLoggingLevel != null
+            && bufferedLoggingLevel.intValue() < min.intValue())
+        {
+            min = bufferedLoggingLevel;
+        }
+        return min;
+    }
 
     /**
      * Convenience method for getting the root logger.

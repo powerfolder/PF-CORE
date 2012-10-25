@@ -259,6 +259,12 @@ public abstract class Loggable {
      * @return
      */
     protected boolean isLog(Level level) {
+        // Performance: Don't create a Logger if not necessary
+        if (level.intValue() < LoggingManager.getMinimumLoggingLevel()
+            .intValue())
+        {
+            return false;
+        }
         if (log == null) {
             log = Logger.getLogger(getLoggerName());
         }
