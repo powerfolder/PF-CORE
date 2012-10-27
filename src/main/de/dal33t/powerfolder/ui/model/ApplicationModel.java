@@ -24,6 +24,8 @@ import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -34,7 +36,9 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
@@ -43,9 +47,13 @@ import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
+import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
+import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
+
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.*;
 
 /**
  * Contains all core models for the application.
@@ -67,6 +75,7 @@ public class ApplicationModel extends PFUIComponent {
     private NoticesModel noticesModel;
     private Date lastMouseAction;
     private Point lastMouseLocation;
+    private final List<SyncStatusListener> syncStatusListeners;
 
     /**
      * Constructs a non-initialized application model. Before the model can be
@@ -112,6 +121,7 @@ public class ApplicationModel extends PFUIComponent {
 
         licenseModel = new LicenseModel();
         noticesModel = new NoticesModel(getController());
+        syncStatusListeners = new CopyOnWriteArrayList<SyncStatusListener>();
     }
 
     /**
@@ -120,6 +130,11 @@ public class ApplicationModel extends PFUIComponent {
     public void initialize() {
         transferManagerModel.initialize();
         getController().getOSClient().addListener(new MyServerClientListener());
+        getController().addPausedModeListener(new MyPausedModeListener());
+        getController().getFolderRepository().addFolderRepositoryListener(new MyFolderRepositoryListener());
+        getController().getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
+        getApplicationModel().getFolderRepositoryModel().addOverallFolderStatListener(
+                new MyOverallFolderStatListener());
     }
 
     // Logic ******************************************************************
@@ -279,5 +294,96 @@ public class ApplicationModel extends PFUIComponent {
 
     public NoticesModel getNoticesModel() {
         return noticesModel;
+    }
+
+    public void addSyncStatusListener(SyncStatusListener l) {
+        syncStatusListeners.add(l);
+    }
+
+    public void removeSyncStatusListener(SyncStatusListener l) {
+        syncStatusListeners.remove(l);
+    }
+
+    private void handleSyncStatusChange() {
+        FolderRepository repository = getController().getFolderRepository();
+        SyncStatusEvent status = SYNC_INCOMPLETE;
+        if (getController().isPaused()) {
+            status = PAUSED;
+        } else if (!getController().getNodeManager().isStarted()) {
+            status = NOT_STARTED;
+        } else if (repository.getFoldersCount() == 0) {
+            status = NO_FOLDERS;
+        } else if (folderRepositoryModel.isSyncing()) {
+            status = SYNCING;
+        } else if (repository.areAllFoldersInSync()) {
+            status = SYNCHRONIZED;
+        }
+        triggerSyncStatusChange(status);
+    }
+
+    private void triggerSyncStatusChange(SyncStatusEvent event) {
+        logFine(event.toString());
+        for (SyncStatusListener listener : syncStatusListeners) {
+            listener.syncStatusChanged(event);
+        }
+    }
+
+    // ////////////////
+    // Inner Classes //
+    // ////////////////
+
+    private class MyPausedModeListener implements PausedModeListener {
+
+        public void setPausedMode(PausedModeEvent event) {
+            handleSyncStatusChange();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
+    private class MyOverallFolderStatListener implements OverallFolderStatListener {
+        public void statCalculated() {
+            handleSyncStatusChange();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
+    private class MyNodeManagerListener extends NodeManagerAdapter {
+
+        public void startStop(NodeManagerEvent e) {
+            handleSyncStatusChange();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
+    private class MyFolderRepositoryListener implements FolderRepositoryListener {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+            handleSyncStatusChange();
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            handleSyncStatusChange();
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            // Don't care
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            // Don't care
+        }
     }
 }
