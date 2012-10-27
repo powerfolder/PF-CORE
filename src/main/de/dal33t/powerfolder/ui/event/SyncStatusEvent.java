@@ -31,7 +31,7 @@ public class SyncStatusEvent {
     public static final SyncStatusEvent SYNC_INCOMPLETE = new SyncStatusEvent("Sync Incomplete");
     public static final SyncStatusEvent SYNCHRONIZED = new SyncStatusEvent("Synchronized");
 
-    private String description;
+    private final String description;
 
     /**
      * Static instances only.
@@ -48,5 +48,26 @@ public class SyncStatusEvent {
         return "SyncStatusEvent{" +
                 "description='" + description + '\'' +
                 '}';
+    }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        SyncStatusEvent that = (SyncStatusEvent) obj;
+
+        if (description != null ? !description.equals(that.description) : that.description != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int hashCode() {
+        return description != null ? description.hashCode() : 0;
     }
 }

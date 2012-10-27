@@ -76,6 +76,7 @@ public class ApplicationModel extends PFUIComponent {
     private Date lastMouseAction;
     private Point lastMouseLocation;
     private final List<SyncStatusListener> syncStatusListeners;
+    private volatile SyncStatusEvent syncStatus;
 
     /**
      * Constructs a non-initialized application model. Before the model can be

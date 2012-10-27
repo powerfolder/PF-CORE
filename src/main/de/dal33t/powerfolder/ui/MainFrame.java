@@ -75,20 +75,16 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.OverallFolderStatListener;
-import de.dal33t.powerfolder.event.PausedModeEvent;
-import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
+import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
@@ -109,6 +105,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.*;
+
 /**
  * Powerfolder gui mainframe
  * 
@@ -116,9 +114,6 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  * @version $Revision: 1.44 $
  */
 public class MainFrame extends PFUIComponent {
-
-    private enum SyncStatus {NOT_STARTED, NO_FOLDERS, PAUSED, SYNCING,
-        SYNC_INCOMPLETE, SYNCHRONIZED}
 
     private enum FrameMode {MAXIMIZED, NORMAL, COMPACT, MINIMIZED}
 
@@ -139,7 +134,6 @@ public class MainFrame extends PFUIComponent {
     private JButton inlineInfoCloseButton;
     private JSplitPane split;
     private ServerClient client;
-    private MyNodeManagerListener nodeManagerListener;
 
     // Left mini panel
     private JButtonMini allInSyncButton;
@@ -346,7 +340,7 @@ public class MainFrame extends PFUIComponent {
 
         relocateIfNecessary();
         configureInlineInfo();
-        updateMainStatus0();
+        updateMainStatus(NOT_STARTED);
         updateNoticesLabel();
     }
 
@@ -408,7 +402,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Initalizes all ui components
+     * Initializes all ui components
      */
     private void initComponents() {
         logFine("Screen resolution: "
@@ -418,7 +412,7 @@ public class MainFrame extends PFUIComponent {
 
         uiComponent = new JFrame();
         uiComponent.setTransferHandler(new MyTransferHandler());
-        uiComponent.addWindowFocusListener(new MyWindowFocusListner());
+        uiComponent.addWindowFocusListener(new MyWindowFocusListener());
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         uiComponent.setBackground(Color.white);
 
@@ -563,21 +557,10 @@ public class MainFrame extends PFUIComponent {
 
         inlineInfoLabel = new JLabel();
 
-        getController().addPausedModeListener(new MyPausedModeListener());
         configurePauseResumeLink();
 
         client = getApplicationModel().getServerClientModel().getClient();
         client.addListener(new MyServerClientListener());
-
-        getApplicationModel().getFolderRepositoryModel()
-            .addOverallFolderStatListener(new MyOverallFolderStatListener());
-
-        nodeManagerListener = new MyNodeManagerListener();
-        getController().getNodeManager().addWeakNodeManagerListener(
-            nodeManagerListener);
-
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new MyFolderRepoListener());
 
         // Start listening to notice changes.
         getController().getUIController().getApplicationModel()
@@ -587,6 +570,7 @@ public class MainFrame extends PFUIComponent {
                     updateNoticesLabel();
                 }
             });
+
         getController().getUIController().getApplicationModel()
             .getNoticesModel().getUnreadNoticesCountVM()
             .addValueChangeListener(new PropertyChangeListener() {
@@ -594,23 +578,18 @@ public class MainFrame extends PFUIComponent {
                     updateNoticesLabel();
                 }
             });
-    }
 
-    /**
-     * Force UI on top if compact, but only if there are no wizards or dialogs
-     * open.
-     */
-    //public void checkOnTop() {
-        // boolean onTop = uiComponent.isAlwaysOnTopSupported()
-        // && frameMode == FrameMode.COMPACT
-        // && !PFWizard.isWizardOpen() && !BaseDialog.isDialogOpen();
-        // uiComponent.setAlwaysOnTop(onTop);
-    //}
+        getController().getUIController().getApplicationModel().addSyncStatusListener(new SyncStatusListener() {
+            public void syncStatusChanged(final SyncStatusEvent event) {
+                mainStatusUpdater.schedule(new Runnable() {
+                    public void run() {
+                        updateMainStatus(event);
+                    }
+                });
+            }
 
-    private void updateMainStatus() {
-        mainStatusUpdater.schedule(new Runnable() {
-            public void run() {
-                updateMainStatus0();
+            public boolean fireInEventDispatchThread() {
+                return true;
             }
         });
     }
@@ -626,37 +605,19 @@ public class MainFrame extends PFUIComponent {
         setLinkTooltips();
     }
 
-    private void updateMainStatus0() {
+    private void updateMainStatus(SyncStatusEvent event) {
 
-        FolderRepository folderRepository =
-                getController().getFolderRepository();
         FolderRepositoryModel folderRepositoryModel = getUIController()
                 .getApplicationModel().getFolderRepositoryModel();
 
-        // Work out status.
-        SyncStatus status = SyncStatus.SYNC_INCOMPLETE;
-        if (getController().isPaused()) {
-            status = SyncStatus.PAUSED;
-        } else if (!getController().getNodeManager().isStarted()) {
-            status = SyncStatus.NOT_STARTED;
-        } else if (folderRepository.getFoldersCount() == 0) {
-            status = SyncStatus.NO_FOLDERS;
-        } else if (folderRepositoryModel.isSyncing()) {
-            status = SyncStatus.SYNCING;
-        } else if (folderRepository.areAllFoldersInSync()) {
-            status = SyncStatus.SYNCHRONIZED;
-        }
-
         // Set visibility of buttons and labels.
-        pauseButton.setVisible(status == SyncStatus.PAUSED);
-        setupLabel.setVisible(status == SyncStatus.NOT_STARTED
-            || status == SyncStatus.NO_FOLDERS);
-        setupButton.setVisible(status == SyncStatus.NOT_STARTED
-            || status == SyncStatus.NO_FOLDERS);
-        allInSyncButton.setVisible(status == SyncStatus.SYNCHRONIZED);
-        syncingButton.setVisible(status == SyncStatus.SYNCING);
-        syncingButton.spin(status == SyncStatus.SYNCING);
-        syncIncompleteButton.setVisible(status == SyncStatus.SYNC_INCOMPLETE);
+        pauseButton.setVisible(event.equals(PAUSED));
+        setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
+        setupButton.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
+        allInSyncButton.setVisible(event.equals(SYNCHRONIZED));
+        syncingButton.setVisible(event.equals(SYNCING));
+        syncingButton.spin(event.equals(SYNCING));
+        syncIncompleteButton.setVisible(event.equals(SYNC_INCOMPLETE));
 
         // Default sync date.
         Date syncDate = folderRepositoryModel.getLastSyncDate();
@@ -667,41 +628,29 @@ public class MainFrame extends PFUIComponent {
         String upperText = " ";
         String setupText = " ";
 
-        switch (status) {
-            case PAUSED:
-                String pausedTemp = (overallSyncPercentage >= 0 &&
-                        overallSyncPercentage < 99.5d) ?
+        if (event.equals(PAUSED)) {
+                String pausedTemp = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d ?
                         Format.formatDecimal(overallSyncPercentage) + '%' : "";
-                upperText = Translation.getTranslation("main_frame.paused",
-                        pausedTemp);
-                break;
-            case NOT_STARTED:
+                upperText = Translation.getTranslation("main_frame.paused", pausedTemp);
+        } else if (event.equals(NOT_STARTED)) {
                 upperText = Translation.getTranslation(
                         "main_frame.not_running");
                 setupText = Translation.getTranslation(
                         "main_frame.activate_now");
-                break;
-            case NO_FOLDERS:
+        } else if (event.equals(NO_FOLDERS)) {
                 upperText = Translation.getTranslation("main_frame.no_folders");
                 setupText = getApplicationModel().getActionModel()
                         .getNewFolderAction().getName();
-                break;
-            case SYNCING:
+        } else if (event.equals(SYNCING)) {
                 syncDate = folderRepositoryModel.getEstimatedSyncDate();
-                String syncingTemp = (overallSyncPercentage >= 0 &&
-                        overallSyncPercentage < 99.5d) ?
-                        Format.formatDecimal(overallSyncPercentage) + '%' :
-                        "...";
-                upperText = Translation.getTranslation("main_frame.syncing",
-                        syncingTemp);
-                break;
-            case SYNCHRONIZED:
+                String syncingTemp = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d ?
+                        Format.formatDecimal(overallSyncPercentage) + '%' : "...";
+                upperText = Translation.getTranslation("main_frame.syncing", syncingTemp);
+        } else if (event.equals(SYNCHRONIZED)) {
                 upperText = Translation.getTranslation("main_frame.in_sync");
-                break;
-            case SYNC_INCOMPLETE:
+        } else if (event.equals(SYNC_INCOMPLETE)) {
                 upperText = Translation.getTranslation(
                         "main_frame.sync_incomplete");
-                break;
         }
 
         upperMainTextActionLabel.setText(upperText);
@@ -709,8 +658,7 @@ public class MainFrame extends PFUIComponent {
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
-        boolean notStartedOrNoFolders = status == SyncStatus.NOT_STARTED ||
-                status == SyncStatus.NO_FOLDERS;
+        boolean notStartedOrNoFolders = event.equals(NOT_STARTED) || event.equals(NO_FOLDERS);
         setupLabel.setVisible(notStartedOrNoFolders);
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
 
@@ -1024,7 +972,7 @@ public class MainFrame extends PFUIComponent {
                 }
             });
         } else {
-            // Splitpane place holders
+            // Split pane place holders
             split.setLeftComponent(new JPanel());
             split.setRightComponent(new JPanel());
 
@@ -1099,11 +1047,8 @@ public class MainFrame extends PFUIComponent {
         int state = uiComponent.getExtendedState();
         state &= ~Frame.ICONIFIED;
         uiComponent.setExtendedState(state);
-        //boolean onTop = uiComponent.isAlwaysOnTop();
-        //uiComponent.setAlwaysOnTop(true);
         uiComponent.toFront();
         uiComponent.requestFocus();
-        //uiComponent.setAlwaysOnTop(onTop);
     }
 
     private void doCloseOperation() {
@@ -1126,10 +1071,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void doMinusOperation() {
-        if (frameMode == FrameMode.MAXIMIZED) {
-            // To COMPACT mode.
-            setFrameMode(FrameMode.COMPACT);
-        } else if (frameMode == FrameMode.NORMAL) {
+        if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
             // To COMPACT mode.
             setFrameMode(FrameMode.COMPACT);
         } else {
@@ -1182,7 +1124,7 @@ public class MainFrame extends PFUIComponent {
 //        }
 //    }
 //
-    private class MyWindowFocusListner implements WindowFocusListener {
+    private class MyWindowFocusListener implements WindowFocusListener {
         public void windowGainedFocus(WindowEvent e) {
             getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
         }
@@ -1485,18 +1427,6 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyPausedModeListener implements PausedModeListener {
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void setPausedMode(PausedModeEvent event) {
-            configurePauseResumeLink();
-            updateMainStatus();
-        }
-    }
-
     private class MyOpenWebInterfaceAction extends BaseAction {
 
         private MyOpenWebInterfaceAction(Controller controller) {
@@ -1631,54 +1561,6 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyOverallFolderStatListener implements
-        OverallFolderStatListener
-    {
-        public void statCalculated() {
-            updateMainStatus();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-    }
-
-    private class MyNodeManagerListener extends NodeManagerAdapter {
-
-        @Override
-        public void startStop(NodeManagerEvent e) {
-            updateMainStatus();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-    }
-
-    private class MyFolderRepoListener implements FolderRepositoryListener {
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
-            updateMainStatus();
-        }
-
-        public void folderCreated(FolderRepositoryEvent e) {
-            updateMainStatus();
-
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-        }
-
-    }
-
     private class MyLoginAction extends BaseAction {
 
         MyLoginAction(Controller controller) {
@@ -1767,7 +1649,7 @@ public class MainFrame extends PFUIComponent {
             return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
         }
 
-        @SuppressWarnings({"unchecked"})
+        @SuppressWarnings("unchecked")
         public boolean importData(TransferSupport support) {
             try {
                 Transferable t = support.getTransferable();
@@ -1818,9 +1700,9 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyOpenPreferencesAction extends BaseAction {
+    private static class MyOpenPreferencesAction extends BaseAction {
 
-        public MyOpenPreferencesAction(Controller controller) {
+        private MyOpenPreferencesAction(Controller controller) {
             super("action_open_preferences", controller);
         }
 
