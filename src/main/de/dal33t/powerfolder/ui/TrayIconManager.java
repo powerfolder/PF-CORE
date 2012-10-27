@@ -201,9 +201,7 @@ public class TrayIconManager extends PFComponent {
         trayIcon.setToolTip(tooltip.toString());
     }
 
-
     private void spinIcon() {
-        // Always increment the angle.
         if (atomicSyncing.get()) {
             int i = atomicAngle.incrementAndGet();
             if (i >= Icons.SYSTRAY_SYNC_ANIMATION.length) {
