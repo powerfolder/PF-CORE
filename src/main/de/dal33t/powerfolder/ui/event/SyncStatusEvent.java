@@ -24,9 +24,11 @@ package de.dal33t.powerfolder.ui.event;
  */
 public class SyncStatusEvent {
 
-    public static final SyncStatusEvent NOT_STARTED = new SyncStatusEvent("Not Started");
-    public static final SyncStatusEvent NO_FOLDERS = new SyncStatusEvent("No Folders");
     public static final SyncStatusEvent PAUSED = new SyncStatusEvent("Paused");
+    public static final SyncStatusEvent NOT_STARTED = new SyncStatusEvent("Not Started");
+    public static final SyncStatusEvent NOT_CONNECTED = new SyncStatusEvent("Not Connected");
+    public static final SyncStatusEvent NOT_LOGGED_IN = new SyncStatusEvent("Not Logged In");
+    public static final SyncStatusEvent NO_FOLDERS = new SyncStatusEvent("No Folders");
     public static final SyncStatusEvent SYNCING = new SyncStatusEvent("Syncing");
     public static final SyncStatusEvent SYNC_INCOMPLETE = new SyncStatusEvent("Sync Incomplete");
     public static final SyncStatusEvent SYNCHRONIZED = new SyncStatusEvent("Synchronized");

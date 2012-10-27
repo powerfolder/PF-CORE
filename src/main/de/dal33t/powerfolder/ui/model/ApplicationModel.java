@@ -262,6 +262,7 @@ public class ApplicationModel extends PFUIComponent {
         }
 
         public void login(ServerClientEvent event) {
+            handleSyncStatusChange();
             if (event.getAccountDetails().getAccount()
                 .hasPermission(AdminPermission.INSTANCE))
             {
@@ -276,9 +277,11 @@ public class ApplicationModel extends PFUIComponent {
         }
 
         public void accountUpdated(ServerClientEvent event) {
+            handleSyncStatusChange();
         }
 
         public void serverConnected(ServerClientEvent event) {
+            handleSyncStatusChange();
             ServerClient client = event.getClient();
             if (client.isPasswordEmpty() && !client.isLoggedIn()) {
                 PFWizard.openLoginWizard(getController(), client);
@@ -286,9 +289,11 @@ public class ApplicationModel extends PFUIComponent {
         }
 
         public void serverDisconnected(ServerClientEvent event) {
+            handleSyncStatusChange();
         }
 
         public void nodeServerStatusChanged(ServerClientEvent event) {
+            handleSyncStatusChange();
         }
 
     }
@@ -307,11 +312,19 @@ public class ApplicationModel extends PFUIComponent {
 
     private void handleSyncStatusChange() {
         FolderRepository repository = getController().getFolderRepository();
+        ServerClient client = getController().getOSClient();
+        boolean connected = client.isConnected();
+        boolean loggedIn = client.isLoggedIn();
+
         SyncStatusEvent status = SYNC_INCOMPLETE;
         if (getController().isPaused()) {
             status = PAUSED;
         } else if (!getController().getNodeManager().isStarted()) {
             status = NOT_STARTED;
+        } else if (!connected) {
+            status = NOT_CONNECTED;
+        } else if (!loggedIn) {
+            status = NOT_LOGGED_IN;
         } else if (repository.getFoldersCount() == 0) {
             status = NO_FOLDERS;
         } else if (folderRepositoryModel.isSyncing()) {

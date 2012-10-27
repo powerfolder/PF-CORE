@@ -141,6 +141,7 @@ public class MainFrame extends PFUIComponent {
     private JButtonMini setupButton;
     private JButtonMini pauseButton;
     private JButtonMini syncIncompleteButton;
+    private JLabel notConnectedLoggedInLabel;
 
     private ActionLabel upperMainTextActionLabel;
     private ActionLabel lowerMainTextActionLabel;
@@ -224,6 +225,7 @@ public class MainFrame extends PFUIComponent {
         b.add(setupButton, cc.xy(1, 1));
         b.add(pauseButton, cc.xy(1, 1));
         b.add(syncIncompleteButton, cc.xy(1, 1));
+        b.add(notConnectedLoggedInLabel, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper.add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
@@ -438,6 +440,8 @@ public class MainFrame extends PFUIComponent {
         setupButton.setIcon(Icons.getIconById(Icons.ACTION_ARROW));
         setupButton.setText(null);
 
+        notConnectedLoggedInLabel = new JLabel(Icons.getIconById(Icons.WARNING));
+
         upperMainTextActionLabel = new ActionLabel(getController(),
                 new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -618,6 +622,7 @@ public class MainFrame extends PFUIComponent {
         syncingButton.setVisible(event.equals(SYNCING));
         syncingButton.spin(event.equals(SYNCING));
         syncIncompleteButton.setVisible(event.equals(SYNC_INCOMPLETE));
+        notConnectedLoggedInLabel.setVisible(event.equals(NOT_CONNECTED) || event.equals(NOT_LOGGED_IN));
 
         // Default sync date.
         Date syncDate = folderRepositoryModel.getLastSyncDate();
@@ -651,6 +656,12 @@ public class MainFrame extends PFUIComponent {
         } else if (event.equals(SYNC_INCOMPLETE)) {
                 upperText = Translation.getTranslation(
                         "main_frame.sync_incomplete");
+        } else if (event.equals(NOT_CONNECTED)) {
+            upperText = Translation.getTranslation("main_frame.connecting.text");
+        } else if (event.equals(NOT_LOGGED_IN)) {
+            upperText = Translation.getTranslation("main_frame.logging_in.text");
+        } else {
+            logSevere("Not handling all sync states: " + event);
         }
 
         upperMainTextActionLabel.setText(upperText);
@@ -1294,7 +1305,7 @@ public class MainFrame extends PFUIComponent {
                 }
             } else if (client.isLoggingIn()) {
                 loginActionLabel.setText(Translation
-                    .getTranslation("main_frame.loging_in.text"));
+                    .getTranslation("main_frame.logging_in.text"));
             } else {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
@@ -1392,7 +1403,6 @@ public class MainFrame extends PFUIComponent {
         }
 
         setLinkTooltips();
-        //checkOnTop();
     }
 
     private void setLinkTooltips() {

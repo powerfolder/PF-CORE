@@ -19,25 +19,27 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.TrayIcon;
+import java.awt.*;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
+import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.*;
+
 /**
- * Encapsualtes tray icon functionality. Anything to do with the tray icon
+ * Encapsultes tray icon functionality. Anything to do with the tray icon
  * should be done *HERE*. This keeps all tray functionality encapsulated.
  * <p/>
  * Blink has the highest priority. If blink is true, the 'P' icon will blink and
@@ -52,19 +54,18 @@ public class TrayIconManager extends PFComponent {
 
     private static final long ROTATION_STEP_DELAY = 200L;
 
-    private enum TrayIconState {
-        ALL_OK, NOT_CONNECTED, NOT_LOGGED_IN
-    }
-
     private final UIController uiController;
     private TrayIcon trayIcon;
-    private volatile int angle = 0;
-    private volatile TrayIconState state;
-    private volatile boolean connectedAndLoggedIn;
+    private final AtomicInteger atomicAngle = new AtomicInteger();
+    private final AtomicBoolean atomicConnectedAndLoggedIn = new AtomicBoolean();
+    private final AtomicBoolean atomicSyncing = new AtomicBoolean();
+    private final DelayedUpdater iconUpdater;
 
     public TrayIconManager(UIController uiController) {
         super(uiController.getController());
         this.uiController = uiController;
+
+        iconUpdater = new DelayedUpdater(getController());
 
         Image image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
         if (image == null) {
@@ -76,20 +77,22 @@ public class TrayIconManager extends PFComponent {
         trayIcon = new TrayIcon(image);
         trayIcon.setImageAutoSize(true);
         updateConnectionStatus();
-        updateIcon();
-        Controller controller = getController();
-        controller.scheduleAndRepeat(new MyUpdateTask(), ROTATION_STEP_DELAY);
-        controller.getOSClient().addListener(new MyServerClientListener());
-        // controller.getFolderRepository().addProblemListenerToAllFolders(
-        // new MyProblemListener());
-        // uiController.getMainFrame().getUIComponent().addWindowListener(
-        // new MyWindowListener());
-        // ApplicationModel applicationModel =
-        // uiController.getApplicationModel();
-        // applicationModel.getNoticesModel().getUnreadNoticesCountVM()
-        // .addValueChangeListener(new MyNoticesCountListener());
-        // applicationModel.getChatModel().addChatModelListener(
-        // new MyChatModelListener());
+        updateIcon(NOT_STARTED);
+        getController().getUIController().getApplicationModel().addSyncStatusListener(new SyncStatusListener() {
+            public void syncStatusChanged(final SyncStatusEvent event) {
+                iconUpdater.schedule(new Runnable() {
+                    public void run() {
+                        updateIcon(event);
+                    }
+                });
+            }
+
+            public boolean fireInEventDispatchThread() {
+                return true;
+            }
+        });
+
+        getController().scheduleAndRepeat(new SpinnerTask(), ROTATION_STEP_DELAY);
     }
 
     /**
@@ -103,15 +106,9 @@ public class TrayIconManager extends PFComponent {
     }
 
     private void updateConnectionStatus() {
-        state = TrayIconManager.TrayIconState.ALL_OK;
         ServerClient client = getController().getOSClient();
         boolean connected = client.isConnected();
         boolean loggedIn = client.isLoggedIn();
-        if (!connected) {
-            state = TrayIconManager.TrayIconState.NOT_CONNECTED;
-        } else if (!loggedIn) {
-            state = TrayIconManager.TrayIconState.NOT_LOGGED_IN;
-        }
 
         // Do a notification if moved between connected and not connected.
         if (!PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
@@ -119,14 +116,12 @@ public class TrayIconManager extends PFComponent {
         {
             return;
         }
-
-        if ((connected && loggedIn) ^ connectedAndLoggedIn) {
-            connectedAndLoggedIn = connected && loggedIn;
+        if (atomicConnectedAndLoggedIn.getAndSet(connected && loggedIn) != connected && loggedIn) {
             // State changed, notify ui.
             String notificationText;
             String title = Translation
                 .getTranslation("tray_icon_manager.status_change.title");
-            if (connectedAndLoggedIn) {
+            if (connected && loggedIn) {
                 notificationText = Translation
                     .getTranslation("tray_icon_manager.status_change.connected");
             } else if (!getController().getNodeManager().isStarted()) {
@@ -144,7 +139,7 @@ public class TrayIconManager extends PFComponent {
         }
     }
 
-    private void updateIcon() {
+    private void updateIcon(SyncStatusEvent event) {
 
         if (trayIcon == null) {
             // Tray icon not supported?
@@ -152,191 +147,100 @@ public class TrayIconManager extends PFComponent {
         }
         StringBuilder tooltip = new StringBuilder();
 
-        // Always increment the angle.
-        // If it is zero, we also update the tooltip up / down rates.
-        angle++;
-        if (angle >= Icons.SYSTRAY_SYNC_ANIMATION.length) {
-            angle = 0;
-        }
-
         tooltip.append(Translation.getTranslation("general.application.name"));
         tooltip.append(' ');
 
         Image image;
-        if (getController().getUIController().getApplicationModel()
-            .getFolderRepositoryModel().isSyncing())
-        {
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[angle]);
+
+        boolean syncing = false;
+        if (event.equals(PAUSED)) {
+            image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
+            tooltip.append(Translation.getTranslation("systray.tooltip.paused"));
+        } else if (event.equals(NOT_STARTED)) {
+            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
+            tooltip.append(Translation.getTranslation("systray.tooltip.not_started"));
+        } else if (event.equals(NO_FOLDERS)) {
+            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
+            tooltip.append(Translation.getTranslation("systray.tooltip.no_folders"));
+        } else if (event.equals(SYNCING)) {
+            syncing = true;
+            image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[atomicAngle.get()]);
             if (trayIcon != null) {
                 trayIcon.setImage(image);
             }
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.syncing"));
+                    .getTranslation("systray.tooltip.syncing"));
             double overallSyncPercentage = getController().getUIController()
                 .getApplicationModel().getFolderRepositoryModel()
                 .getOverallSyncPercentage();
             if (overallSyncPercentage >= 0) {
-                tooltip.append(" ");
+                tooltip.append(' ');
                 tooltip.append(Format.formatDecimal(overallSyncPercentage)
-                    + "%");
+                    + '%');
             }
-        } else if (getController().isPaused()) {
-            image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
-            tooltip
-                .append(Translation.getTranslation("systray.tooltip.paused"));
-        } else if (state == TrayIconState.ALL_OK) {
+        } else if (event.equals(SYNCHRONIZED)) {
             image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
-            tooltip.append(Translation
-                .getTranslation("systray.tooltip.in_sync"));
-        } else if (state == TrayIconState.NOT_CONNECTED) {
+            tooltip.append(Translation.getTranslation("systray.tooltip.in_sync"));
+        } else if (event.equals(SYNC_INCOMPLETE)) {
+            image = Icons.getImageById(Icons.SYNC_INCOMPLETE);
+            tooltip.append(Translation.getTranslation("systray.tooltip.sync_incomplete"));
+        } else if (event.equals(NOT_CONNECTED)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
-            tooltip.append(Translation
-                .getTranslation("systray.tooltip.not_connected"));
-        } else if (state == TrayIconState.NOT_LOGGED_IN) {
+            tooltip.append(Translation.getTranslation("systray.tooltip.not_connected"));
+        } else if (event.equals(NOT_LOGGED_IN)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
-            tooltip.append(Translation
-                .getTranslation("systray.tooltip.not_logged_in"));
+            tooltip.append(Translation.getTranslation("systray.tooltip.not_logged_in"));
         } else {
-            logSevere("Indeterminate TrayIcon state " + state);
-            image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
+            logSevere("Not handling all sync states: " + event);
+            image = Icons.getImageById(Icons.QUESTION);
         }
 
-        // }
+        atomicSyncing.set(syncing);
 
         trayIcon.setImage(image);
         trayIcon.setToolTip(tooltip.toString());
     }
 
-    // ////////////////
-    // Inner classes //
-    // ////////////////
+
+    private void spinIcon() {
+        // Always increment the angle.
+        if (atomicSyncing.get()) {
+            int i = atomicAngle.incrementAndGet();
+            if (i >= Icons.SYSTRAY_SYNC_ANIMATION.length) {
+                atomicAngle.set(0);
+                i = 0;
+
+                // Update tool tip every time we pass zero.
+                StringBuilder tooltip = new StringBuilder();
+                tooltip.append(Translation
+                        .getTranslation("systray.tooltip.syncing"));
+                double overallSyncPercentage = getController().getUIController()
+                    .getApplicationModel().getFolderRepositoryModel()
+                    .getOverallSyncPercentage();
+                if (overallSyncPercentage >= 0) {
+                    tooltip.append(' ');
+                    tooltip.append(Format.formatDecimal(overallSyncPercentage)
+                        + '%');
+                }
+                trayIcon.setToolTip(tooltip.toString());
+            }
+            Image image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[i]);
+            if (trayIcon != null) {
+                trayIcon.setImage(image);
+            }
+        }
+    }
 
     /**
      * Timer to rotate the icon.
      */
-    private class MyUpdateTask extends TimerTask {
+    private class SpinnerTask extends TimerTask {
         public void run() {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    updateIcon();
+                    spinIcon();
                 }
             });
         }
     }
-
-    private class MyServerClientListener implements ServerClientListener {
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void accountUpdated(ServerClientEvent event) {
-            updateConnectionStatus();
-        }
-
-        public void login(ServerClientEvent event) {
-            updateConnectionStatus();
-        }
-
-        public void nodeServerStatusChanged(ServerClientEvent event) {
-            updateConnectionStatus();
-        }
-
-        public void serverConnected(ServerClientEvent event) {
-            updateConnectionStatus();
-        }
-
-        public void serverDisconnected(ServerClientEvent event) {
-            updateConnectionStatus();
-        }
-    }
-
-    // private class MyProblemListener implements ProblemListener {
-    //
-    // public void problemAdded(Problem problem) {
-    // if (!uiController.getMainFrame().isIconifiedOrHidden()) {
-    // return;
-    // }
-    // blink = true;
-    // blinkText = Translation.getTranslation("systray.tooltip.new_problem");
-    // }
-    //
-    // public void problemRemoved(Problem problem) {
-    // // Do nothing
-    // }
-    //
-    // public boolean fireInEventDispatchThread() {
-    // return true;
-    // }
-    // }
-    //
-    /**
-     * Listen for deiconification to stop flashing icon.
-     */
-    // private class MyWindowListener extends WindowAdapter {
-    //
-    // public void windowDeiconified(WindowEvent e) {
-    // blink = false;
-    // }
-    //
-    // /**
-    // * Catch cases where UI gets un-hidden - may not also de-iconify.
-    // *
-    // * @param e
-    // */
-    // public void windowActivated(WindowEvent e) {
-    // if (!uiController.getMainFrame().isIconifiedOrHidden()) {
-    // blink = false;
-    // }
-    // }
-    // }
-
-    /**
-     * Listen for incoming invitations, etc.
-     */
-    // private class MyNoticesCountListener implements PropertyChangeListener {
-    //
-    // public void propertyChange(PropertyChangeEvent evt) {
-    //
-    // Integer count = (Integer) evt.getNewValue();
-    //
-    // if (count == null || count == 0
-    // || !uiController.getMainFrame().isIconifiedOrHidden()) {
-    // return;
-    // }
-    //
-    // blink = true;
-    // blinkText = Translation.getTranslation("systray.tooltip.new_notice");
-    // }
-    // }
-    //
-    // public void clearBlink() {
-    // blink = false;
-    // }
-
-    /**
-     * Listens for chat messages.
-     */
-    // private class MyChatModelListener implements ChatModelListener {
-    //
-    // public void chatChanged(ChatModelEvent event) {
-    //
-    // // Ignore status updates or if ui not iconified
-    // if (event.isStatusFlag()
-    // || !uiController.getMainFrame().isIconifiedOrHidden()) {
-    // return;
-    // }
-    // blink = true;
-    // blinkText = Translation.getTranslation(
-    // "systray.tooltip.new_chat_message");
-    // }
-    //
-    // public void chatAdvice(ChatAdviceEvent event) {
-    // // Don't care.
-    // }
-    //
-    // public boolean fireInEventDispatchThread() {
-    // return true;
-    // }
-    // }
-
 }
