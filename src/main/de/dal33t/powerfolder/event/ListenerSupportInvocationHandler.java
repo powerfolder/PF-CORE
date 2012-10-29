@@ -61,7 +61,9 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
                 listenersNonEDT.add(listener);
                 n = listenersNonEDT.size();
             }
-            if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS) {
+            if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS
+                && n % WARN_IF_MORE_LISTENERS == 0)
+            {
                 LOG.warning(n + " listeners of " + listenerInterface.getName()
                     + " registered");
             }
