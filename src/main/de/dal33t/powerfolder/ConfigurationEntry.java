@@ -774,7 +774,7 @@ public enum ConfigurationEntry {
     FOLDER_WATCHER_DELAY("folder.watcher.delay.seconds", 1),
 
     /**
-     * The number of seconds between db maintenance scans (1 hour).
+     * The number of seconds between db maintenance (1 hour).
      */
     DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 3600),
 
