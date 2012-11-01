@@ -4462,6 +4462,8 @@ public class Folder extends PFComponent {
             FolderPermission.readWrite(getParentFolderInfo()));
         if (hasWrite) {
             hasWriteCache.put(member, new Date());
+        } else {
+            hasWriteCache.remove(member);
         }
         return hasWrite;
     }
