@@ -4439,9 +4439,31 @@ public class Folder extends PFComponent {
             FolderPermission.read(getParentFolderInfo()));
     }
 
+    // PFS-638
+    private Map<Member, Date> hasWriteCache = Util.createConcurrentHashMap();
+    private static final long HAS_WRITE_CACHE_TIMEOUT = 987L;
+    private static volatile int CACHE_HITS;
+
     public boolean hasWritePermission(Member member) {
-        return hasFolderPermission(member,
+        Date lastTimeHadWrite = hasWriteCache.get(member);
+        if (lastTimeHadWrite != null) {
+            long lastHasWriteAgo = System.currentTimeMillis()
+                - lastTimeHadWrite.getTime();
+            if (lastHasWriteAgo < HAS_WRITE_CACHE_TIMEOUT) {
+                CACHE_HITS++;
+                if (CACHE_HITS % 100000 == 0 && isFine()) {
+                    logFine("Permission write cache hit count: " + CACHE_HITS
+                        + " (last: " + lastHasWriteAgo + "ms ago)");
+                }
+                return true;
+            }
+        }
+        boolean hasWrite = hasFolderPermission(member,
             FolderPermission.readWrite(getParentFolderInfo()));
+        if (hasWrite) {
+            hasWriteCache.put(member, new Date());
+        }
+        return hasWrite;
     }
 
     public boolean hasAdminPermission(Member member) {
