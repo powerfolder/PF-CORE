@@ -147,7 +147,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 7;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 23;
+    private static final int REVISION_VERSION = 26;
 
     /**
      * Program version.
@@ -1085,7 +1085,7 @@ public class Controller extends PFComponent {
                     logFine("Dataitems: "
                         + Debug.countDataitems(Controller.this));
                 }
-                String dump = Debug.dumpCurrentStacktraces(true);
+                String dump = Debug.dumpCurrentStacktraces(false);
                 if (StringUtils.isNotBlank(dump) && isFine()) {
                     logFine("Active threads:\n\n" + dump);
                 } else {

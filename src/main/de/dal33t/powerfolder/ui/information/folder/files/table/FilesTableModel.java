@@ -30,19 +30,19 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Class to model files selected from the tree.
@@ -75,6 +75,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private boolean sortAscending = true;
     private int sortColumn;
     private DiskItemFilterListener patternChangeListener;
+    private DelayedUpdater modelChangedUpdater;
 
     /**
      * Constructor
@@ -88,6 +89,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
         tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
         patternChangeListener = new MyPatternChangeListener();
         significantlyChanged = new AtomicBoolean();
+        modelChangedUpdater = new DelayedUpdater(getController());
     }
 
     /**
@@ -136,12 +138,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
                 synchronized (fileInfos) {
                     sort();
                     preprocessSignificantlyChanged();
-                    fireModelChanged();
+                    fireModelChanged0();
                     postprocessSignificantlyChanged();
                 }
             }
         };
-        UIUtil.invokeLaterInEDT(runnable);
+        modelChangedUpdater.schedule(runnable);
     }
 
     /**
@@ -307,7 +309,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
         if (oldComparatorType != newComparatorType) {
             boolean sorted = sort();
             if (sorted) {
-                fireModelChanged();
+                fireModelChanged0();
                 return true;
             }
         }
@@ -319,7 +321,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
         sortBy(COL_MODIFIED_DATE);
     }
 
-    private void fireModelChanged() {
+    private void fireModelChanged0() {
         TableModelEvent e = new TableModelEvent(this);
         for (TableModelListener listener : tableModelListeners) {
             listener.tableChanged(e);
@@ -349,7 +351,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
         synchronized (fileInfos) {
             Collections.reverse(fileInfos);
         }
-        fireModelChanged();
+        fireModelChanged0();
     }
 
     public void setAscending(boolean ascending) {
@@ -363,11 +365,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private class MyPatternChangeListener implements DiskItemFilterListener {
 
         public void patternAdded(PatternChangedEvent e) {
-            fireModelChanged();
+            fireModelChanged0();
         }
 
         public void patternRemoved(PatternChangedEvent e) {
-            fireModelChanged();
+            fireModelChanged0();
         }
 
         public boolean fireInEventDispatchThread() {

@@ -23,6 +23,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1003,6 +1004,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Fire event
         fireFolderRemoved(folder);
+        
+        // Trigger sync on other folders.
+        fileRequestor.triggerFileRequesting();
 
         logInfo(folder + " removed");
     }
@@ -1259,45 +1263,56 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             return;
         }
+        if (getController().isPaused()) {
+            logFine("Skipping searching for new folders (paused)...");
+            return;
+        }
 
         if (isFine()) {
             logFine("Searching for new folders...");
         }
+        // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
         String baseDirName = getFoldersBasedir();
         File baseDir = new File(baseDirName);
-        if (baseDir.exists() && baseDir.canRead() && !baseDir.isHidden()) {
-            File[] files = baseDir.listFiles();
-            for (File file : files) {
-                if (file.getName().equals(Constants.POWERFOLDER_SYSTEM_SUBDIR))
-                {
-                    continue;
-                }
-                if (file.getName().equals("BACKUP_REMOVE")) {
-                    continue;
-                }
-                if (file.isDirectory()) {
+        if (baseDir.exists() && baseDir.canRead()) {
+            // Get all directories
+            File[] directories = baseDir.listFiles(new FileFilter() {
+                public boolean accept(File file) {
+                    String filename = file.getName();
+                    if (filename.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                        return false;
+                    }
+                    if (filename.equals("BACKUP_REMOVE")) {
+                        return false;
+                    }
+                    if (!file.isDirectory()) {
+                        return false;
+                    }
                     // Don't autocreate if it has been removed previously.
                     if (removedFolderDirectories.contains(file)) {
-                        continue;
+                        return false;
                     }
-                    boolean known = false;
-                    for (Folder folder : getFolders()) {
-                        File localBase = folder.getLocalBase();
-                        if (localBase.equals(file)
-                            || localBase.getAbsolutePath().startsWith(
-                                file.getAbsolutePath()))
-                        {
-                            known = true;
-                            break;
-                        }
-                        if (folder.getName().equals(file.getName())) {
-                            known = true;
-                            break;
-                        }
+                    return true;
+                }
+            });
+            for (File dir : directories) {
+                boolean known = false;
+                for (Folder folder : getFolders()) {
+                    if (folder.getName().equals(dir.getName())) {
+                        known = true;
+                        break;
                     }
-                    if (!known && FileUtils.hasFiles(file)) {
-                        handleNewFolder(file);
+                    File localBase = folder.getLocalBase();
+                    if (localBase.equals(dir)
+                        || localBase.getAbsolutePath().startsWith(
+                            dir.getAbsolutePath()))
+                    {
+                        known = true;
+                        break;
                     }
+                }
+                if (!known && FileUtils.hasFiles(dir)) {
+                    handleNewFolder(dir);
                 }
             }
         }

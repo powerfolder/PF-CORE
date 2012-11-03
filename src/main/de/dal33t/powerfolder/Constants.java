@@ -150,9 +150,9 @@ public class Constants {
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_LIST = 4;
 
     /**
-     * The number of seconds until nodel ist is requested. Currently: 10 minutes
+     * The number of seconds until nodelist is requested. Currently: 8 minutes
      */
-    public static final int NODE_LIST_REQUEST_INTERVAL = 5 * 60;
+    public static final int NODE_LIST_REQUEST_INTERVAL = 8 * 60;
 
     /** The number of seconds until a new transfer status is broadcasted */
     public static final int TRANSFER_STATUS_BROADCAST_INTERVAL = 10 * 60;
