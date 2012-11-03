@@ -336,7 +336,9 @@ public class ApplicationModel extends PFUIComponent {
     }
 
     private void triggerSyncStatusChange(SyncStatusEvent event) {
-        logFine(event.toString());
+        if (isFiner()) {            
+            logFiner(event.toString());
+        }
         for (SyncStatusListener listener : syncStatusListeners) {
             listener.syncStatusChanged(event);
         }
