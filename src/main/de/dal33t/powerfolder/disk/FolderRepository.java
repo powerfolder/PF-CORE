@@ -1245,23 +1245,26 @@ public class FolderRepository extends PFComponent implements Runnable {
      * folders.
      */
     public void lookForNewFolders() {
-        if (suspendNewFolderSearch.get() > 0
-            || !getController().getOSClient().isLoggedIn())
-        {
-            if (isFine()) {
-                logFine("Skipping searching for new folders...");
-            }
+        if (suspendNewFolderSearch.get() > 0) {
             return;
         }
-        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
-            && !getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE))
-        {
-            if (isFine()) {
-                logFine("Skipping searching for new folders (no permission)...");
+        if (!getController().getMySelf().isServer()) {
+            if (!getController().getOSClient().isLoggedIn()) {
+                if (isFine()) {
+                    logFine("Skipping searching for new folders...");
+                }
+                return;
             }
-            return;
+            if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+                .getValueBoolean(getController())
+                && !getController().getOSClient().getAccount()
+                    .hasPermission(FolderCreatePermission.INSTANCE))
+            {
+                if (isFine()) {
+                    logFine("Skipping searching for new folders (no permission)...");
+                }
+                return;
+            }
         }
         if (getController().isPaused()) {
             logFine("Skipping searching for new folders (paused)...");
@@ -1321,51 +1324,48 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Found a new directory in the folder base. Create a new folder.
     // Only doing this if logged in.
     private void handleNewFolder(File file) {
+        FolderInfo fi = null;
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
         if (client.isConnected() && client.isLoggedIn()) {
-            boolean foundSameName = false;
-            FolderInfo fi = null;
             for (FolderInfo folderInfo : client.getAccountFolders()) {
                 if (folderInfo.getName().equals(file.getName())) {
-                    foundSameName = true;
                     fi = folderInfo;
                     break;
                 }
             }
-            if (!foundSameName) {
-                fi = new FolderInfo(file.getName(),
-                    '[' + IdGenerator.makeId() + ']');
-            }
-            FolderSettings fs = new FolderSettings(file,
-                SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
-                ArchiveMode.FULL_BACKUP,
-                ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
-                    .getValueInt(controller));
-            Folder folder = createFolder(fi, fs);
-            folder.addDefaultExcludes();
+        }
+        if (fi == null) {
+            fi = new FolderInfo(file.getName(),
+                '[' + IdGenerator.makeId() + ']');
+        }
+        FolderSettings fs = new FolderSettings(file,
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+            ArchiveMode.FULL_BACKUP,
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(controller));
+        Folder folder = createFolder(fi, fs);
+        folder.addDefaultExcludes();
 
-            if (client.isBackupByDefault()) {
-                if (client.isConnected() && client.isLoggedIn()) {
-                    boolean joined = client.joinedByCloud(folder);
-                    if (!joined) {
-                        new CreateFolderOnServerTask(client.getAccountInfo(),
-                            fi, null).scheduleTask(getController());
-                    }
+        if (client.isBackupByDefault()) {
+            if (client.isConnected() && client.isLoggedIn()) {
+                boolean joined = client.joinedByCloud(folder);
+                if (!joined) {
+                    new CreateFolderOnServerTask(client.getAccountInfo(), fi,
+                        null).scheduleTask(getController());
                 }
             }
-
-            logInfo("Auto-created new folder: " + folder + " @ "
-                + folder.getLocalBase());
-
-            folderAutoCreateListener
-                .folderAutoCreated(new FolderAutoCreateEvent(fi));
         }
+
+        logInfo("Auto-created new folder: " + folder + " @ "
+            + folder.getLocalBase());
+
+        folderAutoCreateListener
+            .folderAutoCreated(new FolderAutoCreateEvent(fi));
     }
 
     /**
-     * In sync = all folders are 100% synced and
-     * all syncing actions have stopped.
+     * In sync = all folders are 100% synced and all syncing actions have
+     * stopped.
      * 
      * @return true if all folders are 100% in sync
      */
