@@ -26,7 +26,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -37,12 +41,16 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.*;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -56,6 +64,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -156,22 +165,23 @@ public class DirectoryChooser extends BaseDialog {
     private void okEvent() {
 
         // See if the user has just typed in a directory in the text area.
-        if (selectedDirs.size() == 1) {
-            File selectedDir = selectedDirs.get(0);
-            String selectedPath = selectedDir.getAbsolutePath();
-            String enteredPath = pathField.getText();
-            if (!selectedPath.equals(enteredPath)) {
-                File file = new File(enteredPath);
-                if (!file.exists()) {
-                    try {
-                        file.mkdirs();
-                    } catch (SecurityException e) {
-                        logSevere("Failed to create directory", e);
-                    }
+        if (selectedDirs.size() <= 1
+            && StringUtils.isNotBlank(pathField.getText()))
+        {
+            if (selectedDirs.size() == 1) {
+                File selectedDir = selectedDirs.get(0);
+                String selectedPath = selectedDir.getAbsolutePath();
+                String enteredPath = pathField.getText();
+                if (!selectedPath.equals(enteredPath)) {
+                    File file = new File(enteredPath);
+                    selectedDirs.clear();
+                    selectedDirs.add(file);
                 }
+            } else {
+                String enteredPath = pathField.getText();
+                File file = new File(enteredPath);
                 selectedDirs.clear();
                 selectedDirs.add(file);
-                close();
             }
         }
 
