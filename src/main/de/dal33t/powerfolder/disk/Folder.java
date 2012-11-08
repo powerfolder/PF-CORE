@@ -967,20 +967,7 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles(boolean ignoreLocalMassDeletion) {
-        boolean wasDeviceDisconnected = deviceDisconnected;
         checkIfDeviceDisconnected();
-
-        if (wasDeviceDisconnected && !deviceDisconnected
-            && getKnownItemCount() == 0)
-        {
-            logWarning("Device reconnected. Loading folder database");
-            initFileInfoDAO();
-            // Try to load db from connected device now.
-            loadMetadata();
-            // Re-attach folder watcher
-            watcher.reconfigure(syncProfile);
-        }
-
         ScanResult result;
         FolderScanner scanner = getController().getFolderRepository()
             .getFolderScanner();
@@ -3571,8 +3558,10 @@ public class Folder extends PFComponent {
      */
     private void persist() {
         if (checkIfDeviceDisconnected()) {
-            logWarning("Unable to persist database. Device is disconnected: "
-                + localBase);
+            if (!currentInfo.isMetaFolder()) {
+                logWarning("Unable to persist database. Device is disconnected: "
+                    + localBase);
+            }
             return;
         }
         logFiner("Persisting settings");
@@ -3733,6 +3722,7 @@ public class Folder extends PFComponent {
     }
 
     private boolean setDeviceDisconnected(boolean disconnected) {
+        boolean wasDeviceDisconnected = deviceDisconnected;
         deviceDisconnected = disconnected;
 
         boolean addProblem = disconnected;
@@ -3741,7 +3731,7 @@ public class Folder extends PFComponent {
                 if (deviceDisconnected) {
                     addProblem = false;
                 } else {
-                    logInfo("Device connected again");
+                    logFine("Device reconnected");
                     removeProblem(problem);
                 }
             }
@@ -3769,6 +3759,32 @@ public class Folder extends PFComponent {
             } else {
                 addProblem(new DeviceDisconnectedProblem(currentInfo));
             }
+        }
+
+        if (wasDeviceDisconnected && !deviceDisconnected) {
+            logInfo("Device reconnected @ " + localBase);
+            initFileInfoDAO();
+            // Try to load db from connected device now.
+            loadMetadata();
+            
+            if (!getSystemSubDir().exists()) {
+                getSystemSubDir().mkdirs();    
+            }
+
+            // Re-attach folder watcher
+            watcher.reconfigure(syncProfile);
+
+            // Pull new files
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(currentInfo);
+
+            if (!currentInfo.isMetaFolder()) {
+                Folder metaFolder = getController().getFolderRepository()
+                    .getMetaFolderForParent(currentInfo);
+                metaFolder.checkIfDeviceDisconnected();
+            }
+            
+            // TODO Correctly init Archive
         }
 
         return deviceDisconnected;
