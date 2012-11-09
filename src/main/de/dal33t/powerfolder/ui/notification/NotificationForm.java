@@ -100,7 +100,7 @@ public class NotificationForm extends JPanel {
             // Two buttons
             formLayout = new FormLayout(
                 //            button             button
-                "3dlu, 20dlu, 50dlu:grow, 10dlu, 50dlu:grow, 20dlu, 3dlu",
+                "3dlu, 10dlu, 60dlu:grow, 10dlu, 60dlu:grow, 10dlu, 3dlu",
                     "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
                     //     head        msg         hr          cb          btn
             internalWidth = 5;
@@ -108,7 +108,7 @@ public class NotificationForm extends JPanel {
             // One button
             formLayout = new FormLayout(
                 //            button
-                "3dlu, 50dlu, 50dlu:grow, 50dlu, 3dlu",
+                "3dlu, 45dlu, 60dlu:grow, 45dlu, 3dlu",
                     "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
                     //     head        msg         hr          cb          btn
             internalWidth = 3;
