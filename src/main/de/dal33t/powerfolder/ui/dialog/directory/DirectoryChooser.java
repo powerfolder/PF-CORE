@@ -69,14 +69,14 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class for choosing a directory. Shows a tree of the local file system. User
- * can select any non-hidden directory. Also displayes the currently selected
+ * can select any non-hidden directory. Also displays the currently selected
  * directory. Also has a new subdirectory button for creating subdirectories.
  * NOTE: This class is package-private, not public, because it should only be
  * accessed through DirectoryChooser.
  */
 public class DirectoryChooser extends BaseDialog {
 
-    private final List<File> selectedDirs;
+    private List<File> selectedDirs;
     private final DirectoryTree tree;
     private final JTextField pathField;
     private final JButton newDirButton;
@@ -120,6 +120,9 @@ public class DirectoryChooser extends BaseDialog {
     }
 
     public List<File> getSelectedDirs() {
+        if (selectedDirs == null) {
+            return null;
+        }
         return Collections.unmodifiableList(selectedDirs);
     }
 
@@ -130,7 +133,7 @@ public class DirectoryChooser extends BaseDialog {
      */
     protected Component getButtonBar() {
 
-        // Ok btton sets the selected file path in the value model, if any
+        // Ok button sets the selected file path in the value model, if any
         // selected.
         okButton = createOKButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -429,29 +432,13 @@ public class DirectoryChooser extends BaseDialog {
     }
 
     private void useClassicBrowser() {
-        // Use standard chooser. This is a fall back in case there are
-        // ever any problems with PF dir chooser.
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setMultiSelectionEnabled(multiSelect);
-        if (!selectedDirs.isEmpty()) {
-            chooser.setCurrentDirectory(selectedDirs.get(0));
-        }
-        int i = chooser.showDialog(getUIController().getActiveFrame(),
-            Translation.getTranslation("general.select"));
-        if (i == JFileChooser.APPROVE_OPTION) {
-            selectedDirs.clear();
-            File[] selectedFiles = chooser.getSelectedFiles();
-            selectedDirs.addAll(Arrays.asList(selectedFiles));
-            close();
-        } else {
-            selectedDirs.clear();
-            close();
-        }
+        // We need to exit this dialog and get the DialogFactory to go again with a classic browser.
+        selectedDirs = null; // Crude indication that we need to use classic.
+        close();
     }
 
     /**
-     * Selction listener to set text of path display field on selection change.
+     * Selection listener to set text of path display field on selection change.
      */
     private class MyTreeSelectionListener implements TreeSelectionListener {
         public void valueChanged(TreeSelectionEvent e) {

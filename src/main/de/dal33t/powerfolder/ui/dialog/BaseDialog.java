@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.*;
+import java.awt.Dialog.ModalityType;
 import java.awt.event.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -277,8 +278,8 @@ public abstract class BaseDialog extends PFUIComponent {
         }
         dialog = new JDialog(owner,
                 getTitle(), modal
-                        ? Dialog.ModalityType.APPLICATION_MODAL
-                        : Dialog.ModalityType.MODELESS);
+                        ? ModalityType.APPLICATION_MODAL
+                        : ModalityType.MODELESS);
         dialog.setResizable(resizable);
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 

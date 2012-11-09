@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -91,18 +93,33 @@ public class DialogFactory {
      *            PF base dir that a user may want to create.
      * @return the chosen directory
      */
-    public static List<File> chooseDirectory(UIController uiController,
-        File initialDirectory, List<String> onlineFolders, boolean multiSelect)
-    {
-        DirectoryChooser dc = new DirectoryChooser(
-            uiController.getController(), initialDirectory, onlineFolders,
+    public static List<File> chooseDirectory(UIController uiController, File initialDirectory,
+                                             List<String> onlineFolders, boolean multiSelect) {
+        DirectoryChooser dc = new DirectoryChooser(uiController.getController(), initialDirectory, onlineFolders,
                 multiSelect);
         dc.open();
-        return dc.getSelectedDirs();
+        if (dc.getSelectedDirs() != null) {
+            return dc.getSelectedDirs();
+        }
+
+        // Null selectedDirs indicates that user wants to use classic browser.
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(multiSelect);
+        if (initialDirectory != null) {
+            chooser.setCurrentDirectory(initialDirectory);
+        }
+        int i = chooser.showDialog(uiController.getActiveFrame(), Translation.getTranslation("general.select"));
+        List<File> selectedDirs = new ArrayList<File>();
+        if (i == JFileChooser.APPROVE_OPTION) {
+            File[] selectedFiles = chooser.getSelectedFiles();
+            selectedDirs.addAll(Arrays.asList(selectedFiles));
+        }
+        return selectedDirs;
     }
 
     /**
-     * The prefered way to create a FileChooser in PowerFolder.
+     * The preferred way to create a FileChooser in PowerFolder.
      * 
      * @return a file chooser
      */
@@ -294,7 +311,7 @@ public class DialogFactory {
      *            a {@link GenericDialogType}
      * @param neverAskAgainMessage
      *            the message to display in the 'never ask again' checkbox
-     * @return {@link de.dal33t.powerfolder.ui.util.NeverAskAgainResponse} with 'never ask again' checkbox
+     * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox
      *         selection and selected button index (-1 if dialog cancelled)
      */
     public static NeverAskAgainResponse genericDialog(Controller controller,
