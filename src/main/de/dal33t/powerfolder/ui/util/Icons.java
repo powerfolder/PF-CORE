@@ -193,6 +193,7 @@ public class Icons {
     public static final String CONNECTION_MEDIUM = "connection_medium.icon";
     public static final String CONNECTION_POOR = "connection_poor.icon";
     public static final String DISCONNECTED = "connected_not.icon";
+    public static final String PENDING = "pending.icon";
 
     // Wizard pictos from the quick info panels
     public static final String LOGO128X128 = "picto_logo_128.icon";
