@@ -166,7 +166,26 @@ public interface FolderService {
      * @throws IOException
      *             problem restoring the file.
      */
+    @Deprecated
     FileInfo restore(FileInfo versionInfo, boolean sameLocation)
+        throws IOException;
+    
+    /**
+     * Restores/Copies a file version from the archive to a new File within the
+     * folder. Does NOT deleted the file in the archive. Does scan the related
+     * folder and returns the new FileInfo of the restored file.
+     * 
+     * @param versionInfo
+     *            the FileInfo of the archived file.
+     * @param newRelativeName
+     *            the new relative name. Leave null for same location
+     * @param target
+     * @return the fileInfo of the restored file. Can be used for automatic
+     *         downloading this file from the server after restoring.
+     * @throws IOException
+     *             problem restoring the file.
+     */
+    FileInfo restore(FileInfo versionInfo, String newRelativeName)
         throws IOException;
 
     /**
