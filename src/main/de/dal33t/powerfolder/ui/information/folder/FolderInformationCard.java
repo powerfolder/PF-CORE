@@ -22,8 +22,7 @@ package de.dal33t.powerfolder.ui.information.folder;
 import java.awt.Image;
 import java.util.List;
 
-import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -40,6 +39,7 @@ import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
 import de.dal33t.powerfolder.ui.information.folder.problems.ProblemsTab;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -136,19 +136,6 @@ public class FolderInformationCard extends InformationCard {
         atachProblemListener();
         updateProblems();
     }
-
-    /**
-     * Sets the folder in the tabs with incoming set.
-     * 
-     * @param folderInfo
-     */
-//    public void setFolderInfoIncoming(FolderInfo folderInfo) {
-//        detachProblemListener();
-//        setFolderInfo0(folderInfo);
-//        filesTab.setFolderInfoIncoming(folderInfo);
-//        atachProblemListener();
-//        updateProblems();
-//    }
 
     private void detachProblemListener() {
 
@@ -252,8 +239,6 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.addTab(
             Translation.getTranslation("folder_information_card.files.title"),
             filesTab.getUIComponent());
-        // tabbedPane
-        // .setIconAt(getFilesTabIndex(), Icons.getIconById(Icons.FILES));
         tabbedPane.setToolTipTextAt(getFilesTabIndex(),
             Translation.getTranslation("folder_information_card.files.tips"));
 
@@ -266,16 +251,15 @@ public class FolderInformationCard extends InformationCard {
             tabbedPane.addTab(Translation
                 .getTranslation("folder_information_card.members.title"),
                 membersTab.getUIComponent());
-            // tabbedPane.setIconAt(getMembersTabIndex(), Icons
-            // .getIconById(Icons.NODE_CONNECTED));
             tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
                 .getTranslation("folder_information_card.members.tips"));
 
+            JScrollPane scrollPane = new JScrollPane(settingsTab.getUIComponent(),
+                    ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            UIUtil.removeBorder(scrollPane);
             tabbedPane.addTab(Translation
                 .getTranslation("folder_information_card.settings.title"),
-                settingsTab.getUIComponent());
-            // tabbedPane.setIconAt(getSettingsTabIndex(), Icons
-            // .getIconById(Icons.SETTINGS));
+                scrollPane);
             tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
                 .getTranslation("folder_information_card.settings.tips"));
         }
