@@ -21,9 +21,9 @@ package de.dal33t.powerfolder.ui.wizard.table;
 
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.wizard.data.FileInfoLocation;
+import de.dal33t.powerfolder.ui.wizard.data.FileInfoLocationComparator;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.ui.util.UIUtil;
@@ -40,27 +40,29 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
 
     private static final String[] COLUMNS = {
             Translation.getTranslation("single_file_restore_table_model.modified_date"),
-        Translation.getTranslation("single_file_restore_table_model.version"),
-        Translation.getTranslation("single_file_restore_table_model.size")};
+            Translation.getTranslation("single_file_restore_table_model.version"),
+            Translation.getTranslation("single_file_restore_table_model.size"),
+            Translation.getTranslation("single_file_restore_table_model.location")};
 
     static final int COL_MODIFIED_DATE = 0;
     static final int COL_VERSION = 1;
     static final int COL_SIZE = 2;
+    static final int COL_LOCATION = 3;
 
-    private final List<FileInfo> fileInfos;
-    private int fileInfoComparatorType = -1;
+    private final List<FileInfoLocation> fileInfoLocations;
+    private int fileInfoLocationComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
     private final List<TableModelListener> listeners;
 
     public SingleFileRestoreTableModel(Controller controller) {
         super(controller);
-        fileInfos = new ArrayList<FileInfo>();
+        fileInfoLocations = new ArrayList<FileInfoLocation>();
         listeners = new CopyOnWriteArrayList<TableModelListener>();
     }
 
     public int getRowCount() {
-        return fileInfos.size();
+        return fileInfoLocations.size();
     }
 
     public int getColumnCount() {
@@ -72,7 +74,7 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
     }
 
     public Class<?> getColumnClass(int columnIndex) {
-        return FileInfo.class;
+        return FileInfoLocation.class;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -80,11 +82,11 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return fileInfos.get(rowIndex);
+        return fileInfoLocations.get(rowIndex);
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        throw new UnsupportedOperationException("Cannot modify MultiFileRestoreTableModel");
+        throw new UnsupportedOperationException("Cannot modify SingleFileRestoreTableModel");
     }
 
     public void addTableModelListener(TableModelListener l) {
@@ -107,11 +109,13 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
         sortColumn = columnIndex;
         switch (columnIndex) {
             case COL_VERSION:
-                return sortMe(FileInfoComparator.BY_VERSION);
+                return sortMe(FileInfoLocationComparator.BY_VERSION);
             case COL_SIZE:
-                return sortMe(FileInfoComparator.BY_SIZE);
+                return sortMe(FileInfoLocationComparator.BY_SIZE);
             case COL_MODIFIED_DATE:
-                return sortMe(FileInfoComparator.BY_MODIFIED_DATE);
+                return sortMe(FileInfoLocationComparator.BY_MODIFIED_DATE);
+            case COL_LOCATION:
+                return sortMe(FileInfoLocationComparator.BY_LOCATION);
         }
 
         sortColumn = -1;
@@ -126,11 +130,11 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
      * @return if the table was freshly sorted
      */
     public boolean sortMe(int newComparatorType) {
-        if (fileInfos.isEmpty()) {
+        if (fileInfoLocations.isEmpty()) {
             return false;
         }
-        int oldComparatorType = fileInfoComparatorType;
-        fileInfoComparatorType = newComparatorType;
+        int oldComparatorType = fileInfoLocationComparatorType;
+        fileInfoLocationComparatorType = newComparatorType;
         if (oldComparatorType != newComparatorType) {
             boolean sorted = sort();
             if (sorted) {
@@ -143,15 +147,13 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
 
 
     private boolean sort() {
-        if (fileInfoComparatorType != -1) {
-            FileInfoComparator comparator = new FileInfoComparator(
-                fileInfoComparatorType);
-            synchronized (fileInfos) {
+        if (fileInfoLocationComparatorType != -1) {
+            FileInfoLocationComparator comparator = new FileInfoLocationComparator(fileInfoLocationComparatorType);
+            synchronized (fileInfoLocations) {
                 if (sortAscending) {
-                    Collections.sort(fileInfos, comparator);
+                    Collections.sort(fileInfoLocations, comparator);
                 } else {
-                    Collections.sort(fileInfos, new ReverseComparator<FileInfo>(
-                        comparator));
+                    Collections.sort(fileInfoLocations, new ReverseComparator<FileInfoLocation>(comparator));
                 }
             }
             return true;
@@ -161,8 +163,8 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
 
     public void reverseList() {
         sortAscending = !sortAscending;
-        synchronized (fileInfos) {
-            Collections.reverse(fileInfos);
+        synchronized (fileInfoLocations) {
+            Collections.reverse(fileInfoLocations);
         }
         fireModelChanged();
     }
@@ -178,10 +180,10 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
         sortAscending = ascending;
     }
 
-    public void setFileInfos(List<FileInfo> fileInfos) {
-        synchronized (this.fileInfos) {
-            this.fileInfos.clear();
-            this.fileInfos.addAll(fileInfos);
+    public void setFileInfoLocations(List<FileInfoLocation> fileInfoLocations) {
+        synchronized (this.fileInfoLocations) {
+            this.fileInfoLocations.clear();
+            this.fileInfoLocations.addAll(fileInfoLocations);
         }
         update();
     }
@@ -200,7 +202,7 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
         UIUtil.invokeLaterInEDT(runnable);
     }
 
-    public List<FileInfo> getFileInfos() {
-        return Collections.unmodifiableList(fileInfos);
+    public List<FileInfoLocation> getFileInfoLocations() {
+        return Collections.unmodifiableList(fileInfoLocations);
     }
 }
