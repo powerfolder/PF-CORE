@@ -266,6 +266,9 @@ public class LoginUtil {
         } else if (isUsernameAny(controller)) {
             return Translation.getTranslation("general.username") + "/"
                 + Translation.getTranslation("general.email");
+        } else if (isUsernameShibboleth(controller)) {
+            // FIXME: Make nicer
+            return "Login-ID";
         } else {
             if (isBoolConfValue(controller)) {
                 return Translation.getTranslation("general.username");
