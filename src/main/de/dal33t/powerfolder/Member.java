@@ -234,8 +234,13 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (aInfo == null) {
             return false;
         }
-        return aInfo.getUsername() != null
-            && aInfo.getUsername().toLowerCase().indexOf(searchString) >= 0;
+        if (aInfo.getUsername() != null
+            && aInfo.getUsername().toLowerCase().indexOf(searchString) >= 0)
+        {
+            return true;
+        }
+        return aInfo.getDisplayName() != null
+            && aInfo.getDisplayName().toLowerCase().indexOf(searchString) >= 0;
     }
 
     public String getHostName() {
@@ -1865,8 +1870,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                         + message);
                 }
             } else {
-                logFiner("Message not known to message handling code, "
-                    + "maybe handled in listener: " + message);
+                if (isFiner()) {
+                    logFiner("Message not known to message handling code, "
+                        + "maybe handled in listener: " + message);                    
+                }
             }
 
             // Give message to node manager

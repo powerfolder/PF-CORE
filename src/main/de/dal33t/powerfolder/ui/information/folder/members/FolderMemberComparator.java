@@ -134,6 +134,27 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
         }
     },
 
+    BY_DISPLAY_NAME() {
+        @Override
+        public int compare(FolderMember o1, FolderMember o2) {
+            AccountInfo a1 = o1.getAccountInfo();
+            AccountInfo a2 = o2.getAccountInfo();
+            if (a1 == null) {
+                return a2 == null ? 0 : 1;
+            }
+            if (a2 == null) {
+                return -1;
+            }
+            if (a1.getDisplayName() == null) {
+                return a2.getDisplayName() == null ? 0 : 1;
+            }
+            if (a2.getDisplayName() == null) {
+                return -1;
+            }
+            return a1.getDisplayName().compareTo(a2.getDisplayName());
+        }
+    },
+
     BY_PERMISSION() {
         @Override
         public int compare(FolderMember o1, FolderMember o2) {

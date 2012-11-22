@@ -96,7 +96,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
     private static final FolderMemberComparator[] columnComparators = {
         FolderMemberComparator.BY_TYPE,// 0
         FolderMemberComparator.BY_COMPUTER_NAME, // 1
-        FolderMemberComparator.BY_USERNAME, // 2
+        FolderMemberComparator.BY_DISPLAY_NAME, // 2
         FolderMemberComparator.BY_PERMISSION, // 3
         FolderMemberComparator.BY_SYNC_STATUS, // 4
         FolderMemberComparator.BY_LOCAL_SIZE}; // 5
@@ -381,11 +381,11 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                 // Show warning
                 AccountInfo oldOwner = findFolderOwner();
                 String oldOwnerStr = oldOwner != null
-                    ? oldOwner.getUsername()
+                    ? oldOwner.getDisplayName()
                     : Translation.getTranslation("folder_member.nobody");
                 AccountInfo newOwner = folderMember.getAccountInfo();
                 String newOwnerStr = newOwner != null
-                    ? newOwner.getUsername()
+                    ? newOwner.getDisplayName()
                     : Translation.getTranslation("folder_member.nobody");
                 int result = DialogFactory.genericDialog(getController(),
                     Translation
@@ -634,6 +634,12 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
             AccountInfo aInfo = member.getAccountInfo();
+            // Take "better" AccountInfo.
+            for (AccountInfo caInfo : permInfo.keySet()) {
+                if (aInfo.equals(caInfo)) {
+                    aInfo = caInfo;
+                }
+            }
             FolderPermission folderPermission = permInfo.get(aInfo);
             FolderMember folderMember = new FolderMember(folder, member, aInfo,
                 folderPermission);

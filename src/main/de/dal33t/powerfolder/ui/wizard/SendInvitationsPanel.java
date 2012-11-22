@@ -152,8 +152,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
         for (Member node : candidates) {
             AccountInfo aInfo = node.getAccountInfo();
-            if (aInfo != null && aInfo.getUsername() != null
-                && aInfo.getUsername().equalsIgnoreCase(invitee))
+            if (aInfo != null && aInfo.getDisplayName() != null
+                && aInfo.getDisplayName().equalsIgnoreCase(invitee))
             {
                 InvitationUtil.invitationToNode(getController(), invitation,
                     node);
@@ -349,9 +349,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         List<String> candidateAddresses = new LinkedList<String>();
         for (Member friend : getController().getNodeManager().getFriends()) {
             AccountInfo aInfo = friend.getAccountInfo();
-            if (aInfo != null && aInfo.getUsername() != null) {
+            if (aInfo != null && aInfo.getDisplayName() != null) {
                 // FIXME Shows email unscrambled!
-                candidateAddresses.add(0, aInfo.getUsername());
+                candidateAddresses.add(0, aInfo.getDisplayName());
             }
             //candidateAddresses.add(friend.getNick());
         }
@@ -361,9 +361,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 continue;
             }
             AccountInfo aInfo = node.getAccountInfo();
-            if (aInfo != null && aInfo.getUsername() != null) {
+            if (aInfo != null && aInfo.getDisplayName() != null) {
                 // FIXME Shows email unscrambled!
-                candidateAddresses.add(0, aInfo.getUsername());
+                candidateAddresses.add(0, aInfo.getDisplayName());
             }
             //candidateAddresses.add(node.getNick());
         }

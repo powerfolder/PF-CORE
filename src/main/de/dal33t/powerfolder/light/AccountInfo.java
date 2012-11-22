@@ -22,10 +22,12 @@ package de.dal33t.powerfolder.light;
 import java.io.Serializable;
 
 import javax.persistence.Embeddable;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Leightweight reference/info object to an {@link Account}
@@ -41,20 +43,38 @@ public class AccountInfo implements Serializable {
     @Index(name = "IDX_ACCOUNT_OID")
     private String oid;
     private String username;
+    @Transient
+    private String displayName;
 
     @SuppressWarnings("unused")
     private AccountInfo() {
         // For hibernate.
     }
 
-    public AccountInfo(String oid, String username) {
+    public AccountInfo(String oid, String username, String displayName) {
         super();
         this.oid = oid;
         this.username = username;
+        this.displayName = displayName;
+    }
+
+    public AccountInfo(String oid, String username) {
+        this(oid, username, null);
     }
 
     public String getOID() {
         return oid;
+    }
+
+    public String getDisplayName() {
+        if (StringUtils.isNotBlank(displayName)) {
+            return displayName;
+        }
+        return username;
+    }
+
+    public String getScrabledDisplayName() {
+        return getScrabledName(getDisplayName());
     }
 
     /**
@@ -63,15 +83,24 @@ public class AccountInfo implements Serializable {
      * @return a scrabled version of the username in case its a email.
      */
     public String getScrabledUsername() {
-        if (username == null) {
+        return getScrabledName(username);
+    }
+
+    /**
+     * TODO Don't actually transfer unscrambled emails to any client.
+     * 
+     * @return a scrabled version of the username in case its a email.
+     */
+    private String getScrabledName(String val) {
+        if (val == null) {
             return null;
         }
-        int i = username.indexOf('@');
+        int i = val.indexOf('@');
         if (i < 0) {
-            return username;
+            return val;
         }
         int chopIndex = Math.max(i - 3, 1);
-        return username.substring(0, chopIndex) + "..." + username.substring(i);
+        return val.substring(0, chopIndex) + "..." + val.substring(i);
     }
 
     public String getUsername() {
@@ -105,6 +134,6 @@ public class AccountInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "AccountInfo '" + getScrabledUsername() + "' (" + oid + ')';
+        return "AccountInfo '" + getScrabledDisplayName() + "' (" + oid + ')';
     }
 }

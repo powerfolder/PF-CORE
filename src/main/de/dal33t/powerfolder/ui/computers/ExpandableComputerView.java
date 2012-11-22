@@ -263,7 +263,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         lastSeenLabel = new JLabel();
         AccountInfo aInfo = node.getAccountInfo();
         usernameLabel = new JLabel(aInfo != null
-            ? aInfo.getScrabledUsername()
+            ? aInfo.getScrabledDisplayName()
             : null);
         versionLabel = new JLabel(Translation.getTranslation(
             "exp_computer_view.version", ""));
@@ -363,7 +363,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         AccountInfo aInfo = node.getAccountInfo();
         if (aInfo != null && !node.isServer()) {
             usernameLabel.setText(Translation.getTranslation(
-                "exp_computer_view.account", aInfo.getScrabledUsername()));
+                "exp_computer_view.account", aInfo.getScrabledDisplayName()));
         } else if (node.isServer()) {
             usernameLabel.setText("");
         } else {

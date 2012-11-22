@@ -92,7 +92,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
 
         members.addListDataListener(new ListModelListener());
         columComparators[0] = MemberComparator.NICK;
-        columComparators[1] = MemberComparator.USERNAME;
+        columComparators[1] = MemberComparator.DISPLAY_NAME;
         columComparators[2] = MemberComparator.BY_LAST_CONNECT_DATE;
         columComparators[3] = MemberComparator.IP;
         columComparators[4] = MemberComparator.BY_CONNECTION_TYPE;

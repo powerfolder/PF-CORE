@@ -73,7 +73,7 @@ public class NodesSelectTableCellRenderer extends DefaultTableCellRenderer {
         String text = member.getNick();
         if (aInfo != null) {
             text += " (";
-            text += aInfo.getScrabledUsername();
+            text += aInfo.getScrabledDisplayName();
             text += ')';
         }
         return text;

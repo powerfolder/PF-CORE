@@ -64,7 +64,7 @@ public class MemberAccountPermission {
         Map<AccountInfo, FolderPermission> folderPermissions)
     {
         Collection<MemberAccountPermission> members = new TreeSet<MemberAccountPermission>(
-            MemberAccountPermission.ComparatorType.BY_COMPUTER_USERNAME);
+            MemberAccountPermission.ComparatorType.BY_COMPUTER_NAME_DISPLAY_NAME);
         // Step 1) All computers.
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
@@ -161,14 +161,14 @@ public class MemberAccountPermission {
             }
         },
 
-        BY_COMPUTER_USERNAME() {
+        BY_COMPUTER_NAME_DISPLAY_NAME() {
             @Override
             public int compare(MemberAccountPermission o1,
                 MemberAccountPermission o2)
             {
                 int i = BY_COMPUTER_NAME.compare(o1, o2);
                 if (i == 0) {
-                    i = BY_USERNAME.compare(o1, o2);
+                    i = BY_DISPLAY_NAME.compare(o1, o2);
                 }
                 return i;
             }
@@ -231,6 +231,29 @@ public class MemberAccountPermission {
                     return -1;
                 }
                 return a1.getUsername().compareTo(a2.getUsername());
+            }
+        },
+
+        BY_DISPLAY_NAME() {
+            @Override
+            public int compare(MemberAccountPermission o1,
+                MemberAccountPermission o2)
+            {
+                AccountInfo a1 = o1.getAccountInfo();
+                AccountInfo a2 = o2.getAccountInfo();
+                if (a1 == null) {
+                    return a2 == null ? 0 : 1;
+                }
+                if (a2 == null) {
+                    return -1;
+                }
+                if (a1.getDisplayName() == null) {
+                    return a2.getDisplayName() == null ? 0 : 1;
+                }
+                if (a2.getDisplayName() == null) {
+                    return -1;
+                }
+                return a1.getDisplayName().compareTo(a2.getDisplayName());
             }
         },
 

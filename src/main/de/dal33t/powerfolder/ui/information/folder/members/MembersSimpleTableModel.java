@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -58,7 +57,6 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
@@ -86,7 +84,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     private static final FolderMemberComparator[] columnComparators = {
         FolderMemberComparator.BY_TYPE,// 0
-        FolderMemberComparator.BY_USERNAME, // 1
+        FolderMemberComparator.BY_DISPLAY_NAME, // 1
         FolderMemberComparator.BY_PERMISSION}; // 2
 
     private final List<FolderMember> members;
@@ -336,11 +334,11 @@ public class MembersSimpleTableModel extends PFUIComponent implements
                 // Show warning
                 AccountInfo oldOwner = findFolderOwner();
                 String oldOwnerStr = oldOwner != null
-                    ? oldOwner.getUsername()
+                    ? oldOwner.getDisplayName()
                     : Translation.getTranslation("folder_member.nobody");
                 AccountInfo newOwner = folderMember.getAccountInfo();
                 String newOwnerStr = newOwner != null
-                    ? newOwner.getUsername()
+                    ? newOwner.getDisplayName()
                     : Translation.getTranslation("folder_member.nobody");
                 int result = DialogFactory.genericDialog(getController(),
                     Translation

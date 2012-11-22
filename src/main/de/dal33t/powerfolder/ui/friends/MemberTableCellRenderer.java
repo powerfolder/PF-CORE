@@ -129,7 +129,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
 
     private static String renderAccount(AccountInfo aInfo) {
         if (aInfo != null) {
-            return aInfo.getScrabledUsername();
+            return aInfo.getDisplayName();
         } else {
             return "";
         }

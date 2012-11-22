@@ -231,7 +231,7 @@ public class Account implements Serializable {
      * @return a leightweight/reference object to this account.
      */
     public AccountInfo createInfo() {
-        return new AccountInfo(oid, username);
+        return new AccountInfo(oid, username, getDisplayName());
     }
 
     // Basic permission stuff *************************************************
@@ -447,6 +447,13 @@ public class Account implements Serializable {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getDisplayName() {
+        if (username.contains("!") && !emails.isEmpty()) {
+            return emails.get(0);
+        }
+        return username;
     }
 
     public String getPassword() {
