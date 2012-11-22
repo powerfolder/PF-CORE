@@ -71,7 +71,7 @@ public class MemberComparator implements Comparator<Member> {
     public static final MemberComparator IP = new MemberComparator(7);
 
     /** Sorts nodes by account username */
-    public static final MemberComparator USERNAME = new MemberComparator(8);
+    public static final MemberComparator DISPLAY_NAME = new MemberComparator(8);
 
     private int type;
 
@@ -185,13 +185,13 @@ public class MemberComparator implements Comparator<Member> {
             if (a2 == null) {
                 return -1;
             }
-            if (a1.getUsername() == null) {
-                return a2.getUsername() == null ? 0 : 1;
+            if (a1.getDisplayName() == null) {
+                return a2.getDisplayName() == null ? 0 : 1;
             }
-            if (a2.getUsername() == null) {
+            if (a2.getDisplayName() == null) {
                 return -1;
             }
-            return a1.getUsername().compareTo(a2.getUsername());
+            return a1.getDisplayName().compareTo(a2.getDisplayName());
         } else {
             LOG.severe("Unknow comparing type: " + type);
         }
