@@ -19,11 +19,20 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -46,6 +55,9 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
 
     // Total size of folder in bytes
     private volatile long totalSize;
+
+    // The archive size.
+    private volatile long archiveSize;
 
     // Total number of files
     private volatile int totalFilesCount;
@@ -93,6 +105,14 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
 
     public int getTotalFilesCount() {
         return totalFilesCount;
+    }
+
+    public long getArchiveSize() {
+        return archiveSize;
+    }
+
+    public void setArchiveSize(long archiveSize) {
+        this.archiveSize = archiveSize;
     }
 
     public void setTotalFilesCount(int totalFilesCount) {
@@ -221,6 +241,64 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             Member node = nodeInfo.getNode(controller, false);
             if (node != null && node.isServer()) {
                 return node;
+            }
+        }
+        return null;
+    }
+
+    // Writing / Loading *****************************************************
+
+    /**
+     * Saves this FolderStatisticInfo contents to the given OutputStream.
+     * 
+     * @param out
+     * @throws IOException
+     */
+    public boolean save(File file) {
+        FileOutputStream fout = null;
+        if (isFiner()) {
+            logFiner("Writing folder " + folder.getName() + " stats to " + file);
+        }
+        try {
+            fout = new FileOutputStream(file);
+            ObjectOutputStream oout = new ObjectOutputStream(
+                new BufferedOutputStream(fout));
+            oout.writeObject(this);
+            oout.close();
+        } catch (Exception e) {
+            logWarning("Unable to store stats for folder " + folder.getName()
+                + " to " + file + ". " + e);
+        } finally {
+            if (fout != null) {
+                try {
+                    fout.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static FolderStatisticInfo load(File file) {
+        if (!file.exists()) {
+            return null;
+        }
+        FileInputStream fin = null;
+        try {
+            fin = new FileInputStream(file);
+            ObjectInputStream oin = new ObjectInputStream(
+                new BufferedInputStream(fin));
+            return (FolderStatisticInfo) oin.readObject();
+        } catch (Exception e) {
+            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
+                "Unable to read folder stats from " + file + ". " + e);
+        } finally {
+            if (fin != null) {
+                try {
+                    fin.close();
+                } catch (IOException e) {
+                }
             }
         }
         return null;
