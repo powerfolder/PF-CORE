@@ -146,8 +146,8 @@ public class Controller extends PFComponent {
         .getName());
 
     private static final int MAJOR_VERSION = 7;
-    private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 41;
+    private static final int MINOR_VERSION = 5;
+    private static final int REVISION_VERSION = 34;
 
     /**
      * Program version.
@@ -351,7 +351,19 @@ public class Controller extends PFComponent {
      */
     public void startConfig(CommandLine aCommandLine) {
         commandLine = aCommandLine;
-        String configName = aCommandLine.getOptionValue("c");
+        String[] configNames = aCommandLine.getOptionValues("c");
+        String configName = configNames != null && configNames.length > 0
+            && StringUtils.isNotBlank(configNames[0]) ? configNames[0] : null;
+        if (StringUtils.isNotBlank(configName)
+            && (configName.startsWith("http:") || configName
+                .startsWith("https:")))
+        {
+            if (configNames.length > 1) {
+                configName = configNames[1];
+            } else {
+                configName = Constants.DEFAULT_CONFIG_FILE;
+            }
+        }
         startConfig(configName);
     }
 
@@ -372,6 +384,7 @@ public class Controller extends PFComponent {
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
+        shuttingDown = false;
         threadPool = new WrappedScheduledThreadPoolExecutor(
             Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
                 "Controller-Thread-"));
@@ -421,6 +434,7 @@ public class Controller extends PFComponent {
         // This logs to file for analysis.
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
         initLogger();
+        
         if (verbose) {
             ByteSerializer.BENCHMARK = true;
             scheduleAndRepeat(new Runnable() {
@@ -448,10 +462,22 @@ public class Controller extends PFComponent {
 
         // If we have a new config. clear the preferences.
         clearPreferencesOnConfigSwitch();
-
+        
+        // Load and set http proxy settings
+        HTTPProxySettings.loadFromConfig(this);
+        
         // #2179: Load from server. How to handle timeouts?
+        // Command line option -c http://are.de
+        ConfigurationLoader.loadAndMergeCLI(this);
+        // Config entry in file
         ConfigurationLoader.loadAndMergeConfigURL(this);
+        // Read from installer temp file
         ConfigurationLoader.loadAndMergeFromInstaller(this);
+
+        if (verbose != ConfigurationEntry.VERBOSE.getValueBoolean(this)) {
+            verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
+            initLogger();
+        }
 
         // Init paused only if user expects pause to be permanent or
         // "while I work"
@@ -463,7 +489,7 @@ public class Controller extends PFComponent {
         // Now set it, just in case it was paused in permanent mode.
         PreferencesEntry.PAUSED.setValue(this, paused);
 
-        // Load and set http proxy settings
+        // Load and set http proxy settings again.
         HTTPProxySettings.loadFromConfig(this);
 
         // Initialize branding/preconfiguration of the client
@@ -523,6 +549,20 @@ public class Controller extends PFComponent {
         // The io provider.
         ioProvider = new IOProvider(this);
         ioProvider.start();
+
+        // Set hostname by CLI
+        if (commandLine != null && commandLine.hasOption('d')) {
+            String host = commandLine.getOptionValue("d");
+            if (StringUtils.isNotBlank(host)) {
+                InetSocketAddress addr = Util.parseConnectionString(host);
+                if (addr != null) {
+                    ConfigurationEntry.HOSTNAME.setValue(this,
+                        addr.getHostName());
+                    ConfigurationEntry.NET_BIND_PORT.setValue(this,
+                        addr.getPort());
+                }
+            }
+        }
 
         // initialize dyndns manager
         dyndnsManager = new DynDnsManager(this);
@@ -922,13 +962,16 @@ public class Controller extends PFComponent {
      *            the initial delay in ms
      * @param period
      *            the time in ms between executions
+     * @return
      */
-    public void scheduleAndRepeat(Runnable task, long initialDelay, long period)
+    public ScheduledFuture<?> scheduleAndRepeat(Runnable task,
+        long initialDelay, long period)
     {
         if (!shuttingDown) {
-            threadPool.scheduleWithFixedDelay(task, initialDelay, period,
-                TimeUnit.MILLISECONDS);
+            return threadPool.scheduleWithFixedDelay(task, initialDelay,
+                period, TimeUnit.MILLISECONDS);
         }
+        return null;
     }
 
     /**
@@ -1891,6 +1934,14 @@ public class Controller extends PFComponent {
      */
     public CommandLine getCommandLine() {
         return commandLine;
+    }
+
+    public String getCLIUsername() {
+        return commandLine != null ? commandLine.getOptionValue("u") : null;
+    }
+
+    public String getCLIPassword() {
+        return commandLine != null ? commandLine.getOptionValue("p") : null;
     }
 
     /**
