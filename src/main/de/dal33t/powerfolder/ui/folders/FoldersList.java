@@ -440,7 +440,7 @@ public class FoldersList extends PFUIComponent {
     {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isCloudServer(
+            if (getController().getOSClient().isClusterServer(
                 folderEvent.getMember()))
             {
                 updateFolders();
@@ -448,7 +448,7 @@ public class FoldersList extends PFUIComponent {
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isCloudServer(
+            if (getController().getOSClient().isClusterServer(
                 folderEvent.getMember()))
             {
                 updateFolders();
