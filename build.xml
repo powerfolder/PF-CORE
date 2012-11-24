@@ -114,12 +114,12 @@ For creation of the installer:
 			<include name="annotations-1.0.0.jar" />
 			<include name="bcprov-jdk15-1.44.jar" />
 			<include name="commons-compress-1.3.jar" />
-			<include name="truezip-driver-file-7.4.3.jar" />
-			<!--<include name="truezip-driver-tzp-7.4.3.jar" />-->
-			<include name="truezip-driver-zip-7.4.3.jar" />
-			<include name="truezip-file-7.4.3.jar" />
-			<include name="truezip-kernel-7.4.3.jar" />
-			<include name="truezip-swing-7.4.3.jar" />
+			<include name="truezip-driver-file-7.6.6.jar" />
+			<include name="truezip-driver-zip-7.6.6.jar" />
+			<include name="truezip-driver-tzp-7.6.6.jar" />
+			<include name="truezip-file-7.6.6.jar" />
+			<include name="truezip-kernel-7.6.6.jar" />
+			<include name="truezip-swing-7.6.6.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
