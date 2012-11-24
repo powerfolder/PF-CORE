@@ -43,8 +43,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.NoOwnerProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
@@ -492,7 +492,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
         public void nodeConnected(NodeManagerEvent e) {
             handleNodeChanged(e.getNode());
-            if (getController().getOSClient().isCloudServer(e.getNode())) {
+            if (getController().getOSClient().isClusterServer(e.getNode())) {
                 refreshModel();
             }
         }
@@ -506,7 +506,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
         }
     }
 
-    private class MyFolderListener implements FolderListener,
+    private class MyFolderListener extends FolderAdapter implements
         FolderMembershipListener
     {
 
@@ -519,31 +519,14 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             // handleNodeRemoved(folderEvent.getMember());
             refreshModel();
         }
-
-        public void fileChanged(FolderEvent folderEvent) {
-        }
-
-        public void filesDeleted(FolderEvent folderEvent) {
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-        }
-
         public void statisticsCalculated(FolderEvent folderEvent) {
             modelChanged(new TableModelEvent(MembersSimpleTableModel.this, 0,
                 members.size() - 1));
         }
 
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
         public boolean fireInEventDispatchThread() {
             return true;
         }
-
     }
 
     private class MySecurityManagerListener implements SecurityManagerListener {
