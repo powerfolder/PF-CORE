@@ -32,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import org.apache.commons.cli.CommandLine;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -101,7 +103,30 @@ public class ConfigurationLoader {
         Reject.ifNull(clr, "Message");
         try {
             LOG.info("Processing message: " + clr);
-            if (StringUtils.isNotBlank(clr.getConfigURL())) {
+            if (StringUtils.isBlank(clr.getConfigURL())) {
+                // Single Key=value option
+                if (clr.isKeyValue()) {
+                    boolean hasValue = controller.getConfig().containsKey(
+                        clr.getKey());
+                    if (clr.isReplaceExisting() == null
+                        || clr.isReplaceExisting()
+                        || (!hasValue && !clr.isReplaceExisting()))
+                    {
+                        if (clr.getValue() == null) {
+                            controller.getConfig().remove(clr.getKey());
+                        } else {
+                            controller.getConfig().put(clr.getKey(),
+                                clr.getValue());
+                        }
+                        // Seems to be valid, store.
+                        controller.saveConfig();
+                        LOG.log(
+                            Level.INFO,
+                            "Update configuration " + clr.getKey() + "="
+                                + clr.getValue());
+                    }
+                }
+            } else {
                 Properties preConfig = ConfigurationLoader
                     .loadPreConfiguration(clr.getConfigURL());
                 if (preConfig != null) {
@@ -223,6 +248,28 @@ public class ConfigurationLoader {
     }
 
     /**
+     * #2179 Loads the the config URL from the command line interface and merges
+     * it with the controllers config.
+     * 
+     * @param controller
+     * @return if a config was successfully loaded
+     */
+    public static boolean loadAndMergeCLI(Controller controller) {
+        CommandLine cli = controller.getCommandLine();
+        if (cli == null) {
+            return false;
+        }
+        String configName = cli.getOptionValue("c");
+        if (StringUtils.isNotBlank(configName)
+            && (configName.startsWith("http:") || configName
+                .startsWith("https:")))
+        {
+            return loadAndMergeURL(controller, configName);
+        }
+        return false;
+    }
+
+    /**
      * #2179 Loads the the config from the server and merges it with the
      * controllers config.
      * 
@@ -230,13 +277,27 @@ public class ConfigurationLoader {
      * @return if a config was successfully loaded
      */
     public static boolean loadAndMergeConfigURL(Controller controller) {
+        return loadAndMergeURL(controller, ConfigurationEntry.CONFIG_URL.getValue(controller));
+    }
+
+    /**
+     * #2179 Loads the the config from the URL and merges it with the
+     * controllers config.
+     * 
+     * @param controller
+     * @return if a config was successfully loaded
+     */
+    public static boolean loadAndMergeURL(Controller controller,
+        String configURL)
+    {
         Reject.ifNull(controller, "Controller is null");
-        String configURL = ConfigurationEntry.CONFIG_URL.getValue(controller);
         if (StringUtils.isBlank(configURL)) {
             return false;
         }
+        String un = controller.getCLIUsername();
+        char[] pw = Util.toCharArray(controller.getCLIPassword());
         try {
-            Properties serverConfig = loadPreConfiguration(configURL);
+            Properties serverConfig = loadPreConfiguration(configURL, un, pw);
             boolean overWrite = overwriteConfigEntries(serverConfig);
             if (dropFolderSettings(serverConfig)) {
                 Set<String> entryIds = FolderSettings.loadEntryIds(controller
@@ -273,6 +334,19 @@ public class ConfigurationLoader {
     public static Properties loadPreConfiguration(String server)
         throws IOException
     {
+        return loadPreConfiguration(server, null, null);
+    }
+    /**
+     * Loads a pre-configuration from a server. Automatically adds HTTP:// and
+     * url suffix.
+     * 
+     * @param server
+     * @return the loaded config.
+     * @throws IOException
+     */
+    public static Properties loadPreConfiguration(String server, String un, char[] pw)
+        throws IOException
+    {
         String finalURL = Util.removeLastSlashFromURI(server);
         if (!finalURL.startsWith("http")) {
             finalURL = "http://" + finalURL;
@@ -282,7 +356,7 @@ public class ConfigurationLoader {
         {
             finalURL += DEFAULT_PROPERTIES_URI;
         }
-        return loadPreConfiguration(new URL(finalURL.replace(" ", "%20")));
+        return loadPreConfiguration(new URL(finalURL.replace(" ", "%20")), un, pw);
     }
 
     /**
@@ -293,9 +367,17 @@ public class ConfigurationLoader {
      * @return the loaded properties WITHOUT those in config.
      * @throws IOException
      */
-    public static Properties loadPreConfiguration(URL from) throws IOException {
+    private static Properties loadPreConfiguration(URL from, String un,
+        char[] pw) throws IOException
+    {
         Reject.ifNull(from, "URL is null");
         URLConnection con = from.openConnection();
+        if (StringUtils.isNotBlank(un)) {
+            String s = un + ":" + Util.toString(pw);
+            LoginUtil.clear(pw);
+            String base64 = "Basic " + Base64.encodeBytes(s.getBytes("UTF-8"));
+            con.setRequestProperty("Authorization", base64);
+        }
         con.setConnectTimeout(1000 * URL_CONNECT_TIMEOUT_SECONDS);
         con.setReadTimeout(1000 * URL_CONNECT_TIMEOUT_SECONDS);
         con.connect();
