@@ -9,8 +9,8 @@ import javax.swing.SwingUtilities;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -198,16 +198,10 @@ public class FolderRepositoryModel extends PFUIComponent {
 
     }
 
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener extends FolderAdapter {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             calculateOverallStats();
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
         }
 
         public void scanResultCommited(final FolderEvent folderEvent) {
@@ -227,12 +221,6 @@ public class FolderRepositoryModel extends PFUIComponent {
                     interestedFolders.remove(folderInfo);
                 }
             }
-        }
-
-        public void fileChanged(FolderEvent folderEvent) {
-        }
-
-        public void filesDeleted(FolderEvent folderEvent) {
         }
 
         public boolean fireInEventDispatchThread() {
