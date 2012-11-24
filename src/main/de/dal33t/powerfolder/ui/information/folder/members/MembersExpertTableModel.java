@@ -41,14 +41,13 @@ import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.problem.NoOwnerProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
@@ -60,15 +59,16 @@ import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 
 /**
  * Class to model a folder's members. provides columns for image, name, sync
@@ -538,7 +538,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
 
         public void nodeConnected(NodeManagerEvent e) {
             handleNodeChanged(e.getNode());
-            if (getController().getOSClient().isCloudServer(e.getNode())) {
+            if (getController().getOSClient().isClusterServer(e.getNode())) {
                 refreshModel();
             }
         }
@@ -552,7 +552,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         }
     }
 
-    private class MyFolderListener implements FolderListener,
+    private class MyFolderListener extends FolderAdapter implements
         FolderMembershipListener
     {
 
@@ -566,30 +566,14 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             refreshModel();
         }
 
-        public void fileChanged(FolderEvent folderEvent) {
-        }
-
-        public void filesDeleted(FolderEvent folderEvent) {
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-        }
-
         public void statisticsCalculated(FolderEvent folderEvent) {
             modelChanged(new TableModelEvent(MembersExpertTableModel.this, 0, members
                 .size() - 1));
         }
 
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
         public boolean fireInEventDispatchThread() {
             return true;
         }
-
     }
 
     private class MySecurityManagerListener implements SecurityManagerListener {
