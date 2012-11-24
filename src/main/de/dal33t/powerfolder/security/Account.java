@@ -63,7 +63,6 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
-import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
@@ -73,7 +72,7 @@ import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
  * A access to the system indentified by username & password.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -120,7 +119,7 @@ public class Account implements Serializable {
     @JoinColumn(name = "lastLoginFrom_id")
     private MemberInfo lastLoginFrom;
     private boolean proUser;
-    
+
     // PFS-605
     private String custom1;
     private String custom2;
@@ -193,7 +192,7 @@ public class Account implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Group> groups;
-    
+
     /**
      * The possible email address of this account.
      */
@@ -269,7 +268,7 @@ public class Account implements Serializable {
 
     /**
      * Revokes any permission to a folders.
-     *
+     * 
      * @param foInfo
      *            the folder.
      */
@@ -475,7 +474,7 @@ public class Account implements Serializable {
 
     /**
      * setLanguage Set account language
-     *
+     * 
      * @return Selected language
      */
 
@@ -485,7 +484,7 @@ public class Account implements Serializable {
 
     /**
      * setLanguage Set account language
-     *
+     * 
      * @param lang
      *            New language
      */
@@ -493,7 +492,7 @@ public class Account implements Serializable {
     public void setLanguage(String lang) {
         this.language = lang;
     }
-    
+
     public String getLdapDN() {
         return ldapDN;
     }
@@ -557,7 +556,7 @@ public class Account implements Serializable {
 
     /**
      * Adds a line of info with the current date to the notes of that account.
-     *
+     * 
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
@@ -724,65 +723,6 @@ public class Account implements Serializable {
     // Convenience/Applogic ***************************************************
 
     /**
-     * @param controller
-     * @return the account details
-     * @deprecated does not correctly calculate in cloud setup.
-     */
-    public AccountDetails calculateDetails(Controller controller) {
-        Reject.ifNull(controller, "Controller");
-        long used = calculateTotalUsage(controller);
-        long archiveSize = calculateArchiveSize(controller);
-        return new AccountDetails(this, used, archiveSize);
-    }
-
-    /**
-     * @param controller
-     * @return the total used online storage size on THIS server only.
-     */
-    public long calculateTotalUsage(Controller controller) {
-        return calculateTotalFoldersSize(controller)
-            + calculateArchiveSize(controller);
-    }
-
-    /**
-     * @param controller
-     * @return the total size used by this user on THIS server only.
-     */
-    private long calculateTotalFoldersSize(Controller controller) {
-        long totalSize = 0;
-        for (FolderInfo foInfo : getFoldersCharged()) {
-            Folder f = foInfo.getFolder(controller);
-            if (f == null) {
-                continue;
-            }
-            totalSize += f.getStatistic().getLocalSize();
-        }
-        return totalSize;
-    }
-
-    /**
-     * @param controller
-     * @return the total size of archive on THIS server only.
-     */
-    public long calculateArchiveSize(Controller controller) {
-        long start = System.currentTimeMillis();
-        long size = 0;
-        for (FolderInfo foInfo : getFoldersCharged()) {
-            Folder f = foInfo.getFolder(controller);
-            if (f == null) {
-                continue;
-            }
-            size += f.getFileArchiver().getSize();
-        }
-        long took = System.currentTimeMillis() - start;
-        if (took > 1000L * 20) {
-            LOG.warning("Calculating archive size for " + this + " took " + took
-                + "ms");
-        }
-        return size;
-    }
-
-    /**
      * Enables the selected account:
      * <p>
      * The Online Storage subscription
@@ -792,7 +732,7 @@ public class Account implements Serializable {
      * FIXME: Does only set the folders hosted on the CURRENT server to backup.
      * <p>
      * Account needs to be stored afterwards!!
-     *
+     * 
      * @param controller
      *            the controller
      */
@@ -810,7 +750,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that have SyncProfile.DISABLED to
      * SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT.
-     *
+     * 
      * @param controller
      * @return the number of folder the sync was re-enabled.
      */
@@ -834,7 +774,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that don't have SyncProfile.DISABLED to
      * SyncProfile.DISABLED.
-     *
+     * 
      * @param controller
      * @return the number of folder the sync was disabled.
      */
@@ -866,7 +806,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to read the folder contents.
-     *
+     * 
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to read the folder contents
@@ -878,7 +818,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     *
+     * 
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -890,7 +830,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     *
+     * 
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
