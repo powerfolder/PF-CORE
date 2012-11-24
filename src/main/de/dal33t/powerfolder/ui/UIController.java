@@ -76,6 +76,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
 import de.dal33t.powerfolder.event.FolderAutoCreateListener;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -121,6 +122,7 @@ import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
+import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -159,6 +161,7 @@ public class UIController extends PFComponent {
     private static final String COMMAND_RESUME = "resume";
     private static final String COMMAND_PREFERENCES = "preferences";
     private static final String COMMAND_BROWSE = "browse";
+    private static final String COMMAND_RECENTLY_CHANGED = "recently-changed";
 
     private boolean started;
     private SplashScreen splash;
@@ -189,7 +192,8 @@ public class UIController extends PFComponent {
     private final AtomicBoolean synchronizing = new AtomicBoolean();
     private final DelayedUpdater statusUpdater;
 
-    private final Map<Long, FileInfo> recentlyChangedFiles = Util.createConcurrentHashMap();
+    private final Map<Long, FileInfo> recentlyChangedFiles = Util
+        .createConcurrentHashMap();
     private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
     private final PreferencesDialog preferencesDialog;
     /**
@@ -274,7 +278,6 @@ public class UIController extends PFComponent {
     /**
      * Starts the UI
      */
-    @SuppressWarnings("serial")
     public void start() {
         if (getController().isVerbose()) {
             // EventDispatchThreadHangMonitor.initMonitoring();
@@ -297,7 +300,8 @@ public class UIController extends PFComponent {
         }
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-        getController().getTransferManager().addListener(new MyTransferManagerListner());
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListner());
 
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
@@ -466,7 +470,8 @@ public class UIController extends PFComponent {
                                 Translation.getTranslation("general.cancel")},
                             0, GenericDialogType.QUESTION);
                         if (i == 0) {
-                            String password = textField.getText();
+                            String password = Util.toString(textField
+                                .getPassword());
                             getController().performFullSync();
                             getController().shutdownAfterSync(password);
                         }
@@ -499,22 +504,31 @@ public class UIController extends PFComponent {
                     askToPauseResume();
                 } else if (COMMAND_PREFERENCES.equals(e.getActionCommand())) {
                     preferencesDialog.open();
-//                } else if(e.getActionCommand().startsWith(COMMAND_RECENTLY_CHANGED)) {
-//                    int index = e.getActionCommand().lastIndexOf('-');
-//                    String suffix = e.getActionCommand().substring(index + 1);
-//                    int item = Integer.valueOf(suffix);
-//                    synchronized (recentlyChangedFiles) {
-//                        int i = 0;
-//                        for (FileInfo fileInfo : recentlyChangedFiles.values()) {
-//                            if (i++ == item) {
-//                                MultiFileRestorePanel p = new MultiFileRestorePanel(getController(), fileInfo.getFolder(getController().getFolderRepository()), Collections.singletonList(fileInfo));
-//                                PFWizard wizard = new PFWizard(getController(),
-//                                    Translation.getTranslation("wizard.pfwizard.restore_title"));
-//                                wizard.open(p);
-//                                break;
-//                            }
-//                        }
-//                    }
+                } else if (e.getActionCommand().startsWith(
+                    COMMAND_RECENTLY_CHANGED))
+                {
+                    int index = e.getActionCommand().lastIndexOf('-');
+                    String suffix = e.getActionCommand().substring(index + 1);
+                    int item = Integer.valueOf(suffix);
+                    synchronized (recentlyChangedFiles) {
+                        int i = 0;
+                        for (FileInfo fileInfo : recentlyChangedFiles.values())
+                        {
+                            if (i++ == item) {
+                                MultiFileRestorePanel p = new MultiFileRestorePanel(
+                                    getController(),
+                                    fileInfo.getFolder(getController()
+                                        .getFolderRepository()),
+                                    Collections.singletonList(fileInfo));
+                                PFWizard wizard = new PFWizard(
+                                    getController(),
+                                    Translation
+                                        .getTranslation("wizard.pfwizard.restore_title"));
+                                wizard.open(p);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         };
@@ -522,8 +536,8 @@ public class UIController extends PFComponent {
         // /////////////////////////
         // Open / close menu item //
         // /////////////////////////
-        final MenuItem opentUI = new MenuItem(Translation.getTranslation(
-                "systray.show"));
+        final MenuItem opentUI = new MenuItem(
+            Translation.getTranslation("systray.show"));
         menu.add(opentUI);
         opentUI.setActionCommand(COMMAND_OPENUI);
         opentUI.addActionListener(systrayActionHandler);
@@ -540,7 +554,7 @@ public class UIController extends PFComponent {
             item.setActionCommand(COMMAND_WEB);
             item.addActionListener(systrayActionHandler);
         }
-        
+
         // //////////
         // Folders //
         // //////////
@@ -562,8 +576,8 @@ public class UIController extends PFComponent {
         // /////////////////
         // Pause / Resume //
         // /////////////////
-        pauseResumeMenu = new MenuItem(Translation.getTranslation(
-                "action_resume_sync.name"));
+        pauseResumeMenu = new MenuItem(
+            Translation.getTranslation("action_resume_sync.name"));
         menu.add(pauseResumeMenu);
         pauseResumeMenu.addActionListener(systrayActionHandler);
         getController().addPausedModeListener(new MyPausedModeListener());
@@ -572,16 +586,16 @@ public class UIController extends PFComponent {
         // /////////
         // Recent //
         // /////////
-//        recentlyChangedMenu = new Menu(Translation.getTranslation(
-//                "uicontroller.recently_changed"));
-//        recentlyChangedMenu.setEnabled(false);
-//        menu.add(recentlyChangedMenu);
-//        for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
-//            recentMenuItems[i] = new MenuItem();
-//            recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
-//                    i);
-//            recentMenuItems[i].addActionListener(systrayActionHandler);
-//        }
+        // recentlyChangedMenu = new Menu(Translation.getTranslation(
+        // "uicontroller.recently_changed"));
+        // recentlyChangedMenu.setEnabled(false);
+        // menu.add(recentlyChangedMenu);
+        // for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
+        // recentMenuItems[i] = new MenuItem();
+        // recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED +
+        // i);
+        // recentMenuItems[i].addActionListener(systrayActionHandler);
+        // }
 
         // //////////////
         // Preferences //
@@ -598,7 +612,6 @@ public class UIController extends PFComponent {
                 prefItem.setEnabled(hasPermission);
             }
         };
-       
 
         menu.addSeparator();
 
@@ -606,8 +619,8 @@ public class UIController extends PFComponent {
         // Sync Shutdown //
         // ////////////////
         if (SystemUtil.isShutdownSupported()) {
-            item = menu.add(new MenuItem(Translation.getTranslation(
-                    "systray.sync_shutdown")));
+            item = menu.add(new MenuItem(Translation
+                .getTranslation("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
         }
@@ -615,16 +628,16 @@ public class UIController extends PFComponent {
         // ////////////
         // Sync Exit //
         // ////////////
-        item = menu.add(new MenuItem(Translation.getTranslation(
-                "systray.sync_exit")));
+        item = menu.add(new MenuItem(Translation
+            .getTranslation("systray.sync_exit")));
         item.setActionCommand(COMMAND_SYNC_EXIT);
         item.addActionListener(systrayActionHandler);
 
         // ///////
         // Exit //
         // ///////
-        item = menu.add(new MenuItem(Translation.getTranslation(
-                "systray.exit")));
+        item = menu
+            .add(new MenuItem(Translation.getTranslation("systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
@@ -811,7 +824,7 @@ public class UIController extends PFComponent {
         if (!seenOome) {
             seenOome = true;
             applicationModel.getNoticesModel().handleNotice(
-                    new OutOfMemoryNotice(oome));
+                new OutOfMemoryNotice(oome));
         }
     }
 
@@ -864,10 +877,10 @@ public class UIController extends PFComponent {
      * @param folderInfo
      *            info of the folder to display files information for.
      */
-//    public void openFilesInformationIncoming(FolderInfo folderInfo) {
-//        informationFrame.displayFolderFilesIncoming(folderInfo);
-//        displayInformationWindow();
-//    }
+    // public void openFilesInformationIncoming(FolderInfo folderInfo) {
+    // informationFrame.displayFolderFilesIncoming(folderInfo);
+    // displayInformationWindow();
+    // }
 
     public void openFilesInformationDeleted(FolderInfo folderInfo) {
         informationFrame.displayFolderFilesDeleted(folderInfo);
@@ -1155,14 +1168,13 @@ public class UIController extends PFComponent {
 
     /**
      * Only use this for preview from the DialogSettingsTab.
-     *
+     * 
      * @param title
      * @param message
      */
     public void previewMessage(String title, String message) {
-        PreviewNotificationHandler notificationHandler =
-                new PreviewNotificationHandler(getController(), title,
-                        message);
+        PreviewNotificationHandler notificationHandler = new PreviewNotificationHandler(
+            getController(), title, message);
         notificationHandler.show();
     }
 
@@ -1251,16 +1263,16 @@ public class UIController extends PFComponent {
             sb.toString(), GenericDialogType.INFO);
     }
 
-//    public void clearBlink() {
-//        if (trayIconManager != null) {
-//            trayIconManager.clearBlink();
-//        }
-//    }
+    // public void clearBlink() {
+    // if (trayIconManager != null) {
+    // trayIconManager.clearBlink();
+    // }
+    // }
 
     /**
-     * Special case. A folder has just been created from an invite.
-     * Switch to the folder tab and crack open the new folder info.
-     *
+     * Special case. A folder has just been created from an invite. Switch to
+     * the folder tab and crack open the new folder info.
+     * 
      * @param folderInfo
      */
     public void displayInviteFolderContents(FolderInfo folderInfo) {
@@ -1270,24 +1282,25 @@ public class UIController extends PFComponent {
 
     private void configurePauseResumeLink() {
         if (getController().isPaused()) {
-            pauseResumeMenu.setLabel(Translation.getTranslation(
-                    "action_resume_sync.name"));
+            pauseResumeMenu.setLabel(Translation
+                .getTranslation("action_resume_sync.name"));
             pauseResumeMenu.setActionCommand(COMMAND_RESUME);
         } else {
-            pauseResumeMenu.setLabel(Translation.getTranslation(
-                    "action_pause_sync.name"));
+            pauseResumeMenu.setLabel(Translation
+                .getTranslation("action_pause_sync.name"));
             pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
         }
     }
 
     private void checkStatus() {
-      //  logInfo("From", new RuntimeException());
+        // logInfo("From", new RuntimeException());
         statusUpdater.schedule(new Runnable() {
             public void run() {
                 checkStatus0();
             }
         });
     }
+
     /**
      * Display folder synchronization info. A copy of the MyFolders quick info
      * panel text.
@@ -1344,7 +1357,7 @@ public class UIController extends PFComponent {
 
     /**
      * Maintain a list of the most recently changed files.
-     *
+     * 
      * @param fileInfo
      */
     private void addRecentFileChange(FileInfo fileInfo) {
@@ -1415,49 +1428,41 @@ public class UIController extends PFComponent {
         }
     }
 
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener extends FolderAdapter {
 
         public boolean fireInEventDispatchThread() {
             return false;
         }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
-            //logWarning("Stats calced for " + folderEvent.getFolder(), new RuntimeException());
+            // logWarning("Stats calced for " + folderEvent.getFolder(), new
+            // RuntimeException());
             checkStatus();
         }
 
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-        }
-
         public void fileChanged(FolderEvent folderEvent) {
-//            Collection<FileInfo> collection = folderEvent.getScannedFileInfos();
-//            if (collection != null) {
-//                for (FileInfo fileInfo : collection) {
-//                    if (!fileInfo.isDiretory()) {
-//                        addRecentFileChange(fileInfo);
-//                    }
-//                }
-//            }
+            Collection<FileInfo> collection = folderEvent.getScannedFileInfos();
+            if (collection != null) {
+                for (FileInfo fileInfo : collection) {
+                    if (!fileInfo.isDiretory()) {
+                        addRecentFileChange(fileInfo);
+                    }
+                }
+            }
         }
 
         public void filesDeleted(FolderEvent folderEvent) {
-//            Collection<FileInfo> collection = folderEvent.getDeletedFileInfos();
-//            if (collection != null) {
-//                for (FileInfo fileInfo : collection) {
-//                    if (!fileInfo.isDiretory()) {
-//                        addRecentFileChange(fileInfo);
-//                    }
-//                }
-//            }
+            Collection<FileInfo> collection = folderEvent.getDeletedFileInfos();
+            if (collection != null) {
+                for (FileInfo fileInfo : collection) {
+                    if (!fileInfo.isDiretory()) {
+                        addRecentFileChange(fileInfo);
+                    }
+                }
+            }
         }
     }
-    
+
     private class MyTransferManagerListner implements TransferManagerListener {
 
         public boolean fireInEventDispatchThread() {
@@ -1465,7 +1470,7 @@ public class UIController extends PFComponent {
         }
 
         public void downloadRequested(TransferManagerEvent event) {
-            //checkStatus();
+            // checkStatus();
         }
 
         public void downloadQueued(TransferManagerEvent event) {
@@ -1495,7 +1500,7 @@ public class UIController extends PFComponent {
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            //checkStatus();
+            // checkStatus();
         }
 
         public void uploadStarted(TransferManagerEvent event) {
@@ -1517,7 +1522,7 @@ public class UIController extends PFComponent {
         public void completedUploadRemoved(TransferManagerEvent event) {
         }
     }
-  
+
     /**
      * Class to handle local and remote mass deletion events. This pushes
      * warnings into the app model.
@@ -1582,7 +1587,7 @@ public class UIController extends PFComponent {
                     Translation.getTranslation("notice.invitation.title"),
                     Translation.getTranslation("notice.invitation.summary",
                         invitation.getBestUsername(), invitation.folder.name),
-                        invitation);
+                    invitation);
                 applicationModel.getNoticesModel().handleNotice(notice);
             }
         }
@@ -1620,17 +1625,17 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Can we shut down?
-     * If WARN_ON_CLOSE, let user know if there are any folders still syncing.
-     *
+     * Can we shut down? If WARN_ON_CLOSE, let user know if there are any
+     * folders still syncing.
+     * 
      * @return if all clear to shut down.
      */
     public boolean isShutdownAllowed() {
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
             .getValueBoolean(getController());
         if (warnOnClose) {
-            Collection<Folder> folderCollection =
-                    getController().getFolderRepository().getFolders();
+            Collection<Folder> folderCollection = getController()
+                .getFolderRepository().getFolders();
             List<Folder> foldersToWarn = new ArrayList<Folder>(
                 folderCollection.size());
             for (Folder folder : folderCollection) {
@@ -1661,16 +1666,18 @@ public class UIController extends PFComponent {
                 }
                 String question = Translation
                     .getTranslation("general.neverAskAgain");
-                NeverAskAgainResponse response = DialogFactory
-                    .genericDialog(getController(), title, text,
-                            new String[]{
-                            Translation.getTranslation(
-                                    "uicontroller.continue_exit"),
-                            Translation.getTranslation("general.cancel")},
-                        0, GenericDialogType.QUESTION, question);
+                NeverAskAgainResponse response = DialogFactory.genericDialog(
+                    getController(),
+                    title,
+                    text,
+                    new String[]{
+                        Translation
+                            .getTranslation("uicontroller.continue_exit"),
+                        Translation.getTranslation("general.cancel")}, 0,
+                    GenericDialogType.QUESTION, question);
                 if (response.isNeverAskAgain()) {
-                    PreferencesEntry.WARN_ON_CLOSE.setValue(
-                        getController(), false);
+                    PreferencesEntry.WARN_ON_CLOSE.setValue(getController(),
+                        false);
                 }
                 return response.getButtonIndex() == 0;
             }
@@ -1693,7 +1700,5 @@ public class UIController extends PFComponent {
             configurePauseResumeLink();
         }
     }
-
-
 
 }
