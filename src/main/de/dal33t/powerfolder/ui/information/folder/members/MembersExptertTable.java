@@ -161,7 +161,7 @@ public class MembersExptertTable extends JTable {
 
             boolean isServer = folderMember.getMember() != null
                 && (model.getController().getOSClient()
-                    .isCloudServer(folderMember.getMember()));
+                    .isClusterServer(folderMember.getMember()));
 
             if (actualColumn == MembersExpertTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
