@@ -22,11 +22,11 @@ package de.dal33t.powerfolder.light;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,6 +39,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
 
 /**
  * Contains the statistic calculation result / infos about one folder. This
@@ -255,12 +257,12 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
      * @throws IOException
      */
     public boolean save(File file) {
-        FileOutputStream fout = null;
+        OutputStream fout = null;
         if (isFiner()) {
             logFiner("Writing folder " + folder.getName() + " stats to " + file);
         }
         try {
-            fout = new FileOutputStream(file);
+            fout = new TFileOutputStream(file);
             ObjectOutputStream oout = new ObjectOutputStream(
                 new BufferedOutputStream(fout));
             oout.writeObject(this);
@@ -284,9 +286,9 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         if (!file.exists()) {
             return null;
         }
-        FileInputStream fin = null;
+        InputStream fin = null;
         try {
-            fin = new FileInputStream(file);
+            fin = new TFileInputStream(file);
             ObjectInputStream oin = new ObjectInputStream(
                 new BufferedInputStream(fin));
             return (FolderStatisticInfo) oin.readObject();
