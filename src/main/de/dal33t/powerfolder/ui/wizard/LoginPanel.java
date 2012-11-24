@@ -319,8 +319,11 @@ public class LoginPanel extends PFWizardPanel {
                         Translation
                             .getTranslation("online_storage.account_data"));
                 }
+            } catch (SecurityException e) {
+                LOG.log(Level.SEVERE, "Problem logging in: " + e.getMessage());
+                throw e;
             } catch (Exception e) {
-                LOG.log(Level.SEVERE, "Problem logging in", e);
+                LOG.log(Level.SEVERE, "Problem logging in: " + e, e);
                 throw new SecurityException(e.getMessage() == null
                     ? e.toString()
                     : e.getMessage());
