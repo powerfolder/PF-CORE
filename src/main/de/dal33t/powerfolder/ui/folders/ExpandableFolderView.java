@@ -50,9 +50,9 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -138,7 +138,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private ActionLabel syncDateLabel;
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
-//    private ActionLabel filesAvailableLabel;
+    // private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JButtonMini primaryButton;
     private SyncIconButtonMini upperSyncFolderButton;
@@ -333,7 +333,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name #-files webdav open
         FormLayout upperLayout = new FormLayout(
-//                "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu", "pref");
+        // "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu", "pref");
             "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
@@ -350,10 +350,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         nameLabel.addMouseListener(moa);
         nameLabel.addMouseListener(mca); // Because this is the biggest blank
                                          // area where the user might click.
-        upperBuilder.add(upperSyncPercentageLabel.getUIComponent(),
-                cc.xy(5, 1));
-//        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(7, 1));
-//        filesAvailableLabel.getUIComponent().addMouseListener(moa);
+        upperBuilder
+            .add(upperSyncPercentageLabel.getUIComponent(), cc.xy(5, 1));
+        // upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(7, 1));
+        // filesAvailableLabel.getUIComponent().addMouseListener(moa);
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -427,8 +427,9 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         } else {
             lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
-            if (ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
-                    getController())) {
+            if (ConfigurationEntry.SERVER_INVITE_ENABLED
+                .getValueBoolean(getController()))
+            {
                 lowerBuilder.add(inviteButton, cc.xy(5, row));
             }
 
@@ -499,8 +500,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             getController());
         openSettingsInformationAction.setEnabled(!getController()
             .isBackupOnly());
-        MyMoveLocalFolderAction moveLocalFolderAction =
-                new MyMoveLocalFolderAction(getController());
+        MyMoveLocalFolderAction moveLocalFolderAction = new MyMoveLocalFolderAction(
+            getController());
         moveLocalFolderAction.setEnabled(!getController().isBackupOnly());
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
@@ -508,10 +509,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         clearCompletedDownloadsAction = new MyClearCompletedDownloadsAction(
             getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
-        
-        // Allow to stop local sync even if no folder remove permissions was given.
+
+        // Allow to stop local sync even if no folder remove permissions was
+        // given.
         removeFolderLocalAction = new FolderRemoveAction(getController());
-        
+
         // Don't allow to choose action at all if online folder only.
         removeFolderOnlineAction = new FolderRemoveAction(getController());
         removeFolderOnlineAction.allowWith(FolderRemovePermission.INSTANCE);
@@ -536,7 +538,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             openSettingsInformationAction);
 
         upperSyncPercentageLabel = new ActionLabel(getController(),
-                new MyOpenFilesUnsyncedAction(getController()));
+            new MyOpenFilesUnsyncedAction(getController()));
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
 
         inviteButton = new JButtonMini(inviteAction);
@@ -569,8 +571,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         totalSizeLabel = new JLabel();
         membersLabel = new ActionLabel(getController(),
             openMembersInformationAction);
-//        filesAvailableLabel = new ActionLabel(getController(),
-//            new MyFilesAvailableAction());
+        // filesAvailableLabel = new ActionLabel(getController(),
+        // new MyFilesAvailableAction());
         deletedFilesLabel = new ActionLabel(getController(),
             new MyDeletedFilesAction());
         updateNumberOfFiles();
@@ -773,44 +775,50 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
-                        //If ETA sync > 2 days show text: "Estimated sync: Unknown"
-                        //If ETA sync > 20 hours show text: "Estimated sync: in X days"
-                        //If ETA sync > 45 minutes show text: "Estimated sync: in X hours"
-                        //If ETA sync < 45 minutes show text: "Estimated sync: in X minutes"
+                        // If ETA sync > 2 days show text:
+                        // "Estimated sync: Unknown"
+                        // If ETA sync > 20 hours show text:
+                        // "Estimated sync: in X days"
+                        // If ETA sync > 45 minutes show text:
+                        // "Estimated sync: in X hours"
+                        // If ETA sync < 45 minutes show text:
+                        // "Estimated sync: in X minutes"
                         if (DateUtil.isDateMoreThanNDaysInFuture(date, 2)) {
-                            syncDateText = Translation.getTranslation(
-                                    "main_frame.sync_eta_unknown");
+                            syncDateText = Translation
+                                .getTranslation("main_frame.sync_eta_unknown");
                         } else if (DateUtil.isDateMoreThanNHoursInFuture(date,
-                                20)) {
+                            20))
+                        {
                             int days = DateUtil.getDaysInFuture(date);
                             if (days <= 1) {
-                                syncDateText = Translation.getTranslation(
-                                        "exp_folder_view.sync_eta_one_day");
+                                syncDateText = Translation
+                                    .getTranslation("exp_folder_view.sync_eta_one_day");
                             } else {
                                 syncDateText = Translation.getTranslation(
-                                        "exp_folder_view.sync_eta_days",
-                                        String.valueOf(days));
+                                    "exp_folder_view.sync_eta_days",
+                                    String.valueOf(days));
                             }
-                        } else if (DateUtil.isDateMoreThanNMinutesInFuture(date,
-                                45)) {
+                        } else if (DateUtil.isDateMoreThanNMinutesInFuture(
+                            date, 45))
+                        {
                             int hours = DateUtil.getDaysInFuture(date);
                             if (hours <= 1) {
-                            syncDateText = Translation.getTranslation(
-                                    "exp_folder_view.sync_eta_one_hour");
+                                syncDateText = Translation
+                                    .getTranslation("exp_folder_view.sync_eta_one_hour");
                             } else {
                                 syncDateText = Translation.getTranslation(
-                                        "exp_folder_view.sync_eta_hours",
-                                        String.valueOf(hours));
+                                    "exp_folder_view.sync_eta_hours",
+                                    String.valueOf(hours));
                             }
                         } else {
                             int minutes = DateUtil.getHoursInFuture(date);
                             if (minutes <= 1) {
-                                syncDateText = Translation.getTranslation(
-                                        "exp_folder_view.sync_eta_one_minute");
+                                syncDateText = Translation
+                                    .getTranslation("exp_folder_view.sync_eta_one_minute");
                             } else {
                                 syncDateText = Translation.getTranslation(
-                                        "exp_folder_view.sync_eta_minutes",
-                                        String.valueOf(minutes));
+                                    "exp_folder_view.sync_eta_minutes",
+                                    String.valueOf(minutes));
 
                             }
                         }
@@ -1000,8 +1008,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_preview_text"));
             } else if (getController().isPaused()
-                    && Double.compare(sync, 100.0d) < 0
-                    && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
+                && Double.compare(sync, 100.0d) < 0
+                && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
             {
                 // Sync is in pause
                 primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
@@ -1010,8 +1018,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else if (Double.compare(sync, 100.0d) < 0) {
                 // Not synced and not syncing.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
-                primaryButton.setToolTipText(Translation.getTranslation(
-                        "exp_folder_view.folder_sync_incomplete"));
+                primaryButton.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.folder_sync_incomplete"));
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
@@ -1093,8 +1101,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
             if (!getController().isBackupOnly()) {
                 boolean addedSeparator = false;
-                if (ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(
-                        getController())) {
+                if (ConfigurationEntry.SERVER_INVITE_ENABLED
+                    .getValueBoolean(getController()))
+                {
                     contextMenu.addSeparator();
                     addedSeparator = true;
                     contextMenu.add(inviteAction).setIcon(null);
@@ -1301,7 +1310,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    private void doFolderChanges(Folder eventFolder) {
+    private synchronized void doFolderChanges(Folder eventFolder) {
+        logFiner("doFolderChanges: " + folderInfo.getName(),
+            new RuntimeException());
         if (folder == null || folder.equals(eventFolder)) {
             folderUpdater.schedule(new Runnable() {
                 public void run() {
@@ -1343,10 +1354,16 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent.getFolder());
+            if (folderEvent.getScanResult().isChangeDetected()) {
+                doFolderChanges(folderEvent.getFolder());                
+            }
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
+            doFolderChanges(folderEvent.getFolder());
+        }
+
+        public void archiveSettingsChanged(FolderEvent folderEvent) {
             doFolderChanges(folderEvent.getFolder());
         }
 
@@ -1622,7 +1639,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformationUnsynced(
-                    folderInfo);
+                folderInfo);
         }
     }
 
@@ -1717,13 +1734,13 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-//    private class MyFilesAvailableAction extends AbstractAction {
-//
-//        public void actionPerformed(ActionEvent e) {
-//            getController().getUIController().openFilesInformationIncoming(
-//                folderInfo);
-//        }
-//    }
+    // private class MyFilesAvailableAction extends AbstractAction {
+    //
+    // public void actionPerformed(ActionEvent e) {
+    // getController().getUIController().openFilesInformationIncoming(
+    // folderInfo);
+    // }
+    // }
 
     private class MyDeletedFilesAction extends AbstractAction {
 
