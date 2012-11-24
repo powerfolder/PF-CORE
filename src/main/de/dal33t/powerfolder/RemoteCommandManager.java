@@ -448,7 +448,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         {
             if (absPath.startsWith(folder.getLocalBase().getAbsolutePath())) {
                 FileInfo fInfo = FileInfoFactory.lookupInstance(folder, file);
-                String openLink = getController().getOSClient().getFileOpenURL(
+                String openLink = getController().getOSClient().getFileLink(
                     fInfo);
                 Util.setClipboardContents(openLink);
                 try {
