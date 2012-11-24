@@ -36,8 +36,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -130,7 +130,7 @@ public class DirectoryFilter extends FilterModel {
     public ValueModel getSearchModeVM() {
         return searchModeVM;
     }
-    
+
     public DirectoryInfo getCurrentDirectoryInfo() {
         return currentDirectoryInfo;
     }
@@ -238,7 +238,7 @@ public class DirectoryFilter extends FilterModel {
             public void run() {
                 for (DirectoryFilterListener listener : listeners) {
                     listener.adviseOfFilteringBegin();
-                }  
+                }
             }
         };
         try {
@@ -247,7 +247,6 @@ public class DirectoryFilter extends FilterModel {
             logWarning(e.toString());
             return;
         }
-       
 
         Date start = new Date();
         if (isFiner()) {
@@ -284,7 +283,8 @@ public class DirectoryFilter extends FilterModel {
             }
         }
 
-        final boolean changed = !folder.getName().equals(lastFolderName.getValue());
+        final boolean changed = !folder.getName().equals(
+            lastFolderName.getValue());
         lastFolderName.setValue(folder.getName());
 
         final boolean defaultFilder = fileFilterMode == FILE_FILTER_MODE_LOCAL_AND_INCOMING
@@ -585,7 +585,7 @@ public class DirectoryFilter extends FilterModel {
     /**
      * Listener to respond to folder events. Queue filter event if our folder.
      */
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener extends FolderAdapter {
         public boolean fireInEventDispatchThread() {
             return true;
         }
@@ -610,12 +610,6 @@ public class DirectoryFilter extends FilterModel {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 checkAndQueue(folderEvent);
             }
-        }
-
-        public void statisticsCalculated(FolderEvent folderEvent) {
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
         }
 
         private void checkAndQueue(FolderEvent folderEvent) {
