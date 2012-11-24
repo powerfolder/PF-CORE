@@ -67,7 +67,7 @@ public class FolderReadPermission extends FolderPermission {
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (!(obj instanceof FolderReadPermission))
             return false;
         final FolderReadPermission other = (FolderReadPermission) obj;
         if (folder == null) {

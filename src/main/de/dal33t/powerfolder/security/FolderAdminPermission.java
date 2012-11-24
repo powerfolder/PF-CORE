@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.5 $
  */
 public class FolderAdminPermission extends FolderPermission {
+
     private static final long serialVersionUID = 100L;
 
     @Deprecated
@@ -77,6 +78,31 @@ public class FolderAdminPermission extends FolderPermission {
             return rwp.getFolder().equals(getFolder());
         }
         return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((folder == null) ? 0 : folder.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (!(obj instanceof FolderAdminPermission))
+            return false;
+        FolderAdminPermission other = (FolderAdminPermission) obj;
+        if (folder == null) {
+            if (other.folder != null)
+                return false;
+        } else if (!folder.equals(other.folder))
+            return false;
+        return true;
     }
 
     // Serialization compatibility ********************************************

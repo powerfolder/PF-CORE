@@ -66,7 +66,7 @@ public abstract class FolderPermission implements Permission {
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (!(obj instanceof FolderPermission))
             return false;
         final FolderPermission other = (FolderPermission) obj;
         if (folder == null) {
