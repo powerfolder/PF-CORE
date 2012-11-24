@@ -59,12 +59,12 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
-import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -451,6 +451,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 String openLink = getController().getOSClient().getFileOpenURL(
                     fInfo);
                 Util.setClipboardContents(openLink);
+                try {
+                    BrowserLauncher.openURL(openLink);
+                } catch (IOException e) {
+                   logWarning("Unable to open in browser: " + openLink);
+                }
                 return;
             }
         }
