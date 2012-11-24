@@ -70,9 +70,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         }
 
         startControllerLisa();
-
         connectBartAndLisa();
-        joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         TestHelper.waitMilliSeconds(2500);
 
