@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,6 +93,8 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  */
 public class NodeManager extends PFComponent {
 
+    public static final String SERVER_NODES_URI = "/client_deployment/server.nodes";
+    
     private static final Logger log = Logger.getLogger(NodeManager.class
         .getName());
 
@@ -952,7 +956,9 @@ public class NodeManager extends PFComponent {
                 nNewNodes++;
             } else {
                 // update own information if more valueable
-                thisNode.updateInfo(newNode);
+                if (!thisNode.isServer()) {
+                    thisNode.updateInfo(newNode);
+                }
             }
 
             if (newNode.isConnected) {
@@ -1073,7 +1079,7 @@ public class NodeManager extends PFComponent {
             throw new ConnectionException("Remote client not on same network "
                 + handler + ", disconnecting. remote network ID: "
                 + remoteIdentity.getMemberInfo().networkId
-  + ". Expected/Ours: " + getNetworkId()).with(handler);
+                + ". Expected/Ours: " + getNetworkId()).with(handler);
         }
 
         Member member;
@@ -1402,6 +1408,32 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Loads members from url and adds them
+     * 
+     * @param url
+     */
+    private boolean loadNodesFrom(URL url) {
+        try {
+            NodeList nodeList = new NodeList();
+            nodeList.load(url);
+            logInfo("Loaded " + nodeList.getServersSet().size()
+                + " servers from " + url + " : " + nodeList.getServersSet());
+            return processNodeList(nodeList);
+        } catch (IOException e) {
+            logWarning("Unable to load servers from url '" + url + "'. "
+                + e.getMessage());
+            logFiner("IOException", e);
+        } catch (ClassCastException e) {
+            logWarning("Illegal format of servers url '" + url);
+            logFiner("ClassCastException", e);
+        } catch (ClassNotFoundException e) {
+            logWarning("Illegal format of servers files '" + url);
+            logFiner("ClassNotFoundException", e);
+        }
+        return false;
+    }
+
+    /**
      * Loads members from disk and adds them
      * 
      * @param nodeList
@@ -1425,22 +1457,7 @@ public class NodeManager extends PFComponent {
 
             logFine("Loaded " + nodeList.getNodeList().size() + " nodes from "
                 + nodesFile.getAbsolutePath());
-            queueNewNodes(nodeList.getNodeList().toArray(
-                new MemberInfo[nodeList.getNodeList().size()]));
-
-            for (MemberInfo friend : nodeList.getFriendsSet()) {
-                Member node = friend.getNode(getController(), true);
-                if (!this.friends.containsKey(node.getId()) && !node.isMySelf())
-                {
-                    this.friends.put(node.getId(), node);
-                }
-            }
-            for (MemberInfo server : nodeList.getServersSet()) {
-                Member node = server.getNode(getController(), true);
-                node.setServer(true);
-                logFine("Loaded server: " + node);
-            }
-            return !nodeList.getNodeList().isEmpty();
+            return processNodeList(nodeList);
         } catch (IOException e) {
             logWarning("Unable to load nodes from file '" + filename + "'. "
                 + e.getMessage());
@@ -1462,6 +1479,25 @@ public class NodeManager extends PFComponent {
         return false;
     }
 
+    private boolean processNodeList(NodeList nodeList) {
+        queueNewNodes(nodeList.getNodeList().toArray(
+            new MemberInfo[nodeList.getNodeList().size()]));
+
+        for (MemberInfo friend : nodeList.getFriendsSet()) {
+            Member node = friend.getNode(getController(), true);
+            if (!this.friends.containsKey(node.getId()) && !node.isMySelf()) {
+                this.friends.put(node.getId(), node);
+            }
+        }
+        for (MemberInfo server : nodeList.getServersSet()) {
+            Member node = server.getNode(getController(), true);
+            node.updateInfo(server);
+            node.setServer(true);
+            logFine("Loaded server: " + node);
+        }
+        return !nodeList.getNodeList().isEmpty();
+    }
+
     /**
      * Loads members from disk and connects to them
      */
@@ -1474,6 +1510,23 @@ public class NodeManager extends PFComponent {
             if (!loadNodesFrom(filename)) {
                 return;
             }
+        }
+        if (ConfigurationEntry.SERVER_LOAD_NODES
+            .getValueBoolean(getController()))
+        {
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    String webURL = getController().getOSClient().getWebURL();
+                    if (StringUtils.isBlank(webURL)) {
+                        return;
+                    }
+                    try {
+                        loadNodesFrom(new URL(webURL + SERVER_NODES_URI));
+                    } catch (MalformedURLException e) {
+                        logWarning(e.toString());
+                    }
+                }
+            });
         }
     }
 
@@ -1488,14 +1541,15 @@ public class NodeManager extends PFComponent {
         // Add myself to know nodes
         Collection<MemberInfo> friendInfos = Convert.asMemberInfos(friends
             .values());
-        NodeList nodeList = new NodeList(allNodesInfos, friendInfos, getServers());
+        NodeList nodeList = new NodeList(allNodesInfos, friendInfos,
+            getServers());
 
         if (!storeNodes0(getController().getConfigName() + ".nodes", nodeList))
         {
             logFine("Nodes file could not be written");
         }
     }
-    
+
     private Collection<MemberInfo> getServers() {
         Collection<MemberInfo> servers = new LinkedList<MemberInfo>();
         for (Member member : knownNodes.values()) {
