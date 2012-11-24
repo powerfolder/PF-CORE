@@ -64,6 +64,10 @@ public class AccountDetails implements Serializable {
     public long getArchiveSize() {
         return recycleBinSize;
     }
+    
+    public boolean isUnknown() {
+        return spaceUsed < 0;
+    }
 
     public String toString() {
         return "AccountDetails, " + user + ". "
