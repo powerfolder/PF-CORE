@@ -100,7 +100,11 @@ public class Format extends PFComponent {
             number /= 1024;
             suffix = "TB";
         }
+        
         String str = formatDecimal(number);
+        if (number < 0) {
+            str = "??";
+        }
         return str + ' ' + suffix;
     }
 
