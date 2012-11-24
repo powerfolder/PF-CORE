@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.light;
 import java.io.Serializable;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -52,8 +53,7 @@ public class ServerInfo implements Serializable {
     private String webUrl;
     private String httpTunnelUrl;
 
-    @SuppressWarnings("unused")
-    private ServerInfo() {
+    protected ServerInfo() {
         // NOP - only for Hibernate
     }
 
@@ -94,6 +94,10 @@ public class ServerInfo implements Serializable {
     public String getId() {
         return id;
     }
+    
+    public String getName() {
+        return node.getNick();
+    }
 
     public void migrateId() {
         this.id = node.id;
@@ -113,13 +117,13 @@ public class ServerInfo implements Serializable {
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (!(obj instanceof ServerInfo))
             return false;
         final ServerInfo other = (ServerInfo) obj;
-        if (node == null) {
-            if (other.node != null)
+        if (id == null) {
+            if (other.id != null)
                 return false;
-        } else if (!node.equals(other.node))
+        } else if (!id.equals(other.id))
             return false;
         return true;
     }
