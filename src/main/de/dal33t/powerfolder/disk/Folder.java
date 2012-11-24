@@ -99,6 +99,7 @@ import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -125,6 +126,7 @@ public class Folder extends PFComponent {
 
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
     public static final String METAFOLDER_MEMBERS = "Members";
+    public static final String FOLDER_STATISTIC = "FolderStatistic";
 
     private static final int TEN_MINUTES = 60 * 10;
     private static final int ONE_MINUTE = 60;
@@ -255,6 +257,11 @@ public class Folder extends PFComponent {
     private boolean encrypted;
 
     /**
+     * Encryption key when a client with valid credentials is connected.
+     */
+    private char[] encryptionKeyOBF;
+
+    /**
      * #1538: Script that gets executed after a download has been completed
      * successfully.
      */
@@ -318,7 +325,9 @@ public class Folder extends PFComponent {
                     + localBase);
             }
             if (!localBase.isArchive()) {
-                throw new IllegalStateException();
+                throw new IllegalStateException(
+                    "Unable to open encrypted container for folder "
+                        + getName() + " at " + localBase);
             }
         } else if (folderSettings.getLocalBaseDir().isAbsolute()) {
             localBase = new TFile(folderSettings.getLocalBaseDir());
@@ -552,26 +561,36 @@ public class Folder extends PFComponent {
      *            the ArchiveMode
      */
     public void setArchiveMode(ArchiveMode mode) {
+        if (archiver.getArchiveMode() == mode) {
+            return;
+        }
         try {
             archiver = mode.getInstance(this);
             String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
                 + FolderSettings.FOLDER_SETTINGS_ARCHIVE;
             getController().getConfig().put(syncProfKey, mode.name());
             getController().saveConfig();
+            fireArchiveSettingsChanged();
         } catch (Exception e) {
             logWarning("Unable to set new archive mode: " + mode
                 + ". Falling back to no backup archive. " + e);
             logFiner(e);
             archiver = ArchiveMode.NO_BACKUP.getInstance(this);
+            fireArchiveSettingsChanged();
         }
     }
 
     public void setArchiveVersions(int versions) {
+        int oldVersions = archiver.getVersionsPerFile();
+        if (oldVersions == versions) {
+            return;
+        }
         archiver.setVersionsPerFile(versions);
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
             + FolderSettings.FOLDER_SETTINGS_VERSIONS;
         getController().getConfig().put(syncProfKey, String.valueOf(versions));
         getController().saveConfig();
+        fireArchiveSettingsChanged();
     }
 
     /**
@@ -1637,7 +1656,7 @@ public class Folder extends PFComponent {
                     if (member.isMySelf()) {
                         continue;
                     }
-                    join0(member, true);
+                    join0(member, !getController().isStarted());
                 }
 
                 // Old blacklist explicit items.
@@ -1662,7 +1681,7 @@ public class Folder extends PFComponent {
                     if (object instanceof Date) {
                         lastScan = (Date) object;
                         if (isFiner()) {
-                            logFiner("lastScan" + lastScan);
+                            logFiner("lastScan " + lastScan);
                         }
                     }
                 } catch (EOFException e) {
@@ -2352,10 +2371,8 @@ public class Folder extends PFComponent {
         Reject.ifNull(member, "Member is null, unable to join");
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
-        if (!wasMember && isInfo() && !init) {
-            if (isInfo() && !currentInfo.isMetaFolder()) {
-                logInfo("Member joined " + member);
-            }
+        if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
+            logInfo("Member joined " + member.getNick());
         }
         if (!init) {
             if (!wasMember && member.isCompletelyConnected()) {
@@ -3188,7 +3205,7 @@ public class Folder extends PFComponent {
         if (shutdown) {
             return;
         }
-
+        
         // Correct FolderInfo in case it differs.
         if (changes.getFiles() != null) {
             for (int i = 0; i < changes.getFiles().length; i++) {
@@ -3571,7 +3588,7 @@ public class Folder extends PFComponent {
         if ((hasOwnDatabase || getKnownItemCount() > 0)
             && !getSystemSubDir0().exists())
         {
-            logWarning("Not storting folder database. Local system directory does not exists: "
+            logWarning("Not storing folder database. Local system directory does not exists: "
                 + getLocalBase());
             return;
         }
@@ -4243,7 +4260,14 @@ public class Folder extends PFComponent {
      * @return the local fileinfo instance
      */
     public FileInfo getFile(FileInfo fInfo) {
-        return dao.find(fInfo, null);
+        FileInfo localInfo = dao.find(fInfo, null);
+        if (localInfo != null) {
+            return localInfo;
+        }
+        if (fInfo.isBaseDirectory()) {
+            return getBaseDirectoryInfo();
+        }
+        return null;
     }
 
     /**
@@ -4499,7 +4523,7 @@ public class Folder extends PFComponent {
     private boolean hasFolderPermission(Member member,
         FolderPermission permission)
     {
-        if (getController().getOSClient().isCloudServer(member)) {
+        if (getController().getOSClient().isClusterServer(member)) {
             return true;
         }
         return getController().getSecurityManager().hasPermission(
@@ -4513,7 +4537,12 @@ public class Folder extends PFComponent {
         Folder parentFolder = getController().getFolderRepository()
             .getParentFolder(currentInfo);
         if (parentFolder == null) {
-            logWarning("Unable to retrieve parent folder for " + currentInfo);
+            if (currentInfo.isMetaFolder()) {
+                logFine("Unable to retrieve parent folder for " + currentInfo);
+            } else {
+                logWarning("Unable to retrieve parent folder for "
+                    + currentInfo);
+            }
             return currentInfo;
         }
         return parentFolder.currentInfo;
@@ -4637,6 +4666,11 @@ public class Folder extends PFComponent {
     private void fireSyncProfileChanged() {
         FolderEvent folderEvent = new FolderEvent(this, syncProfile);
         folderListenerSupport.syncProfileChanged(folderEvent);
+    }
+
+    private void fireArchiveSettingsChanged() {
+        FolderEvent folderEvent = new FolderEvent(this);
+        folderListenerSupport.archiveSettingsChanged(folderEvent);
     }
 
     private void fireScanResultCommited(ScanResult scanResult) {
@@ -4831,6 +4865,26 @@ public class Folder extends PFComponent {
         archiver.cleanupOldArchiveFiles(cleanupDate);
     }
 
+    // Encryption logic *******************************************************
+
+    public boolean isEncrypted() {
+        return encrypted;
+    }
+
+    public char[] getEncryptionKeyOBF() {
+        return encryptionKeyOBF;
+    }
+
+    public void setEncryptionKey(char[] encryptionKeyPlain) {
+        char[] newKeyOBF = Util.toCharArray(LoginUtil
+            .obfuscate(encryptionKeyPlain));
+        if (encryptionKeyOBF == null
+            || Arrays.equals(newKeyOBF, encryptionKeyOBF))
+        {
+            this.encryptionKeyOBF = newKeyOBF;
+        }
+    }
+
     // Inner classes **********************************************************
 
     /**
@@ -4859,9 +4913,4 @@ public class Folder extends PFComponent {
             return "FolderPersister for '" + Folder.this;
         }
     }
-
-    public boolean isEncrypted() {
-        return encrypted;
-    }
-
 }
