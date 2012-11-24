@@ -79,7 +79,7 @@ public class SingletonPermission implements Permission {
             return true;
         if (obj == null)
             return false;
-        return getClass() == obj.getClass();
+        return getClass().isInstance(obj);
     }
 
     public String toString() {
