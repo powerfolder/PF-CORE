@@ -58,6 +58,14 @@ public class InvitationUtil {
     private InvitationUtil() {
     }
 
+    public static boolean isDefaultMessage(String message) {
+        if (message == null) {
+            return false;
+        }
+        return message.equalsIgnoreCase("Attach a personal message")
+            || message.equalsIgnoreCase("Persönliche Nachrichten anhängen");
+    }
+
     /**
      * Loads an invitation from a file. Return the invitation or null if not
      * possible to load the file
@@ -220,8 +228,8 @@ public class InvitationUtil {
         // return;
         // }
 
-        controller.getOSClient().getFolderService().sendInvitationEmail(
-            new SendInvitationEmail(invitation, to, ccMe));
+        controller.getOSClient().getFolderService()
+            .sendInvitationEmail(new SendInvitationEmail(invitation, to, ccMe));
     }
 
     /**
@@ -247,9 +255,7 @@ public class InvitationUtil {
             fc.setDialogTitle(Translation
                 .getTranslation("send_invitation.placetostore"));
             // Recommended file
-            fc
-                .setSelectedFile(new File(invitation.folder.name
-                    + ".invitation"));
+            fc.setSelectedFile(new File(invitation.folder.name + ".invitation"));
             fc.setFileFilter(createInvitationsFilefilter());
             int result = fc.showSaveDialog(controller.getUIController()
                 .getMainFrame().getUIComponent());
