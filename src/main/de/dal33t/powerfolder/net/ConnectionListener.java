@@ -85,13 +85,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
         // check our own dyndns address
         String dns = ConfigurationEntry.HOSTNAME.getValue(getController());
-        String clidns = controller.getCommandLine() != null ? controller
-            .getCommandLine().getOptionValue("d") : null;
-
-        if (!StringUtils.isEmpty(clidns)) {
-            // Overwrite dyndns entry by commandline server address
-            dns = clidns;
-        }
 
         // set the dyndns without any validations
         // assuming it has been validated on the pevious time
