@@ -365,7 +365,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         boolean isRelay = getController().getIOProvider()
             .getRelayedConnectionManager().isRelay(getInfo());
-        boolean isServer = getController().getOSClient().isCloudServer(this);
+        boolean isServer = getController().getOSClient().isClusterServer(this);
         boolean isRelayOrServer = isServer || isRelay;
 
         if (getController().getNetworkingMode().equals(
@@ -820,7 +820,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             connectionRetries = 0;
         } else {
             if (isUnableToConnect() && isConnectedToNetwork) {
-                logWarning("Unable to connect directly");
+                logWarning("Unable to connect directly to "
+                    + getReconnectAddress());
                 // FIXME: Find a better ways
                 setConnectedToNetwork(false);
             }
@@ -1862,9 +1863,19 @@ public class Member extends PFComponent implements Comparable<Member> {
                         });
                 }
             } else if (message instanceof ConfigurationLoadRequest) {
-                if (isServer() && !getController().getMySelf().isServer()) {
+                if (isServer()) {
                     ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
-                    ConfigurationLoader.processMessage(getController(), clr);
+                    if (!getController().getMySelf().isServer()) {
+                        ConfigurationLoader
+                            .processMessage(getController(), clr);
+                    } else if (clr.isKeyValue()) {
+                        ConfigurationLoader
+                            .processMessage(getController(), clr);
+                    } else {
+                        logWarning("Ignoring full reload config request for myself being server: "
+                            + message);
+                    }
+
                 } else {
                     logWarning("Ignoring reload config request from non server: "
                         + message);
@@ -2454,7 +2465,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      *         least 2 tries)
      */
     public boolean isUnableToConnect() {
-        return connectionRetries >= 3;
+        return connectionRetries >= 2;
     }
 
     /**
@@ -2483,17 +2494,21 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (oldValue != server) {
             
             if (!server) {
-                logFine("Unsetting server status: " + this);
+                logInfo("Not longer server: " + this);
             } else {
-                logFine("Setting server status: " + this);
+                logInfo("Is server of cluster: " + this);
             }
-            
+
             // #2569: Server 2 server connection. don't wait for folder lists
             if (getController().getMySelf().isServer() && server) {
                 synchronized (folderListWaiter) {
                     folderListWaiter.notifyAll();
                 }
             }
+
+//            if (server && hasJoinedAnyFolder()) {
+//                synchronizeFolderMemberships();
+//            }
 
             getController().getNodeManager().serverStateChanged(this, server);
         }
