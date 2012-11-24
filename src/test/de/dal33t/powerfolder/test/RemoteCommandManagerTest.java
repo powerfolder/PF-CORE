@@ -195,7 +195,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         File file = TestHelper.createRandomFile(dir);
 
         FileInfo expected = FileInfoFactory.lookupInstance(getFolderAtLisa(), file);
-        final String expectedLink = getContollerLisa().getOSClient().getFileOpenURL(expected);
+        final String expectedLink = getContollerLisa().getOSClient().getFileLink(expected);
         
         assertTrue(RemoteCommandManager
             .sendCommand(1155, RemoteCommandManager.COPYLINK + file.getAbsolutePath()));
