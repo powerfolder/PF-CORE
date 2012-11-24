@@ -483,8 +483,13 @@ public class FolderSettings {
         // Save sync profiles as internal configuration for custom profiles.
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_SYNC_PROFILE, syncProfile.getFieldList());
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_ARCHIVE, archiveMode.name());
+        if (archiveMode != null) {
+            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_ARCHIVE, archiveMode.name());
+        } else {
+            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_ARCHIVE, ArchiveMode.FULL_BACKUP.name());
+        }
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_VERSIONS, String.valueOf(versions));
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
