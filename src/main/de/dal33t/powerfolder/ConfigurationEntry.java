@@ -236,6 +236,11 @@ public enum ConfigurationEntry {
      * established
      */
     SERVER_CONFIG_UPDATE("server.config.update", true),
+    
+    /**
+     * If to load server nodes from server URL
+     */
+    SERVER_LOAD_NODES("server.load.nodes", true),
 
     // Server WEB settings ****************************************************
 
