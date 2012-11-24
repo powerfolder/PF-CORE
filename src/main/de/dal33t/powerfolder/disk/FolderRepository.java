@@ -217,20 +217,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void init() {
 
         // #1697
+        // Init required. To avoid extracting ZIP/JAR files
         TFile.setDefaultArchiveDetector(new TArchiveDetector(
             TArchiveDetector.NULL, "pfzip", new JarDriver(
                 IOPoolLocator.SINGLETON)));
         TFile.setLenient(false);
-
-        // #1697
-        // if (getController().getNodeManager().getMySelf().getNick()
-        // .toLowerCase().equals("bart"))
-        // {
-        // TFile.setDefaultArchiveDetector(new TArchiveDetector(
-        // TArchiveDetector.NULL, "pfzip", new CustomZipRaesDriver(
-        // getController())));
-        // TFile.setLenient(false);
-        // }
 
         initFoldersBasedir();
 
@@ -844,7 +835,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         metaFolders.put(folderInfo, metaFolder);
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
-        
+
         if (!metaFolder.hasOwnDatabase()) {
             // Scan once. To get it working.
             metaFolder.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
@@ -868,11 +859,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Fire event
         fireFolderCreated(folder);
 
-        String log = "Setup " + (folder.isEncrypted() ? "encrypted " : "")
-            + "folder " + folderInfo.name + " at " + folder.getLocalBase();
-        if (saveConfig) {
-            logInfo(log);
-        } else {
+        if (isFine()) {
+            String log = "Setup " + (folder.isEncrypted() ? "encrypted " : "")
+                + "folder " + folderInfo.name + " at " + folder.getLocalBase();
             logFine(log);
         }
 
@@ -1004,11 +993,13 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Fire event
         fireFolderRemoved(folder);
-        
+
         // Trigger sync on other folders.
         fileRequestor.triggerFileRequesting();
 
-        logInfo(folder + " removed");
+        if (isFine()) {
+            logFine(folder + " removed");
+        }
     }
 
     private void addToRemovedFolderDirectories(Folder folder) {
@@ -1701,7 +1692,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public boolean areAllFoldersInSync() {
         for (Folder folder : folders.values()) {
-            if (Double.compare(folder.getStatistic().getHarmonizedSyncPercentage(), 100.0d) < 0) {
+            if (Double.compare(folder.getStatistic()
+                .getHarmonizedSyncPercentage(), 100.0d) < 0)
+            {
                 return false;
             }
         }
