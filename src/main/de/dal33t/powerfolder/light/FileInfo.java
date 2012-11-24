@@ -428,6 +428,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     public boolean isFile() {
         return true;
     }
+    
+    public boolean isBaseDirectory() {
+        return StringUtils.isBlank(fileName);
+    }
 
     /**
      * @return a lookup instance of the subdirectory this {@link FileInfo} is
