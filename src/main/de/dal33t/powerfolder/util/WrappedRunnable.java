@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.util;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.hibernate.HibernateException;
+
 /**
  * A Runnable that wraps an deligate and logs all exceptions and errors
  * 
@@ -51,6 +53,8 @@ public class WrappedRunnable implements Runnable {
             log.log(Level.SEVERE, "Error in " + deligate + ": " + t.toString(),
                 t);
             throw t;
+        } catch (HibernateException he) {
+            log.log(Level.SEVERE, "Database connection problem: " + he.getMessage());
         } catch (RuntimeException t) {
             t.printStackTrace();
             log.log(Level.SEVERE, "RuntimeException in " + deligate + ": "
