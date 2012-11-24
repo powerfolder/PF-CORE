@@ -152,7 +152,7 @@ public class MembersSimpleTable extends JTable {
 
             boolean isServer = folderMember.getMember() != null
                 && (model.getController().getOSClient()
-                    .isCloudServer(folderMember.getMember()));
+                    .isClusterServer(folderMember.getMember()));
 
             if (actualColumn == MembersSimpleTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
