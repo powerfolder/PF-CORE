@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Message to force the client to reload the config from a given URL.
@@ -31,6 +32,8 @@ public class ConfigurationLoadRequest extends Message {
     private static final long serialVersionUID = 2L;
 
     private String configURL;
+    private String key;
+    private String value;
     private Boolean replaceExisting;
     private boolean restartRequired;
 
@@ -41,6 +44,28 @@ public class ConfigurationLoadRequest extends Message {
         this.configURL = configURL;
         this.replaceExisting = replaceExisting;
         this.restartRequired = restartRequired;
+    }
+
+    public ConfigurationLoadRequest(String key, String value,
+        Boolean replaceExisting, boolean restartRequired)
+    {
+        super();
+        this.key = key;
+        this.value = value;
+        this.replaceExisting = replaceExisting;
+        this.restartRequired = restartRequired;
+    }
+
+    public boolean isKeyValue() {
+        return StringUtils.isBlank(configURL) && StringUtils.isNotBlank(key);
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
     }
 
     public String getConfigURL() {
@@ -57,6 +82,10 @@ public class ConfigurationLoadRequest extends Message {
 
     @Override
     public String toString() {
+        if (isKeyValue()) {
+            return "SetConfig " + key + "=" + value + " , replace existing? "
+                + replaceExisting + ", restart? " + restartRequired;
+        }
         return "ReloadConfig from " + configURL + ", replace existing? "
             + replaceExisting + ", restart? " + restartRequired;
     }
