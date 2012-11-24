@@ -90,7 +90,7 @@ public class PowerFolder {
         options.addOption("r", "removefolder", true,
                 "<removefolder> Removes an existing folder");
         options.addOption("a", "copylink", true,
-                "<copylink> Copies the PowerFolder link of that file to clipboard");
+                "<copylink> Copies the PowerFolder link of that file");
         options.addOption("y", "notifyleft", false,
                 "Show notification at left of screen");
         options.addOption("z", "nowarn", false,
