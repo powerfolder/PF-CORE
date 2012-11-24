@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -41,9 +42,9 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
+import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
@@ -53,7 +54,8 @@ import de.dal33t.powerfolder.util.SimpleTimeEstimator;
  * @version $Revision: 1.22 $
  */
 public class FolderStatistic extends PFComponent {
-    private static final Logger LOG = Logger.getLogger(FolderStatistic.class.getName());
+    private static final Logger LOG = Logger.getLogger(FolderStatistic.class
+        .getName());
 
     public static final int UNKNOWN_SYNC_STATUS = -1;
 
@@ -67,8 +69,8 @@ public class FolderStatistic extends PFComponent {
     private final Folder folder;
     private final long delay;
 
-    private FolderStatisticInfo calculating;
-    private FolderStatisticInfo current;
+    private volatile FolderStatisticInfo calculating;
+    private volatile FolderStatisticInfo current;
     private SimpleTimeEstimator estimator;
 
     /**
@@ -87,7 +89,6 @@ public class FolderStatistic extends PFComponent {
     FolderStatistic(Folder folder) {
         super(folder.getController());
 
-        current = new FolderStatisticInfo(folder.getInfo());
         estimator = new SimpleTimeEstimator();
         this.folder = folder;
         downloadCounter = new TransferCounter();
@@ -103,6 +104,16 @@ public class FolderStatistic extends PFComponent {
         // Add to NodeManager
         getController().getNodeManager().addWeakNodeManagerListener(
             nodeManagerListener);
+
+        if (!folder.isDeviceDisconnected()) {
+            File file = new File(folder.getSystemSubDir(),
+                Folder.FOLDER_STATISTIC);
+            // Load cached disk results
+            current = FolderStatisticInfo.load(file);
+        }
+        if (current == null) {
+            current = new FolderStatisticInfo(folder.getInfo());
+        }
     }
 
     // package protected called from Folder
@@ -116,12 +127,12 @@ public class FolderStatistic extends PFComponent {
             logWarning("Unable to calc stats. Folder not joined");
             return;
         }
-      
+
         // long millisPast = System.currentTimeMillis() - lastCalc;
         if (calculatorTask != null) {
             return;
         }
-       // logInfo("Sched NEW Calc from: ", new RuntimeException());
+        // logInfo("Sched NEW Calc from: ", new RuntimeException());
         if (current.getAnalyzedFiles() < MAX_ITEMS) {
             setCalculateIn(2000);
         } else {
@@ -178,11 +189,26 @@ public class FolderStatistic extends PFComponent {
         calculating.setEstimatedSyncDate(estimator.updateEstimate(calculating
             .getAverageSyncPercentage()));
 
+        // Archive size
+        long archiveStart = System.currentTimeMillis();
+        calculating.setArchiveSize(folder.getFileArchiver().getSize());
+        long archiveTook = System.currentTimeMillis() - archiveStart;
+        if (archiveTook > 1000L * 60 && isWarning()) {
+            logWarning("Calculating archive size took " + (archiveTook / 1000)
+                + "s");
+        }
+
         // Switch figures / Take over partial sync infos.
         calculating.getPartialSyncStatMap().putAll(
             current.getPartialSyncStatMap());
         current = calculating;
         calculating = null;
+
+        if (!folder.isDeviceDisconnected()) {
+            File file = new File(folder.getSystemSubDir(),
+                Folder.FOLDER_STATISTIC);
+            current.save(file);
+        }
 
         // Recalculate the last modified date of the folder.
         Date date = null;
@@ -218,7 +244,9 @@ public class FolderStatistic extends PFComponent {
         return lastFileChangeDate;
     }
 
-    private static boolean inSync(Member member, FileInfo fileInfo, FileInfo newestFileInfo) {
+    private static boolean inSync(Member member, FileInfo fileInfo,
+        FileInfo newestFileInfo)
+    {
         if (newestFileInfo == null) {
             // It is intended not to use Reject.ifNull for performance reasons.
             throw new NullPointerException("Newest FileInfo not found of "
@@ -314,8 +342,8 @@ public class FolderStatistic extends PFComponent {
                         continue;
                     }
 
-                    boolean otherInSync = inSync(alreadyMember, otherMemberFile,
-                        newestFileInfo);
+                    boolean otherInSync = inSync(alreadyMember,
+                        otherMemberFile, newestFileInfo);
                     if (otherInSync) {
                         incoming = false;
                         break;
@@ -349,7 +377,8 @@ public class FolderStatistic extends PFComponent {
                 if (otherMemberFile == null) {
                     continue;
                 }
-                boolean otherInSync = inSync(alreadyM, otherMemberFile, newestFileInfo);
+                boolean otherInSync = inSync(alreadyM, otherMemberFile,
+                    newestFileInfo);
                 if (otherInSync) {
                     // File already added to totals
                     addToTotals = false;
@@ -473,7 +502,7 @@ public class FolderStatistic extends PFComponent {
     public double getServerSyncPercentage() {
         double sync = -1;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!getController().getOSClient().isCloudServer(member)) {
+            if (!getController().getOSClient().isClusterServer(member)) {
                 continue;
             }
             if (member.isMySelf()) {
@@ -550,12 +579,19 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
+     * @return the archive size in stats.
+     */
+    public long getArchiveSize() {
+        return current.getArchiveSize();
+    }
+
+    /**
      * @return the size of the server(s) backup.
      */
     public long getServerSize() {
         long size = 0;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!getController().getOSClient().isCloudServer(member)) {
+            if (!getController().getOSClient().isClusterServer(member)) {
                 continue;
             }
             size = Math.max(folder.getStatistic().getSizeInSync(member), size);
