@@ -29,6 +29,8 @@ import java.util.prefs.Preferences;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -53,16 +55,26 @@ public class PowerFolder {
     static {
         // Command line parsing
         Options options = new Options();
-        options.addOption("c", "config", true,
-                "<config file>. Sets the configuration file to start. Default: PowerFolder.config");
+        Option configOption = OptionBuilder
+            .withArgName("config")
+            .hasOptionalArgs(2)
+            .withDescription(
+                "<config file>. Sets the configuration file to start. Default: PowerFolder.config")
+            .create("c");
+        options.addOption(configOption);
+        options.addOption("u", "username", true,
+            "<username>. The username to use when connecting.");
+        options.addOption("p", "password", true,
+            "<password>. The password to use when connecting.");
+
         options.addOption("m", "minimized", false,
-                "Start PowerFolder minimized");
+            "Start PowerFolder minimized");
         options.addOption("s", "server", false,
-                "Start PowerFolder in console mode. Graphical user interface will be disabled");
+                "Starts in console mode. Graphical user interface will be disabled");
         options.addOption("d", "dns", true,
                 "<ip/dns>. Sets the dns/ip to listen to. May also be a dyndns address");
         options.addOption("h", "help", false, "Displays this help");
-        options.addOption("n", "nick", true, "<nickname> Sets the nickname");
+        options.addOption("n", "name", true, "<Name> Sets the name of this machine");
         options.addOption("b", "data", true,
                 "Set the base data directory for PowerFolder");
         options.addOption("k", "kill", false,
@@ -73,10 +85,10 @@ public class PowerFolder {
                 "<path\\file> Sets the language file to use (e.g. \"--langfile c:\\powerfolder\\translation\\translation_XX.properties\", forces PowerFolder to load this file as language file)");
         options.addOption("g", "language", true,
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
-        options.addOption("p", "createfolder", true,
-                "<createfolder> Creates a new Folder");
+        options.addOption("e", "createfolder", true,
+                "<createfolder> Creates a new folder");
         options.addOption("r", "removefolder", true,
-                "<removefolder> Removes a existing Folder");
+                "<removefolder> Removes an existing folder");
         options.addOption("a", "copylink", true,
                 "<copylink> Copies the PowerFolder link of that file to clipboard");
         options.addOption("y", "notifyleft", false,
@@ -179,8 +191,8 @@ public class PowerFolder {
         // Parsing of command line completed
 
         boolean commandContainsRemoteCommands = files != null
-            && files.length >= 1 || commandLine.hasOption("p")
-            || commandLine.hasOption("r") || commandLine.hasOption("l");
+            && files.length >= 1 || commandLine.hasOption("e")
+            || commandLine.hasOption("r") || commandLine.hasOption("a");
         // Try to start controller
         boolean startController = !commandContainsRemoteCommands
             || !runningInstanceFound;
@@ -207,20 +219,20 @@ public class PowerFolder {
                 RemoteCommandManager.sendCommand(openFilesRCommand.toString());
             }
 
-            if (commandLine.hasOption("p")) {
+            if (commandLine.hasOption("e")) {
                 RemoteCommandManager
                     .sendCommand(RemoteCommandManager.MAKEFOLDER
-                        + commandLine.getOptionValue("p"));
+                        + commandLine.getOptionValue("e"));
             }
             if (commandLine.hasOption("r")) {
                 RemoteCommandManager
                     .sendCommand(RemoteCommandManager.REMOVEFOLDER
                         + commandLine.getOptionValue("r"));
             }
-            if (commandLine.hasOption("l")) {
+            if (commandLine.hasOption("a")) {
                 RemoteCommandManager
                     .sendCommand(RemoteCommandManager.COPYLINK
-                        + commandLine.getOptionValue("l"));
+                        + commandLine.getOptionValue("a"));
             }
         } catch (Throwable t) {
             t.printStackTrace();
