@@ -19,7 +19,11 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
+
+import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Simple mechanism to generate a unique id in space and time
@@ -72,5 +76,55 @@ public class IdGenerator {
         arr[15] = (byte) (lsb & 0xFF);
 
         return arr;
+    }
+
+    public static final String FILE_LINK_PREFIX = "fi";
+
+    public static String generateFileLinkID(FileInfo fInfo) {
+        String tmp = fInfo.getFolderInfo().id + "/" + fInfo.getRelativeName();
+        byte[] buf = md5(tmp.getBytes(Convert.UTF8));
+        return FILE_LINK_PREFIX + Base58.encode(buf);
+    }
+
+    /**
+     * Calculates the MD5 digest and returns the value as a 16 element
+     * <code>byte[]</code>.
+     * 
+     * @param data
+     *            Data to digest
+     * @return MD5 digest
+     */
+    private static byte[] md5(byte[] data) {
+        return getMd5Digest().digest(data);
+    }
+
+    /**
+     * Returns a MessageDigest for the given <code>algorithm</code>.
+     * 
+     * @param algorithm
+     *            The MessageDigest algorithm name.
+     * @return An MD5 digest instance.
+     * @throws RuntimeException
+     *             when a {@link java.security.NoSuchAlgorithmException} is
+     *             caught,
+     */
+    private static MessageDigest getDigest(String algorithm) {
+        try {
+            return MessageDigest.getInstance(algorithm);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * Returns an MD5 MessageDigest.
+     * 
+     * @return An MD5 digest instance.
+     * @throws RuntimeException
+     *             when a {@link java.security.NoSuchAlgorithmException} is
+     *             caught,
+     */
+    private static MessageDigest getMd5Digest() {
+        return getDigest("MD5");
     }
 }
