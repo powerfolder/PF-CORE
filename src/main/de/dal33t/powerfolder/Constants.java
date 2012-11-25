@@ -86,12 +86,12 @@ public class Constants {
      * #2056: Temporary directory to download the updates before performing an
      * atomic commit.
      */
-    public static String ATOMIC_COMMIT_TEMP_TARGET_DIR = ".temp-dir";
+    public static final String ATOMIC_COMMIT_TEMP_TARGET_DIR = ".temp-dir";
 
     /**
-     * The URL where to check the connectivty with.
+     * The URL where to check the connectivity with.
      */
-    public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
+    public static final String LIMITED_CONNECTIVITY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
 
     /**
      * Check for updates every hour.
@@ -114,14 +114,14 @@ public class Constants {
     public static final int UI_DEFAULT_SCREEN_BORDER = 50;
 
     /**
-     * The minimum suported version for AWTUtilities.setWindowOpacity is
+     * The minimum supported version for AWTUtilities.setWindowOpacity is
      * 1.6.0_10-b12. And not in Linux, but okay in Mac and Windows.
      */
     public static final boolean OPACITY_SUPPORTED = !OSUtil.isLinux()
         && JavaVersion.systemVersion().compareTo(
             new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
-    // Network architecture contants ******************************************
+    // Network architecture constants ******************************************
 
     /**
      * The maximum number of files on a FileList. If list ist greater, it is
@@ -135,12 +135,12 @@ public class Constants {
     public static final int N_SUPERNODES_TO_CONNECT = 3;
 
     /**
-     * The number of supernodes to contact when perfoming a nodes search
+     * The number of supernodes to contact when performing a nodes search
      */
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
 
     /**
-     * The number of lan nodes to contact when perfoming a nodes search
+     * The number of lan nodes to contact when performing a nodes search
      */
     public static final int N_LAN_NODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
 
@@ -158,7 +158,7 @@ public class Constants {
     public static final int TRANSFER_STATUS_BROADCAST_INTERVAL = 10 * 60;
 
     /**
-     * The time in seconds between broadcast of thoses nodes, that went online.
+     * The time in seconds between broadcast of those nodes, that went online.
      * Currently: every minute.
      */
     public static final long NODES_THAN_WENT_ONLINE_BROADCAST_TIME = 60;
@@ -181,7 +181,7 @@ public class Constants {
     public static final long MAX_NODE_OFFLINE_TIME = 10L * 60 * 60 * 1000;
 
     /** Time until total node invalidation (if not friend). Currently: 60 days */
-    public static final long NODE_TIME_TO_INVALIDATE = 1000 * 60 * 60 * 24 * 60;
+    public static final long NODE_TIME_TO_INVALIDATE = 1000L * 60 * 60 * 24 * 60;
 
     /** Time a member is offline to get removed from a folder display */
     public static final long NODE_TIME_TO_REMOVE_MEMBER = 1000 * 60 * 60 * 24
@@ -264,7 +264,7 @@ public class Constants {
     // Transfer settings ******************************************************
 
     /**
-     * The maximun number of enqued download from a internet connected node
+     * The maximum number of enqued download from a internet connected node
      */
     public static final int MAX_DLS_FROM_INET_MEMBER = 10;
 
@@ -274,7 +274,7 @@ public class Constants {
     public static final long START_UPLOADS_TILL_PLANNED_SIZE_INET = 500 * 1024;
 
     /**
-     * The maximun number of enqued download from a lan connected node
+     * The maximum number of enqued download from a lan connected node
      */
     public static final int MAX_DLS_FROM_LAN_MEMBER = 50;
 
@@ -285,7 +285,7 @@ public class Constants {
 
     /**
      * The download timeout of a request. After that time of inactivity the
-     * download is assumend to be timed out. -> Aborts the download.
+     * download is assumed to be timed out. -> Aborts the download.
      */
     public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 3L * 60 * 1000;
 
@@ -369,6 +369,12 @@ public class Constants {
 
     /** Cleanup immediately, 1, 10, 30, never days. */
     public static final int[] CLEANUP_VALUES = {0, 1, 10, 30, Integer.MAX_VALUE};
+
+    public static final int DOCKED_STATE_FREE = 0;
+    public static final int DOCKED_STATE_DOCKED = 2;
+
+    public static final int DEFAULT_NORMAL_DOCKED_WIDTH = 1100;
+    public static final int DEFAULT_NORMAL_HEIGHT = 600;
 
     private Constants() {
         // No instance allowed

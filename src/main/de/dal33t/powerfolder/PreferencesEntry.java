@@ -141,16 +141,6 @@ public enum PreferencesEntry {
      */
     INLINE_INFO_MODE("inline.info.mode", 1),
 
-    MAIN_FRAME_WIDTH("mainframe4.width", 350),
-
-    MAIN_FRAME_HEIGHT("mainframe4.height", -1),
-
-    INFO_WIDTH("infoframe4.width", -1),
-
-    MAIN_FRAME_X("mainframe4.x", -1),
-
-    MAIN_FRAME_Y("mainframe4.y", -1),
-
     MAIN_FRAME_MAXIMIZED("mainframe.maximized", false),
 
     FILE_SEARCH_MODE("file.search.mode",

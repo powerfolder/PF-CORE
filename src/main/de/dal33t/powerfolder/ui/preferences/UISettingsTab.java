@@ -44,6 +44,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.Skin;
@@ -134,7 +135,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.information_panel_docked"));
 
         wasDocked = PreferencesEntry.INLINE_INFO_MODE
-            .getValueInt(getController()) > 0;
+            .getValueInt(getController()) != Constants.DOCKED_STATE_FREE;
         infoDockedBox.setSelected(wasDocked);
 
         ValueModel aeModel = new ValueHolder(
@@ -311,14 +312,11 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (usePowerFolderLink != null) {
             boolean newValue = usePowerFolderLink.isSelected();
             configureLinksPlances(newValue);
-            // PowerFolder favorite
-            // ConfigurationEntry.USE_PF_LINK.setValue(getController(),
-            // Boolean.toString(usePowerFolderLink.isSelected()));
         }
 
         // Use inline info
         PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
-            infoDockedBox.isSelected() ? 2 : 0);
+            infoDockedBox.isSelected() ? Constants.DOCKED_STATE_DOCKED : Constants.DOCKED_STATE_FREE);
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());

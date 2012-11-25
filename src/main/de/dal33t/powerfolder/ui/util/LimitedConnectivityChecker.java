@@ -233,7 +233,7 @@ public class LimitedConnectivityChecker {
 
         URL url;
         try {
-            url = new URL(Constants.LIMITED_CONNECTIVTY_CHECK_URL + "?host="
+            url = new URL(Constants.LIMITED_CONNECTIVITY_CHECK_URL + "?host="
                 + host + "&port=" + port);
         } catch (MalformedURLException e) {
             log.log(Level.WARNING, "Limited connectivity check failed for "

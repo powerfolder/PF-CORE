@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.*;
@@ -96,8 +95,6 @@ public class MainTabbedPane extends PFUIComponent {
                     (int) Character.toUpperCase(key.charAt(0)));
                 tabbedPane.setToolTipTextAt(FOLDERS_INDEX, Translation
                     .getTranslation("main_tabbed_pane.folders.description"));
-                // tabbedPane.setIconAt(FOLDERS_INDEX,
-                // Icons.getIconById(Icons.FOLDER));
 
                 if (showComputersTab) {
                     key = Translation
@@ -107,17 +104,9 @@ public class MainTabbedPane extends PFUIComponent {
                     tabbedPane.setToolTipTextAt(COMPUTERS_INDEX,
                         Translation.getTranslation(""
                             + "main_tabbed_pane.computers.description"));
-                    // tabbedPane.setIconAt(COMPUTERS_INDEX,
-                    // Icons.getIconById(Icons.COMPUTER));
                 }
 
                 tabbedPane.addChangeListener(new MyChangelistener());
-
-                int minWidth = PreferencesEntry.MAIN_FRAME_WIDTH
-                    .getDefaultValueInt();
-                int minHeight = PreferencesEntry.MAIN_FRAME_HEIGHT
-                    .getDefaultValueInt();
-                tabbedPane.setMinimumSize(new Dimension(minWidth, minHeight));
 
                 CursorUtils.setHandCursor(tabbedPane);
                 CursorUtils.setDefaultCursor(foldersTab.getUIComponent());
