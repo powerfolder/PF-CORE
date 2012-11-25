@@ -125,7 +125,7 @@ public class FolderStatistic extends PFComponent {
         if (!getController().getFolderRepository().hasJoinedFolder(
             folder.getInfo()))
         {
-            logWarning("Unable to calc stats. Folder not joined");
+            logFine("Unable to calc stats. Folder not joined");
             return;
         }
 
