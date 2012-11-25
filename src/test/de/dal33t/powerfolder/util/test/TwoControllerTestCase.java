@@ -77,6 +77,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
+        SyncProfile.META_FOLDER_SYNC = SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT;
         System.setProperty("user.home",
             new File("build/test/home").getCanonicalPath());
         Loggable.setLogNickPrefix(true);
