@@ -701,6 +701,11 @@ public enum ConfigurationEntry {
      * #2585
      */
     LOG_FILE_ROTATE("log.file.rotate", true),
+    
+    /**
+     * PFS-475: Remove old log files
+     */
+    LOG_FILE_DELETE_DAYS("log.file.keep.days", 31),
 
     /**
      * The loglevel to print to console when verbose=true
