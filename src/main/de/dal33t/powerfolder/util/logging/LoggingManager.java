@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util.logging;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -55,7 +56,8 @@ public class LoggingManager {
     private static final String DEBUG_DIR = "logs";
 
     /** File Logging file prefix */
-    private static String prefix = "PowerFolder";
+    private static String LOGFILE_PREFIX = "PowerFolder";
+    private static String LOGFILE_SUFFIX = "-log.txt";
 
     /** The document handler for the DebugPanel */
     private static final DocumentHandler documentHandler;
@@ -235,12 +237,12 @@ public class LoggingManager {
         synchronized (fileHandlerLock) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String logFilename = prefix;
+                String logFilename = LOGFILE_PREFIX;
                 if (fileRotate) {
                     logFilename += '-';
                     logFilename += sdf.format(new Date());
                 }
-                logFilename += "-log.txt";
+                logFilename += LOGFILE_SUFFIX;
                 fileLoggingFileName = new File(getDebugDir(),
                     FileUtils.removeInvalidFilenameChars(logFilename))
                     .getAbsolutePath();
@@ -288,7 +290,7 @@ public class LoggingManager {
             return documentLoggingLevel;
         }
     }
-    
+
     public static Level getMinimumLoggingLevel() {
         Level min = Level.OFF;
         if (documentLoggingLevel != null
@@ -362,7 +364,7 @@ public class LoggingManager {
      */
     public static void setPrefix(String prefix) {
         assert prefix != null;
-        LoggingManager.prefix = prefix;
+        LoggingManager.LOGFILE_PREFIX = prefix;
     }
 
     /**
@@ -453,6 +455,33 @@ public class LoggingManager {
             // Close off the old one first.
             fileHandler.flush();
             fileHandler.close();
+        }
+    }
+
+    /**
+     * PFS-475
+     * 
+     * @param maxAgeDays
+     */
+    public static void removeOldLogs(final int maxAgeDays) {
+        File[] oldFiles = getDebugDir().listFiles(new FileFilter() {
+            public boolean accept(File file) {
+                if (!file.isFile()) {
+                    return false;
+                }
+                if (!file.getName().startsWith(LOGFILE_PREFIX)) {
+                    return false;
+                }
+                if (!file.getName().contains(LOGFILE_SUFFIX)) {
+                    return false;
+                }
+                long msOld = System.currentTimeMillis() - file.lastModified();
+                int daysOld = (int) (msOld / 1000 / 60 / 60 / 24);
+                return daysOld >= maxAgeDays;
+            }
+        });
+        for (File logFile : oldFiles) {
+            logFile.delete();
         }
     }
 }

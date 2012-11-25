@@ -434,7 +434,7 @@ public class Controller extends PFComponent {
         // This logs to file for analysis.
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
         initLogger();
-        
+
         if (verbose) {
             ByteSerializer.BENCHMARK = true;
             scheduleAndRepeat(new Runnable() {
@@ -462,10 +462,10 @@ public class Controller extends PFComponent {
 
         // If we have a new config. clear the preferences.
         clearPreferencesOnConfigSwitch();
-        
+
         // Load and set http proxy settings
         HTTPProxySettings.loadFromConfig(this);
-        
+
         // #2179: Load from server. How to handle timeouts?
         // Command line option -c http://are.de
         ConfigurationLoader.loadAndMergeCLI(this);
@@ -691,7 +691,7 @@ public class Controller extends PFComponent {
                 logWarning("Unable to setup auto start: " + e);
             }
         }
-        
+
         if (pauseSecs == 0) {
             // Activate adaptive logic
             setPaused(paused);
@@ -797,7 +797,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add mass delete listener.
-     *
+     * 
      * @param l
      */
     public void addMassDeletionHandler(MassDeletionHandler l) {
@@ -806,7 +806,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove mass delete listener.
-     *
+     * 
      * @param l
      */
     public void removeMassDeletionHandler(MassDeletionHandler l) {
@@ -880,6 +880,11 @@ public class Controller extends PFComponent {
         debugReports = ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(this);
 
         LoggingManager.clearBuffer();
+        int maxDays = ConfigurationEntry.LOG_FILE_DELETE_DAYS
+            .getValueInt(getController());
+        if (maxDays >= 0) {
+            LoggingManager.removeOldLogs(maxDays);
+        }
     }
 
     /**
@@ -1005,7 +1010,7 @@ public class Controller extends PFComponent {
             }
         }
     }
-    
+
     /**
      * Removes a scheduled task for the threadpool
      * 
@@ -1014,7 +1019,8 @@ public class Controller extends PFComponent {
     public boolean removeScheduled(ScheduledFuture<?> future) {
         if (!shuttingDown) {
             if (threadPool instanceof ScheduledThreadPoolExecutor) {
-                return ((ScheduledThreadPoolExecutor) threadPool).remove((Runnable) future);
+                return ((ScheduledThreadPoolExecutor) threadPool)
+                    .remove((Runnable) future);
             } else {
                 logSevere("Unable to remove scheduled task. Wrong threadpool. "
                     + future);
@@ -1181,6 +1187,11 @@ public class Controller extends PFComponent {
             logFine("Reconfiguring logs for new day: " + now);
             initLogger();
             LoggingManager.resetFileLogging();
+            int days = ConfigurationEntry.LOG_FILE_DELETE_DAYS
+                .getValueInt(getController());
+            if (days >= 0) {
+                LoggingManager.removeOldLogs(days);
+            }
             logFine("Reconfigured logs for new day: " + now);
 
             backupConfigAssets();
@@ -1508,12 +1519,15 @@ public class Controller extends PFComponent {
     public void setPaused(boolean newPausedValue) {
         setPaused0(newPausedValue, false);
     }
+
     /**
      * Sets the paused mode.
      * 
      * @param newPausedValue
      */
-    private synchronized void setPaused0(boolean newPausedValue, boolean changedByAdaptiveLogic) {
+    private synchronized void setPaused0(boolean newPausedValue,
+        boolean changedByAdaptiveLogic)
+    {
         boolean oldPausedValue = paused;
         paused = newPausedValue;
 
