@@ -148,7 +148,7 @@ public class SyncProfile implements Serializable {
     /**
      * Especially for meta-folders. Scan every minute.
      */
-    public static final SyncProfile META_FOLDER_SYNC = new SyncProfile(
+    public static SyncProfile META_FOLDER_SYNC = new SyncProfile(
         "backup_target_no_change", false, new SyncProfileConfiguration(true,
             true, true, true, 1));
 
