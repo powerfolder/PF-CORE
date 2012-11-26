@@ -3781,8 +3781,9 @@ public class Folder extends PFComponent {
         }
 
         if (wasDeviceDisconnected && !deviceDisconnected) {
-            logInfo("Device reconnected @ " + localBase);
-            initFileInfoDAO();
+            if (!currentInfo.isMetaFolder()) {
+                logInfo("Device reconnected @ " + localBase);                
+            }
             // Try to load db from connected device now.
             loadMetadata();
             
