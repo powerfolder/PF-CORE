@@ -842,6 +842,9 @@ public class ServerClient extends PFComponent {
             // Don't
             return;
         }
+        if (getController().isShuttingDown() || !getController().isStarted()) {
+            return;
+        }
         logInfo("Considering servers to connect: " + getServersInCluster());
         for (Member server : getServersInCluster()) {
             if (!server.isConnected()) {
