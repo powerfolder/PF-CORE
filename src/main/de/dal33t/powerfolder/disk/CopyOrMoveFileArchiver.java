@@ -19,7 +19,9 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.schlichtherle.truezip.file.TFile;
 
@@ -66,6 +69,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     private static final VersionComparator VERSION_COMPARATOR = new VersionComparator();
     private static final Pattern BASE_NAME_PATTERN = Pattern
         .compile("(.*)_K_\\d+");
+    private static final String SIZE_INFO_FILE = "Size";
 
     private final File archiveDirectory;
     private volatile int versionsPerFile;
@@ -93,6 +97,30 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         // Default: Store unlimited # of files
         versionsPerFile = -1;
         this.mySelf = mySelf;
+        this.size = loadSize();
+    }
+
+    private Long loadSize() {
+        File sizeFile = new File(archiveDirectory, SIZE_INFO_FILE);
+        if (!sizeFile.exists()) {
+            return null;
+        }
+        FileInputStream fin = null;
+        try {
+            fin = new FileInputStream(sizeFile);
+            byte[] buf = StreamUtils.readIntoByteArray(fin);
+            return Long.valueOf(new String(buf));
+        } catch (Exception e) {
+            log.fine("Unable to read size of archive to " + sizeFile + ". " + e);
+            return null;
+        } finally {
+            if (fin != null) {
+                try {
+                    fin.close();
+                } catch (IOException e) {
+                }
+            }
+        }
     }
 
     /**
@@ -113,6 +141,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             return;
         }
 
+        long oldSize = getSize();
         if (target.getParentFile().exists() || target.getParentFile().mkdirs())
         {
             // Reset cache
@@ -146,6 +175,10 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             File[] list = getArchivedFiles(target.getParentFile(),
                 fileInfo.getFilenameOnly());
             checkArchivedFile(list);
+
+            if (oldSize != size) {
+                saveSize();
+            }
         } else {
             throw new IOException("Failed to create directory: "
                 + target.getParent());
@@ -164,6 +197,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
         Arrays.sort(versions, VERSION_COMPARATOR);
         int toDelete = versions.length - versionsPerFile;
+        long oldSize = size;
         for (File f : versions) {
             if (toDelete <= 0) {
                 break;
@@ -181,6 +215,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                     log.fine("checkArchivedFile: Deleted archived file " + f);
                 }
             }
+        }
+        if (oldSize != size) {
+            saveSize();
         }
     }
 
@@ -419,7 +456,13 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     public synchronized long getSize() {
         if (size == null) {
-            size = FileUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
+            long s = FileUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
+            File sizeFile = new File(archiveDirectory, SIZE_INFO_FILE);
+            if (sizeFile.exists()) {
+                s -= sizeFile.length();
+            }
+            size = s;
+            saveSize();
         }
         return size;
     }
@@ -427,6 +470,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     public void purge() throws IOException {
         FileUtils.recursiveDelete(archiveDirectory);
         size = 0L;
+        saveSize();
     }
 
     /**
@@ -451,7 +495,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             Date age = new Date(file.lastModified());
             if (age.before(cleanupDate)) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("Deleting old archive file " + file + " (" + age + ')');                    
+                    log.fine("Deleting old archive file " + file + " (" + age
+                        + ')');
                 }
                 try {
                     file.delete();
@@ -462,4 +507,14 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         }
     }
 
+    private void saveSize() {
+        File sizeFile = new File(archiveDirectory, SIZE_INFO_FILE);
+        ByteArrayInputStream bin = new ByteArrayInputStream(String
+            .valueOf(size).getBytes());
+        try {
+            FileUtils.copyFromStreamToFile(bin, sizeFile);
+        } catch (IOException e) {
+            log.fine("Unable to store size of archive to " + sizeFile);
+        }
+    }
 }
