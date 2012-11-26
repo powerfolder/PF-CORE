@@ -363,24 +363,26 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
             Runnable connector = new Runnable() {
                 public void run() {
 
+                    Member member = selectedMember;
+
                     // Open connect dialog if ui is open
-                    connectDialog.open(selectedMember.getNick());
+                    connectDialog.open(member.getNick());
 
                     // Close connection first
-                    selectedMember.shutdown();
+                    member.shutdown();
 
                     // Now execute the connect
                     try {
-                        if (selectedMember.reconnect().isFailure()) {
-                            throw new ConnectionException(Translation
-                                .getTranslation(
+                        if (member.reconnect().isFailure()) {
+                            throw new ConnectionException(
+                                Translation.getTranslation(
                                     "dialog.unable_to_connect_to_member",
-                                    selectedMember.getNick()));
+                                    member.getNick()));
                         }
                     } catch (ConnectionException ex) {
                         connectDialog.close();
                         if (!connectDialog.isCanceled()
-                            && !selectedMember.isConnected())
+                            && !member.isConnected())
                         {
                             // Show if user didn't cancel
                             ex.show(getController());
