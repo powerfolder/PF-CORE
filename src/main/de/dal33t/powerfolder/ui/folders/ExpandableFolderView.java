@@ -1311,8 +1311,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private synchronized void doFolderChanges(Folder eventFolder) {
-        logFiner("doFolderChanges: " + folderInfo.getName(),
-            new RuntimeException());
         if (folder == null || folder.equals(eventFolder)) {
             folderUpdater.schedule(new Runnable() {
                 public void run() {

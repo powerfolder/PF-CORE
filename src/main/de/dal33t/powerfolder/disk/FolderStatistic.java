@@ -669,7 +669,7 @@ public class FolderStatistic extends PFComponent {
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            if (folderEvent.getMember().isCompletelyConnected()) {
+            if (getController().isStarted()) {
                 // Recalculate statistics
                 scheduleCalculate();
             }
