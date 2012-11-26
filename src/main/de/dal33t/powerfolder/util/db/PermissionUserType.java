@@ -116,6 +116,10 @@ public class PermissionUserType extends Loggable implements UserType {
             } else {
                 fdInfo = fdInfo.intern();
             }
+            
+            if (StringUtils.isBlank(fdInfo.getName())) {
+                logFine("Unknown folder with ID=" + fdInfo.getId());
+            }
 
             // choose the right permission implementation
             if (clazzName.equals(FolderAdminPermission.class.getSimpleName())) {
