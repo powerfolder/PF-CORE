@@ -104,7 +104,8 @@ public class RecycleTest extends ControllerTestCase {
         ((CopyOrMoveFileArchiver) archiver).maintain();
         File recycleBinDir = new File(getFolder().getSystemSubDir(), "archive");
         assertTrue(recycleBinDir.exists());
+        // Only size file
         assertTrue(Arrays.asList(recycleBinDir.list()).toString(),
-            recycleBinDir.list().length == 0);
+            recycleBinDir.list().length == 1);
     }
 }

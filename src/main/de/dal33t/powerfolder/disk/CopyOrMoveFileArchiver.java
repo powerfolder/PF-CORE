@@ -248,6 +248,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         File[] flist = dir.listFiles();
         Map<String, Collection<File>> fileMap = new HashMap<String, Collection<File>>();
         for (File f : flist) {
+            if (f.getName().equals(SIZE_INFO_FILE)) {
+                continue;
+            }
             if (f.isDirectory()) {
                 boolean thisSuccessfuly = checkRecursive(f, checked);
                 if (thisSuccessfuly) {
