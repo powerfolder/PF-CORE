@@ -619,10 +619,12 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         for (Member member : folder.getMembersAsCollection()) {
             AccountInfo aInfo = member.getAccountInfo();
             // Take "better" AccountInfo.
-            for (AccountInfo caInfo : permInfo.keySet()) {
-                if (aInfo.equals(caInfo)) {
-                    aInfo = caInfo;
-                }
+            if (aInfo != null) {
+                for (AccountInfo caInfo : permInfo.keySet()) {
+                    if (aInfo.equals(caInfo)) {
+                        aInfo = caInfo;
+                    }
+                }                
             }
             FolderPermission folderPermission = permInfo.get(aInfo);
             FolderMember folderMember = new FolderMember(folder, member, aInfo,
@@ -799,7 +801,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                 permissionsRetrieved = true;
                 rebuild(res, defaultPermission);
             } catch (Exception e) {
-                logWarning(e.toString());
+                logWarning(e.toString(), e);
                 permissionsRetrieved = false;
                 rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
             } finally {
