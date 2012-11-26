@@ -70,7 +70,6 @@ public class JavaVersionTest extends TestCase {
         try {
             JavaVersion.parse("1.6.0-10_b12");
         } catch (Exception e) {
-            e.printStackTrace();
             threwError = true;
         }
         assertTrue("Throwing error - swap", threwError);
@@ -80,7 +79,6 @@ public class JavaVersionTest extends TestCase {
         try {
             JavaVersion.parse("1.6.0_10-12");
         } catch (Exception e) {
-            e.printStackTrace();
             threwError = true;
         }
         assertTrue("Throwing error - b", threwError);
@@ -90,7 +88,6 @@ public class JavaVersionTest extends TestCase {
         try {
             JavaVersion.parse("complete junk");
         } catch (Exception e) {
-            e.printStackTrace();
             threwError = true;
         }
         assertTrue("Throwing error - junk", threwError);
@@ -100,7 +97,6 @@ public class JavaVersionTest extends TestCase {
         try {
             JavaVersion.parse("");
         } catch (Exception e) {
-            e.printStackTrace();
             threwError = true;
         }
         assertTrue("Throwing error - empty", threwError);
@@ -110,7 +106,6 @@ public class JavaVersionTest extends TestCase {
         try {
             JavaVersion.parse(null);
         } catch (Exception e) {
-            e.printStackTrace();
             threwError = true;
         }
         assertTrue("Throwing error - null", threwError);
