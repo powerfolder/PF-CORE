@@ -348,19 +348,6 @@ public class UIController extends PFComponent {
             }
         }
 
-        // Open wizard on first start. PRO version has activation wizard first
-        if (getController().isFirstStart()
-            && (!ProUtil.isRunningProVersion() || Feature.BETA.isEnabled()))
-        {
-            UIUtil.invokeLaterInEDT(new Runnable() {
-                // Don't block start!
-                public void run() {
-                    hideSplash();
-                    PFWizard.openBasicSetupWizard(getController());
-                }
-            });
-        }
-
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
