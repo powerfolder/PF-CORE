@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
  * This class represents an archive for Files. Subclasses can store file as they
- * wish and even use seperate means etc. for different FileInfos.
+ * wish and even use separate means etc. for different FileInfos.
  * 
  * @author Dennis Waldherr
  */
@@ -58,7 +58,8 @@ public interface FileArchiver {
     /**
      * Retrieves a List of existing FileInfos for an archived file.
      *
-     * NOTE - implementors should ensure this list is read-only
+     * NOTE - implementers should ensure this list is read-only;
+     * others should not be allowed to modify this.
      * 
      * @param fileInfo
      *            fileInfo of the file to get archived versions for.
