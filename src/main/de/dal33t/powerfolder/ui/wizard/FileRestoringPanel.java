@@ -141,7 +141,10 @@ public class FileRestoringPanel extends PFWizardPanel {
         private void restore(FileInfo fileInfo) {
             try {
                 File restoreTo;
-                if (alternateDirectory != null && alternateDirectory.exists() && alternateDirectory.canWrite()) {
+                boolean alternate = alternateDirectory != null &&
+                        alternateDirectory.exists() &&
+                        alternateDirectory.canWrite();
+                if (alternate) {
                     restoreTo = new File(alternateDirectory, fileInfo.getFilenameOnly());
                 } else {
                     restoreTo = fileInfo.getDiskFile(getController().getFolderRepository());
@@ -156,7 +159,13 @@ public class FileRestoringPanel extends PFWizardPanel {
                     ServerClient client = getController().getOSClient();
                     if (client.isConnected() && client.isLoggedIn()) {
                         FolderService service = client.getFolderService();
-                        FileInfo onlineRestoredFileInfo = service.restore(fileInfo, true);
+                        FileInfo onlineRestoredFileInfo = null;
+                        if (alternate) {
+                            // Does not seem to work ?
+                            //onlineRestoredFileInfo = service.restore(fileInfo, restoreTo.getAbsolutePath());
+                        } else {
+                            onlineRestoredFileInfo = service.restore(fileInfo, null);
+                        }
                         log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from OS archive");
                         filesProcessedSuccessfully++;
                     }

@@ -57,6 +57,8 @@ public interface FileArchiver {
 
     /**
      * Retrieves a List of existing FileInfos for an archived file.
+     *
+     * NOTE - implementors should ensure this list is read-only
      * 
      * @param fileInfo
      *            fileInfo of the file to get archived versions for.

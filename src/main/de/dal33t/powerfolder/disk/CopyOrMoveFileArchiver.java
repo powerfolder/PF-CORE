@@ -407,7 +407,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 file.length(), mySelf, modDate, version);
             list.add(archiveFile);
         }
-        return list;
+        // Read-only, so others don't trash this.
+        return Collections.unmodifiableList(list);
     }
 
     /**

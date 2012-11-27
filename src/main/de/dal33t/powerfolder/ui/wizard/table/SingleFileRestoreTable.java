@@ -19,11 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.wizard.table;
 
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.wizard.data.FileInfoLocation;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.*;
@@ -44,7 +43,7 @@ public class SingleFileRestoreTable extends JTable {
         setColumnSelectionAllowed(false);
         setShowGrid(false);
         setupColumns();
-        setDefaultRenderer(FileInfoLocation.class, new MyDefaultTreeCellRenderer());
+        setDefaultRenderer(FileInfo.class, new MyDefaultTreeCellRenderer());
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
         // Associate a header renderer with all columns.
@@ -62,20 +61,18 @@ public class SingleFileRestoreTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(100);
+        column.setPreferredWidth(140);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(100);
+        column.setPreferredWidth(130);
         column = getColumn(getColumnName(2));
-        column.setPreferredWidth(100);
-        column = getColumn(getColumnName(3));
-        column.setPreferredWidth(100);
+        column.setPreferredWidth(130);
     }
 
     public void setSelectedFileInfo(FileInfo selectedFileInfo) {
         if (selectedFileInfo != null) {
             for (int i = 0; i < getModel().getRowCount(); i++) {
-                FileInfoLocation value = (FileInfoLocation) getModel().getValueAt(i, 1);
-                if (value.getFileInfo().isVersionDateAndSizeIdentical(selectedFileInfo)) {
+                FileInfo value = (FileInfo) getModel().getValueAt(i, 1);
+                if (value.isVersionDateAndSizeIdentical(selectedFileInfo)) {
                     ListSelectionModel model = getSelectionModel();
                     model.setSelectionInterval(i, i);
                     break;
@@ -84,12 +81,12 @@ public class SingleFileRestoreTable extends JTable {
         }
     }
 
-    public FileInfoLocation getSelectedFileInfoLocation() {
+    public FileInfo getSelectedFileInfo() {
         int row = getSelectedRow();
         if (row < 0) {
             return null;
         }
-        return (FileInfoLocation) getValueAt(row, 0);
+        return (FileInfo) getValueAt(row, 0);
     }
 
     /**
@@ -124,26 +121,21 @@ public class SingleFileRestoreTable extends JTable {
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
-            FileInfoLocation fileInfoLocation = (FileInfoLocation) value;
+            FileInfo fileInfo = (FileInfo) value;
             setIcon(null);
             String myValue = "";
             switch (column) {
                 case SingleFileRestoreTableModel.COL_MODIFIED_DATE: // modified date
-                    myValue = Format.formatDateShort(fileInfoLocation.getFileInfo().getModifiedDate());
+                    myValue = Format.formatDateShort(fileInfo.getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
                 case SingleFileRestoreTableModel.COL_VERSION:  // version
-                    myValue = Format.formatLong(fileInfoLocation.getFileInfo().getVersion());
+                    myValue = Format.formatLong(fileInfo.getVersion());
                     setHorizontalAlignment(RIGHT);
                     break;
                 case SingleFileRestoreTableModel.COL_SIZE:  // size
-                    myValue = Format.formatBytesShort(fileInfoLocation.getFileInfo().getSize());
+                    myValue = Format.formatBytesShort(fileInfo.getSize());
                     setHorizontalAlignment(RIGHT);
-                    break;
-                case SingleFileRestoreTableModel.COL_LOCATION:  // location
-                    myValue = ((fileInfoLocation.isLocal() ? "Local" : "") + ' ' +
-                            (fileInfoLocation.isOnline() ? "Online" : "")).trim();
-                    setHorizontalAlignment(LEFT);
                     break;
             }
 

@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.wizard.data.FileInfoLocation;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -65,7 +63,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
     private final JLabel infoLabel;
     private boolean hasNext;
-    private SwingWorker<List<FileInfoLocation>, FileInfoLocation> worker;
+    private SwingWorker<List<FileInfo>, FileInfo> worker;
     private final JProgressBar bar;
     private JScrollPane scrollPane;
     private final SingleFileRestoreTableModel tableModel;
@@ -156,19 +154,18 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         alternateTF.setEditable(false);
         originalRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                updateLocations();
+                updteLocations();
             }
         });
         alternateRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                updateLocations();
+                updteLocations();
             }
         });
-        updateLocations();
-        updateOriginalAlternate(false);
+        updteLocations();
     }
 
-    private void updateLocations() {
+    private void updteLocations() {
         originalLabel.setEnabled(originalRadio.isSelected());
         alternateTF.setEnabled(alternateButton.isSelected());
     }
@@ -185,7 +182,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         if (worker != null) {
             worker.cancel(false);
         }
-        tableModel.setFileInfoLocations(new ArrayList<FileInfoLocation>());
+        tableModel.setFileInfos(new ArrayList<FileInfo>());
         bar.setVisible(true);
         scrollPane.setVisible(false);
 
@@ -199,10 +196,10 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        FileInfoLocation fileInfoLocation = table.getSelectedFileInfoLocation();
-        if (fileInfoLocation != null) {
+        FileInfo fileInfo = table.getSelectedFileInfo();
+        if (fileInfo != null) {
             List<FileInfo> list = new ArrayList<FileInfo>();
-            list.add(fileInfoLocation.getFileInfo());
+            list.add(fileInfo);
             if (alternateRadio.isSelected()) {
                 String alternateDirectory = alternateTF.getText();
                 if (alternateDirectory != null && alternateDirectory.trim().length() > 0) {
@@ -221,55 +218,46 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     // Inner Classes //
     // ////////////////
 
-    private class VersionLoaderWorker extends SwingWorker<List<FileInfoLocation>, FileInfoLocation> {
+    private class VersionLoaderWorker extends SwingWorker<List<FileInfo>, FileInfo> {
 
-        protected List<FileInfoLocation> doInBackground() {
-
-            // Get local versions.
-            FileArchiver fileArchiver = folder.getFileArchiver();
-            List<FileInfo> localFileInfos = fileArchiver.getArchivedFilesInfos(fileInfoToRestore);
-            List<FileInfoLocation> localFileInfoLocations = convertToFileInfoLocation(localFileInfos, false);
-
-            // Set up the combined as the local ones.
-            List<FileInfoLocation> combinedFileInfoLocations = new ArrayList<FileInfoLocation>();
-            combinedFileInfoLocations.addAll(localFileInfoLocations);
+        protected List<FileInfo> doInBackground() {
 
             // Also try getting versions from OnlineStorage.
+            boolean online = folder.hasMember(getController().getOSClient().getServer());
             FolderService folderService = null;
-            Member server = getController().getOSClient().getServer();
-            if (folder.hasMember(server)) {
+            if (online) {
                 ServerClient client = getController().getOSClient();
                 if (client != null && client.isConnected() && client.isLoggedIn()) {
                     folderService = client.getFolderService();
                 }
             }
+
+            FileArchiver fileArchiver = folder.getFileArchiver();
+
+            List<FileInfo> tempArchiverFileInfos = fileArchiver.getArchivedFilesInfos(fileInfoToRestore);
+            List<FileInfo> infoList = new ArrayList<FileInfo>();
+            infoList.addAll(tempArchiverFileInfos);
+
             if (folderService != null) {
                 try {
-                    List<FileInfo> onlineFileInfos = folderService.getArchivedFilesInfos(fileInfoToRestore);
-                    List<FileInfoLocation> onlineFileInfoLocations = convertToFileInfoLocation(onlineFileInfos, true);
-                    for (FileInfoLocation onlineFileInfoLocation : onlineFileInfoLocations) {
-                        boolean fileInfoLocal = false;
-                        for (FileInfoLocation localFileInfoLocation : localFileInfoLocations) {
-                            if (onlineFileInfoLocation.getFileInfo().isVersionDateAndSizeIdentical(
-                                    localFileInfoLocation.getFileInfo())) {
-                                // Local and online, so set online status true.
-                                fileInfoLocal = true;
-                                onlineFileInfoLocation.setOnline(true);
+                    List<FileInfo> serviceList = folderService.getArchivedFilesInfos(fileInfoToRestore);
+                    for (FileInfo serviceListInfo : serviceList) {
+                        boolean haveIt = false;
+                        for (FileInfo infoListInfo : infoList) {
+                            if (serviceListInfo.isVersionDateAndSizeIdentical(infoListInfo)) {
+                                haveIt = true;
                                 break;
                             }
                         }
-
-                        // Found an online version that is not local, so add.
-                        if (!fileInfoLocal) {
-                            combinedFileInfoLocations.add(new FileInfoLocation(onlineFileInfoLocation.getFileInfo(),
-                                    false, true));
+                        if (!haveIt) {
+                            infoList.add(serviceListInfo);
                         }
                     }
                 } catch (Exception e) {
                     // Maybe gone offline. No worries.
                 }
             }
-            return combinedFileInfoLocations;
+            return infoList;
         }
 
         @Override
@@ -282,16 +270,13 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                     infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved.text",
                             String.valueOf(get().size()), fileInfoToRestore.getFilenameOnly()));
                 }
-                List<FileInfoLocation> fileInfoLocations = get();
-                Collections.sort(fileInfoLocations, new Comparator<FileInfoLocation>() {
-                    public int compare(FileInfoLocation o1, FileInfoLocation o2) {
-                        if (o1.getFileInfo().getVersion() == o2.getFileInfo().getVersion()) {
-                            return o1.getLocation() - o2.getLocation();
-                        }
-                        return o1.getFileInfo().getVersion() - o2.getFileInfo().getVersion();
+                List<FileInfo> fileInfoList = get();
+                Collections.sort(fileInfoList, new Comparator<FileInfo>() {
+                    public int compare(FileInfo o1, FileInfo o2) {
+                        return o1.getVersion() - o2.getVersion();
                     }
                 });
-                tableModel.setFileInfoLocations(fileInfoLocations);
+                tableModel.setFileInfos(fileInfoList);
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         table.setSelectedFileInfo(selectedFileInfo);
@@ -308,33 +293,10 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         }
     }
 
-    private static List<FileInfoLocation> convertToFileInfoLocation(List<FileInfo> fileInfos, boolean online) {
-        List<FileInfoLocation> results = new ArrayList<FileInfoLocation>(fileInfos.size());
-        for (FileInfo fileInfo : fileInfos) {
-            results.add(new FileInfoLocation(fileInfo, !online, online));
-        }
-        return results;
-    }
-
     private class MyListSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
             hasNext = table.getSelectedRow() >= 0;
-            FileInfoLocation fileInfoLocation = table.getSelectedFileInfoLocation();
-            if (fileInfoLocation != null) {
-                boolean local = fileInfoLocation.isLocal();
-                updateOriginalAlternate(local);
-            }
             updateButtons();
-        }
-    }
-
-    private void updateOriginalAlternate(boolean local) {
-        // Can't restore to an alternate location if not online.
-        alternateRadio.setEnabled(local);
-        alternateButton.setEnabled(local);
-        if (!local) {
-            originalRadio.setSelected(true);
-            alternateTF.setText("");
         }
     }
 
