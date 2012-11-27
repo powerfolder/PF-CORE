@@ -751,6 +751,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
 
+        if (hasJoinedFolder(folderInfo)) {
+            return folders.get(folderInfo);
+        }
+        
         // If non-preview folder and already have this folder as preview,
         // silently remove the preview.
         if (!folderSettings.isPreviewOnly()) {
@@ -775,15 +779,28 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        if (hasJoinedFolder(folderInfo)) {
-            return folders.get(folderInfo);
+        // PFC-2226: Option to restrict new folder creation to the default storage path
+        if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+            .getValueBoolean(getController()))
+        {
+            boolean inBaseDir = folderSettings.getLocalBaseDirString()
+                .startsWith(getFoldersBasedir());
+            if (!inBaseDir) {
+                logSevere("Not allowed to create " + folderInfo.getName()
+                    + " at " + folderSettings.getLocalBaseDirString()
+                    + ". Must be in base directory: " + getFoldersBasedir());
+                throw new IllegalStateException("Not allowed to create "
+                    + folderInfo.getName() + " at "
+                    + folderSettings.getLocalBaseDirString()
+                    + ". Must be in base directory: " + getFoldersBasedir());
+            }
         }
 
         if (Feature.FOLDER_ATOMIC_COMMIT.isEnabled()
             && folderSettings.getCommitDir() == null)
         {
             File newBaseDir = new File(folderSettings.getLocalBaseDir(),
-                Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
+       Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
             newBaseDir.mkdirs();
             FileUtils.setAttributesOnWindows(newBaseDir, true, true);
             File commitDir = folderSettings.getLocalBaseDir();

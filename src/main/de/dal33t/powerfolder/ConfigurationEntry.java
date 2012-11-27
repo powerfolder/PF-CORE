@@ -568,7 +568,7 @@ public enum ConfigurationEntry {
      * if inaccessible during program start, e.g. USB- or Network-Drive
      */
     FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
-
+    
     /**
      * Note - as of PFC-2182, mass delete protection should only be applied
      * if the user has expert mode.
@@ -872,6 +872,11 @@ public enum ConfigurationEntry {
      * Uses any existing directory found at the default path, even if not empty.
      */
     FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", false),
+    
+    /**
+     * PFC-2226: Option to restrict new folder creation to the default storage path
+     */
+    FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false),
 
     /** The archive mode to use when creating a new folder. */
     DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name()),
