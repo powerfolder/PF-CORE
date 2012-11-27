@@ -57,6 +57,7 @@ public class PowerFolder {
         Options options = new Options();
         Option configOption = OptionBuilder
             .withArgName("config")
+            .withLongOpt("config")
             .hasOptionalArgs(2)
             .withDescription(
                 "<config file>. Sets the configuration file to start. Default: PowerFolder.config")
