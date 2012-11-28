@@ -61,8 +61,37 @@ For creation of the installer:
 	<target name="loadproperties" depends="loadproperties0" unless="outputdirset">
 		<property name="output.dir" location="" />
 	</target>
+	
+	<target name="detect-version" depends="loadproperties" unless="MajorVersion">
+		<script language="javascript" manager="bsf" classpath="lib-build/bsf.jar:lib-build/js.jar:lib-build/commons-logging-1.1.1.jar"><![CDATA[
+		    var reader = new java.io.BufferedReader(java.io.FileReader('src/main/de/dal33t/powerfolder/Controller.java'));
+		   
+			var line = "";
+			while ((line = reader.readLine()) != null) {
+				if (line.indexOf("int MAJOR_VERSION") >= 0) {
+					var start = line.indexOf("=") + 1;
+					var end = line.indexOf(";");
+					var vInfo = line.substring(start,end).trim();
+					project.setProperty("MajorVersion", vInfo);
+				} else if (line.indexOf("int MINOR_VERSION") >= 0) {
+					var start = line.indexOf("=") + 1;
+					var end = line.indexOf(";");
+					var vInfo = line.substring(start,end).trim();
+					project.setProperty("MinorVersion", vInfo);
+				} else if (line.indexOf("int REVISION_VERSION") >= 0) {
+					var start = line.indexOf("=") + 1;
+					var end = line.indexOf(";");
+					var vInfo = line.substring(start,end).trim();
+					project.setProperty("RevisionVersion", vInfo);
+				}
+			}
+		]]></script>
+		<echo>
+			Auto detected version: ${MajorVersion}.${MinorVersion}.${RevisionVersion}
+		</echo>
+	</target>
 
-	<target name="init" depends="loadproperties">
+	<target name="init" depends="loadproperties, detect-version">
 		<!-- sets the standard DSTAMP, TSTAMP, and TODAY properties according to the default formats: -->
 		<tstamp>
 			<!--must match the format in AboutDialog2-->
