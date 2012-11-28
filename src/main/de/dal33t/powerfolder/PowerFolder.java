@@ -62,6 +62,7 @@ public class PowerFolder {
             .withDescription(
                 "<config file>. Sets the configuration file to start. Default: PowerFolder.config")
             .create("c");
+        
         options.addOption(configOption);
         options.addOption("u", "username", true,
             "<username>. The username to use when connecting.");
@@ -70,19 +71,35 @@ public class PowerFolder {
 
         options.addOption("m", "minimized", false,
             "Start PowerFolder minimized");
-        options.addOption("s", "server", false,
+        options
+            .addOption("s", "server", false,
                 "Starts in console mode. Graphical user interface will be disabled");
-        options.addOption("d", "dns", true,
+        options
+            .addOption("d", "dns", true,
                 "<ip/dns>. Sets the dns/ip to listen to. May also be a dyndns address");
         options.addOption("h", "help", false, "Displays this help");
-        options.addOption("n", "name", true, "<Name> Sets the name of this machine");
+        options.addOption("n", "name", true,
+            "<Name> Sets the name of this machine");
         options.addOption("b", "data", true,
-                "Set the base data directory for PowerFolder");
-        options.addOption("k", "kill", false,
-                "Shuts down a running PowerFolder instance");
-        options.addOption("l", "log", true,
+            "Set the base data directory for PowerFolder");
+
+        Option killOption = OptionBuilder.withArgName("kill")
+            .withLongOpt("kill").hasOptionalArgs(1)
+            .withDescription("Shuts down a running PowerFolder instance")
+            .create("k");
+        options.addOption(killOption);
+
+        options
+            .addOption(
+                "l",
+                "log",
+                true,
                 "<level> Sets console logging to severe, warning, info, fine or finer level (e.g. \"--log info\", sets info level and above");
-        options.addOption("f", "langfile", true,
+        options
+            .addOption(
+                "f",
+                "langfile",
+                true,
                 "<path\\file> Sets the language file to use (e.g. \"--langfile c:\\powerfolder\\translation\\translation_XX.properties\", forces PowerFolder to load this file as language file)");
         options.addOption("g", "language", true,
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
