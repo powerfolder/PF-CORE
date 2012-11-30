@@ -102,7 +102,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         try {
             UIUtil.invokeAndWaitInEDT(new Runnable() {
                 public void run() {
+                    getFrame().setAlwaysOnTop(true);
                     getFrame().setVisible(true);
+                    getFrame().setAlwaysOnTop(false);
                 }
             });
             if (!EventQueue.isDispatchThread()) {
