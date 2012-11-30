@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jwf.WizardPanel;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -69,6 +70,7 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -433,7 +435,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             final String filename = command.substring(COPYLINK.length());
             getController().schedule(new Runnable() {
                 public void run() {
-                    copyLink(filename);
+                    getLink(filename);
                 }
             }, 0);
         } else {
@@ -441,20 +443,23 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
-    protected void copyLink(String filename) {
+    protected void getLink(String filename) {
         File file = new File(filename);
         String absPath = file.getAbsolutePath();
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (absPath.startsWith(folder.getLocalBase().getAbsolutePath())) {
+                ServerClient client = getController().getOSClient();
                 FileInfo fInfo = FileInfoFactory.lookupInstance(folder, file);
-                String openLink = getController().getOSClient().getFileLink(
-                    fInfo);
-                Util.setClipboardContents(openLink);
+                String getLink = client.getFileLinkURL(fInfo);
+                char[] pw = client.getPassword();
+                getLink = LoginUtil.decorateURL(getLink, client.getUsername(),
+                    pw);
+                LoginUtil.clear(pw);
                 try {
-                    BrowserLauncher.openURL(openLink);
+                    BrowserLauncher.openURL(getLink);
                 } catch (IOException e) {
-                   logWarning("Unable to open in browser: " + openLink);
+                    logWarning("Unable to open in browser: " + getLink);
                 }
                 return;
             }
