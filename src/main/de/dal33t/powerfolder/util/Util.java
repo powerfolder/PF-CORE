@@ -482,13 +482,15 @@ public class Util {
     public static String endcodeForURL(String aURLFragment) {
         String result = null;
         try {
-            result = URLEncoder.encode(aURLFragment, "UTF-8");
+            // FIX1: Corrected relative filenames including path separator /
+            result = URLEncoder.encode(aURLFragment, "UTF-8").replace("%2F",
+                "/");
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException("UTF-8 not supported", ex);
         }
         return result;
     }
-    
+
     /**
      * Removes the last '/' from an URI and trims the string. Example:
      * http://www.powerfolder.com/ gets converted into
