@@ -527,15 +527,9 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        try {
-            return getWebURL() + "/getlink/"
-                + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
-                + URLEncoder.encode(fInfo.getRelativeName(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            logSevere(e);
-            return null;
-        }
-        // + IdGenerator.generateFileLinkID(fInfo);
+        return getWebURL() + Constants.GET_LINK_URI + '/'
+            + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
+            + Util.endcodeForURL(fInfo.getRelativeName());
     }
 
     /**
