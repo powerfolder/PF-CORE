@@ -522,13 +522,20 @@ public class ServerClient extends PFComponent {
      * @param fInfo
      * @return
      */
-    public String getFileLink(FileInfo fInfo) {
+    public String getFileLinkURL(FileInfo fInfo) {
         Reject.ifNull(fInfo, "fileinfo");
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + "/getlink/"
-            + IdGenerator.generateFileLinkID(fInfo);
+        try {
+            return getWebURL() + "/getlink/"
+                + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
+                + URLEncoder.encode(fInfo.getRelativeName(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            logSevere(e);
+            return null;
+        }
+        // + IdGenerator.generateFileLinkID(fInfo);
     }
 
     /**
