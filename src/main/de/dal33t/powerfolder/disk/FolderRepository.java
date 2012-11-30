@@ -172,7 +172,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValue(getController());
         String[] parts = list.split("\\$");
         for (String s : parts) {
-            File f = new File(s);
+            File f = new TFile(s);
             if (f.exists() && f.isDirectory()) {
                 removedFolderDirectories.add(f);
             }
@@ -267,7 +267,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if ((OSUtil.isWindowsSystem() && winNetworkDrive) || (!winNetworkDrive))
         {
-            foldersBasedir = new File(baseDir).getAbsoluteFile();
+            foldersBasedir = new TFile(baseDir).getAbsoluteFile();
             if (!foldersBasedir.exists()) {
                 if (foldersBasedir.mkdirs()) {
                     logInfo("Created base path for folders: " + foldersBasedir);
@@ -281,7 +281,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         if (!OSUtil.isWindowsSystem() && winNetworkDrive) {
-            foldersBasedir = new File(
+            foldersBasedir = new TFile(
                 ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
             if (!foldersBasedir.exists()) {
                 if (foldersBasedir.mkdirs()) {
@@ -300,7 +300,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             && ConfigurationEntry.FOLDER_BASEDIR_FALLBACK_TO_DEFAULT
                 .getValueBoolean(getController()))
         {
-            foldersBasedir = new File(
+            foldersBasedir = new TFile(
                 ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
             if (!foldersBasedir.exists()) {
                 if (foldersBasedir.mkdirs()) {
@@ -799,7 +799,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Feature.FOLDER_ATOMIC_COMMIT.isEnabled()
             && folderSettings.getCommitDir() == null)
         {
-            File newBaseDir = new File(folderSettings.getLocalBaseDir(),
+            File newBaseDir = new TFile(folderSettings.getLocalBaseDir(),
        Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
             newBaseDir.mkdirs();
             FileUtils.setAttributesOnWindows(newBaseDir, true, true);
@@ -981,7 +981,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 // Try to delete the invitation.
-                File invite = new File(folder.getLocalBase(), folder.getName()
+                File invite = new TFile(folder.getLocalBase(), folder.getName()
                     + ".invitation");
                 if (invite.exists()) {
                     try {
@@ -1284,7 +1284,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
         String baseDirName = getFoldersBasedir();
-        File baseDir = new File(baseDirName);
+        File baseDir = new TFile(baseDirName);
         if (baseDir.exists() && baseDir.canRead()) {
             // Get all directories
             File[] directories = baseDir.listFiles(new FileFilter() {
@@ -1432,7 +1432,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController()))
         {
             // Moderate strategy. Use existing folders.
-            suggestedLocalBase = new File(getController().getFolderRepository()
+            suggestedLocalBase = new TFile(getController().getFolderRepository()
                 .getFoldersAbsoluteDir(), invitation.folder.name);
             if (suggestedLocalBase.exists()) {
                 logWarning("Using existing directory " + suggestedLocalBase
@@ -1581,7 +1581,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
                 SyncProfile profile = SyncProfile.getDefault(getController());
-                File suggestedLocalBase = new File(getController()
+                File suggestedLocalBase = new TFile(getController()
                     .getFolderRepository().getFoldersAbsoluteDir(),
                     folderInfo.name);
                 if (removedFolderDirectories.contains(suggestedLocalBase)) {
@@ -1602,7 +1602,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .getValueBoolean(getController()))
                 {
                     // Moderate strategy. Use existing folders.
-                    suggestedLocalBase = new File(getController()
+                    suggestedLocalBase = new TFile(getController()
                         .getFolderRepository().getFoldersAbsoluteDir(),
                         folderInfo.name);
                     if (suggestedLocalBase.exists()) {
