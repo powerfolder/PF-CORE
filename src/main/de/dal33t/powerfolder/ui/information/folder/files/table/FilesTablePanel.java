@@ -26,6 +26,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 import javax.swing.AbstractAction;
@@ -50,6 +51,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -69,6 +71,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -84,6 +87,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private FilesTableModel tableModel;
     private FilesTable table;
     private OpenFileAction openFileAction;
+    private BrowserAction browserAction;
     private DeleteFileAction deleteFileAction;
     private DownloadFileAction downloadFileAction;
     private AbortDownloadAction abortDownloadAction;
@@ -196,13 +200,15 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      * @return the toolbar
      */
     private void createToolBar() {
-        openFileAction = new OpenFileAction();
+        openFileAction = new OpenFileAction(getController());
         openFileAction.setEnabled(false);
-        downloadFileAction = new DownloadFileAction();
+        browserAction = new BrowserAction(getController());
+        browserAction.setEnabled(false);
+        downloadFileAction = new DownloadFileAction(getController());
         downloadFileAction.setEnabled(false);
         abortDownloadAction = new AbortDownloadAction(getController());
         abortDownloadAction.setEnabled(false);
-        deleteFileAction = new DeleteFileAction();
+        deleteFileAction = new DeleteFileAction(getController());
         deleteFileAction.setEnabled(false);
         addIgnoreAction = new AddIgnoreAction(getController());
         addIgnoreAction.setEnabled(false);
@@ -224,6 +230,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             fileMenu.add(openFileAction);
         }
+        fileMenu.add(browserAction);
         fileMenu.add(downloadFileAction);
         fileMenu.add(abortDownloadAction);
         fileMenu.add(deleteFileAction);
@@ -478,7 +485,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         FileInfoCriteria criteria = new FileInfoCriteria();
         criteria.setPath(directoryInfo);
         criteria.setRecursive(true);
-        criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
+        criteria.setType(Type.FILES_ONLY);
         criteria.addWriteMembersAndMyself(folder);
         Collection<FileInfo> infoCollection = folder.getDAO().findFiles(
             criteria);
@@ -495,8 +502,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     // ////////////////
 
     private class DownloadFileAction extends BaseAction {
-        DownloadFileAction() {
-            super("action_download_file", FilesTablePanel.this.getController());
+        DownloadFileAction(Controller controller) {
+            super("action_download_file", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -546,8 +553,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     private class DeleteFileAction extends BaseAction {
-        DeleteFileAction() {
-            super("action_delete_file", FilesTablePanel.this.getController());
+        DeleteFileAction(Controller controller) {
+            super("action_delete_file", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -556,8 +563,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     private class OpenFileAction extends BaseAction {
-        OpenFileAction() {
-            super("action_open_file", FilesTablePanel.this.getController());
+        OpenFileAction(Controller controller) {
+            super("action_open_file", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -575,6 +582,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
                     openFileAction.setEnabled(diskItem != null);
                 }
+                browserAction.setEnabled(diskItem != null && diskItem instanceof FileInfo && getSelectedRows().length == 1);
                 if (diskItem != null && diskItem instanceof DirectoryInfo) {
                     DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
                     boolean retained = tableModel.getFolder()
@@ -630,6 +638,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                     done = true;
                 }
+            } else {
+                browserAction.setEnabled(false);
             }
 
             downloadFileAction.setEnabled(downloadState);
@@ -816,6 +826,27 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         public void actionPerformed(ActionEvent e) {
             parent.resetFilters();
+        }
+    }
+
+    private class BrowserAction extends BaseAction {
+        BrowserAction(Controller controller) {
+            super("action_browser", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (getSelectedRows().length == 1) {
+                DiskItem diskItem = getSelectedRows()[0];
+                if (diskItem instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    String fileLinkURL = getController().getOSClient().getFileLinkURL(fileInfo);
+                    try {
+                        BrowserLauncher.openURL(fileLinkURL);
+                    } catch (IOException ex) {
+                        logWarning("Unable to open in browser: " + fileLinkURL);
+                    }
+                }
+            }
         }
     }
 
