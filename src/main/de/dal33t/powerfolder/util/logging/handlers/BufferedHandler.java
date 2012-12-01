@@ -132,7 +132,7 @@ public class BufferedHandler extends Handler {
                     sx = formattedMessage.indexOf("\n", x);
                 }
                 if (sx < 0) {
-                    sx = formattedMessage.length();
+                    sx = formattedMessage.length() + 1;
                 }
                 if (x > 0 && sx > x) {
                     sx = sx - 1;
