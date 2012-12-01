@@ -19,15 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import com.jgoodies.binding.beans.Model;
-
-import de.dal33t.powerfolder.message.clientserver.AccountDetails;
-import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
 
 public class AccountFilterModel extends Model {
     private static final long serialVersionUID = 100L;
@@ -104,36 +96,4 @@ public class AccountFilterModel extends Model {
         username = null;
         maxResults = 0;
     }
-
-    public boolean matches(Account account) {
-        Reject.ifNull(account, "Account is null");
-        if (disabledOnly && !account.getOSSubscription().isDisabled()) {
-            return false;
-        }
-        if (proUsersOnly && !account.isProUser()) {
-            return false;
-        }
-        if (!StringUtils.isBlank(username)) {
-            if (!account.getUsername().toLowerCase().startsWith(
-                username.toLowerCase()))
-            {
-                return false;
-            }
-        }
-        if (activeTrial) {
-            return !account.getOSSubscription().isDisabledExpiration();
-        }
-        return true;
-    }
-
-    public void apply(Collection<AccountDetails> list) {
-        for (Iterator<AccountDetails> it = list.iterator(); it.hasNext();) {
-            AccountDetails accountDetails = it.next();
-            Account account = accountDetails.getAccount();
-            if (!matches(account)) {
-                it.remove();
-            }
-        }
-    }
-
 }
