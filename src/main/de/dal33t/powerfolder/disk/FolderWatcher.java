@@ -127,9 +127,9 @@ public class FolderWatcher extends PFComponent {
     public synchronized static boolean isLibLoaded() {
         if (LIB_LOADED == null) {
             try {
-                LIB_LOADED = OSUtil.loadLibrary(JNotify.class, "jnotify");
                 // PFC-2162:
                 System.setProperty("file.encoding", "UTF8");
+                LIB_LOADED = OSUtil.loadLibrary(JNotify.class, "jnotify");
             } catch (Error e) {
                 LIB_LOADED = false;
             }
