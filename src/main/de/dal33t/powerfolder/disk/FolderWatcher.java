@@ -128,6 +128,8 @@ public class FolderWatcher extends PFComponent {
         if (LIB_LOADED == null) {
             try {
                 LIB_LOADED = OSUtil.loadLibrary(JNotify.class, "jnotify");
+                // PFC-2162:
+                System.setProperty("file.encoding", "UTF8");
             } catch (Error e) {
                 LIB_LOADED = false;
             }
