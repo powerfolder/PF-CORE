@@ -779,7 +779,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        // PFC-2226: Option to restrict new folder creation to the default storage path
+        // PFC-2226: Option to restrict new folder creation to the default storage path.
+        // Note, this is a last check. User should never get here because of other checks.
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {

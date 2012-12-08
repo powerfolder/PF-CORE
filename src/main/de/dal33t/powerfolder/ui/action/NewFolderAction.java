@@ -80,7 +80,11 @@ public class NewFolderAction extends BaseAction {
                         return;
                     }
 
-                    // Setup sucess panel of this wizard path
+                    if (isNonPowerFolderRootAllowedSelected(files)) {
+                        return;
+                    }
+
+                    // Setup success panel of this wizard path
                     FolderCreatePanel createPanel = new FolderCreatePanel(
                         getController());
 
@@ -159,6 +163,27 @@ public class NewFolderAction extends BaseAction {
     }
 
     /**
+     * Is user is only allowed to select folder base subdirs and selects outside?
+     * Disallow (#2226).
+     *
+     * @param files
+     * @return
+     */
+    private boolean isNonPowerFolderRootAllowedSelected(List<File> files) {
+        if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            for (File file : files) {
+                if (!file.getParentFile().equals(getController().getFolderRepository().getFoldersAbsoluteDir())) {
+                    String title = Translation.getTranslation("general.directory");
+                    String message =  Translation.getTranslation("new_folder_action.non_basedir_error.text");
+                    DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Is one of the files the PowerFolder base directory?
      * A bad thing if true. Should be managing a subdirectory of this.
      *
@@ -172,8 +197,7 @@ public class NewFolderAction extends BaseAction {
             if (file.getAbsolutePath().equals(baseDir)) {
                 String title = Translation.getTranslation("general.directory");
                 String message =  Translation.getTranslation("new_folder_action.basedir_error.text");
-                DialogFactory.genericDialog(getController(), title, message,
-                        GenericDialogType.ERROR);
+                DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
                 return true;
             }
         }
