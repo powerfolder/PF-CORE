@@ -516,15 +516,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * @return the default basedir for all folders. basedir is just suggested
      */
-    public String getFoldersBasedir() {
-        return getFoldersAbsoluteDir() != null ? getFoldersAbsoluteDir()
-            .getAbsolutePath() : null;
+    public String getFoldersBasedirString() {
+        return getFoldersBasedir() != null ? getFoldersBasedir().getAbsolutePath() : null;
     }
 
     /**
      * @return the default basedir for all folders. basedir is just suggested
      */
-    public File getFoldersAbsoluteDir() {
+    public File getFoldersBasedir() {
         if (foldersBasedir == null) {
             initFoldersBasedir();
         }
@@ -784,8 +783,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {
-            boolean inBaseDir = folderSettings.getLocalBaseDirString()
-                .startsWith(getFoldersBasedir());
+            boolean inBaseDir = folderSettings.getLocalBaseDir().getParentFile().equals(getFoldersBasedir());
             if (!inBaseDir) {
                 logSevere("Not allowed to create " + folderInfo.getName()
                     + " at " + folderSettings.getLocalBaseDirString()
@@ -1284,7 +1282,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine("Searching for new folders...");
         }
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
-        String baseDirName = getFoldersBasedir();
+        String baseDirName = getFoldersBasedirString();
         File baseDir = new TFile(baseDirName);
         if (baseDir.exists() && baseDir.canRead()) {
             // Get all directories
@@ -1434,7 +1432,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         {
             // Moderate strategy. Use existing folders.
             suggestedLocalBase = new TFile(getController().getFolderRepository()
-                .getFoldersAbsoluteDir(), invitation.folder.name);
+                .getFoldersBasedir(), invitation.folder.name);
             if (suggestedLocalBase.exists()) {
                 logWarning("Using existing directory " + suggestedLocalBase
                     + " for " + invitation.folder);
@@ -1442,7 +1440,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         } else {
             // Defensive strategy. Find free new empty directory.
             suggestedLocalBase = FileUtils.createEmptyDirectory(getController()
-                .getFolderRepository().getFoldersAbsoluteDir(),
+                .getFolderRepository().getFoldersBasedir(),
                 invitation.folder.name);
         }
 
@@ -1583,7 +1581,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 File suggestedLocalBase = new TFile(getController()
-                    .getFolderRepository().getFoldersAbsoluteDir(),
+                    .getFolderRepository().getFoldersBasedir(),
                     folderInfo.name);
                 if (removedFolderDirectories.contains(suggestedLocalBase)) {
                     continue;
@@ -1604,7 +1602,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 {
                     // Moderate strategy. Use existing folders.
                     suggestedLocalBase = new TFile(getController()
-                        .getFolderRepository().getFoldersAbsoluteDir(),
+                        .getFolderRepository().getFoldersBasedir(),
                         folderInfo.name);
                     if (suggestedLocalBase.exists()) {
                         logWarning("Using existing directory "
@@ -1614,7 +1612,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // Defensive strategy. Find free new empty directory.
                     suggestedLocalBase = FileUtils.createEmptyDirectory(
                         getController().getFolderRepository()
-                            .getFoldersAbsoluteDir(), folderInfo.name);
+                            .getFoldersBasedir(), folderInfo.name);
                 }
 
                 logInfo("Auto setting up folder " + folderInfo

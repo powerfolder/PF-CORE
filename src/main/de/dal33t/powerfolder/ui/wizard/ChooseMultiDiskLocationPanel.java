@@ -329,7 +329,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     protected void initComponents() {
 
         initialDirectory = getController().getFolderRepository()
-            .getFoldersBasedir();
+            .getFoldersBasedirString();
 
         userDirectories = UserDirectories.getUserDirectories();
 
@@ -835,8 +835,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 return;
             }
 
-            File localBase = new File(getController().getFolderRepository()
-                .getFoldersBasedir());
+            File localBase = getController().getFolderRepository().getFoldersBasedir();
 
             // Check none are local base, that's bad.
             for (File file1 : files) {

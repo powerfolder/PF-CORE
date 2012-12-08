@@ -121,7 +121,7 @@ public class Invitation extends FolderRelatedMessage {
         Reject.ifNull(suggestedLocalBase, "File is null");
         this.suggestedLocalBase = new File(suggestedLocalBase.getPath());
         String folderBase = controller.getFolderRepository()
-            .getFoldersBasedir();
+            .getFoldersBasedirString();
         String appsDir = getAppsDir();
         String userHomeDir = getUserHomeDir();
         if (OSUtil.isWindowsSystem() && appsDir != null
@@ -140,7 +140,7 @@ public class Invitation extends FolderRelatedMessage {
         {
             String filePath = suggestedLocalBase.getAbsolutePath();
             String baseDirPath = controller.getFolderRepository()
-                .getFoldersBasedir();
+                .getFoldersBasedirString();
             suggestedLocalBasePath = filePath.substring(baseDirPath.length());
 
             // Remove any leading file separators.
@@ -191,8 +191,8 @@ public class Invitation extends FolderRelatedMessage {
         if (relative == RELATIVE_APP_DATA) {
             return new File(getAppsDir(), suggestedLocalBasePath);
         } else if (relative == RELATIVE_PF_BASE) {
-            File powerFolderBaseDir = new File(controller.getFolderRepository()
-                .getFoldersBasedir());
+            File powerFolderBaseDir = controller.getFolderRepository()
+                .getFoldersBasedir();
             return new File(powerFolderBaseDir, suggestedLocalBasePath);
         } else if (relative == RELATIVE_USER_HOME) {
             return new File(getUserHomeDir(), suggestedLocalBasePath);

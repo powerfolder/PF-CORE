@@ -126,7 +126,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         // Local base selection
         locationModel = new ValueHolder(getController().getFolderRepository()
-            .getFoldersBasedir());
+            .getFoldersBasedirString());
 
         // Behavior
         locationModel.addValueChangeListener(new PropertyChangeListener() {
@@ -445,11 +445,11 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         // Set folder base
-        String oldFolderBase = getController().getFolderRepository()
-            .getFoldersBasedir();
-        String newFolderbase = (String) locationModel.getValue();
-        getController().getFolderRepository().setFoldersBasedir(newFolderbase);
-        if (!StringUtils.isEqual(oldFolderBase, newFolderbase)) {
+        String oldFolderBaseString = getController().getFolderRepository()
+            .getFoldersBasedirString();
+        String newFolderBaseString = (String) locationModel.getValue();
+        getController().getFolderRepository().setFoldersBasedir(newFolderBaseString);
+        if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
             getController().getUIController().configureDesktopShortcut(true);
         }
 

@@ -345,7 +345,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             FolderSettings folderSettings)
         {
             FolderRepository folderRepo = getController().getFolderRepository();
-            File baseDir = new File(folderRepo.getFoldersBasedir());
+            File baseDir = folderRepo.getFoldersBasedir();
             if (!baseDir.exists()) {
                 log.info(String.format("Creating basedir: %s",
                     baseDir.getAbsolutePath()));

@@ -292,12 +292,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             FOLDERINFO_ATTRIBUTE);
         if (folderInfo == null) {
             transientDirectory = getController().getFolderRepository()
-                .getFoldersBasedir();
+                .getFoldersBasedirString();
         } else {
             Folder folder1 = folderInfo.getFolder(getController());
             if (folder1 == null) {
                 transientDirectory = getController().getFolderRepository()
-                    .getFoldersBasedir();
+                    .getFoldersBasedirString();
             } else {
                 transientDirectory = folder1.getLocalBase().getAbsolutePath();
             }
@@ -407,7 +407,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     }
                     if (!ok) {
                         String baseDir = getController().getFolderRepository()
-                            .getFoldersBasedir();
+                            .getFoldersBasedirString();
                         String name = f.getName();
                         if (name.length() == 0) { // Like f == 'E:/'
                             name = "new";

@@ -1300,7 +1300,7 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             FileUtils.openFile(getController().getFolderRepository()
-                .getFoldersAbsoluteDir());
+                .getFoldersBasedir());
         }
     }
 

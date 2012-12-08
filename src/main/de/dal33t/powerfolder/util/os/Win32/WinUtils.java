@@ -163,8 +163,8 @@ public class WinUtils extends Loggable {
             logWarning("Could not locate the Links directory in " + userHome);
             return;
         }
-        File baseDir = new File(controller.getFolderRepository()
-            .getFoldersBasedir());
+        File baseDir = controller.getFolderRepository()
+            .getFoldersBasedir();
         File shortCut = new File(linksDir, baseDir.getName() + ".lnk");
         if (setup) {
             ShellLink link = new ShellLink(null, baseDir.getName(),
@@ -184,8 +184,8 @@ public class WinUtils extends Loggable {
         if (!linksDir.exists()) {
             return false;
         }
-        File baseDir = new File(controller.getFolderRepository()
-            .getFoldersBasedir());
+        File baseDir = controller.getFolderRepository()
+            .getFoldersBasedir();
         File shortCut = new File(linksDir, baseDir.getName() + ".lnk");
         return shortCut.exists();
     }

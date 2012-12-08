@@ -106,7 +106,7 @@ public class MacUtils extends Loggable {
     {
         if (setup) {
             File baseDir = controller.getFolderRepository()
-                .getFoldersAbsoluteDir();
+                .getFoldersBasedir();
             createPlacesLink(baseDir.getAbsolutePath());
         } else {
             // TODO Remove link

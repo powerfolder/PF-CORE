@@ -333,7 +333,7 @@ public class Folder extends PFComponent {
             localBase = new TFile(folderSettings.getLocalBaseDir());
         } else {
             localBase = new TFile(getController().getFolderRepository()
-                .getFoldersAbsoluteDir(), folderSettings.getLocalBaseDir()
+                .getFoldersBasedir(), folderSettings.getLocalBaseDir()
                 .getPath());
             logWarning("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
@@ -352,7 +352,7 @@ public class Folder extends PFComponent {
             encrypted = true;
         }
         Reject.ifTrue(localBase.equals(getController().getFolderRepository()
-            .getFoldersAbsoluteDir()),
+            .getFoldersBasedir()),
             "Folder cannot be located at base directory for all folders");
 
         if (folderSettings.getCommitDir() != null) {
@@ -360,7 +360,7 @@ public class Folder extends PFComponent {
                 commitDir = folderSettings.getCommitDir();
             } else {
                 commitDir = new File(getController().getFolderRepository()
-                    .getFoldersAbsoluteDir(), folderSettings.getCommitDir()
+                    .getFoldersBasedir(), folderSettings.getCommitDir()
                     .getPath());
             }
         }
@@ -770,7 +770,7 @@ public class Folder extends PFComponent {
 
         // Complex checks
         FolderRepository repo = getController().getFolderRepository();
-        if (repo.getFoldersAbsoluteDir().equals(localBase)) {
+        if (repo.getFoldersBasedir().equals(localBase)) {
             throw new FolderException(currentInfo, Translation.getTranslation(
                 "foldercreate.error.it_is_base_dir",
                 localBase.getAbsolutePath()));
@@ -3759,7 +3759,7 @@ public class Folder extends PFComponent {
             logInfo("Device disconnected. Folder disappeared from "
                 + getLocalBase());
             String bd = getController().getFolderRepository()
-                .getFoldersBasedir();
+                .getFoldersBasedirString();
             boolean inBaseDir = false;
             if (bd != null) {
                 inBaseDir = getLocalBase().getAbsolutePath().startsWith(bd);
@@ -4394,7 +4394,7 @@ public class Folder extends PFComponent {
 
             // Ignore My Pictures, My Music, My Videos, PowerFolders (basedir)
             File baseDir = getController().getFolderRepository()
-                .getFoldersAbsoluteDir();
+                .getFoldersBasedir();
             addPattern(baseDir.getName() + '*');
 
             if (UserDirectories.getDocumentsReported() != null) {

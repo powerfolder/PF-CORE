@@ -43,6 +43,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -102,11 +103,11 @@ public class SettingsTab extends PFUIComponent {
     private ValueModel onlineModeModel;
     private ValueModel onlineVersionModel;
     private final ValueModel scriptModel;
-    private DefaultListModel patternsListModel = new DefaultListModel();
+    private DefaultListModel<String> patternsListModel = new DefaultListModel<String>();
     private final SelectionModel selectionModel;
-    private FolderMembershipListener membershipListner;
+    private FolderMembershipListener membershipListener;
     private final DiskItemFilterListener patternChangeListener;
-    private volatile boolean updateingOnlineArchiveMode;
+    private volatile boolean updatingOnlineArchiveMode;
 
     /**
      * Folders with this setting will backup files before replacing them with
@@ -119,7 +120,7 @@ public class SettingsTab extends PFUIComponent {
     private final SyncProfileSelectorPanel transferModeSelectorPanel;
     private final ArchiveModeSelectorPanel localArchiveModeSelectorPanel;
     private final ArchiveModeSelectorPanel onlineArchiveModeSelectorPanel;
-    private JList patternsList;
+    private JList<String> patternsList;
     private final JTextField localFolderField;
     private final JButton localFolderButton;
     private ActionLabel confOSActionLabel;
@@ -128,13 +129,13 @@ public class SettingsTab extends PFUIComponent {
     private ActionLabel previewFolderActionLabel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
-    private boolean settingFolder = false;
+    private boolean settingFolder;
     private JLabel onlineLabel;
     private JCheckBox syncPatternsCheckBox;
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public SettingsTab(Controller controller) {
@@ -151,11 +152,11 @@ public class SettingsTab extends PFUIComponent {
         localFolderButton.setEnabled(false);
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
-        patternsListModel = new DefaultListModel();
+        patternsListModel = new DefaultListModel<String>();
         removeFolderAction = new RemoveFolderAction(getController());
         maintainDBAction = new MaintainFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
-        membershipListner = new MyFolderMembershipListener();
+        membershipListener = new MyFolderMembershipListener();
         scriptModel = new ValueHolder(null, false);
 
         MyLocalValueChangeListener localListener = new MyLocalValueChangeListener();
@@ -204,18 +205,18 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Set the tab with details for a folder.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
         if (folder != null) {
             folder.getDiskItemFilter().removeListener(patternChangeListener);
-            folder.removeMembershipListener(membershipListner);
+            folder.removeMembershipListener(membershipListener);
         }
         settingFolder = true;
         folder = getController().getFolderRepository().getFolder(folderInfo);
         folder.getDiskItemFilter().addListener(patternChangeListener);
-        folder.addMembershipListener(membershipListner);
+        folder.addMembershipListener(membershipListener);
         transferModeSelectorPanel.setUpdateableFolder(folder);
         scriptModel.setValue(folder.getDownloadScript());
         localArchiveModeSelectorPanel.setArchiveMode(folder.getFileArchiver()
@@ -270,7 +271,7 @@ public class SettingsTab extends PFUIComponent {
                 new JLabel(Translation.getTranslation("general.transfer_mode")),
                 cc.xy(2, row));
             builder.add(transferModeSelectorPanel.getUIComponent(),
-                cc.xyw(4, row, 4));            
+                cc.xyw(4, row, 4));
         } else {
             transferModeSelectorPanel.getUIComponent();
         }
@@ -397,7 +398,7 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private JPanel createPatternsPanel() {
-        patternsList = new JList(patternsListModel);
+        patternsList = new JList<String>(patternsListModel);
         patternsList.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
@@ -423,7 +424,7 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Creates a pair of location text field and button.
-     * 
+     *
      * @return
      */
     private JComponent createScriptField() {
@@ -506,7 +507,7 @@ public class SettingsTab extends PFUIComponent {
     /**
      * Removes any patterns for this file name. Directories should have "/*"
      * added to the name.
-     * 
+     *
      * @param patterns
      */
     public void removePatterns(String patterns) {
@@ -616,51 +617,59 @@ public class SettingsTab extends PFUIComponent {
 
             // Select the new folder.
             List<File> files = DialogFactory.chooseDirectory(getController()
-                .getUIController(), originalDirectory, false);
+                    .getUIController(), originalDirectory, false);
             if (!files.isEmpty()) {
                 File newDirectory = files.get(0);
-                boolean disconnected = folder.checkIfDeviceDisconnected();
-                if (!disconnected
-                    && FileUtils
-                        .isSubdirectory(originalDirectory, newDirectory))
-                {
-                    DialogFactory
-                        .genericDialog(getController(), Translation
-                            .getTranslation("settings_tab.subdir.title"),
-                            Translation
-                                .getTranslation("settings_tab.subdir.text"),
+                if (!folder.checkIfDeviceDisconnected() &&
+                        FileUtils.isSubdirectory(originalDirectory, newDirectory)) {
+                    // Can't move a folder to one of its subdirectories.
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation("general.directory"),
+                            Translation.getTranslation("general.subdirectory_error.text"),
                             GenericDialogType.ERROR);
-                } else {
-                    File foldersBaseDir = new File(getController()
-                        .getFolderRepository().getFoldersBasedir());
-                    if (newDirectory.equals(foldersBaseDir)) {
+                    return;
+                }
+
+                File foldersBaseDir = getController().getFolderRepository().getFoldersBasedir();
+                if (newDirectory.equals(foldersBaseDir)) {
+                    // Can't move a folder to the base directory.
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation("general.directory"),
+                            Translation.getTranslation("general.basedir_error.text"),
+                            GenericDialogType.ERROR);
+                    return;
+                }
+
+                if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+                    if (!newDirectory.getParentFile().equals(
+                            getController().getFolderRepository().getFoldersBasedir())) {
+                        // Can't move a folder outside the base directory.
                         DialogFactory.genericDialog(getController(),
-                            Translation
-                                .getTranslation("settings_tab.basedir.title"),
-                            Translation
-                                .getTranslation("settings_tab.basedir.text"),
-                            GenericDialogType.ERROR);
-                    } else {
-                        // Find out if the user wants to move the content of the
-                        // current folder
-                        // to the new one.
-                        int moveContent = shouldMoveContent();
-
-                        if (moveContent == 2) {
-                            // Cancel
-                            return;
-                        }
-
-                        moveDirectory(originalDirectory, newDirectory,
-                            moveContent == 0);
+                                Translation.getTranslation("general.directory"),
+                                Translation.getTranslation("general.outside_basedir_error.text"),
+                                GenericDialogType.ERROR);
+                        return;
                     }
                 }
+
+                // Find out if the user wants to move the content of the
+                // current folder
+                // to the new one.
+                int moveContent = shouldMoveContent();
+
+                if (moveContent == 2) {
+                    // Cancel
+                    return;
+                }
+
+                moveDirectory(originalDirectory, newDirectory,
+                        moveContent == 0);
             }
         } finally {
             try {
                 // Unlock the 'new folder' scanner.
                 getController().getFolderRepository()
-                    .setSuspendNewFolderSearch(false);
+                        .setSuspendNewFolderSearch(false);
             } catch (Exception e) {
                 logSevere(e);
             }
@@ -669,7 +678,7 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Should the content of the existing folder be moved to the new location?
-     * 
+     *
      * @return true if should move.
      */
     private int shouldMoveContent() {
@@ -720,7 +729,7 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Confirm that the user really does want to go ahead with the move.
-     * 
+     *
      * @param newDirectory
      * @return true if the user wishes to move.
      */
@@ -741,7 +750,7 @@ public class SettingsTab extends PFUIComponent {
     /**
      * Do some basic validation. Warn if moving to a folder that has files /
      * directories in it.
-     * 
+     *
      * @param newDirectory
      * @return
      */
@@ -771,7 +780,7 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Moves the contents of a folder to another via a temporary directory.
-     * 
+     *
      * @param moveContent
      * @param originalDirectory
      * @param newDirectory
@@ -842,7 +851,7 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Displays an error if the folder move failed.
-     * 
+     *
      * @param e
      *            the error
      */
@@ -1157,7 +1166,7 @@ public class SettingsTab extends PFUIComponent {
                     folder.maintainFolderDB(System.currentTimeMillis());
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            MaintainFolderAction.this.setEnabled(true);
+                            setEnabled(true);
                         }
                     });
                 }
@@ -1350,7 +1359,7 @@ public class SettingsTab extends PFUIComponent {
             if (evt.getSource() == onlineModeModel
                 || evt.getSource() == onlineVersionModel)
             {
-                if (!updateingOnlineArchiveMode) {
+                if (!updatingOnlineArchiveMode) {
                     SwingWorker worker = new MyUpdaterSwingWorker();
                     worker.execute();
                 }
@@ -1428,7 +1437,7 @@ public class SettingsTab extends PFUIComponent {
                     ArchiveMode archiveMode = folderService
                         .getArchiveMode(folderInfo);
                     int perFile = folderService.getVersionsPerFile(folderInfo);
-                    updateingOnlineArchiveMode = true;
+                    updatingOnlineArchiveMode = true;
                     onlineArchiveModeSelectorPanel.setArchiveMode(archiveMode,
                         perFile);
                     onlineArchiveModeSelectorPanel.getUIComponent().setVisible(
@@ -1440,7 +1449,7 @@ public class SettingsTab extends PFUIComponent {
                 logWarning(e.toString());
                 return null;
             } finally {
-                updateingOnlineArchiveMode = false;
+                updatingOnlineArchiveMode = false;
             }
             return null;
         }

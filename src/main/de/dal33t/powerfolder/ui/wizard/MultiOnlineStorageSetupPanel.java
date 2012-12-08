@@ -217,8 +217,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
         folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
         folderLocalBaseMap = new HashMap<FolderInfo, File>();
-        String folderBasedir = getController().getFolderRepository()
-            .getFoldersBasedir();
+        String folderBasedirString = getController().getFolderRepository()
+            .getFoldersBasedirString();
 
         List<FolderInfo> folderInfoList = (List<FolderInfo>) getWizardContext()
             .getAttribute(WizardContextAttributes.FOLDER_INFOS);
@@ -238,7 +238,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             // Suggest user dir.
             File dirSuggestion;
             if (userDirs.get(folderInfo.name) == null) {
-                dirSuggestion = new File(folderBasedir,
+                dirSuggestion = new File(folderBasedirString,
                     FileUtils.removeInvalidFilenameChars(folderInfo.name));
             } else {
                 dirSuggestion = userDirs.get(folderInfo.name).getDirectory();

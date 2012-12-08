@@ -116,7 +116,7 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
             for (File realFile : realFiles) {
                 files.put(realFile, true);
             }
-            String baseDir = controller.getFolderRepository().getFoldersBasedir();
+            String baseDir = controller.getFolderRepository().getFoldersBasedirString();
             if (baseDir.equals(getDir().getAbsolutePath()) &&
                     virtualDirectories != null &&
                     !virtualDirectories.isEmpty()) {

@@ -120,7 +120,7 @@ public class NewFolderAction extends BaseAction {
                         }
                         // Prevent user from syncing the base directory.
                         if (file.equals(folderRepository
-                            .getFoldersAbsoluteDir()))
+                            .getFoldersBasedir()))
                         {
                             continue;
                         }
@@ -172,7 +172,7 @@ public class NewFolderAction extends BaseAction {
     private boolean isNonPowerFolderRootAllowedSelected(List<File> files) {
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
             for (File file : files) {
-                if (!file.getParentFile().equals(getController().getFolderRepository().getFoldersAbsoluteDir())) {
+                if (!file.getParentFile().equals(getController().getFolderRepository().getFoldersBasedir())) {
                     String title = Translation.getTranslation("general.directory");
                     String message =  Translation.getTranslation("general.outside_basedir_error.text");
                     DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
@@ -191,10 +191,9 @@ public class NewFolderAction extends BaseAction {
      * @return
      */
     private boolean isPowerFolderRootSelected(List<File> files) {
-        String baseDir =
-                getController().getFolderRepository().getFoldersBasedir();
+        File baseDir = getController().getFolderRepository().getFoldersBasedir();
         for (File file : files) {
-            if (file.getAbsolutePath().equals(baseDir)) {
+            if (file.equals(baseDir)) {
                 String title = Translation.getTranslation("general.directory");
                 String message =  Translation.getTranslation("general.basedir_error.text");
                 DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);

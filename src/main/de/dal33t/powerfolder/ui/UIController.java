@@ -127,7 +127,6 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -370,7 +369,7 @@ public class UIController extends PFComponent {
      */
     public void configureDesktopShortcut(boolean removeFirst) {
         String shortcutName = getController().getFolderRepository()
-            .getFoldersAbsoluteDir().getName();
+            .getFoldersBasedir().getName();
         if (removeFirst
             || !PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
                 .getValueBoolean(getController()))
@@ -381,7 +380,7 @@ public class UIController extends PFComponent {
             .getValueBoolean(getController()))
         {
             Util.createDesktopShortcut(shortcutName, getController()
-                .getFolderRepository().getFoldersAbsoluteDir());
+                .getFolderRepository().getFoldersBasedir());
         }
     }
 
@@ -484,7 +483,7 @@ public class UIController extends PFComponent {
                     }
                 } else if (COMMAND_BROWSE.equals(e.getActionCommand())) {
                     FileUtils.openFile(getController().getFolderRepository()
-                        .getFoldersAbsoluteDir());
+                        .getFoldersBasedir());
                 } else if (COMMAND_PAUSE.equals(e.getActionCommand())
                     || COMMAND_RESUME.equals(e.getActionCommand()))
                 {
