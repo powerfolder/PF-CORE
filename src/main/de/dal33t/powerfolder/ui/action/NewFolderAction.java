@@ -174,7 +174,7 @@ public class NewFolderAction extends BaseAction {
             for (File file : files) {
                 if (!file.getParentFile().equals(getController().getFolderRepository().getFoldersAbsoluteDir())) {
                     String title = Translation.getTranslation("general.directory");
-                    String message =  Translation.getTranslation("new_folder_action.non_basedir_error.text");
+                    String message =  Translation.getTranslation("general.outside_basedir_error.text");
                     DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
                     return true;
                 }
@@ -196,7 +196,7 @@ public class NewFolderAction extends BaseAction {
         for (File file : files) {
             if (file.getAbsolutePath().equals(baseDir)) {
                 String title = Translation.getTranslation("general.directory");
-                String message =  Translation.getTranslation("new_folder_action.basedir_error.text");
+                String message =  Translation.getTranslation("general.basedir_error.text");
                 DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
                 return true;
             }

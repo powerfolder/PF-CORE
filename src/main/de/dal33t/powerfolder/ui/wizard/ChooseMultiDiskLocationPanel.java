@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -107,8 +108,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private LinkLabel warningLabel;
 
     private JComponent customDirectoryComp;
-    private JList customDirectoryList;
-    private DefaultListModel customDirectoryListModel;
+    private JList<String> customDirectoryList;
+    private DefaultListModel<String> customDirectoryListModel;
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox manualSyncCheckBox;
     private JCheckBox sendInviteAfterCB;
@@ -189,15 +190,15 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         Reject.ifNull(syncProfile, "No default sync profile");
 
         // Check boxes
-        for (String boxName : userDirectories.keySet()) {
+        for (Entry<String, UserDirectory> stringUserDirectoryEntry : userDirectories.entrySet()) {
             for (JCheckBox box : boxes) {
-                if (box.getText().equals(boxName)) {
+                if (box.getText().equals(stringUserDirectoryEntry.getKey())) {
                     // Ignore disabled boxes - these are already set up.
                     if (box.isSelected() && box.isEnabled()) {
                         FolderCreateItem item = new FolderCreateItem(
-                            userDirectories.get(boxName).getDirectory());
+                                stringUserDirectoryEntry.getValue().getDirectory());
                         item.setSyncProfile(syncProfile);
-                        item.setFolderInfo(createFolderInfo(boxName));
+                        item.setFolderInfo(createFolderInfo(stringUserDirectoryEntry.getKey()));
                         folderCreateItems.add(item);
                     }
                 }
@@ -206,7 +207,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         // Additional folders
         for (int i = 0; i < customDirectoryListModel.size(); i++) {
-            String dir = (String) customDirectoryListModel.getElementAt(i);
+            String dir = customDirectoryListModel.getElementAt(i);
             File file = new File(dir);
             FolderCreateItem item = new FolderCreateItem(file);
             item.setSyncProfile(syncProfile);
@@ -214,7 +215,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         // Add links
-        for (Map.Entry<File, String> entry : links.entrySet()) {
+        for (Entry<File, String> entry : links.entrySet()) {
             entry.getKey();
             for (FolderCreateItem item : folderCreateItems) {
                 if (item.getLocalBase().equals(entry.getKey())) {
@@ -241,27 +242,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        // Create boxes.
-        JCheckBox allBox = new JCheckBox(
-            Translation
-                .getTranslation("wizard.choose_multi_disk_location.all_files"));
-        allBox.setOpaque(false);
-        allBox.addActionListener(new MyAllActionListner());
-        boxes.add(allBox);
-
-        boolean showAppData = PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController());
-
-        for (String name : userDirectories.keySet()) {
-            if (!showAppData && "APP DATA".equalsIgnoreCase(name)) {
-                continue;
-            }
-            JCheckBox box = new JCheckBox(name);
-            box.setOpaque(false);
-            box.addActionListener(new MyActionListener());
-            boxes.add(box);
-        }
-
         StringBuilder verticalUserDirectoryLayout = new StringBuilder();
         // Four buttons every row.
         for (int i = 0; i < 1 + boxes.size() / 4; i++) {
@@ -344,7 +324,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     /**
-     * Initalizes all required components
+     * Initializes all required components
      */
     protected void initComponents() {
 
@@ -367,8 +347,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         linkAction = new MyLinkAction(getController());
         linkButton = new JButtonMini(linkAction);
 
-        customDirectoryListModel = new DefaultListModel();
-        customDirectoryList = new JList(customDirectoryListModel);
+        customDirectoryListModel = new DefaultListModel<String>();
+        customDirectoryList = new JList<String>(customDirectoryListModel);
         customDirectoryComp = new JScrollPane(customDirectoryList);
         customDirectoryList
             .setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -433,6 +413,28 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         enableRemoveLinkAction();
 
         listener = new MyServerClientListener();
+
+        // Create boxes, but only if the user can crete folders outside the base directory.
+        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            JCheckBox allBox = new JCheckBox(
+                Translation.getTranslation("wizard.choose_multi_disk_location.all_files"));
+            allBox.setOpaque(false);
+            allBox.addActionListener(new MyAllActionListner());
+            boxes.add(allBox);
+
+            boolean showAppData = PreferencesEntry.EXPERT_MODE
+                .getValueBoolean(getController());
+
+            for (String name : userDirectories.keySet()) {
+                if (!showAppData && "APP DATA".equalsIgnoreCase(name)) {
+                    continue;
+                }
+                JCheckBox box = new JCheckBox(name);
+                box.setOpaque(false);
+                box.addActionListener(new MyActionListener());
+                boxes.add(box);
+            }
+        }
     }
 
     @Override
@@ -529,9 +531,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     // ////////////////
 
     private class MyFolderSizeSwingWorker extends SwingWorker<Void, Void> {
-        private int nDirectories = 0;
-        private int recursiveFileCount = 0;
-        private long totalDirectorySize = 0;
+        private int nDirectories;
+        private int recursiveFileCount;
+        private long totalDirectorySize;
         private boolean valid = true;
 
         @Override
@@ -540,12 +542,12 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 recursiveFileCount = 0;
                 totalDirectorySize = 0;
                 List<File> originalList = new ArrayList<File>();
-                for (String boxName : userDirectories.keySet()) {
+                for (Entry<String, UserDirectory> stringUserDirectoryEntry1 : userDirectories.entrySet()) {
                     for (JCheckBox box : boxes) {
-                        if (box.getText().equals(boxName)) {
+                        if (box.getText().equals(stringUserDirectoryEntry1.getKey())) {
                             // Ignore disabled boxes - these are already set up.
                             if (box.isSelected() && box.isEnabled()) {
-                                File file = userDirectories.get(boxName)
+                                File file = stringUserDirectoryEntry1.getValue()
                                     .getDirectory();
                                 originalList.add(file);
                             }
@@ -554,7 +556,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
-                    String dir = (String) customDirectoryListModel.elementAt(i);
+                    String dir = customDirectoryListModel.elementAt(i);
                     File file = new File(dir);
                     originalList.add(file);
                 }
@@ -569,12 +571,12 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 getWizardContext().setAttribute(FILE_COUNT, recursiveFileCount);
 
                 List<File> finalList = new ArrayList<File>();
-                for (String boxName : userDirectories.keySet()) {
+                for (Entry<String, UserDirectory> stringUserDirectoryEntry : userDirectories.entrySet()) {
                     for (JCheckBox box : boxes) {
-                        if (box.getText().equals(boxName)) {
+                        if (box.getText().equals(stringUserDirectoryEntry.getKey())) {
                             // Ignore disabled boxes - these are already set up.
                             if (box.isSelected() && box.isEnabled()) {
-                                File file = userDirectories.get(boxName)
+                                File file = stringUserDirectoryEntry.getValue()
                                     .getDirectory();
                                 finalList.add(file);
                             }
@@ -582,7 +584,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     }
                 }
                 for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
-                    String dir = (String) customDirectoryListModel.elementAt(i);
+                    String dir = customDirectoryListModel.elementAt(i);
                     File file = new File(dir);
                     finalList.add(file);
                 }
@@ -681,8 +683,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             Collection<Folder> folders = getController().getFolderRepository()
                 .getFolders();
             ServerClient client = getController().getOSClient();
-            for (String name : userDirectories.keySet()) {
-                File file = userDirectories.get(name).getDirectory();
+            for (Entry<String, UserDirectory> stringUserDirectoryEntry : userDirectories.entrySet()) {
+                File file = stringUserDirectoryEntry.getValue().getDirectory();
                 boolean local = false;
                 for (Folder folder : folders) {
                     if (folder.getLocalBase().equals(file)) {
@@ -700,7 +702,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         Collection<FolderInfo> accountFolders = client
                             .getAccountFolders();
                         for (FolderInfo accountFolder : accountFolders) {
-                            if (accountFolder.getName().equals(name)) {
+                            if (accountFolder.getName().equals(stringUserDirectoryEntry.getKey())) {
                                 onlineOnly = true;
                                 break;
                             }
@@ -710,7 +712,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
                 // Find checkbox
                 for (JCheckBox box : boxes) {
-                    if (box.getText().equals(name)) {
+                    if (box.getText().equals(stringUserDirectoryEntry.getKey())) {
                         Font font = new Font(box.getFont().getName(), !local
                             && onlineOnly ? Font.BOLD : Font.PLAIN, box
                             .getFont().getSize());
@@ -744,7 +746,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String fileName = (String) customDirectoryList.getSelectedValue();
+            String fileName = customDirectoryList.getSelectedValue();
             File file = new File(fileName);
             LinkFolderOnlineDialog dialog = new LinkFolderOnlineDialog(
                 getController(), ChooseMultiDiskLocationPanel.this, file,
@@ -832,22 +834,41 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             if (files.isEmpty()) {
                 return;
             }
+
             File localBase = new File(getController().getFolderRepository()
                 .getFoldersBasedir());
+
             // Check none are local base, that's bad.
             for (File file1 : files) {
                 if (file1.equals(localBase)) {
                     DialogFactory.genericDialog(getController(),
                             Translation.getTranslation(
-                                    "wizard.choose_disk_location.local_base.title"),
+                                    "general.directory"),
                             Translation.getTranslation(
-                                    "wizard.choose_disk_location.local_base.text"),
+                                    "general.basedir_error.text"),
                             GenericDialogType.ERROR);
                     return;
                 }
             }
+
+            // Check user has permission to select outside user base.
+            if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+                for (File file1 : files) {
+                    if (!file1.getParentFile().equals(localBase)) {
+                        DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation(
+                                        "general.directory"),
+                                Translation.getTranslation(
+                                        "general.outside_basedir_error.text"),
+                                GenericDialogType.ERROR);
+                        return;
+                    }
+                }
+            }
+
             // Remember the first as the initial for next time.
             initialDirectory = files.get(0).getAbsolutePath();
+
             // Update the list model.
             boolean changed = false;
             for (File file1 : files) {
