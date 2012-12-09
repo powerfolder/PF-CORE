@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 
 import javax.swing.*;
 
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import jwf.WizardPanel;
 
@@ -79,10 +80,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     /**
      * Used to hold initial dir and any chooser selection changes.
      */
-    private String transientDirectory;
     private WizardPanel next;
     private final String initialLocation;
-    private ValueModel locationModel;
+    private ValueModel locationModel; // <String (directory absolute path)>
     private JTextField locationTF;
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox manualSyncCheckBox;
@@ -117,20 +117,21 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        if (locationModel.getValue() != null && !StringUtils.isBlank(locationModel.getValue().toString())) {
-            String location = locationModel.getValue().toString();
-
-            // Do not allow user to select folder base dir.
-            return !location.equals(getController().getFolderRepository()
-                .getFoldersBasedirString());
-        }
-        return false;
+        return locationModel.getValue() != null && !StringUtils.isBlank(locationModel.getValue().toString());
     }
 
     public boolean validateNext() {
-        File localBase = new File((String) locationModel.getValue());
+
+        File location = new File((String) locationModel.getValue());
+
+        // Have to do this here as well as on choose directory
+        // in case the incoming dir is bad and user does not change anything!
+        if (!validDirectory(location)) {
+            return false;
+        }
+
         getWizardContext().setAttribute(
-            WizardContextAttributes.FOLDER_LOCAL_BASE, localBase);
+            WizardContextAttributes.FOLDER_LOCAL_BASE, location);
         getWizardContext().setAttribute(
             WizardContextAttributes.BACKUP_ONLINE_STOARGE,
             backupByOnlineStorageBox.isSelected());
@@ -138,7 +139,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             sendInviteAfterCB.isSelected());
 
         getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
-            FileUtils.getSuggestedFolderName(localBase));
+            FileUtils.getSuggestedFolderName(location));
 
         // Change to manual sync if requested.
         if (manualSyncCheckBox.isSelected()) {
@@ -195,19 +196,20 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
+        String dir;
         if (folderInfo == null) {
-            transientDirectory = getController().getFolderRepository().getFoldersBasedirString();
+            dir = getController().getFolderRepository().getFoldersBasedirString();
         } else {
             Folder folder1 = folderInfo.getFolder(getController());
             if (folder1 == null) {
-                transientDirectory = getController().getFolderRepository()
+                dir = getController().getFolderRepository()
                     .getFoldersBasedirString();
             } else {
-                transientDirectory = folder1.getLocalBase().getAbsolutePath();
+                dir = folder1.getLocalBase().getAbsolutePath();
             }
         }
 
-        locationModel = new ValueHolder(transientDirectory);
+        locationModel = new ValueHolder(dir);
 
         if (initialLocation != null) {
             locationModel.setValue(initialLocation);
@@ -330,9 +332,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private void updateLocationComponents() {
         String value = (String) locationModel.getValue();
-        if (value == null) {
-            value = transientDirectory;
-        }
         locationTF.setText(value);
     }
 
@@ -363,16 +362,38 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private void displayChooseDirectory() {
         String initial = (String) locationModel.getValue();
-        List<File> files = DialogFactory.chooseDirectory(getController()
-            .getUIController(), initial, false);
+        List<File> files = DialogFactory.chooseDirectory(getController().getUIController(), initial, false);
         if (!files.isEmpty()) {
-            File localFile = files.get(0);
-            locationModel.setValue(localFile.getAbsolutePath());
+            File location = files.get(0);
 
-            // Update this so that if the user clicks other user dirs
-            // and then 'Custom', the selected dir will show.
-            transientDirectory = localFile.getAbsolutePath();
+            if (!validDirectory(location)) {
+                return;
+            }
+
+            locationModel.setValue(location.getAbsolutePath());
         }
+    }
+
+    private boolean validDirectory(File location) {
+        // Do not allow user to select folder base dir.
+        if (location.equals(getController().getFolderRepository().getFoldersBasedir())) {
+            String title = Translation.getTranslation("general.directory");
+            String message = Translation.getTranslation("general.basedir_error.text");
+            DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
+            return false;
+        }
+
+        // Don't allow non-user dir folders if not allowed.
+        if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            if (!location.getParentFile().equals(getController().getFolderRepository().getFoldersBasedir())) {
+                String title = Translation.getTranslation("general.directory");
+                String message = Translation.getTranslation("general.outside_basedir_error.text");
+                DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
