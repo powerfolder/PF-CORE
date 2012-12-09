@@ -541,7 +541,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
             logInfo("Removing folder: " + candidate + ". Matched by: "
                 + folderConfig);
-            // Ok this candiate matches! Remove it.
+            // Ok this candidate matches! Remove it.
             getController().getFolderRepository().removeFolder(candidate, true);
         }
     }
@@ -626,7 +626,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
 
             WizardPanel nextPanel = new FolderCreatePanel(getController());
-            // Setup sucess panel of this wizard path
+            // Setup success panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setup_success"),
                 Translation.getTranslation("wizard.success_join"));

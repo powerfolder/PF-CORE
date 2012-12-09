@@ -35,21 +35,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -74,11 +70,9 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.UserDirectories;
-import de.dal33t.powerfolder.util.UserDirectory;
 
 /**
- * A generally used wizard panel for choosing a disk location for a folder.
+ * A wizard panel for choosing a disk location for a single folder, like when processing a join invite.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
@@ -94,9 +88,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private WizardPanel next;
     private final String initialLocation;
     private ValueModel locationModel;
-    private static Map<String, UserDirectory> userDirectories;
     private JTextField locationTF;
-    private JRadioButton customRB;
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox manualSyncCheckBox;
     private JCheckBox sendInviteAfterCB;
@@ -104,8 +96,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private JComponent locationField;
 
     private JLabel folderSizeLabel;
-
-    private MyItemListener myItemListener;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -132,14 +122,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        if (locationModel.getValue() != null
-            && !StringUtils.isBlank(locationModel.getValue().toString()))
-        {
+        if (locationModel.getValue() != null && !StringUtils.isBlank(locationModel.getValue().toString())) {
             String location = locationModel.getValue().toString();
 
             // Do not allow user to select folder base dir.
             return !location.equals(getController().getFolderRepository()
-                .getFoldersBasedir());
+                .getFoldersBasedirString());
         }
         return false;
     }
@@ -167,132 +155,53 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
 
-        StringBuilder verticalUserDirectoryLayout = new StringBuilder();
-        // Include custom button in size calculations.
-        // Four buttons every row.
-        for (int i = 0; i < 1 + userDirectories.size() / 4; i++) {
-            verticalUserDirectoryLayout.append("pref, 3dlu, ");
-        }
+        String verticalLayout = "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
 
-        String verticalLayout = verticalUserDirectoryLayout
-            + "3dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref";
-
-        FormLayout layout = new FormLayout(
-            "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, 0:grow",
-            verticalLayout);
+        FormLayout layout = new FormLayout("pref, 0:grow", verticalLayout);
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        int row = 1;
 
-        ButtonGroup bg = new ButtonGroup();
-
-        int col = 1;
-        for (String name : userDirectories.keySet()) {
-            final File file = userDirectories.get(name).getDirectory();
-            JRadioButton button = new JRadioButton(name);
-            button.addItemListener(myItemListener);
-            button.setOpaque(false);
-            bg.add(button);
-            builder.add(button, cc.xy(col, row));
-            if (col == 1) {
-                col = 3;
-            } else if (col == 3) {
-                col = 5;
-            } else if (col == 5) {
-                col = 7;
-            } else {
-                row += 2;
-                col = 1;
-            }
-
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    doRadio(file.getAbsolutePath());
-                }
-            });
-        }
-
-        // Custom directory.
-        customRB.setOpaque(false);
-        bg.add(customRB);
-        builder.add(customRB, cc.xy(col, row));
-        customRB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doRadio(transientDirectory);
-            }
-        });
-        row += 3;
-
-        String infoText = (String) getWizardContext().getAttribute(
-            PROMPT_TEXT_ATTRIBUTE);
+        String infoText = (String) getWizardContext().getAttribute(PROMPT_TEXT_ATTRIBUTE);
         if (infoText == null) {
-            infoText = Translation
-                .getTranslation("wizard.choose_disk_location.select");
+            infoText = Translation.getTranslation("wizard.choose_disk_location.select");
         }
-        builder.addLabel(infoText, cc.xyw(1, row, 8));
+        int row = 2;
+        builder.addLabel(infoText, cc.xy(1, row));
         row += 2;
 
-        builder.add(locationField, cc.xyw(1, row, 8));
+        builder.add(locationField, cc.xy(1, row));
 
         row += 2;
-        builder.add(folderSizeLabel, cc.xyw(1, row, 8));
+        builder.add(folderSizeLabel, cc.xy(1, row));
 
         if (getController().getOSClient().isBackupByDefault()
-            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
-        {
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             row += 2;
-            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 8));
+            builder.add(backupByOnlineStorageBox, cc.xy(1, row));
         }
 
         // Send Invite
         if (getController().isBackupOnly()
-            || !ConfigurationEntry.SERVER_INVITE_ENABLED
-                .getValueBoolean(getController()))
-        {
+            || !ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(getController())) {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;
-            builder.add(sendInviteAfterCB, cc.xyw(1, row, 8));
+            builder.add(sendInviteAfterCB, cc.xy(1, row));
         }
-
-        // Object object =
-        // getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
-        // if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
-        // row += 2;
-        // builder.add(manualSyncCheckBox, cc.xyw(1, row, 7));
-        // }
 
         return builder.getPanel();
     }
 
     /**
-     * Radio button selection.
-     * 
-     * @param name
-     */
-    private void doRadio(String name) {
-        locationModel.setValue(name);
-    }
-
-    /**
-     * Initalizes all nessesary components
+     * Initializes all necessary components
      */
     protected void initComponents() {
-
-        if (initialLocation == null) {
-            userDirectories = UserDirectories.getUserDirectoriesFiltered(
-                getController(),
-                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
-        } else {
-            userDirectories = Collections.emptyMap();
-        }
 
         FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
         if (folderInfo == null) {
-            transientDirectory = getController().getFolderRepository()
-                .getFoldersBasedirString();
+            transientDirectory = getController().getFolderRepository().getFoldersBasedirString();
         } else {
             Folder folder1 = folderInfo.getFolder(getController());
             if (folder1 == null) {
@@ -302,21 +211,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 transientDirectory = folder1.getLocalBase().getAbsolutePath();
             }
         }
+
         locationModel = new ValueHolder(transientDirectory);
 
         if (initialLocation != null) {
             locationModel.setValue(initialLocation);
         }
-
-        myItemListener = new MyItemListener();
-
-        // Create customRB now,
-        // so the listener does not see the initial selection later.
-        customRB = new JRadioButton(
-            Translation.getTranslation("user.dir.custom"));
-        customRB.setSelected(true);
-        customRB.addItemListener(myItemListener);
-        customRB.setVisible(initialLocation == null);
 
         locationModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -334,15 +234,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // Online Storage integration
         boolean backupByOS = getController().getOSClient().isBackupByDefault()
-            && Boolean.TRUE.equals(getWizardContext().getAttribute(
-                WizardContextAttributes.BACKUP_ONLINE_STOARGE));
-        backupByOnlineStorageBox = new JCheckBox(
-            Translation
-                .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
+            && Boolean.TRUE.equals(getWizardContext().getAttribute(WizardContextAttributes.BACKUP_ONLINE_STOARGE));
+        backupByOnlineStorageBox = new JCheckBox(Translation.getTranslation(
+                "wizard.choose_disk_location.backup_by_online_storage"));
+
         // Is backup suggested?
         if (backupByOS) {
             backupByOnlineStorageBox.setSelected(true);
         }
+
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (backupByOnlineStorageBox.isSelected()) {
@@ -354,9 +254,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.setOpaque(false);
 
         // Create manual sync cb
-        manualSyncCheckBox = new JCheckBox(
-            Translation
-                .getTranslation("wizard.choose_disk_location.maual_sync"));
+        manualSyncCheckBox = new JCheckBox(Translation.getTranslation(
+                "wizard.choose_disk_location.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
 
@@ -448,7 +347,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("122dlu, 3dlu, 15dlu", "pref");
+        FormLayout layout = new FormLayout("140dlu, 3dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -458,9 +357,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButton(Icons.getIconById(Icons.DIRECTORY));
-        locationButton.setToolTipText(Translation
-            .getTranslation("wizard.choose_disk_location.select_file"));
+        JButtonMini locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
+                Translation.getTranslation("wizard.choose_disk_location.select_file"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         JPanel panel = builder.getPanel();
@@ -488,12 +386,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (customRB.isSelected()) {
-                displayChooseDirectory();
-            } else {
-                // Selecting the radiobutton displays the dir chooser.
-                customRB.setSelected(true);
-            }
+            displayChooseDirectory();
         }
     }
 
@@ -510,9 +403,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         protected void beforeConstruct() {
-            folderSizeLabel
-                .setText(Translation
-                    .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
+            folderSizeLabel.setText(Translation.getTranslation(
+                    "wizard.choose_disk_location.calculating_directory_size"));
             folderSizeLabel.setForeground(SystemColor.textText);
         }
 
@@ -536,8 +428,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         private boolean canWriteDirectory(File dir) {
             File testFile;
             do {
-                testFile = new File(dir,
-                    FileUtils.removeInvalidFilenameChars(IdGenerator.makeId()));
+                testFile = new File(dir, FileUtils.removeInvalidFilenameChars(IdGenerator.makeId()));
             } while (testFile.exists());
             try {
                 testFile.createNewFile();
@@ -553,14 +444,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             try {
                 if (initial.equals(locationModel.getValue())) {
                     if (nonExistent) {
-                        folderSizeLabel
-                            .setText(Translation
-                                .getTranslation("wizard.choose_disk_location.directory_non_existent"));
+                        folderSizeLabel.setText(Translation.getTranslation(
+                                "wizard.choose_disk_location.directory_non_existent"));
                         folderSizeLabel.setForeground(Color.red);
                     } else if (noWrite) {
-                        folderSizeLabel
-                            .setText(Translation
-                                .getTranslation("wizard.choose_disk_location.directory_no_write"));
+                        folderSizeLabel.setText(Translation.getTranslation(
+                                "wizard.choose_disk_location.directory_no_write"));
                         folderSizeLabel.setForeground(Color.red);
                     } else {
                         folderSizeLabel.setText(Translation.getTranslation(
@@ -571,19 +460,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 }
             } catch (Exception e) {
                 Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
-            }
-        }
-    }
-
-    private class MyItemListener implements ItemListener {
-        public void itemStateChanged(ItemEvent e) {
-            if (customRB.isSelected()) {
-                if (initialLocation != null
-                    && new File(initialLocation).exists())
-                {
-                    doRadio(initialLocation);
-                }
-                displayChooseDirectory();
             }
         }
     }
