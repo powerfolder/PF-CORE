@@ -39,11 +39,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import jwf.WizardPanel;
@@ -63,7 +59,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -270,8 +265,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     private void startFolderSizeCalculator() {
-        SwingWorker worker = new MySwingWorker();
-        worker.start();
+        SwingWorker<Object, Object> worker = new MySwingWorker((String) locationModel.getValue());
+        worker.execute();
     }
 
     protected String getTitle() {
@@ -358,7 +353,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         builder.add(locationTF, cc.xy(1, 1));
 
         JButtonMini locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation("wizard.choose_disk_location.select_file"));
+                Translation.getTranslation("wizard.choose_disk_location.select_directory"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         JPanel panel = builder.getPanel();
@@ -390,26 +385,27 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
     }
 
-    private class MySwingWorker extends SwingWorker {
+    /**
+     * Worker to display info of the folder in the background.
+     */
+    private class MySwingWorker extends SwingWorker<Object, Object> {
 
-        private String initial;
+        private final String initial;
         private long directorySize;
         private boolean nonExistent;
         private boolean noWrite;
         private boolean checkNoWrite = true;
 
-        private MySwingWorker() {
-            initial = (String) locationModel.getValue();
+        private MySwingWorker(String initial) {
+            this.initial = initial;
         }
 
-        protected void beforeConstruct() {
-            folderSizeLabel.setText(Translation.getTranslation(
-                    "wizard.choose_disk_location.calculating_directory_size"));
+        protected Object doInBackground() throws Exception {
+
+            // Show something while working.
+            folderSizeLabel.setText(Translation.getTranslation("wizard.choose_disk_location.calculating_directory_size"));
             folderSizeLabel.setForeground(SystemColor.textText);
-        }
 
-        @Override
-        public Object construct() {
             try {
                 File f = new File(initial);
                 if (!f.exists()) {
@@ -425,23 +421,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             return null;
         }
 
-        private boolean canWriteDirectory(File dir) {
-            File testFile;
-            do {
-                testFile = new File(dir, FileUtils.removeInvalidFilenameChars(IdGenerator.makeId()));
-            } while (testFile.exists());
+        @Override
+        protected void done() {
             try {
-                testFile.createNewFile();
-                boolean canWrite = testFile.canWrite();
-                canWrite = canWrite && testFile.delete();
-                return canWrite;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-
-        public void finished() {
-            try {
+                // Has the value changed?
+                // In that case, another worker is going to update the value later.
                 if (initial.equals(locationModel.getValue())) {
                     if (nonExistent) {
                         folderSizeLabel.setText(Translation.getTranslation(
@@ -460,6 +444,21 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 }
             } catch (Exception e) {
                 Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
+            }
+        }
+
+        private boolean canWriteDirectory(File dir) {
+            File testFile;
+            do {
+                testFile = new File(dir, FileUtils.removeInvalidFilenameChars(IdGenerator.makeId()));
+            } while (testFile.exists());
+            try {
+                testFile.createNewFile();
+                boolean canWrite = testFile.canWrite();
+                canWrite = canWrite && testFile.delete();
+                return canWrite;
+            } catch (IOException e) {
+                return false;
             }
         }
     }
