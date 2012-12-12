@@ -31,7 +31,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -103,7 +117,7 @@ public class SettingsTab extends PFUIComponent {
     private ValueModel onlineModeModel;
     private ValueModel onlineVersionModel;
     private final ValueModel scriptModel;
-    private DefaultListModel<String> patternsListModel = new DefaultListModel<String>();
+    private DefaultListModel patternsListModel = new DefaultListModel();
     private final SelectionModel selectionModel;
     private FolderMembershipListener membershipListener;
     private final DiskItemFilterListener patternChangeListener;
@@ -120,7 +134,7 @@ public class SettingsTab extends PFUIComponent {
     private final SyncProfileSelectorPanel transferModeSelectorPanel;
     private final ArchiveModeSelectorPanel localArchiveModeSelectorPanel;
     private final ArchiveModeSelectorPanel onlineArchiveModeSelectorPanel;
-    private JList<String> patternsList;
+    private JList patternsList;
     private final JTextField localFolderField;
     private final JButton localFolderButton;
     private ActionLabel confOSActionLabel;
@@ -152,7 +166,7 @@ public class SettingsTab extends PFUIComponent {
         localFolderButton.setEnabled(false);
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
-        patternsListModel = new DefaultListModel<String>();
+        patternsListModel = new DefaultListModel();
         removeFolderAction = new RemoveFolderAction(getController());
         maintainDBAction = new MaintainFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
@@ -398,7 +412,7 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private JPanel createPatternsPanel() {
-        patternsList = new JList<String>(patternsListModel);
+        patternsList = new JList(patternsListModel);
         patternsList.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
