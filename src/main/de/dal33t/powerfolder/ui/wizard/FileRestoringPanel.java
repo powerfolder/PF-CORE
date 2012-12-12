@@ -158,15 +158,10 @@ public class FileRestoringPanel extends PFWizardPanel {
                 } else if (folder.hasMember(getController().getOSClient().getServer())) {
                     ServerClient client = getController().getOSClient();
                     if (client.isConnected() && client.isLoggedIn()) {
-                        FolderService service = client.getFolderService();
-                        FileInfo onlineRestoredFileInfo = null;
-                        if (alternate) {
-                            // Does not seem to work ?
-                            //onlineRestoredFileInfo = service.restore(fileInfo, restoreTo.getAbsolutePath());
-                        } else {
-                            onlineRestoredFileInfo = service.restore(fileInfo, null);
-                        }
-                        log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from OS archive");
+                        // Doesn't work :-(
+                        // FolderService service = client.getFolderService();
+                        // FileInfo onlineRestoredFileInfo = service.restore(fileInfo, restoreTo);
+                        // log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from OS archive");
                         filesProcessedSuccessfully++;
                     }
                 } else {

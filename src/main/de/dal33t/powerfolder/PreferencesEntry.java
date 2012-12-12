@@ -154,7 +154,13 @@ public enum PreferencesEntry {
 
     PAUSED("paused", false),
 
-    INCLUDE_DELETED_FILES("include.deleted.files", false);
+    INCLUDE_DELETED_FILES("include.deleted.files", false),
+
+    /**
+     * Show hidden files in the file browser.
+     */
+    SHOW_HIDDEN_FILES("show.hidden.files", true);
+
 
     /** String, Boolean, Integer */
     private Class type;

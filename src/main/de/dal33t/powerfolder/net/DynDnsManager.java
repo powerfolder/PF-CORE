@@ -207,7 +207,7 @@ public class DynDnsManager extends PFComponent {
             case ConnectionListener.VALIDATION_FAILED :
 
                 DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("preferences.dialog.warnningMessage"),
+                    .getTranslation("preferences.dialog.warning_message"),
                     Translation.getTranslation(
                         "preferences.dialog.statusValidFailed", arg),
                     GenericDialogType.WARN);
@@ -216,7 +216,7 @@ public class DynDnsManager extends PFComponent {
 
             case ConnectionListener.CANNOT_RESOLVE :
                 DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("preferences.dialog.warnningMessage"),
+                    .getTranslation("preferences.dialog.warning_message"),
                     Translation.getTranslation(
                         "preferences.dialog.statusValidFailed", arg),
                     GenericDialogType.WARN);

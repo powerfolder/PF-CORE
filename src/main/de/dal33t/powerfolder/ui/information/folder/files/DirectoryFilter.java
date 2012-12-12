@@ -32,6 +32,7 @@ import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
@@ -53,7 +54,6 @@ public class DirectoryFilter extends FilterModel {
 
     public static final int FILE_FILTER_MODE_LOCAL_AND_INCOMING = 0;
     public static final int FILE_FILTER_MODE_LOCAL_ONLY = 1;
-    // public static final int FILE_FILTER_MODE_INCOMING_ONLY = 2;
     public static final int FILE_FILTER_MODE_NEW_ONLY = 2;
     public static final int FILE_FILTER_MODE_DELETED_PREVIOUS = 3;
     public static final int FILE_FILTER_MODE_UNSYNCHRONIZED = 4;
@@ -274,12 +274,11 @@ public class DirectoryFilter extends FilterModel {
         if (filteredDirectory != null) {
             if (isFlatMode()) {
                 filterDirectoryFlat(folder.getDAO(), currentDirectoryInfo,
-                    filteredDirectoryModel, filteredDirectory, keywords,
-                    result,
+                    filteredDirectoryModel, keywords, result,
                     currentDirectoryInfo.getRelativeName().length() == 0);
             } else {
                 filterDirectory(folder.getDAO(), currentDirectoryInfo,
-                    filteredDirectoryModel, filteredDirectory, keywords, result);
+                    filteredDirectoryModel, keywords, result);
             }
         }
 
@@ -287,7 +286,7 @@ public class DirectoryFilter extends FilterModel {
             lastFolderName.getValue());
         lastFolderName.setValue(folder.getName());
 
-        final boolean defaultFilder = fileFilterMode == FILE_FILTER_MODE_LOCAL_AND_INCOMING
+        final boolean defaultFilter = fileFilterMode == FILE_FILTER_MODE_LOCAL_AND_INCOMING
             && !isFlatMode() && StringUtils.isBlank(textFilter);
 
         runner = new Runnable() {
@@ -296,7 +295,7 @@ public class DirectoryFilter extends FilterModel {
                     result.getDeletedCount().get(), result.getIncomingCount()
                         .get(), result.getLocalCount().get(),
                     filteredDirectoryModel, changed, fileFilterMode,
-                    defaultFilder);
+                    defaultFilter);
                 for (DirectoryFilterListener listener : listeners) {
                     listener.adviseOfChange(event);
                 }
@@ -329,7 +328,7 @@ public class DirectoryFilter extends FilterModel {
     private void filterDirectoryFlat(FileInfoDAO dao,
         DirectoryInfo directoryInfo,
         FilteredDirectoryModel filteredDirectoryModel,
-        FilteredDirectory filteredDirectory, String[] keywords,
+        String[] keywords,
         DirectoryFilterResult result, boolean targetOrDeeper)
     {
         boolean target = currentDirectoryInfo.getRelativeName().equals(
@@ -349,8 +348,7 @@ public class DirectoryFilter extends FilterModel {
                 // filterDirectoryFlat(dao, di, filteredDirectoryModel, fd,
                 // keywords, result, targetOrDeeper || target);
             } else {
-                filterFileInfo(filteredDirectoryModel, filteredDirectory,
-                    keywords, result, fileInfo, targetOrDeeper || target);
+                filterFileInfo(filteredDirectoryModel, keywords, result, fileInfo, targetOrDeeper || target);
             }
         }
     }
@@ -367,8 +365,7 @@ public class DirectoryFilter extends FilterModel {
      */
     private void filterDirectory(FileInfoDAO dao, DirectoryInfo directoryInfo,
         FilteredDirectoryModel filteredDirectoryModel,
-        FilteredDirectory filteredDirectory, String[] keywords,
-        DirectoryFilterResult result)
+        String[] keywords, DirectoryFilterResult result)
     {
 
         boolean target = currentDirectoryInfo.getRelativeName().equals(
@@ -379,6 +376,13 @@ public class DirectoryFilter extends FilterModel {
         Collection<FileInfo> infoCollection = dao.findFiles(criteria);
         for (FileInfo fileInfo : infoCollection) {
             if (fileInfo instanceof DirectoryInfo) {
+
+                // Hidden directory?
+                if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
+                        fileInfo.getDiskFile(getController().getFolderRepository()).isHidden()) {
+                    return;
+                }
+
                 DirectoryInfo di = (DirectoryInfo) fileInfo;
                 // Add local files to table list.
                 if (target) {
@@ -389,19 +393,23 @@ public class DirectoryFilter extends FilterModel {
                     }
                 }
             } else {
-                filterFileInfo(filteredDirectoryModel, filteredDirectory,
-                    keywords, result, fileInfo, target);
+                filterFileInfo(filteredDirectoryModel, keywords, result, fileInfo, target);
             }
         }
     }
 
     private void filterFileInfo(FilteredDirectoryModel filteredDirectoryModel,
-        FilteredDirectory filteredDirectory, String[] keywords,
-        DirectoryFilterResult result, FileInfo fileInfo, boolean addFiles)
-    {
+                                String[] keywords, DirectoryFilterResult result,
+                                FileInfo fileInfo, boolean addFiles) {
         result.getOriginalCount().incrementAndGet();
 
         int searchMode = (Integer) searchModeVM.getValue();
+
+        // Hidden file?
+        if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
+                fileInfo.getDiskFile(getController().getFolderRepository()).isHidden()) {
+            return;
+        }
 
         // Text filter
         boolean showFile = true;
@@ -430,9 +438,6 @@ public class DirectoryFilter extends FilterModel {
             case FILE_FILTER_MODE_LOCAL_ONLY :
                 showFile = !isIncoming && !isDeleted;
                 break;
-            // case FILE_FILTER_MODE_INCOMING_ONLY:
-            // showFile = isIncoming;
-            // break;
             case FILE_FILTER_MODE_NEW_ONLY :
                 showFile = isNew;
                 break;
@@ -473,22 +478,22 @@ public class DirectoryFilter extends FilterModel {
     }
 
     private boolean isSynchronized(FileInfo fileInfo) {
-        boolean isSynchronized = true;
         Folder localFolder = fileInfo.getFolder(getController()
             .getFolderRepository());
         if (localFolder == null) {
             return true;
         }
+        boolean synced = true;
         for (Member member : localFolder.getConnectedMembers()) {
             FileInfo memberFileInfo = member.getFile(fileInfo);
             if (memberFileInfo == null
                 || memberFileInfo.getVersion() != fileInfo.getVersion())
             {
-                isSynchronized = false;
+                synced = false;
                 break;
             }
         }
-        return isSynchronized;
+        return synced;
     }
 
     /**

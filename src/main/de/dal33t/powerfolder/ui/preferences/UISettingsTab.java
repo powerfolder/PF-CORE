@@ -68,6 +68,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private boolean wasDocked;
     private JCheckBox updateCheck;
     private JCheckBox usePowerFolderLink;
+    private JCheckBox showHiddenFilesCB;
 
     private JLabel skinLabel;
     private JComboBox skinCombo;
@@ -145,6 +146,11 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             Translation.getTranslation("preferences.dialog.auto_expand"));
         autoExpandCB.setVisible(false);
 
+        ValueModel shfModel = new ValueHolder(
+                PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()));
+        showHiddenFilesCB = BasicComponentFactory.createCheckBox(new BufferedValueModel(shfModel, writeTrigger),
+                Translation.getTranslation("preferences.dialog.show_hidden_files"));
+
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
 
@@ -219,7 +225,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -263,6 +269,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(updateCheck, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(showHiddenFilesCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(underlineLinkBox, cc.xyw(3, row, 2));
@@ -320,6 +329,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
+
+        PreferencesEntry.SHOW_HIDDEN_FILES.setValue(getController(), showHiddenFilesCB.isSelected());
 
         ConfigurationEntry.USER_INTERFACE_LOCKED.setValue(getController(),
             String.valueOf(lockUICB.isSelected()));
