@@ -95,7 +95,9 @@ public class CleanupTranslationFiles {
                     key = key.substring(0, i);
                 }
             }
-            searchContents.add(key);
+           if (!key.startsWith("transfer_mode.")) {
+               searchContents.add(key);               
+           }
         }
         Collections.sort(keys);
         if (deep) {
@@ -137,6 +139,8 @@ public class CleanupTranslationFiles {
                 + locale.getLanguage() + ".properties");
             writeTranslationFile(locale.getLanguage(), keys, foreignProperties);
         }
+        
+        writeTranslationFile(null, keys, originals);
 
         System.out.println("Streamlined " + originals.size()
             + " translations. " + (supportedLocales.size() - 1)
@@ -202,12 +206,12 @@ public class CleanupTranslationFiles {
                 if (!prefix.equals(lastPrefix)) {
                     out.newLine();
                 }
-                if (translationFound) {
-                    out.write("#orig#");
-                    out.write(saveConvert(key, true) + "="
-                        + saveConvert(originalVal, false));
-                    out.newLine();
-                }
+//                if (translationFound) {
+//                    out.write("#orig#");
+//                    out.write(saveConvert(key, true) + "="
+//                        + saveConvert(originalVal, false));
+//                    out.newLine();
+//                }
                 if (!translationFound && !original) {
                     out.write("##");
                     missing++;
