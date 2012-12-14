@@ -23,7 +23,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.*;
@@ -76,7 +76,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private AutoTextField viaPowerFolderText;
     private JList inviteesList;
     private JScrollPane inviteesListScrollPane;
-    private ActionLabel advancedLink;
     private ActionLabel addMessageLink;
     private ValueModel permissionsModel;
     private DefaultListModel inviteesListModel;
@@ -84,7 +83,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private ValueModel messageModel;
     private JPanel removeButtonPanel;
     private JComponent messageComp;
-    private JCheckBox adminCB;
 
     public SendInvitationsPanel(Controller controller) {
         super(controller);
@@ -202,8 +200,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "140dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 20dlu, pref");
-        // inv join text inv fdl hint1 hint2 auto list remove adv
+            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref");
+        // inv join text inv fdl hint1 hint2 auto list remove
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
@@ -247,12 +245,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(messageComp, cc.xy(1, row));
         row += 2;
 
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(advancedLink.getUIComponent(), cc.xy(1, row));
-        } else {
-            builder.add(adminCB, cc.xy(1, row));
-        }
-
         return builder.getPanel();
     }
 
@@ -287,17 +279,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         List<String> candidateAddresses = getCandidatesAddresses();
         viaPowerFolderText.setDataList(candidateAddresses);
-        advancedLink = new ActionLabel(getController(), new MyAdvanceAction(
-            getController()));
-        adminCB = new JCheckBox(Translation.getTranslation(
-                "wizard.send_invitations.admin_privilege"));
-        adminCB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                permissionsModel.setValue(adminCB.isSelected() ?
-                        FolderPermission.admin(folder) :
-                        FolderPermission.readWrite(folder));
-            }
-        });
 
         addMessageLink = new ActionLabel(getController(),
             new MyAttachMessageAction());
@@ -456,13 +437,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
     }
 
-    private class MyKeyListener implements KeyListener {
-
-        public void keyTyped(KeyEvent e) {
-        }
-
-        public void keyPressed(KeyEvent e) {
-        }
+    private class MyKeyListener extends KeyAdapter {
 
         public void keyReleased(KeyEvent e) {
             updateButtons();
@@ -475,20 +450,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         public void valueChanged(ListSelectionEvent e) {
             enableRemoveButton();
             updateButtons();
-        }
-    }
-
-    private class MyAdvanceAction extends BaseAction {
-
-        MyAdvanceAction(Controller controller) {
-            super("action_invite_advanced", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            SendInvitationsAdvancedPanel advPanel = new SendInvitationsAdvancedPanel(
-                getController(), invitation.folder,
-                permissionsModel);
-            advPanel.open();
         }
     }
 
