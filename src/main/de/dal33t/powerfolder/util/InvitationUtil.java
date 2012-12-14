@@ -32,7 +32,6 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import de.dal33t.powerfolder.Controller;
@@ -41,8 +40,6 @@ import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.task.SendMessageTask;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 
 /**
  * methods for loading and saving powerfolder invitations
@@ -297,14 +294,14 @@ public class InvitationUtil {
 
     // Internal helper *********************************************************
 
-    /** true if none acsii chars are found in string */
-    private static final boolean containsNoneAscii(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            int c = str.charAt(i);
-            if (c == 63 || c > 255) { // 63 = ?
-                return true;
-            }
-        }
-        return false;
-    }
+//    /** true if none acsii chars are found in string */
+//    private static final boolean containsNoneAscii(String str) {
+//        for (int i = 0; i < str.length(); i++) {
+//            int c = str.charAt(i);
+//            if (c == 63 || c > 255) { // 63 = ?
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 }
