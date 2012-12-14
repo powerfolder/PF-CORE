@@ -1774,7 +1774,7 @@ public class TransferManager extends PFComponent {
                     if (fileToDl.isNewerAvailable(getController()
                         .getFolderRepository()))
                     {
-                        logSevere("Downloading old version while newer is available: "
+                        logFine("Downloading old version while newer is available: "
                             + localFile);
                     }
                     requestDownload(download, bestSource);
