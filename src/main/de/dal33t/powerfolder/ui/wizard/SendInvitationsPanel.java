@@ -25,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +33,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import de.dal33t.powerfolder.security.FolderReadPermission;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
@@ -77,12 +77,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JList inviteesList;
     private JScrollPane inviteesListScrollPane;
     private ActionLabel addMessageLink;
-    private ValueModel permissionsModel;
     private DefaultListModel inviteesListModel;
     private Invitation invitation;
     private ValueModel messageModel;
     private JPanel removeButtonPanel;
     private JComponent messageComp;
+    private DefaultComboBoxModel permissionsComboModel;
+    private JComboBox permissionsCombo;
 
     public SendInvitationsPanel(Controller controller) {
         super(controller);
@@ -97,11 +98,23 @@ public class SendInvitationsPanel extends PFWizardPanel {
         if (invitation == null) {
             return false;
         }
-        FolderPermission fp = (FolderPermission) permissionsModel.getValue();
-        if (fp == null) {
-            fp = FolderPermission.readWrite(invitation.folder);
+        String permissionText = (String) permissionsComboModel.getSelectedItem();
+        FolderPermission folderPermission = FolderPermission.readWrite(invitation.folder);
+        if (permissionText != null) {
+            FolderPermission readPermission = FolderPermission.read(invitation.folder);
+            if (readPermission.getName().equals(permissionText)) {
+                folderPermission = readPermission;
+            }
+            FolderPermission readWritePermission = FolderPermission.readWrite(invitation.folder);
+            if (readWritePermission.getName().equals(permissionText)) {
+                folderPermission = readWritePermission;
+            }
+            FolderPermission adminPermission = FolderPermission.admin(invitation.folder);
+            if (adminPermission.getName().equals(permissionText)) {
+                folderPermission = adminPermission;
+            }
         }
-        invitation.setPermission(fp);
+        invitation.setPermission(folderPermission);
         boolean theResult = false;
         Set<Member> candidates = getCandidates();
 
@@ -159,12 +172,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return !inviteesListModel.isEmpty()
-            || viaPowerFolderText.getText().length() > 0;
-    }
-
-    public boolean validateNext() {
-        return true;
+        return !inviteesListModel.isEmpty() || viaPowerFolderText.getText().length() > 0;
     }
 
     public WizardPanel next() {
@@ -174,13 +182,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
         Runnable inviteTask = new Runnable() {
             public void run() {
                 if (messageModel.getValue() != null) {
-                    invitation.setInvitationText((String) messageModel
-                        .getValue());
+                    invitation.setInvitationText((String) messageModel.getValue());
                 }
                 if (!sendInvitation()) {
-                    throw new RuntimeException(
-                        Translation
-                            .getTranslation("wizard.send_invitations.no_invitees"));
+                    throw new RuntimeException(Translation.getTranslation("wizard.send_invitations.no_invitees"));
                 }
             }
 
@@ -200,8 +205,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "140dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref");
-        // inv join text inv fdl hint1 hint2 auto list remove
+            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 10dlu, pref");
+        // inv join text inv fdl hint1 hint2 auto list remove, privs
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
@@ -244,6 +249,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(addMessageLink.getUIComponent(), cc.xy(1, row));
         builder.add(messageComp, cc.xy(1, row));
         row += 2;
+
+        FormLayout layout4 = new FormLayout("pref, 3dlu, pref:grow", "pref");
+        PanelBuilder builder4 = new PanelBuilder(layout4);
+        builder4.add(new JLabel(Translation.getTranslation("send_invitations.permissions_label")), cc.xy(1, 1));
+        builder4.add(permissionsCombo, cc.xy(3, 1));
+        builder.add(builder4.getPanel(), cc.xy(1, row));
 
         return builder.getPanel();
     }
@@ -288,9 +299,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getTranslation("wizard.send_invitations.add_message.tip"));
         addMessageLink.convertToBigLabel();
 
-        permissionsModel = new ValueHolder(FolderPermission.readWrite(folder),
-            true);
-
         JScrollPane messagePane = new JScrollPane(
             BasicComponentFactory.createTextArea(messageModel));
         FormLayout layout2 = new FormLayout("fill:140dlu",
@@ -304,6 +312,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
         messageComp = builder2.getPanel();
         messageComp.setVisible(false);
         messageComp.setOpaque(false);
+
+        permissionsComboModel = new DefaultComboBoxModel();
+        permissionsCombo = new JComboBox(permissionsComboModel);
+        permissionsComboModel.addElement(FolderPermission.readWrite(folder).getName());
+        permissionsComboModel.addElement(FolderPermission.read(folder).getName());
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            permissionsComboModel.addElement(FolderPermission.admin(folder).getName());
+        }
 
         enableAddButton();
         enableRemoveButton();
