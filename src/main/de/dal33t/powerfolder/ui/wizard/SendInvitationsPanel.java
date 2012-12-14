@@ -33,7 +33,6 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import de.dal33t.powerfolder.security.FolderReadPermission;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
@@ -67,8 +66,8 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  * @version $Revision: 1.12 $
  */
 public class SendInvitationsPanel extends PFWizardPanel {
-    private static final Logger LOG = Logger
-        .getLogger(SendInvitationsAdvancedPanel.class.getName());
+
+    private static final Logger LOG = Logger.getLogger(SendInvitationsPanel.class.getName());
 
     private JButtonMini addButton;
     private JButtonMini searchButton;

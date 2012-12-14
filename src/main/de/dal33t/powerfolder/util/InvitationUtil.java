@@ -211,25 +211,8 @@ public class InvitationUtil {
         Reject.ifNull(controller, "Controller is null");
         Reject.ifNull(invitation, "Invitation is null");
 
-        // JFrame parent = controller.getUIController().getMainFrame()
-        // .getUIComponent();
-
-        // if (to == null) {
-        // to = (String) JOptionPane.showInputDialog(parent, Translation
-        // .getTranslation("send_invitation.ask_emailaddres.message"),
-        // Translation
-        // .getTranslation("send_invitation.ask_emailaddres.title"),
-        // JOptionPane.QUESTION_MESSAGE, null, null, Translation
-        // .getTranslation("send_invitation.example_email_address"));
-        // }
-        //
-        // // null if canceled
-        // if (to == null) {
-        // return;
-        // }
-
-        controller.getOSClient().getFolderService()
-            .sendInvitationEmail(new SendInvitationEmail(invitation, to, ccMe));
+        controller.getOSClient().getFolderService().sendInvitationEmail(
+                new SendInvitationEmail(invitation, to, ccMe));
     }
 
     /**
@@ -243,48 +226,48 @@ public class InvitationUtil {
      *            the file to write to, if null the users is asked for.
      * @return if the file was written.
      */
-    public static boolean invitationToDisk(Controller controller,
-        Invitation invitation, File file)
-    {
-        Reject.ifNull(controller, "Controller is null");
-        Reject.ifNull(invitation, "Invitation is null");
-
-        // Select file
-        if (file == null) {
-            JFileChooser fc = DialogFactory.createFileChooser();
-            fc.setDialogTitle(Translation
-                .getTranslation("send_invitation.placetostore"));
-            // Recommended file
-            fc.setSelectedFile(new File(invitation.folder.name + ".invitation"));
-            fc.setFileFilter(createInvitationsFilefilter());
-            int result = fc.showSaveDialog(controller.getUIController()
-                .getMainFrame().getUIComponent());
-            if (result != JFileChooser.APPROVE_OPTION) {
-                return false;
-            }
-
-            // Store invitation to disk
-            file = fc.getSelectedFile();
-            if (file == null) {
-                return false;
-            }
-            if (file.exists()) {
-                // TODO: Add confirm dialog
-            }
-        }
-
-        log.info("Writing invitation to " + file);
-        if (!save(invitation, file)) {
-            DialogFactory.genericDialog(controller, Translation
-                .getTranslation("invitation.utils.unable.write.title"),
-                Translation
-                    .getTranslation("invitation.utils.unable.write.text"),
-                GenericDialogType.ERROR);
-            return false;
-        }
-
-        return true;
-    }
+//    public static boolean invitationToDisk(Controller controller,
+//        Invitation invitation, File file)
+//    {
+//        Reject.ifNull(controller, "Controller is null");
+//        Reject.ifNull(invitation, "Invitation is null");
+//
+//        // Select file
+//        if (file == null) {
+//            JFileChooser fc = DialogFactory.createFileChooser();
+//            fc.setDialogTitle(Translation
+//                .getTranslation("send_invitation.placetostore"));
+//            // Recommended file
+//            fc.setSelectedFile(new File(invitation.folder.name + ".invitation"));
+//            fc.setFileFilter(createInvitationsFilefilter());
+//            int result = fc.showSaveDialog(controller.getUIController()
+//                .getMainFrame().getUIComponent());
+//            if (result != JFileChooser.APPROVE_OPTION) {
+//                return false;
+//            }
+//
+//            // Store invitation to disk
+//            file = fc.getSelectedFile();
+//            if (file == null) {
+//                return false;
+//            }
+//            if (file.exists()) {
+//                // TODO: Add confirm dialog
+//            }
+//        }
+//
+//        log.info("Writing invitation to " + file);
+//        if (!save(invitation, file)) {
+//            DialogFactory.genericDialog(controller, Translation
+//                .getTranslation("invitation.utils.unable.write.title"),
+//                Translation
+//                    .getTranslation("invitation.utils.unable.write.text"),
+//                GenericDialogType.ERROR);
+//            return false;
+//        }
+//
+//        return true;
+//    }
 
     /**
      * Sends an invitation to a connected node.
