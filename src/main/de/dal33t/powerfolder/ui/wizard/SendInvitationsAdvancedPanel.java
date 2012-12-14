@@ -22,8 +22,6 @@ package de.dal33t.powerfolder.ui.wizard;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -32,8 +30,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.list.SelectionInList;
@@ -46,12 +42,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
@@ -61,25 +54,17 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
 
     private JButton okButton;
     private JButton cancelButton;
-    private JTextField locationDirectoryField;
-    private JButton locationButton;
-    private JButton clearButton;
-    private final ValueModel locationValueModel;
     private final ValueModel permissionsValueModel;
-    private String location;
     private final FolderInfo foInfo;
-    private final String fileName;
     private JComboBox permissionsCombo;
 
     public SendInvitationsAdvancedPanel(Controller controller,
-        FolderInfo foInfo, ValueModel locationValueModel,
-        ValueModel permissionsValueModel, String fileName)
+        FolderInfo foInfo,
+        ValueModel permissionsValueModel)
     {
         super(Senior.NONE, controller, true);
         Reject.ifNull(foInfo, "Folder info is null");
-        this.locationValueModel = locationValueModel;
         this.permissionsValueModel = permissionsValueModel;
-        this.fileName = fileName;
         this.foInfo = foInfo;
         initComponents();
     }
@@ -95,23 +80,11 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                 cancel();
             }
         });
-        locationDirectoryField = new JTextField();
-        locationDirectoryField.setEnabled(false);
-        locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-            Translation
-                .getTranslation("send_invitations_advanced.location_tip"));
-        locationButton.addActionListener(new MyActionListener());
-        clearButton = new JButtonMini(Icons.getIconById(Icons.DELETE),
-            Translation.getTranslation("send_invitations_advanced.clear_tip"));
-        clearButton.addActionListener(new MyActionListener());
-        location = (String) locationValueModel.getValue();
-        locationDirectoryField.setText(location);
 
         SelectionInList<FolderPermission> permissionsModel = new SelectionInList<FolderPermission>();
         permissionsModel.getList().add(FolderPermission.read(foInfo));
         permissionsModel.getList().add(FolderPermission.readWrite(foInfo));
         permissionsModel.getList().add(FolderPermission.admin(foInfo));
-        // permissionsModel.getList().add(new FolderOwnerPermission(foInfo));
         FolderPermission fp = (FolderPermission) permissionsValueModel
             .getValue();
         permissionsModel.setSelectionHolder(permissionsValueModel);
@@ -133,13 +106,9 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                     return comp;
                 }
             });
-        updateButtons();
     }
 
     private void ok() {
-        if (location != null) {
-            locationValueModel.setValue(location);
-        }
         close();
     }
 
@@ -156,57 +125,20 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     }
 
     protected JComponent getContent() {
-        FormLayout layout = new FormLayout("right:pref, 3dlu, pref, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, pref");
-        // file sep file name file dir perm sep combo
+        FormLayout layout = new FormLayout("pref:grow",
+            "pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        // File separator
-        builder.addSeparator(Translation
-            .getTranslation("send_invitations_advanced.file_label"), cc.xyw(1,
-            1, 3));
+        builder.addSeparator(Translation.getTranslation("send_invitations_advanced.permissions_label"),
+                cc.xy(1, 1));
 
-        // File name
-        builder
-            .add(new JLabel(Translation
-                .getTranslation("send_invitations_advanced.filename")), cc.xy(
-                1, 3));
-        builder.add(new JLabel(fileName), cc.xy(3, 3));
+        builder.add(new JLabel(Translation.getTranslation("send_invitations_advanced.permissions_hint")),
+                cc.xy(1, 3));
 
-        // File dir
-        builder.add(new JLabel(Translation
-            .getTranslation("send_invitations_advanced.file_hint")), cc
-            .xy(1, 5));
-        FormLayout layout2 = new FormLayout("107dlu, 3dlu, pref, pref", "pref");
-        PanelBuilder builder2 = new PanelBuilder(layout2);
-        builder2.add(locationDirectoryField, cc.xy(1, 1));
-        builder2.add(locationButton, cc.xy(3, 1));
-        builder2.add(clearButton, cc.xy(4, 1));
-        JPanel panel2 = builder2.getPanel();
-        panel2.setOpaque(false);
-        builder.add(panel2, cc.xy(3, 5));
-
-        // Permission separator
-        builder.addSeparator(Translation
-            .getTranslation("send_invitations_advanced.permissions_label"), cc
-            .xyw(1, 7, 3));
-
-        builder.add(new JLabel(Translation
-            .getTranslation("send_invitations_advanced.permissions_hint")), cc
-            .xy(1, 9));
-        FormLayout layout3 = new FormLayout("pref, pref:grow", "pref");
-        PanelBuilder builder3 = new PanelBuilder(layout3);
-        builder3.add(permissionsCombo, cc.xy(1, 1));
-        JPanel panel3 = builder3.getPanel();
-        panel3.setOpaque(false);
-        builder.add(panel3, cc.xy(3, 9));
+        builder.add(permissionsCombo, cc.xy(1, 5));
 
         return builder.getPanel();
-    }
-
-    private void updateButtons() {
-        clearButton.setEnabled(location != null && location.length() > 0);
     }
 
     protected Icon getIcon() {
@@ -214,26 +146,7 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation
-            .getTranslation("wizard.send_invitations_advanced.title");
+        return Translation.getTranslation("wizard.send_invitations_advanced.title");
     }
 
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == clearButton) {
-                location = "";
-                locationDirectoryField.setText("");
-                updateButtons();
-            } else if (e.getSource() == locationButton) {
-                String initial = (String) locationValueModel.getValue();
-                List<File> files = DialogFactory.chooseDirectory(getController()
-                    .getUIController(), initial, false);
-                if (!files.isEmpty()) {
-                    location = files.get(0).getAbsolutePath();
-                    locationDirectoryField.setText(location);
-                    updateButtons();
-                }
-            }
-        }
-    }
 }

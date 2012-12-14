@@ -26,9 +26,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,7 +78,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JScrollPane inviteesListScrollPane;
     private ActionLabel advancedLink;
     private ActionLabel addMessageLink;
-    private ValueModel locationModel;
     private ValueModel permissionsModel;
     private DefaultListModel inviteesListModel;
     private Invitation invitation;
@@ -119,13 +115,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         for (Object o : inviteesListModel.toArray()) {
             String invitee = (String) o;
             sendInvite(candidates, invitee);
-            theResult = true;
-        }
-
-        Object value = locationModel.getValue();
-        if (value != null && ((String) value).length() > 0) {
-            File file = new File((String) value, constructInviteFileName());
-            InvitationUtil.invitationToDisk(getController(), invitation, file);
             theResult = true;
         }
 
@@ -173,9 +162,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     public boolean hasNext() {
         return !inviteesListModel.isEmpty()
-            || viaPowerFolderText.getText().length() > 0
-            || locationModel.getValue() != null
-            && ((String) locationModel.getValue()).length() > 0;
+            || viaPowerFolderText.getText().length() > 0;
     }
 
     public boolean validateNext() {
@@ -320,9 +307,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getTranslation("wizard.send_invitations.add_message.tip"));
         addMessageLink.convertToBigLabel();
 
-        locationModel = new ValueHolder("");
-        locationModel.addValueChangeListener(new MyPropertyChangeListener());
-
         permissionsModel = new ValueHolder(FolderPermission.readWrite(folder),
             true);
 
@@ -407,10 +391,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
             enableAddButton();
             enableRemoveButton();
         }
-    }
-
-    private String constructInviteFileName() {
-        return invitation.folder.name + ".invitation";
     }
 
     // /////////////////
@@ -506,8 +486,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             SendInvitationsAdvancedPanel advPanel = new SendInvitationsAdvancedPanel(
-                getController(), invitation.folder, locationModel,
-                permissionsModel, constructInviteFileName());
+                getController(), invitation.folder,
+                permissionsModel);
             advPanel.open();
         }
     }
@@ -517,18 +497,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             messageComp.setVisible(true);
             addMessageLink.getUIComponent().setVisible(false);
-            // AttachPersonalizedMessageDialog d = new
-            // AttachPersonalizedMessageDialog(
-            // getController(), messageModel);
-            // d.open();
-        }
-    }
-
-    private class MyPropertyChangeListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == locationModel) {
-                updateButtons();
-            }
         }
     }
 }
