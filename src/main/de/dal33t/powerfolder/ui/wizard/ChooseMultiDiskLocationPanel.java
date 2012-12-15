@@ -851,15 +851,18 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             }
 
             // Check user has permission to select outside user base.
-            if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+                .getValueBoolean(getController()))
+            {
                 for (File file1 : files) {
                     if (!file1.getParentFile().equals(localBase)) {
                         DialogFactory.genericDialog(getController(),
-                                Translation.getTranslation(
-                                        "general.directory"),
-                                Translation.getTranslation(
-                                        "general.outside_basedir_error.text"),
-                                GenericDialogType.ERROR);
+                            Translation.getTranslation("general.directory"),
+                            Translation.getTranslation(
+                                "general.outside_basedir_error.text",
+                                getController().getFolderRepository()
+                                    .getFoldersBasedirString()),
+                            GenericDialogType.ERROR);
                         return;
                     }
                 }

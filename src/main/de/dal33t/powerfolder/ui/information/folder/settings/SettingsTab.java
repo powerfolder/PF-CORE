@@ -654,14 +654,21 @@ public class SettingsTab extends PFUIComponent {
                     return;
                 }
 
-                if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+                if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+                    .getValueBoolean(getController()))
+                {
                     if (!newDirectory.getParentFile().equals(
-                            getController().getFolderRepository().getFoldersBasedir())) {
+                        getController().getFolderRepository()
+                            .getFoldersBasedir()))
+                    {
                         // Can't move a folder outside the base directory.
                         DialogFactory.genericDialog(getController(),
-                                Translation.getTranslation("general.directory"),
-                                Translation.getTranslation("general.outside_basedir_error.text"),
-                                GenericDialogType.ERROR);
+                            Translation.getTranslation("general.directory"),
+                            Translation.getTranslation(
+                                "general.outside_basedir_error.text",
+                                getController().getFolderRepository()
+                                    .getFoldersBasedirString()),
+                            GenericDialogType.ERROR);
                         return;
                     }
                 }

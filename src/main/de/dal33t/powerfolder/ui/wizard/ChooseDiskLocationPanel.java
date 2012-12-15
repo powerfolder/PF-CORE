@@ -384,11 +384,18 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         // Don't allow non-user dir folders if not allowed.
-        if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
-            if (!location.getParentFile().equals(getController().getFolderRepository().getFoldersBasedir())) {
+        if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+            .getValueBoolean(getController()))
+        {
+            if (!location.getParentFile().equals(
+                getController().getFolderRepository().getFoldersBasedir()))
+            {
                 String title = Translation.getTranslation("general.directory");
-                String message = Translation.getTranslation("general.outside_basedir_error.text");
-                DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
+                String message = Translation.getTranslation(
+                    "general.outside_basedir_error.text", getController()
+                        .getFolderRepository().getFoldersBasedirString());
+                DialogFactory.genericDialog(getController(), title, message,
+                    GenericDialogType.ERROR);
                 return false;
             }
         }
