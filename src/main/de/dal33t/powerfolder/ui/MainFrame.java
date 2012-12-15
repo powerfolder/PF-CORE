@@ -78,6 +78,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -1530,6 +1531,7 @@ public class MainFrame extends PFUIComponent {
 
         private MyOpenPreferencesAction(Controller controller) {
             super("action_open_preferences", controller);
+            allowWith(ChangePreferencesPermission.INSTANCE);
         }
 
         public void actionPerformed(ActionEvent e) {
