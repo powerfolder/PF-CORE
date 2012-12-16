@@ -25,14 +25,9 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -49,7 +44,6 @@ import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Help;
-import de.dal33t.powerfolder.ui.util.SwingWorker;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -224,14 +218,14 @@ public class PreferencesDialog extends BaseDialog {
                 // However updating the gui while the task is progressing,
                 // requires us to run the validation in a new thread that will
                 // give the chance of the swing thread to update the GUI
-                SwingWorker worker = new SwingWorker() {
-                    @Override
-                    public Object construct() {
+                SwingWorker<Boolean , Object> worker = new SwingWorker<Boolean , Object>() {
+
+                    protected Boolean doInBackground() throws Exception {
                         try {
                             // validate the user input and check the result
-                            boolean succes = validateSettings();
-                            if (!succes) {
-                                return Boolean.FALSE;
+                            boolean success = validateSettings();
+                            if (!success) {
+                                return false;
                             }
 
                             // Save settings
@@ -239,22 +233,27 @@ public class PreferencesDialog extends BaseDialog {
                             if (needsRestart()) {
                                 handleRestartRequest();
                             }
-                            return Boolean.TRUE;
+                            return true;
                         } catch (Exception ex) {
                             logSevere(ex);
-                            return Boolean.FALSE;
+                            return false;
                         }
                     }
 
-                    @Override
-                    public void finished() {
-                        if (get() == Boolean.TRUE) {
-                            close();
+                    public void done() {
+                        try {
+                            if (get()) {
+                                close();
+                            }
+                        } catch (InterruptedException e1) {
+                            logSevere(e1);
+                        } catch (ExecutionException e1) {
+                            logSevere(e1);
                         }
                         okButton.setEnabled(true);
                     }
                 };
-                worker.start();
+                worker.execute();
             }
         });
     }
@@ -316,12 +315,12 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     /**
-     * Validates the settings before saving them persistantly
+     * Validates the settings before saving them persistently
      */
     private boolean validateSettings() {
         for (PreferenceTab tab : preferenceTabs) {
-            boolean succes = tab.validate();
-            if (!succes) {
+            boolean success = tab.validate();
+            if (!success) {
                 return false;
             }
         }

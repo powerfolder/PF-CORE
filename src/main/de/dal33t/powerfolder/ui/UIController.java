@@ -38,15 +38,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
@@ -122,8 +114,6 @@ import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
-import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -149,9 +139,9 @@ public class UIController extends PFComponent {
 
     public static final int MAX_RECENTLY_CHANGED_FILES = 20;
 
-    private static final String COMMAND_OPENUI = "openui";
-    private static final String COMMAND_HIDEUI = "hideui";
-    private static final String COMMAND_SYNCALL = "syncall";
+    private static final String COMMAND_OPEN_UI = "open-ui";
+    private static final String COMMAND_HIDE_UI = "hide-ui";
+    private static final String COMMAND_SYNC_ALL = "sync-all";
     private static final String COMMAND_EXIT = "exit";
     private static final String COMMAND_SYNC_SHUTDOWN = "sync-shutdown";
     private static final String COMMAND_SYNC_EXIT = "sync-exit";
@@ -160,7 +150,7 @@ public class UIController extends PFComponent {
     private static final String COMMAND_RESUME = "resume";
     private static final String COMMAND_PREFERENCES = "preferences";
     private static final String COMMAND_BROWSE = "browse";
-    private static final String COMMAND_RECENTLY_CHANGED = "recently-changed";
+    private static final String COMMAND_RECENTLY_CHANGED = "recently-changed-";
 
     private boolean started;
     private SplashScreen splash;
@@ -171,7 +161,7 @@ public class UIController extends PFComponent {
     private ChatFrame chatFrame;
     private WeakReference<JDialog> wizardDialogReference;
 
-    // List of pending jobs, execute when ui is opend
+    // List of pending jobs, execute when ui is opened
     private final List<Runnable> pendingJobs;
     private Menu sysTrayFoldersMenu;
     private MenuItem pauseResumeMenu;
@@ -231,7 +221,7 @@ public class UIController extends PFComponent {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
-                        logFiner("Opening splashscreen");
+                        logFiner("Opening splash screen");
                         splash = new SplashScreen(getController(), 260 * 1000);
                     }
                 });
@@ -307,7 +297,7 @@ public class UIController extends PFComponent {
         transferManagerModel.initialize();
 
         if (OSUtil.isSystraySupported()) {
-            initalizeSystray();
+            initializeSystray();
         } else {
             logWarning("System tray currently only supported on windows (>98)");
             mainFrame.getUIComponent().setDefaultCloseOperation(
@@ -410,7 +400,7 @@ public class UIController extends PFComponent {
 
     }
 
-    private void initalizeSystray() {
+    private void initializeSystray() {
         trayIconManager = new TrayIconManager(this);
         PopupMenu menu = new PopupMenu();
 
@@ -421,9 +411,9 @@ public class UIController extends PFComponent {
 
         ActionListener systrayActionHandler = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (COMMAND_OPENUI.equals(e.getActionCommand())) {
+                if (COMMAND_OPEN_UI.equals(e.getActionCommand())) {
                     mainFrame.toFront();
-                } else if (COMMAND_HIDEUI.equals(e.getActionCommand())) {
+                } else if (COMMAND_HIDE_UI.equals(e.getActionCommand())) {
                     mainFrame.getUIComponent().setVisible(false);
                 } else if (COMMAND_EXIT.equals(e.getActionCommand())) {
                     // Exit to system
@@ -468,7 +458,7 @@ public class UIController extends PFComponent {
                 } else if (COMMAND_SYNC_EXIT.equals(e.getActionCommand())) {
                     getController().performFullSync();
                     getController().exitAfterSync(4);
-                } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
+                } else if (COMMAND_SYNC_ALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             getController().performFullSync();
@@ -501,16 +491,13 @@ public class UIController extends PFComponent {
                         for (FileInfo fileInfo : recentlyChangedFiles.values())
                         {
                             if (i++ == item) {
-                                MultiFileRestorePanel p = new MultiFileRestorePanel(
-                                    getController(),
-                                    fileInfo.getFolder(getController()
-                                        .getFolderRepository()),
-                                    Collections.singletonList(fileInfo));
-                                PFWizard wizard = new PFWizard(
-                                    getController(),
-                                    Translation
-                                        .getTranslation("wizard.pfwizard.restore_title"));
-                                wizard.open(p);
+                                // Open file in the file browser, checking if deleted.
+                                UIController uiController = getController().getUIController();
+                                if (fileInfo.isDeleted()) {
+                                    uiController.openFilesInformationDeleted(fileInfo.getFolderInfo());
+                                } else {
+                                    uiController.openFilesInformation(fileInfo.getFolderInfo());
+                                }
                                 break;
                             }
                         }
@@ -522,11 +509,11 @@ public class UIController extends PFComponent {
         // /////////////////////////
         // Open / close menu item //
         // /////////////////////////
-        final MenuItem opentUI = new MenuItem(
+        final MenuItem openUI = new MenuItem(
             Translation.getTranslation("systray.show"));
-        menu.add(opentUI);
-        opentUI.setActionCommand(COMMAND_OPENUI);
-        opentUI.addActionListener(systrayActionHandler);
+        menu.add(openUI);
+        openUI.setActionCommand(COMMAND_OPEN_UI);
+        openUI.addActionListener(systrayActionHandler);
 
         // //////
         // Web //
@@ -572,15 +559,15 @@ public class UIController extends PFComponent {
         // /////////
         // Recent //
         // /////////
-        // recentlyChangedMenu = new Menu(
-        // Translation.getTranslation("uicontroller.recently_changed"));
-        // recentlyChangedMenu.setEnabled(false);
-        // menu.add(recentlyChangedMenu);
-        // for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
-        // recentMenuItems[i] = new MenuItem();
-        // recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED + i);
-        // recentMenuItems[i].addActionListener(systrayActionHandler);
-        // }
+        recentlyChangedMenu = new Menu(
+        Translation.getTranslation("uicontroller.recently_changed"));
+        recentlyChangedMenu.setEnabled(false);
+        menu.add(recentlyChangedMenu);
+        for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
+            recentMenuItems[i] = new MenuItem();
+            recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED + i);
+            recentMenuItems[i].addActionListener(systrayActionHandler);
+        }
 
         // //////////////
         // Preferences //
@@ -645,21 +632,21 @@ public class UIController extends PFComponent {
         // Switch Systray show/hide menuitem dynamically
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
             public void componentShown(ComponentEvent arg0) {
-                opentUI.setLabel(Translation.getTranslation("systray.hide"));
-                opentUI.setActionCommand(COMMAND_HIDEUI);
+                openUI.setLabel(Translation.getTranslation("systray.hide"));
+                openUI.setActionCommand(COMMAND_HIDE_UI);
             }
 
             public void componentHidden(ComponentEvent arg0) {
-                opentUI.setLabel(Translation.getTranslation("systray.show"));
-                opentUI.setActionCommand(COMMAND_OPENUI);
+                openUI.setLabel(Translation.getTranslation("systray.show"));
+                openUI.setActionCommand(COMMAND_OPEN_UI);
             }
         });
 
         mainFrame.getUIComponent().addWindowListener(new WindowAdapter() {
             @Override
             public void windowIconified(WindowEvent e) {
-                opentUI.setLabel(Translation.getTranslation("systray.show"));
-                opentUI.setActionCommand(COMMAND_OPENUI);
+                openUI.setLabel(Translation.getTranslation("systray.show"));
+                openUI.setActionCommand(COMMAND_OPEN_UI);
             }
         });
 
@@ -837,7 +824,7 @@ public class UIController extends PFComponent {
                 frame.setExtendedState(Frame.NORMAL);
             }
 
-            // Card-specific location of the info frae.
+            // Card-specific location of the info frame.
             informationFrame.relocate();
 
             UIUtil.putOnScreen(frame);
@@ -1353,6 +1340,16 @@ public class UIController extends PFComponent {
             return;
         }
         synchronized (recentlyChangedFiles) {
+
+            // Only keep latest version of any particular file; remove earlier versions.
+            for (Iterator<Long> iterator = recentlyChangedFiles.keySet().iterator(); iterator.hasNext(); ) {
+                Long next = iterator.next();
+                FileInfo info = recentlyChangedFiles.get(next);
+                if (fileInfo.getRelativeName().equals(info.getRelativeName())) {
+                    iterator.remove();
+                }
+            }
+
             Long time = new Date().getTime();
             while (recentlyChangedFiles.containsKey(time)) {
                 // Get a unique time for the key.
