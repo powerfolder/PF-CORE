@@ -1309,85 +1309,95 @@ public class Folder extends PFComponent {
 
         // First relink modified by memberinfo to
         // actual instance if available on nodemanager
-        synchronized (scanLock) {
-            synchronized (dbAccessLock) {
-                FileInfo localFile = getFile(fInfo);
-                if (localFile == null) {
-                    if (isFiner()) {
-                        logFiner("Scan new file: " + fInfo.toDetailString());
-                    }
-                    // Update last - modified data
-                    MemberInfo modifiedBy = fInfo.getModifiedBy();
-                    if (modifiedBy == null) {
-                        modifiedBy = getController().getMySelf().getInfo();
-                    }
-                    Member from = modifiedBy.getNode(getController(), true);
-                    Date modDate;
-                    long size;
-                    boolean deleted;
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (scanLock) {
+                synchronized (dbAccessLock) {
+                    FileInfo localFile = getFile(fInfo);
+                    if (localFile == null) {
+                        if (isFiner()) {
+                            logFiner("Scan new file: " + fInfo.toDetailString());
+                        }
+                        // Update last - modified data
+                        MemberInfo modifiedBy = fInfo.getModifiedBy();
+                        if (modifiedBy == null) {
+                            modifiedBy = getController().getMySelf().getInfo();
+                        }
+                        Member from = modifiedBy.getNode(getController(), true);
+                        Date modDate;
+                        long size;
+                        boolean deleted;
 
-                    if (fInfo.isLookupInstance()) {
-                        size = 0;
-                        modDate = new Date();
-                        deleted = !file.exists();
+                        if (fInfo.isLookupInstance()) {
+                            size = 0;
+                            modDate = new Date();
+                            deleted = !file.exists();
+                        } else {
+                            size = fInfo.getSize();
+                            modDate = fInfo.getModifiedDate();
+                            deleted = fInfo.isDeleted();
+                        }
+
+                        if (from != null) {
+                            modifiedBy = from.getInfo();
+                        }
+
+                        if (file.exists()) {
+                            modDate = new Date(file.lastModified());
+                            size = file.length();
+                        }
+
+                        if (deleted) {
+                            fInfo = FileInfoFactory.unmarshallDeletedFile(
+                                currentInfo, fInfo.getRelativeName(),
+                                modifiedBy, modDate, fInfo.getVersion(),
+                                file.isDirectory());
+                        } else {
+                            fInfo = FileInfoFactory.unmarshallExistingFile(
+                                currentInfo, fInfo.getRelativeName(), size,
+                                modifiedBy, modDate, fInfo.getVersion(),
+                                file.isDirectory());
+                        }
+
+                        store(getController().getMySelf(), fInfo);
+
+                        // get folder icon info and set it
+                        if (FileUtils.isDesktopIni(file)) {
+                            makeFolderIcon(file);
+                        }
+
+                        // Fire folder change event
+                        // fireEvent(new FolderChanged());
+
+                        if (isFiner()) {
+                            logFiner(toString() + ": Local file scanned: "
+                                + fInfo.toDetailString());
+                        }
+                        return fInfo;
+                    }
+
+                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this,
+                        file);
+                    if (syncFile != null) {
+                        store(getController().getMySelf(), syncFile);
+                        if (isFiner()) {
+                            logFiner("Scan file changed: "
+                                + syncFile.toDetailString());
+                        }
                     } else {
-                        size = fInfo.getSize();
-                        modDate = fInfo.getModifiedDate();
-                        deleted = fInfo.isDeleted();
+                        if (isFiner()) {
+                            logFiner("Scan file unchanged: "
+                                + localFile.toDetailString());
+                        }
                     }
-
-                    if (from != null) {
-                        modifiedBy = from.getInfo();
-                    }
-
-                    if (file.exists()) {
-                        modDate = new Date(file.lastModified());
-                        size = file.length();
-                    }
-
-                    if (deleted) {
-                        fInfo = FileInfoFactory.unmarshallDeletedFile(
-                            currentInfo, fInfo.getRelativeName(), modifiedBy,
-                            modDate, fInfo.getVersion(), file.isDirectory());
-                    } else {
-                        fInfo = FileInfoFactory.unmarshallExistingFile(
-                            currentInfo, fInfo.getRelativeName(), size,
-                            modifiedBy, modDate, fInfo.getVersion(),
-                            file.isDirectory());
-                    }
-
-                    store(getController().getMySelf(), fInfo);
-
-                    // get folder icon info and set it
-                    if (FileUtils.isDesktopIni(file)) {
-                        makeFolderIcon(file);
-                    }
-
-                    // Fire folder change event
-                    // fireEvent(new FolderChanged());
-
-                    if (isFiner()) {
-                        logFiner(toString() + ": Local file scanned: "
-                            + fInfo.toDetailString());
-                    }
-                    return fInfo;
+                    return syncFile;
                 }
-
-                FileInfo syncFile = localFile
-                    .syncFromDiskIfRequired(this, file);
-                if (syncFile != null) {
-                    store(getController().getMySelf(), syncFile);
-                    if (isFiner()) {
-                        logFiner("Scan file changed: "
-                            + syncFile.toDetailString());
-                    }
-                } else {
-                    if (isFiner()) {
-                        logFiner("Scan file unchanged: "
-                            + localFile.toDetailString());
-                    }
-                }
-                return syncFile;
+            }
+        } finally {
+            long took = System.currentTimeMillis() - start;
+            if (isWarning() && took > 60 * 1000L) {
+                logWarning("Scanning file took " + (took / 1000) + "s: "
+                    + fInfo.toDetailString());
             }
         }
     }
