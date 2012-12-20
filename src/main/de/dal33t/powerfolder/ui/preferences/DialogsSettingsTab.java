@@ -38,7 +38,7 @@ import java.util.Hashtable;
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     /** Show chat notifications */
-    private JCheckBox showChatNotificationBox;
+    //private JCheckBox showChatNotificationBox;
 
     /** Show system notifications */
     private JCheckBox showSystemNotificationBox;
@@ -115,10 +115,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         writeTrigger = new Trigger();
 
         // Show chat notifications when minimized
-        showChatNotificationBox = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.show_chat_notifications"));
-        showChatNotificationBox.setSelected((Boolean) applicationModel
-            .getChatNotificationsValueModel().getValue());
+        //showChatNotificationBox = new JCheckBox(Translation
+        //    .getTranslation("preferences.dialog.show_chat_notifications"));
+        //showChatNotificationBox.setSelected((Boolean) applicationModel
+        //    .getChatNotificationsValueModel().getValue());
 
         // Show system notifications when minimized
         showSystemNotificationBox = new JCheckBox(Translation
@@ -284,8 +284,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.dialogs.notifications"), cc
                 .xyw(1, row, 3));
 
-            row += 2;
-            builder.add(showChatNotificationBox, cc.xy(3, row));
+            //row += 2;
+            //builder.add(showChatNotificationBox, cc.xy(3, row));
 
             row += 2;
             builder.add(showSystemNotificationBox, cc.xy(3, row));
@@ -343,17 +343,17 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
         boolean testConnectivity = warnOnLimitedConnectivityCB.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSyncCB.isSelected();
-        boolean filenamCheck = warnOnPossibleFilenameProblemsCB.isSelected();
+        boolean filenameCheck = warnOnPossibleFilenameProblemsCB.isSelected();
         boolean askFriendship = askForFriendshipCB.isSelected();
         boolean askFriendshipMessage = askForFriendshipMessageCB.isSelected();
         boolean duplicateFolders = warnOnDuplicateFoldersCB.isSelected();
         boolean poorConnection = warnOnPoorConnectionQualityCB.isSelected();
-        boolean fullColudSpace = warnIfCloudSpaceFullCB.isSelected();
+        boolean fullCloudSpace = warnIfCloudSpaceFullCB.isSelected();
 
-        if (showChatNotificationBox != null) {
-            applicationModel.getChatNotificationsValueModel().setValue(
-                showChatNotificationBox.isSelected());
-        }
+        //if (showChatNotificationBox != null) {
+            //applicationModel.getChatNotificationsValueModel().setValue(
+                //showChatNotificationBox.isSelected());
+        //}
 
         if (showSystemNotificationBox != null) {
             applicationModel.getSystemNotificationsValueModel().setValue(
@@ -380,9 +380,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             testConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
         PreferencesEntry.WARN_FULL_CLOUD.setValue(getController(),
-                fullColudSpace);
+                fullCloudSpace);
         PreferencesEntry.FILE_NAME_CHECK
-            .setValue(getController(), filenamCheck);
+            .setValue(getController(), filenameCheck);
         PreferencesEntry.DUPLICATE_FOLDER_USE.setValue(getController(),
             duplicateFolders);
         PreferencesEntry.WARN_POOR_QUALITY.setValue(getController(),

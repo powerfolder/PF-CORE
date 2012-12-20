@@ -32,7 +32,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -76,7 +75,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
     private JButton refreshButton;
     private MembersExptertTable membersTable;
     private Member selectedMember;
-    private JPopupMenu fileMenu;
+    //private JPopupMenu fileMenu;
     private JProgressBar refreshBar;
     private JComboBox defaultPermissionBox;
 
@@ -165,10 +164,10 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
     /**
      * Builds the popup menus
      */
-    private void buildPopupMenus() {
-        fileMenu = new JPopupMenu();
-        fileMenu.add(openChatAction);
-    }
+    //private void buildPopupMenus() {
+        //fileMenu = new JPopupMenu();
+        //fileMenu.add(openChatAction);
+    //}
 
     /**
      * Bulds the ui component.
@@ -181,7 +180,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         builder.add(createToolBar(), cc.xy(2, 2));
         builder.addSeparator(null, cc.xyw(1, 4, 3));
         builder.add(scrollPane, cc.xy(2, 6));
-        buildPopupMenus();
+        //buildPopupMenus();
 
         uiComponent = builder.getPanel();
     }
@@ -191,7 +190,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
      */
     private JPanel createToolBar() {
         JButton inviteButton = new JButton(inviteAction);
-        JButton openChatButton = new JButton(openChatAction);
+        //JButton openChatButton = new JButton(openChatAction);
         JButton reconnectButton = new JButton(reconnectAction);
 
         FormLayout layout = new FormLayout("0:grow", "pref");
@@ -209,20 +208,20 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             bar.addRelatedGap();
-            bar.addGridded(openChatButton);
-            bar.addRelatedGap();
+            //bar.addGridded(openChatButton);
+            //bar.addRelatedGap();
             bar.addGridded(reconnectButton);
             bar.addRelatedGap();
             bar.addGridded(builder.getPanel());
         }
         JPanel buttonBarPanel = bar.getPanel();
 
-        refreshButton.setMinimumSize(openChatButton.getMinimumSize());
-        refreshButton.setMaximumSize(openChatButton.getMaximumSize());
-        refreshButton.setPreferredSize(openChatButton.getPreferredSize());
-        refreshBar.setMinimumSize(openChatButton.getMinimumSize());
-        refreshBar.setMaximumSize(openChatButton.getMaximumSize());
-        refreshBar.setPreferredSize(openChatButton.getPreferredSize());
+        //refreshButton.setMinimumSize(openChatButton.getMinimumSize());
+        //refreshButton.setMaximumSize(openChatButton.getMaximumSize());
+        //refreshButton.setPreferredSize(openChatButton.getPreferredSize());
+        //refreshBar.setMinimumSize(openChatButton.getMinimumSize());
+        //refreshBar.setMaximumSize(openChatButton.getMaximumSize());
+        //refreshBar.setPreferredSize(openChatButton.getPreferredSize());
 
         layout = new FormLayout(
             "pref, 0:grow, pref, 3dlu, pref, 3dlu, max(60dlu;pref)", "pref");
@@ -323,7 +322,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         }
 
         private void showContextMenu(MouseEvent evt) {
-            fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            //fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
         }
 
     }

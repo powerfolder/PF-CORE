@@ -81,11 +81,11 @@ public class ExpandableComputerView extends PFUIComponent implements
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
     private JLabel infoLabel;
-    private JButtonMini chatButton;
+//    private JButtonMini chatButton;
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
     private JButtonMini pictoLabel;
-    private MyOpenChatAction chatAction;
+//    private MyOpenChatAction chatAction;
     private JPanel upperPanel;
     private MyAddRemoveFriendAction addRemoveFriendAction;
     private MyReconnectAction reconnectAction;
@@ -209,7 +209,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         lowerBuilder.addSeparator(null, cc.xyw(1, 1, 8));
 
         lowerBuilder.add(usernameLabel, cc.xy(1, 3));
-        lowerBuilder.add(chatButton, cc.xywh(4, 3, 1, 3));
+        //lowerBuilder.add(chatButton, cc.xywh(4, 3, 1, 3));
         lowerBuilder.add(addRemoveButton, cc.xywh(6, 3, 1, 3));
         lowerBuilder.add(reconnectButton, cc.xywh(8, 3, 1, 3));
         lowerBuilder.add(lastSeenLabel, cc.xy(1, 5));
@@ -271,10 +271,10 @@ public class ExpandableComputerView extends PFUIComponent implements
         reconnectButton = new JButtonMini(reconnectAction);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
         addRemoveButton = new JButtonMini(addRemoveFriendAction);
-        chatAction = new MyOpenChatAction(getController());
-        chatButton = new JButtonMini(chatAction);
+        //chatAction = new MyOpenChatAction(getController());
+//        chatButton = new JButtonMini(chatAction);
         pictoLabel = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
-        pictoLabel.addActionListener(chatAction);
+        //pictoLabel.addActionListener(chatAction);
         updateDetails();
         configureAddRemoveButton();
         registerListeners();
@@ -466,7 +466,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     public JPopupMenu createPopupMenu() {
         if (contextMenu == null) {
             contextMenu = new JPopupMenu();
-            contextMenu.add(chatAction);
+            //contextMenu.add(chatAction);
             contextMenu.add(addRemoveFriendAction);
             contextMenu.add(reconnectAction);
         }
