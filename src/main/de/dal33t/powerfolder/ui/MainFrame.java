@@ -77,6 +77,8 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.PausedModeEvent;
+import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
@@ -564,6 +566,8 @@ public class MainFrame extends PFUIComponent {
                 return true;
             }
         });
+
+        getController().addPausedModeListener(new MyPausedModeListener());
     }
 
     private void handleSyncTextClick() {
@@ -1536,6 +1540,18 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getUIController().openPreferences();
+        }
+    }
+
+    private class MyPausedModeListener implements PausedModeListener {
+        @Override
+        public void setPausedMode(PausedModeEvent event) {
+            configurePauseResumeLink();
+        }
+
+        @Override
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 }
