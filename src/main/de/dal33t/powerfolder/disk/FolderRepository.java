@@ -1626,7 +1626,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()));
 
-                createFolder0(folderInfo, settings, true);
+                Folder folder = createFolder0(folderInfo, settings, true);
+                folder.addDefaultExcludes();
                 folderInfos.add(folderInfo);
             }
         }
