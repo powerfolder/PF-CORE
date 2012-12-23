@@ -1669,6 +1669,17 @@ public class Folder extends PFComponent {
                     join0(member, !getController().isStarted());
                 }
 
+                // Send filelist to connected members
+                for (Member member : getConnectedMembers()) {
+                    if (hasReadPermission(member)) {
+                        member.sendMessagesAsynchron(FileList.create(this,
+                            supportExternalizable(member)));
+                    } else {
+                        member.sendMessagesAsynchron(FileList.createEmpty(
+                            currentInfo, supportExternalizable(member)));
+                    }
+                }
+
                 // Old blacklist explicit items.
                 // Now disused, but maintained for backward compatability.
                 try {

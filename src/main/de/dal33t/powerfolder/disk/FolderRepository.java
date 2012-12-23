@@ -1609,10 +1609,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                             + suggestedLocalBase + " for " + folderInfo);
                     }
                 } else {
-                    // Defensive strategy. Find free new empty directory.
-                    suggestedLocalBase = FileUtils.createEmptyDirectory(
-                        getController().getFolderRepository()
-                            .getFoldersBasedir(), folderInfo.name);
+                    // Take folder name as subdir name
+                    suggestedLocalBase = new TFile(getController()
+                        .getFolderRepository().getFoldersBasedir(),
+                        folderInfo.name);
                 }
 
                 logInfo("Auto setting up folder " + folderInfo
