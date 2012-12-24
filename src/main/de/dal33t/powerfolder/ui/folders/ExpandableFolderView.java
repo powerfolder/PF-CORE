@@ -1201,7 +1201,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                         "net use * \"" + webDAVURL + "\" /User:"
                             + serverClient.getUsername() + ' '
                             + serverClient.getPasswordClearText()
-                            + " persistent:yes");
+                            + " /persistent:yes");
                     byte[] out = StreamUtils.readIntoByteArray(process
                         .getInputStream());
                     String output = new String(out);
