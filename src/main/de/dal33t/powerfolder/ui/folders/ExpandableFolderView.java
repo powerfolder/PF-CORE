@@ -1200,7 +1200,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     Process process = Runtime.getRuntime().exec(
                         "net use * \"" + webDAVURL + "\" /User:"
                             + serverClient.getUsername() + ' '
-                            + serverClient.getPasswordClearText());
+                            + serverClient.getPasswordClearText()
+                            + " persistent:yes");
                     byte[] out = StreamUtils.readIntoByteArray(process
                         .getInputStream());
                     String output = new String(out);
