@@ -373,7 +373,7 @@ public class Util {
             shortcutTarget.getAbsolutePath(), null);
 
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
-            false), shortcutName + ".lnk");
+            false), shortcutName + Constants.LINK_EXTENSION);
         try {
             util.createLink(link, scut.getAbsolutePath());
             return true;
@@ -397,7 +397,7 @@ public class Util {
         }
         LOG.finer("Removing desktop shortcut: " + shortcutName);
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
-            false), shortcutName + ".lnk");
+            false), shortcutName + Constants.LINK_EXTENSION);
         return scut.delete();
     }
 

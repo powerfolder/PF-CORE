@@ -377,6 +377,8 @@ public class Constants {
     public static final int DEFAULT_NORMAL_DOCKED_WIDTH = 1100;
     public static final int DEFAULT_NORMAL_HEIGHT = 600;
 
+    public static final String LINK_EXTENSION = ".lnk";
+
     private Constants() {
         // No instance allowed
     }

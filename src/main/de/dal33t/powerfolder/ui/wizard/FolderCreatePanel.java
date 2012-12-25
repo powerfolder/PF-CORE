@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.Constants;
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -359,7 +360,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 return;
             }
 
-            File shortcutFile = new File(baseDir, folderInfo.getName() + ".lnk");
+            File shortcutFile = new File(baseDir, folderInfo.getName() + Constants.LINK_EXTENSION);
             String shortcutPath = shortcutFile.getAbsolutePath();
             String filePath = folderSettings.getLocalBaseDir()
                 .getAbsolutePath();

@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -165,7 +166,7 @@ public class WinUtils extends Loggable {
         }
         File baseDir = controller.getFolderRepository()
             .getFoldersBasedir();
-        File shortCut = new File(linksDir, baseDir.getName() + ".lnk");
+        File shortCut = new File(linksDir, baseDir.getName() + Constants.LINK_EXTENSION);
         if (setup) {
             ShellLink link = new ShellLink(null, baseDir.getName(),
                 baseDir.getAbsolutePath(), null);
@@ -186,7 +187,7 @@ public class WinUtils extends Loggable {
         }
         File baseDir = controller.getFolderRepository()
             .getFoldersBasedir();
-        File shortCut = new File(linksDir, baseDir.getName() + ".lnk");
+        File shortCut = new File(linksDir, baseDir.getName() + Constants.LINK_EXTENSION);
         return shortCut.exists();
     }
 
@@ -208,7 +209,7 @@ public class WinUtils extends Loggable {
             return;
         }
         logFiner("Found " + pfile.getAbsolutePath());
-        String shortCutname = controller.getDistribution().getName() + ".lnk";
+        String shortCutname = controller.getDistribution().getName() + Constants.LINK_EXTENSION;
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
@@ -226,7 +227,7 @@ public class WinUtils extends Loggable {
 
             // PFC-2164: Fallback. Also delete binary name links
             shortCutname = controller.getDistribution().getBinaryName()
-                + ".lnk";
+                + Constants.LINK_EXTENSION;
             pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
                 shortCutname);
             pflnkAll = new File(
@@ -237,13 +238,13 @@ public class WinUtils extends Loggable {
     }
 
     public boolean isPFStartup(Controller controller) {
-        String shortCutname = controller.getDistribution().getName() + ".lnk";
+        String shortCutname = controller.getDistribution().getName() + Constants.LINK_EXTENSION;
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
             false), shortCutname);
         String shortCutname2 = controller.getDistribution().getBinaryName()
-            + ".lnk";
+            + Constants.LINK_EXTENSION;
         File pflnk2 = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname2);
         File pflnkAll2 = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,

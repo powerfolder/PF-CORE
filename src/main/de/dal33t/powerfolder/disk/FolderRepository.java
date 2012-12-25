@@ -102,7 +102,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Map<FolderInfo, Folder> metaFolders;
     private Thread myThread;
     private final FileRequestor fileRequestor;
-    private Folder currentlyMaintaitingFolder;
+    private Folder currentlyMaintainingFolder;
     private final Set<String> onLoginFolderEntryIds;
     // Flag if the repo is started
     private boolean started;
@@ -125,7 +125,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Object folderMembershipSynchronizerLock = new Object();
 
     /**
-     * Registered to ALL folders to deligate problem event of any folder to
+     * Registered to ALL folders to delegate problem event of any folder to
      * registered listeners.
      * <p>
      * TODO: Value listeners deteriorate the UI refresh speed.
@@ -196,7 +196,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void removeFolderAutoCreateListener(FolderAutoCreateListener listener)
     {
         ListenerSupportFactory.removeListener(folderAutoCreateListener,
-            listener);
+                listener);
     }
 
     /** @return The folder scanner that performs the scanning of files on disk */
@@ -246,6 +246,39 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logSevere(e);
             }
         }
+
+        tidyOldLinks();
+    }
+
+    /**
+     * Make sure there are no old links to deleted folders.
+     * These should be maintained when folders are removed.
+     * This is just a legacy check.
+     */
+    private void tidyOldLinks() {
+        File baseDir = getFoldersBasedir();
+        if (baseDir.exists()) {
+            File[] links = baseDir.listFiles(new FileFilter() {
+                public boolean accept(File pathname) {
+                    return pathname.getName().endsWith(Constants.LINK_EXTENSION);
+                }
+            });
+            for (File link : links) {
+                // Do we have a folder for this link?
+                boolean haveFolder = false;
+                for (Folder folder : getFolders()) {
+                    if ((folder.getName() + Constants.LINK_EXTENSION).equals(link.getName())) {
+                        haveFolder = true;
+                        break;
+                    }
+                }
+                if (!haveFolder) {
+                    // We have a link but no folder; remove link.
+                    boolean deleted = link.delete();
+                    log.info("Removed old link " + link.getName() + "? " + deleted);
+                }
+            }
+        }
     }
 
     private void initFoldersBasedir() {
@@ -265,8 +298,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             && baseDir.charAt(1) == ':';
         boolean ok = false;
 
-        if ((OSUtil.isWindowsSystem() && winNetworkDrive) || (!winNetworkDrive))
-        {
+        if (OSUtil.isWindowsSystem() && winNetworkDrive
+                || !winNetworkDrive) {
             foldersBasedir = new TFile(baseDir).getAbsoluteFile();
             if (!foldersBasedir.exists()) {
                 if (foldersBasedir.mkdirs()) {
@@ -465,7 +498,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
 
-        // Start filerequestor
+        // Start file requestor
         fileRequestor.start();
 
         // Defer 2 minutes, so it is not 'in-your-face' at start up.
@@ -876,9 +909,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         fireFolderCreated(folder);
 
         if (isFine()) {
-            String log = "Setup " + (folder.isEncrypted() ? "encrypted " : "")
+            String message = "Setup " + (folder.isEncrypted() ? "encrypted " : "")
                 + "folder " + folderInfo.name + " at " + folder.getLocalBase();
-            logFine(log);
+            logFine(message);
         }
 
         removeFromRemovedFolderDirectories(folder);
@@ -917,6 +950,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         try {
             suspendNewFolderSearch.incrementAndGet();
 
+            // Remove link if it exists.
+            removeLink(folder);
+
             // Remember that we have removed this folder.
             addToRemovedFolderDirectories(folder);
 
@@ -946,7 +982,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Shutdown folder
             folder.shutdown();
 
-            // Shutdown meta folder aswell
+            // Shutdown meta folder as well
             Folder metaFolder = getMetaFolderForParent(folder.getInfo());
             if (metaFolder != null) {
                 metaFolder.shutdown();
@@ -1018,37 +1054,51 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    /**
+     * Remove the link to the folder if it exists.
+     * @param folder
+     */
+    private void removeLink(Folder folder) {
+        FolderRepository repository = getController().getFolderRepository();
+        File baseDir = repository.getFoldersBasedir();
+        if (baseDir.exists()) {
+            File shortcutFile = new File(baseDir, folder.getName() + Constants.LINK_EXTENSION);
+            if (shortcutFile.exists()) {
+                boolean deleted = shortcutFile.delete();
+                log.info("Removed link " + shortcutFile.getName() + "? " + deleted);
+            }
+        }
+    }
+
     private void addToRemovedFolderDirectories(Folder folder) {
         if (removedFolderDirectories.add(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            for (Iterator<File> iterator = removedFolderDirectories.iterator(); iterator
-                .hasNext();)
-            {
-                String s = iterator.next().getAbsolutePath();
-                sb.append(s);
-                if (iterator.hasNext()) {
-                    sb.append('$');
+            Iterator<File> iterator = removedFolderDirectories.iterator();
+            while (iterator.hasNext()) {
+                    String s = iterator.next().getAbsolutePath();
+                    sb.append(s);
+                    if (iterator.hasNext()) {
+                        sb.append('$');
+                    }
                 }
-            }
             ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
-                sb.toString());
+                    sb.toString());
         }
     }
 
     private void removeFromRemovedFolderDirectories(Folder folder) {
         if (removedFolderDirectories.remove(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            for (Iterator<File> iterator = removedFolderDirectories.iterator(); iterator
-                .hasNext();)
-            {
-                String s = iterator.next().getAbsolutePath();
-                sb.append(s);
-                if (iterator.hasNext()) {
-                    sb.append('$');
+            Iterator<File> iterator = removedFolderDirectories.iterator();
+            while (iterator.hasNext()) {
+                    String s = iterator.next().getAbsolutePath();
+                    sb.append(s);
+                    if (iterator.hasNext()) {
+                        sb.append('$');
+                    }
                 }
-            }
             ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
-                sb.toString());
+                    sb.toString());
         }
     }
 
@@ -1105,7 +1155,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      *         maintaining any folder.
      */
     public Folder getCurrentlyMaintainingFolder() {
-        return currentlyMaintaitingFolder;
+        return currentlyMaintainingFolder;
     }
 
     /**
@@ -1178,12 +1228,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + " folders...");
                 }
                 for (Folder folder : scanningFolders) {
-                    currentlyMaintaitingFolder = folder;
+                    currentlyMaintainingFolder = folder;
                     // Fire event
-                    fireMaintanceStarted(currentlyMaintaitingFolder);
-                    currentlyMaintaitingFolder.maintain();
-                    Folder maintainedFolder = currentlyMaintaitingFolder;
-                    currentlyMaintaitingFolder = null;
+                    fireMaintanceStarted(currentlyMaintainingFolder);
+                    currentlyMaintainingFolder.maintain();
+                    Folder maintainedFolder = currentlyMaintainingFolder;
+                    currentlyMaintainingFolder = null;
                     // Fire event
                     fireMaintenanceFinished(maintainedFolder);
 
