@@ -65,6 +65,11 @@ For creation of the installer:
 	<target name="detect-version" depends="loadproperties" unless="MajorVersion">
 		<script language="javascript" manager="bsf" classpath="lib-build/bsf.jar:lib-build/js.jar:lib-build/commons-logging-1.1.1.jar"><![CDATA[
 			var prjDir = project.getProperty("powerfolder.project.dir");
+			if (!prjDir)  {
+				prjDir = '../PowerFolder';
+			} else {
+				prjDir += '';
+			}
 			var reader = new java.io.BufferedReader(java.io.FileReader(prjDir + '/src/main/de/dal33t/powerfolder/Controller.java'));
 				    
 			var line = "";
