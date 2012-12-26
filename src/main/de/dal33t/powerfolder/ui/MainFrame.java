@@ -1544,12 +1544,10 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class MyPausedModeListener implements PausedModeListener {
-        @Override
         public void setPausedMode(PausedModeEvent event) {
             configurePauseResumeLink();
         }
 
-        @Override
         public boolean fireInEventDispatchThread() {
             return true;
         }
