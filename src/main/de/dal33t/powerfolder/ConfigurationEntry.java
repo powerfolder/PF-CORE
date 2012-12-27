@@ -248,6 +248,11 @@ public enum ConfigurationEntry {
      * #2448: Option to disable Web access
      */
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
+    
+    /**
+     * If the client is allowed to pass the current password to the web browser.
+     */
+    WEB_PASSWORD_ALLOWED("web.login.password", true),
 
     /**
      * If WebDAV should be enabled.
