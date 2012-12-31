@@ -192,7 +192,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         if (MacUtils.isSupported()) {
             startWithMacOSLabel = new ActionLabel(getController(),
-                new BaseAction("preferences.dialog.start_with_macosx",
+                new BaseAction("action_preferences.dialog.start_with_macosx",
                     getController())
                 {
                     public void actionPerformed(ActionEvent e) {
