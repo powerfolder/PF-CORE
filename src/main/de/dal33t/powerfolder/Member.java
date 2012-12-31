@@ -631,8 +631,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + ", expected ID: " + getId(), newPeer);
         }
 
-     
-
         // Complete low-level handshake
         // FIXME: Problematic situation: Now we probably accept the new peer.
         // Messages received from this new peer can be delivered to the
@@ -958,51 +956,15 @@ public class Member extends PFComponent implements Comparable<Member> {
             return ConnectResult.failure(message);
         }
 
-        List<Folder> foldersJoined = getFoldersActuallyJoined();
-        List<Folder> foldersRequested = getFoldersRequestedToJoin();
-        if (isFine() && !foldersJoined.isEmpty()) {
-            logFine("Joined " + foldersJoined.size() + " folders: "
-                + foldersJoined);
-        } else if (isFiner()) {
-            logFiner("Joined " + foldersJoined.size() + " folders: "
-                + foldersJoined);
+        List<Folder> foldersJoined = sendFilelists();
+        if (foldersJoined == null) {
+            return ConnectResult.failure("Unable to send filelists to "
+                + getNick());
         }
-
-        for (Folder folder : foldersJoined) {
-            // FIX for #924
-            folder.waitForScan();
-            // Send filelist of joined folders
-            Message[] filelistMsgs = FileList.create(folder,
-                folder.supportExternalizable(this));
-            for (Message message : filelistMsgs) {
-                try {
-                    sendMessage(message);
-                } catch (ConnectionException e) {
-                    shutdown();
-                    return ConnectResult.failure("Unable to send filelist of "
-                        + folder + ". " + e);
-                }
-            }
-            foldersRequested.remove(folder);
-        }
-        if (!foldersRequested.isEmpty()) {
-            if (isFine()) {
-                logFine("Requested join : " + foldersRequested);
-                logFine("Actually joined: " + foldersJoined);
-            }
-            for (Folder folder : foldersRequested) {
-                sendMessagesAsynchron(FileList.createEmpty(folder.getInfo(),
-                    folder.supportExternalizable(this)));
-            }
-        }
-
         boolean ok = waitForFileLists(foldersJoined);
         if (!ok) {
             String reason = "Disconnecting. Did not receive the full filelists for "
-                + foldersJoined.size()
-                + " folders: "
-                + foldersJoined
-                + ", not joined: " + foldersRequested;
+                + foldersJoined.size() + " folders: " + foldersJoined;
             logWarning(reason);
             if (isFine()) {
                 for (Folder folder : foldersJoined) {
@@ -1094,6 +1056,53 @@ public class Member extends PFComponent implements Comparable<Member> {
         } else {
             return ConnectResult.failure("Not handshaked");
         }
+    }
+
+    /**
+     * Sends complete filelists for all folders, this node is an actual member
+     * of.
+     * 
+     * @return the list of actually allowed to join folder for which filelists
+     *         have been sent.
+     */
+    private List<Folder> sendFilelists() {
+        List<Folder> foldersJoined = getFoldersActuallyJoined();
+        List<Folder> foldersRequested = getFoldersRequestedToJoin();
+        if (isFine() && !foldersJoined.isEmpty()) {
+            logFine("Joined " + foldersJoined.size() + " folders: "
+                + foldersJoined);
+        } else if (isFiner()) {
+            logFiner("Joined " + foldersJoined.size() + " folders: "
+                + foldersJoined);
+        }
+
+        for (Folder folder : foldersJoined) {
+            // FIX for #924
+            folder.waitForScan();
+            // Send filelist of joined folders
+            Message[] filelistMsgs = FileList.create(folder,
+                folder.supportExternalizable(this));
+            for (Message message : filelistMsgs) {
+                try {
+                    sendMessage(message);
+                } catch (ConnectionException e) {
+                    shutdown();
+                    return null;
+                }
+            }
+            foldersRequested.remove(folder);
+        }
+        if (!foldersRequested.isEmpty()) {
+            if (isFine()) {
+                logFine("Requested join : " + foldersRequested);
+                logFine("Actually joined: " + foldersJoined);
+            }
+            for (Folder folder : foldersRequested) {
+                sendMessagesAsynchron(FileList.createEmpty(folder.getInfo(),
+                    folder.supportExternalizable(this)));
+            }
+        }
+        return foldersJoined;
     }
 
     /**
@@ -2257,7 +2266,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             logWarning("Unable to get last folder list");
             return Collections.emptyList();
         }
-        List<Folder> joinedFolders = new LinkedList<Folder>();
+        List<Folder> requestedFolders = new LinkedList<Folder>();
         for (Folder folder : getController().getFolderRepository().getFolders(
             true))
         {
@@ -2272,10 +2281,10 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
 
             if (fList.contains(foInfo, magicId)) {
-                joinedFolders.add(folder);
+                requestedFolders.add(folder);
             }
         }
-        return joinedFolders;
+        return requestedFolders;
     }
 
     /**
