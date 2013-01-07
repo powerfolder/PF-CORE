@@ -2009,10 +2009,13 @@ public class Folder extends PFComponent {
                 + removeBeforeDate);
         }
         lastDBMaintenance = new Date();
-        
+
         long max = Runtime.getRuntime().maxMemory() / 4181;
         if (total > max && total - keepDeleted * 2 < 0) {
-            addProblem(new FolderDatabaseProblem(currentInfo));
+            Problem fdp = new FolderDatabaseProblem(currentInfo);
+            if (!getProblems().contains(fdp)) {
+                addProblem(new FolderDatabaseProblem(currentInfo));
+            }
         }
 
         // Also maintain meta folder
