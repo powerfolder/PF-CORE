@@ -73,7 +73,7 @@ public class FolderDatabaseProblem extends ResolvableProblem {
                         folder.removeProblem(FolderDatabaseProblem.this);
                         folder.broadcastMessages(new FolderDBMaintCommando(
                             folderInfo, new Date()));
-                        folder.maintainFolderDB(System.currentTimeMillis()); 
+                        folder.maintainFolderDB(System.currentTimeMillis());
                     }
                 });
             }
@@ -83,5 +83,31 @@ public class FolderDatabaseProblem extends ResolvableProblem {
     @Override
     public String toString() {
         return getDescription();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+            + ((folderInfo == null) ? 0 : folderInfo.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FolderDatabaseProblem other = (FolderDatabaseProblem) obj;
+        if (folderInfo == null) {
+            if (other.folderInfo != null)
+                return false;
+        } else if (!folderInfo.equals(other.folderInfo))
+            return false;
+        return true;
     }
 }
