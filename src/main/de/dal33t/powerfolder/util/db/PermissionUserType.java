@@ -37,6 +37,9 @@ import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
+import de.dal33t.powerfolder.security.Group;
+import de.dal33t.powerfolder.security.GroupAdminPermission;
+import de.dal33t.powerfolder.security.GroupDAO;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.security.SingletonPermission;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -49,6 +52,7 @@ public class PermissionUserType extends Loggable implements UserType {
 
     private static final int[] sqlTypes = {Types.VARCHAR};
     private static FolderInfoDAO FOLDER_INFO_DAO = null;
+    private static GroupDAO GROUP_DAO = null;
 
     public Object assemble(Serializable cached, Object owner)
         throws HibernateException
@@ -138,6 +142,16 @@ public class PermissionUserType extends Loggable implements UserType {
                 p = FolderPermission.readWrite(fdInfo);
             }
         }
+        else if (permissionID.contains("_GP_")) {
+            String[] idAndName = permissionID.split("_GP_");
+            String gId = idAndName[0];
+            String clazzName = idAndName[1];
+            Group group = GROUP_DAO.findByID(gId);
+
+            if (clazzName.equals(GroupAdminPermission.class.getSimpleName())) {
+                p = new GroupAdminPermission(group);
+            }
+        }
         // SingletonPermissions (e. g. ChangePreferencesPermission)
         else {
             // get class name
@@ -208,5 +222,14 @@ public class PermissionUserType extends Loggable implements UserType {
             log.severe("FolderInfoDAO was already set! The reset should not happen!");
         }
         FOLDER_INFO_DAO = fdao;
+    }
+
+    public static void setGroupDAO(GroupDAO gdao) {
+        if (GROUP_DAO != null && gdao != null) {
+            Logger log = Logger.getLogger(PermissionUserType.class.getName());
+            log.severe("GroupDAO was already set! The reset should not happen!");
+        }
+
+        GROUP_DAO = gdao;
     }
 }

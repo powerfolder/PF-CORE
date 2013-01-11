@@ -102,6 +102,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_OS_SUBSCRIPTION = "osSubscription";
     public static final String PROPERTYNAME_LICENSE_KEY_FILES = "licenseKeyFiles";
     public static final String PROPERTYNAME_COMPUTERS = "computers";
+    public static final String PROPERTYNAME_GROUPS = "groups";
 
     @Id
     private String oid;
@@ -342,7 +343,7 @@ public class Account implements Serializable {
             }
         }
         for (Group g : groups) {
-            for (Permission p : g.getPermission()) {
+            for (Permission p : g.getPermissions()) {
                 if (p instanceof FolderPermission) {
                     FolderPermission fp = (FolderPermission) p;
                     if (fp.folder.equals(folder)) {
@@ -370,7 +371,7 @@ public class Account implements Serializable {
             }
         }
         for (Group g : groups) {
-            for (Permission p : g.getPermission()) {
+            for (Permission p : g.getPermissions()) {
                 if (p instanceof FolderOwnerPermission) {
                     FolderPermission fp = (FolderPermission) p;
                     folders.add(fp.getFolder());
@@ -394,7 +395,7 @@ public class Account implements Serializable {
             }
         }
         for (Group g : groups) {
-            for (Permission p : g.getPermission()) {
+            for (Permission p : g.getPermissions()) {
                 if (p instanceof FolderPermission) {
                     FolderPermission fp = (FolderPermission) p;
                     folderInfos.add(fp.getFolder());
@@ -416,7 +417,9 @@ public class Account implements Serializable {
     public void addGroup(Group... group) {
         Reject.ifNull(group, "Group is null");
         for (Group g : group) {
-            groups.add(g);
+            if (!groups.contains(g)) {
+                groups.add(g);
+            }
         }
     }
 

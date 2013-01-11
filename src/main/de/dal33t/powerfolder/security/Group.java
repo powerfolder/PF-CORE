@@ -20,9 +20,9 @@
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
@@ -38,7 +38,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -54,6 +54,7 @@ public class Group implements Serializable {
 
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_GROUPNAME = "name";
+    public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
 
     private static final long serialVersionUID = 100L;
@@ -65,6 +66,9 @@ public class Group implements Serializable {
     @Index(name = "IDX_GROUP_NAME")
     @Column(nullable = false)
     private String name;
+
+    @Column(length = 1024)
+    private String notes;
 
     @CollectionOfElements
     @Type(type = "permissionType")
@@ -81,7 +85,6 @@ public class Group implements Serializable {
 
     public Group(String oid, String name) {
         Reject.ifBlank(oid, "OID");
-        Reject.ifBlank(name, "Name");
         this.oid = oid;
         this.name = name;
         this.permissions = new CopyOnWriteArrayList<Permission>();
@@ -131,8 +134,22 @@ public class Group implements Serializable {
         return false;
     }
 
-    public Collection<Permission> getPermission() {
+    public Collection<Permission> getPermissions() {
         return Collections.unmodifiableCollection(permissions);
+    }
+
+    public Collection<FolderInfo> getFolder() {
+        Collection<FolderInfo> folder = new ArrayList<FolderInfo>(permissions.size());
+
+        for (Permission p : permissions) {
+            if (p instanceof FolderPermission) {
+                FolderPermission fp = (FolderPermission)p;
+
+                folder.add(fp.getFolder());
+            }
+        }
+
+        return folder;
     }
 
     public String getOID() {
@@ -145,6 +162,26 @@ public class Group implements Serializable {
 
     public void setName(String newName) {
         name = newName;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String newNotes) {
+        notes = newNotes;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof Group)) {
+            return false;
+        }
+
+        if (obj == this) {
+            return true;
+        }
+
+        return (this.oid.equals(((Group)obj).oid));
     }
 
     synchronized void convertCollections() {
