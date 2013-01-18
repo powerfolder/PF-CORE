@@ -37,7 +37,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor
-     * 
+     *
      * @param major
      * @param minor
      * @param point
@@ -54,7 +54,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor, defaulting build to zero.
-     * 
+     *
      * @param major
      * @param minor
      * @param point
@@ -66,7 +66,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor, defaulting update and build to zero.
-     * 
+     *
      * @param major
      * @param minor
      * @param point
@@ -77,7 +77,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor, defaulting point, update and build to zero.
-     * 
+     *
      * @param major
      * @param minor
      */
@@ -87,7 +87,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the build value of the version.
-     * 
+     *
      * @return
      */
     public int getBuild() {
@@ -96,7 +96,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the major value of the version.
-     * 
+     *
      * @return
      */
     public int getMajor() {
@@ -105,7 +105,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the minor value of the version.
-     * 
+     *
      * @return
      */
     public int getMinor() {
@@ -114,7 +114,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the point value of the version.
-     * 
+     *
      * @return
      */
     public int getPoint() {
@@ -123,7 +123,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the update value of the version.
-     * 
+     *
      * @return
      */
     public int getUpdate() {
@@ -133,7 +133,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
     /**
      * Tests for equality with another object. If object is a JavaVersion, tests
      * all version values.
-     * 
+     *
      * @param obj
      * @return
      */
@@ -168,7 +168,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Hash of the version values.
-     * 
+     *
      * @return
      */
     public int hashCode() {
@@ -183,7 +183,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
     /**
      * Compare to another JavaVersion, progressing down major, minor, point,
      * update and finally build.
-     * 
+     *
      * @param o
      * @return
      */
@@ -215,7 +215,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
      * Displays as
      * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;
      * It skips 'build' and 'update' values if not available (zero).
-     * 
+     *
      * @return
      */
     public String toString() {
@@ -238,9 +238,22 @@ public class JavaVersion implements Comparable<JavaVersion> {
     }
 
     /**
+     * @return Is the installed JRE the OpenJDK-JRE
+     */
+    public boolean isOpenJDK() {
+        String vendor = System.getProperty("java.vm.name");
+
+        if (vendor.contains("OpenJDK")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Gets the system version of Java. First tries 'java.runtime.version', then
      * 'java.version', then 'java.specification.version', otherwise it folds.
-     * 
+     *
      * @return
      */
     public static JavaVersion systemVersion() {
@@ -273,7 +286,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
     /**
      * Parse a string version into a Java Version. Expects something in between
      * '1.6' and '1.6.2_10-b12' format.
-     * 
+     *
      * @param version
      * @return
      */

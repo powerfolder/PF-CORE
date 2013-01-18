@@ -43,6 +43,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -316,7 +317,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         permissionsCombo = new JComboBox(permissionsComboModel);
         permissionsComboModel.addElement(FolderPermission.readWrite(folder).getName());
         permissionsComboModel.addElement(FolderPermission.read(folder).getName());
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
+            && ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController()))
+        {
             permissionsComboModel.addElement(FolderPermission.admin(folder).getName());
         }
 

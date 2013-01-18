@@ -19,12 +19,15 @@
  */
 package de.dal33t.powerfolder;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+
+import javax.swing.JOptionPane;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -35,6 +38,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.MemoryMonitor;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -43,7 +48,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 /**
  * Main class for the PowerFolder application.
  * <p>
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.46 $
  */
@@ -62,7 +67,7 @@ public class PowerFolder {
             .withDescription(
                 "<config file>. Sets the configuration file to start. Default: PowerFolder.config")
             .create("c");
-        
+
         options.addOption(configOption);
         options.addOption("u", "username", true,
             "<username>. The username to use when connecting.");
@@ -123,7 +128,7 @@ public class PowerFolder {
 
     /**
      * Starts a PowerFolder controller with the given command line arguments
-     * 
+     *
      * @param args
      */
     public static void startPowerFolder(String[] args) {
@@ -167,7 +172,7 @@ public class PowerFolder {
             formatter.printHelp("PowerFolder", COMMAND_LINE_OPTIONS);
             return;
         }
-        
+
         int rconPort = Integer.valueOf(ConfigurationEntry.NET_RCON_PORT
             .getDefaultValue());
         String portStr = commandLine.getOptionValue("k");
@@ -200,6 +205,28 @@ public class PowerFolder {
         if (commandLine.hasOption("g")) {
             Preferences.userNodeForPackage(Translation.class).put("locale",
                 commandLine.getOptionValue("g"));
+        }
+
+        if (JavaVersion.systemVersion().isOpenJDK()) {
+            Object[] options = {"Open Oracle home page and exit", "Exit"};
+
+            int n = JOptionPane.showOptionDialog(null,
+                "You are using OpenJDK which is not supported.\n" +
+                "Please install the Oracle JRE.",
+                "PowerFolder - Unsupported JRE",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE,
+                null, options, options[0]);
+
+            if (n == 0) {
+                try {
+                    BrowserLauncher.openURL("http://www.java.com/");
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            return;
         }
 
         // The controller.

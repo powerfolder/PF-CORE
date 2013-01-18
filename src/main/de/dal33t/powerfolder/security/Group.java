@@ -138,7 +138,7 @@ public class Group implements Serializable {
         return Collections.unmodifiableCollection(permissions);
     }
 
-    public Collection<FolderInfo> getFolder() {
+    public Collection<FolderInfo> getFolders() {
         Collection<FolderInfo> folder = new ArrayList<FolderInfo>(permissions.size());
 
         for (Permission p : permissions) {

@@ -72,7 +72,7 @@ import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
  * A access to the system indentified by username & password.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -210,12 +210,12 @@ public class Account implements Serializable {
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
 
-    public Account() {
+    Account() {
         // Generate unique id
         this(IdGenerator.makeId());
     }
 
-    public Account(String oid) {
+    Account(String oid) {
         Reject.ifBlank(oid, "OID");
         this.oid = oid;
         this.permissions = new CopyOnWriteArrayList<Permission>();
@@ -269,7 +269,7 @@ public class Account implements Serializable {
 
     /**
      * Revokes any permission to a folders.
-     * 
+     *
      * @param foInfo
      *            the folder.
      */
@@ -334,6 +334,9 @@ public class Account implements Serializable {
      * @return the permission on the given folder. null for no access.
      */
     public AccessMode getAllowedAccess(FolderInfo folder) {
+        /*FIXME: If Group has a higher permission as the direct permission,
+         * what should happen.
+         */
         for (Permission p : permissions) {
             if (p instanceof FolderPermission) {
                 FolderPermission fp = (FolderPermission) p;
@@ -477,7 +480,7 @@ public class Account implements Serializable {
 
     /**
      * setLanguage Set account language
-     * 
+     *
      * @return Selected language
      */
 
@@ -487,7 +490,7 @@ public class Account implements Serializable {
 
     /**
      * setLanguage Set account language
-     * 
+     *
      * @param lang
      *            New language
      */
@@ -559,7 +562,7 @@ public class Account implements Serializable {
 
     /**
      * Adds a line of info with the current date to the notes of that account.
-     * 
+     *
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
@@ -735,7 +738,7 @@ public class Account implements Serializable {
      * FIXME: Does only set the folders hosted on the CURRENT server to backup.
      * <p>
      * Account needs to be stored afterwards!!
-     * 
+     *
      * @param controller
      *            the controller
      */
@@ -753,7 +756,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that have SyncProfile.DISABLED to
      * SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT.
-     * 
+     *
      * @param controller
      * @return the number of folder the sync was re-enabled.
      */
@@ -777,7 +780,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that don't have SyncProfile.DISABLED to
      * SyncProfile.DISABLED.
-     * 
+     *
      * @param controller
      * @return the number of folder the sync was disabled.
      */
@@ -809,7 +812,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to read the folder contents.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to read the folder contents
@@ -821,7 +824,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -833,7 +836,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.

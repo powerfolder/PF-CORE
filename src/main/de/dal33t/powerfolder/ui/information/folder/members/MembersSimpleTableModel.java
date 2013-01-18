@@ -37,6 +37,7 @@ import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -571,8 +572,10 @@ public class MembersSimpleTableModel extends PFUIComponent implements
                 FolderPermission.read(folder.getInfo()));
             permissionsListModel.getList().add(
                 FolderPermission.readWrite(folder.getInfo()));
-            permissionsListModel.getList().add(
-                FolderPermission.admin(folder.getInfo()));
+            if (ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController())) {
+                permissionsListModel.getList().add(
+                    FolderPermission.admin(folder.getInfo()));
+            }
             if (getController().getOSClient().getAccount()
                 .hasOwnerPermission(folder.getInfo()))
             {
@@ -591,8 +594,10 @@ public class MembersSimpleTableModel extends PFUIComponent implements
                 FolderPermission.read(folder.getInfo()));
             defaultPermissionsListModel.getList().add(
                 FolderPermission.readWrite(folder.getInfo()));
-            defaultPermissionsListModel.getList().add(
-                FolderPermission.admin(folder.getInfo()));
+            if (ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController())) {
+                defaultPermissionsListModel.getList().add(
+                    FolderPermission.admin(folder.getInfo()));
+            }
             defaultPermissionModel.setValue(defaultPermission);
         }
         updatingDefaultPermissionModel = false;

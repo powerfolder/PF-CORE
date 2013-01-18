@@ -91,6 +91,12 @@ public enum ConfigurationEntry {
      */
     SECURITY_PERMISSIONS_STRICT("security.permissions.strict", false),
 
+    /**
+     * Don't show the FolderAdminPermission
+     */
+    SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN(
+        "security.permissions.show_folder_admin", true),
+
     // Node setup *************************************************************
 
     /**
