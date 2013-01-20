@@ -181,8 +181,8 @@ public class UIController extends PFComponent {
     private final AtomicBoolean synchronizing = new AtomicBoolean();
     private final DelayedUpdater statusUpdater;
 
-    private final Map<Long, FileInfo> recentlyChangedFiles = Util
-        .createConcurrentHashMap();
+    private final Map<Long, FileInfo> recentlyChangedFiles =
+            new HashMap<Long, FileInfo>(MAX_RECENTLY_CHANGED_FILES);
     private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
     private final PreferencesDialog preferencesDialog;
     /**
@@ -191,6 +191,8 @@ public class UIController extends PFComponent {
     private Skin[] skins;
 
     private Skin activeSkin;
+
+    private final DelayedUpdater recentlyChangedUpdater = new DelayedUpdater(getController(), 5000L);
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -1361,17 +1363,27 @@ public class UIController extends PFComponent {
             if (recentlyChangedFiles.size() > MAX_RECENTLY_CHANGED_FILES) {
                 recentlyChangedFiles.keySet().iterator().remove();
             }
-
-            // Update menu.
-            recentlyChangedMenu.removeAll();
-            int i = 0;
-            for (FileInfo info : recentlyChangedFiles.values()) {
-                MenuItem menuItem = recentMenuItems[i++];
-                recentlyChangedMenu.add(menuItem);
-                menuItem.setLabel(info.getFilenameOnly());
-            }
-            recentlyChangedMenu.setEnabled(!recentlyChangedFiles.isEmpty());
         }
+
+        // Delay updating the actual menu so we don't spam the UI with multiple updates.
+        recentlyChangedUpdater.schedule(new Runnable() {
+            @Override
+            public void run() {
+
+                // Update menu.
+                synchronized (recentlyChangedFiles) {
+                    recentlyChangedMenu.removeAll();
+                    int i = 0;
+                    for (FileInfo info : recentlyChangedFiles.values()) {
+                        MenuItem menuItem = recentMenuItems[i++];
+                        recentlyChangedMenu.add(menuItem);
+                        menuItem.setLabel(info.getFilenameOnly());
+                    }
+                    recentlyChangedMenu.setEnabled(!recentlyChangedFiles.isEmpty());
+                }
+            }
+        });
+
     }
 
     public void closePreferencesDialog() {

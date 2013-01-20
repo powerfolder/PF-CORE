@@ -27,8 +27,6 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Helper class to perform UI updates delayed. If an UI update is scheduled
@@ -59,24 +57,18 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
  */
 public class DelayedUpdater {
 
-    private static final Logger LOG = Logger.getLogger(DelayedUpdater.class
-        .getName());
+    /* Not static because log access is marshaled by synchronized call. */
+    private final Logger log = Logger.getLogger(DelayedUpdater.class.getName());
     private static final long DEFAULT_DELAY = 250L;
+    private static final int NOT_SCHEDULED = -1;
 
     private long delay;
-    private long nextMandatoryEvent = -1;
-    private static ScheduledExecutorService scheduledES;
+    private long nextMandatoryEvent = NOT_SCHEDULED;
+    private final ScheduledExecutorService executorService;
     private volatile DelayedTimerTask currentTask;
 
     /**
-     * Constructs a delayed execution. Creates own timer lazily
-     */
-    public DelayedUpdater() {
-        delay = DEFAULT_DELAY;
-    }
-
-    /**
-     * Constructs a delayed execution. Uses shared timer from Controller.
+     * Constructs a delayed execution in 250ms. Uses shared timer from Controller.
      * 
      * @param controller
      */
@@ -92,7 +84,7 @@ public class DelayedUpdater {
      *            the delay to use
      */
     public DelayedUpdater(Controller controller, long delay) {
-        scheduledES = controller.getThreadPool();
+        executorService = controller.getThreadPool();
         this.delay = delay;
     }
 
@@ -111,35 +103,32 @@ public class DelayedUpdater {
      * 
      * @param task
      */
-    public synchronized void schedule(final Runnable task) {
+    public synchronized void schedule(Runnable task) {
         if (currentTask != null) {
             currentTask.cancel();
             currentTask.canceled = true;
         }
         currentTask = new DelayedTimerTask(task);
-        if (scheduledES == null) {
-            scheduledES = new WrappedScheduledThreadPoolExecutor(1);
-        }
         try {
             long now = System.currentTimeMillis();
-            if (nextMandatoryEvent < 0) {
+            if (nextMandatoryEvent == NOT_SCHEDULED) {
                 nextMandatoryEvent = now + delay;
             }
             long delayUntilEvent = Math.max(nextMandatoryEvent - now, 0);
-            scheduledES.schedule(currentTask, delayUntilEvent,
+            executorService.schedule(currentTask, delayUntilEvent,
                 TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            LOG.log(Level.FINER, "Unable to schedule task to timer: " + e, e);
+            log.log(Level.FINER, "Unable to schedule task to timer: " + e, e);
         }
     }
 
-    private final class DelayedTimerTask extends TimerTask {
+    private class DelayedTimerTask extends TimerTask {
         private final Runnable task;
         private volatile boolean canceled;
 
         private DelayedTimerTask(Runnable task) {
             this.task = task;
-            this.canceled = false;
+            canceled = false;
         }
 
         @Override
@@ -147,7 +136,7 @@ public class DelayedUpdater {
             // Ready for new tasks
             synchronized (DelayedUpdater.this) {
                 currentTask = null;
-                nextMandatoryEvent = -1;
+                nextMandatoryEvent = NOT_SCHEDULED;
                 if (canceled) {
                     return;
                 }
@@ -160,7 +149,7 @@ public class DelayedUpdater {
                     try {
                         task.run();
                     } catch (Exception e) {
-                        LOG.log(Level.SEVERE,
+                        log.log(Level.SEVERE,
                             "Exception while executing delayed task: " + e, e);
                     }
                 }

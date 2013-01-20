@@ -4,20 +4,20 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import junit.framework.TestCase;
+import de.dal33t.powerfolder.test.ControllerTest;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 
-public class DelayedUpdaterTest extends TestCase {
+public class DelayedUpdaterTest extends ControllerTest {
     private DelayedUpdater updater;
     private List<Date> updates;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        updater = new DelayedUpdater();
+        updater = new DelayedUpdater(getController());
         updater.setDelay(1000);
         updates = new CopyOnWriteArrayList<Date>();
     }
@@ -52,7 +52,7 @@ public class DelayedUpdaterTest extends TestCase {
             - updates.get(0).getTime();
         assertTrue("Updates took " + took + "ms", took >= updater.getDelay());
         assertTrue("Updates took " + took
-            + "ms, should not really take longer than single", took <= 1100);
+                + "ms, should not really take longer than single", took <= 1100);
         assertTrue("Should not have passed more that 100ms after last event",
             sinceLastEvent < 100);
     }
@@ -73,9 +73,8 @@ public class DelayedUpdaterTest extends TestCase {
                 return "Got only " + updates.size() + " updates";
             }
         });
-        assertTrue("Got wrong number of updates: " + updates.size(), updates
-            .size() >= 10
-            && updates.size() <= 12);
+        assertTrue("Got wrong number of updates: " + updates.size(),
+                updates.size() >= 10 && updates.size() <= 12);
     }
 
     private class Update implements Runnable {
