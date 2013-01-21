@@ -317,8 +317,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         permissionsCombo = new JComboBox(permissionsComboModel);
         permissionsComboModel.addElement(FolderPermission.readWrite(folder).getName());
         permissionsComboModel.addElement(FolderPermission.read(folder).getName());
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
-            && ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController()))
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController()))
         {
             permissionsComboModel.addElement(FolderPermission.admin(folder).getName());
         }
