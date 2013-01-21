@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -148,11 +149,16 @@ public interface SecurityService {
 
     /**
      * @param foInfo
-     * @param nodeInfos
-     * @return the permissions of the nodes on the given folder.
+     * @return the permissions on the folder.
      */
     Map<AccountInfo, FolderPermission> getFolderPermissions(FolderInfo foInfo);
 
+    /**
+     * @param foInfo
+     * @return All permissions to an account and group on the folder.
+     */
+    Map<Serializable, FolderPermission> getAllFolderPermissions(FolderInfo foInfo);
+    
     /**
      * Tries to obtain a permission on the given folder for the logged in
      * account.

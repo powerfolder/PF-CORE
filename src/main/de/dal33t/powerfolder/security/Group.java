@@ -39,6 +39,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -164,6 +165,10 @@ public class Group implements Serializable {
         name = newName;
     }
 
+    public String getDisplayName() {
+        return name;
+    }
+    
     public String getNotes() {
         return notes;
     }
@@ -172,6 +177,10 @@ public class Group implements Serializable {
         notes = newNotes;
     }
 
+    public GroupInfo createInfo() {
+        return new GroupInfo(oid, name);
+    }
+    
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Group)) {
             return false;
@@ -184,6 +193,14 @@ public class Group implements Serializable {
         return (this.oid.equals(((Group)obj).oid));
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((oid == null) ? 0 : oid.hashCode());
+        return result;
+    }
+    
     synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
             Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(

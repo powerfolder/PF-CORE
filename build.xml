@@ -349,7 +349,7 @@ For creation of the installer:
 				<exclude name="${distribution.name}.app/Contents/MacOS/**/*" />
 			</fileset>
 		</tar>
-		<delete file="${dist.dir}/${distribution.name}.app"/>
+		<delete file="${dist.dir}/${jar.name}" />
 	</target>
 	
 	<target name="dist-client" description="Builds all client distribution files" depends="jarbundler, installer"/>
