@@ -1367,7 +1367,6 @@ public class UIController extends PFComponent {
 
         // Delay updating the actual menu so we don't spam the UI with multiple updates.
         recentlyChangedUpdater.schedule(new Runnable() {
-            @Override
             public void run() {
 
                 // Update menu.
