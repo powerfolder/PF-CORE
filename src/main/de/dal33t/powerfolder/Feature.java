@@ -48,11 +48,6 @@ public enum Feature {
      * If the nodes of a server clusters should automatically connect.
      */
     CLUSTER_NODES_CONNECT,
-    
-    /**
-     * If cluster features are available.
-     */
-    CLUSTER(false),
 
     /**
      * If disabled all peers will be detected as on LAN.
