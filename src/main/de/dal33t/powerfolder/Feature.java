@@ -130,6 +130,8 @@ public enum Feature {
      * #2726 - disable manual sync check box for now.
      */
     MANUAL_SYNC_CB(false),
+    
+    SHOW_GROUPS(false),
 
     SYSTRAY_ALL_FOLDERS(false);
 
