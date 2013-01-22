@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.Group;
 import de.dal33t.powerfolder.util.db.GenericDAO;
 
 /**
@@ -15,5 +16,5 @@ public interface GroupDAO extends GenericDAO<Group> {
 
     List<Group> getGroups();
 
-    Collection<Group> findWithFolderPermission(Account account, FolderInfo folderInfo);
+    Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
 }
