@@ -22,15 +22,12 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -57,9 +54,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox udtConnectionBox;
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
-    private JSlider pausedModeThrottle;
-    private boolean needsRestart = false;
-    private JLabel pausedThrottleLabel;
+    private boolean needsRestart;
     private JButton httpProxyButton;
     private ServerSelectorPanel severSelector;
     private JCheckBox useOnlineStorageCB;
@@ -121,39 +116,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.use.udt.connections"));
         udtConnectionBox.setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
             .getValueBoolean(getController()));
-
-        pausedThrottleLabel = new JLabel(
-            Translation.getTranslation("preferences.dialog.paused_throttle"));
-        pausedThrottleLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.paused_throttle.tooltip"));
-
-        pausedModeThrottle = new JSlider();
-        pausedModeThrottle.setMinimum(10);
-        pausedModeThrottle.setMajorTickSpacing(25);
-        pausedModeThrottle.setMinorTickSpacing(5);
-
-        pausedModeThrottle.setPaintTicks(true);
-        pausedModeThrottle.setPaintLabels(true);
-        Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
-        for (int i = 0; i <= 100; i += pausedModeThrottle.getMajorTickSpacing())
-        {
-            smtT.put(i, new JLabel(Integer.toString(i) + '%'));
-        }
-        smtT.put(pausedModeThrottle.getMinimum(),
-            new JLabel(pausedModeThrottle.getMinimum() + "%"));
-        smtT.put(pausedModeThrottle.getMaximum(),
-            new JLabel(pausedModeThrottle.getMaximum() + "%"));
-        pausedModeThrottle.setLabelTable(smtT);
-
-        int smt = 25;
-        try {
-            smt = Math.min(100, Math.max(10, Integer
-                .parseInt(ConfigurationEntry.UPLOADLIMIT_PAUSEDMODE_THROTTLE
-                    .getValue(getController()))));
-        } catch (NumberFormatException e) {
-            logWarning("pausedmodethrottle: " + e);
-        }
-        pausedModeThrottle.setValue(smt);
 
         HttpProxyAction action  = new HttpProxyAction(getController());
         httpProxyButton = new JButton(action);
@@ -270,11 +232,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(pausedThrottleLabel,
-                cc.xywh(1, row, 1, 1, "default, top"));
-            builder.add(pausedModeThrottle, cc.xy(3, row));
-
-            row += 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.server"),
                 cc.xy(1, row));
@@ -322,13 +279,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         tm.setUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
         tm.setDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
-        try {
-            ConfigurationEntry.UPLOADLIMIT_PAUSEDMODE_THROTTLE.setValue(
-                getController(),
-                Integer.toString(pausedModeThrottle.getValue()));
-        } catch (Exception e) {
-            logSevere("Unable to set paused mode throttle: " + e);
-        }
 
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
             getController(), String.valueOf(relayedConnectionBox.isSelected()));

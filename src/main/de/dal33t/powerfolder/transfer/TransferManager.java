@@ -1040,33 +1040,15 @@ public class TransferManager extends PFComponent {
      * upload limits, paused mode
      */
     public void updateSpeedLimits() {
-        int throttle = 100;
-
-        if (getController().isPaused()) {
-            try {
-                throttle = Integer
-                    .parseInt(ConfigurationEntry.UPLOADLIMIT_PAUSEDMODE_THROTTLE
-                        .getValue(getController()));
-                if (throttle < 10) {
-                    throttle = 10;
-                } else if (throttle > 100) {
-                    throttle = 100;
-                }
-            } catch (NumberFormatException nfe) {
-                throttle = 100;
-                // logFine(nfe);
-            }
-        }
-
         // Any setting that is "unlimited" will stay unlimited!
         bandwidthProvider.setLimitBPS(sharedLANOutputHandler,
-            getUploadCPSForLAN() * throttle / 100);
+            getUploadCPSForLAN());
         bandwidthProvider.setLimitBPS(sharedWANOutputHandler,
-            getUploadCPSForWAN() * throttle / 100);
+            getUploadCPSForWAN());
         bandwidthProvider.setLimitBPS(sharedLANInputHandler,
-            getDownloadCPSForLAN() * throttle / 100);
+            getDownloadCPSForLAN());
         bandwidthProvider.setLimitBPS(sharedWANInputHandler,
-            getDownloadCPSForWAN() * throttle / 100);
+            getDownloadCPSForWAN());
     }
 
     /**
