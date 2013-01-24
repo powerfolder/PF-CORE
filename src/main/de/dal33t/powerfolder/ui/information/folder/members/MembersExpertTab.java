@@ -70,10 +70,9 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
     private MembersExpertTableModel model;
     private JScrollPane scrollPane;
     private BaseAction inviteAction;
-    private Action openChatAction;
     private Action reconnectAction;
     private JButton refreshButton;
-    private MembersExptertTable membersTable;
+    private MembersExpertTable membersTable;
     private Member selectedMember;
     //private JPopupMenu fileMenu;
     private JProgressBar refreshBar;
@@ -111,7 +110,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
 
     public void initialize() {
         inviteAction = new MyInviteAction();
-        openChatAction = new MyOpenChatAction();
         reconnectAction = new MyReconnectAction();
         Action refreshAction = model.getRefreshAction();
         refreshButton = new JButton(refreshAction);
@@ -123,7 +121,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         defaultPermissionBox = createdEditComboBox(model
             .getDefaultPermissionsListModel());
 
-        membersTable = new MembersExptertTable(model);
+        membersTable = new MembersExpertTable(model);
         membersTable.getSelectionModel().setSelectionMode(
             ListSelectionModel.SINGLE_SELECTION);
         membersTable.getSelectionModel().addListSelectionListener(
@@ -162,15 +160,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
     }
 
     /**
-     * Builds the popup menus
-     */
-    //private void buildPopupMenus() {
-        //fileMenu = new JPopupMenu();
-        //fileMenu.add(openChatAction);
-    //}
-
-    /**
-     * Bulds the ui component.
+     * Builds the ui component.
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
@@ -180,7 +170,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         builder.add(createToolBar(), cc.xy(2, 2));
         builder.addSeparator(null, cc.xyw(1, 4, 3));
         builder.add(scrollPane, cc.xy(2, 6));
-        //buildPopupMenus();
 
         uiComponent = builder.getPanel();
     }
@@ -190,7 +179,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
      */
     private JPanel createToolBar() {
         JButton inviteButton = new JButton(inviteAction);
-        //JButton openChatButton = new JButton(openChatAction);
         JButton reconnectButton = new JButton(reconnectAction);
 
         FormLayout layout = new FormLayout("0:grow", "pref");
@@ -208,20 +196,11 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             bar.addRelatedGap();
-            //bar.addGridded(openChatButton);
-            //bar.addRelatedGap();
             bar.addGridded(reconnectButton);
             bar.addRelatedGap();
             bar.addGridded(builder.getPanel());
         }
         JPanel buttonBarPanel = bar.getPanel();
-
-        //refreshButton.setMinimumSize(openChatButton.getMinimumSize());
-        //refreshButton.setMaximumSize(openChatButton.getMaximumSize());
-        //refreshButton.setPreferredSize(openChatButton.getPreferredSize());
-        //refreshBar.setMinimumSize(openChatButton.getMinimumSize());
-        //refreshBar.setMaximumSize(openChatButton.getMaximumSize());
-        //refreshBar.setPreferredSize(openChatButton.getPreferredSize());
 
         layout = new FormLayout(
             "pref, 0:grow, pref, 3dlu, pref, 3dlu, max(60dlu;pref)", "pref");
@@ -247,15 +226,12 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
 
         if (selectedMember != null) {
             if (selectedMember.equals(getController().getMySelf())) {
-                openChatAction.setEnabled(false);
                 reconnectAction.setEnabled(false);
             } else {
-                openChatAction.setEnabled(true);
                 reconnectAction.setEnabled(true);
             }
         } else {
             selectedMember = null;
-            openChatAction.setEnabled(false);
             reconnectAction.setEnabled(false);
         }
     }
@@ -284,19 +260,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
     // /////////////////
     // Inner Classes //
     // /////////////////
-
-    private class MyOpenChatAction extends BaseAction {
-
-        private MyOpenChatAction() {
-            super("action_open_chat", MembersExpertTab.this.getController());
-            setIcon(null);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            getController().getUIController()
-                .openChat(selectedMember.getInfo());
-        }
-    }
 
     /**
      * Class to detect table selection changes.

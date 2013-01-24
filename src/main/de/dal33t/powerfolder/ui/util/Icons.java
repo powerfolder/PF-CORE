@@ -114,8 +114,6 @@ public class Icons {
     public static final String UNKNOWN_FILE_GRAY = "unknown_file_gray";
     public static final String UNKNOWN_FILE_RED = "unknown_file_red";
 
-    public static final String CHAT = "chat.icon";
-    public static final String CHAT_PENDING = "chat_pending.icon";
     public static final String SETTINGS = "settings.icon";
     public static final String PROBLEMS = "problems.icon";
     public static final String INFORMATION = "information.icon";

@@ -59,7 +59,6 @@ import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -81,11 +80,9 @@ public class ExpandableComputerView extends PFUIComponent implements
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
     private JLabel infoLabel;
-//    private JButtonMini chatButton;
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
     private JButtonMini pictoLabel;
-//    private MyOpenChatAction chatAction;
     private JPanel upperPanel;
     private MyAddRemoveFriendAction addRemoveFriendAction;
     private MyReconnectAction reconnectAction;
@@ -178,7 +175,6 @@ public class ExpandableComputerView extends PFUIComponent implements
         initComponent();
 
         // Build ui
-        // icon name space chat
         FormLayout upperLayout = new FormLayout(
             "pref, 3dlu, pref, pref:grow, 3dlu, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
@@ -186,7 +182,6 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
         upperBuilder.add(infoLabel, cc.xy(3, 1));
-        // upperBuilder.add(chatButton, cc.xy(6, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -197,7 +192,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         CursorUtils.setHandCursor(upperPanel);
         pictoLabel.addActionListener(new PrimaryButtonActionListener());
 
-        // Build lower detials with line border.
+        // Build lower details with line border.
         // last, qual rmve recon
         FormLayout lowerLayout = new FormLayout(
             "pref, pref:grow, 3dlu, pref, 2dlu, pref, 2dlu, pref",
@@ -209,7 +204,6 @@ public class ExpandableComputerView extends PFUIComponent implements
         lowerBuilder.addSeparator(null, cc.xyw(1, 1, 8));
 
         lowerBuilder.add(usernameLabel, cc.xy(1, 3));
-        //lowerBuilder.add(chatButton, cc.xywh(4, 3, 1, 3));
         lowerBuilder.add(addRemoveButton, cc.xywh(6, 3, 1, 3));
         lowerBuilder.add(reconnectButton, cc.xywh(8, 3, 1, 3));
         lowerBuilder.add(lastSeenLabel, cc.xy(1, 5));
@@ -240,7 +234,6 @@ public class ExpandableComputerView extends PFUIComponent implements
         borderBuilder.add(panel, cc.xy(2, 3));
         borderPanel = borderBuilder.getPanel();
         borderPanel.setOpaque(false);
-        // borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one.
         FormLayout outerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
@@ -271,10 +264,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         reconnectButton = new JButtonMini(reconnectAction);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
         addRemoveButton = new JButtonMini(addRemoveFriendAction);
-        //chatAction = new MyOpenChatAction(getController());
-//        chatButton = new JButtonMini(chatAction);
         pictoLabel = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
-        //pictoLabel.addActionListener(chatAction);
         updateDetails();
         configureAddRemoveButton();
         registerListeners();
@@ -434,11 +424,8 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         ExpandableComputerView that = (ExpandableComputerView) obj;
 
-        if (!node.equals(that.node)) {
-            return false;
-        }
+        return node.equals(that.node);
 
-        return true;
     }
 
     public int hashCode() {
@@ -466,7 +453,6 @@ public class ExpandableComputerView extends PFUIComponent implements
     public JPopupMenu createPopupMenu() {
         if (contextMenu == null) {
             contextMenu = new JPopupMenu();
-            //contextMenu.add(chatAction);
             contextMenu.add(addRemoveFriendAction);
             contextMenu.add(reconnectAction);
         }
@@ -594,17 +580,6 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         public boolean fireInEventDispatchThread() {
             return true;
-        }
-    }
-
-    private class MyOpenChatAction extends BaseAction {
-
-        private MyOpenChatAction(Controller controller) {
-            super("action_open_chat", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openChat(getNode().getInfo());
         }
     }
 

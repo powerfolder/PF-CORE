@@ -104,11 +104,6 @@ public class Constants {
     public static final int CONTROLLER_THREADS_IN_THREADPOOL = 5;
 
     /**
-     * The maximum number of lines in a chat.
-     */
-    public static final int MAX_CHAT_LINES = 500;
-
-    /**
      * The number of pixels to stay away from the screen border by default.
      */
     public static final int UI_DEFAULT_SCREEN_BORDER = 50;

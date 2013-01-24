@@ -44,18 +44,14 @@ public abstract class NotificationHandlerBase extends PFComponent {
 
     private final JWindow dialog;
     private final Slider slider;
-    private final boolean chat;
 
     /**
      * Constructor
      *
      * @param controller
-     * @param chat different checkboxes get displayed depending on
-     * whether it is chat or not.
      */
-    protected NotificationHandlerBase(Controller controller, boolean chat) {
+    protected NotificationHandlerBase(Controller controller) {
         super(controller);
-        this.chat = chat;
         dialog = new JWindow();
         slider = new Slider((JComponent) dialog.getContentPane(),
             PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
@@ -71,7 +67,7 @@ public abstract class NotificationHandlerBase extends PFComponent {
         Reject.ifNull(messageText, "MessageText must not be null");
         NotificationForm notificationForm = new NotificationForm(getController(),
                 title, messageText, acceptOptionLabel,
-                acceptAction, cancelOptionLabel, cancelAction, chat);
+                acceptAction, cancelOptionLabel, cancelAction);
         dialog.getContentPane().add(notificationForm, BorderLayout.CENTER);
         dialog.pack();
         slider.show();

@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 /**
  * Table to display members of a folder.
  */
-public class MembersExptertTable extends JTable {
+public class MembersExpertTable extends JTable {
 
     private DefaultCellEditor cellEditor;
 
@@ -59,7 +59,7 @@ public class MembersExptertTable extends JTable {
      * 
      * @param model
      */
-    public MembersExptertTable(MembersExpertTableModel model) {
+    public MembersExpertTable(MembersExpertTableModel model) {
         super(model);
 
         setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED)

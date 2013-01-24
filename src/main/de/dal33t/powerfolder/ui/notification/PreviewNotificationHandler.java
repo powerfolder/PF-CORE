@@ -35,7 +35,7 @@ public class PreviewNotificationHandler extends NotificationHandlerBase {
      */
     public PreviewNotificationHandler(Controller controller,
                                    String title, String messageText) {
-        super(controller, false);
+        super(controller);
         setTitle(title);
         setMessageText(messageText);
     }

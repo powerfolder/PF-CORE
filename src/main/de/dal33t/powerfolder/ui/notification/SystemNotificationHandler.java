@@ -43,7 +43,7 @@ public class SystemNotificationHandler extends NotificationHandlerBase {
      */
     public SystemNotificationHandler(Controller controller,
                                      final Notice notice) {
-        super(controller, false);
+        super(controller);
         Reject.ifNull(notice, "Notice must not be null");
         setTitle(notice.getTitle());
         setMessageText(notice.getSummary());

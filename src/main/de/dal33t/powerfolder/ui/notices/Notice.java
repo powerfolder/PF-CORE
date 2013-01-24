@@ -27,8 +27,8 @@ import java.io.Serializable;
 
 /**
  * This interface is the generic ui Notice that is used to either show a
- * notification popup message to the user and/or add to the actionmodel Notices
- * for action by the user. Notices are not used with Chat notifications.
+ * notification popup message to the user and/or add to the action model Notices
+ * for action by the user.
  */
 public interface Notice extends Serializable {
 

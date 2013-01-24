@@ -67,15 +67,6 @@ public enum PreferencesEntry {
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
 
     /**
-     * Whether to show chat notifications when minimized.
-     */
-    SHOW_CHAT_NOTIFICATIONS("show.chat.notifications", true) {
-        protected Object getDefaultValue(Controller controller) {
-            return PreferencesEntry.EXPERT_MODE.getValueBoolean(controller);
-        }
-    },
-
-    /**
      * Whether to show system notifications when minimized.
      */
     SHOW_SYSTEM_NOTIFICATIONS("show.system.notifications", true) {

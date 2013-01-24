@@ -85,11 +85,9 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.skin.Skin;
-import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PauseDialog;
@@ -106,7 +104,6 @@ import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
-import de.dal33t.powerfolder.ui.notification.ChatNotificationHandler;
 import de.dal33t.powerfolder.ui.notification.PreviewNotificationHandler;
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
@@ -134,7 +131,6 @@ public class UIController extends PFComponent {
 
     public static final int MAIN_FRAME_ID = 0;
     public static final int INFO_FRAME_ID = 1;
-    public static final int CHAT_FRAME_ID = 2;
     public static final int WIZARD_DIALOG_ID = 3;
 
     public static final int MAX_RECENTLY_CHANGED_FILES = 20;
@@ -158,7 +154,6 @@ public class UIController extends PFComponent {
     private MainFrame mainFrame;
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
-    private ChatFrame chatFrame;
     private WeakReference<JDialog> wizardDialogReference;
 
     // List of pending jobs, execute when ui is opened
@@ -235,7 +230,6 @@ public class UIController extends PFComponent {
         }
 
         informationFrame = new InformationFrame(getController());
-        chatFrame = new ChatFrame(getController());
         if (Feature.SYSTEM_MONITOR.isEnabled()) {
             systemMonitorFrame = new SystemMonitorFrame(getController());
         }
@@ -324,8 +318,6 @@ public class UIController extends PFComponent {
         } catch (InvocationTargetException e) {
             logSevere("InvocationTargetException", e);
         }
-
-        chatFrame.initializeChatModelListener(applicationModel.getChatModel());
 
         started = true;
 
@@ -920,24 +912,6 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
-    /**
-     * Opens the Files information for a folder.
-     * 
-     * @param memberInfo
-     *            info of the folder to display files information for.
-     */
-    public void openChat(MemberInfo memberInfo) {
-        if (memberInfo != null) {
-            chatFrame.displayChat(memberInfo, true);
-        }
-        JFrame frame = chatFrame.getUIComponent();
-        if (frame.getExtendedState() == Frame.ICONIFIED) {
-            frame.setExtendedState(Frame.NORMAL);
-        }
-        UIUtil.putOnScreen(chatFrame.getUIComponent());
-        chatFrame.getUIComponent().setVisible(true);
-    }
-
     public void openTransfersInformation() {
         informationFrame.displayTransfers();
         displayInformationWindow();
@@ -958,7 +932,6 @@ public class UIController extends PFComponent {
      */
     public void hideChildPanels() {
         informationFrame.getUIComponent().setVisible(false);
-        chatFrame.getUIComponent().setVisible(false);
         if (systemMonitorFrame != null) {
             systemMonitorFrame.getUIComponent().setVisible(false);
         }
@@ -983,7 +956,7 @@ public class UIController extends PFComponent {
      * window.
      * <p>
      * This returns most recently active PowerFolder frame. Possibly the
-     * InformationFrame, ChatFrame or (default) MainFrame. Used by dialogs, so
+     * InformationFrame or (default) MainFrame. Used by dialogs, so
      * focus does not always jump to the wrong (Main) frame.
      * <P>
      * 
@@ -996,11 +969,6 @@ public class UIController extends PFComponent {
             JFrame infoComponent = informationFrame.getUIComponent();
             if (infoComponent.isVisible()) {
                 return infoComponent;
-            }
-        } else if (f == CHAT_FRAME_ID) {
-            JFrame chatComponent = chatFrame.getUIComponent();
-            if (chatComponent.isVisible()) {
-                return chatComponent;
             }
         } else if (f == WIZARD_DIALOG_ID) {
             if (wizardDialogReference != null) {
@@ -1023,10 +991,6 @@ public class UIController extends PFComponent {
         wizardDialogReference = new WeakReference<JDialog>(wizardDialog);
     }
 
-    public boolean chatFrameVisible() {
-        return chatFrame.getUIComponent().isVisible();
-    }
-
     /**
      * Shuts the ui down
      */
@@ -1036,10 +1000,6 @@ public class UIController extends PFComponent {
         if (started) {
             informationFrame.getUIComponent().setVisible(false);
             informationFrame.getUIComponent().dispose();
-
-            chatFrame.storeValues();
-            chatFrame.getUIComponent().setVisible(false);
-            chatFrame.getUIComponent().dispose();
 
             if (systemMonitorFrame != null) {
                 systemMonitorFrame.storeValues();
@@ -1150,28 +1110,6 @@ public class UIController extends PFComponent {
         PreviewNotificationHandler notificationHandler = new PreviewNotificationHandler(
             getController(), title, message);
         notificationHandler.show();
-    }
-
-    /**
-     * Show a chat message popup notification.
-     * 
-     * @param title
-     *            message title
-     * @param message
-     *            the message to popup
-     */
-    public void showChatNotification(MemberInfo memberInfo, String title,
-        String message)
-    {
-        if (started && !getController().isShuttingDown()) {
-            if ((Boolean) applicationModel.getChatNotificationsValueModel()
-                .getValue())
-            {
-                ChatNotificationHandler notificationHandler = new ChatNotificationHandler(
-                    getController(), memberInfo, title, message);
-                notificationHandler.show();
-            }
-        }
     }
 
     private void handleFolderAutoCreate(FolderAutoCreateEvent event) {

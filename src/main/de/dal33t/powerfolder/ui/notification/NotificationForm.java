@@ -42,7 +42,6 @@ import de.dal33t.powerfolder.Controller;
 public class NotificationForm extends JPanel {
 
     private final Controller controller;
-    private JCheckBox neverShowChatNotificationCB;
     private JCheckBox neverShowSystemNotificationCB;
     private final String messageText;
 
@@ -57,19 +56,17 @@ public class NotificationForm extends JPanel {
      * @param acceptAction
      * @param cancelOptionLabel
      * @param cancelAction
-     * @param chat
      */
     NotificationForm(Controller controller, String titleText, String messageText,
                      String acceptOptionLabel, Action acceptAction,
-                     String cancelOptionLabel, Action cancelAction,
-                     boolean chat) {
+                     String cancelOptionLabel, Action cancelAction) {
         this.controller = controller;
         // Trim message to 200 chars max.
         this.messageText = messageText.length() > 200 ?
                 messageText.substring(0, 200) + "..." : messageText;
         setLayout(new BorderLayout());
         JPanel panel = createPanel(titleText, acceptOptionLabel,
-                acceptAction, cancelOptionLabel, cancelAction, chat);
+                acceptAction, cancelOptionLabel, cancelAction);
         add(panel, BorderLayout.CENTER);
         setBorder(new LineBorder(Color.lightGray, 1));
     }
@@ -79,8 +76,7 @@ public class NotificationForm extends JPanel {
      */
     private JPanel createPanel(String titleText,
                                String acceptOptionLabel, Action acceptAction,
-                               String cancelOptionLabel, Action cancelAction,
-                               boolean chat) {
+                               String cancelOptionLabel, Action cancelAction) {
 
         JPanel panel = new JPanel();
         panel.setBackground(Color.WHITE);
@@ -132,18 +128,10 @@ public class NotificationForm extends JPanel {
             // Separator
             panel.add(new JSeparator(), cc.xyw(2, 6, internalWidth));
 
-            // Check boxes
-            if (chat) {
-                neverShowChatNotificationCB = new JCheckBox(Translation.getTranslation(
-                        "notification_form.never_show_chat_notifications"));
-                neverShowChatNotificationCB.addActionListener(new MyActionListener());
-                panel.add(neverShowChatNotificationCB, cc.xyw(2, 8, internalWidth));
-            } else {
-                neverShowSystemNotificationCB = new JCheckBox(Translation.getTranslation(
-                        "notification_form.never_show_system_notifications"));
-                neverShowSystemNotificationCB.addActionListener(new MyActionListener());
-                panel.add(neverShowSystemNotificationCB, cc.xyw(2, 8, internalWidth));
-            }
+            neverShowSystemNotificationCB = new JCheckBox(Translation.getTranslation(
+                    "notification_form.never_show_system_notifications"));
+            neverShowSystemNotificationCB.addActionListener(new MyActionListener());
+            panel.add(neverShowSystemNotificationCB, cc.xyw(2, 8, internalWidth));
 
             // Buttons
             if (acceptOptionLabel != null && cancelOptionLabel != null) {
@@ -205,11 +193,7 @@ public class NotificationForm extends JPanel {
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == neverShowChatNotificationCB) {
-                controller.getUIController().getApplicationModel()
-                        .getChatNotificationsValueModel().setValue(
-                        !neverShowChatNotificationCB.isSelected());
-            } else if (e.getSource() == neverShowSystemNotificationCB) {
+            if (e.getSource() == neverShowSystemNotificationCB) {
                 controller.getUIController().getApplicationModel()
                         .getSystemNotificationsValueModel().setValue(
                         !neverShowSystemNotificationCB.isSelected());

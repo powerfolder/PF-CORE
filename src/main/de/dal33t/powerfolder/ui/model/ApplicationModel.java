@@ -42,10 +42,6 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
-import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
-import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
-import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
@@ -64,12 +60,10 @@ import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.*;
 public class ApplicationModel extends PFUIComponent {
 
     private ActionModel actionModel;
-    private ChatModel chatModel;
     private FolderRepositoryModel folderRepositoryModel;
     private NodeManagerModel nodeManagerModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
-    private ValueModel chatNotificationsValueModel;
     private ValueModel systemNotificationsValueModel;
     private LicenseModel licenseModel;
     private NoticesModel noticesModel;
@@ -88,8 +82,6 @@ public class ApplicationModel extends PFUIComponent {
     public ApplicationModel(final Controller controller) {
         super(controller);
         actionModel = new ActionModel(getController());
-        chatModel = new ChatModel(getController());
-        chatModel.addChatModelListener(new ChatNotificationManager());
         folderRepositoryModel = new FolderRepositoryModel(getController());
         nodeManagerModel = new NodeManagerModel(getController());
         transferManagerModel = new TransferManagerModel(getController()
@@ -97,17 +89,6 @@ public class ApplicationModel extends PFUIComponent {
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
 
-        chatNotificationsValueModel = new ValueHolder(
-            PreferencesEntry.SHOW_CHAT_NOTIFICATIONS
-                .getValueBoolean(controller));
-        chatNotificationsValueModel
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    PreferencesEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
-                        controller, (Boolean) evt.getNewValue());
-                    controller.saveConfig();
-                }
-            });
         systemNotificationsValueModel = new ValueHolder(
             PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
                 .getValueBoolean(controller));
@@ -201,10 +182,6 @@ public class ApplicationModel extends PFUIComponent {
         return actionModel;
     }
 
-    public ChatModel getChatModel() {
-        return chatModel;
-    }
-
     public FolderRepositoryModel getFolderRepositoryModel() {
         return folderRepositoryModel;
     }
@@ -221,38 +198,12 @@ public class ApplicationModel extends PFUIComponent {
         return serverClientModel;
     }
 
-    public ValueModel getChatNotificationsValueModel() {
-        return chatNotificationsValueModel;
-    }
-
     public ValueModel getSystemNotificationsValueModel() {
         return systemNotificationsValueModel;
     }
 
     public LicenseModel getLicenseModel() {
         return licenseModel;
-    }
-
-    private class ChatNotificationManager implements ChatModelListener {
-
-        public void chatChanged(ChatModelEvent event) {
-            if (event.isStatusFlag() || event.isCreatedLocally()) {
-                // Ignore status updates and own messages
-                return;
-            }
-            getController().getUIController().showChatNotification(
-                event.getMemberInfo(),
-                Translation.getTranslation("chat.notification.title_long",
-                    event.getMemberInfo().getNick()), event.getMessage());
-        }
-
-        public void chatAdvice(ChatAdviceEvent event) {
-            // Don't care
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
     }
 
     private class MyServerClientListener implements ServerClientListener {

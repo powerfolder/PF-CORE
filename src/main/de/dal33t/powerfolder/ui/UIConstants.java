@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: ChatFrame.java 5457 2008-10-17 14:25:41Z harry $
+ * $Id: UIConstants.java 5457 2008-10-17 14:25:41Z harry $
  */
 package de.dal33t.powerfolder.ui;
 
