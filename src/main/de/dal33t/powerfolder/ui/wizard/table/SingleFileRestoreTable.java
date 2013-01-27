@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.wizard.data.SingleFileRestoreItem;
 import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.*;
@@ -47,8 +48,7 @@ public class SingleFileRestoreTable extends JTable {
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
         // Associate a header renderer with all columns.
-        SortedTableHeaderRenderer.associateHeaderRenderer(
-                model, getColumnModel(), 0, true);
+        SortedTableHeaderRenderer.associateHeaderRenderer(model, getColumnModel(), 0, true);
     }
 
     /**
@@ -61,11 +61,13 @@ public class SingleFileRestoreTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(140);
+        column.setPreferredWidth(100);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(130);
+        column.setPreferredWidth(100);
         column = getColumn(getColumnName(2));
-        column.setPreferredWidth(130);
+        column.setPreferredWidth(100);
+        column = getColumn(getColumnName(3));
+        column.setPreferredWidth(100);
     }
 
     public void setSelectedFileInfo(FileInfo selectedFileInfo) {
@@ -81,12 +83,12 @@ public class SingleFileRestoreTable extends JTable {
         }
     }
 
-    public FileInfo getSelectedFileInfo() {
+    public SingleFileRestoreItem getSelectedRestoreItem() {
         int row = getSelectedRow();
         if (row < 0) {
             return null;
         }
-        return (FileInfo) getValueAt(row, 0);
+        return (SingleFileRestoreItem) getValueAt(row, 0);
     }
 
     /**
@@ -99,15 +101,12 @@ public class SingleFileRestoreTable extends JTable {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 JTableHeader tableHeader = (JTableHeader) e.getSource();
                 int columnNo = tableHeader.columnAtPoint(e.getPoint());
-                TableColumn column = tableHeader.getColumnModel().getColumn(
-                    columnNo);
+                TableColumn column = tableHeader.getColumnModel().getColumn(columnNo);
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
                 if (model instanceof SingleFileRestoreTableModel) {
-                    SingleFileRestoreTableModel restoreFilesTableModel
-                            = (SingleFileRestoreTableModel) model;
-                    boolean freshSorted = restoreFilesTableModel.sortBy(
-                            modelColumnNo);
+                    SingleFileRestoreTableModel restoreFilesTableModel = (SingleFileRestoreTableModel) model;
+                    boolean freshSorted = restoreFilesTableModel.sortBy(modelColumnNo);
                     if (!freshSorted) {
                         // reverse list
                         restoreFilesTableModel.reverseList();
@@ -121,20 +120,24 @@ public class SingleFileRestoreTable extends JTable {
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
-            FileInfo fileInfo = (FileInfo) value;
+            SingleFileRestoreItem restoreItem = (SingleFileRestoreItem) value;
             setIcon(null);
             String myValue = "";
             switch (column) {
                 case SingleFileRestoreTableModel.COL_MODIFIED_DATE: // modified date
-                    myValue = Format.formatDateShort(fileInfo.getModifiedDate());
+                    myValue = Format.formatDateShort(restoreItem.getFileInfo().getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
                 case SingleFileRestoreTableModel.COL_VERSION:  // version
-                    myValue = Format.formatLong(fileInfo.getVersion());
+                    myValue = Format.formatLong(restoreItem.getFileInfo().getVersion());
                     setHorizontalAlignment(RIGHT);
                     break;
                 case SingleFileRestoreTableModel.COL_SIZE:  // size
-                    myValue = Format.formatBytesShort(fileInfo.getSize());
+                    myValue = Format.formatBytesShort(restoreItem.getFileInfo().getSize());
+                    setHorizontalAlignment(RIGHT);
+                    break;
+                case SingleFileRestoreTableModel.COL_LOCAL:  // size
+                    myValue = Format.formatBoolean(restoreItem.isLocal());
                     setHorizontalAlignment(RIGHT);
                     break;
             }

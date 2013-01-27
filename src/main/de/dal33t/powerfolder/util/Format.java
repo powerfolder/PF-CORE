@@ -38,12 +38,12 @@ import java.util.Locale;
 public class Format extends PFComponent {
 
     private static final CanonicalDateFormat CANONICAL_DATE_FORMAT = new CanonicalDateFormat();
-    private static final ShortDateFormat SHORT_DATE_FORAMT = new ShortDateFormat();
-    private static final ShortTimeFormat SHORT_TIME_FORAMT = new ShortTimeFormat();
-    private static final LongTimeFormat LONG_TIME_FORAMT = new LongTimeFormat();
-    private static final DoubleNumberFormat DOUBLE_NUMBER_FORAMT = new DoubleNumberFormat();
-    private static final LongNumberFormat LONG_NUMBER_FORAMT = new LongNumberFormat();
-    private static final PercentNumberFormat PERCENT_NUMBER_FORAMT = new PercentNumberFormat();
+    private static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
+    private static final ShortTimeFormat SHORT_TIME_FORMAT = new ShortTimeFormat();
+    private static final LongTimeFormat LONG_TIME_FORMAT = new LongTimeFormat();
+    private static final DoubleNumberFormat DOUBLE_NUMBER_FORMAT = new DoubleNumberFormat();
+    private static final LongNumberFormat LONG_NUMBER_FORMAT = new LongNumberFormat();
+    private static final PercentNumberFormat PERCENT_NUMBER_FORMAT = new PercentNumberFormat();
 
     private Format() {
         // No instance
@@ -118,7 +118,7 @@ public class Format extends PFComponent {
         if (date == null) {
             return null;
         }
-        return LONG_TIME_FORAMT.get().format(date);
+        return LONG_TIME_FORMAT.get().format(date);
     }
 
     /**
@@ -131,7 +131,7 @@ public class Format extends PFComponent {
         if (date == null) {
             return null;
         }
-        return SHORT_TIME_FORAMT.get().format(date);
+        return SHORT_TIME_FORMAT.get().format(date);
     }
 
     /**
@@ -207,7 +207,7 @@ public class Format extends PFComponent {
         }
 
         // Otherwise use default format
-        return SHORT_DATE_FORAMT.get().format(date);
+        return SHORT_DATE_FORMAT.get().format(date);
     }
 
     /**
@@ -217,7 +217,7 @@ public class Format extends PFComponent {
      * @return
      */
     public static String formatDecimal(double n) {
-        return DOUBLE_NUMBER_FORAMT.get().format(n);
+        return DOUBLE_NUMBER_FORMAT.get().format(n);
     }
 
     /**
@@ -227,7 +227,7 @@ public class Format extends PFComponent {
      * @return
      */
     public static String formatLong(long n) {
-        return LONG_NUMBER_FORAMT.get().format(n);
+        return LONG_NUMBER_FORMAT.get().format(n);
     }
 
     /**
@@ -237,7 +237,17 @@ public class Format extends PFComponent {
      * @return
      */
     public static String formatPercent(double n) {
-        return PERCENT_NUMBER_FORAMT.get().format(n / 100.0);
+        return PERCENT_NUMBER_FORMAT.get().format(n / 100.0);
+    }
+
+    /**
+     * Formats boolean as 'Yes'/'No'
+     *
+     * @param n
+     * @return
+     */
+    public static String formatBoolean(boolean n) {
+        return n ? Translation.getTranslation("general.yes") : Translation.getTranslation("general.no");
     }
 
     /**

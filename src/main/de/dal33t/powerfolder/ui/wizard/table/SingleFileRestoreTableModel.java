@@ -21,16 +21,19 @@ package de.dal33t.powerfolder.ui.wizard.table;
 
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.wizard.data.SingleFileRestoreItem;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,13 +44,16 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
     private static final String[] COLUMNS = {
             Translation.getTranslation("single_file_restore_table_model.modified_date"),
             Translation.getTranslation("single_file_restore_table_model.version"),
-            Translation.getTranslation("single_file_restore_table_model.size")};
+            Translation.getTranslation("single_file_restore_table_model.size"),
+            Translation.getTranslation("single_file_restore_table_model.local")
+    };
 
     static final int COL_MODIFIED_DATE = 0;
     static final int COL_VERSION = 1;
     static final int COL_SIZE = 2;
+    static final int COL_LOCAL = 3;
 
-    private final List<FileInfo> fileInfos;
+    private final List<SingleFileRestoreItem> fileInfos;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
@@ -55,7 +61,7 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
 
     public SingleFileRestoreTableModel(Controller controller) {
         super(controller);
-        fileInfos = new ArrayList<FileInfo>();
+        fileInfos = new ArrayList<SingleFileRestoreItem>();
         listeners = new CopyOnWriteArrayList<TableModelListener>();
     }
 
@@ -107,11 +113,13 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
         sortColumn = columnIndex;
         switch (columnIndex) {
             case COL_VERSION:
-                return sortMe(FileInfoComparator.BY_VERSION);
+                return sortMe(SingleFileRestoreItemComparator.BY_VERSION);
             case COL_SIZE:
-                return sortMe(FileInfoComparator.BY_SIZE);
+                return sortMe(SingleFileRestoreItemComparator.BY_SIZE);
             case COL_MODIFIED_DATE:
-                return sortMe(FileInfoComparator.BY_MODIFIED_DATE);
+                return sortMe(SingleFileRestoreItemComparator.BY_MODIFIED_DATE);
+            case COL_LOCAL:
+                return sortMe(SingleFileRestoreItemComparator.BY_MODIFIED_DATE);
         }
 
         sortColumn = -1;
@@ -144,12 +152,12 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
 
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
-            FileInfoComparator comparator = new FileInfoComparator(fileInfoComparatorType);
+            SingleFileRestoreItemComparator comparator = new SingleFileRestoreItemComparator(fileInfoComparatorType);
             synchronized (fileInfos) {
                 if (sortAscending) {
                     Collections.sort(fileInfos, comparator);
                 } else {
-                    Collections.sort(fileInfos, new ReverseComparator<FileInfo>(comparator));
+                    Collections.sort(fileInfos, new ReverseComparator<SingleFileRestoreItem>(comparator));
                 }
             }
             return true;
@@ -176,10 +184,10 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
         sortAscending = ascending;
     }
 
-    public void setFileInfos(List<FileInfo> fileInfoLocations) {
+    public void setFileInfos(List<SingleFileRestoreItem> restoreItems) {
         synchronized (fileInfos) {
             fileInfos.clear();
-            fileInfos.addAll(fileInfoLocations);
+            fileInfos.addAll(restoreItems);
         }
         update();
     }
@@ -198,7 +206,100 @@ public class SingleFileRestoreTableModel  extends PFComponent implements TableMo
         UIUtil.invokeLaterInEDT(runnable);
     }
 
-    public List<FileInfo> getFileInfos() {
+    public List<SingleFileRestoreItem> getRestoreItems() {
         return Collections.unmodifiableList(fileInfos);
     }
+
+    // ////////////////
+    // Inner Classes //
+    // ////////////////
+
+private static class SingleFileRestoreItemComparator extends Loggable implements Comparator<SingleFileRestoreItem> {
+
+    // All the available file comparators
+    public static final int BY_SIZE = 0;
+    public static final int BY_MODIFIED_DATE = 1;
+    public static final int BY_VERSION = 2;
+    public static final int BY_LOCAL = 3;
+
+    private static final int BEFORE = -1;
+    private static final int AFTER = 1;
+
+    private int sortBy;
+    private static final SingleFileRestoreItemComparator[] COMPARATORS;
+
+    static {
+        COMPARATORS = new SingleFileRestoreItemComparator[8];
+        COMPARATORS[BY_SIZE] = new SingleFileRestoreItemComparator(BY_SIZE);
+        COMPARATORS[BY_MODIFIED_DATE] = new SingleFileRestoreItemComparator(BY_MODIFIED_DATE);
+        COMPARATORS[BY_VERSION] = new SingleFileRestoreItemComparator(BY_VERSION);
+    }
+
+    SingleFileRestoreItemComparator(int sortBy) {
+        this.sortBy = sortBy;
+    }
+
+    /**
+     * Compare by various types. If types are the same, sub-compare on file
+     * name, for nice table display.
+     *
+     * @param o1
+     * @param o2
+     * @return the value
+     */
+    public int compare(SingleFileRestoreItem o1, SingleFileRestoreItem o2) {
+
+        switch (sortBy) {
+            case BY_SIZE :
+                if (o1.getFileInfo().isLookupInstance() || o2.getFileInfo().isLookupInstance()) {
+                    return sortByVersion(o1, o2);
+                }
+                if (o1.getFileInfo().getSize() < o2.getFileInfo().getSize()) {
+                    return BEFORE;
+                }
+                if (o1.getFileInfo().getSize() > o2.getFileInfo().getSize()) {
+                    return AFTER;
+                }
+                return sortByVersion(o1, o2);
+            case BY_MODIFIED_DATE :
+                if (o1.getFileInfo().getModifiedDate() == null
+                    && o2.getFileInfo().getModifiedDate() == null)
+                {
+                    return sortByVersion(o1, o2);
+                } else if (o1.getFileInfo().getModifiedDate() == null) {
+                    return BEFORE;
+                } else if (o2.getFileInfo().getModifiedDate() == null) {
+                    return AFTER;
+                }
+                int x = o2.getFileInfo().getModifiedDate().compareTo(o1.getFileInfo().getModifiedDate());
+                if (x == 0) {
+                    return sortByVersion(o1, o2);
+                }
+                return x;
+            case BY_VERSION :
+                return sortByVersion(o1, o2);
+            case BY_LOCAL :
+                if (o1.isLocal() && o2.isLocal() || !o1.isLocal() && !o2.isLocal()) {
+                    return sortByVersion(o1, o2);
+                }
+                return o1.isLocal() ? BEFORE : AFTER;
+        }
+        return 0;
+    }
+
+    private int sortByVersion(SingleFileRestoreItem o1, SingleFileRestoreItem o2) {
+    if (o1.getFileInfo().getFolderInfo() == null && o2.getFileInfo().getFolderInfo() == null) {
+        return 0;
+    } else if (o1.getFileInfo().getFolderInfo() == null) {
+        return BEFORE;
+    } else if (o2.getFileInfo().getFolderInfo() == null) {
+        return AFTER;
+    } else if (o1.getFileInfo() instanceof DirectoryInfo || o2.getFileInfo() instanceof DirectoryInfo) {
+        return 1;
+    } else {
+        return o1.getFileInfo().getVersion() - o2.getFileInfo().getVersion();
+    }
+
+}
+}
 }
