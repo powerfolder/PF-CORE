@@ -19,18 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import de.dal33t.powerfolder.clientserver.FolderService;
 import jwf.WizardPanel;
 
 import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -49,22 +50,47 @@ public class FileRestoringPanel extends PFWizardPanel {
     private final List<FileInfo> fileInfosToRestore;
     private final JLabel statusLabel;
     private final JProgressBar bar;
-    private final File alternateDirectory;
     private SwingWorker<List<FileInfo>, FileInfo> worker;
     private int filesProcessedSuccessfully;
+    private File alternateLocation;
+    private String alternateName;
 
-    public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore,
-                              File alternateDirectory) {
+    public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
         super(controller);
         this.folder = folder;
         this.fileInfosToRestore = fileInfosToRestore;
         bar = new JProgressBar(0, 100);
         statusLabel = new JLabel();
-        this.alternateDirectory = alternateDirectory;
     }
 
-    public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
-        this(controller, folder, fileInfosToRestore, null);
+    /**
+     * Either alternateLocation or alternateName can be non-null
+     * @param controller
+     * @param folder
+     * @param fileInfo
+     * @param alternateLocation
+     * @param alternateName
+     */
+    private FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, File alternateLocation,
+                              String alternateName) {
+        this(controller, folder, Collections.singletonList(fileInfo));
+        if (alternateLocation != null && alternateName != null) {
+            throw new IllegalArgumentException("Can't have both alternates.");
+        }
+        this.alternateLocation = alternateLocation;
+        this.alternateName = alternateName;
+    }
+
+    public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo) {
+        this(controller, folder, fileInfo, null, null);
+    }
+
+    public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, File alternateFile) {
+        this(controller, folder, fileInfo, alternateFile, null);
+    }
+
+    public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, String alternateName) {
+        this(controller, folder, fileInfo, null, alternateName);
     }
 
     protected JComponent buildContent() {
@@ -76,9 +102,7 @@ public class FileRestoringPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.add(statusLabel, cc.xy(1, 1));
-
         builder.add(bar, cc.xy(1, 3));
-
         return builder.getPanel();
     }
 
@@ -140,31 +164,59 @@ public class FileRestoringPanel extends PFWizardPanel {
 
         private void restore(FileInfo fileInfo) {
             try {
-                File restoreTo;
-                boolean alternate = alternateDirectory != null &&
-                        alternateDirectory.exists() &&
-                        alternateDirectory.canWrite();
-                if (alternate) {
-                    restoreTo = new File(alternateDirectory, fileInfo.getFilenameOnly());
-                } else {
-                    restoreTo = fileInfo.getDiskFile(getController().getFolderRepository());
-                }
+
+                // If there is an alternateLocation, restore from the local archive to the new location.
+                boolean restoreLocalToAlternateLocation = alternateLocation != null;
+
+                // If there is an alternateName, restore from the server with the new name.
+                boolean restoreServerToAlternateName = alternateName != null;
+
                 FileArchiver fileArchiver = folder.getFileArchiver();
-                if (fileArchiver.restore(fileInfo, restoreTo)) {
-                    folder.scanChangedFile(fileInfo);
-                    folder.scanAllParentDirectories(fileInfo);
-                    log.info("Restored " + fileInfo.getFilenameOnly() + " from local archive");
-                    filesProcessedSuccessfully++;
-                } else if (folder.hasMember(getController().getOSClient().getServer())) {
-                    ServerClient client = getController().getOSClient();
-                    if (client.isConnected() && client.isLoggedIn()) {
-                        // Doesn't work :-(
-                        // FolderService service = client.getFolderService();
-                        // FileInfo onlineRestoredFileInfo = service.restore(fileInfo, restoreTo);
-                        // log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from OS archive");
+                boolean restored = false;
+
+                // Try local restore first.
+                if (!restoreServerToAlternateName) {
+                    File restoreTo;
+                    if (restoreLocalToAlternateLocation) {
+                        // Restore to an alternate location.
+                        restoreTo = new File(alternateLocation, fileInfo.getFilenameOnly());
+                    } else {
+                        // Just restore to existing location.
+                        restoreTo = fileInfo.getDiskFile(getController().getFolderRepository());
+                    }
+                    restored = fileArchiver.restore(fileInfo, restoreTo);
+                    if (restored) {
+                        folder.scanChangedFile(fileInfo);
+                        folder.scanAllParentDirectories(fileInfo);
+                        log.info("Restored " + fileInfo.getFilenameOnly() + " from local archive");
                         filesProcessedSuccessfully++;
                     }
-                } else {
+                }
+
+                // Try server restore if no local restore done.
+                if (!restored && !restoreLocalToAlternateLocation) {
+                    if (folder.hasMember(getController().getOSClient().getServer())) {
+                        ServerClient client = getController().getOSClient();
+                        if (client.isConnected() && client.isLoggedIn()) {
+                            FolderService service = client.getFolderService();
+                            String relativeName = fileInfo.getRelativeName();
+                            String targetRelativeName;
+                            if (restoreServerToAlternateName) {
+                                // Change the file name to alternateName.
+                                targetRelativeName = FileInfo.renameRelativeFileName(relativeName, alternateName);
+                            } else {
+                                // Just restore to existing location.
+                                targetRelativeName = relativeName;
+                            }
+                            FileInfo onlineRestoredFileInfo = service.restore(fileInfo, targetRelativeName);
+                            log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from OS archive");
+                            filesProcessedSuccessfully++;
+                            restored = true;
+                        }
+                    }
+                }
+
+                if (!restored) {
                     log.info("Failed to restore " + fileInfo.getFilenameOnly());
                 }
 

@@ -43,14 +43,13 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
 
+import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.CancellationException;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.io.File;
 
 /**
@@ -73,9 +72,12 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     private final JRadioButton originalRadio;
     private final JLabel originalLabel;
 
-    private final JRadioButton alternateRadio;
-    private final JTextField alternateTF;
-    private final JButton alternateButton;
+    private final JRadioButton alternateLocationRadio;
+    private final JTextField alternateLocationTF;
+    private final JButton alternateLocationButton;
+
+    private final JRadioButton alternateNameRadio;
+    private final JTextField alternateNameTF;
 
     public SingleFileRestorePanel(Controller controller, Folder folder, FileInfo fileInfoToRestore) {
         this(controller, folder, fileInfoToRestore, null);
@@ -96,10 +98,12 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         originalRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.original.text"));
         originalLabel = new JLabel();
 
-        alternateRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.alternate.text"));
-        alternateTF = new JTextField();
-        alternateButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation("wizard.single_file_restore.select_directory.tip"));
+        alternateLocationRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.alternate_location.text"));
+        alternateLocationTF = new JTextField();
+        alternateLocationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY), Translation.getTranslation("wizard.single_file_restore.select_directory.tip"));
+
+        alternateNameRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.alternate_name.text"));
+        alternateNameTF = new JTextField();
     }
 
     protected JComponent buildContent() {
@@ -119,17 +123,20 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     }
 
     private JComponent buildLocationPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, 3dlu, pref", "pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, 3dlu, pref", "pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(originalRadio, cc.xy(1, 1));
         builder.add(originalLabel, cc.xyw(3, 1, 3));
-        
-        builder.add(alternateRadio, cc.xy(1, 3));
-        builder.add(alternateTF, cc.xy(3, 3));
-        builder.add(alternateButton, cc.xy(5, 3));
-        alternateButton.addActionListener(new MyActionListener());
+
+        builder.add(alternateLocationRadio, cc.xy(1, 3));
+        builder.add(alternateLocationTF, cc.xy(3, 3));
+        builder.add(alternateLocationButton, cc.xy(5, 3));
+        alternateLocationButton.addActionListener(new MyActionListener());
+
+        builder.add(alternateNameRadio, cc.xy(1, 5));
+        builder.add(alternateNameTF, cc.xy(3, 5));
 
         return builder.getPanel();
     }
@@ -147,28 +154,129 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         UIUtil.setZeroWidth(scrollPane);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+
         ButtonGroup bg = new ButtonGroup();
         bg.add(originalRadio);
-        bg.add(alternateRadio);
+        bg.add(alternateLocationRadio);
+        bg.add(alternateNameRadio);
+
         originalRadio.setSelected(true);
         originalLabel.setText(fileInfoToRestore.getDiskFile(getController().getFolderRepository()).getParent());
-        alternateTF.setEditable(false);
         originalRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateLocations();
             }
         });
-        alternateRadio.addActionListener(new ActionListener() {
+
+        alternateLocationRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateLocations();
             }
         });
+        alternateLocationTF.setEditable(false);
+        alternateLocationTF.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+                updateLocations();
+            }
+        });
+
+        alternateNameRadio.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                defaultName();
+            }
+        });
+        alternateNameTF.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+                updateLocations();
+            }
+        });
+
+        updateLocations();
+    }
+
+    private void defaultName() {
+        SingleFileRestoreItem restoreItem = table.getSelectedRestoreItem();
+        if (restoreItem != null) {
+            // Provide a default of Filename_Version.extension
+            String fileName = restoreItem.getFileInfo().getFilenameOnly();
+            int version = restoreItem.getFileInfo().getVersion();
+            if (fileName.lastIndexOf('.') >= 0) {
+                String name = fileName.substring(0, fileName.lastIndexOf('.'));
+                String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                fileName = name + '_' + version + '.' + extension;
+            } else {
+                fileName = fileName + '_' + version;
+            }
+            alternateNameTF.setText(fileName);
+        } else {
+            alternateNameTF.setText("");
+        }
         updateLocations();
     }
 
     private void updateLocations() {
-        originalLabel.setEnabled(originalRadio.isSelected());
-        alternateTF.setEnabled(alternateButton.isSelected());
+        SingleFileRestoreItem restoreItem = table.getSelectedRestoreItem();
+        if (restoreItem == null) {
+            // Nothing available until a row is selected.
+            originalRadio.setEnabled(false);
+            originalLabel.setEnabled(false);
+
+            alternateLocationRadio.setEnabled(false);
+            alternateLocationTF.setEnabled(false);
+            alternateLocationButton.setEnabled(false);
+
+            alternateNameRadio.setEnabled(false);
+            alternateNameTF.setEnabled(false);
+            hasNext = false;
+        } else {
+
+            // Default buttons on.
+            originalRadio.setEnabled(true);
+            alternateLocationRadio.setEnabled(true);
+            alternateNameRadio.setEnabled(true);
+
+            hasNext = true;
+
+            // Local restores can't use alternate name.
+            if (restoreItem.isLocal()) {
+                if (alternateNameRadio.isSelected()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            originalRadio.setSelected(true);
+                        }
+                    });
+                }
+                alternateNameRadio.setEnabled(false);
+            } else { // Server restores can't use alternate location.
+                if (alternateLocationRadio.isSelected()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            originalRadio.setSelected(true);
+                        }
+                    });
+                }
+                alternateLocationRadio.setEnabled(false);
+            }
+
+            originalLabel.setEnabled(originalRadio.isSelected());
+
+            alternateLocationTF.setEnabled(alternateLocationButton.isSelected());
+            if (!alternateLocationRadio.isSelected()) {
+                alternateLocationTF.setText("");
+            }
+            alternateLocationButton.setEnabled(true);
+
+            alternateNameTF.setEnabled(alternateNameRadio.isSelected());
+        }
+
+        if (alternateLocationRadio.isSelected() && alternateLocationTF.getText().length() == 0 ||
+                alternateNameRadio.isSelected() && alternateNameTF.getText().length() == 0) {
+            hasNext = false;
+        }
+
+        updateButtons();
     }
 
     @Override
@@ -197,22 +305,29 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        FileInfo fileInfo = table.getSelectedRestoreItem().getFileInfo(); // @todo need to actually pass the restore item.
-        if (fileInfo != null) {
-            List<FileInfo> list = new ArrayList<FileInfo>();
-            list.add(fileInfo);
-            if (alternateRadio.isSelected()) {
-                String alternateDirectory = alternateTF.getText();
-                if (alternateDirectory != null && alternateDirectory.trim().length() > 0) {
-                    File alternateFile = new File(alternateDirectory.trim());
-                    if (alternateFile.isDirectory() && alternateFile.canWrite()) {
-                        return new FileRestoringPanel(getController(), folder, list, alternateFile);
-                    }
+        SingleFileRestoreItem restoreItem = table.getSelectedRestoreItem();
+        if (restoreItem == null) {
+            throw new IllegalStateException("Could not find the selected file info.");
+        }
+
+        // Alternate location for local restore.
+        if (alternateLocationRadio.isSelected()) {
+            String alternateDirectory = alternateLocationTF.getText();
+            if (alternateDirectory != null && alternateDirectory.trim().length() > 0) {
+                File alternateFile = new File(alternateDirectory.trim());
+                if (alternateFile.isDirectory() && alternateFile.canWrite()) {
+                    return new FileRestoringPanel(getController(), folder, restoreItem.getFileInfo(), alternateFile);
                 }
             }
-            return new FileRestoringPanel(getController(), folder, list);
         }
-        throw new IllegalStateException("Could not find the selected file info.");
+
+        // Alternate name for server restore.
+        if (alternateNameRadio.isSelected()) {
+            return new FileRestoringPanel(getController(), folder, restoreItem.getFileInfo(), alternateNameTF.getText().trim());
+        }
+
+        // Restore to original location.
+        return new FileRestoringPanel(getController(), folder, restoreItem.getFileInfo());
     }
 
     // ////////////////
@@ -298,8 +413,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
     private class MyListSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
-            hasNext = table.getSelectedRow() >= 0;
-            updateButtons();
+            updateLocations();
         }
     }
 
@@ -309,17 +423,19 @@ public class SingleFileRestorePanel extends PFWizardPanel {
             // Help the user by ensuring alternate set is selected if the button is clicked.
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    alternateRadio.setSelected(true);
+                    alternateLocationRadio.setSelected(true);
+                    updateLocations();
                 }
             });
-            List<File> files = DialogFactory.chooseDirectory(getController().getUIController(), alternateTF.getText(),
+            List<File> files = DialogFactory.chooseDirectory(getController().getUIController(), alternateLocationTF.getText(),
                     false);
             if (files.isEmpty()) {
                 return;
             }
 
             File file = files.get(0);
-            alternateTF.setText(file.getPath());
+            alternateLocationTF.setText(file.getPath());
+            updateLocations();
         }
     }
 }

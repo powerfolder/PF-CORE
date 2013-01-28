@@ -53,6 +53,9 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class FileInfo implements Serializable, DiskItem, Cloneable {
 
+    public static final String UNIX_SEPARATOR = "/";
+    private static final Logger log = Logger.getLogger(FileInfo.class.getName());
+
     /**
      * #1531: If this system should ignore cases of files in
      * {@link #equals(Object)} and {@link #hashCode()}
@@ -68,12 +71,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     public static final String PROPERTYNAME_DELETED = "deleted";
     public static final String PROPERTYNAME_FOLDER_INFO = "folderInfo";
 
-    private static final Logger log = Logger
-        .getLogger(FileInfo.class.getName());
     private static final long serialVersionUID = 100L;
 
     /**
      * Unix-style separated path of the file relative to the folder base dir.
+     * So like 'myFile.txt' or 'directory/myFile.txt' or 'directory/subdirectory/myFile.txt'.
      */
     private String fileName;
 
@@ -801,7 +803,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     {
         long extUID = in.readLong();
         if (extUID != extVersionUID) {
-            throw new InvalidClassException(this.getClass().getName(),
+            throw new InvalidClassException(getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
                     + ", expected: " + extVersionUID);
         }
@@ -834,4 +836,29 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         out.writeBoolean(deleted);
         ExternalizableUtil.writeFolderInfo(out, folderInfo);
     }
+
+    /**
+     * Utility method for changing the fileName part of a relative file path.
+     * Example renameRelativeFileName('directory/subdirectory/myFile.txt', 'newFile.txt') ==>
+     * 'directory/subdirectory/newFile.txt'
+     *
+     * NOTE: This is static, so does not affect a FileInfo.
+     *
+     * @param relativeName
+     * @param newFileName
+     * @return
+     */
+    public static String renameRelativeFileName(String relativeName, String newFileName) {
+        if (newFileName.contains(UNIX_SEPARATOR)) {
+            throw new IllegalArgumentException(
+                "newFileName must not contain " + UNIX_SEPARATOR + ": " + relativeName);
+        }
+        if (relativeName.contains(UNIX_SEPARATOR)) {
+            String directoryPart = relativeName.substring(0, relativeName.lastIndexOf(UNIX_SEPARATOR));
+            return directoryPart + UNIX_SEPARATOR + newFileName;
+        } else {
+            // No path - just use the relative filename.
+            return newFileName;
+        }
+}
 }
