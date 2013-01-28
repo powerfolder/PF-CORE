@@ -41,11 +41,11 @@ import com.jgoodies.binding.adapter.BasicComponentFactory;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Table to display members of a folder.
@@ -164,13 +164,22 @@ public class MembersExpertTable extends JTable {
                     .isClusterServer(folderMember.getMember()));
 
             if (actualColumn == MembersExpertTableModel.COL_TYPE) {
-                Member member = folderMember.getMember();
-                Icon icon = member != null ? Icons.getIconFor(member) : Icons
-                    .getIconById(Icons.NODE_DISCONNECTED);
+                Icon icon = null;
+                if (folderMember.getGroupInfo() != null) {
+                    icon = Icons.getIconById(Icons.NODE_GROUP);
+                }
+                else {
+                    Member member = folderMember.getMember();
+                    icon = member != null ? Icons.getIconFor(member) : Icons
+                        .getIconById(Icons.NODE_DISCONNECTED);
+                }
                 setIcon(icon);
                 setText("");
             } else if (actualColumn == MembersExpertTableModel.COL_COMPUTER_NAME) {
-                if (folderMember.getMember() != null) {
+                if (folderMember.getGroupInfo() != null) {
+                    setText("");
+                }
+                else if (folderMember.getMember() != null) {
                     setText(folderMember.getMember().getNick());
                 } else {
                     setText(Translation
@@ -187,6 +196,8 @@ public class MembersExpertTable extends JTable {
                     setForeground(Color.GRAY);
                 } else if (folderMember.getAccountInfo() != null) {
                     setText(folderMember.getAccountInfo().getDisplayName());
+                } else if (folderMember.getGroupInfo() != null) {
+                    setText(folderMember.getGroupInfo().getDisplayName());
                 } else {
                     setText(Translation
                         .getTranslation("folder_member.not_logged_in"));

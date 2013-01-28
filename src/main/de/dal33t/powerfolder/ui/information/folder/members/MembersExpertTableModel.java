@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.information.folder.members;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,9 +56,11 @@ import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -214,7 +217,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         for (Member member : folder.getMembersAsCollection()) {
             // TODO Default permission?
             members.add(new FolderMember(folder, member, member
-                .getAccountInfo(), null));
+                .getAccountInfo(), null, null, false));
         }
         // Fresh sort
         sortMe0(sortColumn);
@@ -352,9 +355,11 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         if (columnIndex != COL_PERMISSION) {
             return false;
         }
+//        return permissionsRetrieved
+//            && getFolderMemberAt(rowIndex).getAccountInfo() != null
+//            && !(getFolderMemberAt(rowIndex).getPermission() instanceof FolderOwnerPermission);
         return permissionsRetrieved
-            && getFolderMemberAt(rowIndex).getAccountInfo() != null
-            && !(getFolderMemberAt(rowIndex).getPermission() instanceof FolderOwnerPermission);
+            && getFolderMemberAt(rowIndex).isPermissionChangeable();
     }
 
     /**
@@ -384,9 +389,14 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                 String oldOwnerStr = oldOwner != null
                     ? oldOwner.getDisplayName()
                     : Translation.getTranslation("folder_member.nobody");
-                AccountInfo newOwner = folderMember.getAccountInfo();
-                String newOwnerStr = newOwner != null
-                    ? newOwner.getDisplayName()
+
+                AccountInfo newOwnerAI = folderMember.getAccountInfo();
+                GroupInfo newOwnerGI = folderMember.getGroupInfo();
+                String newOwnerStr = newOwnerAI != null
+                    ? newOwnerAI.getDisplayName()
+                    : Translation.getTranslation("folder_member.nobody");
+                newOwnerStr = newOwnerGI != null
+                    ? newOwnerGI.getDisplayName()
                     : Translation.getTranslation("folder_member.nobody");
                 int result = DialogFactory.genericDialog(getController(),
                     Translation
@@ -436,7 +446,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             new ModelRefresher().execute();
         } else {
             permissionsRetrieved = false;
-            rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
+            rebuild(new HashMap<Serializable, FolderPermission>(), null);
             refreshingModel.setValue(Boolean.FALSE);
         }
     }
@@ -612,7 +622,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         }
     }
 
-    private void rebuild(Map<AccountInfo, FolderPermission> permInfo,
+    private void rebuild(Map<Serializable, FolderPermission> permInfo,
         FolderPermission defaultPermission)
     {
         // Step 1) All computers.
@@ -621,15 +631,28 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             AccountInfo aInfo = member.getAccountInfo();
             // Take "better" AccountInfo.
             if (aInfo != null) {
-                for (AccountInfo caInfo : permInfo.keySet()) {
-                    if (aInfo.equals(caInfo)) {
-                        aInfo = caInfo;
+                for (Serializable caInfo : permInfo.keySet()) {
+                    if (caInfo instanceof AccountInfo && aInfo.equals((AccountInfo)caInfo)) {
+                        aInfo = (AccountInfo)caInfo;
                     }
-                }                
+                }
             }
+            else {
+                // probably a group
+                continue;
+            }
+
             FolderPermission folderPermission = permInfo.get(aInfo);
+            boolean changeable = true;
+            if (folderPermission == null && aInfo.getOID() != null) {
+                folderPermission = getAllFolderPermission(aInfo, folder.getInfo());
+                if (folderPermission != null) {
+                    changeable = false;
+                }
+            }
+
             FolderMember folderMember = new FolderMember(folder, member, aInfo,
-                folderPermission);
+                null, folderPermission, changeable);
             members.add(folderMember);
         }
         for (Member member : folder.getMembersAsCollection()) {
@@ -640,11 +663,28 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         }
         // Step 2) All other users not joined with any computer.
         if (!permInfo.isEmpty()) {
-            for (Entry<AccountInfo, FolderPermission> permissionInfo : permInfo
+            for (Entry<Serializable, FolderPermission> permissionInfo : permInfo
                 .entrySet())
             {
-                FolderMember folderMember = new FolderMember(folder, null,
-                    permissionInfo.getKey(), permissionInfo.getValue());
+                FolderMember folderMember = null;
+                if (permissionInfo.getKey() instanceof AccountInfo) {
+                    AccountInfo aInfo = (AccountInfo) permissionInfo.getKey();
+                    FolderPermission fp = permissionInfo.getValue();
+                    boolean changeable = true;
+
+                    if (fp == null) {
+                        fp = getAllFolderPermission(aInfo, folder.getInfo());
+                        changeable = false;
+                    }
+
+                    folderMember = new FolderMember(folder, null,
+                        aInfo, null, fp, changeable);
+                }
+                else if (permissionInfo.getKey() instanceof GroupInfo) {
+                    folderMember = new FolderMember(folder, null, null,
+                        (GroupInfo)permissionInfo.getKey(),
+                        permissionInfo.getValue(), false);
+                }
                 members.add(folderMember);
             }
         }
@@ -669,6 +709,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                 permissionsListModel.getList().add(
                     FolderPermission.owner(folder.getInfo()));
             }
+            
         }
 
         updatingDefaultPermissionModel = true;
@@ -694,6 +735,21 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
 
         modelChanged(new TableModelEvent(this, 0, getRowCount(),
             TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
+    }
+
+    private FolderPermission getAllFolderPermission(AccountInfo aInfo, FolderInfo foInfo) {
+        SecurityManager sm = getController().getSecurityManager();
+        if (sm.hasPermission(aInfo, FolderPermission.admin(foInfo))) {
+            return FolderPermission.admin(foInfo);
+        }
+        else if (sm.hasPermission(aInfo, FolderPermission.readWrite(foInfo))) {
+            return FolderPermission.readWrite(foInfo);
+        }
+        else if (sm.hasPermission(aInfo, FolderPermission.read(foInfo))) {
+            return FolderPermission.read(foInfo);
+        }
+
+        return null;
     }
 
     public void setAscending(boolean ascending) {
@@ -761,26 +817,31 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
     }
 
     private class ModelRefresher extends
-        SwingWorker<Map<AccountInfo, FolderPermission>, Void>
+        SwingWorker<Map<Serializable, FolderPermission>, Void>
     {
         private Folder refreshFor;
         private FolderPermission defaultPermission;
 
         @Override
-        protected Map<AccountInfo, FolderPermission> doInBackground()
+        protected Map<Serializable, FolderPermission> doInBackground()
             throws Exception
         {
             refreshFor = folder;
+            for (Member member : folder.getMembersAsCollection()) {
+                if (!member.isServer()) {
+                    getAllFolderPermission(member.getAccountInfo(), folder.getInfo());
+                }
+            }
             defaultPermission = getController().getOSClient()
                 .getSecurityService().getDefaultPermission(folder.getInfo());
             return getController().getOSClient().getSecurityService()
-                .getFolderPermissions(refreshFor.getInfo());
+                .getAllFolderPermissions(refreshFor.getInfo());
         }
 
         @Override
         protected void done() {
             try {
-                Map<AccountInfo, FolderPermission> res = get();
+                Map<Serializable, FolderPermission> res = get();
                 logFine("Returned " + res);
                 if (!refreshFor.equals(folder)) {
                     // Folder has changed. discard result.
@@ -808,7 +869,7 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             } catch (Exception e) {
                 logWarning(e.toString(), e);
                 permissionsRetrieved = false;
-                rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
+                rebuild(new HashMap<Serializable, FolderPermission>(), null);
             } finally {
                 refreshingModel.setValue(Boolean.FALSE);
             }

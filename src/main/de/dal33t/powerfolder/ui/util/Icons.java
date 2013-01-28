@@ -141,6 +141,7 @@ public class Icons {
     public static final String NODE_POOR = "node_friend_poor.icon";
     public static final String NODE_MEDIUM = "node_friend_medium.icon";
     public static final String NODE_LAN = "node_friend_lan.icon";
+    public static final String NODE_GROUP = "node_group.icon";
 
     public static final String FOLDER = "folder.icon";
     public static final String FILES = "files.icon";

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.information.folder.members;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
@@ -190,7 +192,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
         for (Member member : folder.getMembersAsCollection()) {
             // TODO Default permission?
             members.add(new FolderMember(folder, member, member
-                .getAccountInfo(), null));
+                .getAccountInfo(), null, null, false));
         }
         // Fresh sort
         sortMe0(sortColumn);
@@ -284,10 +286,15 @@ public class MembersSimpleTableModel extends PFUIComponent implements
         }
         FolderMember folderMember = members.get(rowIndex);
         AccountInfo aInfo = folderMember.getAccountInfo();
+        GroupInfo gInfo = folderMember.getGroupInfo();
 
         if (columnIndex == COL_TYPE) {
             return folderMember;
         } else if (columnIndex == COL_USERNAME) {
+            if (gInfo != null) {
+                return gInfo;
+            }
+
             return aInfo;
         } else if (columnIndex == COL_PERMISSION) {
             return folderMember.getPermission();
@@ -390,7 +397,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             new ModelRefresher().execute();
         } else {
             permissionsRetrieved = false;
-            rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
+            rebuild(new HashMap<Serializable, FolderPermission>(), null);
             refreshingModel.setValue(Boolean.FALSE);
         }
     }
@@ -545,7 +552,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     }
 
-    private void rebuild(Map<AccountInfo, FolderPermission> permInfo,
+    private void rebuild(Map<Serializable, FolderPermission> permInfo,
         FolderPermission defaultPermission)
     {
         // Step 1) All computers.
@@ -553,11 +560,21 @@ public class MembersSimpleTableModel extends PFUIComponent implements
         
         // Step 2) All other users not joined with any computer.
         if (!permInfo.isEmpty()) {
-            for (Entry<AccountInfo, FolderPermission> permissionInfo : permInfo
+            for (Entry<Serializable, FolderPermission> permissionInfo : permInfo
                 .entrySet())
             {
-                FolderMember folderMember = new FolderMember(folder, null,
-                    permissionInfo.getKey(), permissionInfo.getValue());
+                FolderMember folderMember = null;
+                if (permissionInfo.getKey() instanceof AccountInfo) {
+                    folderMember = new FolderMember(folder, null,
+                        (AccountInfo)permissionInfo.getKey(), null,
+                        permissionInfo.getValue(), false);
+                }
+                else if (permissionInfo.getKey() instanceof GroupInfo) {
+                    folderMember = new FolderMember(folder, null, null,
+                        (GroupInfo)permissionInfo.getKey(),
+                        permissionInfo.getValue(), false);
+                }
+
                 members.add(folderMember);
             }
         }
@@ -674,26 +691,26 @@ public class MembersSimpleTableModel extends PFUIComponent implements
     }
 
     private class ModelRefresher extends
-        SwingWorker<Map<AccountInfo, FolderPermission>, Void>
+        SwingWorker<Map<Serializable, FolderPermission>, Void>
     {
         private Folder refreshFor;
         private FolderPermission defaultPermission;
 
         @Override
-        protected Map<AccountInfo, FolderPermission> doInBackground()
+        protected Map<Serializable, FolderPermission> doInBackground()
             throws Exception
         {
             refreshFor = folder;
             defaultPermission = getController().getOSClient()
                 .getSecurityService().getDefaultPermission(folder.getInfo());
             return getController().getOSClient().getSecurityService()
-                .getFolderPermissions(refreshFor.getInfo());
+                .getAllFolderPermissions(refreshFor.getInfo());
         }
 
         @Override
         protected void done() {
             try {
-                Map<AccountInfo, FolderPermission> res = get();
+                Map<Serializable, FolderPermission> res = get();
                 logFine("Returned " + res);
                 if (!refreshFor.equals(folder)) {
                     // Folder has changed. discard result.
@@ -721,7 +738,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             } catch (Exception e) {
                 logWarning(e.toString());
                 permissionsRetrieved = false;
-                rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
+                rebuild(new HashMap<Serializable, FolderPermission>(), null);
             } finally {
                 refreshingModel.setValue(Boolean.FALSE);
             }

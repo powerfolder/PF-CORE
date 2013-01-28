@@ -163,8 +163,8 @@ public class SecurityManagerClient extends PFComponent implements
                             hasPermission = null;
                         }
                         if (hasPermission == null) {
-                            hasPermission = Boolean.valueOf(retrievePermission(
-                                accountInfo, permission, cache));
+                            hasPermission = retrievePermission(
+                                accountInfo, permission, cache);
                             source = "recvd";
                             if (isFine()) {
                                 logFine("(" + source + ") "
@@ -193,13 +193,17 @@ public class SecurityManagerClient extends PFComponent implements
                 logFiner(e);
             }
 
-            return hasPermissionDisconnected(permission);
+            return hasPermissionDisconnected(permission).booleanValue();
         }
     }
 
-    private boolean retrievePermission(AccountInfo aInfo,
+    private Boolean retrievePermission(AccountInfo aInfo,
         Permission permission, PermissionsCacheSegment cache)
     {
+        if (aInfo.getOID() == null) {
+            return Boolean.FALSE;
+        }
+
         boolean supportsBulkRequest = false;
         try {
             supportsBulkRequest = Util.compareVersions(client.getServer()
@@ -253,7 +257,7 @@ public class SecurityManagerClient extends PFComponent implements
 
     }
 
-    private boolean hasPermissionDisconnected(Permission permission) {
+    private Boolean hasPermissionDisconnected(Permission permission) {
         boolean noConnectPossible = getController().isLanOnly()
             && !client.getServer().isOnLAN()
             && !ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
@@ -261,7 +265,7 @@ public class SecurityManagerClient extends PFComponent implements
         if (noConnectPossible) {
             // Server is not on LAN, but running in LAN only mode. Allow all
             // since we will never connect at all
-            return true;
+            return Boolean.TRUE;
         }
         if (permission instanceof FolderPermission) {
             return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS

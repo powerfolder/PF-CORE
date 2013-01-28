@@ -40,6 +40,7 @@ import javax.swing.table.TableModel;
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
@@ -155,11 +156,18 @@ public class MembersSimpleTable extends JTable {
                     .isClusterServer(folderMember.getMember()));
 
             if (actualColumn == MembersSimpleTableModel.COL_TYPE) {
-                Member member = folderMember.getMember();
-//                Icon icon = member != null ? Icons.getIconFor(member) : Icons
-//                    .getIconById(Icons.NODE_DISCONNECTED);
-                setIcon(null);
-                setText("");
+                if (folderMember.getGroupInfo() != null) {
+                    GroupInfo gInfo = folderMember.getGroupInfo();
+                    Icon icon = Icons.getIconById(Icons.NODE_GROUP);
+                    setIcon(icon);
+                }
+                else {
+                    Member member = folderMember.getMember();
+//                    Icon icon = member != null ? Icons.getIconFor(member) : Icons
+//                        .getIconById(Icons.NODE_DISCONNECTED);
+                    setIcon(null);
+                    setText("");
+                }
             } else if (actualColumn == MembersSimpleTableModel.COL_USERNAME) {
                 if (!model.getController().getOSClient().isConnected()) {
                     setText(Translation
@@ -168,6 +176,8 @@ public class MembersSimpleTable extends JTable {
                 } else if (isServer) {
                     setText(Translation.getTranslation("folder_member.server"));
                     setForeground(Color.GRAY);
+                } else if (folderMember.getGroupInfo() != null) {
+                    setText(folderMember.getGroupInfo().getDisplayName());
                 } else if (folderMember.getAccountInfo() != null) {
                     setText(folderMember.getAccountInfo().getDisplayName());
                 } else {

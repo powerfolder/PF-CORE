@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -52,9 +53,9 @@ public class NoOwnerProblem extends ResolvableProblem {
      * @return true if a owner could be found. false if not.
      */
     public static final boolean hasOwner(
-        Map<AccountInfo, FolderPermission> folderPermissions)
+        Map<Serializable, FolderPermission> folderPermissions)
     {
-        for (Entry<AccountInfo, FolderPermission> entry : folderPermissions
+        for (Entry<Serializable, FolderPermission> entry : folderPermissions
             .entrySet())
         {
             if (entry.getKey() == null) {
