@@ -241,7 +241,6 @@ public class SingleFileRestorePanel extends PFWizardPanel {
             if (restoreItem.isLocal()) {
                 if (alternateNameRadio.isSelected()) {
                     SwingUtilities.invokeLater(new Runnable() {
-                        @Override
                         public void run() {
                             originalRadio.setSelected(true);
                         }
@@ -251,7 +250,6 @@ public class SingleFileRestorePanel extends PFWizardPanel {
             } else { // Server restores can't use alternate location.
                 if (alternateLocationRadio.isSelected()) {
                     SwingUtilities.invokeLater(new Runnable() {
-                        @Override
                         public void run() {
                             originalRadio.setSelected(true);
                         }
