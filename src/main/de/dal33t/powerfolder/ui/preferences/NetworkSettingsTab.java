@@ -56,8 +56,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private LineSpeedSelectionPanel lanSpeed;
     private boolean needsRestart;
     private JButton httpProxyButton;
-    private ServerSelectorPanel severSelector;
-    private JCheckBox useOnlineStorageCB;
     private JComboBox serverDisconnectBehaviorBox;
 
     public NetworkSettingsTab(Controller controller) {
@@ -120,21 +118,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         HttpProxyAction action  = new HttpProxyAction(getController());
         httpProxyButton = new JButton(action);
 
-        severSelector = new ServerSelectorPanel(getController());
 
-        useOnlineStorageCB = new JCheckBox(Translation
-                .getTranslation("preferences.dialog.online_storage.text"));
-        useOnlineStorageCB.setToolTipText(Translation
-            .getTranslation("preferences.dialog.online_storage.tip"));
-      
         wanSpeed = new LineSpeedSelectionPanel(getController(), true, true);
 
         lanSpeed = new LineSpeedSelectionPanel(getController(), false, true);
 
         enableDisableComponents(getController().isLanOnly());
         
-        useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()));
 
         TransferManager tm = getController().getTransferManager();
 
@@ -170,7 +160,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         udtConnectionBox.setEnabled(!lanOnly && UDTSocket.isSupported());
         udtConnectionBox.setVisible(UDTSocket.isSupported());
         wanSpeed.setEnabled(!lanOnly);
-        useOnlineStorageCB.setSelected(!lanOnly);
     }
 
     /**
@@ -213,12 +202,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
                 cc.xy(3, row));
 
-            if (!getController().isBackupOnly()) {
-                row += 2;
-                builder.add(useOnlineStorageCB,
-                    cc.xy(3, row));
-            }
-
             row += 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.line_settings"),
@@ -230,12 +213,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.lan_line_settings"), cc
                 .xywh(1, row, 1, 1, "default, top"));
             builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.addLabel(
-                Translation.getTranslation("preferences.dialog.server"),
-                cc.xy(1, row));
-            builder.add(severSelector.getUIComponent(), cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
@@ -284,8 +261,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             getController(), String.valueOf(relayedConnectionBox.isSelected()));
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
             String.valueOf(udtConnectionBox.isSelected()));
-        PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
-            useOnlineStorageCB.isSelected());
         boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
         ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
             getController(), String.valueOf(syncAnyways));

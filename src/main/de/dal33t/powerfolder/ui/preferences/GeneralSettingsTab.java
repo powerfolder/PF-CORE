@@ -80,8 +80,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
-    private JCheckBox expertModeBox;
-    private ValueModel expertModeModel;
 
     private JCheckBox usePowerFolderIconBox;
 
@@ -121,28 +119,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     // Exposing *************************************************************
 
     /**
-     * @return the model containing the visible-state of the expert settings
-     *         dialog
-     */
-    public ValueModel getExpertModeModel() {
-        return expertModeModel;
-    }
-
-    /**
      * Initalizes all needed ui components
      */
     private void initComponents() {
         writeTrigger = new Trigger();
 
-        expertModeModel = new ValueHolder(
-            PreferencesEntry.EXPERT_MODE
-                .getValueBoolean(getController()));
-
         nickField = new JTextField(getController().getMySelf().getNick());
-
-        expertModeBox = BasicComponentFactory.createCheckBox(
-                expertModeModel,
-            Translation.getTranslation("preferences.dialog.expert_mode"));
 
         ValueModel massDeleteModel = new ValueHolder(
             ConfigurationEntry.MASS_DELETE_PROTECTION
@@ -356,9 +338,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(expertModeBox, cc.xyw(3, row, 2));
-            
-            row += 2;
             builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
 
             row += 2;
@@ -438,13 +417,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             getController().changeNick(nickField.getText(), false);
         }
 
-        // Advanced
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
-                ^ expertModeBox.isSelected()) {
-            needsRestart = true;
-        }
-        PreferencesEntry.EXPERT_MODE.setValue(getController(),
-            expertModeBox.isSelected());
 
         if (createPowerFoldersDesktopShortcutsBox != null) {
             // Desktop PowerFolders shortcut.

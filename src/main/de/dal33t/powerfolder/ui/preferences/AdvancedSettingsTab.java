@@ -25,13 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.BufferedValueModel;
@@ -48,6 +42,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -57,6 +52,14 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JPanel panel;
+
+    private ServerSelectorPanel severSelector;
+    private JCheckBox useOnlineStorageCB;
+    private JCheckBox verboseBox;
+    private boolean originalVerbose;
+    private JCheckBox expertModeBox;
+
+
 
     private JComboBox languageChooser;
     private JComboBox xBehaviorChooser;
@@ -100,6 +103,21 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
      */
     private void initComponents() {
         writeTrigger = new Trigger();
+
+        severSelector = new ServerSelectorPanel(getController());
+
+        useOnlineStorageCB = new JCheckBox(Translation.getTranslation("preferences.advanced.online_storage.text"));
+        useOnlineStorageCB.setToolTipText(Translation.getTranslation("preferences.advanced.online_storage.tip"));
+        useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController()));
+
+        originalVerbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
+        verboseBox = SimpleComponentFactory.createCheckBox(Translation.getTranslation("preferences.advanced.verbose"));
+        verboseBox.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
+
+
+        expertModeBox = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.advanced.expert_mode"));
+        expertModeBox.setSelected(PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         // Language selector
         languageChooser = createLanguageChooser();
@@ -214,7 +232,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -222,6 +240,34 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
             CellConstraints cc = new CellConstraints();
             int row = 1;
+
+            row += 2;
+            builder.addLabel(
+                Translation.getTranslation("preferences.advanced.server"),
+                cc.xy(1, row));
+            builder.add(severSelector.getUIComponent(), cc.xy(3, row));
+
+            if (!getController().isBackupOnly()) {
+                row += 2;
+                builder.add(useOnlineStorageCB, cc.xy(3, row));
+            }
+
+            row += 2;
+            builder.add(verboseBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(expertModeBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(lockUICB, cc.xyw(3, row, 2));
+
+
+
+
+
+
+
+            row += 2;
 
             builder.add(
                 new JLabel(Translation
@@ -251,9 +297,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             }
 
             row += 2;
-            builder.add(lockUICB, cc.xyw(3, row, 2));
-
-            row += 2;
             builder.add(updateCheck, cc.xyw(3, row, 2));
 
             row += 2;
@@ -274,6 +317,25 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
     public void save() {
         // Write properties into core
         writeTrigger.triggerCommit();
+
+        PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(), useOnlineStorageCB.isSelected());
+
+        // Verbose logging
+        if (originalVerbose ^ verboseBox.isSelected()) {
+            // Verbose setting changed.
+            needsRestart = true;
+        }
+        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean.toString(verboseBox.isSelected()));
+
+        // Advanced
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()) ^ expertModeBox.isSelected()) {
+            needsRestart = true;
+        }
+        PreferencesEntry.EXPERT_MODE.setValue(getController(), expertModeBox.isSelected());
+
+
+
+
         // Set locale
         if (languageChooser.getSelectedItem() instanceof Locale) {
             Locale locale = (Locale) languageChooser.getSelectedItem();

@@ -77,8 +77,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private LANList lanList;
     private JCheckBox randomPort;
     private JCheckBox openport;
-    private JCheckBox verboseBox;
-    private boolean originalVerbose;
     private JCheckBox useDeltaSyncOnInternetCheckBox;
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
@@ -246,13 +244,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             openport.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
                 .getValueBoolean(getController()));
         }
-
-        originalVerbose = ConfigurationEntry.VERBOSE
-            .getValueBoolean(getController());
-        verboseBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.verbose"));
-        verboseBox.setSelected(ConfigurationEntry.VERBOSE
-            .getValueBoolean(getController()));
     }
 
     /**
@@ -374,9 +365,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             swarmingBar.addRelatedGap();
             swarmingBar.addGridded(useSwarmingOnLanCheckBox);
             builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(verboseBox, cc.xyw(3, row, 2));
 
             panel = builder.getPanel();
         }
@@ -513,17 +501,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 needsRestart = true;
             }
         }
-
-        // Verbose logging
-        if (originalVerbose ^ verboseBox.isSelected()) {
-            // Verbose setting changed.
-            needsRestart = true;
-        }
-        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean
-            .toString(verboseBox.isSelected()));
-
-        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean
-            .toString(verboseBox.isSelected()));
 
         // LAN list
         needsRestart |= lanList.save();
