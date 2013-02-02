@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.friends;
 
-import java.awt.Dimension;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,11 +48,8 @@ import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.PopupMenuOpener;
-import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
@@ -255,73 +251,11 @@ public class FindComputersPanel extends PFUIComponent {
             int[] selectedIndexes = searchResultTable.getSelectedRows();
             if (selectedIndexes != null && selectedIndexes.length > 0) {
 
-                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
-                    .getValueBoolean(getController());
-                if (askForFriendshipMessage) {
-
-                    // Prompt for personal message.
-                    String[] options = {
-                        Translation.getTranslation("general.ok"),
-                        Translation.getTranslation("general.cancel")};
-
-                    FormLayout layout = new FormLayout("pref",
-                        "pref, 3dlu, pref, pref");
-                    PanelBuilder builder = new PanelBuilder(layout);
-                    CellConstraints cc = new CellConstraints();
-                    String text;
-                    if (selectedIndexes.length == 1) {
-                        Object o = searchNodeTableModel
-                            .getDataAt(selectedIndexes[0]);
-                        if (o instanceof Member) {
-                            Member member = (Member) o;
-                            String nick = member.getNick();
-                            text = Translation.getTranslation(
-                                "friend.search.personal.message.text2", nick);
-                        } else {
-                            text = Translation
-                                .getTranslation("friend.search.personal.message.text");
-                        }
-                    } else {
-                        text = Translation
-                            .getTranslation("friend.search.personal.message.text");
-                    }
-                    builder.add(new JLabel(text), cc.xy(1, 1));
-                    JTextArea textArea = new JTextArea();
-                    JScrollPane scrollPane = new JScrollPane(textArea);
-                    scrollPane.setPreferredSize(new Dimension(400, 200));
-                    builder.add(scrollPane, cc.xy(1, 3));
-                    JPanel innerPanel = builder.getPanel();
-
-                    NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .getTranslation("friend.search.personal.message.title"),
-                            innerPanel, options, 0, GenericDialogType.INFO,
-                            Translation.getTranslation("general.neverAskAgain"));
-                    if (response.getButtonIndex() == 0) { // == OK
-                        String personalMessage = textArea.getText();
-                        for (int index : selectedIndexes) {
-                            Object item = searchNodeTableModel.getDataAt(index);
-                            if (item instanceof Member) {
-                                Member newFriend = (Member) item;
-                                newFriend.setFriend(true, personalMessage);
-                            }
-                        }
-                    }
-                    if (response.isNeverAskAgain()) {
-                        // dont ask me again
-                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
-                            getController(), false);
-                    }
-                } else {
-                    // Send with no personal messages
-                    for (int index : selectedIndexes) {
-                        Object item = searchNodeTableModel.getDataAt(index);
-                        if (item instanceof Member) {
-                            Member newFriend = (Member) item;
-                            newFriend.setFriend(true, null);
-                        }
+                for (int index : selectedIndexes) {
+                    Object item = searchNodeTableModel.getDataAt(index);
+                    if (item instanceof Member) {
+                        Member newFriend = (Member) item;
+                        newFriend.setFriend(true, null);
                     }
                 }
             }
@@ -356,7 +290,7 @@ public class FindComputersPanel extends PFUIComponent {
         addFriendAction.setEnabled(enabled);
     }
 
-    private final class MyConnectAction extends ConnectAction {
+    private class MyConnectAction extends ConnectAction {
         private MyConnectAction(Controller controller) {
             super(controller);
         }

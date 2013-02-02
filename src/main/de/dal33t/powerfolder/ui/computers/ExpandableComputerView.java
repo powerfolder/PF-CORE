@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
-import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -61,8 +60,6 @@ import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -649,53 +646,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (add) {
-                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
-                    .getValueBoolean(getController());
-                if (askForFriendshipMessage) {
-
-                    // Prompt for personal message.
-                    String[] options = {
-                        Translation.getTranslation("general.ok"),
-                        Translation.getTranslation("general.cancel")};
-
-                    FormLayout layout = new FormLayout("pref",
-                        "pref, 3dlu, pref, pref");
-                    PanelBuilder builder = new PanelBuilder(layout);
-                    CellConstraints cc = new CellConstraints();
-                    String nick = node.getNick();
-                    String text = Translation.getTranslation(
-                        "friend.search.personal.message.text2", nick);
-                    builder.add(new JLabel(text), cc.xy(1, 1));
-                    JTextArea textArea = new JTextArea();
-                    JScrollPane scrollPane = new JScrollPane(textArea);
-                    scrollPane.setPreferredSize(new Dimension(400, 200));
-                    builder.add(scrollPane, cc.xy(1, 3));
-                    JPanel innerPanel = builder.getPanel();
-
-                    NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .getTranslation("friend.search.personal.message.title"),
-                            innerPanel, options, 0, GenericDialogType.INFO,
-                            Translation.getTranslation("general.neverAskAgain"));
-                    if (response.getButtonIndex() == 0) { // == OK
-                        String personalMessage = textArea.getText();
-                        node.setFriend(true, personalMessage);
-                    }
-                    if (response.isNeverAskAgain()) {
-                        // don't ask me again
-                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
-                            getController(), false);
-                    }
-                } else {
-                    // Send with no personal messages
-                    node.setFriend(true, null);
-                }
-            } else {
-                node.setFriend(false, null);
-            }
+            node.setFriend(add, null);
         }
     }
 

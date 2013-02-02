@@ -56,8 +56,6 @@ public enum PreferencesEntry {
     ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN(
         "AskForFriendshipOnPrivateFolderJoin", true),
 
-    ASK_FOR_FRIENDSHIP_MESSAGE("AskForFriendshipMessage", true),
-
     EXPERT_MODE("ExpertMode", false),
 
     UNDERLINE_LINKS("UnderlineLinks", false),
