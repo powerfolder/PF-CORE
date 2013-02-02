@@ -21,8 +21,6 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -73,12 +71,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox startWithWindowsBox;
     private ActionLabel startWithMacOSLabel;
 
-    private JCheckBox conflictDetectionBox;
 
     private JCheckBox folderAutoSetupBox;
 
-    private JCheckBox massDeleteBox;
-    private JSlider massDeleteSlider;
 
 
     private JCheckBox usePowerFolderIconBox;
@@ -126,28 +121,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
-        ValueModel massDeleteModel = new ValueHolder(
-            ConfigurationEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()));
-        massDeleteBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(massDeleteModel, writeTrigger),
-            Translation.getTranslation("preferences.dialog.use_mass_delete"));
-        massDeleteBox.addItemListener(new MassDeleteItemListener());
-        massDeleteSlider = new JSlider(20, 100,
-            ConfigurationEntry.MASS_DELETE_THRESHOLD
-                .getValueInt(getController()));
-        massDeleteSlider.setMajorTickSpacing(20);
-        massDeleteSlider.setMinorTickSpacing(5);
-        massDeleteSlider.setPaintTicks(true);
-        massDeleteSlider.setPaintLabels(true);
-        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing())
-        {
-            dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
-        }
-        massDeleteSlider.setLabelTable(dictionary);
-        enableMassDeleteSlider();
-
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
 
@@ -190,10 +163,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         }
 
-        conflictDetectionBox = new JCheckBox(
-            Translation.getTranslation("preferences.dialog.use_conflict_handling"));
-        conflictDetectionBox.setSelected(ConfigurationEntry.CONFLICT_DETECTION
-            .getValueBoolean(getController()));
 
         folderAutoSetupBox = new JCheckBox(
             Translation.getTranslation("preferences.dialog.auto_setup_folders"));
@@ -263,7 +232,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         folderSyncSlider.setPaintTicks(true);
         folderSyncSlider.setPaintLabels(true);
 
-        dictionary = new Hashtable<Integer, JLabel>();
+        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
         dictionary.put(1, new JLabel("1"));
         dictionary.put(10, new JLabel("10"));
         dictionary.put(20, new JLabel("20"));
@@ -338,21 +307,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
-
-            row += 2;
             builder.add(folderAutoSetupBox, cc.xyw(3, row, 2));
 
             if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
 
-                row += 2;
-                builder.add(massDeleteBox, cc.xyw(3, row, 2));
-
-                row += 2;
-                builder.add(new JLabel(Translation.getTranslation(
-                        "preferences.dialog.mass_delete_threshold")),
-                    cc.xy(1, row));
-                builder.add(massDeleteSlider, cc.xy(3, row));
 
             }
 
@@ -394,13 +352,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public void undoChanges() {
-    }
-
-    /**
-     * Enable the mass delete slider if the box is selected.
-     */
-    private void enableMassDeleteSlider() {
-        massDeleteSlider.setEnabled(massDeleteBox.isSelected());
     }
 
     private void doFolderChangeEvent() {
@@ -462,9 +413,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 Boolean.toString(usePowerFolderIconBox.isSelected()));
         }
 
-        ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(),
-            conflictDetectionBox.isSelected());
-
         ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),
             folderAutoSetupBox.isSelected());
         // Re-run setup if selected.
@@ -477,11 +425,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 }
             }, 0);
         }
-
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
-            massDeleteBox.isSelected());
-        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
-            massDeleteSlider.getValue());
 
         try {
             ConfigurationEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
@@ -517,12 +460,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     // ////////////////
     // Inner classes //
     // ////////////////
-
-    private class MassDeleteItemListener implements ItemListener {
-        public void itemStateChanged(ItemEvent e) {
-            enableMassDeleteSlider();
-        }
-    }
 
     private class FolderChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {

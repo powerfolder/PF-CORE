@@ -67,7 +67,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
     private JCheckBox underlineLinkBox;
     private JCheckBox autoExpandCB;
     private JCheckBox updateCheck;
-    private JCheckBox usePowerFolderLink;
     private JCheckBox showHiddenFilesCB;
 
     private JLabel skinLabel;
@@ -179,23 +178,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                         }
                     });
             }
-
-            ValueModel pflModel = new ValueHolder(
-                ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController())
-                    || WinUtils.isPFLinks(getController()));
-            usePowerFolderLink = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(pflModel, writeTrigger),
-                Translation.getTranslation("preferences.dialog.show_pf_link"));
-
-        }
-
-        if (OSUtil.isMacOS()) {
-            // Places
-            ValueModel pflModel = new ValueHolder(
-                ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController()));
-            usePowerFolderLink = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(pflModel, writeTrigger),
-                Translation.getTranslation("preferences.dialog.show_pf_link"));
         }
 
         if (getUIController().getSkins().length > 1) {
@@ -288,14 +270,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                     .xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
-            // Links only available in Vista
-            if (usePowerFolderLink != null) {
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
-            }
-
             row += 2;
             builder.add(updateCheck, cc.xyw(3, row, 2));
 
@@ -362,11 +336,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             needsRestart = true;
         }
 
-        if (usePowerFolderLink != null) {
-            boolean newValue = usePowerFolderLink.isSelected();
-            configureLinksPlances(newValue);
-        }
-
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
 
@@ -384,22 +353,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                 PreferencesEntry.SKIN_NAME.setValue(getController(),
                     (String) skinCombo.getSelectedItem());
                 needsRestart = true;
-            }
-        }
-    }
-
-    private void configureLinksPlances(boolean newValue) {
-        if (WinUtils.isSupported()) {
-            try {
-                WinUtils.getInstance().setPFLinks(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
-        } else if (MacUtils.isSupported()) {
-            try {
-                MacUtils.getInstance().setPFPlaces(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
             }
         }
     }

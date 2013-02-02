@@ -21,24 +21,19 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -64,7 +59,10 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -84,6 +82,12 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JTextField locationTF;
     private ValueModel locationModel;
     private JComponent locationField;
+
+    private JCheckBox conflictDetectionBox;
+    private JCheckBox usePowerFolderLink;
+
+    private JCheckBox massDeleteBox;
+    private JSlider massDeleteSlider;
 
     private boolean needsRestart;
 
@@ -109,8 +113,25 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        String port = ConfigurationEntry.NET_BIND_PORT
-            .getValue(getController());
+
+        massDeleteBox = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.dialog.use_mass_delete"));
+        massDeleteBox.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
+        massDeleteBox.addItemListener(new MassDeleteItemListener());
+        massDeleteSlider = new JSlider(20, 100, ConfigurationEntry.MASS_DELETE_THRESHOLD
+                .getValueInt(getController()));
+        massDeleteSlider.setMajorTickSpacing(20);
+        massDeleteSlider.setMinorTickSpacing(5);
+        massDeleteSlider.setPaintTicks(true);
+        massDeleteSlider.setPaintLabels(true);
+        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
+        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing()) {
+            dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
+        }
+        massDeleteSlider.setLabelTable(dictionary);
+        enableMassDeleteSlider();
+
+        String port = ConfigurationEntry.NET_BIND_PORT.getValue(getController());
         if (port == null) {
             port = Integer.toString(ConnectionListener.DEFAULT_PORT);
         }
@@ -119,12 +140,20 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 return new NumberAndCommaDocument();
             }
         };
-        advPort.setToolTipText(Translation
-            .getTranslation("preferences.dialog.advPort.tooltip"));
+        advPort.setToolTipText(Translation.getTranslation("preferences.expert.advPort.tooltip"));
+
+        if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
+            usePowerFolderLink = SimpleComponentFactory.createCheckBox(
+                    Translation.getTranslation("preferences.expert.show_pf_link"));
+            usePowerFolderLink.setSelected(ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController()) ||
+                    WinUtils.isPFLinks(getController()));
+        }
+
+        conflictDetectionBox = new JCheckBox(Translation.getTranslation("preferences.dialog.use_conflict_handling"));
+        conflictDetectionBox.setSelected(ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController()));
 
         // Local base selection
-        locationModel = new ValueHolder(getController().getFolderRepository()
-            .getFoldersBasedirString());
+        locationModel = new ValueHolder(getController().getFolderRepository().getFoldersBasedirString());
 
         // Behavior
         locationModel.addValueChangeListener(new PropertyChangeListener() {
@@ -256,6 +285,13 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     /**
+     * Enable the mass delete slider if the box is selected.
+     */
+    private void enableMassDeleteSlider() {
+        massDeleteSlider.setEnabled(massDeleteBox.isSelected());
+    }
+
+    /**
      * Creates a pair of location text field and button.
      * 
      * @return
@@ -287,7 +323,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -304,6 +340,59 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
             builder.add(locationField, cc.xyw(3, row, 2));
 
+            if (usePowerFolderLink != null) {
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
+            }
+
+            row += 2;
+            builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(massDeleteBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(new JLabel(Translation.getTranslation(
+                    "preferences.dialog.mass_delete_threshold")),
+                cc.xy(1, row));
+            builder.add(massDeleteSlider, cc.xy(3, row));
+
+            row += 2;
+            builder.addLabel(Translation.getTranslation("preferences.dialog.zip_compression"), cc.xy(1, row));
+            ButtonBarBuilder zipBar = ButtonBarBuilder
+                .createLeftToRightBuilder();
+            zipBar.addGridded(useZipOnInternetCheckBox);
+            zipBar.addRelatedGap();
+            zipBar.addGridded(useZipOnLanCheckBox);
+            builder.add(zipBar.getPanel(), cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.addLabel(Translation.getTranslation("preferences.dialog.delta_sync"), cc.xy(1, row));
+            ButtonBarBuilder deltaBar = ButtonBarBuilder.createLeftToRightBuilder();
+            deltaBar.addGridded(useDeltaSyncOnInternetCheckBox);
+            deltaBar.addRelatedGap();
+            deltaBar.addGridded(useDeltaSyncOnLanCheckBox);
+            builder.add(deltaBar.getPanel(), cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.addLabel(Translation.getTranslation("preferences.dialog.swarming"), cc.xy(1, row));
+            ButtonBarBuilder swarmingBar = ButtonBarBuilder.createLeftToRightBuilder();
+            swarmingBar.addGridded(useSwarmingOnInternetCheckBox);
+            swarmingBar.addRelatedGap();
+            swarmingBar.addGridded(useSwarmingOnLanCheckBox);
+            builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
+
+
+
+
+
+
+
+
+
+
             row += 2;
             builder.add(randomPort, cc.xy(3, row));
 
@@ -312,7 +401,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 Translation.getTranslation("preferences.dialog.advPort"),
                 cc.xy(1, row)).setToolTipText(
                 Translation
-                    .getTranslation("preferences.dialog.advPort.tooltip"));
+                    .getTranslation("preferences.expert.advPort.tooltip"));
             builder.add(advPort, cc.xy(3, row));
 
             if (FirewallUtil.isFirewallAccessible()) {
@@ -332,40 +421,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.ip_lan_list"), cc.xywh(1,
                 row, 1, 1, "default, top"));
             builder.add(lanList.getUIPanel(), cc.xy(3, row));
-
-            row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.zip_compression"), cc.xy(1,
-                row));
-            ButtonBarBuilder zipBar = ButtonBarBuilder
-                .createLeftToRightBuilder();
-            zipBar.addGridded(useZipOnInternetCheckBox);
-            zipBar.addRelatedGap();
-            zipBar.addGridded(useZipOnLanCheckBox);
-            builder.add(zipBar.getPanel(), cc.xyw(3, row, 2));
-            row += 2;
-
-            builder
-                .addLabel(Translation
-                    .getTranslation("preferences.dialog.delta_sync"), cc.xy(1,
-                    row));
-            ButtonBarBuilder deltaBar = ButtonBarBuilder
-                .createLeftToRightBuilder();
-            deltaBar.addGridded(useDeltaSyncOnInternetCheckBox);
-            deltaBar.addRelatedGap();
-            deltaBar.addGridded(useDeltaSyncOnLanCheckBox);
-            builder.add(deltaBar.getPanel(), cc.xyw(3, row, 2));
-            row += 2;
-
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.swarming"), cc.xy(1, row));
-            ButtonBarBuilder swarmingBar = ButtonBarBuilder
-                .createLeftToRightBuilder();
-            swarmingBar.addGridded(useSwarmingOnInternetCheckBox);
-            swarmingBar.addRelatedGap();
-            swarmingBar.addGridded(useSwarmingOnLanCheckBox);
-            builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
-
             panel = builder.getPanel();
         }
         return panel;
@@ -414,6 +469,22 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         } catch (NumberFormatException e) {
             logWarning("Unparsable port number");
         }
+
+        if (usePowerFolderLink != null) {
+            boolean newValue = usePowerFolderLink.isSelected();
+            configureLinksPlaces(newValue);
+        }
+
+        ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(), conflictDetectionBox.isSelected());
+
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(), massDeleteBox.isSelected());
+        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(), massDeleteSlider.getValue());
+
+
+
+
+
+
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());
         Object bindObj = bindAddress.getSelectedItem();
@@ -505,6 +576,24 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         // LAN list
         needsRestart |= lanList.save();
     }
+
+    private void configureLinksPlaces(boolean newValue) {
+        if (WinUtils.isSupported()) {
+            try {
+                WinUtils.getInstance().setPFLinks(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        } else if (MacUtils.isSupported()) {
+            try {
+                MacUtils.getInstance().setPFPlaces(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        }
+    }
+
+
 
     private static class InterfaceChoice {
         private NetworkInterface netInterface;
@@ -598,6 +687,12 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 }
                 locationModel.setValue(newLocation.getAbsolutePath());
             }
+        }
+    }
+
+    private class MassDeleteItemListener implements ItemListener {
+        public void itemStateChanged(ItemEvent e) {
+            enableMassDeleteSlider();
         }
     }
 
