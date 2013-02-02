@@ -238,22 +238,22 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
 
     private JPanel createCustomSpeedInputFieldPanel() {
         FormLayout layout = new FormLayout(
-                "pref, 3dlu, pref, 3dlu, pref:grow",
-                "pref, 3dlu, pref");
+                "pref, 3dlu, 25dlu, 3dlu, 25dlu, " +
+                        "3dlu, " +
+                        "pref, 3dlu, 25dlu, 3dlu, 25dlu",
+                "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(Translation
-                .getTranslation("line_speed.download_speed")), cc.xy(1, 1));
+        builder.add(new JLabel(Translation.getTranslation("line_speed.download_speed")), cc.xy(1, 1));
         builder.add(customDownloadSpeedSpinner, cc.xy(3, 1));
         builder.add(customDownloadKbPerSLabel, cc.xy(5, 1));
         builder.add(customDownloadSpeedText, cc.xyw(3, 1, 3));
 
-        builder.add(new JLabel(Translation
-                .getTranslation("line_speed.upload_speed")), cc.xy(1, 3));
-        builder.add(customUploadSpeedSpinner, cc.xy(3, 3));
-        builder.add(customUploadKbPerSLabel, cc.xy(5, 3));
-        builder.add(customUploadSpeedText, cc.xyw(3, 3, 3));
+        builder.add(new JLabel(Translation.getTranslation("line_speed.upload_speed")), cc.xy(7, 1));
+        builder.add(customUploadSpeedSpinner, cc.xy(9, 1));
+        builder.add(customUploadKbPerSLabel, cc.xy(11, 1));
+        builder.add(customUploadSpeedText, cc.xyw(9, 1, 3));
 
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);

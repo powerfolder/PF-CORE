@@ -22,12 +22,18 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -39,13 +45,15 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.panel.LineSpeedSelectionPanel;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
+import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JPanel panel;
@@ -57,6 +65,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private boolean needsRestart;
     private JButton httpProxyButton;
     private JComboBox serverDisconnectBehaviorBox;
+    private JCheckBox randomPort;
+    private JTextField advPort;
+    private JCheckBox openPort;
+    private JComboBox bindAddress;
+    private LANList lanList;
 
     public NetworkSettingsTab(Controller controller) {
         super(controller);
@@ -102,6 +115,40 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 enableDisableComponents(NetworkingMode.LANONLYMODE == selectedNetworkingMode);
             }
         });
+
+        String port = ConfigurationEntry.NET_BIND_PORT.getValue(getController());
+        if (port == null) {
+            port = Integer.toString(ConnectionListener.DEFAULT_PORT);
+        }
+        advPort = new JTextField(port) {
+            protected Document createDefaultModel() {
+                return new NumberAndCommaDocument();
+            }
+        };
+        advPort.setToolTipText(Translation.getTranslation("preferences.expert.advPort.tooltip"));
+        randomPort = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.randomPort"));
+        randomPort.setToolTipText(Translation
+            .getTranslation("preferences.dialog.randomPort.tooltip"));
+        randomPort.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
+            .getValueBoolean(getController()));
+
+        advPort.setEnabled(!randomPort.isSelected());
+
+        randomPort.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                advPort.setEnabled(!randomPort.isSelected());
+            }
+        });
+
+        if (FirewallUtil.isFirewallAccessible()) {
+            openPort = SimpleComponentFactory.createCheckBox(Translation
+                .getTranslation("preferences.dialog.open_port"));
+            openPort.setToolTipText(Translation
+                .getTranslation("preferences.dialog.open_port.tooltip"));
+            openPort.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
+                .getValueBoolean(getController()));
+        }
 
         relayedConnectionBox = SimpleComponentFactory
             .createCheckBox(Translation
@@ -153,6 +200,42 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                     .valueOf(serverDisconnectBehaviorBox.getSelectedItem()));
             }
         });
+
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+            .getValue(getController());
+        bindAddress = new JComboBox();
+        bindAddress.addItem(Translation
+            .getTranslation("preferences.dialog.bind.any"));
+        // Fill in all known InetAddresses of this machine
+        try {
+            Enumeration<NetworkInterface> e = NetworkInterface
+                .getNetworkInterfaces();
+            while (e.hasMoreElements()) {
+                NetworkInterface ni = e.nextElement();
+                Enumeration<InetAddress> ie = ni.getInetAddresses();
+                while (ie.hasMoreElements()) {
+                    InetAddress addr = ie.nextElement();
+                    if (!(addr instanceof Inet4Address)) {
+                        continue;
+                    }
+                    bindAddress.addItem(new InterfaceChoice(ni, addr));
+                    if (!StringUtils.isEmpty(cfgBind)) {
+                        if (addr.getHostAddress().equals(cfgBind)) {
+                            bindAddress.setSelectedIndex(bindAddress
+                                .getItemCount() - 1);
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e1) {
+            logWarning("SocketException. " + e1);
+        } catch (Error e1) {
+            logWarning("Error. " + e1);
+        }
+
+
+        lanList = new LANList(getController());
+        lanList.load();
     }
 
     private void enableDisableComponents(boolean lanOnly) {
@@ -209,16 +292,40 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(wanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.lan_line_settings"), cc
-                .xywh(1, row, 1, 1, "default, top"));
+            builder.addLabel(Translation.getTranslation("preferences.dialog.lan_line_settings"),
+                    cc.xywh(1, row, 1, 1, "default, top"));
             builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.server_disconnect"), cc.xy(
-                1, row));
+            builder.addLabel(Translation.getTranslation("preferences.dialog.server_disconnect"),
+                    cc.xy(1, row));
             builder.add(serverDisconnectBehaviorBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(randomPort, cc.xy(3, row));
+
+            row += 2;
+            builder.addLabel(Translation.getTranslation("preferences.dialog.advPort"),
+                    cc.xy(1, row)).setToolTipText(Translation.getTranslation("preferences.expert.advPort.tooltip"));
+            builder.add(advPort, cc.xy(3, row));
+
+            if (FirewallUtil.isFirewallAccessible()) {
+                row += 2;
+                builder.add(openPort, cc.xy(3, row));
+            }
+
+            row += 2;
+            builder.addLabel(
+                Translation.getTranslation("preferences.dialog.bind"),
+                cc.xy(1, row)).setToolTipText(
+                Translation.getTranslation("preferences.dialog.bind.tooltip"));
+            builder.add(bindAddress, cc.xy(3, row));
+
+            row += 2;
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.ip_lan_list"), cc.xywh(1,
+                row, 1, 1, "default, top"));
+            builder.add(lanList.getUIPanel(), cc.xy(3, row));
 
             panel = builder.getPanel();
         }
@@ -238,6 +345,61 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the network settings.
      */
     public void save() {
+
+        // Check for correctly entered port values
+        try {
+            // Check if it's a comma-separated list of parseable numbers
+            String port = advPort.getText();
+            StringTokenizer st = new StringTokenizer(port, ",");
+            while (st.hasMoreTokens()) {
+                int p = Integer.parseInt(st.nextToken());
+                if (p < 0 || p > 65535) {
+                    throw new NumberFormatException(
+                        "Port out of range [0,65535]");
+                }
+            }
+
+            // Check if only one port was given which is the default port
+            if (ConfigurationEntry.NET_BIND_PORT.getValue(getController()) == null)
+            {
+                try {
+                    int portnum = Integer.parseInt(port);
+                    if (portnum != ConnectionListener.DEFAULT_PORT) {
+                        needsRestart = true;
+                    }
+                } catch (NumberFormatException e) {
+                }
+            }
+            // Only compare with old value if the things above don't match
+            if (!needsRestart) {
+                // Check if the value actually changed
+                if (!port.equals(ConfigurationEntry.NET_BIND_PORT.getValue(getController()))) {
+                    needsRestart = true;
+                }
+            }
+
+            ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
+        } catch (NumberFormatException e) {
+            logWarning("Unparsable port number");
+        }
+
+        if (FirewallUtil.isFirewallAccessible()) {
+            boolean current = ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(getController());
+            if (current != openPort.isSelected()) {
+                ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(getController(),
+                        String.valueOf(openPort.isSelected()));
+                needsRestart = true;
+            }
+        }
+
+        boolean current = ConfigurationEntry.NET_BIND_RANDOM_PORT
+            .getValueBoolean(getController());
+        if (current != randomPort.isSelected()) {
+            ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
+                String.valueOf(randomPort.isSelected()));
+            needsRestart = true;
+        }
+
 
         NetworkingMode netMode = NetworkingMode.values()[networkingMode
             .getSelectedIndex()];
@@ -264,6 +426,25 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
         ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
             getController(), String.valueOf(syncAnyways));
+
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());
+        Object bindObj = bindAddress.getSelectedItem();
+        if (bindObj instanceof String) { // Selected ANY
+            if (!StringUtils.isEmpty(cfgBind)) {
+                ConfigurationEntry.NET_BIND_ADDRESS.removeValue(getController());
+                needsRestart = true;
+            }
+        } else {
+            InetAddress addr = ((InterfaceChoice) bindObj).getAddress();
+            if (!addr.getHostAddress().equals(cfgBind)) {
+                ConfigurationEntry.NET_BIND_ADDRESS.setValue(getController(),
+                    addr.getHostAddress());
+                needsRestart = true;
+            }
+        }
+
+        // LAN list
+        needsRestart |= lanList.save();
     }
 
     private static String getTooltip(NetworkingMode nm) {
@@ -290,5 +471,67 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             new HTTPProxySettingsDialog(getController()).open();
         }
     }
+
+    /**
+     * Accepts oly digits and commas
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+     */
+    private static class NumberAndCommaDocument extends PlainDocument {
+        public void insertString(int offs, String str, AttributeSet a)
+            throws BadLocationException
+        {
+
+            if (str == null) {
+                return;
+            }
+            StringBuilder b = new StringBuilder();
+            char[] chars = str.toCharArray();
+            for (char aChar : chars) {
+                if (Character.isDigit(aChar) || aChar == ',') {
+                    b.append(aChar);
+                }
+            }
+            super.insertString(offs, b.toString(), a);
+        }
+    }
+
+    private static class InterfaceChoice {
+        private NetworkInterface netInterface;
+        private InetAddress address;
+        private String showString;
+
+        private InterfaceChoice(NetworkInterface netInterface,
+            InetAddress address)
+        {
+            this.netInterface = netInterface;
+            this.address = address;
+
+            StringBuilder sb = new StringBuilder();
+            if (address.getAddress() != null) {
+                for (int i = 0; i < address.getAddress().length; i++) {
+                    if (i > 0) {
+                        sb.append('.');
+                    }
+                    sb.append(address.getAddress()[i] & 0xff);
+                }
+            }
+            sb.append(" / ");
+            if (StringUtils.isNotBlank(netInterface.getDisplayName())) {
+                sb.append(netInterface.getDisplayName().trim());
+            }
+            showString = sb.toString();
+        }
+
+        public String toString() {
+            return showString;
+        }
+
+        public InetAddress getAddress() {
+            return address;
+        }
+    }
+
+
 
 }

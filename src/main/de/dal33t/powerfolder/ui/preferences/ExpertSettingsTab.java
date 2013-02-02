@@ -34,11 +34,6 @@ import java.net.SocketException;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -51,7 +46,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Icons;
@@ -67,14 +61,9 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
-    private JTextField advPort;
-    private JComboBox bindAddress;
     private JCheckBox useZipOnInternetCheckBox;
     private JCheckBox useZipOnLanCheckBox;
     private JCheckBox useDeltaSyncOnLanCheckBox;
-    private LANList lanList;
-    private JCheckBox randomPort;
-    private JCheckBox openport;
     private JCheckBox useDeltaSyncOnInternetCheckBox;
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
@@ -131,17 +120,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         massDeleteSlider.setLabelTable(dictionary);
         enableMassDeleteSlider();
 
-        String port = ConfigurationEntry.NET_BIND_PORT.getValue(getController());
-        if (port == null) {
-            port = Integer.toString(ConnectionListener.DEFAULT_PORT);
-        }
-        advPort = new JTextField(port) {
-            protected Document createDefaultModel() {
-                return new NumberAndCommaDocument();
-            }
-        };
-        advPort.setToolTipText(Translation.getTranslation("preferences.expert.advPort.tooltip"));
-
         if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
             usePowerFolderLink = SimpleComponentFactory.createCheckBox(
                     Translation.getTranslation("preferences.expert.show_pf_link"));
@@ -164,38 +142,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         locationField = createLocationField();
 
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
-        bindAddress = new JComboBox();
-        bindAddress.addItem(Translation
-            .getTranslation("preferences.dialog.bind.any"));
-        // Fill in all known InetAddresses of this machine
-        try {
-            Enumeration<NetworkInterface> e = NetworkInterface
-                .getNetworkInterfaces();
-            while (e.hasMoreElements()) {
-                NetworkInterface ni = e.nextElement();
-                Enumeration<InetAddress> ie = ni.getInetAddresses();
-                while (ie.hasMoreElements()) {
-                    InetAddress addr = ie.nextElement();
-                    if (!(addr instanceof Inet4Address)) {
-                        continue;
-                    }
-                    bindAddress.addItem(new InterfaceChoice(ni, addr));
-                    if (!StringUtils.isEmpty(cfgBind)) {
-                        if (addr.getHostAddress().equals(cfgBind)) {
-                            bindAddress.setSelectedIndex(bindAddress
-                                .getItemCount() - 1);
-                        }
-                    }
-                }
-            }
-        } catch (SocketException e1) {
-            logWarning("SocketException. " + e1);
-        } catch (Error e1) {
-            logWarning("Error. " + e1);
-        }
-        
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.use_zip_on_lan"));
         useZipOnLanCheckBox.setToolTipText(Translation
@@ -246,33 +192,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         useSwarmingOnInternetCheckBox
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
                 .getValueBoolean(getController()));
-
-        lanList = new LANList(getController());
-        lanList.load();
-
-        randomPort = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.randomPort"));
-        randomPort.setToolTipText(Translation
-            .getTranslation("preferences.dialog.randomPort.tooltip"));
-        randomPort.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
-            .getValueBoolean(getController()));
-
-        advPort.setEnabled(!randomPort.isSelected());
-
-        randomPort.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                advPort.setEnabled(!randomPort.isSelected());
-            }
-        });
-
-        if (FirewallUtil.isFirewallAccessible()) {
-            openport = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("preferences.dialog.open_port"));
-            openport.setToolTipText(Translation
-                .getTranslation("preferences.dialog.open_port.tooltip"));
-            openport.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
-                .getValueBoolean(getController()));
-        }
     }
 
     /**
@@ -384,43 +303,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             swarmingBar.addGridded(useSwarmingOnLanCheckBox);
             builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
 
-
-
-
-
-
-
-
-
-
-            row += 2;
-            builder.add(randomPort, cc.xy(3, row));
-
-            row += 2;
-            builder.addLabel(
-                Translation.getTranslation("preferences.dialog.advPort"),
-                cc.xy(1, row)).setToolTipText(
-                Translation
-                    .getTranslation("preferences.expert.advPort.tooltip"));
-            builder.add(advPort, cc.xy(3, row));
-
-            if (FirewallUtil.isFirewallAccessible()) {
-                row += 2;
-                builder.add(openport, cc.xy(3, row));
-            }
-
-            row += 2;
-            builder.addLabel(
-                Translation.getTranslation("preferences.dialog.bind"),
-                cc.xy(1, row)).setToolTipText(
-                Translation.getTranslation("preferences.dialog.bind.tooltip"));
-            builder.add(bindAddress, cc.xy(3, row));
-
-            row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.ip_lan_list"), cc.xywh(1,
-                row, 1, 1, "default, top"));
-            builder.add(lanList.getUIPanel(), cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;
@@ -431,45 +313,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
      */
     public void save() {
 
-        // Check for correctly entered port values
-        try {
-            // Check if it's a comma-seperated list of parseable numbers
-            String port = advPort.getText();
-            StringTokenizer st = new StringTokenizer(port, ",");
-            while (st.hasMoreTokens()) {
-                int p = Integer.parseInt(st.nextToken());
-                if (p < 0 || p > 65535) {
-                    throw new NumberFormatException(
-                        "Port out of range [0,65535]");
-                }
-            }
-
-            // Check if only one port was given which is the default port
-            if (ConfigurationEntry.NET_BIND_PORT.getValue(getController()) == null)
-            {
-                try {
-                    int portnum = Integer.parseInt(port);
-                    if (portnum != ConnectionListener.DEFAULT_PORT) {
-                        needsRestart = true;
-                    }
-                } catch (NumberFormatException e) {
-                }
-            }
-            // Only compare with old value if the things above don't match
-            if (!needsRestart) {
-                // Check if the value actually changed
-                if (!port.equals(ConfigurationEntry.NET_BIND_PORT
-                    .getValue(getController())))
-                {
-                    needsRestart = true;
-                }
-            }
-
-            ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
-        } catch (NumberFormatException e) {
-            logWarning("Unparsable port number");
-        }
-
         if (usePowerFolderLink != null) {
             boolean newValue = usePowerFolderLink.isSelected();
             configureLinksPlaces(newValue);
@@ -479,29 +322,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(), massDeleteBox.isSelected());
         ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(), massDeleteSlider.getValue());
-
-
-
-
-
-
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
-        Object bindObj = bindAddress.getSelectedItem();
-        if (bindObj instanceof String) { // Selected ANY
-            if (!StringUtils.isEmpty(cfgBind)) {
-                ConfigurationEntry.NET_BIND_ADDRESS
-                    .removeValue(getController());
-                needsRestart = true;
-            }
-        } else {
-            InetAddress addr = ((InterfaceChoice) bindObj).getAddress();
-            if (!addr.getHostAddress().equals(cfgBind)) {
-                ConfigurationEntry.NET_BIND_ADDRESS.setValue(getController(),
-                    addr.getHostAddress());
-                needsRestart = true;
-            }
-        }
 
         // Set folder base
         String oldFolderBaseString = getController().getFolderRepository()
@@ -554,27 +374,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     .isSelected()));
             needsRestart = true;
         }
-
-        current = ConfigurationEntry.NET_BIND_RANDOM_PORT
-            .getValueBoolean(getController());
-        if (current != randomPort.isSelected()) {
-            ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
-                String.valueOf(randomPort.isSelected()));
-            needsRestart = true;
-        }
-
-        if (FirewallUtil.isFirewallAccessible()) {
-            current = ConfigurationEntry.NET_FIREWALL_OPENPORT
-                .getValueBoolean(getController());
-            if (current != openport.isSelected()) {
-                ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(
-                    getController(), String.valueOf(openport.isSelected()));
-                needsRestart = true;
-            }
-        }
-
-        // LAN list
-        needsRestart |= lanList.save();
     }
 
     private void configureLinksPlaces(boolean newValue) {
@@ -594,66 +393,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
 
-
-    private static class InterfaceChoice {
-        private NetworkInterface netInterface;
-        private InetAddress address;
-        private String showString;
-
-        private InterfaceChoice(NetworkInterface netInterface,
-            InetAddress address)
-        {
-            this.netInterface = netInterface;
-            this.address = address;
-
-            StringBuilder sb = new StringBuilder();
-            if (address.getAddress() != null) {
-                for (int i = 0; i < address.getAddress().length; i++) {
-                    if (i > 0) {
-                        sb.append('.');
-                    }
-                    sb.append(address.getAddress()[i] & 0xff);
-                }
-            }
-            sb.append(" / ");
-            if (StringUtils.isNotBlank(netInterface.getDisplayName())) {
-                sb.append(netInterface.getDisplayName().trim());
-            }
-            showString = sb.toString();
-        }
-
-        public String toString() {
-            return showString;
-        }
-
-        public InetAddress getAddress() {
-            return address;
-        }
-    }
-
-    /**
-     * Accepts oly digits and commatas
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
-     */
-    private static class NumberAndCommaDocument extends PlainDocument {
-        public void insertString(int offs, String str, AttributeSet a)
-            throws BadLocationException
-        {
-
-            if (str == null) {
-                return;
-            }
-            StringBuilder b = new StringBuilder();
-            char[] chars = str.toCharArray();
-            for (char aChar : chars) {
-                if (Character.isDigit(aChar) || aChar == ',') {
-                    b.append(aChar);
-                }
-            }
-            super.insertString(offs, b.toString(), a);
-        }
-    }
 
     /**
      * Action listener for the location button. Opens a choose dir dialog and
