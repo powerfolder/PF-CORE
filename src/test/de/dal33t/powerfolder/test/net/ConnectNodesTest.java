@@ -22,8 +22,6 @@ package de.dal33t.powerfolder.test.net;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
@@ -219,110 +217,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         });
     }
 
-    /**
-     * Also tests #1124
-     * 
-     * @throws InvalidIdentityException
-     */
-    public void testFriendAutoConnect() throws InvalidIdentityException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
-        final MyAskForFriendshipListener handlerAtMarge = new MyAskForFriendshipListener();
-        // Set expert true so friendship listeners fire.
-        // Otherwise the friend just gets accepted without notification.
-        PreferencesEntry.EXPERT_MODE.setValue(getContollerMarge(), true);
-        getContollerMarge().addAskForFriendshipListener(handlerAtMarge);
-        assertFalse(handlerAtMarge.hasBeenAsked);
-
-        // All connections should be detected as on internet.
-        Feature.CORRECT_LAN_DETECTION.enable();
-        Feature.CORRECT_INTERNET_DETECTION.disable();
-
-        // Reconnect manager has to be started therefore!
-        getContollerLisa().getReconnectManager().start();
-        getContollerMarge().getReconnectManager().start();
-
-        final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
-            .getNode(getContollerLisa(), true);
-        assertFalse("Marge at lisa should not be connected", margeAtLisa
-            .isCompletelyConnected());
-
-        // Make friend
-        margeAtLisa.setFriend(true, "");
-
-        TestHelper.waitForCondition(100, new ConditionWithMessage() {
-            public String message() {
-                return "Marge has not beed reconnected. Nodes in recon queue at Lisa: "
-                    + getContollerLisa().getReconnectManager()
-                        .getReconnectionQueue().size();
-            }
-
-            public boolean reached() {
-                return margeAtLisa.isCompletelyConnected();
-            }
-        });
-
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
-            public String message() {
-                return "Marge has not been ask for friendship with Lisa!";
-            }
-
-            public boolean reached() {
-                return handlerAtMarge.hasBeenAsked;
-            }
-        });
-
-        TestHelper.waitMilliSeconds(100);
-        margeAtLisa.shutdown();
-        // Marge is already friend. So auto-reconnect should happen
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            public String message() {
-                return "Marge has not been reconnected. Nodes in recon queue at Lisa: "
-                    + getContollerLisa().getReconnectManager()
-                        .getReconnectionQueue().size();
-            }
-
-            public boolean reached() {
-                return margeAtLisa.isCompletelyConnected();
-            }
-        });
-
-        assertTrue("marge is not connected", margeAtLisa
-            .isCompletelyConnected());
-        margeAtLisa.shutdown();
-
-        TestHelper.waitMilliSeconds(500);
-
-        final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
-            .getNode(getContollerMarge(), true);
-        lisaAtMarge.setFriend(true, "YAAA");
-
-        // RECONNECT should happen!
-        // Both are friends so connect!
-        TestHelper.waitForCondition(100, new ConditionWithMessage() {
-            public String message() {
-                return "Marge has not been reconnected. Nodes in recon queue at Lisa: "
-                    + getContollerLisa().getReconnectManager()
-                        .getReconnectionQueue().size();
-            }
-
-            public boolean reached() {
-                return margeAtLisa.isCompletelyConnected();
-            }
-        });
-    }
-
-    // public void testFolderConnectTrusted() throws InvalidIdentityException {
-    // getContollerLisa().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-    // getContollerMarge().setNetworkingMode(NetworkingMode.TRUSTEDONLYMODE);
-    //
-    // // All connections should be detected as on internet.
-    // Feature.CORRECT_LAN_DETECTION.enable();
-    // Feature.CORRECT_INTERNET_DETECTION.disable();
-    //
-    // folderConnect();
-    // }
-
     public void testFolderConnectInternetMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testFolderConnectInternet();
@@ -458,17 +352,4 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         }
 
     }
-
-    private class MyAskForFriendshipListener implements
-        AskForFriendshipListener
-    {
-        boolean hasBeenAsked = false;
-
-        public void askForFriendship(
-            AskForFriendshipEvent askForFriendshipHandlerEvent)
-        {
-            hasBeenAsked = true;
-        }
-    }
-
 }

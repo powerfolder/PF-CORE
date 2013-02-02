@@ -65,8 +65,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
 import de.dal33t.powerfolder.event.FolderAutoCreateListener;
@@ -95,7 +93,6 @@ import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
 import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
@@ -337,8 +334,6 @@ public class UIController extends PFComponent {
 
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         getController().addInvitationHandler(new MyInvitationHandler());
-        getController().addAskForFriendshipListener(
-            new MyAskForFriendshipListener());
         getController().getFolderRepository().addFolderAutoCreateListener(
             new MyFolderAutoCreateListener());
 
@@ -1503,24 +1498,6 @@ public class UIController extends PFComponent {
                     Translation.getTranslation("notice.invitation.summary",
                         invitation.getBestUsername(), invitation.folder.name),
                     invitation);
-                applicationModel.getNoticesModel().handleNotice(notice);
-            }
-        }
-    }
-
-    private class MyAskForFriendshipListener implements
-        AskForFriendshipListener
-    {
-        public void askForFriendship(AskForFriendshipEvent event) {
-            if (PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
-                .getValueBoolean(getController()))
-            {
-                Notice notice = new AskForFriendshipEventNotice(
-                    Translation
-                        .getTranslation("notice.ask_for_friendship.title"),
-                    Translation.getTranslation(
-                        "notice.ask_for_friendship.summary", event
-                            .getMemberInfo().getNick()), event);
                 applicationModel.getNoticesModel().handleNotice(notice);
             }
         }

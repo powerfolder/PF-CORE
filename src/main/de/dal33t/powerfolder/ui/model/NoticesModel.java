@@ -19,29 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import java.awt.Dimension;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.notices.*;
@@ -51,7 +41,6 @@ import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.*;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -170,13 +159,10 @@ public class NoticesModel extends PFUIComponent {
      */
     public void activateNotice(Notice notice) {
         // @todo Refactor this, moving activation to within notices.
-        // There is no need for 'instanceof' handling.
+        // There should be no need for 'instanceof' handling.
         if (notice instanceof InvitationNotice) {
             InvitationNotice invitationNotice = (InvitationNotice) notice;
             handleInvitationNotice(invitationNotice);
-        } else if (notice instanceof AskForFriendshipEventNotice) {
-            AskForFriendshipEventNotice eventNotice = (AskForFriendshipEventNotice) notice;
-            handleAskForFriendshipEventNotice(eventNotice);
         } else if (notice instanceof WarningNotice) {
             WarningNotice eventNotice = (WarningNotice) notice;
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
@@ -233,167 +219,6 @@ public class NoticesModel extends PFUIComponent {
     public void markRead(Notice notice) {
         notice.setRead();
         updateNoticeCounts();
-    }
-
-    /**
-     * Handle a request for friendship.
-     * 
-     * @param eventNotice
-     */
-    private void handleAskForFriendshipEventNotice(
-        AskForFriendshipEventNotice eventNotice)
-    {
-        AskForFriendshipEvent event = eventNotice.getPayload(getController());
-        Member node = getController().getNodeManager().getNode(
-            event.getMemberInfo());
-        if (node == null) {
-            // Ignore friendship request from unknown node.
-            return;
-        }
-
-        Set<FolderInfo> joinedFolders = event.getJoinedFolders();
-        String message = event.getMessage();
-
-        if (joinedFolders == null) {
-            simpleAskForFriendship(node, message);
-        } else {
-            joinedAskForFriendship(node, joinedFolders, message);
-        }
-    }
-
-    /**
-     * Handle a freindship request with folders to join.
-     * 
-     * @param member
-     * @param joinedFolders
-     * @param message
-     */
-    private void joinedAskForFriendship(final Member member,
-        final Set<FolderInfo> joinedFolders, final String message)
-    {
-        Runnable friendAsker = new Runnable() {
-            public void run() {
-
-                StringBuilder folderString = new StringBuilder();
-                for (FolderInfo folderInfo : joinedFolders) {
-                    if (!folderInfo.isMetaFolder()) {
-                        folderString.append(folderInfo.name + '\n');
-                    }
-                }
-                String[] options = {
-                    Translation
-                        .getTranslation("dialog.ask_for_friendship.button.add"),
-                    Translation.getTranslation("general.cancel")};
-                String text = Translation.getTranslation(
-                    "dialog.ask_for_friendship.question", member.getNick(),
-                    folderString.toString())
-                    + "\n\n"
-                    + Translation
-                        .getTranslation("dialog.ask_for_friendship.explain");
-                // if mainframe is hidden we should wait till its opened
-
-                FormLayout layout = new FormLayout("pref",
-                    "pref, 3dlu, pref, pref");
-                PanelBuilder builder = new PanelBuilder(layout);
-                CellConstraints cc = new CellConstraints();
-                PanelBuilder panelBuilder = LinkedTextBuilder.build(
-                    getController(), text);
-                JPanel panel1 = panelBuilder.getPanel();
-                builder.add(panel1, cc.xy(1, 1));
-                if (!StringUtils.isEmpty(message)) {
-                    builder.add(
-                        new JLabel(Translation.getTranslation(
-                            "dialog.ask_for_friendship.message_title",
-                            member.getNick())), cc.xy(1, 3));
-                    JTextArea textArea = new JTextArea(message);
-                    textArea.setEditable(false);
-                    JScrollPane scrollPane = new JScrollPane(textArea);
-                    scrollPane.setPreferredSize(new Dimension(400, 200));
-                    builder.add(scrollPane, cc.xy(1, 4));
-                }
-                JPanel panel = builder.getPanel();
-
-                NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    getController(), Translation.getTranslation(
-                        "dialog.ask_for_friendship.title", member.getNick()),
-                    panel, options, 0, GenericDialogType.QUESTION, Translation
-                        .getTranslation("general.neverAskAgain"));
-                member.setFriend(response.getButtonIndex() == 0, null);
-                if (response.isNeverAskAgain()) {
-                    // dont ask me again
-                    PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
-                        .setValue(getController(), false);
-                }
-            }
-        };
-        SwingUtilities.invokeLater(friendAsker);
-    }
-
-    /**
-     * Handle a simple freindship request.
-     * 
-     * @param node
-     * @param message
-     */
-    private void simpleAskForFriendship(final Member node, final String message)
-    {
-
-        if (getController().isUIOpen()) {
-
-            // Okay we are asking for friendship now
-            node.setAskedForFriendship(true);
-            Runnable friendAsker = new Runnable() {
-                public void run() {
-
-                    String[] options = {
-                        Translation
-                            .getTranslation("dialog.ask_for_friendship.button.add"),
-                        Translation.getTranslation("general.cancel")};
-                    String text = Translation.getTranslation(
-                        "dialog.ask_for_friendship.question2", node.getNick())
-                        + "\n\n"
-                        + Translation
-                            .getTranslation("dialog.ask_for_friendship.explain");
-                    // if mainframe is hidden we should wait till its opened
-
-                    FormLayout layout = new FormLayout("pref",
-                        "pref, 3dlu, pref, pref");
-                    PanelBuilder builder = new PanelBuilder(layout);
-                    CellConstraints cc = new CellConstraints();
-                    PanelBuilder panelBuilder = LinkedTextBuilder.build(
-                        getController(), text);
-                    JPanel panel1 = panelBuilder.getPanel();
-                    builder.add(panel1, cc.xy(1, 1));
-                    if (!StringUtils.isEmpty(message)) {
-                        builder.add(
-                            new JLabel(Translation.getTranslation(
-                                "dialog.ask_for_friendship.message_title",
-                                node.getNick())), cc.xy(1, 3));
-                        JTextArea textArea = new JTextArea(message);
-                        textArea.setEditable(false);
-                        JScrollPane scrollPane = new JScrollPane(textArea);
-                        scrollPane.setPreferredSize(new Dimension(400, 200));
-                        builder.add(scrollPane, cc.xy(1, 4));
-                    }
-                    JPanel panel = builder.getPanel();
-
-                    NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(getController(), Translation
-                            .getTranslation("dialog.ask_for_friendship.title",
-                                node.getNick()), panel, options, 0,
-                            GenericDialogType.QUESTION, Translation
-                                .getTranslation("general.neverAskAgain"));
-                    node.setFriend(response.getButtonIndex() == 0, null);
-                    if (response.isNeverAskAgain()) {
-                        node.setFriend(false, null);
-                        // dont ask me again
-                        PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
-                            .setValue(getController(), false);
-                    }
-                }
-            };
-            SwingUtilities.invokeLater(friendAsker);
-        }
     }
 
     /**

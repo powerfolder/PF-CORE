@@ -37,7 +37,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -138,8 +137,8 @@ public class Member extends PFComponent implements Comparable<Member> {
     /** The last time, the node was seen on the network */
     private Date lastNetworkConnectTime;
 
-    /** Lock when peer is going to be initalized */
-    private final Object peerInitalizeLock = new Object();
+    /** Lock when peer is going to be initialized */
+    private final Object peerInitializeLock = new Object();
 
     /** Folderlist waiter */
     private final Object folderListWaiter = new Object();
@@ -201,7 +200,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public Member(Controller controller, MemberInfo mInfo) {
         super(controller);
-        this.info = mInfo;
+        info = mInfo;
     }
 
     /**
@@ -368,8 +367,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean isServer = getController().getOSClient().isClusterServer(this);
         boolean isRelayOrServer = isServer || isRelay;
 
-        if (getController().getNetworkingMode().equals(
-            NetworkingMode.SERVERONLYMODE)
+        if (getController().getNetworkingMode() == NetworkingMode.SERVERONLYMODE
             && !isRelayOrServer)
         {
             return false;
@@ -540,7 +538,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         ConnectionHandler thisPeer = peer;
         if (thisPeer != null) {
             thisPeer.shutdown();
-            synchronized (peerInitalizeLock) {
+            synchronized (peerInitializeLock) {
                 peer = null;
             }
         }
@@ -659,7 +657,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         // Reset the last connect time
         info.setLastConnectNow();
 
-        synchronized (peerInitalizeLock) {
+        synchronized (peerInitializeLock) {
             ConnectionHandler oldPeer = peer;
             // Set the new peer
             peer = newPeer;
@@ -789,7 +787,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Try to establish a low-level connection.
             handler = getController().getIOProvider()
-                .getConnectionHandlerFactory().tryToConnect(this.getInfo());
+                .getConnectionHandlerFactory().tryToConnect(getInfo());
             connectResult = setPeer(handler);
         } catch (InvalidIdentityException e) {
             logFiner(e);
@@ -857,7 +855,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             receivedFolderList = waitForFoldersJoin();
         }
 
-        synchronized (peerInitalizeLock) {
+        synchronized (peerInitializeLock) {
             if (!isConnected() || identity == null) {
                 logFine("Disconnected while completing handshake");
                 return ConnectResult
@@ -884,7 +882,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         // My messages sent, now wait for his folder list.
         receivedFolderList = waitForFoldersJoin();
-        synchronized (peerInitalizeLock) {
+        synchronized (peerInitializeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
                 return ConnectResult
@@ -912,30 +910,30 @@ public class Member extends PFComponent implements Comparable<Member> {
             .createDefaultNodeListRequestMessage();
 
         boolean thisHandshakeCompleted = true;
-        synchronized (peerInitalizeLock) {
+        synchronized (peerInitializeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
                 return ConnectResult
                     .failure("Disconnected while completing handshake");
             }
 
-            if (!isInteresting()) {
-                logFine("Rejected, Node not interesting");
-                // Tell remote side
-                try {
-                    peer.sendMessage(new Problem("You are boring", true,
-                        Problem.DO_NOT_LONGER_CONNECT));
-                } catch (ConnectionException e) {
-                    // Ignore
-                }
-                thisHandshakeCompleted = false;
-            } else {
+            if (isInteresting()) {
                 // Send request for nodelist.
                 peer.sendMessagesAsynchron(request);
 
                 // Send our transfer status
                 peer.sendMessagesAsynchron(getController().getTransferManager()
-                    .getStatus());
+                        .getStatus());
+            } else {
+                logFine("Rejected, Node not interesting");
+                // Tell remote side
+                try {
+                    peer.sendMessage(new Problem("You are boring", true,
+                            Problem.DO_NOT_LONGER_CONNECT));
+                } catch (ConnectionException e) {
+                    // Ignore
+                }
+                thisHandshakeCompleted = false;
             }
         }
 
@@ -1617,7 +1615,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof SettingsChange) {
                 SettingsChange settingsChange = (SettingsChange) message;
                 if (settingsChange.newInfo != null) {
-                    logFine(this.getInfo().nick + " changed nick to "
+                    logFine(getInfo().nick + " changed nick to "
                         + settingsChange.newInfo.nick);
                     setNick(settingsChange.newInfo.nick);
                 }
@@ -1733,10 +1731,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             } else if (message instanceof AddFriendNotification) {
                 AddFriendNotification notification = (AddFriendNotification) message;
-                AskForFriendshipEvent event = new AskForFriendshipEvent(
-                    notification.getMemberInfo(),
-                    notification.getPersonalMessage());
-                getController().addAskForFriendship(event);
+                getController().makeFriendship(notification.getMemberInfo());
                 expectedTime = 50;
             } else if (message instanceof Notification) {
                 // This is the V3 friendship notification class.
@@ -1747,9 +1742,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else {
                     switch (not.getEvent()) {
                         case ADDED_TO_FRIENDS :
-                            AskForFriendshipEvent event = new AskForFriendshipEvent(
-                                getInfo(), not.getPersonalMessage());
-                            getController().addAskForFriendship(event);
+                            getController().makeFriendship(getInfo());
                             break;
                         default :
                             logWarning("Unhandled event: " + not.getEvent());
@@ -1867,7 +1860,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         new Filter<Member>() {
                             // Don't send the message back to the source.
                             public boolean accept(Member item) {
-                                return !this.equals(item) && !item.isServer();
+                                return !equals(item) && !item.isServer();
                             }
                         });
                 }
@@ -2167,9 +2160,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         + " folder(s)");
                 }
                 if (!isFriend() && !server) {
-                    AskForFriendshipEvent event = new AskForFriendshipEvent(
-                        getInfo(), joinedFolders);
-                    getController().addAskForFriendship(event);
+                    getController().makeFriendship(getInfo());
                 }
             }
         } finally {
@@ -2661,7 +2652,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         if (other instanceof Member) {
             Member oM = (Member) other;
-            return Util.equals(this.info.id, oM.info.id);
+            return Util.equals(info.id, oM.info.id);
         }
 
         return false;

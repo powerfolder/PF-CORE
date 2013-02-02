@@ -46,9 +46,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** Notification dwell period (seconds) */
     private JSlider notificationDisplaySlider;
 
-    /** Ask to add to friends if user becomes member of a folder */
-    private JCheckBox askForFriendshipCB;
-
     /** Show folders that have been found in PF folder base & auto-created. */
     private JCheckBox showAutoCreatedFoldersBox;
 
@@ -161,8 +158,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         }
         notificationTranslucentSlider.setLabelTable(dictionary);
 
-        boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
-            .getValueBoolean(getController());
         boolean warnOnNoDirectConnectivity = PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY
             .getValueBoolean(getController());
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
@@ -171,10 +166,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean cloudFull = PreferencesEntry.WARN_FULL_CLOUD
             .getValueBoolean(getController());
-        askForFriendshipCB = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
-            askFriendship);
         warnOnCloseIfNotInSyncCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_close_if_not_in_sync"),
@@ -216,9 +207,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(warnOnPossibleFilenameProblemsCB, cc.xy(3, row));
-
-            row += 2;
-            builder.add(askForFriendshipCB, cc.xy(3, row));
 
             row += 2;
             builder.add(showAutoCreatedFoldersBox, cc.xy(3, row));
@@ -295,7 +283,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean warnOnNoDirectConnectivity = warnOnNoDirectConnectivityCB.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSyncCB.isSelected();
         boolean filenameCheck = warnOnPossibleFilenameProblemsCB.isSelected();
-        boolean askFriendship = askForFriendshipCB.isSelected();
         boolean fullCloudSpace = warnIfCloudSpaceFullCB.isSelected();
 
         if (showSystemNotificationBox != null) {
@@ -314,9 +301,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
             notificationDisplaySlider.getValue());
-
-        PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
-            getController(), askFriendship);
         PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY.setValue(getController(),
             warnOnNoDirectConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);

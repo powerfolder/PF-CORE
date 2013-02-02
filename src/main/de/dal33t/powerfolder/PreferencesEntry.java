@@ -53,9 +53,6 @@ public enum PreferencesEntry {
 
     WARN_ON_CLOSE("WarnOnClose", true),
 
-    ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN(
-        "AskForFriendshipOnPrivateFolderJoin", true),
-
     EXPERT_MODE("ExpertMode", false),
 
     UNDERLINE_LINKS("UnderlineLinks", false),

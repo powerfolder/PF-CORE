@@ -641,7 +641,7 @@ public class NodeManager extends PFComponent {
      * @param node
      * @param server
      */
-    public void serverStateChanged(final Member node, boolean server) {
+    public void serverStateChanged(Member node, boolean server) {
         if (node.isMySelf()) {
             // Ignore change on myself
             return;

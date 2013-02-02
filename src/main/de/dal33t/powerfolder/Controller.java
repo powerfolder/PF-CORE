@@ -61,6 +61,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
+import de.dal33t.powerfolder.light.MemberInfo;
 import org.apache.commons.cli.CommandLine;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -70,8 +71,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.event.LimitedConnectivityEvent;
 import de.dal33t.powerfolder.event.LimitedConnectivityListener;
@@ -233,7 +232,6 @@ public class Controller extends PFComponent {
      */
     private List<ConnectionListener> additionalConnectionListeners;
 
-    private final List<AskForFriendshipListener> askForFriendshipListeners;
     private final List<InvitationHandler> invitationHandlers;
     private final List<MassDeletionHandler> massDeletionHandlers;
 
@@ -305,7 +303,6 @@ public class Controller extends PFComponent {
         System.setProperty("sun.net.inetaddr.ttl", "0");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
-        askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
         pausedModeListenerSupport = ListenerSupportFactory
@@ -757,24 +754,6 @@ public class Controller extends PFComponent {
         // Fresh reconnection try!
         reconnectManager.buildReconnectionQueue();
 
-    }
-
-    /**
-     * Add ask for friend listener.
-     * 
-     * @param l
-     */
-    public void addAskForFriendshipListener(AskForFriendshipListener l) {
-        askForFriendshipListeners.add(l);
-    }
-
-    /**
-     * Remove ask for friend listener.
-     * 
-     * @param l
-     */
-    public void removeAskForFriendshipListener(AskForFriendshipListener l) {
-        askForFriendshipListeners.remove(l);
     }
 
     /**
@@ -2630,24 +2609,24 @@ public class Controller extends PFComponent {
      * 
      * @param event
      */
-    public void addAskForFriendship(AskForFriendshipEvent event) {
+    public void makeFriendship(MemberInfo memberInfo) {
         if (networkingMode == NetworkingMode.SERVERONLYMODE) {
             logFine("Ignoring ask for friendship from client "
-                + event.getMemberInfo() + ". Running in server only mode");
+                + memberInfo + ". Running in server only mode");
             return;
         }
 
         // Is this a friend already?
-        Member member = event.getMemberInfo().getNode(this, false);
+        Member member = memberInfo.getNode(this, false);
         if (member != null) {
             if (member.isFriend()) {
                 log.fine("Ignoring ask for friendship from "
-                    + event.getMemberInfo().getNick() + ". Already friend.");
+                    + memberInfo.getNick() + ". Already friend.");
                 return;
             }
             if (member.isServer()) {
                 log.fine("Ignoring ask for friendship from "
-                    + event.getMemberInfo().getNick() + ". is a server.");
+                    + memberInfo.getNick() + ". is a server.");
                 return;
             }
             // Hack alert(tm):
@@ -2656,20 +2635,13 @@ public class Controller extends PFComponent {
                 && lnick.contains("cloud");
             if (isPowerFolderCloud) {
                 log.fine("Ignoring ask for friendship from "
-                    + event.getMemberInfo().getNick() + ". is a pf server.");
+                    + memberInfo.getNick() + ". is a pf server.");
                 return;
             }
         }
 
-        // Expert mode ? ask the expert : just accept the friendship
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(this)) {
-            for (AskForFriendshipListener listener : askForFriendshipListeners)
-            {
-                listener.askForFriendship(event);
-            }
-        } else {
-            member.setFriend(true, null);
-        }
+        // A new friend!
+        member.setFriend(true, null);
     }
 
     /**
