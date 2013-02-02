@@ -19,28 +19,18 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Locale;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.BufferedValueModel;
-import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -54,13 +44,17 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
+import de.dal33t.powerfolder.util.update.Updater;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
@@ -74,9 +68,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JCheckBox folderAutoSetupBox;
 
-
+    private JCheckBox updateCheck;
+    private boolean originalQuitOnX;
 
     private JCheckBox usePowerFolderIconBox;
+    private JComboBox xBehaviorChooser;
 
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel modeModel;
@@ -89,10 +85,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JLabel folderSyncLabel;
     private JSlider folderSyncSlider;
 
-    private boolean needsRestart;
+    private JComboBox languageChooser;
 
-    // The triggers the writing into core
-    private Trigger writeTrigger;
+    private boolean needsRestart;
 
     public GeneralSettingsTab(Controller controller) {
         super(controller);
@@ -117,9 +112,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      * Initalizes all needed ui components
      */
     private void initComponents() {
-        writeTrigger = new Trigger();
+
+        languageChooser = createLanguageChooser();
 
         nickField = new JTextField(getController().getMySelf().getNick());
+
+        updateCheck = new JCheckBox(Translation.getTranslation("preferences.dialog.dialogs.check_for_program_updates"));
+        updateCheck.setSelected(PreferencesEntry.CHECK_UPDATE.getValueBoolean(getController()));
+
+        xBehaviorChooser = createXBehaviorChooser();
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
@@ -138,11 +139,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .isPFStartup(getController()));
             }
 
-            ValueModel pfiModel = new ValueHolder(
-                ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
-            usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(pfiModel, writeTrigger),
-                Translation.getTranslation("preferences.dialog.use_pf_icon"));
+            usePowerFolderIconBox = SimpleComponentFactory.createCheckBox(
+                    Translation.getTranslation("preferences.dialog.use_pf_icon"));
+            usePowerFolderIconBox.setSelected(ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
 
         if (MacUtils.isSupported()) {
@@ -239,8 +238,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         dictionary.put(30, new JLabel("30"));
         folderSyncSlider.setLabelTable(dictionary);
 
-        folderSyncLabel = new JLabel(
-            Translation.getTranslation("preferences.dialog.folder_sync_text"));
+        folderSyncLabel = new JLabel(Translation.getTranslation("preferences.dialog.folder_sync_text"));
 
         folderSyncCB.addChangeListener(new FolderChangeListener());
 
@@ -270,8 +268,26 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     row));
             builder.add(nickField, cc.xy(3, row));
 
+            row += 2;
+            builder.add(new JLabel(Translation.getTranslation("preferences.dialog.language")), cc.xy(1, row));
+            builder.add(languageChooser, cc.xy(3, row));
+
+            row += 2;
+            builder.add(createUpdateCheckPanel(), cc.xyw(3, row, 2));
+
+
+
+
+
+
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
+
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(createPowerFoldersDesktopShortcutsBox, cc.xyw(3, row, 2));
+
                 if (startWithWindowsBox != null) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
@@ -282,47 +298,35 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
-                builder.add(createPowerFoldersDesktopShortcutsBox,
-                    cc.xyw(3, row, 2));
-
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
                 builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
-                builder.add(
-                    new JLabel(Translation
-                        .getTranslation("preferences.dialog.non_windows_info"),
+                builder.add(new JLabel(Translation.getTranslation("preferences.dialog.non_windows_info"),
                         SwingConstants.CENTER), cc.xyw(1, row, 4));
                 if (startWithMacOSLabel != null) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
                     row += 2;
-                    builder.add(startWithMacOSLabel.getUIComponent(),
-                        cc.xyw(3, row, 2));
+                    builder.add(startWithMacOSLabel.getUIComponent(), cc.xyw(3, row, 2));
                 }
             }
 
             row += 2;
             builder.add(folderAutoSetupBox, cc.xyw(3, row, 2));
 
-            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-
-
-            }
+            row += 2;
+            builder.add(new JLabel(Translation.getTranslation("preferences.dialog.exit_behavior")), cc.xy(1, row));
+            builder.add(xBehaviorChooser, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation.getTranslation(
                     "preferences.dialog.default_archive_mode.text")),
                     cc.xy(1, row));
             builder.add(
-                fourPanel(
+                threePanel(
                     archiveModeSelectorPanel.getUIComponent(),
-                    new JLabel(Translation
-                        .getTranslation("preferences.dialog.archive_cleanup")),
                     archiveCleanupCombo, new JButton(cleanupAction)),
                     cc.xyw(3, row, 2));
 
@@ -337,17 +341,71 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return panel;
     }
 
-    private static Component fourPanel(Component component1,
-        Component component2, Component component3, Component component4)
-    {
-        FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref");
+    private JPanel createUpdateCheckPanel() {
+        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(updateCheck, cc.xy(1, 1));
+        builder.add(createCheckForUpdatesButton(), cc.xy(3, 1));
+        return builder.getPanel();
+    }
+
+    /**
+     * Creates an internationalized check for updates button. This button will
+     * invoke the manual update checker.
+     */
+    private JButton createCheckForUpdatesButton() {
+        JButton checkForUpdatesButton = new JButton(Translation.getTranslation("about_dialog.check_for_updates.text"));
+        checkForUpdatesButton.setToolTipText(Translation.getTranslation("about_dialog.check_for_updates.tips"));
+        checkForUpdatesButton.setMnemonic(
+                Translation.getTranslation("about_dialog.check_for_updates.key").trim().charAt(0));
+        checkForUpdatesButton.addActionListener(new UpdateAction());
+        checkForUpdatesButton.setBackground(Color.WHITE);
+        return checkForUpdatesButton;
+    }
+
+
+    private JComboBox createLanguageChooser() {
+        // Create combobox
+        JComboBox chooser = new JComboBox();
+        for (Locale locale1 : Translation.getSupportedLocales()) {
+            chooser.addItem(locale1);
+        }
+
+        // Add renderer
+        chooser.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList list,
+                Object value, int index, boolean isSelected,
+                boolean cellHasFocus)
+            {
+                super.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+                if (value instanceof Locale) {
+                    Locale locale = (Locale) value;
+                    setText(locale.getDisplayName(locale));
+                } else {
+                    setText("- unknown -");
+                }
+                return this;
+            }
+        });
+
+        // Initialize chooser with the active locale.
+        chooser.setSelectedItem(Translation.getActiveLocale());
+
+        return chooser;
+    }
+
+
+
+    private static Component threePanel(Component component1,
+        Component component2, Component component3) {
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(component1, cc.xy(1, 1));
         builder.add(component2, cc.xy(3, 1));
         builder.add(component3, cc.xy(5, 1));
-        builder.add(component4, cc.xy(7, 1));
         return builder.getPanel();
     }
 
@@ -360,13 +418,33 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public void save() {
-        // Write properties into core
-        writeTrigger.triggerCommit();
 
         // Nickname
         if (!StringUtils.isBlank(nickField.getText())) {
             getController().changeNick(nickField.getText(), false);
         }
+
+        // Set locale
+        if (languageChooser.getSelectedItem() instanceof Locale) {
+            Locale locale = (Locale) languageChooser.getSelectedItem();
+            // Check if we need to restart
+            needsRestart |= !Util.equals(locale, Translation.getActiveLocale());
+            // Save settings
+            Translation.saveLocalSetting(locale);
+        } else {
+            // Remove setting
+            Translation.saveLocalSetting(null);
+        }
+
+        PreferencesEntry.CHECK_UPDATE.setValue(getController(), updateCheck.isSelected());
+
+        PreferencesEntry.QUIT_ON_X.setValue(getController(),
+                xBehaviorChooser.getSelectedIndex() == 0); // Quit on exit.
+        if (xBehaviorChooser.getSelectedIndex() == 0 ^ originalQuitOnX) {
+            // Need to restart to redraw minimize button.
+            needsRestart = true;
+        }
+
 
 
         if (createPowerFoldersDesktopShortcutsBox != null) {
@@ -481,6 +559,47 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 }
             });
         }
+    }
+
+
+    private class UpdateAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (getController().getUpdateSettings() != null) {
+                ManuallyInvokedUpdateHandler handler = new ManuallyInvokedUpdateHandler(
+                    getController());
+                Updater updater = new Updater(getController(), getController()
+                    .getUpdateSettings(), handler);
+                updater.start();
+            }
+            PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);
+        }
+    }
+
+    /**
+     * Creates a X behavior chooser.
+     * Option 0 is Exit program
+     * Option 1 is Minimize to system tray
+     */
+    private JComboBox createXBehaviorChooser() {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        model.addElement(Translation.getTranslation(
+                "preferences.dialog.exit_behavior.exit"));
+        if (OSUtil.isSystraySupported()) {
+            model.addElement(Translation.getTranslation(
+                    "preferences.dialog.exit_behavior.minimize"));
+        }
+
+        JComboBox combo = new JComboBox(model);
+        combo.setEnabled(OSUtil.isSystraySupported());
+        if (OSUtil.isSystraySupported() &&
+                !PreferencesEntry.QUIT_ON_X.getValueBoolean(
+                        getController())) {
+            combo.setSelectedIndex(1); // Minimize option.
+        }
+
+        originalQuitOnX = combo.getSelectedIndex() == 0;
+
+        return combo;
     }
 
 }

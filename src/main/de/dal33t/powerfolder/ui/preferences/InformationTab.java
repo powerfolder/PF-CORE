@@ -114,8 +114,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
             builder.add(createTranslators(), cc.xy(3, 2));
         }
         builder.add(ButtonBarFactory.buildCenteredBar(
-                createActivateButton(),
-            createCheckForUpdatesButton()), cc.xyw(1, 3, 3));
+                createActivateButton()), cc.xyw(1, 3, 3));
 
         panel = builder.getPanel();
     }
@@ -139,25 +138,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         activateButton.setEnabled(changeLoginAllowed);
         return activateButton;
     }
-
-    /**
-     * Creates an internationlaized check for updates button. This button will
-     * invoke the manual updatechecker.
-     */
-    private JButton createCheckForUpdatesButton() {
-        JButton checkForUpdatesButton = new JButton(
-            Translation.getTranslation("about_dialog.check_for_updates.text"));
-        checkForUpdatesButton.setToolTipText(Translation
-            .getTranslation("about_dialog.check_for_updates.tips"));
-        checkForUpdatesButton.setMnemonic(Translation
-            .getTranslation("about_dialog.check_for_updates.key").trim()
-            .charAt(0));
-        checkForUpdatesButton.addActionListener(new UpdateAction());
-        checkForUpdatesButton.setBackground(Color.WHITE);
-        return checkForUpdatesButton;
-    }
-
-
 
     private static JPanel createTranslators() {
         return createTextBox(
@@ -383,19 +363,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     public void save() {
         // Nothing to do here.
-    }
-
-    private class UpdateAction implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            if (getController().getUpdateSettings() != null) {
-                ManuallyInvokedUpdateHandler handler = new ManuallyInvokedUpdateHandler(
-                    getController());
-                Updater updater = new Updater(getController(), getController()
-                    .getUpdateSettings(), handler);
-                updater.start();
-            }
-            PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);
-        }
     }
 
 }

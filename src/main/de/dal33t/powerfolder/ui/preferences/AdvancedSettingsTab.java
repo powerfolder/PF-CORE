@@ -19,11 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Locale;
 
 import javax.swing.*;
 
@@ -44,10 +42,8 @@ import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab {
 
@@ -61,17 +57,13 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
 
 
-    private JComboBox languageChooser;
-    private JComboBox xBehaviorChooser;
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
     private JCheckBox autoExpandCB;
-    private JCheckBox updateCheck;
     private JCheckBox showHiddenFilesCB;
 
     private JLabel skinLabel;
     private JComboBox skinCombo;
-    private boolean originalQuitOnX;
 
     private boolean needsRestart;
     // The triggers the writing into core
@@ -117,19 +109,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         expertModeBox = SimpleComponentFactory.createCheckBox(
                 Translation.getTranslation("preferences.advanced.expert_mode"));
         expertModeBox.setSelected(PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
-
-        // Language selector
-        languageChooser = createLanguageChooser();
-
-        // Build behavior chooser
-        xBehaviorChooser = createXBehaviorChooser();
-
-        boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
-            .getValueBoolean(getController());
-        updateCheck = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
-            checkForUpdate);
 
         ValueModel lockedModel = new ValueHolder(
             ConfigurationEntry.USER_INTERFACE_LOCKED
@@ -249,13 +228,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
 
 
-            row += 2;
-
-            builder.add(
-                new JLabel(Translation
-                    .getTranslation("preferences.dialog.language")), cc.xy(1,
-                    row));
-            builder.add(languageChooser, cc.xy(3, row));
 
             row += 2;
             if (skinLabel != null && skinCombo != null) {
@@ -263,15 +235,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                 builder.add(skinCombo, cc.xy(3, row));
             }
 
-            row += 2;
-            builder.add(
-                new JLabel(Translation
-                    .getTranslation("preferences.dialog.exit_behavior")), cc
-                    .xy(1, row));
-            builder.add(xBehaviorChooser, cc.xy(3, row));
 
-            row += 2;
-            builder.add(updateCheck, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(showHiddenFilesCB, cc.xyw(3, row, 2));
@@ -310,31 +274,10 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
 
 
-        // Set locale
-        if (languageChooser.getSelectedItem() instanceof Locale) {
-            Locale locale = (Locale) languageChooser.getSelectedItem();
-            // Check if we need to restart
-            needsRestart |= !Util.equals(locale, Translation.getActiveLocale());
-            // Save settings
-            Translation.saveLocalSetting(locale);
-        } else {
-            // Remove setting
-            Translation.saveLocalSetting(null);
-        }
-
-        boolean checkForUpdate = updateCheck.isSelected();
-        PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
 
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
             underlineLinkBox.isSelected());
-
-        PreferencesEntry.QUIT_ON_X.setValue(getController(),
-                xBehaviorChooser.getSelectedIndex() == 0); // Quit on exit.
-        if (xBehaviorChooser.getSelectedIndex() == 0 ^ originalQuitOnX) {
-            // Need to restart to redraw minimize button. 
-            needsRestart = true;
-        }
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
@@ -362,62 +305,4 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
      * 
      * @return a language chooser, which contains the supported locales
      */
-    @SuppressWarnings("serial")
-    private JComboBox createLanguageChooser() {
-        // Create combobox
-        JComboBox chooser = new JComboBox();
-        for (Locale locale1 : Translation.getSupportedLocales()) {
-            chooser.addItem(locale1);
-        }
-
-        // Add renderer
-        chooser.setRenderer(new DefaultListCellRenderer() {
-            public Component getListCellRendererComponent(JList list,
-                Object value, int index, boolean isSelected,
-                boolean cellHasFocus)
-            {
-                super.getListCellRendererComponent(list, value, index,
-                    isSelected, cellHasFocus);
-                if (value instanceof Locale) {
-                    Locale locale = (Locale) value;
-                    setText(locale.getDisplayName(locale));
-                } else {
-                    setText("- unknown -");
-                }
-                return this;
-            }
-        });
-
-        // Initialize chooser with the active locale.
-        chooser.setSelectedItem(Translation.getActiveLocale());
-
-        return chooser;
-    }
-
-    /**
-     * Creates a X behavior chooser.
-     * Option 0 is Exit program
-     * Option 1 is Minimize to system tray
-     */
-    private JComboBox createXBehaviorChooser() {
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        model.addElement(Translation.getTranslation(
-                "preferences.dialog.exit_behavior.exit"));
-        if (OSUtil.isSystraySupported()) {
-            model.addElement(Translation.getTranslation(
-                    "preferences.dialog.exit_behavior.minimize"));
-        }
-
-        JComboBox combo = new JComboBox(model);
-        combo.setEnabled(OSUtil.isSystraySupported());
-        if (OSUtil.isSystraySupported() &&
-                !PreferencesEntry.QUIT_ON_X.getValueBoolean(
-                        getController())) {
-            combo.setSelectedIndex(1); // Minimize option.
-        }
-
-        originalQuitOnX = combo.getSelectedIndex() == 0;
-
-        return combo;
-    }
 }
