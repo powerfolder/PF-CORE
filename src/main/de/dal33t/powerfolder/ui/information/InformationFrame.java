@@ -19,12 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.information;
 
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
-import java.awt.event.WindowAdapter;
-import java.awt.*;
-import java.util.prefs.Preferences;
-
 import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
@@ -34,9 +28,6 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.UIConstants;
 import de.dal33t.powerfolder.ui.information.debug.DebugInformationCard;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
@@ -47,14 +38,6 @@ import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
  * The information window.
  */
 public class InformationFrame extends PFUIComponent {
-
-    private static final String INFOCARD = "infocard.";
-    private static final String INFOCARD_X = ".x";
-    private static final String INFOCARD_Y = ".y";
-    private static final String INFOCARD_WIDTH = ".width";
-    private static final String INFOCARD_HEIGHT = ".height";
-    private static final String INFOCARD_SET = ".set";
-    private static final String INFOCARD_MAXIMIZED = ".maximized";
 
     private JFrame uiComponent;
 
@@ -68,8 +51,6 @@ public class InformationFrame extends PFUIComponent {
 
     private FolderInfo currentFolderInfo;
 
-    private InformationCardType informationCardType = InformationCardType.NONE;
-
     /**
      * Constructor
      * 
@@ -79,10 +60,6 @@ public class InformationFrame extends PFUIComponent {
         super(controller);
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-    }
-
-    public InformationCardType getInformationCardType() {
-        return informationCardType;
     }
 
     public JFrame getUIComponent() {
@@ -97,54 +74,7 @@ public class InformationFrame extends PFUIComponent {
      */
     private void initialize() {
         uiComponent = new JFrame();
-        uiComponent.addWindowFocusListener(new WindowFocusListener() {
-            public void windowGainedFocus(WindowEvent e) {
-                getUIController().setActiveFrame(UIController.INFO_FRAME_ID);
-            }
-
-            public void windowLostFocus(WindowEvent e) {
-                storeLocationSize();
-            }
-        });
-
-        uiComponent.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                storeLocationSize();
-            }
-        });
-
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
-    }
-
-    /**
-     * Remember where the location / size for this type for next time.
-     */
-    private void storeLocationSize() {
-
-        if (informationCardType == null ||
-                informationCardType == InformationCardType.NONE) {
-            return;
-        }
-
-        String propertyPrefix = INFOCARD +
-                informationCardType.name().toLowerCase();
-        Preferences preferences = getController().getPreferences();
-
-        if (getUIComponent().getExtendedState() == Frame.NORMAL) {
-            preferences.putInt(propertyPrefix + INFOCARD_X,
-                    getUIComponent().getX());
-            preferences.putInt(propertyPrefix + INFOCARD_Y,
-                    getUIComponent().getY());
-            preferences.putInt(propertyPrefix + INFOCARD_WIDTH,
-                    getUIComponent().getWidth());
-            preferences.putInt(propertyPrefix + INFOCARD_HEIGHT,
-                    getUIComponent().getHeight());
-        }
-
-        preferences.putBoolean(propertyPrefix + INFOCARD_MAXIMIZED,
-        (getUIComponent().getExtendedState() &
-                Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH);
-
     }
 
     public boolean isShowingFolder() {
@@ -277,7 +207,6 @@ public class InformationFrame extends PFUIComponent {
                 uploadsInformationCard.getUIComponent());
         getUIComponent().getContentPane().add(tabbedPane);
         showingFolder = false;
-        informationCardType = InformationCardType.TRANSFERS;
     }
 
     public void displayDebug() {
@@ -302,7 +231,6 @@ public class InformationFrame extends PFUIComponent {
         getUIComponent().setTitle(card.getCardTitle());
         getUIComponent().getContentPane().removeAll();
         getUIComponent().getContentPane().add(card.getUIComponent());
-        informationCardType = card.getInformationCardType();
     }
 
     /**
@@ -363,71 +291,12 @@ public class InformationFrame extends PFUIComponent {
         }
     }
 
-    /**
-     * Depending on the card being displayed, locate the frame to the last
-     * known position / size.
-     */
-    public void relocate() {
-
-        getUIComponent().setExtendedState(Frame.NORMAL);
-
-        String propertyPrefix = INFOCARD +
-                informationCardType.name().toLowerCase();
-        Preferences preferences = getController().getPreferences();
-        boolean set = preferences.getBoolean(propertyPrefix + INFOCARD_SET,
-                false);
-
-        if (set) {
-            if (preferences.getBoolean(propertyPrefix + INFOCARD_MAXIMIZED,
-                    UIConstants.DEFAULT_FRAME_MAXIMIZED)) {
-                getUIComponent().setExtendedState(Frame.MAXIMIZED_BOTH);
-            } else {
-                getUIComponent().setExtendedState(Frame.NORMAL);
-                int x = preferences.getInt(propertyPrefix + INFOCARD_X,
-                        UIConstants.DEFAULT_FRAME_X);
-                int y = preferences.getInt(propertyPrefix + INFOCARD_Y,
-                        UIConstants.DEFAULT_FRAME_Y);
-                int w = preferences.getInt(propertyPrefix + INFOCARD_WIDTH,
-                        UIConstants.DEFAULT_FRAME_WIDTH);
-                int h = preferences.getInt(propertyPrefix + INFOCARD_HEIGHT,
-                        UIConstants.DEFAULT_FRAME_HEIGHT);
-                getUIComponent().setLocation(x, y);
-                getUIComponent().setSize(w, h);
-            }
-        } else {
-
-            // First time displayed for this card type, use sensible defaults.
-            getUIComponent().setExtendedState(Frame.NORMAL);
-            getUIComponent().pack();
-
-            if (getUIComponent().getHeight() <
-                    UIConstants.DEFAULT_FRAME_HEIGHT) {
-                getUIComponent().setSize(getUIComponent().getWidth(),
-                        UIConstants.DEFAULT_FRAME_HEIGHT);
-            }
-            if (getUIComponent().getWidth() <
-                    UIConstants.DEFAULT_FRAME_WIDTH) {
-                getUIComponent().setSize(UIConstants.DEFAULT_FRAME_WIDTH,
-                        getUIComponent().getHeight());
-            }
-            
-            getUIComponent().setLocation(UIConstants.DEFAULT_FRAME_X,
-                    UIConstants.DEFAULT_FRAME_Y);
-
-            preferences.putBoolean(propertyPrefix + INFOCARD_SET, true);
-
-            UIUtil.putOnScreen(getUIComponent());
-        }
-
-    }
-
     // /////////////////
     // Inner classes //
     // /////////////////
 
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
+    private class MyFolderRepositoryListener
+            implements FolderRepositoryListener {
 
         public void folderRemoved(FolderRepositoryEvent e) {
             removedFolder(e.getFolderInfo());

@@ -850,22 +850,15 @@ public class MainFrame extends PFUIComponent {
         configureInlineInfo();
     }
 
-    public boolean shouldShowInfoInline() {
-        int inline = PreferencesEntry.INLINE_INFO_MODE
-            .getValueInt(getController());
-        return inline != Constants.DOCKED_STATE_FREE;
-    }
-
     public boolean isShowingInfoInline() {
         return inlineInfoPanel != null;
     }
 
     private void configureInlineInfo() {
-        boolean inline = shouldShowInfoInline();
         boolean displaying = isShowingInfoInline();
-        inlineInfoCloseButton.setVisible(inline && displaying);
+        inlineInfoCloseButton.setVisible(displaying);
 
-        if (inline && displaying) {
+        if (displaying) {
 
             centralPanel.removeAll();
             split.setLeftComponent(mainTabbedPane.getUIComponent());

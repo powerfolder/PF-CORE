@@ -366,9 +366,6 @@ public class Constants {
     /** Cleanup immediately, 1, 10, 30, never days. */
     public static final int[] CLEANUP_VALUES = {0, 1, 10, 30, Integer.MAX_VALUE};
 
-    public static final int DOCKED_STATE_FREE = 0;
-    public static final int DOCKED_STATE_DOCKED = 2;
-
     public static final int DEFAULT_NORMAL_DOCKED_WIDTH = 1100;
     public static final int DEFAULT_NORMAL_HEIGHT = 600;
 

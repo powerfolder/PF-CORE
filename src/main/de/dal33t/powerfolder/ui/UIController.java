@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.EventQueue;
-import java.awt.Frame;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -808,22 +807,9 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     private void displayInformationWindow() {
-        if (mainFrame.shouldShowInfoInline()) {
-            mainFrame.showInlineInfoPanel((JPanel) informationFrame
-                .getUIComponent().getContentPane(), informationFrame
-                .getUIComponent().getTitle());
-        } else {
-            JFrame frame = informationFrame.getUIComponent();
-            if (frame.getExtendedState() == Frame.ICONIFIED) {
-                frame.setExtendedState(Frame.NORMAL);
-            }
-
-            // Card-specific location of the info frame.
-            informationFrame.relocate();
-
-            UIUtil.putOnScreen(frame);
-            frame.setVisible(true);
-        }
+        mainFrame.showInlineInfoPanel(
+                (JPanel) informationFrame.getUIComponent().getContentPane(),
+                informationFrame.getUIComponent().getTitle());
     }
 
     /**
@@ -1036,18 +1022,10 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * @return true if the info panel is displayed currently (either inline or
-     *         floating)
+     * @return true if the info panel is displayed currently
      */
     public boolean isShowingInfo() {
-        if (mainFrame.shouldShowInfoInline()) {
-            return mainFrame.isShowingInfoInline();
-        } else {
-            JFrame frame = informationFrame.getUIComponent();
-            return frame.isVisible()
-                && (frame.getExtendedState() & Frame.ICONIFIED) != Frame.ICONIFIED;
-        }
-
+        return mainFrame.isShowingInfoInline();
     }
 
     /**

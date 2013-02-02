@@ -126,12 +126,6 @@ public enum PreferencesEntry {
 
     SHOW_ASK_FOR_PAUSE("show.ask.for.pause", true),
 
-    /**
-     * Show the information tab with the mainframe 0=free, 1=docked. info on the
-     * right.
-     */
-    INLINE_INFO_MODE("inline.info.mode", 1),
-
     MAIN_FRAME_MAXIMIZED("mainframe.maximized", false),
 
     FILE_SEARCH_MODE("file.search.mode",

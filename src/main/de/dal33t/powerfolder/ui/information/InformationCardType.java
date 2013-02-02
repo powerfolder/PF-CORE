@@ -23,9 +23,7 @@ package de.dal33t.powerfolder.ui.information;
  * The various flavours for information panel.
  */
 public enum InformationCardType {
-        NONE,
         FOLDER,
-        SETTINGS,
         TRANSFERS,
         DEBUG,
         NOTICES

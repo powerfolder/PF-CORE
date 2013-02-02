@@ -44,7 +44,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.Skin;
@@ -63,9 +62,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox xBehaviorChooser;
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
-    private JCheckBox infoDockedBox;
     private JCheckBox autoExpandCB;
-    private boolean wasDocked;
     private JCheckBox updateCheck;
     private JCheckBox usePowerFolderLink;
     private JCheckBox showHiddenFilesCB;
@@ -130,14 +127,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             new BufferedValueModel(ulModel, writeTrigger),
             Translation.getTranslation("preferences.dialog.underline_link"));
         underlineLinkBox.setVisible(false);
-
-        infoDockedBox = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.information_panel_docked"));
-
-        wasDocked = PreferencesEntry.INLINE_INFO_MODE
-            .getValueInt(getController()) != Constants.DOCKED_STATE_FREE;
-        infoDockedBox.setSelected(wasDocked);
 
         ValueModel aeModel = new ValueHolder(
             PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController()));
@@ -262,9 +251,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(infoDockedBox, cc.xy(3, row));
-
-            row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
 
             row += 2;
@@ -307,10 +293,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
             underlineLinkBox.isSelected());
 
-        if (wasDocked != infoDockedBox.isSelected()) {
-            needsRestart = true;
-        }
-
         PreferencesEntry.QUIT_ON_X.setValue(getController(),
                 xBehaviorChooser.getSelectedIndex() == 0); // Quit on exit.
         if (xBehaviorChooser.getSelectedIndex() == 0 ^ originalQuitOnX) {
@@ -322,10 +304,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             boolean newValue = usePowerFolderLink.isSelected();
             configureLinksPlances(newValue);
         }
-
-        // Use inline info
-        PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
-            infoDockedBox.isSelected() ? Constants.DOCKED_STATE_DOCKED : Constants.DOCKED_STATE_FREE);
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
