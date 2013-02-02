@@ -35,7 +35,7 @@ import java.awt.event.ActionEvent;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
+public class WarningsNotificationsSettingsTab extends PFComponent implements PreferenceTab {
 
     /** Show system notifications */
     private JCheckBox showSystemNotificationBox;
@@ -72,7 +72,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     private Trigger writeTrigger;
     private ApplicationModel applicationModel;
 
-    public DialogsSettingsTab(Controller controller) {
+    public WarningsNotificationsSettingsTab(Controller controller) {
         super(controller);
         initComponents();
     }

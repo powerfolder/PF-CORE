@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
-public class UISettingsTab extends PFUIComponent implements PreferenceTab {
+public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JPanel panel;
 
@@ -75,7 +75,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     // The triggers the writing into core
     private Trigger writeTrigger;
 
-    public UISettingsTab(Controller controller) {
+    public AdvancedSettingsTab(Controller controller) {
         super(controller);
         initComponents();
     }

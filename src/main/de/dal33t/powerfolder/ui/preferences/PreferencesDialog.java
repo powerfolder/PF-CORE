@@ -58,9 +58,9 @@ public class PreferencesDialog extends BaseDialog {
 
     private InformationTab informationTab;
     private GeneralSettingsTab generalSettingsTab;
-    private UISettingsTab uiSettingsTab;
+    private AdvancedSettingsTab advancedSettingsTab;
     private NetworkSettingsTab networkSettingsTab;
-    private DialogsSettingsTab dialogsSettingsTab;
+    private WarningsNotificationsSettingsTab warningsNotificationsSettingsTab;
     private DynDnsSettingsTab dynDnsSettingsTab;
     private ExpertSettingsTab expertSettingsTab;
     private PluginSettingsTab pluginSettingsTab;
@@ -121,17 +121,17 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(generalSettingsTab.getTabName(),
             generalSettingsTab.getUIPanel());
 
-        // UI tab
-        uiSettingsTab = new UISettingsTab(getController());
-        preferenceTabs.add(uiSettingsTab);
-        tabbedPane.addTab(uiSettingsTab.getTabName(),
-            uiSettingsTab.getUIPanel());
+        // Advanced tab
+        advancedSettingsTab = new AdvancedSettingsTab(getController());
+        preferenceTabs.add(advancedSettingsTab);
+        tabbedPane.addTab(advancedSettingsTab.getTabName(),
+            advancedSettingsTab.getUIPanel());
 
-        // Dialog tab
-        dialogsSettingsTab = new DialogsSettingsTab(getController());
-        preferenceTabs.add(dialogsSettingsTab);
-        tabbedPane.addTab(dialogsSettingsTab.getTabName(),
-            dialogsSettingsTab.getUIPanel());
+        // Warnings and Notifications tab
+        warningsNotificationsSettingsTab = new WarningsNotificationsSettingsTab(getController());
+        preferenceTabs.add(warningsNotificationsSettingsTab);
+        tabbedPane.addTab(warningsNotificationsSettingsTab.getTabName(),
+            warningsNotificationsSettingsTab.getUIPanel());
 
         Boolean expertMode = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
@@ -343,16 +343,16 @@ public class PreferencesDialog extends BaseDialog {
             && component == generalSettingsTab.getUIPanel())
         {
             article = WikiLinks.SETTINGS_GENERAL;
-        } else if (uiSettingsTab != null
-            && component == uiSettingsTab.getUIPanel())
+        } else if (advancedSettingsTab != null
+            && component == advancedSettingsTab.getUIPanel())
         {
             article = WikiLinks.SETTINGS_UI;
         } else if (networkSettingsTab != null
             && component == networkSettingsTab.getUIPanel())
         {
             article = WikiLinks.SETTINGS_NETWORK;
-        } else if (dialogsSettingsTab != null
-            && component == dialogsSettingsTab.getUIPanel())
+        } else if (warningsNotificationsSettingsTab != null
+            && component == warningsNotificationsSettingsTab.getUIPanel())
         {
             article = WikiLinks.SETTINGS_DIALOG;
         } else if (dynDnsSettingsTab != null
