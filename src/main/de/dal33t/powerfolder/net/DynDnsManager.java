@@ -148,9 +148,9 @@ public class DynDnsManager extends PFComponent {
                         // validation failed ask the user if he/she
                         // wants to continue with these settings
                         String message = Translation
-                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.text");
+                            .getTranslation("preferences.dyn_dns.manager_no_match_text");
                         String title = Translation
-                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.title");
+                            .getTranslation("preferences.dyn_dns.manager_no_match_title");
 
                         int result = DialogFactory.genericDialog(
                             getController(), title, message, new String[]{
@@ -207,18 +207,18 @@ public class DynDnsManager extends PFComponent {
             case ConnectionListener.VALIDATION_FAILED :
 
                 DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("preferences.dialog.warning_message"),
+                    .getTranslation("preferences.dyn_dns.warning_message"),
                     Translation.getTranslation(
-                        "preferences.dialog.statusValidFailed", arg),
+                            "preferences.dyn_dns.status_valid_failed", arg),
                     GenericDialogType.WARN);
 
                 break;
 
             case ConnectionListener.CANNOT_RESOLVE :
                 DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("preferences.dialog.warning_message"),
+                    .getTranslation("preferences.dyn_dns.warning_message"),
                     Translation.getTranslation(
-                        "preferences.dialog.statusValidFailed", arg),
+                            "preferences.dyn_dns.status_valid_failed", arg),
                     GenericDialogType.WARN);
 
         }
@@ -235,8 +235,8 @@ public class DynDnsManager extends PFComponent {
         }
 
         DialogFactory.genericDialog(getController(), Translation
-            .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
-            Translation.getTranslation("preferences.dialog.dyn_dnsUpdateText",
+            .getTranslation("preferences.dyn_dns.update_title"),
+            Translation.getTranslation("preferences.dyn_dns.update_text",
                 err), GenericDialogType.ERROR);
     }
 
@@ -249,7 +249,7 @@ public class DynDnsManager extends PFComponent {
             case ErrorManager.NO_ERROR :
 
                 DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
+                    .getTranslation("preferences.dyn_dns.update_title"),
 
                 activeDynDns.getErrorText(), GenericDialogType.INFO);
                 break;
@@ -264,9 +264,9 @@ public class DynDnsManager extends PFComponent {
                     .genericDialog(
                         getController(),
                         Translation
-                            .getTranslation("preferences.dialog.dyn_dnsUpdateTitle"),
+                            .getTranslation("preferences.dyn_dns.update_title"),
                         Translation
-                            .getTranslation("preferences.dialog.dyn_dnsUpdateUnknowError"),
+                            .getTranslation("preferences.dyn_dns.update_unknown_error"),
                         GenericDialogType.ERROR);
                 break;
 
@@ -341,7 +341,7 @@ public class DynDnsManager extends PFComponent {
             int wpos = 1;
             int hpos = 1;
             builder.add(new JLabel(Translation.getTranslation(
-                "preferences.dialog.statusWaitDynDns", dyndns)), cc.xywh(xpos,
+                    "preferences.dyn_dns.status_wait", dyndns)), cc.xywh(xpos,
                 ypos, wpos, hpos));
 
             // Add panel to component
@@ -407,7 +407,7 @@ public class DynDnsManager extends PFComponent {
     }
 
     /**
-     * Updates DYNDNS if neccessary.
+     * Updates DYNDNS if necessary.
      */
     public synchronized void updateIfNessesary() {
         if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE

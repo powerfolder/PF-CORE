@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -27,6 +26,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -39,6 +39,8 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
 
     /** Show system notifications */
     private JCheckBox showSystemNotificationBox;
+
+    private JCheckBox showHiddenFilesCB;
 
     /** Notification translucency */
     private JSlider notificationTranslucentSlider;
@@ -68,8 +70,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
 
     private boolean needsRestart;
 
-    // The triggers the writing into core
-    private Trigger writeTrigger;
     private ApplicationModel applicationModel;
 
     public WarningsNotificationsSettingsTab(Controller controller) {
@@ -78,7 +78,7 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.dialog.dialogs.title");
+        return Translation.getTranslation("preferences.warnings_notifications.title");
     }
 
     public boolean needsRestart() {
@@ -94,26 +94,26 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
     }
 
     private void initComponents() {
-        applicationModel = getController().getUIController()
-            .getApplicationModel();
+        applicationModel = getController().getUIController().getApplicationModel();
 
-        writeTrigger = new Trigger();
+        showHiddenFilesCB = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.warnings_notifications.show_hidden_files"));
+        showHiddenFilesCB.setSelected(PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()));
 
         // Show system notifications when minimized
-        showSystemNotificationBox = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.show_system_notifications"));
-        showSystemNotificationBox.setSelected((Boolean) applicationModel
-            .getSystemNotificationsValueModel().getValue());
+        showSystemNotificationBox = new JCheckBox(
+                Translation.getTranslation("preferences.warnings_notifications.show_system_notifications"));
+        showSystemNotificationBox.setSelected(
+                (Boolean) applicationModel.getSystemNotificationsValueModel().getValue());
 
         // Show system notifications when minimized
         showAutoCreatedFoldersBox = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.show_auto_created_folders"));
+            .getTranslation("preferences.warnings_notifications.show_auto_created_folders"));
         showAutoCreatedFoldersBox.setSelected(
-                PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.getValueBoolean(
-                        getController()));
+                PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.getValueBoolean(getController()));
 
         showPauseOptionsCB = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.show_pause_options"));
+            .getTranslation("preferences.warnings_notifications.show_pause_options"));
         showPauseOptionsCB.setSelected(
                 PreferencesEntry.SHOW_ASK_FOR_PAUSE.getValueBoolean(
                         getController()));
@@ -168,18 +168,18 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
             .getValueBoolean(getController());
         warnOnCloseIfNotInSyncCB = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warn_on_close_if_not_in_sync"),
+                .getTranslation("preferences.warnings_notifications.warn_on_close_if_not_in_sync"),
             warnOnClose);
         warnOnNoDirectConnectivityCB = new JCheckBox(
-            Translation.getTranslation("preferences.dialog.dialogs.warn_on_no_direct_connectivity"),
+            Translation.getTranslation("preferences.warnings_notifications.warn_on_no_direct_connectivity"),
             warnOnNoDirectConnectivity);
         warnOnPossibleFilenameProblemsCB = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warn_on_possible_file_name_problems"),
+                .getTranslation("preferences.warnings_notifications.warn_on_possible_file_name_problems"),
             fileNameCheck);
         warnIfCloudSpaceFullCB = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warn_if_cloud_space_full"),
+                .getTranslation("preferences.warnings_notifications.warn_if_cloud_space_full"),
             cloudFull);
     }
 
@@ -200,10 +200,19 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
 
             int row = 1;
 
-            builder.add(warnOnCloseIfNotInSyncCB, cc.xy(3, row));
+            builder.add(showPauseOptionsCB, cc.xy(3, row));
+
+            row += 2;
+            builder.add(showHiddenFilesCB, cc.xy(3, row));
+
+            row += 2;
+            builder.add(warnIfCloudSpaceFullCB, cc.xy(3, row));
 
             row += 2;
             builder.add(warnOnNoDirectConnectivityCB, cc.xy(3, row));
+
+            row += 2;
+            builder.add(warnOnCloseIfNotInSyncCB, cc.xy(3, row));
 
             row += 2;
             builder.add(warnOnPossibleFilenameProblemsCB, cc.xy(3, row));
@@ -211,40 +220,27 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
             row += 2;
             builder.add(showAutoCreatedFoldersBox, cc.xy(3, row));
 
-            row += 2;
-            builder.add(showPauseOptionsCB, cc.xy(3, row));
-
-            row += 2;
-            builder.add(warnIfCloudSpaceFullCB, cc.xy(3, row));
-
             // //////////////////////////////////////
             // Notification stuff only below here //
             // //////////////////////////////////////
 
             row += 2;
-            builder.addSeparator(Translation
-                .getTranslation("preferences.dialog.dialogs.notifications"), cc
-                .xyw(1, row, 3));
+            builder.addSeparator(Translation.getTranslation("preferences.warnings_notifications.notifications"),
+                    cc.xyw(1, row, 3));
 
             row += 2;
             builder.add(showSystemNotificationBox, cc.xy(3, row));
 
             if (Constants.OPACITY_SUPPORTED) {
                 row += 2;
-                builder
-                    .addLabel(
-                        Translation
-                            .getTranslation("preferences.dialog.dialogs.notification_translucency"),
+                builder.addLabel(Translation.getTranslation("preferences.warnings_notifications.notification_translucency"),
                         cc.xy(1, row));
                 builder.add(createNotificationTranslucentSpinnerPanel(), cc.xy(
                     3, row));
             }
 
             row += 2;
-            builder
-                .addLabel(
-                    Translation
-                        .getTranslation("preferences.dialog.dialogs.notification_delay"),
+            builder.addLabel(Translation.getTranslation("preferences.warnings_notifications.notification_delay"),
                     cc.xy(1, row));
             builder.add(createNotificationDisplaySpinnerPanel(), cc.xy(3, row));
 
@@ -277,13 +273,12 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
      */
     public void save() {
 
-        // Write properties into core
-        writeTrigger.triggerCommit();
-
         boolean warnOnNoDirectConnectivity = warnOnNoDirectConnectivityCB.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSyncCB.isSelected();
         boolean filenameCheck = warnOnPossibleFilenameProblemsCB.isSelected();
         boolean fullCloudSpace = warnIfCloudSpaceFullCB.isSelected();
+
+        PreferencesEntry.SHOW_HIDDEN_FILES.setValue(getController(), showHiddenFilesCB.isSelected());
 
         if (showSystemNotificationBox != null) {
             applicationModel.getSystemNotificationsValueModel().setValue(
@@ -337,9 +332,9 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
                 .getUIController()
                 .previewMessage(
                     Translation
-                        .getTranslation("preferences.dialog.dialogs.notification.preview.title"),
+                        .getTranslation("preferences.warnings_notifications.notification_preview_title"),
                     Translation
-                        .getTranslation("preferences.dialog.dialogs.notification.preview.text"));
+                        .getTranslation("preferences.warnings_notifications.notification_preview_text"));
 
             // Reset
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),

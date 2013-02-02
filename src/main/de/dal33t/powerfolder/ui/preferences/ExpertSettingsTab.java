@@ -27,10 +27,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.*;
 
 import javax.swing.*;
@@ -86,7 +82,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.dialog.expert.title");
+        return Translation.getTranslation("preferences.expert_title");
     }
 
     public boolean needsRestart() {
@@ -104,7 +100,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
 
         massDeleteBox = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.dialog.use_mass_delete"));
+                Translation.getTranslation("preferences.expert.use_mass_delete"));
         massDeleteBox.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
         massDeleteBox.addItemListener(new MassDeleteItemListener());
         massDeleteSlider = new JSlider(20, 100, ConfigurationEntry.MASS_DELETE_THRESHOLD
@@ -127,7 +123,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     WinUtils.isPFLinks(getController()));
         }
 
-        conflictDetectionBox = new JCheckBox(Translation.getTranslation("preferences.dialog.use_conflict_handling"));
+        conflictDetectionBox = new JCheckBox(Translation.getTranslation("preferences.expert.use_conflict_handling"));
         conflictDetectionBox.setSelected(ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController()));
 
         // Local base selection
@@ -143,55 +139,55 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         locationField = createLocationField();
 
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.use_zip_on_lan"));
+            .getTranslation("preferences.expert.use_zip_on_lan"));
         useZipOnLanCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.use_zip_on_lan.tooltip"));
+            .getTranslation("preferences.expert.use_zip_on_lan_tooltip"));
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
             .getValueBoolean(getController()));
 
         // Always uses compression on internet
         useZipOnInternetCheckBox = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("preferences.dialog.use_zip_on_internet"));
+                .getTranslation("preferences.expert.use_zip_on_internet"));
         useZipOnInternetCheckBox.setSelected(true);
         useZipOnInternetCheckBox.setEnabled(false);
 
         useDeltaSyncOnLanCheckBox = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("preferences.dialog.use_delta_on_lan"));
+                .getTranslation("preferences.expert.use_delta_on_lan"));
         useDeltaSyncOnLanCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.use_delta_on_lan.tooltip"));
+            .getTranslation("preferences.expert.use_delta_on_lan_tooltip"));
         useDeltaSyncOnLanCheckBox
             .setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
                 .getValueBoolean(getController()));
 
         useDeltaSyncOnInternetCheckBox = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("preferences.dialog.use_delta_on_internet"));
+                .getTranslation("preferences.expert.use_delta_on_internet"));
         useDeltaSyncOnInternetCheckBox
             .setToolTipText(Translation
-                .getTranslation("preferences.dialog.use_delta_on_internet.tooltip"));
+                .getTranslation("preferences.expert.use_delta_on_internet_tooltip"));
         useDeltaSyncOnInternetCheckBox
             .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
                 .getValueBoolean(getController()));
 
         useSwarmingOnLanCheckBox = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("preferences.dialog.swarming.lan"));
+                .getTranslation("preferences.expert.swarming_lan"));
         useSwarmingOnLanCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.swarming.lan.tooltip"));
+            .getTranslation("preferences.expert.swarming_lan_tooltip"));
         useSwarmingOnLanCheckBox
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN
                 .getValueBoolean(getController()));
 
         useSwarmingOnInternetCheckBox = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("preferences.dialog.swarming.internet"));
+                .getTranslation("preferences.expert.swarming_internet"));
         useSwarmingOnInternetCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.swarming.internet.tooltip"));
+            .getTranslation("preferences.expert.swarming_internet_tooltip"));
         useSwarmingOnInternetCheckBox
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
-                .getValueBoolean(getController()));
+                    .getValueBoolean(getController()));
     }
 
     /**
@@ -228,7 +224,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         JButton locationButton = new JButtonMini(Icons
             .getIconById(Icons.DIRECTORY), Translation
-            .getTranslation("folder_create.dialog.select_directory.text"));
+            .getTranslation("preferences.expert.select_directory_text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -256,7 +252,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
+                .getTranslation("preferences.expert.base_dir")), cc.xy(1, row));
             builder.add(locationField, cc.xyw(3, row, 2));
 
             if (usePowerFolderLink != null) {
@@ -274,12 +270,12 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.dialog.mass_delete_threshold")),
+                    "preferences.expert.mass_delete_threshold")),
                 cc.xy(1, row));
             builder.add(massDeleteSlider, cc.xy(3, row));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("preferences.dialog.zip_compression"), cc.xy(1, row));
+            builder.addLabel(Translation.getTranslation("preferences.expert.zip_compression"), cc.xy(1, row));
             ButtonBarBuilder zipBar = ButtonBarBuilder
                 .createLeftToRightBuilder();
             zipBar.addGridded(useZipOnInternetCheckBox);
@@ -288,7 +284,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(zipBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("preferences.dialog.delta_sync"), cc.xy(1, row));
+            builder.addLabel(Translation.getTranslation("preferences.expert.delta_sync"), cc.xy(1, row));
             ButtonBarBuilder deltaBar = ButtonBarBuilder.createLeftToRightBuilder();
             deltaBar.addGridded(useDeltaSyncOnInternetCheckBox);
             deltaBar.addRelatedGap();
@@ -296,7 +292,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(deltaBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("preferences.dialog.swarming"), cc.xy(1, row));
+            builder.addLabel(Translation.getTranslation("preferences.expert.swarming"), cc.xy(1, row));
             ButtonBarBuilder swarmingBar = ButtonBarBuilder.createLeftToRightBuilder();
             swarmingBar.addGridded(useSwarmingOnInternetCheckBox);
             swarmingBar.addRelatedGap();
@@ -392,8 +388,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         }
     }
 
-
-
     /**
      * Action listener for the location button. Opens a choose dir dialog and
      * sets the location model with the result.
@@ -411,14 +405,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     .getFolders(true))
                 {
                     if (folder.getLocalBase().equals(newLocation)) {
-                        DialogFactory
-                            .genericDialog(
-                                getController(),
-                                Translation
-                                    .getTranslation("preferences.dialog.duplicate_localbase.title"),
-                                Translation
-                                    .getTranslation(
-                                        "preferences.dialog.duplicate_localbase.message",
+                        DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation("preferences.expert.duplicate_local_base_title"),
+                                Translation.getTranslation("preferences.expert.duplicate_local_base_message",
                                         folder.getName()),
                                 GenericDialogType.ERROR);
                         return;

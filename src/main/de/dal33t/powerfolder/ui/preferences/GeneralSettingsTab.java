@@ -61,30 +61,21 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JPanel panel;
     private JTextField nickField;
     private JCheckBox createPowerFoldersDesktopShortcutsBox;
-
     private JCheckBox startWithWindowsBox;
     private ActionLabel startWithMacOSLabel;
-
-
     private JCheckBox folderAutoSetupBox;
-
     private JCheckBox updateCheck;
     private boolean originalQuitOnX;
-
     private JCheckBox usePowerFolderIconBox;
     private JComboBox xBehaviorChooser;
-
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel modeModel;
     private ValueModel versionModel;
-
     private JComboBox archiveCleanupCombo;
     private Action cleanupAction;
-
     private JCheckBox folderSyncCB;
     private JLabel folderSyncLabel;
     private JSlider folderSyncSlider;
-
     private JComboBox languageChooser;
 
     private boolean needsRestart;
@@ -95,7 +86,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.dialog.general.title");
+        return Translation.getTranslation("preferences.general.title");
     }
 
     public boolean needsRestart() {
@@ -109,7 +100,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     // Exposing *************************************************************
 
     /**
-     * Initalizes all needed ui components
+     * Initializes all needed ui components
      */
     private void initComponents() {
 
@@ -117,7 +108,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
-        updateCheck = new JCheckBox(Translation.getTranslation("preferences.dialog.dialogs.check_for_program_updates"));
+        updateCheck = new JCheckBox(Translation.getTranslation("preferences.general.check_for_program_updates"));
         updateCheck.setSelected(PreferencesEntry.CHECK_UPDATE.getValueBoolean(getController()));
 
         xBehaviorChooser = createXBehaviorChooser();
@@ -129,18 +120,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getValueBoolean(getController());
             createPowerFoldersDesktopShortcutsBox = new JCheckBox(
                 Translation
-                    .getTranslation("preferences.dialog.dialogs.create_powerfolders_shotrcut"),
+                    .getTranslation("preferences.general.create_powerfolder_shortcut"),
                 createPowerFoldersDesktopShortcut);
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
                 startWithWindowsBox = new JCheckBox(
                     Translation
-                        .getTranslation("preferences.dialog.start_with_windows"));
+                        .getTranslation("preferences.general.start_with_windows"));
                 startWithWindowsBox.setSelected(WinUtils.getInstance()
                     .isPFStartup(getController()));
             }
 
             usePowerFolderIconBox = SimpleComponentFactory.createCheckBox(
-                    Translation.getTranslation("preferences.dialog.use_pf_icon"));
+                    Translation.getTranslation("preferences.general.use_pf_icon"));
             usePowerFolderIconBox.setSelected(ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
 
@@ -159,12 +150,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         }
                     }
                 });
-
         }
 
-
         folderAutoSetupBox = new JCheckBox(
-            Translation.getTranslation("preferences.dialog.auto_setup_folders"));
+            Translation.getTranslation("preferences.general.auto_setup_folders"));
         folderAutoSetupBox.setSelected(ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
             .getValueBoolean(getController()));
 
@@ -180,15 +169,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         archiveCleanupCombo = new JComboBox();
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.dialog.archive_cleanup_day")); // 1
+            .getTranslation("preferences.general.archive_cleanup_day")); // 1
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.dialog.archive_cleanup_week")); // 7
+            .getTranslation("preferences.general.archive_cleanup_week")); // 7
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.dialog.archive_cleanup_month")); // 31
+            .getTranslation("preferences.general.archive_cleanup_month")); // 31
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.dialog.archive_cleanup_year")); // 365
+            .getTranslation("preferences.general.archive_cleanup_year")); // 365
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.dialog.archive_cleanup_never")); // 2147483647
+            .getTranslation("preferences.general.archive_cleanup_never")); // 2147483647
         int cleanup = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
         switch (cleanup) {
@@ -217,7 +206,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         folderSyncCB = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.folder_sync_warn.use"));
+                .getTranslation("preferences.general.folder_sync_warn_use"));
         folderSyncCB.setSelected(ConfigurationEntry.FOLDER_SYNC_USE
             .getValueBoolean(getController()));
 
@@ -238,7 +227,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         dictionary.put(30, new JLabel("30"));
         folderSyncSlider.setLabelTable(dictionary);
 
-        folderSyncLabel = new JLabel(Translation.getTranslation("preferences.dialog.folder_sync_text"));
+        folderSyncLabel = new JLabel(Translation.getTranslation("preferences.general.folder_sync_text"));
 
         folderSyncCB.addChangeListener(new FolderChangeListener());
 
@@ -264,12 +253,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             builder.add(
                 new JLabel(Translation
-                    .getTranslation("preferences.dialog.nickname")), cc.xy(1,
+                    .getTranslation("preferences.general.nickname")), cc.xy(1,
                     row));
             builder.add(nickField, cc.xy(3, row));
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation("preferences.dialog.language")), cc.xy(1, row));
+            builder.add(new JLabel(Translation.getTranslation("preferences.general.language")), cc.xy(1, row));
             builder.add(languageChooser, cc.xy(3, row));
 
             row += 2;
@@ -303,7 +292,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
-                builder.add(new JLabel(Translation.getTranslation("preferences.dialog.non_windows_info"),
+                builder.add(new JLabel(Translation.getTranslation("preferences.general.non_windows_info"),
                         SwingConstants.CENTER), cc.xyw(1, row, 4));
                 if (startWithMacOSLabel != null) {
                     builder.appendRow("3dlu");
@@ -317,17 +306,17 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(folderAutoSetupBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation("preferences.dialog.exit_behavior")), cc.xy(1, row));
+            builder.add(new JLabel(Translation.getTranslation("preferences.general.exit_behavior")), cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.dialog.default_archive_mode.text")),
+                    "preferences.general.default_archive_mode_text")),
                     cc.xy(1, row));
             builder.add(
                 threePanel(
-                    archiveModeSelectorPanel.getUIComponent(),
-                    archiveCleanupCombo, new JButton(cleanupAction)),
+                        archiveModeSelectorPanel.getUIComponent(),
+                        archiveCleanupCombo, new JButton(cleanupAction)),
                     cc.xyw(3, row, 2));
 
             row += 2;
@@ -355,10 +344,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      * invoke the manual update checker.
      */
     private JButton createCheckForUpdatesButton() {
-        JButton checkForUpdatesButton = new JButton(Translation.getTranslation("about_dialog.check_for_updates.text"));
-        checkForUpdatesButton.setToolTipText(Translation.getTranslation("about_dialog.check_for_updates.tips"));
+        JButton checkForUpdatesButton = new JButton(Translation.getTranslation("preferences.general.check_for_updates_text"));
+        checkForUpdatesButton.setToolTipText(Translation.getTranslation("preferences.general.check_for_updates_tips"));
         checkForUpdatesButton.setMnemonic(
-                Translation.getTranslation("about_dialog.check_for_updates.key").trim().charAt(0));
+                Translation.getTranslation("preferences.general.check_for_updates_key").trim().charAt(0));
         checkForUpdatesButton.addActionListener(new UpdateAction());
         checkForUpdatesButton.setBackground(Color.WHITE);
         return checkForUpdatesButton;
@@ -583,10 +572,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox createXBehaviorChooser() {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement(Translation.getTranslation(
-                "preferences.dialog.exit_behavior.exit"));
+                "preferences.general.exit_behavior_exit"));
         if (OSUtil.isSystraySupported()) {
             model.addElement(Translation.getTranslation(
-                    "preferences.dialog.exit_behavior.minimize"));
+                    "preferences.general.exit_behavior_minimize"));
         }
 
         JComboBox combo = new JComboBox(model);

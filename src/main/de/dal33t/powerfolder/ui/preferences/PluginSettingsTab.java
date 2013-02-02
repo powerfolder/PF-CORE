@@ -49,10 +49,10 @@ import java.util.List;
 
 public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
 
-    private final static int PLUGIN_NAME_COL = 0;
-    private final static int PLUGIN_DESCR_COL = 1;
-    private final static int PLUGIN_CLASS_COL = 2;
-    private final static int PLUGIN_STATUS_COL = 3;
+    private static final int PLUGIN_NAME_COL = 0;
+    private static final int PLUGIN_DESCR_COL = 1;
+    private static final int PLUGIN_CLASS_COL = 2;
+    private static final int PLUGIN_STATUS_COL = 3;
 
     private PreferencesDialog preferencesDialog;
 
@@ -84,7 +84,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.dialog.plugin.title");
+        return Translation.getTranslation("preferences.plugin.title");
     }
 
     public void undoChanges() {
@@ -171,22 +171,18 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
         @Override
         public String getColumnName(int column) {
             switch (column) {
-                case PLUGIN_NAME_COL : {
+                case PLUGIN_NAME_COL :
                     return Translation
-                        .getTranslation("preferences.dialog.plugin.name");
-                }
-                case PLUGIN_DESCR_COL : {
+                        .getTranslation("preferences.plugin.name");
+                case PLUGIN_DESCR_COL :
                     return Translation
-                        .getTranslation("preferences.dialog.plugin.description");
-                }
-                case PLUGIN_CLASS_COL : {
+                        .getTranslation("preferences.plugin.description");
+                case PLUGIN_CLASS_COL :
                     return Translation
-                        .getTranslation("preferences.dialog.plugin.class_name");
-                }
-                case PLUGIN_STATUS_COL : {
+                        .getTranslation("preferences.plugin.class_name");
+                case PLUGIN_STATUS_COL :
                     return Translation
-                        .getTranslation("preferences.dialog.plugin.status");
-                }
+                        .getTranslation("preferences.plugin.status");
                 default :
                     return null;
             }
@@ -215,7 +211,6 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column)
         {
-            String newValue = "";
             PluginManager pluginManager = getController().getPluginManager();
             List<Plugin> plugins = pluginManager.getPlugins();
             Plugin plugin = plugins.get(row);
@@ -228,37 +223,34 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             int columnInModel = UIUtil.toModel(table, column);
+            String newValue;
             switch (columnInModel) {
-                case PLUGIN_NAME_COL : {
+                case PLUGIN_NAME_COL :
                     newValue = plugin.getName();
                     setToolTipText(plugin.getName());
                     setHorizontalAlignment(SwingConstants.LEFT);
                     break;
-                }
-                case PLUGIN_DESCR_COL : {
+                case PLUGIN_DESCR_COL :
                     newValue = plugin.getDescription();
                     setToolTipText(plugin.getDescription());
                     setHorizontalAlignment(SwingConstants.LEFT);
                     break;
-                }
-                case PLUGIN_CLASS_COL : {
+                case PLUGIN_CLASS_COL :
                     newValue = plugin.getClass().getName();
                     setToolTipText(plugin.getClass().getName());
                     setHorizontalAlignment(SwingConstants.LEFT);
                     break;
-                }
-                case PLUGIN_STATUS_COL : {
+                case PLUGIN_STATUS_COL :
                     if (enabled) {
                         newValue = Translation
-                            .getTranslation("preferences.dialog.plugin.status_enabled");
+                            .getTranslation("preferences.plugin.status_enabled");
                     } else {
                         newValue = Translation
-                            .getTranslation("preferences.dialog.plugin.status_disabled");
+                            .getTranslation("preferences.plugin.status_disabled");
                     }
                     setToolTipText(newValue);
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
-                }
                 default :
                     return null;
             }
@@ -305,18 +297,18 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
                 setEnabled(true);
                 if (getController().getPluginManager().isEnabled(plugin)) {
                     putValue(NAME, Translation
-                        .getTranslation("plugin_disable.name"));
+                        .getTranslation("preferences.plugin.disable_name"));
                     putValue(SHORT_DESCRIPTION, Translation
-                        .getTranslation("plugin_disable.description"));
+                        .getTranslation("preferences.plugin.disable_description"));
                     putValue(ACCELERATOR_KEY, Translation
-                        .getTranslation("plugin_disable.key"));
+                        .getTranslation("preferences.plugin.disable_key"));
                 } else {
                     putValue(NAME, Translation
-                        .getTranslation("plugin_enable.name"));
+                        .getTranslation("preferences.plugin.enable_name"));
                     putValue(SHORT_DESCRIPTION, Translation
-                        .getTranslation("plugin_enable.description"));
+                        .getTranslation("preferences.plugin.enable_description"));
                     putValue(ACCELERATOR_KEY, Translation
-                        .getTranslation("plugin_enable.key"));
+                        .getTranslation("preferences.plugin.enable_key"));
                 }
             }
         }

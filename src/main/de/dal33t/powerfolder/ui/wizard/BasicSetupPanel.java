@@ -91,7 +91,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
         builder.addLabel(
-            Translation.getTranslation("preferences.dialog.line_settings"),
+            Translation.getTranslation("preferences.network.line_settings"),
             cc.xywh(1, 3, 1, 1, "default, top"));
         builder.add(wanLineSpeed.getUiComponent(), cc.xy(3, 3));
         builder.addLabel(
