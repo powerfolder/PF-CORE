@@ -82,13 +82,9 @@ public enum PreferencesEntry {
     MASS_DELETE_THRESHOLD("mass.delete.threshold", 75),
 
     /**
-     * the pref that holds a boolean value if the connection should be tested
-     * and a warning displayed if limited connectivty is given.
+     * the pref that holds a boolean value a warning is displayed if no direct connectivity is given.
      */
-    TEST_CONNECTIVITY("test_for_connectivity", false),
-
-    /** Warn user if connection is poor. */
-    WARN_POOR_QUALITY("warn.poor.quality", false),
+    WARN_ON_NO_DIRECT_CONNECTIVITY("warn_on_no_direct_connectivity", false),
 
     /** Warn user if cloud space is getting full (80%+). */
     WARN_FULL_CLOUD("warn.poor.quality", true),

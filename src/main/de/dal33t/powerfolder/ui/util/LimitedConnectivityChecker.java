@@ -48,8 +48,6 @@ import de.dal33t.powerfolder.message.SingleMessageProducer;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.Help;
-import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -103,14 +101,14 @@ public class LimitedConnectivityChecker {
             return true;
         }
 
-        // Try two times, just to make sure we don't hit a full backlog
+        // Try three times, just to make sure we don't hit a full backlog
         boolean connectOK = isConnectPossible() || isConnectPossible()
             || isConnectPossible();
         return !connectOK;
     }
 
     /**
-     * Installs a task to check the connecvitity of this system once. or when
+     * Installs a task to check the connectivity of this system once. or when
      * the networking mode changes.
      * 
      * @param ctrl
@@ -152,7 +150,7 @@ public class LimitedConnectivityChecker {
                 // Skip check if de-activated.
                 return;
             }
-            if (!PreferencesEntry.TEST_CONNECTIVITY.getValueBoolean(controller))
+            if (!PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY.getValueBoolean(controller))
             {
                 return;
             }
@@ -284,16 +282,15 @@ public class LimitedConnectivityChecker {
                     wikiLink = "";
                 }
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    controllerArg, Translation
+                        controllerArg, Translation
                         .getTranslation("limited_connection.title"),
-                    Translation.getTranslation("limited_connection.text",
-                        wikiLink), new String[]{Translation
+                        Translation.getTranslation("limited_connection.text",
+                                wikiLink), new String[]{Translation
                         .getTranslation("general.ok")}, 0,
-                    GenericDialogType.INFO, Translation
+                        GenericDialogType.INFO, Translation
                         .getTranslation("limited_connection.dont_autodetect"));
                 if (response.isNeverAskAgain()) {
-                    PreferencesEntry.TEST_CONNECTIVITY.setValue(controllerArg,
-                        false);
+                    PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY.setValue(controllerArg, false);
                     log.warning("store do not show this dialog again");
                 }
             }

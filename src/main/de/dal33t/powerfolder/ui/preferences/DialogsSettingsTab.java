@@ -49,7 +49,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** Ask to add to friends if user becomes member of a folder */
     private JCheckBox askForFriendshipCB;
 
-    /** Add personal message with freindship status change */
+    /** Add personal message with friendship status change */
     private JCheckBox askForFriendshipMessageCB;
 
     /** Show folders that have been found in PF folder base & auto-created. */
@@ -58,10 +58,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** Show pause options. */
     private JCheckBox showPauseOptionsCB;
 
-    /** warn on limited connectivity */
-    private JCheckBox warnOnLimitedConnectivityCB;
+    /** warn on no direct connectivity */
+    private JCheckBox warnOnNoDirectConnectivityCB;
 
-    /** warn on posible filename problems */
+    /** warn on possible filename problems */
     private JCheckBox warnOnPossibleFilenameProblemsCB;
 
     /** warn on close program if a folder is still syncing */
@@ -69,9 +69,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     /** warn if changing profile for multiple folders */
     private JCheckBox warnOnDuplicateFoldersCB;
-
-    /** warn if connection quality is poor */
-    private JCheckBox warnOnPoorConnectionQualityCB;
 
     /** warn if online storage more than 90% full. */
     private JCheckBox warnIfCloudSpaceFullCB;
@@ -174,15 +171,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean askFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
             .getValueBoolean(getController());
-        boolean testConnectivity = PreferencesEntry.TEST_CONNECTIVITY
+        boolean warnOnNoDirectConnectivity = PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY
             .getValueBoolean(getController());
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
             .getValueBoolean(getController());
-        boolean filenamCheck = PreferencesEntry.FILE_NAME_CHECK
+        boolean fileNameCheck = PreferencesEntry.FILE_NAME_CHECK
             .getValueBoolean(getController());
         boolean duplicateFolders = PreferencesEntry.DUPLICATE_FOLDER_USE
-            .getValueBoolean(getController());
-        boolean poorConnection = PreferencesEntry.WARN_POOR_QUALITY
             .getValueBoolean(getController());
         boolean cloudFull = PreferencesEntry.WARN_FULL_CLOUD
             .getValueBoolean(getController());
@@ -198,25 +193,20 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_close_if_not_in_sync"),
             warnOnClose);
-        warnOnLimitedConnectivityCB = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.dialogs.warn_on_limited_connectivity"),
-            testConnectivity);
+        warnOnNoDirectConnectivityCB = new JCheckBox(
+            Translation.getTranslation("preferences.dialog.dialogs.warn_on_no_direct_connectivity"),
+            warnOnNoDirectConnectivity);
         warnOnPossibleFilenameProblemsCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_possible_file_name_problems"),
-            filenamCheck);
+            fileNameCheck);
         warnOnDuplicateFoldersCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_duplicate_folders"),
             duplicateFolders);
-        warnOnPoorConnectionQualityCB = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.dialogs.warn_on_poor_connection_quality"),
-            poorConnection);
         warnIfCloudSpaceFullCB = new JCheckBox(
             Translation
-                .getTranslation("preferences.dialog.dialogs.warn_ifcloud_space_full"),
+                .getTranslation("preferences.dialog.dialogs.warn_if_cloud_space_full"),
             cloudFull);
     }
 
@@ -240,7 +230,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(warnOnCloseIfNotInSyncCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnLimitedConnectivityCB, cc.xy(3, row));
+            builder.add(warnOnNoDirectConnectivityCB, cc.xy(3, row));
 
             row += 2;
             builder.add(warnOnPossibleFilenameProblemsCB, cc.xy(3, row));
@@ -259,9 +249,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(warnOnDuplicateFoldersCB, cc.xy(3, row));
-
-            row += 2;
-            builder.add(warnOnPoorConnectionQualityCB, cc.xy(3, row));
 
             row += 2;
             builder.add(warnIfCloudSpaceFullCB, cc.xy(3, row));
@@ -329,13 +316,12 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         // Write properties into core
         writeTrigger.triggerCommit();
 
-        boolean testConnectivity = warnOnLimitedConnectivityCB.isSelected();
+        boolean warnOnNoDirectConnectivity = warnOnNoDirectConnectivityCB.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSyncCB.isSelected();
         boolean filenameCheck = warnOnPossibleFilenameProblemsCB.isSelected();
         boolean askFriendship = askForFriendshipCB.isSelected();
         boolean askFriendshipMessage = askForFriendshipMessageCB.isSelected();
         boolean duplicateFolders = warnOnDuplicateFoldersCB.isSelected();
-        boolean poorConnection = warnOnPoorConnectionQualityCB.isSelected();
         boolean fullCloudSpace = warnIfCloudSpaceFullCB.isSelected();
 
         if (showSystemNotificationBox != null) {
@@ -359,8 +345,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             getController(), askFriendship);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(getController(),
             askFriendshipMessage);
-        PreferencesEntry.TEST_CONNECTIVITY.setValue(getController(),
-            testConnectivity);
+        PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY.setValue(getController(),
+            warnOnNoDirectConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
         PreferencesEntry.WARN_FULL_CLOUD.setValue(getController(),
                 fullCloudSpace);
@@ -368,8 +354,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .setValue(getController(), filenameCheck);
         PreferencesEntry.DUPLICATE_FOLDER_USE.setValue(getController(),
             duplicateFolders);
-        PreferencesEntry.WARN_POOR_QUALITY.setValue(getController(),
-            poorConnection);
     }
 
     /**
@@ -385,7 +369,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             // Remember current
             Integer currentDisplay = PreferencesEntry.NOTIFICATION_DISPLAY
                 .getValueInt(getController());
-            Integer currentTranlucent = PreferencesEntry.NOTIFICATION_TRANSLUCENT
+            Integer currentTranslucent = PreferencesEntry.NOTIFICATION_TRANSLUCENT
                 .getValueInt(getController());
 
             // Set temporary
@@ -407,7 +391,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
                 currentDisplay);
             PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
-                currentTranlucent);
+                currentTranslucent);
         }
     }
 }

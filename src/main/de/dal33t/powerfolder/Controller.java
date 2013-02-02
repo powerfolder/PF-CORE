@@ -1703,7 +1703,7 @@ public class Controller extends PFComponent {
     /**
      * Answers if this controller has restricted connection to the network
      * 
-     * @return true if no incomming connections, else false.
+     * @return true if no incoming connections, else false.
      */
     public boolean isLimitedConnectivity() {
         return limitedConnectivity;
@@ -1718,10 +1718,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Shutsdown controller and exits to system with the given status
+     * Shuts down controller and exits to system with the given status
      * 
      * @param status
-     *            thes status to exit with.
+     *            the status to exit with.
      */
     public void exit(int status) {
         if (Feature.EXIT_ON_SHUTDOWN.isDisabled()) {
