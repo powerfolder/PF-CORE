@@ -67,9 +67,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** warn on close program if a folder is still syncing */
     private JCheckBox warnOnCloseIfNotInSyncCB;
 
-    /** warn if changing profile for multiple folders */
-    private JCheckBox warnOnDuplicateFoldersCB;
-
     /** warn if online storage more than 90% full. */
     private JCheckBox warnIfCloudSpaceFullCB;
 
@@ -177,8 +174,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean fileNameCheck = PreferencesEntry.FILE_NAME_CHECK
             .getValueBoolean(getController());
-        boolean duplicateFolders = PreferencesEntry.DUPLICATE_FOLDER_USE
-            .getValueBoolean(getController());
         boolean cloudFull = PreferencesEntry.WARN_FULL_CLOUD
             .getValueBoolean(getController());
         askForFriendshipCB = new JCheckBox(
@@ -200,10 +195,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_possible_file_name_problems"),
             fileNameCheck);
-        warnOnDuplicateFoldersCB = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.dialogs.warn_on_duplicate_folders"),
-            duplicateFolders);
         warnIfCloudSpaceFullCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_if_cloud_space_full"),
@@ -246,9 +237,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(showPauseOptionsCB, cc.xy(3, row));
-
-            row += 2;
-            builder.add(warnOnDuplicateFoldersCB, cc.xy(3, row));
 
             row += 2;
             builder.add(warnIfCloudSpaceFullCB, cc.xy(3, row));
@@ -321,7 +309,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean filenameCheck = warnOnPossibleFilenameProblemsCB.isSelected();
         boolean askFriendship = askForFriendshipCB.isSelected();
         boolean askFriendshipMessage = askForFriendshipMessageCB.isSelected();
-        boolean duplicateFolders = warnOnDuplicateFoldersCB.isSelected();
         boolean fullCloudSpace = warnIfCloudSpaceFullCB.isSelected();
 
         if (showSystemNotificationBox != null) {
@@ -352,8 +339,6 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                 fullCloudSpace);
         PreferencesEntry.FILE_NAME_CHECK
             .setValue(getController(), filenameCheck);
-        PreferencesEntry.DUPLICATE_FOLDER_USE.setValue(getController(),
-            duplicateFolders);
     }
 
     /**

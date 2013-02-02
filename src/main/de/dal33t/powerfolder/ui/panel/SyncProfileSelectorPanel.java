@@ -37,7 +37,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.security.ChangeTransferModePermission;
@@ -51,7 +50,6 @@ import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.Help;
-import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -357,12 +355,6 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
      */
     private int showDuplicates(List<Folder> folders, String messageKey) {
 
-        if (!PreferencesEntry.DUPLICATE_FOLDER_USE
-            .getValueBoolean(getController()))
-        {
-            return 0;
-        }
-
         String title = Translation
             .getTranslation("dialog.synchronization.duplicate.title");
         StringBuilder sb = new StringBuilder();
@@ -384,15 +376,9 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
             + sb.toString()
             + '\n'
             + Translation.getTranslation(messageKey);
-        NeverAskAgainResponse response = DialogFactory.genericDialog(
-            getController(), title, message, new String[]{"OK", "Cancel"}, 0,
-            GenericDialogType.WARN, Translation
-                .getTranslation("general.neverAskAgain"));
-        if (response.isNeverAskAgain()) {
-            PreferencesEntry.DUPLICATE_FOLDER_USE.setValue(getController(),
-                false);
-        }
-        return response.getButtonIndex();
+        return DialogFactory.genericDialog(
+                getController(), title, message, new String[]{"OK", "Cancel"}, 0,
+                GenericDialogType.WARN);
     }
 
     private List<Folder> usedFolders() {

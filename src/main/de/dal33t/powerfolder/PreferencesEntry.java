@@ -89,11 +89,6 @@ public enum PreferencesEntry {
     /** Warn user if cloud space is getting full (80%+). */
     WARN_FULL_CLOUD("warn.poor.quality", true),
 
-    /**
-     * Warn if changing a transfer mode for multiple folders
-     */
-    DUPLICATE_FOLDER_USE("duplicate_folder_use", true),
-
     SETUP_DEFAULT_FOLDER("setup_default_folder", false),
 
     /**
