@@ -1086,12 +1086,7 @@ public class UIController extends PFComponent {
     }
 
     private void handleFolderAutoCreate(FolderAutoCreateEvent event) {
-        if (PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS
-            .getValueBoolean(getController()))
-        {
-            applicationModel.getNoticesModel().handleNotice(
-                new FolderAutoCreateNotice(event.getFolderInfo()));
-        }
+        applicationModel.getNoticesModel().handleNotice(new FolderAutoCreateNotice(event.getFolderInfo()));
     }
 
     /**

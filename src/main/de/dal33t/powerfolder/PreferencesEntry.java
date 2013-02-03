@@ -117,9 +117,9 @@ public enum PreferencesEntry {
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
 
-    SHOW_AUTO_CREATED_FOLDERS("show.auto.created.folders", true),
-
     SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
+
+    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
 
     DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true),
 

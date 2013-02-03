@@ -51,13 +51,12 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
     private JCheckBox verboseBox;
     private boolean originalVerbose;
     private JCheckBox expertModeBox;
-
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
     private JCheckBox autoExpandCB;
-
     private JLabel skinLabel;
     private JComboBox skinCombo;
+    private JCheckBox autoDetectFoldersCB;
 
     private boolean needsRestart;
 
@@ -161,6 +160,10 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             skinCombo.setVisible(getController().getDistribution()
                 .allowSkinChange());
         }
+
+        autoDetectFoldersCB = new JCheckBox(
+                Translation.getTranslation("preferences.advanced.auto_detect_folders"));
+        autoDetectFoldersCB.setSelected(PreferencesEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController()));
     }
 
     /**
@@ -178,8 +181,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
             CellConstraints cc = new CellConstraints();
             int row = 1;
-
-            row += 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.advanced.server"),
                 cc.xy(1, row));
@@ -199,11 +200,14 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
 
-            row += 2;
             if (skinLabel != null && skinCombo != null) {
+                row += 2;
                 builder.add(skinLabel, cc.xy(1, row));
                 builder.add(skinCombo, cc.xy(3, row));
             }
+
+            row += 2;
+            builder.add(autoDetectFoldersCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(underlineLinkBox, cc.xyw(3, row, 2));
@@ -244,8 +248,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         ConfigurationEntry.USER_INTERFACE_LOCKED.setValue(getController(),
             String.valueOf(lockUICB.isSelected()));
 
-        getController().saveConfig();
-
         if (skinCombo != null) {
             String skinName = PreferencesEntry.SKIN_NAME
                 .getValueString(getController());
@@ -255,5 +257,14 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                 needsRestart = true;
             }
         }
+
+        boolean originalLookForFolders = PreferencesEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController());
+        PreferencesEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(), autoDetectFoldersCB.isSelected());
+        if (originalLookForFolders ^ autoDetectFoldersCB.isSelected()) {
+            needsRestart = true;
+        }
+
+        getController().saveConfig();
+
     }
 }

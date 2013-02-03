@@ -298,7 +298,7 @@ public class DynDnsManager extends PFComponent {
      * @return
      */
     private String getTitle() {
-        return Translation.getTranslation("preferences.dialog.titleProcessing");
+        return Translation.getTranslation("preferences.dialog.title_processing");
     }
 
     /**

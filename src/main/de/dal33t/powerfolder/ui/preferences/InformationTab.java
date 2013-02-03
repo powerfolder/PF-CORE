@@ -199,7 +199,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         long dbSize = Debug.countDataitems(getController());
 
         return createTextBox(
-            Translation.getTranslation("preferences.information..your_system_title"),
+            Translation.getTranslation("preferences.information.your_system_title"),
             Translation.getTranslation("preferences.information.your_system_java_version",
                 JavaVersion.systemVersion().toString())
                 + '\n'

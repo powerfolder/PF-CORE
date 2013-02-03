@@ -908,8 +908,6 @@ public enum ConfigurationEntry {
      */
     AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", false),
 
-    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
-
     REMOVED_FOLDER_FILES("removed.folder.files", ""),
 
     /**

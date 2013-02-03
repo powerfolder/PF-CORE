@@ -48,9 +48,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
     /** Notification dwell period (seconds) */
     private JSlider notificationDisplaySlider;
 
-    /** Show folders that have been found in PF folder base & auto-created. */
-    private JCheckBox showAutoCreatedFoldersBox;
-
     /** Show pause options. */
     private JCheckBox showPauseOptionsCB;
 
@@ -105,12 +102,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
                 Translation.getTranslation("preferences.warnings_notifications.show_system_notifications"));
         showSystemNotificationBox.setSelected(
                 (Boolean) applicationModel.getSystemNotificationsValueModel().getValue());
-
-        // Show system notifications when minimized
-        showAutoCreatedFoldersBox = new JCheckBox(Translation
-            .getTranslation("preferences.warnings_notifications.show_auto_created_folders"));
-        showAutoCreatedFoldersBox.setSelected(
-                PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.getValueBoolean(getController()));
 
         showPauseOptionsCB = new JCheckBox(Translation
             .getTranslation("preferences.warnings_notifications.show_pause_options"));
@@ -217,9 +208,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
             row += 2;
             builder.add(warnOnPossibleFilenameProblemsCB, cc.xy(3, row));
 
-            row += 2;
-            builder.add(showAutoCreatedFoldersBox, cc.xy(3, row));
-
             // //////////////////////////////////////
             // Notification stuff only below here //
             // //////////////////////////////////////
@@ -287,9 +275,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
 
         PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
             notificationTranslucentSlider.getValue());
-
-        PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.setValue(getController(),
-            showAutoCreatedFoldersBox.isSelected());
 
         PreferencesEntry.SHOW_ASK_FOR_PAUSE.setValue(getController(),
             showPauseOptionsCB.isSelected());
