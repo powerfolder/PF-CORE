@@ -45,12 +45,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
@@ -228,12 +223,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         processV4Format();
 
         // Maintain link
-        boolean useFavLink = ConfigurationEntry.USE_PF_LINK
-            .getValueBoolean(getController());
+        boolean useFavLink = PreferencesEntry.USE_PF_LINK.getValueBoolean(getController());
         if (useFavLink && WinUtils.isSupported()) {
             try {
                 WinUtils.getInstance().setPFLinks(true, getController());
-                ConfigurationEntry.USE_PF_LINK.setValue(getController(), false);
             } catch (IOException e) {
                 logSevere(e);
             }
@@ -241,7 +234,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (useFavLink && MacUtils.isSupported()) {
             try {
                 MacUtils.getInstance().setPFPlaces(true, getController());
-                ConfigurationEntry.USE_PF_LINK.setValue(getController(), false);
             } catch (IOException e) {
                 logSevere(e);
             }

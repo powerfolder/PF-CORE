@@ -684,11 +684,6 @@ public enum ConfigurationEntry {
     USE_PF_ICON("use.pf.icon", true),
 
     /**
-     * Whether to set PowerFolders as a Favorite Link in Windows Explorer.
-     */
-    USE_PF_LINK("use.pf.link", true),
-
-    /**
      * #2256: Simple conflict detection.
      */
     CONFLICT_DETECTION("conflict.detection", true),

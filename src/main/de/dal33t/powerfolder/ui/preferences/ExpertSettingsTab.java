@@ -69,7 +69,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JComponent locationField;
 
     private JCheckBox conflictDetectionBox;
-    private JCheckBox usePowerFolderLink;
 
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
@@ -115,13 +114,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         }
         massDeleteSlider.setLabelTable(dictionary);
         enableMassDeleteSlider();
-
-        if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
-            usePowerFolderLink = SimpleComponentFactory.createCheckBox(
-                    Translation.getTranslation("preferences.expert.show_pf_link"));
-            usePowerFolderLink.setSelected(ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController()) ||
-                    WinUtils.isPFLinks(getController()));
-        }
 
         conflictDetectionBox = new JCheckBox(Translation.getTranslation("preferences.expert.use_conflict_handling"));
         conflictDetectionBox.setSelected(ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController()));
@@ -255,13 +247,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.expert.base_dir")), cc.xy(1, row));
             builder.add(locationField, cc.xyw(3, row, 2));
 
-            if (usePowerFolderLink != null) {
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
-            }
-
             row += 2;
             builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
 
@@ -308,11 +293,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the advanced settings.
      */
     public void save() {
-
-        if (usePowerFolderLink != null) {
-            boolean newValue = usePowerFolderLink.isSelected();
-            configureLinksPlaces(newValue);
-        }
 
         ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(), conflictDetectionBox.isSelected());
 
@@ -369,22 +349,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 getController(), Boolean.toString(useSwarmingOnInternetCheckBox
                     .isSelected()));
             needsRestart = true;
-        }
-    }
-
-    private void configureLinksPlaces(boolean newValue) {
-        if (WinUtils.isSupported()) {
-            try {
-                WinUtils.getInstance().setPFLinks(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
-        } else if (MacUtils.isSupported()) {
-            try {
-                MacUtils.getInstance().setPFPlaces(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
         }
     }
 

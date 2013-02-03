@@ -77,6 +77,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JLabel folderSyncLabel;
     private JSlider folderSyncSlider;
     private JComboBox languageChooser;
+    private JCheckBox usePowerFolderLink;
 
     private boolean needsRestart;
 
@@ -119,8 +120,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             boolean createPowerFoldersDesktopShortcut = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
                 .getValueBoolean(getController());
             createPowerFoldersDesktopShortcutsBox = new JCheckBox(
-                Translation
-                    .getTranslation("preferences.general.create_powerfolder_shortcut"),
+                Translation.getTranslation("preferences.general.create_powerfolder_shortcut"),
                 createPowerFoldersDesktopShortcut);
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
                 startWithWindowsBox = new JCheckBox(
@@ -133,6 +133,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             usePowerFolderIconBox = SimpleComponentFactory.createCheckBox(
                     Translation.getTranslation("preferences.general.use_pf_icon"));
             usePowerFolderIconBox.setSelected(ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
+        }
+
+        if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
+            usePowerFolderLink = SimpleComponentFactory.createCheckBox(
+                    Translation.getTranslation("preferences.general.show_pf_link"));
+            usePowerFolderLink.setSelected(PreferencesEntry.USE_PF_LINK.getValueBoolean(getController()));
         }
 
         if (MacUtils.isSupported()) {
@@ -264,10 +270,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(createUpdateCheckPanel(), cc.xyw(3, row, 2));
 
-
-
-
-
+            if (usePowerFolderLink != null) {
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
+            }
 
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
@@ -434,7 +442,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             needsRestart = true;
         }
 
-
+        if (usePowerFolderLink != null) {
+            boolean newValue = usePowerFolderLink.isSelected();
+            configureLinksPlaces(newValue);
+            PreferencesEntry.USE_PF_LINK.setValue(getController(), usePowerFolderLink.isSelected());
+        }
 
         if (createPowerFoldersDesktopShortcutsBox != null) {
             // Desktop PowerFolders shortcut.
@@ -520,6 +532,23 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 } catch (IOException e) {
                     logWarning("Unable to setup autostart: " + e);
                 }
+            }
+        }
+
+    }
+
+    private void configureLinksPlaces(boolean newValue) {
+        if (WinUtils.isSupported()) {
+            try {
+                WinUtils.getInstance().setPFLinks(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        } else if (MacUtils.isSupported()) {
+            try {
+                MacUtils.getInstance().setPFPlaces(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
             }
         }
     }

@@ -121,7 +121,15 @@ public enum PreferencesEntry {
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
 
+    /**
+     * Show PowerFolder base dir short cut on the desk top.
+     */
     DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true),
+
+    /**
+     * Whether to set PowerFolders as a Favorite Link in Windows Explorer.
+     */
+    USE_PF_LINK("use.pf.link", true),
 
     PAUSED("paused", false),
 
