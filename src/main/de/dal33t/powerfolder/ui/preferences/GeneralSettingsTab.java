@@ -72,9 +72,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel versionModel;
     private JComboBox archiveCleanupCombo;
     private Action cleanupAction;
-    private JCheckBox folderSyncCB;
-    private JLabel folderSyncLabel;
-    private JSlider folderSyncSlider;
     private JComboBox languageChooser;
 
     private boolean needsRestart;
@@ -196,36 +193,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         cleanupAction = new MyCleanupAction(getController());
-
-        folderSyncCB = new JCheckBox(
-            Translation
-                .getTranslation("preferences.general.folder_sync_warn_use"));
-        folderSyncCB.setSelected(ConfigurationEntry.FOLDER_SYNC_USE
-            .getValueBoolean(getController()));
-
-        folderSyncSlider = new JSlider();
-        folderSyncSlider.setMinimum(1);
-        folderSyncSlider.setMaximum(30);
-        folderSyncSlider.setValue(ConfigurationEntry.FOLDER_SYNC_WARN_SECONDS
-            .getValueInt(getController()) / 60 / 60 / 24);
-        folderSyncSlider.setMinorTickSpacing(1);
-
-        folderSyncSlider.setPaintTicks(true);
-        folderSyncSlider.setPaintLabels(true);
-
-        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        dictionary.put(1, new JLabel("1"));
-        dictionary.put(10, new JLabel("10"));
-        dictionary.put(20, new JLabel("20"));
-        dictionary.put(30, new JLabel("30"));
-        folderSyncSlider.setLabelTable(dictionary);
-
-        folderSyncLabel = new JLabel(Translation.getTranslation("preferences.general.folder_sync_text"));
-
-        folderSyncCB.addChangeListener(new FolderChangeListener());
-
-        doFolderChangeEvent();
-
     }
 
     /**
@@ -301,13 +268,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         archiveModeSelectorPanel.getUIComponent(),
                         archiveCleanupCombo, new JButton(cleanupAction)),
                     cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(folderSyncCB, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(folderSyncLabel, cc.xy(1, row));
-            builder.add(folderSyncSlider, cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;
@@ -380,11 +340,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public void undoChanges() {
-    }
-
-    private void doFolderChangeEvent() {
-        folderSyncLabel.setEnabled(folderSyncCB.isSelected());
-        folderSyncSlider.setEnabled(folderSyncCB.isSelected());
     }
 
     public void save() {
@@ -468,12 +423,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             logWarning("Unable to store archive settings: " + e);
         }
 
-        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(),
-            String.valueOf(folderSyncCB.isSelected()));
-
-        ConfigurationEntry.FOLDER_SYNC_WARN_SECONDS.setValue(getController(),
-            String.valueOf(folderSyncSlider.getValue() * 60 * 60 * 24));
-
         if (WinUtils.isSupported()) {
             boolean changed = WinUtils.getInstance().isPFStartup(
                 getController()) != startWithWindowsBox.isSelected();
@@ -494,12 +443,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     // ////////////////
     // Inner classes //
     // ////////////////
-
-    private class FolderChangeListener implements ChangeListener {
-        public void stateChanged(ChangeEvent e) {
-            doFolderChangeEvent();
-        }
-    }
 
     private static class MyCleanupAction extends BaseAction {
 
