@@ -62,7 +62,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JTextField nickField;
     private JCheckBox startWithWindowsBox;
     private ActionLabel startWithMacOSLabel;
-    private JCheckBox folderAutoSetupBox;
     private JCheckBox updateCheck;
     private boolean originalQuitOnX;
     private JComboBox xBehaviorChooser;
@@ -137,11 +136,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     }
                 });
         }
-
-        folderAutoSetupBox = new JCheckBox(
-            Translation.getTranslation("preferences.general.auto_setup_folders"));
-        folderAutoSetupBox.setSelected(ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
-            .getValueBoolean(getController()));
 
         modeModel = new ValueHolder();
         versionModel = new ValueHolder();
@@ -243,9 +237,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.add(startWithMacOSLabel.getUIComponent(), cc.xyw(3, row, 2));
                 }
             }
-
-            row += 2;
-            builder.add(folderAutoSetupBox, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(new JLabel(Translation.getTranslation("preferences.general.exit_behavior")), cc.xy(1, row));
@@ -385,19 +376,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.setValue(
                     getController(), 0);
                 break;
-        }
-
-        ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),
-            folderAutoSetupBox.isSelected());
-        // Re-run setup if selected.
-        if (folderAutoSetupBox.isSelected()
-            && getController().getOSClient().isLoggedIn()) {
-            getController().schedule(new Runnable() {
-                public void run() {
-                    getController().getFolderRepository().updateFolders(
-                        getController().getOSClient().getAccount());
-                }
-            }, 0);
         }
 
         try {

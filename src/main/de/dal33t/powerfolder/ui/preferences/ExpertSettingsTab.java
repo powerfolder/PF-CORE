@@ -73,6 +73,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox createFavoritesShortcutCB;
     private JCheckBox createDesktopShortcutsCB;
     private JCheckBox usePowerFolderIconCB;
+    private JCheckBox folderAutoSetupCB;
 
     private boolean needsRestart;
 
@@ -104,7 +105,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     Translation.getTranslation("preferences.expert.create_desktop_shortcut"),
                     PreferencesEntry.CREATE_DESKTOP_SHORTCUT.getValueBoolean(getController()));
             usePowerFolderIconCB = new JCheckBox(
-                    Translation.getTranslation("preferences.general.use_pf_icon"),
+                    Translation.getTranslation("preferences.expert.use_pf_icon"),
                     ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
 
@@ -183,6 +184,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 Translation.getTranslation("preferences.expert.swarming_internet_tooltip"));
         useSwarmingOnInternetCB.setSelected(
                 ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(getController()));
+        folderAutoSetupCB = new JCheckBox(
+            Translation.getTranslation("preferences.expert.auto_setup_folders"),
+                ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()));
     }
 
     /**
@@ -261,6 +265,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     "preferences.expert.mass_delete_threshold")),
                 cc.xy(1, row));
             builder.add(massDeleteSlider, cc.xy(3, row));
+
+            row += 2;
+            builder.add(folderAutoSetupCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.addLabel(Translation.getTranslation("preferences.expert.zip_compression"), cc.xy(1, row));
@@ -389,6 +396,20 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 getController().getUIController().configureDesktopShortcut(false);
             }
         }
+
+        ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),
+            folderAutoSetupCB.isSelected());
+        // Re-run setup if selected.
+        if (folderAutoSetupCB.isSelected()
+            && getController().getOSClient().isLoggedIn()) {
+            getController().schedule(new Runnable() {
+                public void run() {
+                    getController().getFolderRepository().updateFolders(
+                        getController().getOSClient().getAccount());
+                }
+            }, 0);
+        }
+
     }
 
     private void configureLinksPlaces(boolean newValue) {
