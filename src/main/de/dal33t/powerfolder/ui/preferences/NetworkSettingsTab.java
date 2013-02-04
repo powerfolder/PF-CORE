@@ -58,19 +58,20 @@ import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
-    private JComboBox networkingMode;
-    private JCheckBox relayedConnectionBox;
-    private JCheckBox udtConnectionBox;
+    private JComboBox networkingModeCombo;
+    private JCheckBox relayedConnectionCB;
+    private JCheckBox udtConnectionCB;
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
-    private boolean needsRestart;
     private JButton httpProxyButton;
-    private JComboBox serverDisconnectBehaviorBox;
-    private JCheckBox randomPort;
-    private JTextField advPort;
-    private JCheckBox openPort;
-    private JComboBox bindAddress;
+    private JComboBox serverDisconnectBehaviorCombo;
+    private JCheckBox randomPortCB;
+    private JTextField advPortTF;
+    private JCheckBox openPortCB;
+    private JComboBox bindAddressCombo;
     private LANList lanList;
+
+    private boolean needsRestart;
 
     public NetworkSettingsTab(Controller controller) {
         super(controller);
@@ -101,18 +102,18 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("general.network_mode.lan_only");
         options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
             .getTranslation("general.network_mode.server_only");
-        networkingMode = new JComboBox(options);
+        networkingModeCombo = new JComboBox(options);
 
         NetworkingMode currentNetworkingMode = getController()
             .getNetworkingMode();
         String tooltip = getTooltip(currentNetworkingMode);
-        networkingMode.setSelectedIndex(currentNetworkingMode.ordinal());
-        networkingMode.setToolTipText(tooltip);
-        networkingMode.addActionListener(new ActionListener() {
+        networkingModeCombo.setSelectedIndex(currentNetworkingMode.ordinal());
+        networkingModeCombo.setToolTipText(tooltip);
+        networkingModeCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                NetworkingMode selectedNetworkingMode = NetworkingMode.values()[networkingMode
+                NetworkingMode selectedNetworkingMode = NetworkingMode.values()[networkingModeCombo
                     .getSelectedIndex()];
-                networkingMode.setToolTipText(getTooltip(selectedNetworkingMode));
+                networkingModeCombo.setToolTipText(getTooltip(selectedNetworkingMode));
                 enableDisableComponents(NetworkingMode.LANONLYMODE == selectedNetworkingMode);
             }
         });
@@ -121,46 +122,46 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (port == null) {
             port = Integer.toString(ConnectionListener.DEFAULT_PORT);
         }
-        advPort = new JTextField(port) {
+        advPortTF = new JTextField(port) {
             protected Document createDefaultModel() {
                 return new NumberAndCommaDocument();
             }
         };
-        advPort.setToolTipText(Translation.getTranslation("preferences.network.adv_port_tooltip"));
-        randomPort = SimpleComponentFactory.createCheckBox(Translation
+        advPortTF.setToolTipText(Translation.getTranslation("preferences.network.adv_port_tooltip"));
+        randomPortCB = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.network.random_port"));
-        randomPort.setToolTipText(Translation
+        randomPortCB.setToolTipText(Translation
             .getTranslation("preferences.network.random_port_tooltip"));
-        randomPort.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
+        randomPortCB.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
             .getValueBoolean(getController()));
 
-        advPort.setEnabled(!randomPort.isSelected());
+        advPortTF.setEnabled(!randomPortCB.isSelected());
 
-        randomPort.addActionListener(new ActionListener() {
+        randomPortCB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                advPort.setEnabled(!randomPort.isSelected());
+                advPortTF.setEnabled(!randomPortCB.isSelected());
             }
         });
 
         if (FirewallUtil.isFirewallAccessible()) {
-            openPort = SimpleComponentFactory.createCheckBox(Translation
+            openPortCB = SimpleComponentFactory.createCheckBox(Translation
                 .getTranslation("preferences.network.open_port"));
-            openPort.setToolTipText(Translation
+            openPortCB.setToolTipText(Translation
                 .getTranslation("preferences.network.open_port_tooltip"));
-            openPort.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
+            openPortCB.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
                 .getValueBoolean(getController()));
         }
 
-        relayedConnectionBox = SimpleComponentFactory
+        relayedConnectionCB = SimpleComponentFactory
             .createCheckBox(Translation
                 .getTranslation("preferences.network.use_relayed_connections"));
-        relayedConnectionBox
+        relayedConnectionCB
             .setSelected(ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
                 .getValueBoolean(getController()));
 
-        udtConnectionBox = SimpleComponentFactory.createCheckBox(Translation
+        udtConnectionCB = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.network.use_udt_connections"));
-        udtConnectionBox.setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
+        udtConnectionCB.setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
             .getValueBoolean(getController()));
 
         HttpProxyAction action  = new HttpProxyAction(getController());
@@ -189,23 +190,23 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.network.server_disconnect_sync"),
             Translation
                 .getTranslation("preferences.network.server_disconnect_no_sync")};
-        serverDisconnectBehaviorBox = new JComboBox(options);
+        serverDisconnectBehaviorCombo = new JComboBox(options);
         int selected = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
             .getValueBoolean(getController()) ? 0 : 1;
-        serverDisconnectBehaviorBox.setSelectedIndex(selected);
-        serverDisconnectBehaviorBox.setToolTipText(String
-            .valueOf(serverDisconnectBehaviorBox.getSelectedItem()));
-        serverDisconnectBehaviorBox.addActionListener(new ActionListener() {
+        serverDisconnectBehaviorCombo.setSelectedIndex(selected);
+        serverDisconnectBehaviorCombo.setToolTipText(String
+            .valueOf(serverDisconnectBehaviorCombo.getSelectedItem()));
+        serverDisconnectBehaviorCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                serverDisconnectBehaviorBox.setToolTipText(String
-                    .valueOf(serverDisconnectBehaviorBox.getSelectedItem()));
+                serverDisconnectBehaviorCombo.setToolTipText(String
+                    .valueOf(serverDisconnectBehaviorCombo.getSelectedItem()));
             }
         });
 
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());
-        bindAddress = new JComboBox();
-        bindAddress.addItem(Translation
+        bindAddressCombo = new JComboBox();
+        bindAddressCombo.addItem(Translation
             .getTranslation("preferences.network.bind_any"));
         // Fill in all known InetAddresses of this machine
         try {
@@ -219,10 +220,10 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                     if (!(addr instanceof Inet4Address)) {
                         continue;
                     }
-                    bindAddress.addItem(new InterfaceChoice(ni, addr));
+                    bindAddressCombo.addItem(new InterfaceChoice(ni, addr));
                     if (!StringUtils.isEmpty(cfgBind)) {
                         if (addr.getHostAddress().equals(cfgBind)) {
-                            bindAddress.setSelectedIndex(bindAddress
+                            bindAddressCombo.setSelectedIndex(bindAddressCombo
                                 .getItemCount() - 1);
                         }
                     }
@@ -240,9 +241,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void enableDisableComponents(boolean lanOnly) {
-        relayedConnectionBox.setEnabled(!lanOnly);
-        udtConnectionBox.setEnabled(!lanOnly && UDTSocket.isSupported());
-        udtConnectionBox.setVisible(UDTSocket.isSupported());
+        relayedConnectionCB.setEnabled(!lanOnly);
+        udtConnectionCB.setEnabled(!lanOnly && UDTSocket.isSupported());
+        udtConnectionCB.setVisible(UDTSocket.isSupported());
         wanSpeed.setEnabled(!lanOnly);
     }
 
@@ -273,13 +274,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(Translation
                 .getTranslation("preferences.network_mode_name"), cc.xy(
                 1, row));
-            builder.add(networkingMode, cc.xy(3, row));
+            builder.add(networkingModeCombo, cc.xy(3, row));
 
             row += 2;
-            builder.add(relayedConnectionBox, cc.xy(3, row));
+            builder.add(relayedConnectionCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(udtConnectionBox, cc.xy(3, row));
+            builder.add(udtConnectionCB, cc.xy(3, row));
 
             row += 2;
             builder.add(
@@ -300,19 +301,19 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.addLabel(Translation.getTranslation("preferences.network.server_disconnect"),
                     cc.xy(1, row));
-            builder.add(serverDisconnectBehaviorBox, cc.xy(3, row));
-
-            row += 2;
-            builder.add(randomPort, cc.xy(3, row));
+            builder.add(serverDisconnectBehaviorCombo, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation.getTranslation("preferences.network.adv_port"),
                     cc.xy(1, row)).setToolTipText(Translation.getTranslation("preferences.network.adv_port_tooltip"));
-            builder.add(advPort, cc.xy(3, row));
+            builder.add(advPortTF, cc.xy(3, row));
+
+            row += 2;
+            builder.add(randomPortCB, cc.xy(3, row));
 
             if (FirewallUtil.isFirewallAccessible()) {
                 row += 2;
-                builder.add(openPort, cc.xy(3, row));
+                builder.add(openPortCB, cc.xy(3, row));
             }
 
             row += 2;
@@ -320,7 +321,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 Translation.getTranslation("preferences.network.bind"),
                 cc.xy(1, row)).setToolTipText(
                 Translation.getTranslation("preferences.network.bind_tooltip"));
-            builder.add(bindAddress, cc.xy(3, row));
+            builder.add(bindAddressCombo, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
@@ -350,7 +351,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         // Check for correctly entered port values
         try {
             // Check if it's a comma-separated list of parseable numbers
-            String port = advPort.getText();
+            String port = advPortTF.getText();
             StringTokenizer st = new StringTokenizer(port, ",");
             while (st.hasMoreTokens()) {
                 int p = Integer.parseInt(st.nextToken());
@@ -386,23 +387,23 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         if (FirewallUtil.isFirewallAccessible()) {
             boolean current = ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(getController());
-            if (current != openPort.isSelected()) {
+            if (current != openPortCB.isSelected()) {
                 ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(getController(),
-                        String.valueOf(openPort.isSelected()));
+                        String.valueOf(openPortCB.isSelected()));
                 needsRestart = true;
             }
         }
 
         boolean current = ConfigurationEntry.NET_BIND_RANDOM_PORT
             .getValueBoolean(getController());
-        if (current != randomPort.isSelected()) {
+        if (current != randomPortCB.isSelected()) {
             ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
-                String.valueOf(randomPort.isSelected()));
+                String.valueOf(randomPortCB.isSelected()));
             needsRestart = true;
         }
 
 
-        NetworkingMode netMode = NetworkingMode.values()[networkingMode
+        NetworkingMode netMode = NetworkingMode.values()[networkingModeCombo
             .getSelectedIndex()];
         getController().setNetworkingMode(netMode);
         TransferManager tm = getController().getTransferManager();
@@ -421,15 +422,15 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         tm.setDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
 
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
-            getController(), String.valueOf(relayedConnectionBox.isSelected()));
+            getController(), String.valueOf(relayedConnectionCB.isSelected()));
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
-            String.valueOf(udtConnectionBox.isSelected()));
-        boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
+            String.valueOf(udtConnectionCB.isSelected()));
+        boolean syncAnyways = serverDisconnectBehaviorCombo.getSelectedIndex() == 0;
         ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
             getController(), String.valueOf(syncAnyways));
 
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());
-        Object bindObj = bindAddress.getSelectedItem();
+        Object bindObj = bindAddressCombo.getSelectedItem();
         if (bindObj instanceof String) { // Selected ANY
             if (!StringUtils.isEmpty(cfgBind)) {
                 ConfigurationEntry.NET_BIND_ADDRESS.removeValue(getController());
