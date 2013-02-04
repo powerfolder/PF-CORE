@@ -65,7 +65,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox folderAutoSetupBox;
     private JCheckBox updateCheck;
     private boolean originalQuitOnX;
-    private JCheckBox usePowerFolderIconBox;
     private JComboBox xBehaviorChooser;
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel modeModel;
@@ -120,9 +119,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .isPFStartup(getController()));
             }
 
-            usePowerFolderIconBox = SimpleComponentFactory.createCheckBox(
-                    Translation.getTranslation("preferences.general.use_pf_icon"));
-            usePowerFolderIconBox.setSelected(ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
 
         if (MacUtils.isSupported()) {
@@ -234,10 +230,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
                 }
 
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
@@ -393,12 +385,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.setValue(
                     getController(), 0);
                 break;
-        }
-
-        if (usePowerFolderIconBox != null) {
-            // PowerFolder icon
-            ConfigurationEntry.USE_PF_ICON.setValue(getController(),
-                Boolean.toString(usePowerFolderIconBox.isSelected()));
         }
 
         ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),

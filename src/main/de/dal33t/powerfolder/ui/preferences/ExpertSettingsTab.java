@@ -58,25 +58,21 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
-    private JCheckBox useZipOnInternetCheckBox;
-    private JCheckBox useZipOnLanCheckBox;
-    private JCheckBox useDeltaSyncOnLanCheckBox;
-    private JCheckBox useDeltaSyncOnInternetCheckBox;
-    private JCheckBox useSwarmingOnLanCheckBox;
-    private JCheckBox useSwarmingOnInternetCheckBox;
-
+    private JCheckBox useZipOnInternetCB;
+    private JCheckBox useZipOnLanCB;
+    private JCheckBox useDeltaSyncOnLanCB;
+    private JCheckBox useDeltaSyncOnInternetCB;
+    private JCheckBox useSwarmingOnLanCB;
+    private JCheckBox useSwarmingOnInternetCB;
     private JTextField locationTF;
     private ValueModel locationModel;
     private JComponent locationField;
-
-    private JCheckBox conflictDetectionBox;
-
-    private JCheckBox massDeleteBox;
+    private JCheckBox conflictDetectionCB;
+    private JCheckBox massDeleteCB;
     private JSlider massDeleteSlider;
-
     private JCheckBox createFavoritesShortcutCB;
     private JCheckBox createDesktopShortcutsCB;
-
+    private JCheckBox usePowerFolderIconCB;
 
     private boolean needsRestart;
 
@@ -107,6 +103,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             createDesktopShortcutsCB = new JCheckBox(
                     Translation.getTranslation("preferences.expert.create_desktop_shortcut"),
                     PreferencesEntry.CREATE_DESKTOP_SHORTCUT.getValueBoolean(getController()));
+            usePowerFolderIconCB = new JCheckBox(
+                    Translation.getTranslation("preferences.general.use_pf_icon"),
+                    ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
 
         if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
@@ -115,10 +114,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     PreferencesEntry.CREATE_FAVORITES_SHORTCUT.getValueBoolean(getController()));
         }
 
-        massDeleteBox = SimpleComponentFactory.createCheckBox(
+        massDeleteCB = SimpleComponentFactory.createCheckBox(
                 Translation.getTranslation("preferences.expert.use_mass_delete"));
-        massDeleteBox.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
-        massDeleteBox.addItemListener(new MassDeleteItemListener());
+        massDeleteCB.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
+        massDeleteCB.addItemListener(new MassDeleteItemListener());
         massDeleteSlider = new JSlider(20, 100, ConfigurationEntry.MASS_DELETE_THRESHOLD
                 .getValueInt(getController()));
         massDeleteSlider.setMajorTickSpacing(20);
@@ -132,8 +131,8 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         massDeleteSlider.setLabelTable(dictionary);
         enableMassDeleteSlider();
 
-        conflictDetectionBox = new JCheckBox(Translation.getTranslation("preferences.expert.use_conflict_handling"));
-        conflictDetectionBox.setSelected(ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController()));
+        conflictDetectionCB = new JCheckBox(Translation.getTranslation("preferences.expert.use_conflict_handling"));
+        conflictDetectionCB.setSelected(ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController()));
 
         // Local base selection
         locationModel = new ValueHolder(getController().getFolderRepository().getFoldersBasedirString());
@@ -147,56 +146,43 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         locationField = createLocationField();
 
-        useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.expert.use_zip_on_lan"));
-        useZipOnLanCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.expert.use_zip_on_lan_tooltip"));
-        useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
-            .getValueBoolean(getController()));
+        useZipOnLanCB = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.expert.use_zip_on_lan"));
+        useZipOnLanCB.setToolTipText(Translation.getTranslation("preferences.expert.use_zip_on_lan_tooltip"));
+        useZipOnLanCB.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(getController()));
 
         // Always uses compression on internet
-        useZipOnInternetCheckBox = SimpleComponentFactory
-            .createCheckBox(Translation
-                .getTranslation("preferences.expert.use_zip_on_internet"));
-        useZipOnInternetCheckBox.setSelected(true);
-        useZipOnInternetCheckBox.setEnabled(false);
+        useZipOnInternetCB = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.expert.use_zip_on_internet"));
+        useZipOnInternetCB.setSelected(true);
+        useZipOnInternetCB.setEnabled(false);
 
-        useDeltaSyncOnLanCheckBox = SimpleComponentFactory
-            .createCheckBox(Translation
-                .getTranslation("preferences.expert.use_delta_on_lan"));
-        useDeltaSyncOnLanCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.expert.use_delta_on_lan_tooltip"));
-        useDeltaSyncOnLanCheckBox
-            .setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
-                .getValueBoolean(getController()));
+        useDeltaSyncOnLanCB = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.expert.use_delta_on_lan"));
+        useDeltaSyncOnLanCB.setToolTipText(
+                Translation.getTranslation("preferences.expert.use_delta_on_lan_tooltip"));
+        useDeltaSyncOnLanCB.setSelected(
+                ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(getController()));
 
-        useDeltaSyncOnInternetCheckBox = SimpleComponentFactory
-            .createCheckBox(Translation
-                .getTranslation("preferences.expert.use_delta_on_internet"));
-        useDeltaSyncOnInternetCheckBox
-            .setToolTipText(Translation
-                .getTranslation("preferences.expert.use_delta_on_internet_tooltip"));
-        useDeltaSyncOnInternetCheckBox
-            .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
-                .getValueBoolean(getController()));
+        useDeltaSyncOnInternetCB = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.expert.use_delta_on_internet"));
+        useDeltaSyncOnInternetCB.setToolTipText(
+                Translation.getTranslation("preferences.expert.use_delta_on_internet_tooltip"));
+        useDeltaSyncOnInternetCB.setSelected(
+                ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(getController()));
 
-        useSwarmingOnLanCheckBox = SimpleComponentFactory
-            .createCheckBox(Translation
-                .getTranslation("preferences.expert.swarming_lan"));
-        useSwarmingOnLanCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.expert.swarming_lan_tooltip"));
-        useSwarmingOnLanCheckBox
-            .setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN
-                .getValueBoolean(getController()));
+        useSwarmingOnLanCB = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.expert.swarming_lan"));
+        useSwarmingOnLanCB.setToolTipText(
+                Translation.getTranslation("preferences.expert.swarming_lan_tooltip"));
+        useSwarmingOnLanCB.setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(getController()));
 
-        useSwarmingOnInternetCheckBox = SimpleComponentFactory
-            .createCheckBox(Translation
-                .getTranslation("preferences.expert.swarming_internet"));
-        useSwarmingOnInternetCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.expert.swarming_internet_tooltip"));
-        useSwarmingOnInternetCheckBox
-            .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
-                    .getValueBoolean(getController()));
+        useSwarmingOnInternetCB = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation("preferences.expert.swarming_internet"));
+        useSwarmingOnInternetCB.setToolTipText(
+                Translation.getTranslation("preferences.expert.swarming_internet_tooltip"));
+        useSwarmingOnInternetCB.setSelected(
+                ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(getController()));
     }
 
     /**
@@ -212,7 +198,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
      * Enable the mass delete slider if the box is selected.
      */
     private void enableMassDeleteSlider() {
-        massDeleteSlider.setEnabled(massDeleteBox.isSelected());
+        massDeleteSlider.setEnabled(massDeleteCB.isSelected());
     }
 
     /**
@@ -265,10 +251,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(locationField, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
+            builder.add(conflictDetectionCB, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(massDeleteBox, cc.xyw(3, row, 2));
+            builder.add(massDeleteCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(new JLabel(Translation.getTranslation(
@@ -280,26 +266,31 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(Translation.getTranslation("preferences.expert.zip_compression"), cc.xy(1, row));
             ButtonBarBuilder zipBar = ButtonBarBuilder
                 .createLeftToRightBuilder();
-            zipBar.addGridded(useZipOnInternetCheckBox);
+            zipBar.addGridded(useZipOnInternetCB);
             zipBar.addRelatedGap();
-            zipBar.addGridded(useZipOnLanCheckBox);
+            zipBar.addGridded(useZipOnLanCB);
             builder.add(zipBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
             builder.addLabel(Translation.getTranslation("preferences.expert.delta_sync"), cc.xy(1, row));
             ButtonBarBuilder deltaBar = ButtonBarBuilder.createLeftToRightBuilder();
-            deltaBar.addGridded(useDeltaSyncOnInternetCheckBox);
+            deltaBar.addGridded(useDeltaSyncOnInternetCB);
             deltaBar.addRelatedGap();
-            deltaBar.addGridded(useDeltaSyncOnLanCheckBox);
+            deltaBar.addGridded(useDeltaSyncOnLanCB);
             builder.add(deltaBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
             builder.addLabel(Translation.getTranslation("preferences.expert.swarming"), cc.xy(1, row));
             ButtonBarBuilder swarmingBar = ButtonBarBuilder.createLeftToRightBuilder();
-            swarmingBar.addGridded(useSwarmingOnInternetCheckBox);
+            swarmingBar.addGridded(useSwarmingOnInternetCB);
             swarmingBar.addRelatedGap();
-            swarmingBar.addGridded(useSwarmingOnLanCheckBox);
+            swarmingBar.addGridded(useSwarmingOnLanCB);
             builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
+
+            if (usePowerFolderIconCB != null) {
+                row += 2;
+                builder.add(usePowerFolderIconCB, cc.xyw(3, row, 2));
+            }
 
             if (createFavoritesShortcutCB != null) {
                 row += 2;
@@ -321,9 +312,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
      */
     public void save() {
 
-        ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(), conflictDetectionBox.isSelected());
+        ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(), conflictDetectionCB.isSelected());
 
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(), massDeleteBox.isSelected());
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(), massDeleteCB.isSelected());
         ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(), massDeleteSlider.getValue());
 
         // Set folder base
@@ -338,42 +329,48 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         // zip on lan?
         boolean current = ConfigurationEntry.USE_ZIP_ON_LAN
             .getValueBoolean(getController());
-        if (current != useZipOnLanCheckBox.isSelected()) {
+        if (current != useZipOnLanCB.isSelected()) {
             ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(), String
-                .valueOf(useZipOnLanCheckBox.isSelected()));
+                .valueOf(useZipOnLanCB.isSelected()));
+        }
+
+        if (usePowerFolderIconCB != null) {
+            // PowerFolder icon
+            ConfigurationEntry.USE_PF_ICON.setValue(getController(),
+                Boolean.toString(usePowerFolderIconCB.isSelected()));
         }
 
         // delta on lan?
         current = ConfigurationEntry.USE_DELTA_ON_LAN
             .getValueBoolean(getController());
-        if (current != useDeltaSyncOnLanCheckBox.isSelected()) {
+        if (current != useDeltaSyncOnLanCB.isSelected()) {
             ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getController(),
-                String.valueOf(useDeltaSyncOnLanCheckBox.isSelected()));
+                String.valueOf(useDeltaSyncOnLanCB.isSelected()));
             needsRestart = true;
         }
 
         current = ConfigurationEntry.USE_DELTA_ON_INTERNET
             .getValueBoolean(getController());
-        if (current != useDeltaSyncOnInternetCheckBox.isSelected()) {
+        if (current != useDeltaSyncOnInternetCB.isSelected()) {
             ConfigurationEntry.USE_DELTA_ON_INTERNET.setValue(getController(),
-                Boolean.toString(useDeltaSyncOnInternetCheckBox.isSelected()));
+                Boolean.toString(useDeltaSyncOnInternetCB.isSelected()));
             needsRestart = true;
         }
 
         // Swarming
         current = ConfigurationEntry.USE_SWARMING_ON_LAN
             .getValueBoolean(getController());
-        if (current != useSwarmingOnLanCheckBox.isSelected()) {
+        if (current != useSwarmingOnLanCB.isSelected()) {
             ConfigurationEntry.USE_SWARMING_ON_LAN.setValue(getController(),
-                String.valueOf(useSwarmingOnLanCheckBox.isSelected()));
+                String.valueOf(useSwarmingOnLanCB.isSelected()));
             needsRestart = true;
         }
 
         current = ConfigurationEntry.USE_SWARMING_ON_INTERNET
             .getValueBoolean(getController());
-        if (current != useSwarmingOnInternetCheckBox.isSelected()) {
+        if (current != useSwarmingOnInternetCB.isSelected()) {
             ConfigurationEntry.USE_SWARMING_ON_INTERNET.setValue(
-                getController(), Boolean.toString(useSwarmingOnInternetCheckBox
+                getController(), Boolean.toString(useSwarmingOnInternetCB
                     .isSelected()));
             needsRestart = true;
         }
