@@ -1067,7 +1067,7 @@ public class Controller extends PFComponent {
         // ============
         // Monitor the default directory for possible new folders.
         // ============
-        if (PreferencesEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(this))
+        if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(this))
         {
             threadPool.scheduleAtFixedRate(new TimerTask() {
                 public void run() {

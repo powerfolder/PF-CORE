@@ -163,7 +163,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
         autoDetectFoldersCB = new JCheckBox(
                 Translation.getTranslation("preferences.advanced.auto_detect_folders"));
-        autoDetectFoldersCB.setSelected(PreferencesEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController()));
+        autoDetectFoldersCB.setSelected(ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController()));
     }
 
     /**
@@ -258,8 +258,8 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             }
         }
 
-        boolean originalLookForFolders = PreferencesEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController());
-        PreferencesEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(), autoDetectFoldersCB.isSelected());
+        boolean originalLookForFolders = ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController());
+        ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(), autoDetectFoldersCB.isSelected());
         if (originalLookForFolders ^ autoDetectFoldersCB.isSelected()) {
             needsRestart = true;
         }

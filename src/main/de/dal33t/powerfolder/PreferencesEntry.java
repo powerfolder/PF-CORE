@@ -119,8 +119,6 @@ public enum PreferencesEntry {
 
     SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
 
-    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
-
     /**
      * Show PowerFolder base dir short cut on the desk top.
      */

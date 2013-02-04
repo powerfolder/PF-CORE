@@ -688,6 +688,8 @@ public enum ConfigurationEntry {
      */
     CONFLICT_DETECTION("conflict.detection", true),
 
+    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
+
     /**
      * Whether to log verbose.
      */
