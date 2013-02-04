@@ -22,8 +22,6 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,14 +38,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.util.TextLinesPanelBuilder;
@@ -58,8 +54,6 @@ import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
-import de.dal33t.powerfolder.util.update.Updater;
 
 public class InformationTab extends PFComponent implements PreferenceTab {
 
@@ -111,8 +105,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
             builder.add(createTeamPanel(), cc.xy(3, 1));
             builder.add(createTranslators(), cc.xy(3, 2));
         }
-        builder.add(ButtonBarFactory.buildCenteredBar(
-                createActivateButton()), cc.xyw(1, 3, 3));
 
         panel = builder.getPanel();
     }
@@ -252,10 +244,17 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                         + Translation.getTranslation(
                         "preferences.information.power_folder_distribution",
                         getController().getDistribution().getName()) + '\n' +
-                        readLicense());
+                        readLicense(),
+                createActivateButton()
+                );
+
     }
 
     private static JPanel createTextBox(String title, String contents) {
+        return createTextBox(title, contents, null);
+    }
+
+    private static JPanel createTextBox(String title, String contents, JButton button) {
         String[] contentsArray = contents.split("\n");
 
         FormLayout contentsForm = new FormLayout("pref");
@@ -263,8 +262,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
         TitledBorder titledBorder = new TitledBorder(title);
         titledBorder.setTitleColor(Color.BLACK);
-        builder.setBorder(new CompoundBorder(titledBorder, new EmptyBorder(2,
-            2, 2, 2)));
+        builder.setBorder(new CompoundBorder(titledBorder, new EmptyBorder(2, 2, 2, 2)));
         // split into tokens
         int row = 1;
         CellConstraints cc = new CellConstraints();
@@ -275,11 +273,19 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                 builder.appendRow("3dlu");
             } else {
                 builder.appendRow("pref");
-                builder.add(new JLabel("<HTML><BODY>" + lineText
-                    + "</BODY></HTML>"), cc.xy(1, row));
+                builder.add(new JLabel("<HTML><BODY>" + lineText + "</BODY></HTML>"), cc.xy(1, row));
             }
             row += 1;
         }
+
+        if (button != null) {
+            // Gap, then button
+            builder.appendRow("3dlu");
+            row += 1;
+            builder.appendRow("pref");
+            builder.add(button, cc.xy(1, row));
+        }
+
         JPanel textBoxPanel = builder.getPanel();
         textBoxPanel.setBackground(Color.WHITE);
         return textBoxPanel;
