@@ -48,15 +48,14 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
     private ServerSelectorPanel severSelector;
     private JCheckBox useOnlineStorageCB;
-    private JCheckBox verboseBox;
+    private JCheckBox verboseCB;
     private boolean originalVerbose;
-    private JCheckBox expertModeBox;
+    private JCheckBox expertModeCB;
     private JCheckBox lockUICB;
-    private JCheckBox underlineLinkBox;
+    private JCheckBox underlineLinkCB;
     private JCheckBox autoExpandCB;
     private JLabel skinLabel;
     private JComboBox skinCombo;
-    private JCheckBox autoDetectFoldersCB;
 
     private boolean needsRestart;
 
@@ -92,20 +91,20 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController()));
 
         originalVerbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
-        verboseBox = SimpleComponentFactory.createCheckBox(Translation.getTranslation("preferences.advanced.verbose"));
-        verboseBox.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
+        verboseCB = SimpleComponentFactory.createCheckBox(Translation.getTranslation("preferences.advanced.verbose"));
+        verboseCB.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
 
-        expertModeBox = SimpleComponentFactory.createCheckBox(
+        expertModeCB = SimpleComponentFactory.createCheckBox(
                 Translation.getTranslation("preferences.advanced.expert_mode"));
-        expertModeBox.setSelected(PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
+        expertModeCB.setSelected(PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         lockUICB = SimpleComponentFactory.createCheckBox(Translation.getTranslation("preferences.advanced.ui_locked"));
         lockUICB.setSelected(ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(getController()));
 
-        underlineLinkBox = SimpleComponentFactory.createCheckBox(
+        underlineLinkCB = SimpleComponentFactory.createCheckBox(
                 Translation.getTranslation("preferences.advanced.underline_link"));
-        underlineLinkBox.setVisible(false);
-        underlineLinkBox.setSelected(PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController()));
+        underlineLinkCB.setVisible(false);
+        underlineLinkCB.setSelected(PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController()));
 
         autoExpandCB = SimpleComponentFactory.createCheckBox(
                 Translation.getTranslation("preferences.advanced.auto_expand"));
@@ -160,10 +159,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             skinCombo.setVisible(getController().getDistribution()
                 .allowSkinChange());
         }
-
-        autoDetectFoldersCB = new JCheckBox(
-                Translation.getTranslation("preferences.advanced.auto_detect_folders"));
-        autoDetectFoldersCB.setSelected(ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController()));
     }
 
     /**
@@ -192,10 +187,10 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             }
 
             row += 2;
-            builder.add(verboseBox, cc.xy(3, row));
+            builder.add(verboseCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(expertModeBox, cc.xy(3, row));
+            builder.add(expertModeCB, cc.xy(3, row));
 
             row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
@@ -207,10 +202,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             }
 
             row += 2;
-            builder.add(autoDetectFoldersCB, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(underlineLinkBox, cc.xyw(3, row, 2));
+            builder.add(underlineLinkCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(autoExpandCB, cc.xyw(3, row, 2));
@@ -226,21 +218,21 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(), useOnlineStorageCB.isSelected());
 
         // Verbose logging
-        if (originalVerbose ^ verboseBox.isSelected()) {
+        if (originalVerbose ^ verboseCB.isSelected()) {
             // Verbose setting changed.
             needsRestart = true;
         }
-        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean.toString(verboseBox.isSelected()));
+        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean.toString(verboseCB.isSelected()));
 
         // Advanced
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()) ^ expertModeBox.isSelected()) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()) ^ expertModeCB.isSelected()) {
             needsRestart = true;
         }
-        PreferencesEntry.EXPERT_MODE.setValue(getController(), expertModeBox.isSelected());
+        PreferencesEntry.EXPERT_MODE.setValue(getController(), expertModeCB.isSelected());
 
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
-            underlineLinkBox.isSelected());
+            underlineLinkCB.isSelected());
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
@@ -256,12 +248,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                     (String) skinCombo.getSelectedItem());
                 needsRestart = true;
             }
-        }
-
-        boolean originalLookForFolders = ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController());
-        ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(), autoDetectFoldersCB.isSelected());
-        if (originalLookForFolders ^ autoDetectFoldersCB.isSelected()) {
-            needsRestart = true;
         }
 
         getController().saveConfig();

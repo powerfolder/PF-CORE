@@ -74,6 +74,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox createDesktopShortcutsCB;
     private JCheckBox usePowerFolderIconCB;
     private JCheckBox folderAutoSetupCB;
+    private JCheckBox autoDetectFoldersCB;
 
     private boolean needsRestart;
 
@@ -187,6 +188,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         folderAutoSetupCB = new JCheckBox(
             Translation.getTranslation("preferences.expert.auto_setup_folders"),
                 ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()));
+
+        autoDetectFoldersCB = new JCheckBox(
+                Translation.getTranslation("preferences.expert.auto_detect_folders"),
+                ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController()));
     }
 
     /**
@@ -299,6 +304,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 builder.add(usePowerFolderIconCB, cc.xyw(3, row, 2));
             }
 
+            row += 2;
+            builder.add(autoDetectFoldersCB, cc.xyw(3, row, 2));
+
             if (createFavoritesShortcutCB != null) {
                 row += 2;
                 builder.add(createFavoritesShortcutCB, cc.xyw(3, row, 2));
@@ -408,6 +416,12 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                         getController().getOSClient().getAccount());
                 }
             }, 0);
+        }
+
+        boolean originalLookForFolders = ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController());
+        ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(), autoDetectFoldersCB.isSelected());
+        if (originalLookForFolders ^ autoDetectFoldersCB.isSelected()) {
+            needsRestart = true;
         }
 
     }
