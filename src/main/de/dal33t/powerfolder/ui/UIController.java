@@ -349,12 +349,12 @@ public class UIController extends PFComponent {
         String shortcutName = getController().getFolderRepository()
             .getFoldersBasedir().getName();
         if (removeFirst
-            || !PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+            || !PreferencesEntry.CREATE_DESKTOP_SHORTCUT
                 .getValueBoolean(getController()))
         {
             Util.removeDesktopShortcut(shortcutName);
         }
-        if (PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+        if (PreferencesEntry.CREATE_DESKTOP_SHORTCUT
             .getValueBoolean(getController()))
         {
             Util.createDesktopShortcut(shortcutName, getController()

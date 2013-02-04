@@ -223,7 +223,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         processV4Format();
 
         // Maintain link
-        boolean useFavLink = PreferencesEntry.USE_PF_LINK.getValueBoolean(getController());
+        boolean useFavLink = PreferencesEntry.CREATE_FAVOURITES_SHORTCUT.getValueBoolean(getController());
         if (useFavLink && WinUtils.isSupported()) {
             try {
                 WinUtils.getInstance().setPFLinks(true, getController());

@@ -60,7 +60,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JPanel panel;
     private JTextField nickField;
-    private JCheckBox createPowerFoldersDesktopShortcutsBox;
     private JCheckBox startWithWindowsBox;
     private ActionLabel startWithMacOSLabel;
     private JCheckBox folderAutoSetupBox;
@@ -77,7 +76,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JLabel folderSyncLabel;
     private JSlider folderSyncSlider;
     private JComboBox languageChooser;
-    private JCheckBox usePowerFolderLink;
 
     private boolean needsRestart;
 
@@ -117,11 +115,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
 
-            boolean createPowerFoldersDesktopShortcut = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
-                .getValueBoolean(getController());
-            createPowerFoldersDesktopShortcutsBox = new JCheckBox(
-                Translation.getTranslation("preferences.general.create_powerfolder_shortcut"),
-                createPowerFoldersDesktopShortcut);
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
                 startWithWindowsBox = new JCheckBox(
                     Translation
@@ -133,12 +126,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             usePowerFolderIconBox = SimpleComponentFactory.createCheckBox(
                     Translation.getTranslation("preferences.general.use_pf_icon"));
             usePowerFolderIconBox.setSelected(ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
-        }
-
-        if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
-            usePowerFolderLink = SimpleComponentFactory.createCheckBox(
-                    Translation.getTranslation("preferences.general.show_pf_link"));
-            usePowerFolderLink.setSelected(PreferencesEntry.USE_PF_LINK.getValueBoolean(getController()));
         }
 
         if (MacUtils.isSupported()) {
@@ -270,20 +257,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(createUpdateCheckPanel(), cc.xyw(3, row, 2));
 
-            if (usePowerFolderLink != null) {
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
-            }
-
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
-
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(createPowerFoldersDesktopShortcutsBox, cc.xyw(3, row, 2));
 
                 if (startWithWindowsBox != null) {
                     builder.appendRow("3dlu");
@@ -393,8 +368,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return chooser;
     }
 
-
-
     private static Component threePanel(Component component1,
         Component component2, Component component3) {
         FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref", "pref");
@@ -440,25 +413,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (xBehaviorChooser.getSelectedIndex() == 0 ^ originalQuitOnX) {
             // Need to restart to redraw minimize button.
             needsRestart = true;
-        }
-
-        if (usePowerFolderLink != null) {
-            boolean newValue = usePowerFolderLink.isSelected();
-            configureLinksPlaces(newValue);
-            PreferencesEntry.USE_PF_LINK.setValue(getController(), usePowerFolderLink.isSelected());
-        }
-
-        if (createPowerFoldersDesktopShortcutsBox != null) {
-            // Desktop PowerFolders shortcut.
-            boolean oldValue = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
-                .getValueBoolean(getController());
-            boolean newValue = createPowerFoldersDesktopShortcutsBox
-                .isSelected();
-            if (oldValue ^ newValue) {
-                PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.setValue(
-                    getController(), newValue);
-                getUIController().configureDesktopShortcut(false);
-            }
         }
 
         int index = archiveCleanupCombo.getSelectedIndex();
@@ -535,22 +489,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         }
 
-    }
-
-    private void configureLinksPlaces(boolean newValue) {
-        if (WinUtils.isSupported()) {
-            try {
-                WinUtils.getInstance().setPFLinks(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
-        } else if (MacUtils.isSupported()) {
-            try {
-                MacUtils.getInstance().setPFPlaces(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
-        }
     }
 
     // ////////////////

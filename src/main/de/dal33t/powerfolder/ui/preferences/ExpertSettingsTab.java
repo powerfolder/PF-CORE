@@ -26,6 +26,7 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import javax.swing.*;
@@ -40,6 +41,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -48,7 +50,10 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -68,6 +73,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
+
+    private JCheckBox createFavouritesShortcutCB;
+    private JCheckBox createDesktopShortcutsCB;
+
 
     private boolean needsRestart;
 
@@ -93,6 +102,18 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
+
+        if (OSUtil.isWindowsSystem()) {
+            createDesktopShortcutsCB = new JCheckBox(
+                    Translation.getTranslation("preferences.expert.create_desktop_shortcut"),
+                    PreferencesEntry.CREATE_DESKTOP_SHORTCUT.getValueBoolean(getController()));
+        }
+
+        if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
+            createFavouritesShortcutCB = new JCheckBox(
+                    Translation.getTranslation("preferences.expert.create_favourites_shortcut"),
+                    PreferencesEntry.CREATE_FAVOURITES_SHORTCUT.getValueBoolean(getController()));
+        }
 
         massDeleteBox = SimpleComponentFactory.createCheckBox(
                 Translation.getTranslation("preferences.expert.use_mass_delete"));
@@ -280,6 +301,16 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             swarmingBar.addGridded(useSwarmingOnLanCheckBox);
             builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
 
+            if (createFavouritesShortcutCB != null) {
+                row += 2;
+                builder.add(createFavouritesShortcutCB, cc.xyw(3, row, 2));
+            }
+
+            if (createDesktopShortcutsCB != null) {
+                row += 2;
+                builder.add(createDesktopShortcutsCB, cc.xyw(3, row, 2));
+            }
+
             panel = builder.getPanel();
         }
         return panel;
@@ -346,7 +377,42 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     .isSelected()));
             needsRestart = true;
         }
+
+        if (createFavouritesShortcutCB != null) {
+            boolean newValue = createFavouritesShortcutCB.isSelected();
+            configureLinksPlaces(newValue);
+            PreferencesEntry.CREATE_FAVOURITES_SHORTCUT.setValue(getController(),newValue);
+        }
+
+        if (createDesktopShortcutsCB != null) {
+            boolean oldValue = PreferencesEntry.CREATE_DESKTOP_SHORTCUT.getValueBoolean(getController());
+            boolean newValue = createDesktopShortcutsCB.isSelected();
+            if (oldValue ^ newValue) {
+                PreferencesEntry.CREATE_DESKTOP_SHORTCUT.setValue(getController(), newValue);
+                getController().getUIController().configureDesktopShortcut(false);
+            }
+        }
     }
+
+    private void configureLinksPlaces(boolean newValue) {
+        if (WinUtils.isSupported()) {
+            try {
+                WinUtils.getInstance().setPFLinks(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        } else if (MacUtils.isSupported()) {
+            try {
+                MacUtils.getInstance().setPFPlaces(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        }
+    }
+
+    // ////////////////
+    // Inner Classes //
+    // ////////////////
 
     /**
      * Action listener for the location button. Opens a choose dir dialog and
