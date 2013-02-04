@@ -127,7 +127,7 @@ public enum PreferencesEntry {
     /**
      * Whether to set PowerFolders as a Favorite Link in Windows Explorer.
      */
-    CREATE_FAVOURITES_SHORTCUT("use.pf.link", true),
+    CREATE_FAVORITES_SHORTCUT("use.pf.link", true),
 
     PAUSED("paused", false),
 

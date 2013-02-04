@@ -74,7 +74,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
-    private JCheckBox createFavouritesShortcutCB;
+    private JCheckBox createFavoritesShortcutCB;
     private JCheckBox createDesktopShortcutsCB;
 
 
@@ -110,9 +110,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
-            createFavouritesShortcutCB = new JCheckBox(
-                    Translation.getTranslation("preferences.expert.create_favourites_shortcut"),
-                    PreferencesEntry.CREATE_FAVOURITES_SHORTCUT.getValueBoolean(getController()));
+            createFavoritesShortcutCB = new JCheckBox(
+                    Translation.getTranslation("preferences.expert.create_favorites_shortcut"),
+                    PreferencesEntry.CREATE_FAVORITES_SHORTCUT.getValueBoolean(getController()));
         }
 
         massDeleteBox = SimpleComponentFactory.createCheckBox(
@@ -301,9 +301,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             swarmingBar.addGridded(useSwarmingOnLanCheckBox);
             builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
 
-            if (createFavouritesShortcutCB != null) {
+            if (createFavoritesShortcutCB != null) {
                 row += 2;
-                builder.add(createFavouritesShortcutCB, cc.xyw(3, row, 2));
+                builder.add(createFavoritesShortcutCB, cc.xyw(3, row, 2));
             }
 
             if (createDesktopShortcutsCB != null) {
@@ -378,10 +378,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             needsRestart = true;
         }
 
-        if (createFavouritesShortcutCB != null) {
-            boolean newValue = createFavouritesShortcutCB.isSelected();
+        if (createFavoritesShortcutCB != null) {
+            boolean newValue = createFavoritesShortcutCB.isSelected();
             configureLinksPlaces(newValue);
-            PreferencesEntry.CREATE_FAVOURITES_SHORTCUT.setValue(getController(),newValue);
+            PreferencesEntry.CREATE_FAVORITES_SHORTCUT.setValue(getController(),newValue);
         }
 
         if (createDesktopShortcutsCB != null) {
