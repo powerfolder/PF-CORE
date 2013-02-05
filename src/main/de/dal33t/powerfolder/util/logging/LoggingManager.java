@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 
 import javax.swing.text.StyledDocument;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -56,7 +57,7 @@ public class LoggingManager {
     private static final String DEBUG_DIR = "logs";
 
     /** File Logging file prefix */
-    private static String LOGFILE_PREFIX = "PowerFolder";
+    private static String LOGFILE_PREFIX = Constants.MISC_DIR_NAME; // "PowerFolder"
     private static String LOGFILE_SUFFIX = "-log.txt";
 
     /** The document handler for the DebugPanel */
