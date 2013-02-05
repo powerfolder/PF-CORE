@@ -64,7 +64,7 @@ public class ProUtil {
         // }
 
         // String loginURL = client.getLoginURLWithCredentials();
-        // HACK(tm) Redirect to https://access.powerfolder.com/upgrade.html does
+        // HACK(tm) Redirect to https://my.powerfolder.com/upgrade.html does
         // not work!
         // return loginURL;
 
