@@ -388,6 +388,9 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
         uiComponent.setBackground(Color.white);
 
+        BaseAction mySetupAction = new MySetupAction(getController());
+        mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
+        
         MyOpenFoldersBaseAction myOpenFoldersBaseAction =
                 new MyOpenFoldersBaseAction(getController());
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
@@ -406,7 +409,7 @@ public class MainFrame extends PFUIComponent {
         syncingButton.addActionListener(myOpenFoldersBaseAction);
         syncingButton.setVisible(false);
 
-        setupButton = new JButtonMini(new MySetupAction());
+        setupButton = new JButtonMini(mySetupAction);
         setupButton.setIcon(Icons.getIconById(Icons.ACTION_ARROW));
         setupButton.setText(null);
 
@@ -422,11 +425,11 @@ public class MainFrame extends PFUIComponent {
         lowerMainTextActionLabel = new ActionLabel(getController(),
                 new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                handleSyncTextClick();
-            }
-        });
+                    handleSyncTextClick();
+                }
+            });
 
-        setupLabel = new ActionLabel(getController(), new MySetupAction());
+        setupLabel = new ActionLabel(getController(), mySetupAction);
 
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
@@ -1302,7 +1305,11 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MySetupAction extends AbstractAction {
+    private class MySetupAction extends BaseAction {
+
+        protected MySetupAction(Controller controller) {
+            super(null, controller);
+        }
 
         public void actionPerformed(ActionEvent e) {
             if (!getController().getNodeManager().isStarted()) {
