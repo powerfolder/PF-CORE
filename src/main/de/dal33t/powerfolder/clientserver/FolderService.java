@@ -232,7 +232,7 @@ public interface FolderService {
      * @param fInfo
      * @param folder
      */
-    String getFileLink(FileInfo fInfo, Folder folder);
+    String getFileLink(FileInfo fInfo);
 
     /**
      * Create a download link.
@@ -240,7 +240,7 @@ public interface FolderService {
      * @param fInfo
      * @param folder
      */
-    String getDownloadLink(FileInfo fInfo, Folder folder);
+    String getDownloadLink(FileInfo fInfo);
 
     /**
      * Bulk get of archive and local folders size.
