@@ -77,6 +77,9 @@ public abstract class BaseAction extends AbstractAction {
      *            the action id
      */
     protected void configureFromActionId(String actionId) {
+        if (StringUtils.isBlank(actionId)) {
+            return;
+        }
         putValue(NAME, Translation.getTranslation(actionId + ".name"));
         setMnemonicKey(Translation.getTranslation(actionId + ".key"));
         putValue(SHORT_DESCRIPTION,
