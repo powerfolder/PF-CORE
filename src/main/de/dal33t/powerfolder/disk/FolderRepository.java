@@ -1553,8 +1553,20 @@ public class FolderRepository extends PFComponent implements Runnable {
                 && getController().getOSClient().isConnected())
             {
                 logWarning("Removing local " + folder + ' ' + a
-                    + " does not have read permission");
+                    + " does not have read permission. Wiping out data.");
                 removeFolder(folder, true);
+                final File localBase = folder.getLocalBase();
+                getController().getIOProvider().startIO(new Runnable() {
+                    public void run() {
+                        try {
+                            Thread.sleep(2000L);
+                            FileUtils.recursiveDelete(localBase);
+                        } catch (Exception e) {
+                            logWarning("Unable to delete directory: "
+                                + localBase);
+                        }
+                    }
+                });
             }
         }
     }
@@ -1590,6 +1602,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     break;
                 }
             }
+            // Actually create the directory
+            settings.getLocalBaseDir().mkdirs();
             if (foInfo != null) {
                 // Load existing.
                 createFolder0(foInfo, settings, true);
@@ -1667,6 +1681,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     ArchiveMode.FULL_BACKUP,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()));
+                
+                
+                // Actually create the directory
+                settings.getLocalBaseDir().mkdirs();
 
                 Folder folder = createFolder0(folderInfo, settings, true);
                 folder.addDefaultExcludes();
