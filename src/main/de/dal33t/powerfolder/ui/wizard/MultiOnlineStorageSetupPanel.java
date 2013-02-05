@@ -339,7 +339,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     
     /**
      * Create a WebDAV connection to this folder. Should be something like 'net
-     * use * "https://access.powerfolder.com/node/os004/webdav/afolder"
+     * use * "https://my.powerfolder.com/webdav/afolder"
      * /User:bob@powerfolder.com pazzword'
      */
     private void createWebdavConnection() {
