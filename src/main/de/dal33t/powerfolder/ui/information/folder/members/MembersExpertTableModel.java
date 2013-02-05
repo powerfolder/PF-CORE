@@ -442,7 +442,10 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
 
     void refreshModel() {
         refreshingModel.setValue(Boolean.TRUE);
-        if (getController().getOSClient().isLoggedIn()) {
+        if (getController().getOSClient().isLoggedIn()
+            && getController().getFolderRepository().hasJoinedFolder(
+                folder.getInfo()))
+        {
             new ModelRefresher().execute();
         } else {
             permissionsRetrieved = false;
