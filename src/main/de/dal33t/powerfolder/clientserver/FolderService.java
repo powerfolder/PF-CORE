@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -224,6 +225,22 @@ public interface FolderService {
      * @return
      */
     String getWebDAVURL(FolderInfo foInfo);
+
+    /**
+     * Create a file link.
+     * 
+     * @param fInfo
+     * @param folder
+     */
+    String getFileLink(FileInfo fInfo, Folder folder);
+
+    /**
+     * Create a download link.
+     * 
+     * @param fInfo
+     * @param folder
+     */
+    String getDownloadLink(FileInfo fInfo, Folder folder);
 
     /**
      * Bulk get of archive and local folders size.
