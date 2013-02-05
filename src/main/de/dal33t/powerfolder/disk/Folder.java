@@ -3826,7 +3826,9 @@ public class Folder extends PFComponent {
             if (!currentInfo.isMetaFolder()) {
                 Folder metaFolder = getController().getFolderRepository()
                     .getMetaFolderForParent(currentInfo);
-                metaFolder.checkIfDeviceDisconnected();
+                if (metaFolder != null) {
+                    metaFolder.checkIfDeviceDisconnected();                    
+                }
             }
             
             // TODO Correctly init Archive
