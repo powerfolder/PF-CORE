@@ -128,9 +128,8 @@ public class Folder extends PFComponent {
     public static final String METAFOLDER_MEMBERS = "Members";
     public static final String FOLDER_STATISTIC = "FolderStatistic";
 
-    private static final int TEN_MINUTES = 60 * 10;
-    private static final int ONE_MINUTE = 60;
-    private static final int TEN_SECONDS = 10;
+    private static final int FIVE_MINUTES = 60 * 5;
+    private static final int THIRTY_SECONDS = 30;
 
     /** The base location of the folder. */
     private final TFile localBase;
@@ -1060,26 +1059,26 @@ public class Folder extends PFComponent {
             int items = getKnownItemCount();
             // Dynamically adapt fallback scan time.
             // The less files we have, the faster we scan.
-            // 0 files = every 10 seconds (MIN)
-            // 100 files = every minute
-            // 1.000 files = every 10 minutes (MAX)
-            // 30.000 files = every 10 minutes
-            // If folder watch is not supported max is 1 minute.
-            int frequency = (int) (60L * items / 100L);
+            // 0 files = every 30 seconds (MIN)
+            // 10.000 files = every minute
+            // 50.000 files = every 5 minutes (MAX)
+            // 130.000 files = every 5 minutes (MAX)
+            // If folder watch is not supported filesystem is scanned every 30 seconds
+            int frequency = (int) (6L * items / 1000L);
 
             // Min
-            if (frequency < TEN_SECONDS) {
-                frequency = TEN_SECONDS;
+            if (frequency < THIRTY_SECONDS) {
+                frequency = THIRTY_SECONDS;
             }
 
             // Max
             if (watcher.isSupported()) {
-                if (frequency > TEN_MINUTES) {
-                    frequency = TEN_MINUTES;
+                if (frequency > FIVE_MINUTES) {
+                    frequency = FIVE_MINUTES;
                 }
             } else {
-                if (frequency > ONE_MINUTE) {
-                    frequency = ONE_MINUTE;
+                if (frequency > THIRTY_SECONDS) {
+                    frequency = THIRTY_SECONDS;
                 }
             }
 
