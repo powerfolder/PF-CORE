@@ -554,7 +554,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             if (!getController().getOSClient().getAccount()
                 .hasPermission(FolderCreatePermission.INSTANCE))
             {
-                // TODO: Inform user
+                if (getController().getOSClient().isLoggedIn()) {
+                    // TODO: Inform user                    
+                }
+                // SKIP?
                 return;
             }
         }
