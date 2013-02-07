@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
@@ -547,6 +548,16 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     private void makeFolder(String folderConfig) {
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()))
+        {
+            if (!getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE))
+            {
+                // TODO: Inform user
+                return;
+            }
+        }
         Map<String, String> config = parseFolderConfig(folderConfig);
 
         // Directory
