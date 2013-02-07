@@ -131,6 +131,17 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     {
         Reject.notNull(fileInfo, "fileInfo");
         Reject.notNull(source, "source");
+        
+        if (versionsPerFile == 0) {
+            // Optimization for zero-archive
+            if (!forceKeepSource) {
+                if (source.exists() && !source.delete()) {
+                    log.warning("Unable to remove old file " + source);
+                }
+                source.delete();
+                return;
+            }
+        }
 
         File target = getArchiveTarget(fileInfo);
 
