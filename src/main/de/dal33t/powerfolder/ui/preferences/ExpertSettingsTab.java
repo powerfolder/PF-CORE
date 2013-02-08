@@ -75,6 +75,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox usePowerFolderIconCB;
     private JCheckBox folderAutoSetupCB;
     private JCheckBox autoDetectFoldersCB;
+    private JCheckBox allowFoldersOutsideDefaultCB;
 
     private boolean needsRestart;
 
@@ -192,6 +193,11 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         autoDetectFoldersCB = new JCheckBox(
                 Translation.getTranslation("preferences.expert.auto_detect_folders"),
                 ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController()));
+
+        // Logical inverse of the config entry.
+        allowFoldersOutsideDefaultCB = new JCheckBox(
+                Translation.getTranslation("dialog.expert.allow_folders_outside_default"),
+                !ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController()));
     }
 
     /**
@@ -317,6 +323,9 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 builder.add(createDesktopShortcutsCB, cc.xyw(3, row, 2));
             }
 
+            row += 2;
+            builder.add(allowFoldersOutsideDefaultCB, cc.xyw(3, row, 2));
+
             panel = builder.getPanel();
         }
         return panel;
@@ -395,6 +404,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             configureLinksPlaces(newValue);
             PreferencesEntry.CREATE_FAVORITES_SHORTCUT.setValue(getController(),newValue);
         }
+
+        // Logical inverse of the displayed.
+        ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.setValue(getController(),
+                !allowFoldersOutsideDefaultCB.isSelected());
 
         if (createDesktopShortcutsCB != null) {
             boolean oldValue = PreferencesEntry.CREATE_DESKTOP_SHORTCUT.getValueBoolean(getController());
