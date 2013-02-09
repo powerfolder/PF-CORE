@@ -266,6 +266,22 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(locationField, cc.xyw(3, row, 2));
 
             row += 2;
+            builder.add(autoDetectFoldersCB, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(allowFoldersOutsideDefaultCB, cc.xyw(3, row, 2));
+
+            if (createDesktopShortcutsCB != null) {
+                row += 2;
+                builder.add(createDesktopShortcutsCB, cc.xyw(3, row, 2));
+            }
+
+            if (createFavoritesShortcutCB != null) {
+                row += 2;
+                builder.add(createFavoritesShortcutCB, cc.xyw(3, row, 2));
+            }
+
+            row += 2;
             builder.add(conflictDetectionCB, cc.xyw(3, row, 2));
 
             row += 2;
@@ -310,22 +326,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 builder.add(usePowerFolderIconCB, cc.xyw(3, row, 2));
             }
 
-            row += 2;
-            builder.add(autoDetectFoldersCB, cc.xyw(3, row, 2));
-
-            if (createFavoritesShortcutCB != null) {
-                row += 2;
-                builder.add(createFavoritesShortcutCB, cc.xyw(3, row, 2));
-            }
-
-            if (createDesktopShortcutsCB != null) {
-                row += 2;
-                builder.add(createDesktopShortcutsCB, cc.xyw(3, row, 2));
-            }
-
-            row += 2;
-            builder.add(allowFoldersOutsideDefaultCB, cc.xyw(3, row, 2));
-
             panel = builder.getPanel();
         }
         return panel;
@@ -347,7 +347,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         String newFolderBaseString = (String) locationModel.getValue();
         getController().getFolderRepository().setFoldersBasedir(newFolderBaseString);
         if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
-            getController().getUIController().configureDesktopShortcut(true);
+            getController().getUIController().configureDesktopShortcutFoldersBase(true);
         }
 
         // zip on lan?
@@ -414,7 +414,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             boolean newValue = createDesktopShortcutsCB.isSelected();
             if (oldValue ^ newValue) {
                 PreferencesEntry.CREATE_DESKTOP_SHORTCUT.setValue(getController(), newValue);
-                getController().getUIController().configureDesktopShortcut(false);
+                getController().getUIController().configureDesktopShortcutFoldersBase(false);
             }
         }
 

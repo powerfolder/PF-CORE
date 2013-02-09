@@ -330,7 +330,7 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        configureDesktopShortcut(false);
+        configureDesktopShortcutFoldersBase(false);
 
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         getController().addInvitationHandler(new MyInvitationHandler());
@@ -345,9 +345,31 @@ public class UIController extends PFComponent {
      * @param removeFirst
      *            remove any shortcut before creating a new one.
      */
-    public void configureDesktopShortcut(boolean removeFirst) {
+    public void configureDesktopShortcutFoldersBase(boolean removeFirst) {
         String shortcutName = getController().getFolderRepository()
             .getFoldersBasedir().getName();
+        if (removeFirst
+            || !PreferencesEntry.CREATE_DESKTOP_SHORTCUT
+                .getValueBoolean(getController()))
+        {
+            Util.removeDesktopShortcut(shortcutName);
+        }
+        if (PreferencesEntry.CREATE_DESKTOP_SHORTCUT
+            .getValueBoolean(getController()))
+        {
+            Util.createDesktopShortcut(shortcutName, getController()
+                .getFolderRepository().getFoldersBasedir());
+        }
+    }
+
+    /**
+     * Creates / removes a desktop shortcut to PowerFolder exe.
+     *
+     * @param removeFirst
+     *            remove any shortcut before creating a new one.
+     */
+    public void configureDesktopShortcutPowerFolder(boolean removeFirst) {
+        String shortcutName = ""; // @todo how to get exe path?
         if (removeFirst
             || !PreferencesEntry.CREATE_DESKTOP_SHORTCUT
                 .getValueBoolean(getController()))
