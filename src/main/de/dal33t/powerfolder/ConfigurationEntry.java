@@ -224,7 +224,7 @@ public enum ConfigurationEntry {
      * The optional server hostname to connect to. Example:
      * server.powerfolder.com:1234
      */
-    SERVER_HOST("server.host", "access.powerfolder.com:1337"),
+    SERVER_HOST("server.host", "os003.powerfolder.com:1337"),
 
     /**
      * HTTP tunnel relay URL. TODO Change config key.
@@ -461,7 +461,7 @@ public enum ConfigurationEntry {
     /**
      * Auto detect WAN speeds
      */
-    TRANSFER_LIMIT_AUTODETECT("transfer.limit.autodetect", true),
+    TRANSFER_LIMIT_AUTODETECT("transfer.limit.autodetect", false),
 
     /**
      * The upload limit for WAN (Internet) connections in KB/s
@@ -831,7 +831,7 @@ public enum ConfigurationEntry {
     DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", 2),
 
     /** Warning about unsyned folders. */
-    FOLDER_SYNC_USE("sync.folder.use", true),
+    FOLDER_SYNC_USE("sync.folder.use", false),
 
     /** Seconds before warning about unsynced folders (10 days). */
     FOLDER_SYNC_WARN_SECONDS("sync.folder.warn.seconds", 864000) {
