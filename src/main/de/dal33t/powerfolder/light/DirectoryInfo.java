@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.Date;
 
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * A lightweight object representing an actual directory in the PowerFolder.
