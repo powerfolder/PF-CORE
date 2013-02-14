@@ -61,7 +61,6 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 
-import de.dal33t.powerfolder.light.MemberInfo;
 import org.apache.commons.cli.CommandLine;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -82,6 +81,7 @@ import de.dal33t.powerfolder.event.NetworkingModeListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -146,7 +146,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 8;
     private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 0;
+    private static final int REVISION_VERSION = 2;
 
     /**
      * Program version.
