@@ -448,8 +448,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             lastEvent = event;
         }
 
-        public synchronized void pendingDownloadEnqueud(
-            TransferManagerEvent event)
+        public synchronized void pendingDownloadEnqueued(
+                TransferManagerEvent event)
         {
             pendingDownloadEnqued++;
             lastEvent = event;

@@ -3177,7 +3177,7 @@ public class TransferManager extends PFComponent {
     }
 
     private void firePendingDownloadEnqueud(TransferManagerEvent event) {
-        listenerSupport.pendingDownloadEnqueud(event);
+        listenerSupport.pendingDownloadEnqueued(event);
     }
 
     /**

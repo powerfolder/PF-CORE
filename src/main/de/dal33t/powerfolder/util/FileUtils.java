@@ -647,9 +647,6 @@ public class FileUtils {
                         WinUtils.getProgramInstallationPath(), exeName);
 
                     if (!powerFolderFile.exists()) {
-                        powerFolderFile = new TFile(
-                            WinUtils.getProgramInstallationPath(), exeName);
-
                         log.fine("Could not find " + powerFolderFile.getName()
                             + " at " + powerFolderFile.getAbsolutePath());
                         return;

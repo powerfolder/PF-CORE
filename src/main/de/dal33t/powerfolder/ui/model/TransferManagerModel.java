@@ -331,7 +331,7 @@ public class TransferManagerModel extends PFUIComponent {
             updateDownloadsValueModels();
         }
 
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+        public void pendingDownloadEnqueued(TransferManagerEvent event) {
             updateUploadsValueModels();
         }
 

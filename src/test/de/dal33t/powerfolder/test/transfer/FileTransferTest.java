@@ -1950,8 +1950,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
-        public synchronized void pendingDownloadEnqueud(
-            TransferManagerEvent event)
+        public synchronized void pendingDownloadEnqueued(
+                TransferManagerEvent event)
         {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;

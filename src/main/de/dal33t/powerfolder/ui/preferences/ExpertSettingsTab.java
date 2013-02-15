@@ -71,7 +71,8 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox massDeleteCB;
     private JSlider massDeleteSlider;
     private JCheckBox createFavoritesShortcutCB;
-    private JCheckBox createDesktopShortcutsCB;
+    private JCheckBox createApplicationDesktopShortcutsCB;
+    private JCheckBox createBasedirDesktopShortcutsCB;
     private JCheckBox usePowerFolderIconCB;
     private JCheckBox folderAutoSetupCB;
     private JCheckBox autoDetectFoldersCB;
@@ -103,9 +104,12 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
 
         if (OSUtil.isWindowsSystem()) {
-            createDesktopShortcutsCB = new JCheckBox(
-                    Translation.getTranslation("preferences.expert.create_desktop_shortcut"),
-                    PreferencesEntry.CREATE_DESKTOP_SHORTCUT.getValueBoolean(getController()));
+        createApplicationDesktopShortcutsCB  = new JCheckBox(
+                    Translation.getTranslation("preferences.expert.create_application_desktop_shortcut"),
+                    PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.getValueBoolean(getController()));
+        createBasedirDesktopShortcutsCB = new JCheckBox(
+                    Translation.getTranslation("preferences.expert.create_basedir_desktop_shortcut"),
+                    PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT.getValueBoolean(getController()));
             usePowerFolderIconCB = new JCheckBox(
                     Translation.getTranslation("preferences.expert.use_pf_icon"),
                     ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
@@ -248,7 +252,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -271,9 +275,14 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(allowFoldersOutsideDefaultCB, cc.xyw(3, row, 2));
 
-            if (createDesktopShortcutsCB != null) {
+            if (createApplicationDesktopShortcutsCB != null) {
                 row += 2;
-                builder.add(createDesktopShortcutsCB, cc.xyw(3, row, 2));
+                builder.add(createApplicationDesktopShortcutsCB, cc.xyw(3, row, 2));
+            }
+
+            if (createBasedirDesktopShortcutsCB != null) {
+                row += 2;
+                builder.add(createBasedirDesktopShortcutsCB, cc.xyw(3, row, 2));
             }
 
             if (createFavoritesShortcutCB != null) {
@@ -347,7 +356,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         String newFolderBaseString = (String) locationModel.getValue();
         getController().getFolderRepository().setFoldersBasedir(newFolderBaseString);
         if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
-            getController().getUIController().configureDesktopShortcutFoldersBase(true);
+            getController().getUIController().configureBasedirDesktopShortcut(true);
         }
 
         // zip on lan?
@@ -409,12 +418,21 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.setValue(getController(),
                 !allowFoldersOutsideDefaultCB.isSelected());
 
-        if (createDesktopShortcutsCB != null) {
-            boolean oldValue = PreferencesEntry.CREATE_DESKTOP_SHORTCUT.getValueBoolean(getController());
-            boolean newValue = createDesktopShortcutsCB.isSelected();
+        if (createBasedirDesktopShortcutsCB != null) {
+            boolean oldValue = PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT.getValueBoolean(getController());
+            boolean newValue = createBasedirDesktopShortcutsCB.isSelected();
             if (oldValue ^ newValue) {
-                PreferencesEntry.CREATE_DESKTOP_SHORTCUT.setValue(getController(), newValue);
-                getController().getUIController().configureDesktopShortcutFoldersBase(false);
+                PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT.setValue(getController(), newValue);
+                getController().getUIController().configureBasedirDesktopShortcut(false);
+            }
+        }
+
+        if (createApplicationDesktopShortcutsCB != null) {
+            boolean oldValue = PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.getValueBoolean(getController());
+            boolean newValue = createApplicationDesktopShortcutsCB.isSelected();
+            if (oldValue ^ newValue) {
+                PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.setValue(getController(), newValue);
+                getController().getUIController().configureApplicationDesktopShortcut();
             }
         }
 

@@ -474,7 +474,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             removeDownload(event.getDownload(), true);
         }
 
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+        public void pendingDownloadEnqueued(TransferManagerEvent event) {
             // #1732 FIXME
             // addOrUpdateDownload(event.getDownload());
         }

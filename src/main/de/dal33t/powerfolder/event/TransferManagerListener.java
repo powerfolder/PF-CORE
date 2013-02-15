@@ -43,7 +43,7 @@ public interface TransferManagerListener extends CoreListener {
     
     public void completedDownloadRemoved(TransferManagerEvent event);
     
-    public void pendingDownloadEnqueud(TransferManagerEvent event);
+    public void pendingDownloadEnqueued(TransferManagerEvent event);
 
     // Upload listening
     public void uploadRequested(TransferManagerEvent event);

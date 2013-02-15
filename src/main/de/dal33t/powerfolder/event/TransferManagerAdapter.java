@@ -43,7 +43,7 @@ public abstract class TransferManagerAdapter implements TransferManagerListener 
     public void completedDownloadRemoved(TransferManagerEvent event) {
     }
     
-    public void pendingDownloadEnqueud(TransferManagerEvent event) {
+    public void pendingDownloadEnqueued(TransferManagerEvent event) {
     }
 
     public void uploadRequested(TransferManagerEvent event) {

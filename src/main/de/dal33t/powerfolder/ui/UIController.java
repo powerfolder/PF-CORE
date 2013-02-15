@@ -33,7 +33,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
@@ -41,6 +43,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
@@ -65,21 +68,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.event.FolderAdapter;
-import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
-import de.dal33t.powerfolder.event.FolderAutoCreateListener;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.PausedModeEvent;
-import de.dal33t.powerfolder.event.PausedModeListener;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -114,8 +103,10 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
+import de.schlichtherle.truezip.file.TFile;
 
 /**
  * The ui controller.
@@ -282,7 +273,7 @@ public class UIController extends PFComponent {
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
         getController().getTransferManager().addListener(
-            new MyTransferManagerListner());
+            new MyTransferManagerListener());
 
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
@@ -330,7 +321,8 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        configureDesktopShortcutFoldersBase(false);
+        configureApplicationDesktopShortcut();
+        configureBasedirDesktopShortcut(false);
 
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         getController().addInvitationHandler(new MyInvitationHandler());
@@ -345,16 +337,16 @@ public class UIController extends PFComponent {
      * @param removeFirst
      *            remove any shortcut before creating a new one.
      */
-    public void configureDesktopShortcutFoldersBase(boolean removeFirst) {
+    public void configureBasedirDesktopShortcut(boolean removeFirst) {
         String shortcutName = getController().getFolderRepository()
             .getFoldersBasedir().getName();
         if (removeFirst
-            || !PreferencesEntry.CREATE_DESKTOP_SHORTCUT
+            || !PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT
                 .getValueBoolean(getController()))
         {
             Util.removeDesktopShortcut(shortcutName);
         }
-        if (PreferencesEntry.CREATE_DESKTOP_SHORTCUT
+        if (PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT
             .getValueBoolean(getController()))
         {
             Util.createDesktopShortcut(shortcutName, getController()
@@ -363,25 +355,31 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Creates / removes a desktop shortcut to PowerFolder exe.
+     * Creates / removes a desktop shortcut to application exe.
      *
-     * @param removeFirst
-     *            remove any shortcut before creating a new one.
      */
-    public void configureDesktopShortcutPowerFolder(boolean removeFirst) {
-        String shortcutName = ""; // @todo how to get exe path?
-        if (removeFirst
-            || !PreferencesEntry.CREATE_DESKTOP_SHORTCUT
-                .getValueBoolean(getController()))
-        {
-            Util.removeDesktopShortcut(shortcutName);
+    public void configureApplicationDesktopShortcut() {
+
+        // Try to find path to the PowerFolder exe.
+        File hereFile = new TFile("");
+        String herePath = hereFile.getAbsolutePath();
+        String exeName = getController().getDistribution().getBinaryName() + ".exe";
+        File powerFolderFile = new TFile(herePath, exeName);
+        if (!powerFolderFile.exists()) {
+            // Try harder
+            powerFolderFile = new TFile(WinUtils.getProgramInstallationPath(), exeName);
+
+            if (!powerFolderFile.exists()) {
+                return;
+            }
         }
-        if (PreferencesEntry.CREATE_DESKTOP_SHORTCUT
-            .getValueBoolean(getController()))
-        {
-            Util.createDesktopShortcut(shortcutName, getController()
-                .getFolderRepository().getFoldersBasedir());
+
+        if (PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.getValueBoolean(getController())) {
+            Util.createDesktopShortcut(Translation.getTranslation("general.application.name"), powerFolderFile);
+        } else {
+            Util.removeDesktopShortcut(Translation.getTranslation("general.application.name"));
         }
+
     }
 
     public void askToPauseResume() {
@@ -1049,11 +1047,11 @@ public class UIController extends PFComponent {
      * Sets the loading percentage
      * 
      * @param percentage
-     * @param nextPerc
+     * @param nextPercentage
      */
-    public void setLoadingCompletion(int percentage, int nextPerc) {
+    public void setLoadingCompletion(int percentage, int nextPercentage) {
         if (splash != null) {
-            splash.setCompletionPercentage(percentage, nextPerc);
+            splash.setCompletionPercentage(percentage, nextPercentage);
         }
     }
 
@@ -1390,14 +1388,10 @@ public class UIController extends PFComponent {
         }
     }
 
-    private class MyTransferManagerListner implements TransferManagerListener {
+    private class MyTransferManagerListener extends TransferManagerAdapter {
 
         public boolean fireInEventDispatchThread() {
             return false;
-        }
-
-        public void downloadRequested(TransferManagerEvent event) {
-            // checkStatus();
         }
 
         public void downloadQueued(TransferManagerEvent event) {
@@ -1420,16 +1414,6 @@ public class UIController extends PFComponent {
             checkStatus();
         }
 
-        public void completedDownloadRemoved(TransferManagerEvent event) {
-        }
-
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
-        }
-
-        public void uploadRequested(TransferManagerEvent event) {
-            // checkStatus();
-        }
-
         public void uploadStarted(TransferManagerEvent event) {
             checkStatus();
         }
@@ -1446,8 +1430,6 @@ public class UIController extends PFComponent {
             checkStatus();
         }
 
-        public void completedUploadRemoved(TransferManagerEvent event) {
-        }
     }
 
     /**

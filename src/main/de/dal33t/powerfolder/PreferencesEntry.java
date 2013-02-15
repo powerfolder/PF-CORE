@@ -120,9 +120,14 @@ public enum PreferencesEntry {
     SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
 
     /**
+     * Show PowerFolder application short cut on the desk top.
+     */
+    CREATE_APPLICATION_DESKTOP_SHORTCUT("display.application.shortcut", true),
+
+    /**
      * Show PowerFolder base dir short cut on the desk top.
      */
-    CREATE_DESKTOP_SHORTCUT("display.powerfolders.shortcut", true),
+    CREATE_BASEDIR_DESKTOP_SHORTCUT("display.powerfolders.shortcut", true),
 
     /**
      * Whether to set PowerFolders as a Favorite Link in Windows Explorer.
