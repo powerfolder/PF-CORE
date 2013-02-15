@@ -703,8 +703,26 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             refreshFor = folder;
             defaultPermission = getController().getOSClient()
                 .getSecurityService().getDefaultPermission(folder.getInfo());
-            return getController().getOSClient().getSecurityService()
-                .getAllFolderPermissions(refreshFor.getInfo());
+
+            String serverVersion  = getController().getOSClient().getServer().getIdentity().getProgramVersion();
+            String featureVersion = "9.0.0";
+
+            // TODO: remove in the future
+            if (Util.compareVersions(serverVersion, featureVersion)) {
+                return getController().getOSClient().getSecurityService()
+                    .getAllFolderPermissions(refreshFor.getInfo());
+            }
+            else {
+                Map<AccountInfo, FolderPermission> perm = getController().getOSClient()
+                    .getSecurityService().getFolderPermissions(refreshFor.getInfo());
+                Map<Serializable, FolderPermission> permissionMap = new HashMap<Serializable, FolderPermission>(perm.size());
+
+                for (Entry<AccountInfo, FolderPermission> entry : perm.entrySet()) {
+                    permissionMap.put(entry.getKey(), entry.getValue());
+                }
+
+                return permissionMap;
+            }
         }
 
         @Override

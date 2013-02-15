@@ -59,9 +59,9 @@ import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
-import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -797,8 +797,26 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             refreshFor = folder;
             defaultPermission = getController().getOSClient()
                 .getSecurityService().getDefaultPermission(folder.getInfo());
-            return getController().getOSClient().getSecurityService()
-                .getAllFolderPermissions(refreshFor.getInfo());
+
+            String serverVersion  = getController().getOSClient().getServer().getIdentity().getProgramVersion();
+            String featureVersion = "9.0.0";
+
+            // TODO: remove in the future
+            if (Util.compareVersions(serverVersion, featureVersion)) {
+                return getController().getOSClient().getSecurityService()
+                    .getAllFolderPermissions(refreshFor.getInfo());
+            }
+            else {
+                Map<AccountInfo, FolderPermission> perm = getController().getOSClient()
+                    .getSecurityService().getFolderPermissions(refreshFor.getInfo());
+                Map<Serializable, FolderPermission> permissionMap = new HashMap<Serializable, FolderPermission>(perm.size());
+
+                for (Entry<AccountInfo, FolderPermission> entry : perm.entrySet()) {
+                    permissionMap.put(entry.getKey(), entry.getValue());
+                }
+
+                return permissionMap;
+            }
         }
 
         @Override
