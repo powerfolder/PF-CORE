@@ -30,8 +30,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -40,7 +38,6 @@ import de.dal33t.powerfolder.light.FileHistory.Conflict;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileHistoryReply;
-import de.dal33t.powerfolder.message.FileHistoryRequest;
 import de.dal33t.powerfolder.util.ProblemUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -301,60 +298,6 @@ public class FileRequestor extends PFComponent {
 
     private void prepareDownload(FileInfo newestVersion, boolean autoDownload) {
         TransferManager tm = getController().getTransferManager();
-        if (Feature.CONFLICT_DETECTION.isEnabled()) {
-            if (autoDownload
-                && newestVersion.getLocalFileInfo(getController()
-                    .getFolderRepository()) != null)
-            {
-                if (pendingRequests.contains(newestVersion)) {
-                    return;
-                }
-                // FIXME Currently only support for automatically requested
-                // files,
-                // additional features require some rewriting of the whole
-                // requests
-                // thing.
-                // FIXME #1927: Differs from method used in
-                // TransferManager.downloadNewestVersion
-                // Already probably caused problems while migrating users in
-                // cloud
-                Collection<Member> sources = tm
-                    .getSourcesForVersion(newestVersion);
-                Member fhReq = null;
-                Member oldSource = null;
-                for (Member m : sources) {
-                    if (m.getIdentity().isSupportingFileHistoryRequests()) {
-                        // TODO Send History request!
-                        fhReq = m;
-                        break;
-                    } else {
-                        oldSource = m;
-                    }
-                }
-
-                // No source at all?
-                if (fhReq == null && oldSource == null) {
-                    // This is autoDownlad so just drop out
-                    return;
-                }
-
-                if (fhReq == null && oldSource != null) {
-                    if (!ProblemUtil.resolveNoFileHistorySupport(newestVersion
-                        .getFolder(getController().getFolderRepository()),
-                        newestVersion, oldSource))
-                    {
-                        return;
-                    }
-                }
-
-                if (fhReq != null) {
-                    pendingRequests.add(newestVersion);
-                    fhReq.sendMessageAsynchron(new FileHistoryRequest(
-                        newestVersion));
-                    return;
-                }
-            }
-        }
         tm.downloadNewestVersion(newestVersion, autoDownload);
     }
 

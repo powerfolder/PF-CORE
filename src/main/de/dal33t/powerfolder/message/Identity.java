@@ -24,7 +24,6 @@ import java.util.Calendar;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Reject;
@@ -108,9 +107,6 @@ public class Identity extends Message {
 
     private boolean requestFullFolderlist;
 
-    private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
-        .isEnabled();
-
     /**
      * If I got interesting pending messages for you. Better keep the
      * connection!
@@ -186,10 +182,6 @@ public class Identity extends Message {
 
     public boolean isSupportingPartTransfers() {
         return supportingPartTransfers;
-    }
-
-    public boolean isSupportingFileHistoryRequests() {
-        return supportingFileHistoryRequests;
     }
 
     public boolean isSupportsQuickLogin() {

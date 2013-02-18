@@ -66,13 +66,6 @@ public enum Feature {
     CORRECT_MOVEMENT_DETECTION(false),
 
     /**
-     * If typical strings of FileInfo should be cached with a softreference.
-     * <p>
-     * Disabled: FileInfo:322 and 282
-     */
-    // CACHE_FILEINFO_STRINGS,
-
-    /**
      * Writes the debug filelist CSV into debug directory
      */
     DEBUG_WRITE_FILELIST_CSV(false),
@@ -81,16 +74,6 @@ public enum Feature {
      * Display Tip Of Day.
      */
     TIP_OF_DAY(false),
-
-    /**
-     * True if running in beta mode.
-     */
-    BETA(false),
-
-    /**
-     * TRAC #198
-     */
-    CONFLICT_DETECTION(false),
 
     /**
      * TRAC #1901 for internal use only.
@@ -108,19 +91,12 @@ public enum Feature {
      * is 100% sync.
      */
     FOLDER_ATOMIC_COMMIT(false),
-    
-    /**
-     * Remove after #2336
-     */
-    MISSING_OWNER_OBTAIN(false),
 
     /**
      * TRAC #1962 For later use
      */
     REGION_SELECTOR(false),
 
-    COMPACT_MODE(true),
-    
     /**
      * #2533 By default disabled to save memory. Otherwise swingx.jar would be required.
      */
