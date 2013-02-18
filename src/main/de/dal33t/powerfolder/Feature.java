@@ -107,7 +107,15 @@ public enum Feature {
      */
     MANUAL_SYNC_CB(false),
     
+    /**
+     * ENABLE for 9.0
+     */
     SHOW_GROUPS(false),
+    
+    /**
+     * ENABLE for 8.1
+     */
+    MAC_CLIENT_INSTALLER_DMG(false),
 
     SYSTRAY_ALL_FOLDERS(false);
 
