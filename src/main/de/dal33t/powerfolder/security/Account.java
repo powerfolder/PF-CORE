@@ -549,9 +549,25 @@ public class Account implements Serializable {
         this.custom3 = custom3;
     }
 
+    // PFS-742: TODO Add EXTRA Field for this later
+    public boolean isSendEmail() {
+        if (StringUtils.isBlank(custom2)) {
+            return true;
+        }
+        return !custom2.toUpperCase().contains("NOEMAIL");
+    }
+
+    public void setSendEmail(boolean sendEmail) {
+        if (sendEmail) {
+            custom2 = "NOEMAIL";
+        } else {
+            custom2 = null;
+        }
+    }
+
     /**
      * Adds a line of info with the current date to the notes of that account.
-     *
+     * 
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
