@@ -34,6 +34,10 @@ public class AdminPermission extends SingletonPermission {
         if (SystemSettingsPermission.INSTANCE.equals(impliedPermision)) {
             return false;
         }
+        // Also admin is NEVER owner of a folder.
+        if (impliedPermision instanceof FolderOwnerPermission) {
+            return false;
+        }
         return true;
     }
 }
