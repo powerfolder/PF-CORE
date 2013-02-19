@@ -331,29 +331,18 @@ public class Account implements Serializable {
 
     /**
      * @param folder
-     * @return the permission on the given folder. null for no access.
+     * @return the permission on the given folder. AccessMode.NO_ACCESS for no
+     *         access.
      */
     public AccessMode getAllowedAccess(FolderInfo folder) {
-        /*FIXME: If Group has a higher permission as the direct permission,
-         * what should happen.
-         */
-        for (Permission p : permissions) {
-            if (p instanceof FolderPermission) {
-                FolderPermission fp = (FolderPermission) p;
-                if (fp.folder.equals(folder)) {
-                    return fp.getMode();
-                }
-            }
-        }
-        for (Group g : groups) {
-            for (Permission p : g.getPermissions()) {
-                if (p instanceof FolderPermission) {
-                    FolderPermission fp = (FolderPermission) p;
-                    if (fp.folder.equals(folder)) {
-                        return fp.getMode();
-                    }
-                }
-            }
+        if (hasPermission(FolderPermission.owner(folder))) {
+            return FolderPermission.owner(folder).getMode();
+        } else if (hasPermission(FolderPermission.admin(folder))) {
+            return FolderPermission.admin(folder).getMode();
+        } else if (hasPermission(FolderPermission.readWrite(folder))) {
+            return FolderPermission.readWrite(folder).getMode();
+        } else if (hasPermission(FolderPermission.read(folder))) {
+            return FolderPermission.read(folder).getMode();
         }
         return AccessMode.NO_ACCESS;
     }
