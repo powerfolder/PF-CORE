@@ -962,6 +962,14 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Save config
             getController().saveConfig();
+            
+            // Shutdown meta folder as well
+            Folder metaFolder = getMetaFolderForParent(folder.getInfo());
+            if (metaFolder != null) {
+                metaFolder.shutdown();
+                metaFolders.remove(metaFolder.getInfo());
+                metaFolders.remove(folder.getInfo());
+            }
 
             // Remove internal
             folders.remove(folder.getInfo());
@@ -973,14 +981,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Shutdown folder
             folder.shutdown();
-
-            // Shutdown meta folder as well
-            Folder metaFolder = getMetaFolderForParent(folder.getInfo());
-            if (metaFolder != null) {
-                metaFolder.shutdown();
-                metaFolders.remove(metaFolder.getInfo());
-                metaFolders.remove(folder.getInfo());
-            }
 
             // synchronize memberships
             triggerSynchronizeAllFolderMemberships();
@@ -1549,9 +1549,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (skip.contains(folder.getInfo())) {
                 continue;
             }
-            if (!a.hasReadPermissions(folder.getInfo())
-                && getController().getOSClient().isConnected())
-            {
+            if (!a.hasReadPermissions(folder.getInfo()) && a.isValid()) {
                 logWarning("Removing local " + folder + ' ' + a
                     + " does not have read permission. Wiping out data.");
                 removeFolder(folder, true);
