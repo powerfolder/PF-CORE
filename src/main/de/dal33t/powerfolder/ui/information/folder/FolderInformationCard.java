@@ -69,7 +69,7 @@ public class FolderInformationCard extends InformationCard {
         super(controller);
         filesTab = new FilesTab(getController());
 
-        if (ConfigurationEntry.WEB_MEMBERS_ENABLED.getValueBoolean(getController())) {
+        if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
             if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
                 membersTab = new MembersExpertTab(getController());
             } else {
@@ -80,7 +80,7 @@ public class FolderInformationCard extends InformationCard {
             membersTab = null;
         }
 
-        if (ConfigurationEntry.WEB_SETTINGS_ENABLED.getValueBoolean(getController())) {
+        if (ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
             settingsTab = new SettingsTab(getController());
         }
         else {
@@ -361,10 +361,10 @@ public class FolderInformationCard extends InformationCard {
      */
     private int getSettingsTabIndex() {
         int maxIndex = 2;
-        if (!ConfigurationEntry.WEB_MEMBERS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
             maxIndex -= 1;
         }
-        if (!ConfigurationEntry.WEB_SETTINGS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
             maxIndex -= 1;
         }
         return getController().isBackupOnly() ? 1 : maxIndex;
@@ -377,10 +377,10 @@ public class FolderInformationCard extends InformationCard {
      */
     private int getProblemsTabIndex() {
         int maxIndex = 3;
-        if (!ConfigurationEntry.WEB_MEMBERS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
             maxIndex -= 1;
         }
-        if (!ConfigurationEntry.WEB_SETTINGS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
             maxIndex -= 1;
         }
         return getController().isBackupOnly() ? 1 : maxIndex;

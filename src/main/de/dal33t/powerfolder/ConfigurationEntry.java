@@ -265,11 +265,11 @@ public enum ConfigurationEntry {
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),
 
-    WEB_MEMBERS_ENABLED("web.members.enabled", true),
+    MEMBERS_ENABLED("web.members.enabled", true),
 
-    WEB_SETTINGS_ENABLED("web.settings.enabled", true),
+    SETTINGS_ENABLED("web.settings.enabled", true),
 
-    WEB_MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
+    MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
 
     // Config META information ************************************************
 

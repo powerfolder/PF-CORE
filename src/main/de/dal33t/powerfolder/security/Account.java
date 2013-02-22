@@ -454,7 +454,11 @@ public class Account implements Serializable {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPasswordPlain(String prefix, String password) {
+        this.password = prefix + password;
+    }
+
+    public void setPasswordSalted(String password) {
         this.password = LoginUtil.hashAndSalt(password);
     }
 
