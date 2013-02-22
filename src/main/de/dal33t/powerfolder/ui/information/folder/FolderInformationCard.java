@@ -22,8 +22,12 @@ package de.dal33t.powerfolder.ui.information.folder;
 import java.awt.Image;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.ScrollPaneConstants;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
@@ -64,12 +68,25 @@ public class FolderInformationCard extends InformationCard {
     public FolderInformationCard(Controller controller) {
         super(controller);
         filesTab = new FilesTab(getController());
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            membersTab = new MembersExpertTab(getController());
-        } else {
-            membersTab = new MembersSimpleTab(getController());
+
+        if (ConfigurationEntry.WEB_MEMBERS_ENABLED.getValueBoolean(getController())) {
+            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+                membersTab = new MembersExpertTab(getController());
+            } else {
+                membersTab = new MembersSimpleTab(getController());
+            }
         }
-        settingsTab = new SettingsTab(getController());
+        else {
+            membersTab = null;
+        }
+
+        if (ConfigurationEntry.WEB_SETTINGS_ENABLED.getValueBoolean(getController())) {
+            settingsTab = new SettingsTab(getController());
+        }
+        else {
+            settingsTab = null;
+        }
+
         problemsTab = new ProblemsTab(getController());
         problemListener = new MyProblemListener();
 
@@ -90,8 +107,12 @@ public class FolderInformationCard extends InformationCard {
      */
     private void setFolderInfo0(FolderInfo folderInfo) {
         this.folderInfo = folderInfo;
-        membersTab.setFolderInfo(folderInfo);
-        settingsTab.setFolderInfo(folderInfo);
+        if (membersTab != null) {
+            membersTab.setFolderInfo(folderInfo);
+        }
+        if (settingsTab != null) {
+            settingsTab.setFolderInfo(folderInfo);
+        }
         problemsTab.setFolderInfo(folderInfo);
     }
 
@@ -245,23 +266,31 @@ public class FolderInformationCard extends InformationCard {
         // No computers stuff if backup mode.
         if (getController().isBackupOnly()) {
             // Create component anyways to stop UI exceptions if mode changes.
-            membersTab.getUIComponent();
-            settingsTab.getUIComponent();
+            if (membersTab != null) {
+                membersTab.getUIComponent();
+            }
+            if (settingsTab != null) {
+                settingsTab.getUIComponent();
+            }
         } else {
-            tabbedPane.addTab(Translation
-                .getTranslation("folder_information_card.members.title"),
-                membersTab.getUIComponent());
-            tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
-                .getTranslation("folder_information_card.members.tips"));
+            if (membersTab != null) {
+                tabbedPane.addTab(Translation
+                    .getTranslation("folder_information_card.members.title"),
+                    membersTab.getUIComponent());
+                tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
+                    .getTranslation("folder_information_card.members.tips"));
+            }
 
-            JScrollPane scrollPane = new JScrollPane(settingsTab.getUIComponent(),
-                    ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-            UIUtil.removeBorder(scrollPane);
-            tabbedPane.addTab(Translation
-                .getTranslation("folder_information_card.settings.title"),
-                scrollPane);
-            tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
-                .getTranslation("folder_information_card.settings.tips"));
+            if (settingsTab != null) {
+                JScrollPane scrollPane = new JScrollPane(settingsTab.getUIComponent(),
+                        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                UIUtil.removeBorder(scrollPane);
+                tabbedPane.addTab(Translation
+                    .getTranslation("folder_information_card.settings.title"),
+                    scrollPane);
+                tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
+                    .getTranslation("folder_information_card.settings.tips"));
+            }
         }
     }
 
@@ -331,7 +360,14 @@ public class FolderInformationCard extends InformationCard {
      * @return
      */
     private int getSettingsTabIndex() {
-        return getController().isBackupOnly() ? 1 : 2;
+        int maxIndex = 2;
+        if (!ConfigurationEntry.WEB_MEMBERS_ENABLED.getValueBoolean(getController())) {
+            maxIndex -= 1;
+        }
+        if (!ConfigurationEntry.WEB_SETTINGS_ENABLED.getValueBoolean(getController())) {
+            maxIndex -= 1;
+        }
+        return getController().isBackupOnly() ? 1 : maxIndex;
     }
 
     /**
@@ -340,7 +376,14 @@ public class FolderInformationCard extends InformationCard {
      * @return
      */
     private int getProblemsTabIndex() {
-        return getController().isBackupOnly() ? 1 : 3;
+        int maxIndex = 3;
+        if (!ConfigurationEntry.WEB_MEMBERS_ENABLED.getValueBoolean(getController())) {
+            maxIndex -= 1;
+        }
+        if (!ConfigurationEntry.WEB_SETTINGS_ENABLED.getValueBoolean(getController())) {
+            maxIndex -= 1;
+        }
+        return getController().isBackupOnly() ? 1 : maxIndex;
     }
 
     private class MyProblemListener implements ProblemListener {

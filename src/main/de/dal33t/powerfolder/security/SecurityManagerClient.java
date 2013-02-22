@@ -200,7 +200,7 @@ public class SecurityManagerClient extends PFComponent implements
     private Boolean retrievePermission(AccountInfo aInfo,
         Permission permission, PermissionsCacheSegment cache)
     {
-        if (aInfo.getOID() == null) {
+        if (aInfo == null || aInfo.getOID() == null) {
             return Boolean.FALSE;
         }
 
