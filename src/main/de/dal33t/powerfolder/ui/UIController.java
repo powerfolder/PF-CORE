@@ -591,7 +591,7 @@ public class UIController extends PFComponent {
         recentlyChangedMenu = new Menu(
             Translation.getTranslation("uicontroller.recently_changed"));
         recentlyChangedMenu.setEnabled(false);
-        // menu.add(recentlyChangedMenu);
+        menu.add(recentlyChangedMenu);
         for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
             recentMenuItems[i] = new MenuItem();
             recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED + i);
@@ -1308,7 +1308,8 @@ public class UIController extends PFComponent {
 
             // Find the earliest change.
             if (recentlyChangedFiles.size() > MAX_RECENTLY_CHANGED_FILES) {
-                recentlyChangedFiles.keySet().iterator().remove();
+                Long first = recentlyChangedFiles.keySet().iterator().next();
+                recentlyChangedFiles.remove(first);
             }
         }
 
@@ -1391,7 +1392,7 @@ public class UIController extends PFComponent {
             if (collection != null) {
                 for (FileInfo fileInfo : collection) {
                     if (!fileInfo.isDiretory()) {
-                        // addRecentFileChange(fileInfo);
+                        addRecentFileChange(fileInfo);
                     }
                 }
             }
@@ -1402,7 +1403,7 @@ public class UIController extends PFComponent {
             if (collection != null) {
                 for (FileInfo fileInfo : collection) {
                     if (!fileInfo.isDiretory()) {
-                        // addRecentFileChange(fileInfo);
+                        addRecentFileChange(fileInfo);
                     }
                 }
             }
