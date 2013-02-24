@@ -443,7 +443,11 @@ public class MainFrame extends PFUIComponent {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
-                    PFWizard.openLoginWizard(getController(), client);
+                    try {
+                        BrowserLauncher.openURL(client.getWebURL() + Constants.MY_ACCOUNT_URI);
+                    } catch (IOException ex) {
+                        logSevere(ex);
+                    }
                 }
             }
         });

@@ -362,6 +362,7 @@ public class Constants {
     public static final String LOGIN_PARAM_PASSWORD = "Password";
     public static final String LOGIN_PARAM_PASSWORD_OBF = "PasswordOBF";
     public static final String LOGIN_PARAM_ORIGINAL_URI = "originalURI";
+    public static final String MY_ACCOUNT_URI = "/myaccount";
 
     /** Cleanup immediately, 1, 10, 30, never days. */
     public static final int[] CLEANUP_VALUES = {0, 1, 10, 30, Integer.MAX_VALUE};
