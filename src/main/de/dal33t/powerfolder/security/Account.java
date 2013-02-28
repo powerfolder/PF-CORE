@@ -562,7 +562,7 @@ public class Account implements Serializable {
     }
 
     public void setSendEmail(boolean sendEmail) {
-        if (sendEmail) {
+        if (!sendEmail) {
             custom2 = "NOEMAIL";
         } else {
             custom2 = null;
