@@ -45,7 +45,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
@@ -191,7 +197,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void removeFolderAutoCreateListener(FolderAutoCreateListener listener)
     {
         ListenerSupportFactory.removeListener(folderAutoCreateListener,
-                listener);
+            listener);
     }
 
     /** @return The folder scanner that performs the scanning of files on disk */
@@ -223,7 +229,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         processV4Format();
 
         // Maintain link
-        boolean useFavLink = PreferencesEntry.CREATE_FAVORITES_SHORTCUT.getValueBoolean(getController());
+        boolean useFavLink = PreferencesEntry.CREATE_FAVORITES_SHORTCUT
+            .getValueBoolean(getController());
         if (useFavLink && WinUtils.isSupported()) {
             try {
                 WinUtils.getInstance().setPFLinks(true, getController());
@@ -243,23 +250,25 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Make sure there are no old links to deleted folders.
-     * These should be maintained when folders are removed.
-     * This is just a legacy check.
+     * Make sure there are no old links to deleted folders. These should be
+     * maintained when folders are removed. This is just a legacy check.
      */
     private void tidyOldLinks() {
         File baseDir = getFoldersBasedir();
         if (baseDir.exists()) {
             File[] links = baseDir.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
-                    return pathname.getName().endsWith(Constants.LINK_EXTENSION);
+                    return pathname.getName()
+                        .endsWith(Constants.LINK_EXTENSION);
                 }
             });
             for (File link : links) {
                 // Do we have a folder for this link?
                 boolean haveFolder = false;
                 for (Folder folder : getFolders()) {
-                    if ((folder.getName() + Constants.LINK_EXTENSION).equals(link.getName())) {
+                    if ((folder.getName() + Constants.LINK_EXTENSION)
+                        .equals(link.getName()))
+                    {
                         haveFolder = true;
                         break;
                     }
@@ -267,7 +276,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (!haveFolder) {
                     // We have a link but no folder; remove link.
                     boolean deleted = link.delete();
-                    log.info("Removed old link " + link.getName() + "? " + deleted);
+                    log.info("Removed old link " + link.getName() + "? "
+                        + deleted);
                 }
             }
         }
@@ -290,8 +300,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             && baseDir.charAt(1) == ':';
         boolean ok = false;
 
-        if (OSUtil.isWindowsSystem() && winNetworkDrive
-                || !winNetworkDrive) {
+        if (OSUtil.isWindowsSystem() && winNetworkDrive || !winNetworkDrive) {
             foldersBasedir = new TFile(baseDir).getAbsoluteFile();
             if (!foldersBasedir.exists()) {
                 if (foldersBasedir.mkdirs()) {
@@ -542,7 +551,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the default basedir for all folders. basedir is just suggested
      */
     public String getFoldersBasedirString() {
-        return getFoldersBasedir() != null ? getFoldersBasedir().getAbsolutePath() : null;
+        return getFoldersBasedir() != null ? getFoldersBasedir()
+            .getAbsolutePath() : null;
     }
 
     /**
@@ -778,7 +788,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (hasJoinedFolder(folderInfo)) {
             return folders.get(folderInfo);
         }
-        
+
         // If non-preview folder and already have this folder as preview,
         // silently remove the preview.
         if (!folderSettings.isPreviewOnly()) {
@@ -803,12 +813,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        // PFC-2226: Option to restrict new folder creation to the default storage path.
-        // Note, this is a last check. User should never get here because of other checks.
+        // PFC-2226: Option to restrict new folder creation to the default
+        // storage path.
+        // Note, this is a last check. User should never get here because of
+        // other checks.
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {
-            boolean inBaseDir = folderSettings.getLocalBaseDir().getParentFile().equals(getFoldersBasedir());
+            boolean inBaseDir = folderSettings.getLocalBaseDir()
+                .getParentFile().equals(getFoldersBasedir());
             if (!inBaseDir) {
                 logSevere("Not allowed to create " + folderInfo.getName()
                     + " at " + folderSettings.getLocalBaseDirString()
@@ -824,7 +837,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             && folderSettings.getCommitDir() == null)
         {
             File newBaseDir = new TFile(folderSettings.getLocalBaseDir(),
-       Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
+                Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
             newBaseDir.mkdirs();
             FileUtils.setAttributesOnWindows(newBaseDir, true, true);
             File commitDir = folderSettings.getLocalBaseDir();
@@ -901,8 +914,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         fireFolderCreated(folder);
 
         if (isFine()) {
-            String message = "Setup " + (folder.isEncrypted() ? "encrypted " : "")
-                + "folder " + folderInfo.name + " at " + folder.getLocalBase();
+            String message = "Setup "
+                + (folder.isEncrypted() ? "encrypted " : "") + "folder "
+                + folderInfo.name + " at " + folder.getLocalBase();
             logFine(message);
         }
 
@@ -962,7 +976,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Save config
             getController().saveConfig();
-            
+
             // Shutdown meta folder as well
             Folder metaFolder = getMetaFolderForParent(folder.getInfo());
             if (metaFolder != null) {
@@ -1048,16 +1062,19 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Remove the link to the folder if it exists.
+     * 
      * @param folder
      */
     private void removeLink(Folder folder) {
         FolderRepository repository = getController().getFolderRepository();
         File baseDir = repository.getFoldersBasedir();
         if (baseDir.exists()) {
-            File shortcutFile = new File(baseDir, folder.getName() + Constants.LINK_EXTENSION);
+            File shortcutFile = new File(baseDir, folder.getName()
+                + Constants.LINK_EXTENSION);
             if (shortcutFile.exists()) {
                 boolean deleted = shortcutFile.delete();
-                log.info("Removed link " + shortcutFile.getName() + "? " + deleted);
+                log.info("Removed link " + shortcutFile.getName() + "? "
+                    + deleted);
             }
         }
     }
@@ -1067,14 +1084,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             StringBuilder sb = new StringBuilder();
             Iterator<File> iterator = removedFolderDirectories.iterator();
             while (iterator.hasNext()) {
-                    String s = iterator.next().getAbsolutePath();
-                    sb.append(s);
-                    if (iterator.hasNext()) {
-                        sb.append('$');
-                    }
+                String s = iterator.next().getAbsolutePath();
+                sb.append(s);
+                if (iterator.hasNext()) {
+                    sb.append('$');
                 }
+            }
             ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
-                    sb.toString());
+                sb.toString());
         }
     }
 
@@ -1083,14 +1100,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             StringBuilder sb = new StringBuilder();
             Iterator<File> iterator = removedFolderDirectories.iterator();
             while (iterator.hasNext()) {
-                    String s = iterator.next().getAbsolutePath();
-                    sb.append(s);
-                    if (iterator.hasNext()) {
-                        sb.append('$');
-                    }
+                String s = iterator.next().getAbsolutePath();
+                sb.append(s);
+                if (iterator.hasNext()) {
+                    sb.append('$');
                 }
+            }
             ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
-                    sb.toString());
+                sb.toString());
         }
     }
 
@@ -1473,8 +1490,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController()))
         {
             // Moderate strategy. Use existing folders.
-            suggestedLocalBase = new TFile(getController().getFolderRepository()
-                .getFoldersBasedir(), invitation.folder.name);
+            suggestedLocalBase = new TFile(getController()
+                .getFolderRepository().getFoldersBasedir(),
+                invitation.folder.name);
             if (suggestedLocalBase.exists()) {
                 logWarning("Using existing directory " + suggestedLocalBase
                     + " for " + invitation.folder);
@@ -1522,7 +1540,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (getController().getMySelf().isServer()) {
             return;
         }
-
+        if (!a.isValid()) {
+            return;
+        }
         accountSyncLock.lock();
         try {
             logInfo("Syncing folder setup with account permissions("
@@ -1545,11 +1565,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private void removeLocalFolders(Account a, Collection<FolderInfo> skip) {
+        if (!a.isValid()) {
+            return;
+        }
         for (Folder folder : getFolders()) {
             if (skip.contains(folder.getInfo())) {
                 continue;
             }
-            if (!a.hasReadPermissions(folder.getInfo()) && a.isValid()) {
+            if (!a.hasReadPermissions(folder.getInfo())) {
                 logWarning("Removing local " + folder + ' ' + a
                     + " does not have read permission. Wiping out data.");
                 removeFolder(folder, true);
@@ -1635,8 +1658,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 File suggestedLocalBase = new TFile(getController()
-                    .getFolderRepository().getFoldersBasedir(),
-                    folderInfo.name);
+                    .getFolderRepository().getFoldersBasedir(), folderInfo.name);
                 if (removedFolderDirectories.contains(suggestedLocalBase)) {
                     continue;
                 }
@@ -1679,8 +1701,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     ArchiveMode.FULL_BACKUP,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()));
-                
-                
+
                 // Actually create the directory
                 settings.getLocalBaseDir().mkdirs();
 
