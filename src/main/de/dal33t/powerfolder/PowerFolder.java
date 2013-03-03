@@ -133,6 +133,12 @@ public class PowerFolder {
      */
     public static void startPowerFolder(String[] args) {
 
+        try {
+            Thread.sleep (10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
         // Touch Logger immediately to initialize handlers.
         LoggingManager.isLogToFile();
 
@@ -162,7 +168,7 @@ public class PowerFolder {
         }
 
         if (commandLine.hasOption("s")) {
-            // Server mode, supress debug output on console
+            // Server mode, suppress debug output on console
             // Logger.addExcludeConsoleLogLevel(Logger.DEBUG);
         }
 

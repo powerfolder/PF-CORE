@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder;
 
-import java.awt.Frame;
+import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -46,6 +46,9 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -130,7 +133,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     private Thread myThread;
 
     /**
-     * Initalization
+     * Initialization
      * 
      * @param controller
      */
@@ -139,10 +142,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Checks if there is a running instance of RemoteComamndManager. Determines
+     * Checks if there is a running instance of RemoteCommandManager. Determines
      * this by opening a server socket port on the default remote command port.
      * 
-     * @return true if port allready taken
+     * @return true if port already taken
      */
     public static boolean hasRunningInstance() {
         return hasRunningInstance(Integer
@@ -164,7 +167,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             testSocket = new ServerSocket(port, 0,
                 InetAddress.getByName("127.0.0.1"));
 
-            // Server socket can be opend, no instance of PowerFolder running
+            // Server socket can be opened, no instance of PowerFolder running
             log.fine("No running instance found");
             return false;
         } catch (UnknownHostException e) {
@@ -332,11 +335,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // JSON Start
             w.write("{");
             w.write("'nodeId':'"
-                + getController().getMySelf().getId().replace("'", "\\'") + "'");
+                + getController().getMySelf().getId().replace("'", "\\'") + '\'');
             w.write(",");
             w.write("'nodeName':'"
                 + getController().getMySelf().getNick().replace("'", "\\'")
-                + "'");
+                + '\'');
             w.write("}");
             // JSON End
 
@@ -347,7 +350,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             int start = line.indexOf("/open/");
             int end = line.indexOf(" HTTP");
             String addr = line.substring(start + 6, end);
-            int fIdEnd = addr.indexOf("/");
+            int fIdEnd = addr.indexOf('/');
             String fId64 = addr.substring(0, fIdEnd);
             String folderId = Base64.decodeString(fId64);
             Folder folder = getController().getFolderRepository().getFolder(
@@ -381,6 +384,19 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             return;
         }
         logFine("Processing remote command: '" + command + '\'');
+
+        if (command.startsWith(REMOVEFOLDER) || command.startsWith(MAKEFOLDER)) {
+            // Wait for hook up.
+            int tryCount = 0;
+            while (tryCount++ < 10 && !getController().getOSClient().isLoggedIn()) {
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    // Don't care.
+                }
+            }
+        }
+
         if (QUIT.equalsIgnoreCase(command)) {
             getController().exit(0);
         } else if (command.startsWith(OPEN)) {
@@ -548,19 +564,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     private void makeFolder(String folderConfig) {
-        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController()))
-        {
-            if (!getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE))
-            {
-                if (getController().getOSClient().isLoggedIn()) {
-                    // TODO: Inform user                    
-                }
-                // SKIP?
-                return;
-            }
-        }
+
         Map<String, String> config = parseFolderConfig(folderConfig);
 
         // Directory
@@ -569,12 +573,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 + folderConfig);
             return;
         }
-        FolderRepository repo = getController().getFolderRepository();
+        FolderRepository repository = getController().getFolderRepository();
         File dir = new File(config.get(FOLDER_SCRIPT_CONFIG_DIR));
-
-        // Show user?
-        boolean silent = "true".equalsIgnoreCase(config
-            .get(FOLDER_SCRIPT_CONFIG_SILENT));
 
         // Name
         String name;
@@ -583,6 +583,26 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         } else {
             name = FileUtils.getSuggestedFolderName(dir);
         }
+
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()))
+        {
+            if (!getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE))
+            {
+                if (getController().isUIEnabled()) {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation("remote_command_manager.make_folder.error_title"),
+                            Translation.getTranslation("remote_command_manager.make_folder.error_message", name),
+                            GenericDialogType.ERROR);
+                }
+                return;
+            }
+        }
+
+        // Show user?
+        boolean silent = "true".equalsIgnoreCase(config
+            .get(FOLDER_SCRIPT_CONFIG_SILENT));
 
         // ID
         String id = config.get(FOLDER_SCRIPT_CONFIG_ID);
@@ -595,9 +615,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         if (ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES
             .getValueBoolean(getController()))
         {
-            Folder oldFolder = repo.findExistingFolder(dir);
+            Folder oldFolder = repository.findExistingFolder(dir);
             if (oldFolder != null) {
-                oldFolder = repo.findExistingFolder(name);
+                oldFolder = repository.findExistingFolder(name);
             }
             if (oldFolder != null) {
                 // Re-use old ID to prevent breaking existing setup.
@@ -605,7 +625,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 logWarning("Deleting folder: " + oldFolder + " at "
                     + oldFolder.getLocalBase() + ". Replacing it new one at "
                     + dir);
-                repo.removeFolder(oldFolder, true);
+                repository.removeFolder(oldFolder, true);
             }
         }
 
@@ -658,7 +678,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     .getValue(getController())), false, dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                     .getValueInt(getController()), true);
-            repo.createFolder(foInfo, settings);
+            repository.createFolder(foInfo, settings);
             if (backupByServer) {
                 new CreateFolderOnServerTask(foInfo, null)
                     .scheduleTask(getController());
@@ -692,12 +712,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      *            The file to load from
      * @return array of MemberInfo, null if failed
      */
+    @SuppressWarnings({"unchecked"})
     private static MemberInfo[] loadNodesFile(File file) {
         try {
             InputStream fIn = new BufferedInputStream(new FileInputStream(file));
             ObjectInputStream oIn = new ObjectInputStream(fIn);
             // Load nodes
-            List nodes = (List) oIn.readObject();
+            List<MemberInfo> nodes = (List<MemberInfo>) oIn.readObject();
 
             log.warning("Loaded " + nodes.size() + " nodes");
             MemberInfo[] nodesArrary = new MemberInfo[nodes.size()];
