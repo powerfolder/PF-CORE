@@ -66,7 +66,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
     public void testJoinExistingFolder() {
         assertEquals(1, getFolderAtLisa().getMembersCount());
         boolean sent = RemoteCommandManager.sendCommand(3458,
-            RemoteCommandManager.MAKE_FOLDER + "dir=" + oldDir.getAbsolutePath()
+            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.getAbsolutePath()
                 + ";id=" + getFolderAtLisa().getId() + ";dlscript=what.bat");
         assertTrue(sent);
 
@@ -96,7 +96,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         boolean sent = RemoteCommandManager
             .sendCommand(
                 3458,
-                RemoteCommandManager.MAKE_FOLDER
+                RemoteCommandManager.MAKEFOLDER
                     + "dir="
                     + oldDir.getAbsolutePath()
                     + ";name=XXX"
@@ -123,7 +123,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
             getContollerBart(), Boolean.TRUE.toString());
         Folder oldFolderAtBart = folderAtBart;
         sent = RemoteCommandManager.sendCommand(3458,
-            RemoteCommandManager.MAKE_FOLDER + "dir=" + oldDir.getAbsolutePath()
+            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.getAbsolutePath()
                 + ";name=XXX"
                 + ";syncprofile=true,true,true,true,5,false,22,0,m,Auto-sync");
         assertTrue(sent);
