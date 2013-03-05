@@ -427,16 +427,23 @@ public class ExpandableFolderView extends PFUIComponent implements
                 cc.xy(2, row));
 
         } else {
-            lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
+            if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
+                lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
+            }
             if (ConfigurationEntry.SERVER_INVITE_ENABLED
                 .getValueBoolean(getController()))
             {
                 lowerBuilder.add(inviteButton, cc.xy(5, row));
             }
 
-            row += 2;
-
-            lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
+            if (ConfigurationEntry.MEMBERS_ENABLED
+                .getValueBoolean(getController())
+                || ConfigurationEntry.SERVER_INVITE_ENABLED
+                    .getValueBoolean(getController()))
+            {
+                row += 2;
+                lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
+            }
 
             row += 2;
 
@@ -1117,7 +1124,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
             contextMenu.addSeparator();
-            contextMenu.add(openSettingsInformationAction).setIcon(null);
+            if (ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
+                contextMenu.add(openSettingsInformationAction).setIcon(null);
+            }
             contextMenu.add(removeFolderLocalAction).setIcon(null);
             if (expert && serverClient.isConnected()
                 && serverClient.isLoggedIn())
