@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -77,7 +76,6 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -385,7 +383,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
         logFine("Processing remote command: '" + command + '\'');
 
-        if (command.startsWith(REMOVEFOLDER) || command.startsWith(MAKEFOLDER)) {
+        if (command.startsWith(REMOVEFOLDER) || command.startsWith(MAKEFOLDER) || command.startsWith(COPYLINK)) {
             // Wait for hook up.
             int tryCount = 0;
             while (tryCount++ < 10 && !getController().getOSClient().isLoggedIn()) {
@@ -452,7 +450,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             final String filename = command.substring(COPYLINK.length());
             getController().schedule(new Runnable() {
                 public void run() {
-                    getLink(filename);
+                    copyLink(filename);
                 }
             }, 0);
         } else {
@@ -460,7 +458,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
-    protected void getLink(String filename) {
+    protected void copyLink(String filename) {
         File file = new File(filename);
         String absPath = file.getAbsolutePath();
         for (Folder folder : getController().getFolderRepository().getFolders())
@@ -468,21 +466,26 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             if (absPath.startsWith(folder.getLocalBase().getAbsolutePath())) {
                 ServerClient client = getController().getOSClient();
                 FileInfo fInfo = FileInfoFactory.lookupInstance(folder, file);
-                String getLink = client.getFileLinkURL(fInfo);
+                String linkURL = client.getFileLinkURL(fInfo);
                 char[] pw = client.getPassword();
-                getLink = LoginUtil.decorateURL(getLink, client.getUsername(),
-                    pw);
+                linkURL = LoginUtil.decorateURL(linkURL, client.getUsername(), pw);
                 LoginUtil.clear(pw);
                 try {
-                    BrowserLauncher.openURL(getLink);
+                    BrowserLauncher.openURL(linkURL);
                 } catch (IOException e) {
-                    logWarning("Unable to open in browser: " + getLink);
+                    logWarning("Unable to open in browser: " + linkURL);
                 }
                 return;
             }
         }
         logWarning("Unable to copy file link. File not contained in a shared folder");
-        Util.setClipboardContents("Unable to copy file link. File not contained in a shared folder");
+        if (getController().isUIEnabled()) {
+            DialogFactory.genericDialog(getController(),
+                    Translation.getTranslation("remote_command_manager.copy_link.error_title"),
+                    Translation.getTranslation("remote_command_manager.copy_link.error_message", filename),
+                    GenericDialogType.ERROR);
+        }
+
     }
 
     /**
