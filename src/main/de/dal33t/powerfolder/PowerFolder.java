@@ -133,12 +133,6 @@ public class PowerFolder {
      */
     public static void startPowerFolder(String[] args) {
 
-        try {
-            Thread.sleep (10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
         // Touch Logger immediately to initialize handlers.
         LoggingManager.isLogToFile();
 
