@@ -24,6 +24,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -147,8 +148,8 @@ public class TrayIconManager extends PFComponent {
         }
         StringBuilder tooltip = new StringBuilder();
 
-        tooltip.append(Translation.getTranslation("general.application.name"));
-        tooltip.append(' ');
+        tooltip.append(Translation.getTranslation("general.application.name") + ' ' + Controller.PROGRAM_VERSION);
+        tooltip.append('\n');
 
         Image image;
 
