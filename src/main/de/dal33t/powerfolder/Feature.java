@@ -106,12 +106,7 @@ public enum Feature {
      * #2726 - disable manual sync check box for now.
      */
     MANUAL_SYNC_CB(false),
-    
-    /**
-     * ENABLE for 9.0
-     */
-    SHOW_GROUPS(false),
-    
+
     /**
      * ENABLE for 8.1
      */
