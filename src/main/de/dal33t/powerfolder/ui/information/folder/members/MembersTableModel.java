@@ -45,8 +45,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.disk.problem.NoOwnerProblem;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -828,21 +826,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                     // Folder has changed. discard result.
                     logFine("Folder has changed. discard result.");
                     return;
-                }
-
-                // TODO Find a better place to check this:
-                if (NoOwnerProblem.hasOwner(res)) {
-                    for (Problem p : folder.getProblems()) {
-                        if (p instanceof NoOwnerProblem) {
-                            folder.removeProblem(p);
-                        }
-                    }
-                } else {
-                    NoOwnerProblem problem = new NoOwnerProblem(folder
-                        .getInfo());
-                    if (!folder.getProblems().contains(problem)) {
-                        folder.addProblem(new NoOwnerProblem(folder.getInfo()));
-                    }
                 }
 
                 permissionsRetrieved = true;
