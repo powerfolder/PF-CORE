@@ -1,16 +1,18 @@
 package de.dal33t.powerfolder.disk.problem;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
-public class FileConflictProblem extends Problem {
+public class FileConflictProblem extends ResolvableProblem {
 
     private FileInfo fInfo;
 
     public FileConflictProblem(FileInfo fInfo) {
-        super();
         Reject.ifNull(fInfo, "FileInfo");
         this.fInfo = fInfo;
     }
@@ -32,9 +34,9 @@ public class FileConflictProblem extends Problem {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
+        int prime = 31;
         int result = 1;
-        result = prime * result + ((fInfo == null) ? 0 : fInfo.hashCode());
+        result = prime * result + (fInfo == null ? 0 : fInfo.hashCode());
         return result;
     }
 
@@ -53,5 +55,20 @@ public class FileConflictProblem extends Problem {
         } else if (!fInfo.equals(other.fInfo))
             return false;
         return true;
+    }
+
+    @Override
+    public Runnable resolution(final Controller controller) {
+        return new Runnable() {
+            public void run() {
+                Folder folder = controller.getFolderRepository().getFolder(fInfo.getFolderInfo());
+                PFWizard.openSingleFileRestoreWizard(controller, folder, fInfo, fInfo);
+            }
+        };
+    }
+
+    @Override
+    public String getResolutionDescription() {
+        return Translation.getTranslation("file_conflict_problem.soln_desc");
     }
 }
