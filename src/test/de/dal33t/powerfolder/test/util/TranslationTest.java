@@ -30,16 +30,16 @@ public class TranslationTest extends TestCase {
 
     public void testPlaceholders() {
         String text = Translation
-            .getTranslation("action_open_about_box.description");
+            .getTranslation("action_login.description");
         assertTrue("Text fail: " + text, text.contains("PowerFolder"));
         assertFalse("Text fail: " + text, text.contains("{PowerFolder}"));
         Translation.setPlaceHolder("APPNAME", "XXX");
-        text = Translation.getTranslation("action_open_about_box.description");
+        text = Translation.getTranslation("action_login.description");
         assertTrue("Text fail: " + text, text.contains("XXX"));
         assertFalse("Text fail: " + text, text.contains("{XXX}"));
 
         Translation.setPlaceHolder("APPNAME", null);
-        text = Translation.getTranslation("action_open_about_box.description");
+        text = Translation.getTranslation("action_login.description");
         assertTrue("Text fail: " + text, text.contains("{APPNAME}"));
     }
 }
