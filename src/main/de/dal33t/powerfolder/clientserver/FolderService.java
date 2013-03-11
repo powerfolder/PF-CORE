@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
  * Access/Control over folders of a server.
@@ -194,6 +195,19 @@ public interface FolderService {
      * @param versionsPerFile
      */
     void setArchiveMode(FolderInfo foInfo, int versionsPerFile);
+    
+    /**
+     * Controls the archive configuration on the server.
+     * 
+     * @param foInfo
+     * @param mode
+     * @param versionsPerFile
+     */
+    @Deprecated
+    void setArchiveMode(FolderInfo foInfo, ArchiveMode mode, int versionsPerFile);
+
+    @Deprecated
+    ArchiveMode getArchiveMode(FolderInfo foInfo);
 
     /**
      * To empty/purge the online stored archive.
