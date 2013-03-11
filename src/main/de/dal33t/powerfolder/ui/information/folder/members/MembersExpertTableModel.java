@@ -43,6 +43,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -836,24 +837,27 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             defaultPermission = getController().getOSClient()
                 .getSecurityService().getDefaultPermission(folder.getInfo());
 
-            String serverVersion  = getController().getOSClient().getServer().getIdentity().getProgramVersion();
-            String featureVersion = "9.0.0";
-
-            // TODO: remove in the future
-            if (Util.compareVersions(serverVersion, featureVersion)) {
+            try {
                 return getController().getOSClient().getSecurityService()
                     .getAllFolderPermissions(refreshFor.getInfo());
             }
-            else {
-                Map<AccountInfo, FolderPermission> perm = getController().getOSClient()
-                    .getSecurityService().getFolderPermissions(refreshFor.getInfo());
-                Map<Serializable, FolderPermission> permissionMap = new HashMap<Serializable, FolderPermission>(perm.size());
+            catch (RemoteCallException rce) {
+                try {
+                    Map<AccountInfo, FolderPermission> perm = getController().getOSClient()
+                        .getSecurityService().getFolderPermissions(refreshFor.getInfo());
+                    Map<Serializable, FolderPermission> permissionMap = new HashMap<Serializable, FolderPermission>(perm.size());
 
-                for (Entry<AccountInfo, FolderPermission> entry : perm.entrySet()) {
-                    permissionMap.put(entry.getKey(), entry.getValue());
+                    for (Entry<AccountInfo, FolderPermission> entry : perm.entrySet()) {
+                        permissionMap.put(entry.getKey(), entry.getValue());
+                    }
+
+                    return permissionMap;
                 }
+                catch (RuntimeException re) {
+                    logWarning("Could not retrive permission list from the server");
 
-                return permissionMap;
+                    throw re;
+                }
             }
         }
 
