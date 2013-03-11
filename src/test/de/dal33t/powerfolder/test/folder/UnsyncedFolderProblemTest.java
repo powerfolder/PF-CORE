@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.test.folder;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -14,6 +15,8 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
+        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getContollerBart(), true);
+        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getContollerLisa(), true);
     }
 
     public void testSyncOK() {
