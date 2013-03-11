@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.io.IOException;
 
-import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -109,7 +109,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         assertEquals(4, getFolderAtBart().getKnownFiles().iterator().next()
             .getSize());
 
-        FileArchiver archiveAtLisa = getFolderAtLisa().getFileArchiver();
+        CopyOrMoveFileArchiver archiveAtLisa = getFolderAtLisa().getFileArchiver();
         assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa).size());
         FileInfo infoAtLisa = archiveAtLisa.getArchivedFilesInfos(fInfoLisa)
             .get(0);

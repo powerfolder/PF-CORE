@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Date;
 
 import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
-import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
@@ -34,10 +33,10 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class RecycleTest extends ControllerTestCase {
 
-    private FileArchiver archiver;
+    private CopyOrMoveFileArchiver archiver;
 
     public void setUp() throws Exception {
-        // Remove directries
+        // Remove directories
 
         super.setUp();
 

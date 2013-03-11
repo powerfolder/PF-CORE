@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.wizard;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.util.UIUtil;
@@ -158,7 +158,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 List<FileInfo> fileInfos = new ArrayList<FileInfo>();
                 fileInfos.addAll(fileInfosToRestore);
 
-                FileArchiver fileArchiver = folder.getFileArchiver();
+                CopyOrMoveFileArchiver fileArchiver = folder.getFileArchiver();
                 for (FileInfo fileInfo : fileInfos) {
 
                     if (isCancelled()) {

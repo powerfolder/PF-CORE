@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
 
 import java.util.Collections;
 import java.util.List;
@@ -171,7 +171,7 @@ public class FileRestoringPanel extends PFWizardPanel {
                 // If there is an alternateName, restore from the server with the new name.
                 boolean restoreServerToAlternateName = alternateName != null;
 
-                FileArchiver fileArchiver = folder.getFileArchiver();
+                CopyOrMoveFileArchiver fileArchiver = folder.getFileArchiver();
                 boolean restored = false;
 
                 // Try local restore first.

@@ -62,7 +62,7 @@ import de.schlichtherle.truezip.file.TFile;
  * 
  * @author dante
  */
-public class CopyOrMoveFileArchiver implements FileArchiver {
+public class CopyOrMoveFileArchiver {
 
     private static final Logger log = Logger
         .getLogger(CopyOrMoveFileArchiver.class.getName());
