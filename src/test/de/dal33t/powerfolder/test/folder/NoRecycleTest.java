@@ -52,6 +52,7 @@ public class NoRecycleTest extends ControllerTestCase {
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
         scanFolder(getFolder());
+        getFolder().setArchiveVersions(0);
     }
 
     public void testRecycleBin() {
