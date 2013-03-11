@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder;
 
-import java.awt.*;
+import java.awt.Frame;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -46,8 +46,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -61,6 +59,8 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -75,6 +75,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Waiter;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -382,15 +383,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
         logFine("Processing remote command: '" + command + '\'');
 
-        if (command.startsWith(REMOVEFOLDER) || command.startsWith(MAKEFOLDER) || command.startsWith(COPYLINK)) {
+        if (command.startsWith(MAKEFOLDER) || command.startsWith(COPYLINK)) {
             // Wait for hook up.
-            int tryCount = 0;
-            while (tryCount++ < 10 && !getController().getOSClient().isLoggedIn()) {
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    // Don't care.
-                }
+            Waiter w = new Waiter(60000);
+            while (!w.isTimeout()
+                && !getController().getOSClient().isLoggedIn())
+            {
+                w.waitABit();
             }
         }
 
@@ -398,7 +397,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             getController().exit(0);
         } else if (command.startsWith(OPEN)) {
             // Open files
-            String fileStr = command.substring(OPEN.length());
+   String fileStr = command.substring(OPEN.length());
 
             // Open all files in remote command
             StringTokenizer nizer = new StringTokenizer(fileStr, ";");
