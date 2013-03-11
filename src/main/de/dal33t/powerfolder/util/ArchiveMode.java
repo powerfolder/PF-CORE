@@ -3,7 +3,7 @@ package de.dal33t.powerfolder.util;
 import java.io.File;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.schlichtherle.truezip.file.TFile;
 
@@ -11,7 +11,7 @@ public enum ArchiveMode {
     FULL_BACKUP("archive.full_backup") {
 
         @Override
-        public CopyOrMoveFileArchiver getInstance(Folder f) {
+        public FileArchiver getInstance(Folder f) {
             File archive = new TFile(f.getSystemSubDir(), "archive");
             if (!f.checkIfDeviceDisconnected() && !archive.exists()
                 && !archive.mkdirs())
@@ -19,7 +19,7 @@ public enum ArchiveMode {
                 log.warning("Failed to create archive directory in system subdirectory: "
                     + archive);
             }
-            return new CopyOrMoveFileArchiver(archive, f.getController()
+            return new FileArchiver(archive, f.getController()
                 .getMySelf().getInfo());
         }
 
@@ -41,5 +41,5 @@ public enum ArchiveMode {
         return Translation.getTranslation(key);
     }
 
-    public abstract CopyOrMoveFileArchiver getInstance(Folder f);
+    public abstract FileArchiver getInstance(Folder f);
 }

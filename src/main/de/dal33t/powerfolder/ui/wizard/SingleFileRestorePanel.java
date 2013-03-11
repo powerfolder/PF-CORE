@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.light.FileInfo;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -346,7 +346,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                 }
             }
 
-            CopyOrMoveFileArchiver fileArchiver = folder.getFileArchiver();
+            FileArchiver fileArchiver = folder.getFileArchiver();
 
             List<FileInfo> tempArchiverFileInfos = fileArchiver.getArchivedFilesInfos(fileInfoToRestore);
             List<SingleFileRestoreItem> infoList = new ArrayList<SingleFileRestoreItem>();

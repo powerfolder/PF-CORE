@@ -233,7 +233,7 @@ public class Folder extends PFComponent {
     /** The statistic for this folder */
     private final FolderStatistic statistic;
 
-    private volatile CopyOrMoveFileArchiver archiver;
+    private volatile FileArchiver archiver;
 
     /**
      * TRAC #711: Automatic change detection by watching the filesystem.
@@ -595,7 +595,7 @@ public class Folder extends PFComponent {
     /**
      * @return the FileArchiver used
      */
-    public CopyOrMoveFileArchiver getFileArchiver() {
+    public FileArchiver getFileArchiver() {
         return archiver;
     }
 
@@ -839,7 +839,7 @@ public class Folder extends PFComponent {
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already exists here
                 // Using local var because of possible race condition!!
-                CopyOrMoveFileArchiver arch = archiver;
+                FileArchiver arch = archiver;
                 if (arch != null) {
                     try {
                         FileInfo oldLocalFileInfo = fInfo

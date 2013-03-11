@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -38,7 +38,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         FileInfo fib = fb.getKnownFiles().iterator().next();
 
-        CopyOrMoveFileArchiver fa = ArchiveMode.FULL_BACKUP.getInstance(fb);
+        FileArchiver fa = ArchiveMode.FULL_BACKUP.getInstance(fb);
         try {
             fa.archive(fib, tb, false);
         } catch (IOException e) {
@@ -196,7 +196,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(2100);
         modLisaFile(f, fInfo);
 
-        CopyOrMoveFileArchiver aBart = getFolderAtBart().getFileArchiver();
+        FileArchiver aBart = getFolderAtBart().getFileArchiver();
         for (int i = 0; i < nVersion; i++) {
             TestHelper.waitMilliSeconds(2100);
             assertEquals(i + 2, modLisaFile(f, fInfo).getVersion());

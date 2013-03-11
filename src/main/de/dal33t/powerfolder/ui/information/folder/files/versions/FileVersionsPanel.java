@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.Controller;
@@ -216,7 +216,7 @@ public class FileVersionsPanel extends PFUIComponent {
                 // Loading...
                 setState(STATE_LOADING);
                 try {
-                    CopyOrMoveFileArchiver fileArchiver = folder.getFileArchiver();
+                    FileArchiver fileArchiver = folder.getFileArchiver();
 
                     // Get local versions.
                     List<FileInfoVersionTypeHolder> consolidatedFileInfos = new ArrayList<FileInfoVersionTypeHolder>();

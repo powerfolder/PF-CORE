@@ -26,7 +26,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
@@ -405,7 +405,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // switch profiles
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
 
-        CopyOrMoveFileArchiver archiver = getFolderAtLisa().getFileArchiver();
+        FileArchiver archiver = getFolderAtLisa().getFileArchiver();
         Collection<FileInfo> filesAtLisa = getFolderAtLisa().getKnownFiles();
         for (FileInfo fileAtLisa : filesAtLisa) {
             if (fileAtLisa.isDeleted()) {

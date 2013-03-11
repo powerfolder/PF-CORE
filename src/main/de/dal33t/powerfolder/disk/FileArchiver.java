@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.schlichtherle.truezip.file.TFile;
 
 /**
- * An implementation of {@link FileArchiver} that tries to move a file to an
+ * A file archiver that tries to move a file to an
  * archive first, and falls back to copying otherwise, or if forced to.
  * <i>Note:</i> No support for removal of old files (yet) - special care of
  * directories might be required Archives are stored in an archives directory,
@@ -62,10 +62,10 @@ import de.schlichtherle.truezip.file.TFile;
  * 
  * @author dante
  */
-public class CopyOrMoveFileArchiver {
+public class FileArchiver {
 
     private static final Logger log = Logger
-        .getLogger(CopyOrMoveFileArchiver.class.getName());
+        .getLogger(FileArchiver.class.getName());
     private static final VersionComparator VERSION_COMPARATOR = new VersionComparator();
     private static final Pattern BASE_NAME_PATTERN = Pattern
         .compile("(.*)_K_\\d+");
@@ -88,7 +88,7 @@ public class CopyOrMoveFileArchiver {
      * @param mySelf
      *            myself
      */
-    public CopyOrMoveFileArchiver(File archiveDirectory, MemberInfo mySelf) {
+    public FileArchiver(File archiveDirectory, MemberInfo mySelf) {
         Reject.notNull(archiveDirectory, "archiveDirectory");
         Reject.ifFalse(archiveDirectory.isDirectory(),
             "archiveDirectory not a directory!");

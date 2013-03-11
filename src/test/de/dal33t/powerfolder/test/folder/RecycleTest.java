@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class RecycleTest extends ControllerTestCase {
 
-    private CopyOrMoveFileArchiver archiver;
+    private FileArchiver archiver;
 
     public void setUp() throws Exception {
         // Remove directories
@@ -100,7 +100,7 @@ public class RecycleTest extends ControllerTestCase {
         getFolder().removeFilesLocal(testfile);
         assertFalse(file.exists());
         (archiver).setVersionsPerFile(0);
-        ((CopyOrMoveFileArchiver) archiver).maintain();
+        ((FileArchiver) archiver).maintain();
         File recycleBinDir = new File(getFolder().getSystemSubDir(), "archive");
         assertTrue(recycleBinDir.exists());
         // Only size file
