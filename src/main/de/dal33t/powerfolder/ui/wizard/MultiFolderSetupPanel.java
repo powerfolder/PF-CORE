@@ -80,7 +80,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
 
     /**
-     * Constuctor
+     * Constructor
      * 
      * @param controller
      */
@@ -268,14 +268,9 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     private void updateModeAndVersion() {
         if (selectedItem != null) {
-            ArchiveMode am = (ArchiveMode) modeModel.getValue();
-            if (am == ArchiveMode.NO_BACKUP) {
-                selectedItem.setArchiveMode(ArchiveMode.NO_BACKUP);
-            } else {
-                selectedItem.setArchiveMode(ArchiveMode.FULL_BACKUP);
-                int version = (Integer) versionsModel.getValue();
-                selectedItem.setArchiveHistory(version);
-            }
+            selectedItem.setArchiveMode(ArchiveMode.FULL_BACKUP);
+            int version = (Integer) versionsModel.getValue();
+            selectedItem.setArchiveHistory(version);
         }
     }
 

@@ -56,7 +56,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                 try {
                     FolderSettings folderSettings = new FolderSettings(dir,
                         SyncProfile.HOST_FILES, false,
-                        ArchiveMode.NO_BACKUP, 0);
+                        ArchiveMode.FULL_BACKUP, 0);
                     getContollerBart().getFolderRepository().createFolder(
                         invitation.folder, folderSettings);
                 } catch (Exception e) {
@@ -72,7 +72,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
         FolderSettings folderSettings = new FolderSettings(
             TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false,
-            ArchiveMode.NO_BACKUP, 0);
+            ArchiveMode.FULL_BACKUP, 0);
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
             testFolder, folderSettings);
 

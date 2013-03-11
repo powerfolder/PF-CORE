@@ -131,7 +131,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      * @param versionHistory
      */
     public void setArchiveMode(ArchiveMode archiveMode, int versionHistory) {
-        if (archiveMode == ArchiveMode.NO_BACKUP || versionHistory == 0) {
+        if (versionHistory == 0) {
             archiveCombo.setSelectedIndex(0); // No Backup
         } else if (versionHistory == -1) {
             archiveCombo.setSelectedIndex(PAIRS.size() - 1); // Unlimited
@@ -189,7 +189,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
                 versionModel.setValue(0);
             }
             for (ValueModel modeModel : modeModels) {
-                modeModel.setValue(ArchiveMode.NO_BACKUP);
+                modeModel.setValue(ArchiveMode.FULL_BACKUP);
             }
         } else {
             for (ValueModel versionModel : versionModels) {

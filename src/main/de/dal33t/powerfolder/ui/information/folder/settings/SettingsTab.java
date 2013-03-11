@@ -938,9 +938,6 @@ public class SettingsTab extends PFUIComponent {
 
     private void updateLocalArchiveMode(Object oldValue, final Object newValue) {
         ArchiveMode am = (ArchiveMode) localModeModel.getValue();
-        if (am == ArchiveMode.NO_BACKUP) {
-            folder.setArchiveMode(ArchiveMode.NO_BACKUP);
-        } else {
             folder.setArchiveMode(ArchiveMode.FULL_BACKUP);
             Integer versions = (Integer) localVersionModel.getValue();
             folder.setArchiveVersions(versions);
@@ -971,7 +968,6 @@ public class SettingsTab extends PFUIComponent {
                     }
                 });
             }
-        }
     }
 
     public static void doPreviewChange(Controller controller, Folder fldr) {
@@ -1418,15 +1414,10 @@ public class SettingsTab extends PFUIComponent {
                 if (folderService != null && serverClient.joinedByCloud(folder))
                 {
                     ArchiveMode am = (ArchiveMode) onlineModeModel.getValue();
-                    if (am == ArchiveMode.NO_BACKUP) {
-                        folderService.setArchiveMode(folderInfo,
-                            ArchiveMode.NO_BACKUP, 0);
-                    } else {
-                        Integer versions = (Integer) onlineVersionModel
-                            .getValue();
-                        folderService.setArchiveMode(folderInfo,
-                            ArchiveMode.FULL_BACKUP, versions);
-                    }
+                    Integer versions = (Integer) onlineVersionModel
+                        .getValue();
+                    folderService.setArchiveMode(folderInfo,
+                        ArchiveMode.FULL_BACKUP, versions);
                 }
 
             } catch (Exception e) {

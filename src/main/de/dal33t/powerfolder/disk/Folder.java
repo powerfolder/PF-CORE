@@ -455,11 +455,11 @@ public class Folder extends PFComponent {
             } catch (Exception e) {
                 logWarning("Unable to setup file archive - disabled now. Please check the folder base dir: "
                     + localBase + ". " + e.getMessage());
-                archiver = ArchiveMode.NO_BACKUP.getInstance(this);
+                archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
             }
 
         } else {
-            archiver = ArchiveMode.NO_BACKUP.getInstance(this);
+            archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
         }
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
@@ -574,7 +574,7 @@ public class Folder extends PFComponent {
             logWarning("Unable to set new archive mode: " + mode
                 + ". Falling back to no backup archive. " + e);
             logFiner(e);
-            archiver = ArchiveMode.NO_BACKUP.getInstance(this);
+            archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
             fireArchiveSettingsChanged();
         }
     }

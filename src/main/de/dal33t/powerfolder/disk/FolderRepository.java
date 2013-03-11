@@ -874,7 +874,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         FolderSettings metaFolderSettings = new FolderSettings(new TFile(
             systemSubdir, Constants.METAFOLDER_SUBDIR),
-            SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.NO_BACKUP, 0);
+            SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.FULL_BACKUP, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
             metaFolderSettings.getLocalBaseDir().mkdirs();

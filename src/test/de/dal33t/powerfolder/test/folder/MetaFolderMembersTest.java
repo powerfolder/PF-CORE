@@ -57,14 +57,14 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         TESTFOLDER_BASEDIR_BART.mkdirs();
         FolderSettings folderSettingsBart = new FolderSettings(
             TESTFOLDER_BASEDIR_BART, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
-            false, ArchiveMode.NO_BACKUP, 0);
+            false, ArchiveMode.FULL_BACKUP, 0);
         final Folder folderBart = controllerBart.getFolderRepository()
             .createFolder(folderInfo, folderSettingsBart);
 
         TESTFOLDER_BASEDIR_HOMER.mkdirs();
         FolderSettings folderSettingsHomer = new FolderSettings(
             TESTFOLDER_BASEDIR_HOMER, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
-            false, ArchiveMode.NO_BACKUP, 0);
+            false, ArchiveMode.FULL_BACKUP, 0);
         Controller controllerHomer = getContollerHomer();
         final Folder folderHomer = controllerHomer.getFolderRepository()
             .createFolder(folderInfo, folderSettingsHomer);
@@ -90,7 +90,7 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         TESTFOLDER_BASEDIR_MARGE.mkdirs();
         FolderSettings folderSettingsMarge = new FolderSettings(
             TESTFOLDER_BASEDIR_MARGE, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
-            false, ArchiveMode.NO_BACKUP, 0);
+            false, ArchiveMode.FULL_BACKUP, 0);
         Controller controllerMarge = getContollerMarge();
         final Folder folderMarge = controllerMarge.getFolderRepository()
             .createFolder(folderInfo, folderSettingsMarge);

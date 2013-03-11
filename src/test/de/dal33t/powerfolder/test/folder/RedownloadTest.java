@@ -44,10 +44,10 @@ public class RedownloadTest extends TwoControllerTestCase {
     public void testRedownload() {
 
         final Folder folderBart = getFolderAtBart();
-        folderBart.setArchiveMode(ArchiveMode.NO_BACKUP);
+        folderBart.setArchiveMode(ArchiveMode.FULL_BACKUP);
 
         final Folder folderLisa = getFolderAtLisa();
-        folderLisa.setArchiveMode(ArchiveMode.NO_BACKUP);
+        folderLisa.setArchiveMode(ArchiveMode.FULL_BACKUP);
 
         // Set up Bart & Lisa with a file in the folder.
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());

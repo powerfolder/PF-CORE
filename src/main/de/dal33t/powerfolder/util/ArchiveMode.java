@@ -6,17 +6,9 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.NullFileArchiver;
 import de.schlichtherle.truezip.file.TFile;
 
 public enum ArchiveMode {
-    NO_BACKUP("archive.no_backup") {
-
-        @Override
-        public FileArchiver getInstance(Folder f) {
-            return new NullFileArchiver();
-        }
-    },
     FULL_BACKUP("archive.full_backup") {
 
         @Override

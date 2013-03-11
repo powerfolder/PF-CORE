@@ -52,7 +52,7 @@ public class TestScanFolder extends ControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId());
         FolderSettings folderSettings = new FolderSettings(new File(location),
-            SyncProfile.HOST_FILES, false,ArchiveMode.NO_BACKUP, 0);
+            SyncProfile.HOST_FILES, false,ArchiveMode.FULL_BACKUP, 0);
         folder = getController().getFolderRepository().createFolder(testFolder,
             folderSettings);
 
