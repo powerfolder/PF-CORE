@@ -35,7 +35,6 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ArchiveMode;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -135,7 +134,6 @@ public class NewFolderAction extends BaseAction {
                         item.setFolderInfo(fi);
                         item.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                             .getValueInt(getController()));
-                        item.setArchiveMode(ArchiveMode.FULL_BACKUP);
                         folderCreateItems.add(item);
 
                     }

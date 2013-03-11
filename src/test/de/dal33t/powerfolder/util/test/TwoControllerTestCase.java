@@ -39,7 +39,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
@@ -481,14 +480,14 @@ public abstract class TwoControllerTestCase extends TestCase {
         final Folder folder2;
         final Folder meta2;
         FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile,
-            false, ArchiveMode.FULL_BACKUP, 5);
+            false, 5);
         folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
             folderSettings1);
         meta1 = getContollerBart().getFolderRepository()
             .getMetaFolderForParent(folder1.getInfo());
 
         FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
-            false, ArchiveMode.FULL_BACKUP, 5);
+            false, 5);
         folder2 = getContollerLisa().getFolderRepository().createFolder(foInfo,
             folderSettings2);
         if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {

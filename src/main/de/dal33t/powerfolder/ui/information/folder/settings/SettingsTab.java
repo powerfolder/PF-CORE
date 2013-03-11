@@ -96,7 +96,6 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -112,9 +111,7 @@ public class SettingsTab extends PFUIComponent {
     // Model and other stuff
     private final ServerClient serverClient;
     private Folder folder;
-    private ValueModel localModeModel;
     private ValueModel localVersionModel;
-    private ValueModel onlineModeModel;
     private ValueModel onlineVersionModel;
     private final ValueModel scriptModel;
     private DefaultListModel patternsListModel = new DefaultListModel();
@@ -174,42 +171,32 @@ public class SettingsTab extends PFUIComponent {
         scriptModel = new ValueHolder(null, false);
 
         MyLocalValueChangeListener localListener = new MyLocalValueChangeListener();
-        localModeModel = new ValueHolder(); // <ArchiveMode>
-        localModeModel.addValueChangeListener(localListener);
         localVersionModel = new ValueHolder(); // <Integer>
         localVersionModel.addValueChangeListener(localListener);
 
         MyOnlineValueChangeListener onlineListener = new MyOnlineValueChangeListener();
-        onlineModeModel = new ValueHolder(); // <ArchiveMode>
-        onlineModeModel.addValueChangeListener(onlineListener);
         onlineVersionModel = new ValueHolder(); // <Integer>
         onlineVersionModel.addValueChangeListener(onlineListener);
 
-        List<ValueModel> localModeModels = new ArrayList<ValueModel>();
         List<ValueModel> localVersionModels = new ArrayList<ValueModel>();
-        List<ValueModel> onlineModeModels = new ArrayList<ValueModel>();
         List<ValueModel> onlineVersionModels = new ArrayList<ValueModel>();
 
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(controller)) {
             // Expert gets separate archive mode panels - local and online.
-            localModeModels.add(localModeModel);
             localVersionModels.add(localVersionModel);
-            onlineModeModels.add(onlineModeModel);
             onlineVersionModels.add(onlineVersionModel);
         } else {
             // Non-expert gets one archive mode panel,
             // which simultaneously updates both local and online.
-            localModeModels.add(localModeModel);
             localVersionModels.add(localVersionModel);
-            localModeModels.add(onlineModeModel);
             localVersionModels.add(onlineVersionModel);
         }
 
         localArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            controller, localModeModels, localVersionModels,
+            controller, localVersionModels,
             new LocalPurgeListener());
         onlineArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            controller, onlineModeModels, onlineVersionModels,
+            controller, onlineVersionModels,
             new OnlinePurgeListener());
         onlineLabel = new JLabel(
             Translation.getTranslation("general.online_archive_mode"));
@@ -233,8 +220,7 @@ public class SettingsTab extends PFUIComponent {
         folder.addMembershipListener(membershipListener);
         transferModeSelectorPanel.setUpdateableFolder(folder);
         scriptModel.setValue(folder.getDownloadScript());
-        localArchiveModeSelectorPanel.setArchiveMode(folder.getFileArchiver()
-            .getArchiveMode(), folder.getFileArchiver().getVersionsPerFile());
+        localArchiveModeSelectorPanel.setArchiveMode(folder.getFileArchiver().getVersionsPerFile());
         syncPatternsCheckBox.setSelected(folder.isSyncPatterns());
         settingFolder = false;
         update();
@@ -847,8 +833,7 @@ public class SettingsTab extends PFUIComponent {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory,
-                folder.getSyncProfile(), false, folder.getFileArchiver()
-                    .getArchiveMode(), folder.isPreviewOnly(),
+                folder.getSyncProfile(), false, folder.isPreviewOnly(),
                 folder.getDownloadScript(), folder.getFileArchiver()
                     .getVersionsPerFile(), folder.isSyncPatterns(), commitDir,
                 folder.getSyncWarnSeconds());
@@ -937,8 +922,6 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private void updateLocalArchiveMode(Object oldValue, final Object newValue) {
-        ArchiveMode am = (ArchiveMode) localModeModel.getValue();
-            folder.setArchiveMode(ArchiveMode.FULL_BACKUP);
             Integer versions = (Integer) localVersionModel.getValue();
             folder.setArchiveVersions(versions);
 
@@ -1360,9 +1343,7 @@ public class SettingsTab extends PFUIComponent {
 
     private class MyLocalValueChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == localModeModel
-                || evt.getSource() == localVersionModel)
-            {
+            if (evt.getSource() == localVersionModel) {
                 if (!settingFolder) {
                     updateLocalArchiveMode(evt.getOldValue(), evt.getNewValue());
                 }
@@ -1373,8 +1354,7 @@ public class SettingsTab extends PFUIComponent {
     private class MyOnlineValueChangeListener implements PropertyChangeListener
     {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == onlineModeModel
-                || evt.getSource() == onlineVersionModel)
+            if (evt.getSource() == onlineVersionModel)
             {
                 if (!updatingOnlineArchiveMode) {
                     SwingWorker worker = new MyUpdaterSwingWorker();
@@ -1413,11 +1393,9 @@ public class SettingsTab extends PFUIComponent {
                     .getFolderService() : null;
                 if (folderService != null && serverClient.joinedByCloud(folder))
                 {
-                    ArchiveMode am = (ArchiveMode) onlineModeModel.getValue();
                     Integer versions = (Integer) onlineVersionModel
                         .getValue();
-                    folderService.setArchiveMode(folderInfo,
-                        ArchiveMode.FULL_BACKUP, versions);
+                    folderService.setArchiveMode(folderInfo, versions);
                 }
 
             } catch (Exception e) {
@@ -1446,12 +1424,9 @@ public class SettingsTab extends PFUIComponent {
                 if (folderInfo != null) {
                     FolderService folderService = serverClient
                         .getFolderService();
-                    ArchiveMode archiveMode = folderService
-                        .getArchiveMode(folderInfo);
                     int perFile = folderService.getVersionsPerFile(folderInfo);
                     updatingOnlineArchiveMode = true;
-                    onlineArchiveModeSelectorPanel.setArchiveMode(archiveMode,
-                        perFile);
+                    onlineArchiveModeSelectorPanel.setArchiveMode(perFile);
                     onlineArchiveModeSelectorPanel.getUIComponent().setVisible(
                         true);
                     onlineLabel.setVisible(true);

@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -49,7 +48,6 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_COMMIT_DIR = ".commit-dir";
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name";
-    public static final String FOLDER_SETTINGS_ARCHIVE = ".archive";
     public static final String FOLDER_SETTINGS_VERSIONS = ".versions";
     public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns";
     public static final String FOLDER_SETTINGS_SYNC_WARN_SECONDS = ".sync-warn-seconds";
@@ -103,11 +101,6 @@ public class FolderSettings {
     private final boolean createInvitationFile;
 
     /**
-     * How to archive local files
-     */
-    private final ArchiveMode archiveMode;
-
-    /**
      * The number of archive versions to keep
      */
     private final int versions;
@@ -146,9 +139,9 @@ public class FolderSettings {
      * @param versions
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, ArchiveMode archiveMode, int versions)
+        boolean createInvitationFile, int versions)
     {
-        this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
+        this(localBaseDir, syncProfile, createInvitationFile,
             false, null, versions, true);
     }
 
@@ -165,11 +158,11 @@ public class FolderSettings {
      * @param syncPatterns
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, ArchiveMode archiveMode,
+        boolean createInvitationFile,
         boolean previewOnly, String downloadScript, int versions,
         boolean syncPatterns)
     {
-        this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
+        this(localBaseDir, syncProfile, createInvitationFile,
             previewOnly, downloadScript, versions, syncPatterns, null, 0);
     }
 
@@ -188,7 +181,7 @@ public class FolderSettings {
      * @param syncWarnSeconds
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, ArchiveMode archiveMode,
+        boolean createInvitationFile,
         boolean previewOnly, String downloadScript, int versions,
         boolean syncPatterns, File commitDir, int syncWarnSeconds)
     {
@@ -198,7 +191,6 @@ public class FolderSettings {
         this.commitDir = commitDir;
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
-        this.archiveMode = archiveMode;
         this.previewOnly = previewOnly;
         this.downloadScript = downloadScript;
         this.versions = versions;
@@ -234,10 +226,6 @@ public class FolderSettings {
 
     public boolean isCreateInvitationFile() {
         return createInvitationFile;
-    }
-
-    public ArchiveMode getArchiveMode() {
-        return archiveMode;
     }
 
     public int getVersions() {
@@ -382,31 +370,6 @@ public class FolderSettings {
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
 
-        String archiveSetting = properties
-            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_ARCHIVE);
-        ArchiveMode archiveMode = null;
-        try {
-            if (archiveSetting != null) {
-                archiveMode = ArchiveMode.valueOf(archiveSetting);
-            } else {
-                if (verify) {
-                    LOG.log(Level.FINE, "ArchiveMode not set: "
-                        + archiveSetting + ", falling back to DEFAULT: "
-                        + fallbackDefaultVersions);
-                    archiveMode = ArchiveMode.FULL_BACKUP;
-                }
-            }
-        } catch (Exception e) {
-            if (verify) {
-                LOG.log(Level.WARNING, "Unsupported ArchiveMode: "
-                    + archiveSetting + ", falling back to DEFAULT: "
-                    + fallbackDefaultVersions);
-                LOG.log(Level.FINE, e.toString(), e);
-                archiveMode = ArchiveMode.FULL_BACKUP;
-            }
-        }
-
         String ver = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_VERSIONS);
         int versions;
@@ -449,7 +412,7 @@ public class FolderSettings {
         }
 
         FolderSettings settings = new FolderSettings(folderDir, syncProfile,
-            false, archiveMode, preview, dlScript, versions, syncPatterns,
+            false, preview, dlScript, versions, syncPatterns,
             commitDir, syncWarnSeconds);
         settings.configEntryId = entryId;
         settings.localBaseDirStr = folderDirStr;
@@ -483,13 +446,6 @@ public class FolderSettings {
         // Save sync profiles as internal configuration for custom profiles.
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_SYNC_PROFILE, syncProfile.getFieldList());
-        if (archiveMode != null) {
-            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_ARCHIVE, archiveMode.name());
-        } else {
-            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_ARCHIVE, ArchiveMode.FULL_BACKUP.name());
-        }
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_VERSIONS, String.valueOf(versions));
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId

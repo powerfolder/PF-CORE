@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 
@@ -131,23 +130,11 @@ public abstract class ControllerTestCase extends TestCase {
      * @param useRecycleBin
      *            whether to folder supports the recycle bin.
      */
-    protected void setupTestFolder(SyncProfile syncprofile,
-        ArchiveMode archiveMode)
+    protected void setupTestFolder(SyncProfile syncprofile)
     {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString());
-        folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile,
-            archiveMode);
-    }
-
-    /**
-     * Joins the controller into a testfolder. get these testfolder with
-     * <code>getFolder()</code>. Uses recycle bin.
-     * 
-     * @see #getFolder()
-     */
-    protected void setupTestFolder(SyncProfile syncprofile) {
-        setupTestFolder(syncprofile, ArchiveMode.FULL_BACKUP);
+        folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
     }
 
     /**
@@ -162,7 +149,7 @@ public abstract class ControllerTestCase extends TestCase {
      * @return the folder joined
      */
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
-        SyncProfile profile, ArchiveMode archiveMode)
+        SyncProfile profile)
     {
         baseDir.mkdirs();
         try {
@@ -171,7 +158,7 @@ public abstract class ControllerTestCase extends TestCase {
             throw new RuntimeException(e);
         }
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, archiveMode, 5);
+            false, 5);
         return getController().getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

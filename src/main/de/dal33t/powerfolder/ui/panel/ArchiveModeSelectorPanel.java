@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ArchiveMode;
 
 import javax.swing.*;
 import java.awt.Component;
@@ -70,7 +69,6 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
 
     private JComboBox archiveCombo;
     private JPanel panel;
-    private List<ValueModel> modeModels; // {ArchiveMode}
     private List<ValueModel> versionModels; // {Integer}
     private ActionListener purgeListener;
 
@@ -88,37 +86,33 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      *            Listener to the user clicking the purge archive button.
      */
     public ArchiveModeSelectorPanel(Controller controller,
-        List<ValueModel> modeModels, List<ValueModel> versionModels,
+        List<ValueModel> versionModels,
         ActionListener purgeListener) {
         super(controller);
-        this.modeModels = modeModels;
         this.versionModels = versionModels;
         this.purgeListener = purgeListener;
         initComponents();
     }
 
     public ArchiveModeSelectorPanel(Controller controller,
-        ValueModel modeModel, ValueModel versionModel,
+        ValueModel versionModel,
         ActionListener purgeListener) {
         super(controller);
-        modeModels = Collections.singletonList(modeModel);
         versionModels = Collections.singletonList(versionModel);
         this.purgeListener = purgeListener;
         initComponents();
     }
 
     public ArchiveModeSelectorPanel(Controller controller,
-        List<ValueModel> modeModels, List<ValueModel> versionModels) {
+        List<ValueModel> versionModels) {
         super(controller);
-        this.modeModels = modeModels;
         this.versionModels = versionModels;
         initComponents();
     }
 
     public ArchiveModeSelectorPanel(Controller controller,
-        ValueModel modeModel, ValueModel versionModel) {
+        ValueModel versionModel) {
         super(controller);
-        modeModels = Collections.singletonList(modeModel);
         versionModels = Collections.singletonList(versionModel);
         initComponents();
     }
@@ -127,10 +121,9 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      * Set the archive mode and verions history for the panel. Value models are
      * not notified of changes during the set operation.
      * 
-     * @param archiveMode
      * @param versionHistory
      */
-    public void setArchiveMode(ArchiveMode archiveMode, int versionHistory) {
+    public void setArchiveMode(int versionHistory) {
         if (versionHistory == 0) {
             archiveCombo.setSelectedIndex(0); // No Backup
         } else if (versionHistory == -1) {
@@ -188,16 +181,10 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
             for (ValueModel versionModel : versionModels) {
                 versionModel.setValue(0);
             }
-            for (ValueModel modeModel : modeModels) {
-                modeModel.setValue(ArchiveMode.FULL_BACKUP);
-            }
         } else {
             for (ValueModel versionModel : versionModels) {
                 versionModel.setValue(PAIRS.toArray(
                         new NameValuePair[PAIRS.size()])[index].getValue());
-            }
-            for (ValueModel modeModel : modeModels) {
-                modeModel.setValue(ArchiveMode.FULL_BACKUP);
             }
         }
     }

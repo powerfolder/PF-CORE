@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
@@ -52,7 +51,7 @@ public class TestScanFolder extends ControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId());
         FolderSettings folderSettings = new FolderSettings(new File(location),
-            SyncProfile.HOST_FILES, false,ArchiveMode.FULL_BACKUP, 0);
+            SyncProfile.HOST_FILES, false,0);
         folder = getController().getFolderRepository().createFolder(testFolder,
             folderSettings);
 

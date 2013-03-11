@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.wizard;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ArchiveMode;
 
 import java.io.File;
 
@@ -35,13 +34,11 @@ public class FolderCreateItem {
     private File localBase;
     private FolderInfo folderInfo;
     private SyncProfile syncProfile;
-    private ArchiveMode archiveMode;
     private int archiveHistory;
     private String linkToOnlineFolder;
 
     public FolderCreateItem(File localBase) {
         this.localBase = localBase;
-        archiveMode = ArchiveMode.FULL_BACKUP;
         archiveHistory = 5;
     }
 
@@ -68,14 +65,6 @@ public class FolderCreateItem {
 
     public void setSyncProfile(SyncProfile syncProfile) {
         this.syncProfile = syncProfile;
-    }
-
-    public ArchiveMode getArchiveMode() {
-        return archiveMode;
-    }
-
-    public void setArchiveMode(ArchiveMode archiveMode) {
-        this.archiveMode = archiveMode;
     }
 
     public int getArchiveHistory() {

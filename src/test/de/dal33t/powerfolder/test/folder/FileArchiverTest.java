@@ -11,7 +11,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -38,7 +37,9 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         FileInfo fib = fb.getKnownFiles().iterator().next();
 
-        FileArchiver fa = ArchiveMode.FULL_BACKUP.getInstance(fb);
+        File archive = new TFile(fb.getSystemSubDir(), "archive");
+        archive.mkdirs();
+        FileArchiver fa = new FileArchiver(archive, getContollerBart().getMySelf().getInfo());
         try {
             fa.archive(fib, tb, false);
         } catch (IOException e) {
@@ -54,7 +55,6 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
     public void testBackupOnDownload() {
         final Folder fb = getFolderAtBart();
-        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
 
         Folder fl = getFolderAtLisa();
         File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
@@ -83,7 +83,6 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
     public void testLimitedVersions() {
         final Folder fb = getFolderAtBart();
-        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
         fb.setArchiveVersions(3);
 
         Folder fl = getFolderAtLisa();
@@ -135,7 +134,6 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
     public void testChangeVersionsPerFile() {
         final Folder fb = getFolderAtBart();
-        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
         fb.setArchiveVersions(3);
 
         Folder fl = getFolderAtLisa();

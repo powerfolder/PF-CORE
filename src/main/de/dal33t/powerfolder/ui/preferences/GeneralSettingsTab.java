@@ -23,13 +23,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.Locale;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -44,10 +40,8 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -66,7 +60,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private boolean originalQuitOnX;
     private JComboBox xBehaviorChooser;
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
-    private ValueModel modeModel;
     private ValueModel versionModel;
     private JComboBox archiveCleanupCombo;
     private Action cleanupAction;
@@ -137,15 +130,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 });
         }
 
-        modeModel = new ValueHolder();
         versionModel = new ValueHolder();
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            getController(), modeModel, versionModel);
-        archiveModeSelectorPanel.setArchiveMode(ArchiveMode
-            .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                .getValue(getController())),
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
-                .getValueInt(getController()));
+            getController(), versionModel);
+        archiveModeSelectorPanel.setArchiveMode(
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(getController()));
 
         archiveCleanupCombo = new JComboBox();
         archiveCleanupCombo.addItem(Translation
@@ -379,8 +368,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         try {
-            ConfigurationEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
-                ((ArchiveMode) modeModel.getValue()).name());
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.setValue(
                 getController(), versionModel.getValue().toString());
         } catch (Exception e) {

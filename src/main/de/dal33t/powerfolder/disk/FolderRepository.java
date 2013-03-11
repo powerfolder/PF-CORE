@@ -68,7 +68,6 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -845,7 +844,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             folderSettings = new FolderSettings(newBaseDir, syncProfile,
                 folderSettings.isCreateInvitationFile(),
-                folderSettings.getArchiveMode(),
                 folderSettings.isPreviewOnly(),
                 folderSettings.getDownloadScript(),
                 folderSettings.getVersions(), folderSettings.isSyncPatterns(),
@@ -874,7 +872,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         FolderSettings metaFolderSettings = new FolderSettings(new TFile(
             systemSubdir, Constants.METAFOLDER_SUBDIR),
-            SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.FULL_BACKUP, 0);
+            SyncProfile.META_FOLDER_SYNC, false, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
             metaFolderSettings.getLocalBaseDir().mkdirs();
@@ -1407,7 +1405,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
-            ArchiveMode.FULL_BACKUP,
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(controller));
         Folder folder = createFolder(fi, fs);
         folder.addDefaultExcludes();
@@ -1523,7 +1520,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
             invitation.getSuggestedSyncProfile(), false,
-            ArchiveMode.FULL_BACKUP,
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
         createFolder(invitation.folder, folderSettings);
@@ -1698,7 +1694,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Correct local path if in UserDirectories.
                 FolderSettings settings = new FolderSettings(
                     suggestedLocalBase, profile, false,
-                    ArchiveMode.FULL_BACKUP,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()));
 

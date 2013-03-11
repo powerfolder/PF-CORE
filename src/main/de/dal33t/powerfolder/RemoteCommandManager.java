@@ -66,7 +66,6 @@ import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Convert;
@@ -677,8 +676,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
                 createInvitationFile,
-                ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                    .getValue(getController())), false, dlScript,
+                false, dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                     .getValueInt(getController()), true);
             repository.createFolder(foInfo, settings);

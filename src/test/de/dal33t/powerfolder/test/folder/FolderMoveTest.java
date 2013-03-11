@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
@@ -51,7 +50,7 @@ public class FolderMoveTest extends ControllerTestCase {
 
         // Setup a test folder; delete previous tests.
         getController().setPaused(true);
-        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.FULL_BACKUP);
+        setupTestFolder(SyncProfile.HOST_FILES);
         folder = getFolder();
         File localBase = folder.getLocalBase();
 
@@ -141,7 +140,6 @@ public class FolderMoveTest extends ControllerTestCase {
             // Create new folder
             FolderSettings folderSettings = new FolderSettings(testFolder2,
                 getFolder().getSyncProfile(), false, getFolder()
-                    .getFileArchiver().getArchiveMode(), getFolder()
                             .getFileArchiver().getVersionsPerFile());
 
             // Move the folder

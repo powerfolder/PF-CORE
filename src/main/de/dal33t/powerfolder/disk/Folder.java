@@ -93,7 +93,6 @@ import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
@@ -449,18 +448,12 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        if (folderSettings.getArchiveMode() != null) {
-            try {
-                archiver = folderSettings.getArchiveMode().getInstance(this);
-            } catch (Exception e) {
-                logWarning("Unable to setup file archive - disabled now. Please check the folder base dir: "
-                    + localBase + ". " + e.getMessage());
-                archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
-            }
-
-        } else {
-            archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
+        File archive = new TFile(getSystemSubDir(), "archive");
+        if (!checkIfDeviceDisconnected() && !archive.exists() && !archive.mkdirs())
+        {
+            logWarning("Failed to create archive directory in system subdirectory: " + archive);
         }
+        archiver = new FileArchiver(archive, getController().getMySelf().getInfo());
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         // Create invitation
@@ -551,32 +544,6 @@ public class Folder extends PFComponent {
      */
     public List<Problem> getProblems() {
         return Collections.unmodifiableList(problems);
-    }
-
-    /**
-     * Sets the FileArchiver to be used.
-     * 
-     * @param mode
-     *            the ArchiveMode
-     */
-    public void setArchiveMode(ArchiveMode mode) {
-        if (archiver.getArchiveMode() == mode) {
-            return;
-        }
-        try {
-            archiver = mode.getInstance(this);
-            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-                + FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-            getController().getConfig().put(syncProfKey, mode.name());
-            getController().saveConfig();
-            fireArchiveSettingsChanged();
-        } catch (Exception e) {
-            logWarning("Unable to set new archive mode: " + mode
-                + ". Falling back to no backup archive. " + e);
-            logFiner(e);
-            archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
-            fireArchiveSettingsChanged();
-        }
     }
 
     public void setArchiveVersions(int versions) {

@@ -45,7 +45,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
@@ -361,10 +360,6 @@ public class FileArchiver {
             return Util.equalsRelativeName(m.group(1), baseName);
         }
         return false;
-    }
-
-    public ArchiveMode getArchiveMode() {
-        return ArchiveMode.FULL_BACKUP;
     }
 
     public boolean hasArchivedFileInfo(FileInfo fileInfo) {

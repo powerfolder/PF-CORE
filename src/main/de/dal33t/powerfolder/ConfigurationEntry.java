@@ -35,7 +35,6 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -886,9 +885,6 @@ public enum ConfigurationEntry {
      * PFC-2226: Option to restrict new folder creation to the default storage path
      */
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false),
-
-    /** The archive mode to use when creating a new folder. */
-    DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name()),
 
     /** The number of file versions to use when creating a new folder. */
     DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 5),

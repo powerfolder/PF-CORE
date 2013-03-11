@@ -43,7 +43,6 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PropertiesUtil;
@@ -285,7 +284,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Controller controller, SyncProfile profile)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, ArchiveMode.FULL_BACKUP, 5);
+            false, 5);
         return controller.getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

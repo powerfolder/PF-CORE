@@ -53,7 +53,6 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
@@ -71,7 +70,6 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private DefaultComboBoxModel localBaseComboModel;
 
     private FolderCreateItem selectedItem;
-    private ValueModel modeModel;
     private ValueModel versionsModel;
 
     private JTextField nameField;
@@ -181,17 +179,12 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         nameField = new JTextField();
         nameField.addKeyListener(myKeyListener);
 
-        modeModel = new ValueHolder();
         versionsModel = new ValueHolder();
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            getController(), modeModel, versionsModel);
-        archiveModeSelectorPanel.setArchiveMode(ArchiveMode
-            .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                .getValue(getController())),
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
-                .getValueInt(getController()));
+            getController(), versionsModel);
+        archiveModeSelectorPanel.setArchiveMode(
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(getController()));
         PropertyChangeListener listener = new MyPropertyChangeListener();
-        modeModel.addValueChangeListener(listener);
         versionsModel.addValueChangeListener(listener);
 
         MyItemListener itemListener = new MyItemListener();
@@ -268,7 +261,6 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     private void updateModeAndVersion() {
         if (selectedItem != null) {
-            selectedItem.setArchiveMode(ArchiveMode.FULL_BACKUP);
             int version = (Integer) versionsModel.getValue();
             selectedItem.setArchiveHistory(version);
         }
@@ -312,8 +304,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     private class MyPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == modeModel
-                || evt.getSource() == versionsModel)
+            if (evt.getSource() == versionsModel)
             {
                 updateModeAndVersion();
             }

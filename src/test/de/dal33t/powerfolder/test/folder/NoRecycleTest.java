@@ -24,7 +24,6 @@ import java.io.FileWriter;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 /**
@@ -39,8 +38,7 @@ public class NoRecycleTest extends ControllerTestCase {
 
         super.setUp();
 
-        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.FULL_BACKUP);
-        getFolder().setArchiveMode(ArchiveMode.FULL_BACKUP);
+        setupTestFolder(SyncProfile.HOST_FILES);
         File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");
         if (testFile.exists()) {

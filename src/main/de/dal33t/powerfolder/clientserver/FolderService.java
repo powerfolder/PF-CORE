@@ -25,14 +25,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
  * Access/Control over folders of a server.
@@ -193,12 +191,9 @@ public interface FolderService {
      * Controls the archive configuration on the server.
      * 
      * @param foInfo
-     * @param mode
      * @param versionsPerFile
      */
-    void setArchiveMode(FolderInfo foInfo, ArchiveMode mode, int versionsPerFile);
-
-    ArchiveMode getArchiveMode(FolderInfo foInfo);
+    void setArchiveMode(FolderInfo foInfo, int versionsPerFile);
 
     /**
      * To empty/purge the online stored archive.

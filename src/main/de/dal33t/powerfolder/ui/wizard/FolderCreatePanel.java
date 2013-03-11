@@ -56,7 +56,6 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
@@ -178,7 +177,6 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     if (folderInfo == null) {
                         folderInfo = createFolderInfo(localBase);
                     }
-                    ArchiveMode archiveMode = folderCreateItem.getArchiveMode();
                     int archiveHistory = folderCreateItem.getArchiveHistory();
                     if (!StringUtils.isBlank(folderCreateItem
                         .getLinkToOnlineFolder()))
@@ -187,7 +185,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                             folderCreateItem.getLinkToOnlineFolder());
                     }
                     FolderSettings folderSettings = new FolderSettings(
-                        localBase, syncProfile, saveLocalInvite, archiveMode,
+                        localBase, syncProfile, saveLocalInvite,
                         previewFolder, null, archiveHistory, true);
                     configurations.put(folderInfo, folderSettings);
                 }
@@ -215,8 +213,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
 
                 FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite,
-                    ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                        .getValue(getController())), previewFolder, null,
+                    previewFolder, null,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()), true);
                 configurations.put(folderInfo, folderSettings);

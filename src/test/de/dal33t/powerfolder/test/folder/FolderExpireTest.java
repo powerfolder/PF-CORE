@@ -23,7 +23,6 @@ import java.io.File;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 /**
@@ -37,7 +36,7 @@ public class FolderExpireTest extends ControllerTestCase {
         super.setUp();
 
         // Setup a test folder.
-        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.FULL_BACKUP);
+        setupTestFolder(SyncProfile.HOST_FILES);
 
         File localBase = getFolder().getLocalBase();
 

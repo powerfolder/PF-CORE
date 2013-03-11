@@ -23,7 +23,6 @@ import java.io.File;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -53,7 +52,7 @@ public class FolderPreviewHelper {
     {
         File localBase = makePreviewBaseDir(folderName);
         return new FolderSettings(localBase, SyncProfile.NO_SYNC, false,
-            ArchiveMode.FULL_BACKUP, true, null, 0, false);
+            true, null, 0, false);
     }
 
     // Creates a preview folder directory for a folderName.
@@ -96,7 +95,7 @@ public class FolderPreviewHelper {
             initialFolderSettings.getLocalBaseDir(),
             initialFolderSettings.getSyncProfile(),
             initialFolderSettings.isCreateInvitationFile(),
-            initialFolderSettings.getArchiveMode(), true,
+            true,
             initialFolderSettings.getDownloadScript(),
             initialFolderSettings.getVersions(),
             initialFolderSettings.isSyncPatterns());

@@ -51,7 +51,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -104,7 +103,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         FolderSettings folderSettings = new FolderSettings(
             invitation.getSuggestedLocalBase(getController()),
             syncProfileSelectorPanel.getSyncProfile(), false,
-            ArchiveMode.FULL_BACKUP, true, null, 0, true);
+            true, null, 0, true);
 
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);

@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -88,8 +87,7 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
             client.getFolderService().createFolder(foInfo, syncProfile);
 
             if (archiveVersions != null) {
-                client.getFolderService().setArchiveMode(foInfo,
-                    ArchiveMode.FULL_BACKUP, archiveVersions);
+                client.getFolderService().setArchiveMode(foInfo, archiveVersions);
             }
 
             // Remove task

@@ -44,11 +44,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 
 /**
@@ -114,7 +112,7 @@ public class PreviewToJoinDialog extends BaseDialog {
                 FolderSettings newFolderSettings = new FolderSettings(new File(
                     (String) locationModel.getValue()),
                     syncProfileSelectorPanel.getSyncProfile(), false,
-                    existingFoldersSettings.getArchiveMode(), false,
+                    false,
                     existingFoldersSettings.getDownloadScript(),
                     existingFoldersSettings.getVersions(),
                     existingFoldersSettings.isSyncPatterns());

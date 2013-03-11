@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.test.folder;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.Condition;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -44,10 +43,8 @@ public class RedownloadTest extends TwoControllerTestCase {
     public void testRedownload() {
 
         final Folder folderBart = getFolderAtBart();
-        folderBart.setArchiveMode(ArchiveMode.FULL_BACKUP);
 
         final Folder folderLisa = getFolderAtLisa();
-        folderLisa.setArchiveMode(ArchiveMode.FULL_BACKUP);
 
         // Set up Bart & Lisa with a file in the folder.
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
