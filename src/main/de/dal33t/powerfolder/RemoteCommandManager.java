@@ -387,7 +387,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // Wait for hook up.
             Waiter w = new Waiter(60000);
             while (!w.isTimeout()
-                && !getController().getOSClient().isLoggedIn())
+                && !getController().getOSClient().isLoggedIn()
+                && Feature.OS_CLIENT.isEnabled())
             {
                 w.waitABit();
             }
@@ -397,7 +398,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             getController().exit(0);
         } else if (command.startsWith(OPEN)) {
             // Open files
-   String fileStr = command.substring(OPEN.length());
+            String fileStr = command.substring(OPEN.length());
 
             // Open all files in remote command
             StringTokenizer nizer = new StringTokenizer(fileStr, ";");
