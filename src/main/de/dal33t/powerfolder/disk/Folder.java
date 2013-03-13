@@ -1754,7 +1754,7 @@ public class Folder extends PFComponent {
         if (encrypted && !currentInfo.isMetaFolder()) {
             try {
                 TFile.umount(localBase);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logWarning("Problem unmounting " + localBase + ". " + e);
             }
         }
