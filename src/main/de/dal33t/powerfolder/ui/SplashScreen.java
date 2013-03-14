@@ -25,9 +25,7 @@ import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -41,9 +39,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;
 
 /**
@@ -66,7 +62,6 @@ public class SplashScreen extends JWindow {
     private int nPercentageGuessed;
     private int nextPercentage;
     private Date startTime;
-    private String tipOfTheDay;
 
     /**
      * New splashscreen
@@ -131,13 +126,6 @@ public class SplashScreen extends JWindow {
         };
         setVisible(true);
 
-        // Get 'tip of the day' text.
-        int dayOfYear = new GregorianCalendar().get(Calendar.DAY_OF_YEAR);
-        String tipOfDayLengthString = Translation
-            .getTranslation("tip_of_the_day.length");
-        int day = 1 + dayOfYear % Integer.valueOf(tipOfDayLengthString);
-        tipOfTheDay = Translation.getTranslation("tip_of_the_day.text_" + day);
-
         splashThread = new Thread(waitRunner, "SplashScreenThread");
         splashThread.start();
     }
@@ -195,9 +183,6 @@ public class SplashScreen extends JWindow {
                     }
                     String version = Controller.PROGRAM_VERSION;
                     g.drawString(version, 20, getHeight() - 25);
-                    if (Feature.TIP_OF_DAY.isEnabled()) {
-                        g.drawString(tipOfTheDay, 20, getHeight() - 50);
-                    }
                 }
             });
         } catch (InterruptedException e) {
