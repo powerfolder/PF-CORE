@@ -71,11 +71,6 @@ public enum Feature {
     DEBUG_WRITE_FILELIST_CSV(false),
 
     /**
-     * Display Tip Of Day.
-     */
-    TIP_OF_DAY(false),
-
-    /**
      * TRAC #1901 for internal use only.
      */
     CREDITS_SYSTEM(false),
