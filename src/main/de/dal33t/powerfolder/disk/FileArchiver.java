@@ -52,19 +52,19 @@ import de.dal33t.powerfolder.util.Util;
 import de.schlichtherle.truezip.file.TFile;
 
 /**
- * A file archiver that tries to move a file to an
- * archive first, and falls back to copying otherwise, or if forced to.
- * <i>Note:</i> No support for removal of old files (yet) - special care of
- * directories might be required Archives are stored in an archives directory,
- * with suffix '_K_nnn', where 'nnn' is the version number. So 'data/info.txt'
- * archive version 6 would be 'archive/data/info.txt_K_6'.
+ * A file archiver that tries to move a file to an archive first, and falls back
+ * to copying otherwise, or if forced to. <i>Note:</i> No support for removal of
+ * old files (yet) - special care of directories might be required Archives are
+ * stored in an archives directory, with suffix '_K_nnn', where 'nnn' is the
+ * version number. So 'data/info.txt' archive version 6 would be
+ * 'archive/data/info.txt_K_6'.
  * 
  * @author dante
  */
 public class FileArchiver {
 
-    private static final Logger log = Logger
-        .getLogger(FileArchiver.class.getName());
+    private static final Logger log = Logger.getLogger(FileArchiver.class
+        .getName());
     private static final VersionComparator VERSION_COMPARATOR = new VersionComparator();
     private static final Pattern BASE_NAME_PATTERN = Pattern
         .compile("(.*)_K_\\d+");
@@ -89,8 +89,6 @@ public class FileArchiver {
      */
     public FileArchiver(File archiveDirectory, MemberInfo mySelf) {
         Reject.notNull(archiveDirectory, "archiveDirectory");
-        Reject.ifFalse(archiveDirectory.isDirectory(),
-            "archiveDirectory not a directory!");
         Reject.ifNull(mySelf, "Myself");
         this.archiveDirectory = archiveDirectory;
         // Default: Store unlimited # of files
@@ -130,7 +128,7 @@ public class FileArchiver {
     {
         Reject.notNull(fileInfo, "fileInfo");
         Reject.notNull(source, "source");
-        
+
         if (versionsPerFile == 0) {
             // Optimization for zero-archive
             if (!forceKeepSource) {
