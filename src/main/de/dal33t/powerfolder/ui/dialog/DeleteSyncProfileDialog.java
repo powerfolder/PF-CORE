@@ -19,21 +19,26 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Dialog for creatigng or editing profile configuration. User can select a
@@ -97,11 +102,17 @@ public class DeleteSyncProfileDialog extends BaseDialog
         SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
 
         // Message
-        builder.add(new JLabel("Delete profile " + syncProfile.getName() +
-                '?'), cc.xyw(1, 1, 3));
+        builder
+            .add(
+                new JLabel(Translation.getTranslation(
+                    "transfer_mode.delete.profile",
+                    (syncProfile.getName() + '?'))), cc.xyw(1, 1, 3));
 
         // Substitute
-        builder.add(new JLabel("Substitute with profile"), cc.xy(1, 3));
+        builder.add(
+            new JLabel(Translation
+                .getTranslation("transfer_mode.substitute.profile")), cc.xy(1,
+                3));
         builder.add(syncProfilesCombo, cc.xy(3, 3));
 
         return builder.getPanel();
