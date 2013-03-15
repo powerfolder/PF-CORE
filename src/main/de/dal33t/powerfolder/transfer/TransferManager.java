@@ -3109,9 +3109,16 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        logInfo((download ? "Download" : "Upload") + " completed: "
-            + Format.formatDecimal(fInfo.getSize()) + " bytes in " + took
-            / 1000 + "s (" + cpsStr + " KByte/s): " + fInfo + memberInfo);
+        if (isInfo()) {
+            String msg = (download ? "Download" : "Upload") + " completed: "
+                + Format.formatDecimal(fInfo.getSize()) + " bytes in " + took
+                / 1000 + "s (" + cpsStr + " KByte/s): " + fInfo + memberInfo;
+            if (fInfo.getFolderInfo().isMetaFolder()) {
+                logFine(msg);
+            } else {
+                logInfo(msg);
+            }
+        }
     }
 
     // Event/Listening code ***************************************************
