@@ -598,7 +598,10 @@ public class FolderScanner extends PFComponent {
                     FileInfo changedFile = exists.syncFromDiskIfRequired(
                         currentScanningFolder, fileToScan);
                     if (changedFile != null) {
-                        if (isInfo()) {
+                        if (isInfo()
+                            && currentScanningFolder.getDiskItemFilter()
+                                .isRetained(changedFile))
+                        {
                             logInfo("Change detected: "
                                 + exists.toDetailString() + ". On disk: size: "
                                 + fileToScan.length() + ", lastMod: "
