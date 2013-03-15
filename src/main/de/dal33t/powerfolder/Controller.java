@@ -146,8 +146,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 8;
     private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 11;
-
+    private static final int REVISION_VERSION = 14;
     /**
      * Program version.
      */
@@ -386,7 +385,7 @@ public class Controller extends PFComponent {
             Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
                 "Controller-Thread-"));
 
-        // Initalize resouce bundle eager
+        // Initialize resource bundle eager
         // check forced language file from commandline
         if (commandLine != null && commandLine.hasOption("f")) {
             String langfilename = commandLine.getOptionValue("f");
