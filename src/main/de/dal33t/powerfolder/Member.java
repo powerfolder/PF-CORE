@@ -2494,9 +2494,9 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (oldValue != server) {
             
             if (!server) {
-                logInfo("Not longer server: " + this);
+                logFine("Not longer server: " + this);
             } else {
-                logInfo("Is server of cluster: " + this);
+                logFine("Is server of cluster: " + this);
             }
 
             // #2569: Server 2 server connection. don't wait for folder lists
