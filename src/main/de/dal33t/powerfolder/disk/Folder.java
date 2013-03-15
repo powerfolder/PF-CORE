@@ -419,9 +419,6 @@ public class Folder extends PFComponent {
             FileUtils.maintainDesktopIni(getController(), localBase);
         }
 
-        // #2047 Remove later after 4.3.0
-        FileUtils.setAttributesOnWindows(localBase, null, false);
-
         // Force the next time scan.
         recommendScanOnNextMaintenance();
 

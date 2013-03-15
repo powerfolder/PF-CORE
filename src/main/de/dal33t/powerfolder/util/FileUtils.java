@@ -603,6 +603,8 @@ public class FileUtils {
         }
     }
 
+    private static final long MS_15_MAR_2013 = 1363357334684L;
+    
     /**
      * Set / remove desktop ini in managed folders.
      * 
@@ -630,6 +632,10 @@ public class FileUtils {
         boolean iniExists = desktopIniFile.exists();
         boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
             .getValueBoolean(controller);
+        if (iniExists && desktopIniFile.lastModified() < MS_15_MAR_2013) {
+            // PFC-1500: Migration
+            iniExists = !desktopIniFile.delete();
+        }
         if (!iniExists && usePfIcon) {
             // Need to set up desktop ini.
             PrintWriter pw = null;
@@ -673,6 +679,7 @@ public class FileUtils {
 
                 // Hide the files
                 setAttributesOnWindows(desktopIniFile, true, true);
+                setAttributesOnWindows(directory, null, true);
 
                 // #2047: Now need to set folder as system for desktop.ini to
                 // work.
@@ -706,6 +713,7 @@ public class FileUtils {
         boolean iniExists = desktopIniFile.exists();
         if (iniExists) {
             desktopIniFile.delete();
+            setAttributesOnWindows(directory, null, false);
         }
     }
 
