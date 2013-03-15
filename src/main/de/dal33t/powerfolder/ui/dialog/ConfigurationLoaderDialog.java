@@ -77,6 +77,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
     private final Vector<String> serviceProviderUrls = new Vector<String>();
 
+    private String initialText;
     private JFrame frame;
     private JComboBox addressBox;
     private JComponent proxySettingsLabel;
@@ -87,6 +88,11 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
     private Object haltLock = new Object();
     private Trigger finishedTrigger;
 
+    public ConfigurationLoaderDialog(Controller controller, String initialText) {
+        super(controller);
+        this.initialText = initialText;
+    }
+    
     public ConfigurationLoaderDialog(Controller controller) {
         super(controller);
     }
@@ -212,10 +218,15 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
         addressBox = new JComboBox(serviceProviderUrls);
         addressBox.setEditable(true);
+        
         try {
             JTextField editorField = (JTextField) addressBox.getEditor()
                 .getEditorComponent();
-            editorField.setText("http://");
+            if (StringUtils.isNotBlank(initialText)) {
+                editorField.setText(initialText);
+            } else {                
+                editorField.setText("http://");
+            }
             editorField.setCaretPosition(editorField.getText().length());
         } catch (Exception e) {
             // Ignore
