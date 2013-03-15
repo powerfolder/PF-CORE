@@ -30,7 +30,13 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.UserDirectory;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Class to consolidate the settings for creating a folder. Used as constructor
@@ -93,12 +99,6 @@ public class FolderSettings {
      * The synchronization profile for the folder (manual, backup, etc)
      */
     private final SyncProfile syncProfile;
-
-    /**
-     * Whether an invitation file should be created at the time the folder is
-     * constructed.
-     */
-    private final boolean createInvitationFile;
 
     /**
      * The number of archive versions to keep
@@ -190,7 +190,6 @@ public class FolderSettings {
         this.localBaseDir = localBaseDir;
         this.commitDir = commitDir;
         this.syncProfile = syncProfile;
-        this.createInvitationFile = createInvitationFile;
         this.previewOnly = previewOnly;
         this.downloadScript = downloadScript;
         this.versions = versions;
@@ -225,7 +224,7 @@ public class FolderSettings {
     }
 
     public boolean isCreateInvitationFile() {
-        return createInvitationFile;
+        return false;
     }
 
     public int getVersions() {
