@@ -2024,6 +2024,10 @@ public class Folder extends PFComponent {
     }
 
     private boolean checkRevertLocalChanges(FileInfo fileInfo) {
+        if (getConnectedMembersCount() == 0) {
+            // Don't check anything. No other partner. Keep everything
+            return false;
+        }
         FileInfo newestVersion = fileInfo.getNewestVersion(getController()
             .getFolderRepository());
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
@@ -2716,9 +2720,9 @@ public class Folder extends PFComponent {
             // Skip.
             return;
         }
+
         if (isFine()) {
-            logFine("Deleting files, which are deleted by friends. con-members: "
-                + Arrays.asList(getConnectedMembers()));
+            logFine("Sync Remote file deltions with: " + collection);
         }
 
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
@@ -2813,17 +2817,28 @@ public class Folder extends PFComponent {
 
         // Add to local file to database if was deleted on remote
         if (localFile == null) {
-            remoteFile = correctFolderInfo(remoteFile);
-            store(getController().getMySelf(), remoteFile);
-            localFile = getFile(remoteFile);
-            // File has been marked as removed at our side
-            removedFiles.add(localFile);
+            long removeBefore = System.currentTimeMillis()
+                - 1000L
+                * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
+                    .getValueInt(getController());
+            if (remoteFile.getModifiedDate().getTime() > removeBefore) {
+                if (isFine()) {
+                    logFine("Taking over deletion file info: "
+                        + remoteFile.toDetailString());
+                }
+                // Take over info
+                remoteFile = correctFolderInfo(remoteFile);
+                store(getController().getMySelf(), remoteFile);
+                localFile = getFile(remoteFile);
+                // File has been marked as removed at our side
+                removedFiles.add(localFile);
+            }
             return;
         }
         if (localFile.isDeleted()) {
             if (remoteFile.isNewerThan(localFile)) {
                 if (isFine()) {
-                    logFine("Taking over deletion file info: "
+                    logFine("Taking over new deletion file info: "
                         + remoteFile.toDetailString());
                 }
                 // Take over modification infos
