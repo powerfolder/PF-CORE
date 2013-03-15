@@ -32,8 +32,8 @@ import com.jgoodies.forms.layout.LayoutMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Reject;
@@ -229,11 +229,6 @@ public abstract class PFWizardPanel extends WizardPanel {
         pageBuilder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI)), cc
             .xywh(1, row, 2, 1, "left, default"));
         row += 2;
-
-        if (controller.isVerbose()) {
-            String className = getClass().getName();
-            title += " (" + className.substring(className.lastIndexOf('.') + 1) + ')';
-        }
         
         titleLabel = createTitleLabel(title);
         pageBuilder.add(titleLabel, cc.xy(2, row));
