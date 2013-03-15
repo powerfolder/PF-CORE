@@ -427,6 +427,20 @@ public class FileTransferTest extends TwoControllerTestCase {
                 download);
         }
     }
+    
+    /**
+     * 
+     */
+    private void clearCompletedDownloadsAtBart() {
+        // Clear completed downloads
+        Collection<DownloadManager> list = getContollerBart()
+            .getTransferManager().getCompletedDownloadsCollection();
+        for (DownloadManager download : list) {
+            getContollerBart().getTransferManager().clearCompletedDownload(
+                download);
+        }
+    }
+
 
     /**
      * Tests the copy of a big file. approx. 10 megs.
@@ -633,72 +647,72 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
-            TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+            TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         }
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getKnownItemCount() == 35;
+                return getFolderAtLisa().getKnownItemCount() == 35;
             }
 
             public String message() {
                 return "Known files at bart: "
-                    + getFolderAtBart().getKnownItemCount() + " Expected: "
+                    + getFolderAtLisa().getKnownItemCount() + " Expected: "
                     + 35;
             }
         });
-        assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
-        assertEquals("Connected nodes at bart: "
-            + getContollerBart().getNodeManager().getConnectedNodes(), 1,
-            getContollerBart().getNodeManager().getConnectedNodes().size());
+        assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         assertEquals("Connected nodes at lisa: "
             + getContollerLisa().getNodeManager().getConnectedNodes(), 1,
             getContollerLisa().getNodeManager().getConnectedNodes().size());
+        assertEquals("Connected nodes at bart: "
+            + getContollerBart().getNodeManager().getConnectedNodes(), 1,
+            getContollerBart().getNodeManager().getConnectedNodes().size());
 
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(200, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.downloadRequested >= nFiles
-                    && lisasListener.downloadCompleted >= nFiles
-                    && bartsListener.uploadCompleted >= nFiles;
+                return bartsListener.downloadRequested >= nFiles
+                    && bartsListener.downloadCompleted >= nFiles
+                    && lisasListener.uploadCompleted >= nFiles;
             }
 
             public String message() {
-                return "lisa dl req: " + lisasListener.downloadRequested
-                    + ", lisa dl comp: " + lisasListener.downloadCompleted
-                    + ", bart ul comp: " + bartsListener.uploadCompleted
+                return "bart dl req: " + bartsListener.downloadRequested
+                    + ", bart dl comp: " + bartsListener.downloadCompleted
+                    + ", lisas ul comp: " + lisasListener.uploadCompleted
                     + " should be " + nFiles;
             }
         });
 
         // Check correct event fireing
-        assertEquals(0, bartsListener.uploadAborted);
-        assertEquals(0, bartsListener.uploadBroken);
-        assertEquals(nFiles, bartsListener.uploadRequested);
-        assertEquals(nFiles, bartsListener.uploadStarted);
-        assertEquals(nFiles, bartsListener.uploadCompleted);
+        assertEquals(0, lisasListener.uploadAborted);
+        assertEquals(0, lisasListener.uploadBroken);
+        assertEquals(nFiles, lisasListener.uploadRequested);
+        assertEquals(nFiles, lisasListener.uploadStarted);
+        assertEquals(nFiles, lisasListener.uploadCompleted);
 
         // Check correct event fireing
-        assertEquals(nFiles, lisasListener.downloadRequested);
+        assertEquals(nFiles, bartsListener.downloadRequested);
         // We can't rely on that all downloads have been queued.
         // Might be started fast! So now queued message is sent
         // assertEquals(nFiles, lisasListener.downloadQueued);
-        assertEquals(nFiles, lisasListener.downloadStarted);
-        assertEquals(nFiles, lisasListener.downloadCompleted);
-        assertEquals(0, lisasListener.downloadAborted);
-        assertEquals(0, lisasListener.downloadBroken);
-        assertEquals(0, lisasListener.downloadsCompletedRemoved);
+        assertEquals(nFiles, bartsListener.downloadStarted);
+        assertEquals(nFiles, bartsListener.downloadCompleted);
+        assertEquals(0, bartsListener.downloadAborted);
+        assertEquals(0, bartsListener.downloadBroken);
+        assertEquals(0, bartsListener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
+        assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
+        assertEquals(nFiles + 1, getFolderAtBart().getLocalBase().list().length);
 
         // No active downloads?!
-        assertEquals(0, getContollerLisa().getTransferManager()
+        assertEquals(0, getContollerBart().getTransferManager()
             .countActiveDownloads());
 
-        clearCompletedDownloadsAtLisa();
-        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+        clearCompletedDownloadsAtBart();
+        assertEquals(nFiles, bartsListener.downloadsCompletedRemoved);
 
         TestHelper.assertIncompleteFilesGone(this);
     }
