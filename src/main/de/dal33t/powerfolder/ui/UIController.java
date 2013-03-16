@@ -384,12 +384,13 @@ public class UIController extends PFComponent {
         // Try to find path to the PowerFolder exe.
         File hereFile = new TFile("");
         String herePath = hereFile.getAbsolutePath();
-        String exeName = getController().getDistribution().getBinaryName() + ".exe";
+        String exeName = getController().getDistribution().getBinaryName()
+            + ".exe";
         File powerFolderFile = new TFile(herePath, exeName);
-        if (!powerFolderFile.exists()) {
+        if (!powerFolderFile.exists() && OSUtil.isWindowsSystem()) {
             // Try harder
-            powerFolderFile = new TFile(WinUtils.getProgramInstallationPath(), exeName);
-
+            powerFolderFile = new TFile(WinUtils.getProgramInstallationPath(),
+                exeName);
             if (!powerFolderFile.exists()) {
                 return;
             }
