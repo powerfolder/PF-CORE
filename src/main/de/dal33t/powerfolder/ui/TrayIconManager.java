@@ -149,7 +149,7 @@ public class TrayIconManager extends PFComponent {
         StringBuilder tooltip = new StringBuilder();
 
         tooltip.append(Translation.getTranslation("general.application.name") + ' ' + Controller.PROGRAM_VERSION);
-        tooltip.append('\n');
+        tooltip.append(" \n");
 
         Image image;
 
