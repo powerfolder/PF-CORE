@@ -165,7 +165,11 @@ public class TrayIconManager extends PFComponent {
             tooltip.append(Translation.getTranslation("systray.tooltip.no_folders"));
         } else if (event.equals(SYNCING)) {
             syncing = true;
-            image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[atomicAngle.get()]);
+            if (isHiRes()) {
+                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_HI_RES[atomicAngle.get()]);
+            } else {
+                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_LOW_RES[atomicAngle.get()]);
+            }
             if (trayIcon != null) {
                 trayIcon.setImage(image);
             }
@@ -205,7 +209,7 @@ public class TrayIconManager extends PFComponent {
     private void spinIcon() {
         if (atomicSyncing.get()) {
             int i = atomicAngle.incrementAndGet();
-            if (i >= Icons.SYSTRAY_SYNC_ANIMATION.length) {
+            if (i >= Icons.SYSTRAY_SYNC_ANIMATION_HI_RES.length) {
                 atomicAngle.set(0);
                 i = 0;
 
@@ -223,11 +227,26 @@ public class TrayIconManager extends PFComponent {
                 }
                 trayIcon.setToolTip(tooltip.toString());
             }
-            Image image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[i]);
+            Image image;
+            if (isHiRes()) {
+                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_HI_RES[i]);
+            } else {
+                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_LOW_RES[i]);
+            }
             if (trayIcon != null) {
                 trayIcon.setImage(image);
             }
         }
+    }
+
+    /**
+     * Display tray sync icon in hi resolution?
+     * JET needs to be low resolution, otherwise it looks rubbish.
+     *
+     * @return
+     */
+    private static boolean isHiRes() {
+        return !OSUtil.isJETRuntime();
     }
 
     /**

@@ -178,11 +178,17 @@ public class Icons {
         "sync09.icon", "sync10.icon", "sync11.icon"};
 
     public static final String SYSTRAY_ALL_OK = "systray_sync_complete.icon";
-    public static final String[] SYSTRAY_SYNC_ANIMATION = {
-        "systray_sync00.icon", "systray_sync01.icon", "systray_sync02.icon",
-        "systray_sync03.icon", "systray_sync04.icon", "systray_sync05.icon",
-        "systray_sync06.icon", "systray_sync07.icon", "systray_sync08.icon",
-        "systray_sync09.icon", "systray_sync10.icon", "systray_sync11.icon"};
+    public static final String[] SYSTRAY_SYNC_ANIMATION_LOW_RES = {
+        "systray_sync00LowRes.icon", "systray_sync01LowRes.icon", "systray_sync02LowRes.icon",
+        "systray_sync03LowRes.icon", "systray_sync04LowRes.icon", "systray_sync05LowRes.icon",
+        "systray_sync06LowRes.icon", "systray_sync07LowRes.icon", "systray_sync08LowRes.icon",
+        "systray_sync09LowRes.icon", "systray_sync10LowRes.icon", "systray_sync11LowRes.icon"};
+
+    public static final String[] SYSTRAY_SYNC_ANIMATION_HI_RES = {
+        "systray_sync00HiRes.icon", "systray_sync01HiRes.icon", "systray_sync02HiRes.icon",
+        "systray_sync03HiRes.icon", "systray_sync04HiRes.icon", "systray_sync05HiRes.icon",
+        "systray_sync06HiRes.icon", "systray_sync07HiRes.icon", "systray_sync08HiRes.icon",
+        "systray_sync09HiRes.icon", "systray_sync10HiRes.icon", "systray_sync11HiRes.icon"};
 
     public static final String SYSTRAY_WARNING = "systray_warning.icon";
     public static final String SYSTRAY_PAUSE = "systray_pause.icon";
