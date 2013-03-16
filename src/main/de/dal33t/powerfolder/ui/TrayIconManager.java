@@ -186,7 +186,7 @@ public class TrayIconManager extends PFComponent {
             image = Icons.getImageById(Icons.PENDING);
             tooltip.append(Translation.getTranslation("systray.tooltip.sync_incomplete"));
         } else if (event.equals(NOT_CONNECTED)) {
-            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
+            image = Icons.getImageById(Icons.PENDING);
             tooltip.append(Translation.getTranslation("systray.tooltip.not_connected"));
         } else if (event.equals(NOT_LOGGED_IN)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
