@@ -1,4 +1,122 @@
-PowerFolder Version 6.0 - http://www.powerfolder.com
+RowerFolder Client release notes
+
+Download: http://www.powerfolder.com/download.html
+http://download.powerfolder.com/pro/ReleaseNotes.txt
+
+Version 8.0
+-----------
+
+= Bugfixes =
+ * Automatically requested downloads are removed from the queue when switching sync profile
+ * Client shows incorrect sync percentage
+ * Optimized behavior of minimizing/maximizing the client windows
+ * Wrong error message when uploads are removed from the queue on the remote peer
+ * Prevent creation of folders by drap and drop if user does not have permission to create folders
+ * Activation information doesn't change after successful activation
+ * Download list does not update in real-time
+ * Fixed selection of directory path for local sync when entered path into textfield
+ * Popup buttons text is being cut off
+ * Windows to choose folder directory hides classic directory browser
+ * Default storage path doesn't fall back to default one if invalid
+ * Share link is not offered on directories in Windows context menu
+ * WebDAV registry changes to allow basic authentication are not applied
+ * Label for pausing files doesn't change to resume label
+
+= Improvements =
+ * Mount folders via WebDAV from a different server
+ * Remember cluster and relay servers for high-availability scenarios
+ * File details panel should have a close button on the upper right corner
+ * Improved transfer speed via LAN and internet
+ * Close preferences dialogue when performing software update
+ * Reworked members tab
+ * Displayed archive settings are not reflecting the real settings
+ * Option to create unsigned branded client edition in the build process
+ * Auto-detect program version from controller if not present in build-local.properties
+ * System-tray icon now shows a pending icon if folders sync status in unknown
+ * Option to automatically import existing directories as shared folders
+ * Vertical scrollbar for settings
+ * Removed first-time wizard
+ * Option to hide hidden files and folders in the filebrowser
+ * Simplified rights assignment when inviting users to a folder
+ * Removed chat options
+
+= New Feature =
+ * Option to restrict folders to be located in the default folder path
+ * Links to share files and directories from the client
+
+Please give us feedback and request improvements:
+http://www.powerfolder.com/contact.html
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features. We hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+Homepage   : http://www.powerfolder.com
+Contact    : http://www.powerfolder.com/about-us/contact.html
+Support    : http://www.powerfolder.com/support/support.html
+Email      : contact (at) powerfolder.com
+
+
+== Version History ==
+
+Version 7.0
+-----------
+
+= New features =
+ * Re-request downloads from closer sources if possible
+
+= Improvements =
+ * Folder list icon for folders to be synched
+ * High CPU usage when viewing a folder
+ * Simplify folder invitation wizard, show permission checkbox
+ * Remove Release Notes from the installer
+ * Add link to open the folder at the end of the wizard to join a folder
+ * Move output folder for installer build process
+ * Show warning when expected uploads to server will exceed the storage quota
+ * Link in folder setup wizard to open the folder in Explorer
+ * Display filesystem location in the filebrowser
+ * Check folder status before showing a synchronized status
+ * Account disabled is displayed when online sync is disabled
+ * Always show warning when standard folder directory is selected as new folder
+ * Standard folder directory changes back default when inaccessible during program startup
+ * Multi-source download in LAN environment enabled by default
+ * Remove duplicates from ignored list
+ * Automatically show folder list on first login when online folders are available
+ * Show mass deletion options only in expert mode
+ * Possibility to cleanup all conflict detections
+ * Compact mode main window no longer stays always on top
+ * French translation updates
+
+= Bugfixes =
+ * Client does not automatically restart after silent update
+ * Deleted files are not listed in the unsynchronized files view
+ * NullPointerException when removing folders from local sync
+ * Remove duplicate option for minimizing the client to systray
+ * Client does not start on Windows Vista
+ * Random deletion of files
+ * Client blocks computer shutdown
+ * Start with windows option can now be deselected under preferences
+ * Cleanup of configuration directory for branded clients
+ * Installer launches the client under the account used for elevation
+ * Introduce minimize button to compact mode
+ * File browser looses selection while syncing
+ * Web deletions are not properly synced to the client
+ * Some SSL root certificates are not accepted by the JET client
+ * Client creates duplicated files and directories in a folder
+ * Alignment of notices is not correct
+ * Specify server URL as installer command line parameter
+ * Unable to start UDT connections
+ 
+
+Version 6.0
+-----------
 
 = New features =
  * Brand new simplified user interface. PowerFolder now starts in "Compact mode", which
@@ -33,33 +151,8 @@ PowerFolder Version 6.0 - http://www.powerfolder.com
  * Explorer shell extensions now get correctly preserved during upgrade.
 
 
-Please give us feedback and request improvements:
-http://www.powerfolder.com/contact.html
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features. We hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-Homepage   : http://www.powerfolder.com
-Contact    : http://www.powerfolder.com/contact.html
-Support    : http://www.powerfolder.com/support.html
-Development: http://www.powerfolder.com/about_us.html
-Email      : contact (at) powerfolder.com
-
 Version 5.6.0
 -------------
-
-== Version History ==
 
 = Improvements/New features =
  * Free edition can now sync up to 2 GB of data.
