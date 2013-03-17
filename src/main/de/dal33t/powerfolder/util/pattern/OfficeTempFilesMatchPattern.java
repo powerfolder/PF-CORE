@@ -24,7 +24,7 @@ package de.dal33t.powerfolder.util.pattern;
  */
 public class OfficeTempFilesMatchPattern extends EndMatchPattern {
 
-    private char startChar;
+    private String startStr;
 
     /**
      * Constructor.
@@ -34,16 +34,16 @@ public class OfficeTempFilesMatchPattern extends EndMatchPattern {
      * @param endPattern
      *            e.g. ".tmp"
      */
-    public OfficeTempFilesMatchPattern(char startChar, String endPattern) {
+    public OfficeTempFilesMatchPattern(String startStr, String endPattern) {
         super(endPattern);
-        this.startChar = startChar;
+        this.startStr = startStr;
     }
 
     public boolean isMatch(String matchString) {
         if (!super.isMatch(matchString)) {
             return false;
         }
-        return matchString.indexOf(startChar) >= 0;
+        return matchString.indexOf(startStr) >= 0;
     }
 
 }

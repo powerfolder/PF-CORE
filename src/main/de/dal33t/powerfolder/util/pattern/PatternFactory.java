@@ -51,11 +51,17 @@ public class PatternFactory {
         } else if (patternText.indexOf('*') == patternText.length() - 1) {
             return new StartMatchPattern(patternText);
         } else if (patternText.toLowerCase().equalsIgnoreCase(
-            Pattern.OFFICE_TEMP))
+            DefaultExcludes.OFFICE_TEMP.getPattern()))
         {
             // This is a heuristisc but much quicker implementation for ignoring
             // office temp files.
-            return new OfficeTempFilesMatchPattern('~', "*.tmp");
+            return new OfficeTempFilesMatchPattern("~", "*.tmp");
+        } else if (patternText.toLowerCase().equalsIgnoreCase(
+            DefaultExcludes.OFFICEX_TEMP.getPattern()))
+        {
+            // This is a heuristisc but much quicker implementation for ignoring
+            // officex temp files.
+            return new OfficeTempFilesMatchPattern("~$", "*");
         } else {
             // Fallback solution: Works for all, but is not optimized.
             LOG.fine("Using fallback for pattern '" + patternText + "'");
