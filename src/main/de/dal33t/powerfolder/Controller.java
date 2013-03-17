@@ -1146,7 +1146,7 @@ public class Controller extends PFComponent {
                 logSevere("ConnectionException", e);
             }
         } else {
-            logWarning("Auto client discovery in LAN via broadcast disabled");
+            logInfo("Auto client discovery in LAN via broadcast disabled");
         }
     }
 
