@@ -1028,27 +1028,31 @@ public class Folder extends PFComponent {
             int items = getKnownItemCount();
             // Dynamically adapt fallback scan time.
             // The less files we have, the faster we scan.
-            // 0 files = every 30 seconds (MIN)
+            // 0 files = every minute (MIN)
             // 10.000 files = every minute
             // 50.000 files = every 5 minutes (MAX)
             // 130.000 files = every 5 minutes (MAX)
-            // If folder watch is not supported filesystem is scanned every 30 seconds
+            // If folder watch is not supported filesystem is scanned every minute
             int frequency = (int) (6L * items / 1000L);
+            int setFrequency = syncProfile.getSecondsBetweenScans();
+            if (setFrequency < 0) {
+                // No scanning supported
+                return false;
+            }
 
             // Min
-            if (frequency < THIRTY_SECONDS) {
-                frequency = THIRTY_SECONDS;
+            if (frequency < setFrequency) {
+                frequency = setFrequency;
             }
 
             // Max
             if (watcher.isSupported()) {
-                if (frequency > FIVE_MINUTES) {
+                if (!syncProfile.isCustom() && frequency > FIVE_MINUTES) {
                     frequency = FIVE_MINUTES;
                 }
             } else {
-                if (frequency > THIRTY_SECONDS) {
-                    frequency = THIRTY_SECONDS;
-                }
+                // Fallback for not supported watcher
+                frequency = setFrequency;
             }
 
             if (secondsSinceLastSync < frequency) {
@@ -2198,7 +2202,7 @@ public class Folder extends PFComponent {
         }
 
         if (syncProfile.isSyncDeletion()) {
-            triggerSyncRemoteDeletedFiles(members.keySet(), false);
+            triggerSyncRemoteDeletedFiles(members.keySet());
         }
         watcher.reconfigure(syncProfile);
         recommendScanOnNextMaintenance();
@@ -2683,14 +2687,13 @@ public class Folder extends PFComponent {
      * 
      * @param collection
      *            selected members to sync deletions with
-     * @param force
      */
     public void triggerSyncRemoteDeletedFiles(
-        final Collection<Member> collection, final boolean force)
+        final Collection<Member> collection)
     {
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
-                syncRemoteDeletedFiles(collection, force);
+                syncRemoteDeletedFiles(collection, false);
             }
         });
     }
