@@ -427,6 +427,38 @@ public class ServerClient extends PFComponent {
         return null;
     }
 
+    public String getWebURL(String uri, boolean withCredentials) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        String webURL = getWebURL();
+        if (StringUtils.isBlank(uri)) {
+            uri = "";
+        }
+        if (uri.startsWith("/")) {
+            uri = uri.substring(1);
+        }
+        if (!withCredentials
+            || !ConfigurationEntry.WEB_PASSWORD_ALLOWED
+                .getValueBoolean(getController()))
+        {
+            return webURL + '/' + uri;
+        }
+        String fullURL = getLoginURLWithCredentials();
+        try {
+            if (fullURL.contains("?")) {
+                fullURL += "&";
+            } else {
+                fullURL += "?";
+            }
+            fullURL += Constants.LOGIN_PARAM_ORIGINAL_URI + "="
+                + URLEncoder.encode(uri, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        return fullURL;
+    }
+
     /**
      * @return true if the connected server offers a web interface.
      */
@@ -765,9 +797,9 @@ public class ServerClient extends PFComponent {
                 passwordObf = thePasswordObj;
                 saveLastKnowLogin();
                 if (!server.isConnected() || StringUtils.isBlank(passwordObf)) {
-//                    if (!server.isConnected()) {
-//                        findAlternativeServer();
-//                    }
+                    // if (!server.isConnected()) {
+                    // findAlternativeServer();
+                    // }
                     setAnonAccount();
                     fireLogin(accountDetails);
                     return accountDetails.getAccount();
