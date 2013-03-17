@@ -594,6 +594,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 .hasPermission(FolderCreatePermission.INSTANCE))
             {
                 if (getController().isUIEnabled()) {
+                    getController().getUIController().getMainFrame().toFront();
                     DialogFactory.genericDialog(getController(),
                             Translation.getTranslation("remote_command_manager.make_folder.error_title"),
                             Translation.getTranslation("remote_command_manager.make_folder.error_message", name),
