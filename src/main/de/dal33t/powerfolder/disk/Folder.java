@@ -480,6 +480,11 @@ public class Folder extends PFComponent {
         }
 
         watcher = new FolderWatcher(this);
+        
+        // PFC-2318: Workaround
+        if (diskItemFilter.getPatterns().isEmpty()) {
+            addDefaultExcludes();
+        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -1703,10 +1708,6 @@ public class Folder extends PFComponent {
         loadLastSyncDate();
         diskItemFilter.loadPatternsFrom(new TFile(getSystemSubDir0(),
             DiskItemFilter.PATTERNS_FILENAME), false);
-        if (diskItemFilter.getPatterns().isEmpty()) {
-            // PFC-2318: Workaround
-            addDefaultExcludes();
-        }
     }
 
     /**
