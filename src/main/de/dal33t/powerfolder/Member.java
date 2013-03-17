@@ -1034,11 +1034,15 @@ public class Member extends PFComponent implements Comparable<Member> {
         for (Folder folder : foldersJoined) {
             // Trigger filerequesting. we may want re-request files on a
             // folder he joined.
-            getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting(folder.getInfo());
+            if (folder.getSyncProfile().isAutodownload()) {
+                getController().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting(folder.getInfo());
+            }
             if (folder.getSyncProfile().isSyncDeletion()) {
-                folder.triggerSyncRemoteDeletedFiles(
-                    Collections.singleton(this), false);
+                folder.syncRemoteDeletedFiles(Collections.singleton(this),
+                    false);
+                // folder.triggerSyncRemoteDeletedFiles(Collections
+                // .singleton(this));
             }
         }
 
