@@ -263,7 +263,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
 
         public EnableAction(Controller controller, SelectionModel selectionModel)
         {
-            super("plugin_enable", controller, selectionModel);
+            super("preferences.plugin.enable", controller, selectionModel);
             setEnabled(false);
         }
 
@@ -297,18 +297,18 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
                 setEnabled(true);
                 if (getController().getPluginManager().isEnabled(plugin)) {
                     putValue(NAME, Translation
-                        .getTranslation("preferences.plugin.disable_name"));
+                        .getTranslation("preferences.plugin.disable.name"));
                     putValue(SHORT_DESCRIPTION, Translation
-                        .getTranslation("preferences.plugin.disable_description"));
+                        .getTranslation("preferences.plugin.disable.description"));
                     putValue(ACCELERATOR_KEY, Translation
-                        .getTranslation("preferences.plugin.disable_key"));
+                        .getTranslation("preferences.plugin.disable.key"));
                 } else {
                     putValue(NAME, Translation
-                        .getTranslation("preferences.plugin.enable_name"));
+                        .getTranslation("preferences.plugin.enable.name"));
                     putValue(SHORT_DESCRIPTION, Translation
-                        .getTranslation("preferences.plugin.enable_description"));
+                        .getTranslation("preferences.plugin.enable.description"));
                     putValue(ACCELERATOR_KEY, Translation
-                        .getTranslation("preferences.plugin.enable_key"));
+                        .getTranslation("preferences.plugin.enable.key"));
                 }
             }
         }
@@ -320,7 +320,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
         public SettingsAction(Controller controller,
             SelectionModel selectionModel)
         {
-            super("plugin_settings", controller, selectionModel);
+            super("preferences.plugin.settings", controller, selectionModel);
             setEnabled(false);
         }
 
