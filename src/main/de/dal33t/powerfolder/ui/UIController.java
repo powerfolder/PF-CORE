@@ -1289,9 +1289,15 @@ public class UIController extends PFComponent {
         if (fileInfo.getFolderInfo().isMetaFolder()) {
             return;
         }
+        if (fileInfo.getFolder(getController().getFolderRepository())
+            .getDiskItemFilter().isExcluded(fileInfo))
+        {
+            return;
+        }
         synchronized (recentlyChangedFiles) {
 
-            // Only keep latest version of any particular file; remove earlier versions.
+            // Only keep latest version of any particular file; remove earlier
+            // versions.
             for (Iterator<Long> iterator = recentlyChangedFiles.keySet().iterator(); iterator.hasNext(); ) {
                 Long next = iterator.next();
                 FileInfo info = recentlyChangedFiles.get(next);
