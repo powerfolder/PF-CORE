@@ -19,16 +19,6 @@
  */
 package de.dal33t.powerfolder.net;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.message.Ping;
-import de.dal33t.powerfolder.util.NamedThreadFactory;
-import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.WrapperExecutorService;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -38,6 +28,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.util.NamedThreadFactory;
+import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.WrapperExecutorService;
 
 /**
  * Provides basic IO stuff.
@@ -85,14 +85,14 @@ public class IOProvider extends PFComponent {
         conHanFactory = new ConnectionHandlerFactory(controller);
         keepAliveList = new CopyOnWriteArrayList<ConnectionHandler>();
         relayedConManager = new RelayedConnectionManager(controller);
-        udtConManager = new UDTSocketConnectionManager(controller, Range
-            .getRangeByNumbers(1024, 65535));
+        udtConManager = new UDTSocketConnectionManager(controller,
+            Range.getRangeByNumbers(1024, 65535));
     }
 
     public void start() {
         // For basic IO
-        ioThreadPool = new WrapperExecutorService(Executors
-            .newCachedThreadPool(new NamedThreadFactory("IOThread-")));
+        ioThreadPool = new WrapperExecutorService(
+            Executors.newCachedThreadPool(new NamedThreadFactory("IOThread-")));
         started = true;
         getController().scheduleAndRepeat(new KeepAliveChecker(),
             TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
@@ -138,24 +138,6 @@ public class IOProvider extends PFComponent {
 
     public UDTSocketConnectionManager getUDTSocketConnectionManager() {
         return udtConManager;
-    }
-
-    /**
-     * Starts the sender and receiver IO in the global threadpool.
-     * 
-     * @param ioSender
-     *            the io sender
-     * @param ioReceiver
-     *            the io receiver
-     */
-    public void startIO(Runnable ioSender, Runnable ioReceiver) {
-        Reject.ifNull(ioSender, "IO Sender is null");
-        Reject.ifNull(ioReceiver, "IO Receiver is null");
-        if (isFiner()) {
-            logFiner("Starting IO for " + ioSender + " " + ioReceiver);
-        }
-        startIO(ioSender);
-        startIO(ioReceiver);
     }
 
     /**
