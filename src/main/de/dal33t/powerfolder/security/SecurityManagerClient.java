@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ public class SecurityManagerClient extends PFComponent implements
 {
 
     private static final boolean CACHE_ENABLED = true;
+    private static final int MAX_REQUEST_ACCOUNT_INFOS = 21;
 
     private static final AccountInfo NULL_ACCOUNT = new AccountInfo(null, null)
     {
@@ -163,8 +165,8 @@ public class SecurityManagerClient extends PFComponent implements
                             hasPermission = null;
                         }
                         if (hasPermission == null) {
-                            hasPermission = retrievePermission(
-                                accountInfo, permission, cache);
+                            hasPermission = retrievePermission(accountInfo,
+                                permission, cache);
                             source = "recvd";
                             if (isFine()) {
                                 logFine("(" + source + ") "
@@ -367,11 +369,17 @@ public class SecurityManagerClient extends PFComponent implements
             if (!client.isConnected()) {
                 return;
             }
-            Collection<MemberInfo> reqNodes = new ArrayList<MemberInfo>(nodes
-                .size());
+            Collection<MemberInfo> reqNodes = new ArrayList<MemberInfo>(
+                nodes.size());
+            Map<MemberInfo, AccountInfo> res = new HashMap<MemberInfo, AccountInfo>();
             for (Member node : nodes) {
                 if (forceRefresh || !sessions.containsKey(node)) {
                     reqNodes.add(node.getInfo());
+                    if (reqNodes.size() >= MAX_REQUEST_ACCOUNT_INFOS) {
+                        res.putAll(client.getSecurityService().getAccountInfos(
+                            reqNodes));
+                        reqNodes.clear();
+                    }
                 }
             }
             if (reqNodes.isEmpty()) {
@@ -381,16 +389,14 @@ public class SecurityManagerClient extends PFComponent implements
                 logFine("Pre-fetching account infos for " + nodes.size()
                     + " nodes");
             }
-            if (reqNodes.size() > 50) {
+            if (reqNodes.size() > MAX_REQUEST_ACCOUNT_INFOS) {
                 logWarning("Pre-fetching account infos for many nodes ("
                     + nodes.size() + ")");
             }
-            Map<MemberInfo, AccountInfo> res = client.getSecurityService()
-                .getAccountInfos(reqNodes);
+            res.putAll(client.getSecurityService().getAccountInfos(reqNodes));
             if (isFine()) {
                 logFine("Retrieved " + res.size() + " AccountInfos for "
-                    + reqNodes.size() + " requested of " + nodes.size()
-                    + " nodes: " + res);
+                    + nodes.size() + " nodes: " + res);
             }
             for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
                 Member node = entry.getKey().getNode(getController(), false);
@@ -522,7 +528,7 @@ public class SecurityManagerClient extends PFComponent implements
             }
         }
     }
-    
+
     private class MyServerClientListener implements ServerClientListener {
 
         public boolean fireInEventDispatchThread() {
