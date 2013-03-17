@@ -531,7 +531,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
 
         if (isInfo()) {
-            logInfo("Download completed: " + fileInfo.toDetailString());
+            if (fileInfo.getFolderInfo().isMetaFolder()) {
+                logFine("Download completed: " + fileInfo.toDetailString());    
+            } else {
+                logInfo("Download completed: " + fileInfo.toDetailString());
+            }
         }
 
         setTransferState(TransferState.DONE, 1);
