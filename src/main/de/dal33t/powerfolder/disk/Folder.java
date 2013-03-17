@@ -110,7 +110,7 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.pattern.Pattern;
+import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
@@ -4375,11 +4375,9 @@ public class Folder extends PFComponent {
             DiskItemFilter.PATTERNS_FILENAME);
         boolean init = !pFile.exists();
 
-        addPattern(Pattern.THUMBS_DB);
-        addPattern(Pattern.OFFICE_TEMP);
-        addPattern(FileUtils.DESKTOP_INI_FILENAME);
-        addPattern(Pattern.DS_STORE);
-        addPattern(Pattern.ITHUMB);
+        for (DefaultExcludes pattern : DefaultExcludes.values()) {
+            addPattern(pattern.getPattern());
+        }
 
         if (WinUtils.getAppDataCurrentUser() != null
             && localBase.getAbsolutePath().equals(
