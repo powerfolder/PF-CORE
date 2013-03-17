@@ -241,12 +241,12 @@ public class TrayIconManager extends PFComponent {
 
     /**
      * Display tray sync icon in hi resolution?
-     * JET needs to be low resolution, otherwise it looks rubbish.
+     * Linux needs to be low resolution, otherwise it looks rubbish.
      *
      * @return
      */
     private static boolean isHiRes() {
-        return !OSUtil.isJETRuntime();
+        return !OSUtil.isLinux();
     }
 
     /**
