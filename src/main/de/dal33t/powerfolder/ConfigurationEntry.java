@@ -210,7 +210,7 @@ public enum ConfigurationEntry {
     /**
      * The optional url of the server.
      */
-    SERVER_WEB_URL("server.url", "https://access.powerfolder.com"),
+    SERVER_WEB_URL("server.url", "https://my.powerfolder.com"),
 
     /**
      * The node id of the server to connect to. Not mandatory but at
@@ -226,7 +226,7 @@ public enum ConfigurationEntry {
     SERVER_HOST("server.host", "os003.powerfolder.com:1337"),
 
     /**
-     * HTTP tunnel relay URL. TODO Change config key.
+     * HTTP tunnel relay URL.
      */
     SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
         "http://os005.powerfolder.com/rpc"),
