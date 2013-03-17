@@ -372,15 +372,28 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
         Reject.ifFalse(columnIndex == COL_PERMISSION,
             "Unable to set value in MembersTableModel; not editable");
         FolderMember folderMember = getFolderMemberAt(rowIndex);
+        FolderPermission newPermission = (FolderPermission) aValue;
         if (folderMember == null) {
             return;
         }
-        if (folderMember.getAccountInfo() == null) {
-            logSevere("Unable to set permission. No account for "
-                + folderMember.getMember());
-            return;
+        if (newPermission == null) {
+            if (folderMember.getMember().isServer()) {
+                // REMOVE FROM CLOUD
+                getController().getIOProvider().startIO(new Runnable() {
+                    public void run() {
+                        getController().getOSClient().getFolderService()
+                            .removeFolder(folder.getInfo(), true, false);
+                    }
+                });
+                return;
+            }
+            if (folderMember.getAccountInfo() == null
+                && folderMember.getMember() != null)
+            {
+                folder.remove(folderMember.getMember());
+                return;
+            }
         }
-        FolderPermission newPermission = (FolderPermission) aValue;
         if (!Util.equals(newPermission, folderMember.getPermission())) {
             if (newPermission instanceof FolderOwnerPermission) {
                 // Show warning
@@ -634,28 +647,38 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             // Take "better" AccountInfo.
             if (aInfo != null) {
                 for (Serializable caInfo : permInfo.keySet()) {
-                    if (caInfo instanceof AccountInfo && aInfo.equals((AccountInfo)caInfo)) {
-                        aInfo = (AccountInfo)caInfo;
+                    if (caInfo instanceof AccountInfo
+                        && aInfo.equals((AccountInfo) caInfo))
+                    {
+                        aInfo = (AccountInfo) caInfo;
                     }
                 }
             }
-            else {
-                // probably a group
-                continue;
-            }
 
-            FolderPermission folderPermission = permInfo.get(aInfo);
-            boolean changeable = true;
-            if (folderPermission == null && aInfo.getOID() != null) {
-                folderPermission = getAllFolderPermission(aInfo, folder.getInfo());
-                if (folderPermission != null) {
-                    changeable = false;
+            if (aInfo != null) {
+                FolderPermission folderPermission = permInfo.get(aInfo);
+                boolean changeable = true;
+                if (folderPermission == null && aInfo.getOID() != null) {
+                    folderPermission = getAllFolderPermission(aInfo,
+                        folder.getInfo());
+                    if (folderPermission != null) {
+                        changeable = false;
+                    }
                 }
+                FolderMember folderMember = new FolderMember(folder, member,
+                    aInfo, null, folderPermission, changeable);
+                members.add(folderMember);
+            } else if (member.isServer()) {
+                FolderMember folderMember = new FolderMember(folder, member,
+                    null, null, FolderPermission.readWrite(folder.getInfo()),
+                    false);
+                members.add(folderMember);
+            } else  {
+                FolderMember folderMember = new FolderMember(folder, member,
+                    null, null, null,
+                    true);
+                members.add(folderMember);
             }
-
-            FolderMember folderMember = new FolderMember(folder, member, aInfo,
-                null, folderPermission, changeable);
-            members.add(folderMember);
         }
         for (Member member : folder.getMembersAsCollection()) {
             AccountInfo aInfo = member.getAccountInfo();
