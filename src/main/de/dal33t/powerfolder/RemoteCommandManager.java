@@ -479,6 +479,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
         logWarning("Unable to copy file link. File not contained in a shared folder");
         if (getController().isUIEnabled()) {
+            getController().getUIController().getMainFrame().toFront();
             DialogFactory.genericDialog(getController(),
                     Translation.getTranslation("remote_command_manager.copy_link.error_title"),
                     Translation.getTranslation("remote_command_manager.copy_link.error_message", filename),

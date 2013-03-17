@@ -329,6 +329,9 @@ public final class FileInfoFactory {
     }
 
     protected static String buildFileName(File baseDirectory, File file) {
+        if (file.equals(baseDirectory)) {
+            return "";
+        }
         String fn = decodeIllegalChars(file.getName());
         if (fn.endsWith("/")) {
             fn = fn.substring(0, fn.length() - 1);
