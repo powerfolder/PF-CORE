@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.folders;
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -635,7 +634,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         openMembersInformationAction.setEnabled(enabled
             && !getController().isBackupOnly());
 
-        openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
+        openExplorerAction.setEnabled(enabled);
 
         // Controlled by permission system.
         // removeFolderAction.setEnabled(true);
@@ -1798,9 +1797,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 SettingsTab.doPreviewChange(getController(), folder);
             } else if (type == Type.Local) {
                 // Local - open it
-                if (Desktop.isDesktopSupported()) {
-                    openExplorer();
-                }
+                openExplorer();
             } else {
                 // Typical - ask to create.
                 askToCreateFolder();
