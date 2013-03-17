@@ -319,6 +319,9 @@ public class UIController extends PFComponent {
                     mainFrame.getUIComponent().setVisible(
                         !OSUtil.isSystraySupported()
                             || !getController().isStartMinimized());
+                    if (!getController().isStartMinimized()) {
+                        mainFrame.toFront();
+                    }
                 }
             });
         } catch (InterruptedException e) {
@@ -349,7 +352,6 @@ public class UIController extends PFComponent {
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().getFolderRepository().addFolderAutoCreateListener(
             new MyFolderAutoCreateListener());
-
     }
 
     /**
