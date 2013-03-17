@@ -480,9 +480,9 @@ public class Folder extends PFComponent {
         }
 
         watcher = new FolderWatcher(this);
-        
+
         // PFC-2318: Workaround
-        if (diskItemFilter.getPatterns().isEmpty()) {
+        if (diskItemFilter.getPatterns().isEmpty() && !isDeviceDisconnected()) {
             addDefaultExcludes();
         }
     }
