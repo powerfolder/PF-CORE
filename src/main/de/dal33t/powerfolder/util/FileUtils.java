@@ -603,8 +603,9 @@ public class FileUtils {
         }
     }
 
-    private static final long MS_15_MAR_2013 = 1363357334684L;
-    
+    private static final long MS_18_MAR_2013 = 1363357334684L + 1000L * 60 * 60
+        * 24 * 3;
+
     /**
      * Set / remove desktop ini in managed folders.
      * 
@@ -632,7 +633,8 @@ public class FileUtils {
         boolean iniExists = desktopIniFile.exists();
         boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
             .getValueBoolean(controller);
-        if (iniExists && desktopIniFile.lastModified() < MS_15_MAR_2013) {
+        // Migration to 8 SP1: Correct older folder icon setup
+        if (iniExists && desktopIniFile.lastModified() < MS_18_MAR_2013) {
             // PFC-1500: Migration
             iniExists = !desktopIniFile.delete();
         }
@@ -699,6 +701,7 @@ public class FileUtils {
         } else if (iniExists && !usePfIcon) {
             // Need to remove desktop ini.
             desktopIniFile.delete();
+            setAttributesOnWindows(directory, null, false);
         }
     }
 
