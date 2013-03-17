@@ -98,9 +98,9 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.WebDAV;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -427,7 +427,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                 cc.xy(2, row));
 
         } else {
-            if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
+            if (ConfigurationEntry.MEMBERS_ENABLED
+                .getValueBoolean(getController()))
+            {
                 lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
             }
             if (ConfigurationEntry.SERVER_INVITE_ENABLED
@@ -1124,7 +1126,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
             contextMenu.addSeparator();
-            if (ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
+            if (ConfigurationEntry.SETTINGS_ENABLED
+                .getValueBoolean(getController()))
+            {
                 contextMenu.add(openSettingsInformationAction).setIcon(null);
             }
             contextMenu.add(removeFolderLocalAction).setIcon(null);
@@ -1206,33 +1210,12 @@ public class ExpandableFolderView extends PFUIComponent implements
             public Object construct() throws Throwable {
                 try {
                     createWebDAVURL();
-                    Process process = Runtime.getRuntime().exec(
-                        "net use * \"" + webDAVURL + "\" /User:"
-                            + serverClient.getUsername() + ' '
-                            + serverClient.getPasswordClearText()
-                            + " /persistent:yes");
-                    byte[] out = StreamUtils.readIntoByteArray(process
-                        .getInputStream());
-                    String output = new String(out);
-                    byte[] err = StreamUtils.readIntoByteArray(process
-                        .getErrorStream());
-                    String error = new String(err);
-                    if (StringUtils.isEmpty(error)) {
-                        if (!StringUtils.isEmpty(output)) {
-                            // Looks like the link succeeded :-)
-                            return 'Y' + output;
-                        }
-                    } else {
-                        // Looks like the link failed :-(
-                        return 'N' + error;
-                    }
+                    return WebDAV.createConnection(serverClient, webDAVURL);
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
                     logSevere(e.getMessage(), e);
                     return 'N' + e.getMessage();
                 }
-                // Huh?
-                return null;
             }
 
             public void finished() {
@@ -1364,7 +1347,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void scanResultCommited(FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
-                doFolderChanges(folderEvent.getFolder());                
+                doFolderChanges(folderEvent.getFolder());
             }
         }
 
@@ -1582,9 +1565,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                         getController().getUIController().openFilesInformation(
                             folderInfo);
                     }
-                    if (type == Type.CloudOnly
-                        && folderInfo != null)
-                    {
+                    if (type == Type.CloudOnly && folderInfo != null) {
                         PFWizard.openOnlineStorageJoinWizard(getController(),
                             Collections.singletonList(folderInfo));
                     }
@@ -1810,8 +1791,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 // Join the folder locally.
                 PFWizard.openOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
-            } else if (type == Type.Local
-                && folder != null && folder.isPreviewOnly())
+            } else if (type == Type.Local && folder != null
+                && folder.isPreviewOnly())
             {
                 // Local Preview - want to change?
                 SettingsTab.doPreviewChange(getController(), folder);

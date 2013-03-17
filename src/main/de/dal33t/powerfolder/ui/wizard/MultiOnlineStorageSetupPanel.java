@@ -26,10 +26,21 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.swing.*;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import jwf.WizardPanel;
 
@@ -38,20 +49,24 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.UserDirectory;
+import de.dal33t.powerfolder.util.WebDAV;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -359,32 +374,11 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             public Object construct() throws Throwable {
                 try {
                     createWebDAVURL();
-                    Process process = Runtime.getRuntime().exec(
-                        "net use * \"" + webDAVURL + "\" /User:"
-                            + serverClient.getUsername() + ' '
-                            + serverClient.getPasswordClearText()
-                            + " /persistent:yes");
-                    byte[] out = StreamUtils.readIntoByteArray(process
-                        .getInputStream());
-                    String output = new String(out);
-                    byte[] err = StreamUtils.readIntoByteArray(process
-                        .getErrorStream());
-                    String error = new String(err);
-                    if (StringUtils.isEmpty(error)) {
-                        if (!StringUtils.isEmpty(output)) {
-                            // Looks like the link succeeded :-)
-                            return 'Y' + output;
-                        }
-                    } else {
-                        // Looks like the link failed :-(
-                        return 'N' + error;
-                    }
+                    return WebDAV.createConnection(serverClient, webDAVURL);
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
                     return 'N' + e.getMessage();
                 }
-                // Huh?
-                return null;
             }
 
             public void finished() {
