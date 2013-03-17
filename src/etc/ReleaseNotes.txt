@@ -674,7 +674,7 @@ Version 4.0.0
    http://www.powerfolder.com/wiki/Security_Permissions
  * Mass delete protection: PowerFolder detects unintended deletions and warns the user.
  * Play Music online / View Photos online! Share your photos and view them online as gallery.
-   https://access.powerfolder.com
+   https://my.powerfolder.com
  * Easy folder join: Securely access folders of own computers without invitation file.
  * Drag and drop support: Drag folders onto the interface to send, sync or backup these.
  * Invite other users quicker and easier. 
