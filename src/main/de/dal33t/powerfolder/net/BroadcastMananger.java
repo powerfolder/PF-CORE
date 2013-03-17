@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Listener, which listens for incoming broadcast messages
@@ -116,18 +117,20 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             // open multicast socket
             socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
 
-            InetAddress bindAddr;
+            InetAddress bindAddr = null;
             String bindIP = ConfigurationEntry.NET_BIND_ADDRESS
                 .getValue(getController());
             if (!StringUtils.isEmpty(bindIP)) {
                 bindAddr = InetAddress.getByName(bindIP);
-            } else {
+            } else if (OSUtil.isWindowsSystem()) {
                 // TRAC #466 - Windows Vista
                 bindAddr = InetAddress.getLocalHost();
             }
 
-            logFiner("Binding multicast on address: " + bindAddr);
-            socket.setInterface(bindAddr);
+            if (bindAddr != null) {
+                logFiner("Binding multicast on address: " + bindAddr);
+                socket.setInterface(bindAddr);
+            }
             socket.setSoTimeout((int) waitTime);
             socket.joinGroup(group);
             socket.setTimeToLive(65);
@@ -342,10 +345,15 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 if (getController().isStarted()
                     && !getController().getMySelf().isServer())
                 {
-                    // found another new node!!!
-                    node = getController().connect(address);
-                    node.setOnLAN(true);
-                    return true;
+                    if (ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                        .getValueBoolean(getController())
+                        || getController().getOSClient().isConnected())
+                    {
+                        // found another new node!!!
+                        node = getController().connect(address);
+                        node.setOnLAN(true);
+                        return true;
+                    }
                 }
             } catch (ConnectionException e) {
                 logFine("Unable to connect to node on subnet: " + address
