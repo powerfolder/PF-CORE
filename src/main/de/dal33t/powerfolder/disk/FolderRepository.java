@@ -1542,8 +1542,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         accountSyncLock.lock();
         try {
             logInfo("Syncing folder setup with account permissions("
-                + a.getFolders().size() + "): " + a.getUsername() + ", "
-                + a.getFolders());
+                + a.getFolders().size() + "): " + a.getUsername());
             Collection<FolderInfo> created = createLocalFolders(a);
             if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController()))
