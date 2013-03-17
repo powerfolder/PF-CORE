@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.pattern.CompiledPattern;
+import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.pattern.EndMatchPattern;
 import de.dal33t.powerfolder.util.pattern.ExactMatchPattern;
 import de.dal33t.powerfolder.util.pattern.OfficeTempFilesMatchPattern;
@@ -41,7 +42,8 @@ public class PatternMatchTest extends TestCase {
         assertTrue(p instanceof EndMatchPattern);
         p = PatternFactory.createPattern("dsd*kjskj");
         assertTrue(p instanceof CompiledPattern);
-        p = PatternFactory.createPattern(Pattern.OFFICE_TEMP);
+        p = PatternFactory.createPattern(DefaultExcludes.OFFICE_TEMP
+            .getPattern());
         assertTrue(p instanceof OfficeTempFilesMatchPattern);
     }
 
@@ -198,7 +200,7 @@ public class PatternMatchTest extends TestCase {
             fail("Illegal construction possible");
         } catch (Exception e) {
         }
-        
+
         assertFalse(new StartMatchPattern("sdfgkjh*").isMatch("sdf"));
         assertTrue(new StartMatchPattern("sdfgkjh*").isMatch("sdfgkjh"));
         assertTrue(new StartMatchPattern("sdfgkjh*").isMatch("SdFgKjH"));
@@ -256,7 +258,8 @@ public class PatternMatchTest extends TestCase {
 
         int nPatterns = 10000000;
         pe = Profiling.start("CompiledPatternThumbsDB");
-        Pattern pattern = new CompiledPattern(Pattern.THUMBS_DB);
+        Pattern pattern = new CompiledPattern(
+            DefaultExcludes.THUMBS_DB.getPattern());
         for (int i = 0; i < nPatterns; i++) {
             assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
             assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
@@ -264,7 +267,7 @@ public class PatternMatchTest extends TestCase {
         Profiling.end(pe);
 
         pe = Profiling.start("EndMatchPatternThumbsDB");
-        pattern = new EndMatchPattern(Pattern.THUMBS_DB);
+        pattern = new EndMatchPattern(DefaultExcludes.THUMBS_DB.getPattern());
         for (int i = 0; i < nPatterns; i++) {
             assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
             assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
@@ -280,10 +283,17 @@ public class PatternMatchTest extends TestCase {
         Profiling.end(pe);
 
         pe = Profiling.start("OfficeTempMatchPatternThumbsDB");
-        pattern = new OfficeTempFilesMatchPattern('~', "*.tmp");
+        pattern = new OfficeTempFilesMatchPattern("~", "*.tmp");
         for (int i = 0; i < nPatterns; i++) {
             assertFalse(pattern.isMatch("Programme\\test\\Thumbs.db"));
             assertTrue(pattern.isMatch("Users\\test\\~W8833453.tmp"));
+        }
+        
+        pe = Profiling.start("OfficeXTempMatchPatternThumbsDB");
+        pattern = new OfficeTempFilesMatchPattern("~$", "*");
+        for (int i = 0; i < nPatterns; i++) {
+            assertFalse(pattern.isMatch("Programme\\test\\Thumbs.db"));
+            assertTrue(pattern.isMatch("Users\\test\\~$LAST Quotation.xlsx"));
         }
         Profiling.end(pe);
         System.err.println(Profiling.dumpStats());
