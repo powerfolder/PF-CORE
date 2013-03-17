@@ -1378,7 +1378,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         break;
                     }
                 }
-                if (!known && FileUtils.hasFiles(dir)) {
+                if (!known && FileUtils.hasContents(dir)) {
                     handleNewFolder(dir);
                 }
             }
