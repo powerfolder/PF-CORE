@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1125,6 +1126,27 @@ public class FileUtils {
     }
 
     /**
+     * @param base
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public static boolean hasContents(File base) {
+        Reject.ifNull(base, "Base is null");
+        Reject.ifFalse(base.isDirectory(), "Base is not folder");
+        String[] contents = base.list(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                    // Don't care about our .PowerFolder files, just the user's
+                    // stuff.
+                    return false;
+                }
+                return true;
+            }
+        });
+        return contents != null && contents.length > 0;
+    }
+
+    /**
      * Does a directory have any files, recursively? This ignores the
      * .PowerFolder dir.
      * 
@@ -1142,12 +1164,13 @@ public class FileUtils {
         if (depth > 100) {
             // Smells fishy. Should not be this deep into the structure.
         }
-        if (dir.getName().equals(".PowerFolder")) {
+        if (dir.getName().equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
             // Don't care about our .PowerFolder files, just the user's stuff.
             return false;
         }
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
+                // TODO THIS IS SLOW
                 if (hasFilesInternal(file, depth + 1)) {
                     // A subdirectory has a file; we're out of here.
                     return true;
