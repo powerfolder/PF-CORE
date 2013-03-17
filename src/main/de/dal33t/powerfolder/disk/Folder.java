@@ -1703,6 +1703,10 @@ public class Folder extends PFComponent {
         loadLastSyncDate();
         diskItemFilter.loadPatternsFrom(new TFile(getSystemSubDir0(),
             DiskItemFilter.PATTERNS_FILENAME), false);
+        if (diskItemFilter.getPatterns().isEmpty()) {
+            // PFC-2318: Workaround
+            addDefaultExcludes();
+        }
     }
 
     /**
