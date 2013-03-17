@@ -560,10 +560,12 @@ public class FolderScanner extends PFComponent {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
                 if (otherFInfo.getRelativeName().equalsIgnoreCase(filename)) {
-                    logFine("Found local diskfile with diffrent name-case in db. file: "
-                        + fileToScan.getAbsolutePath()
-                        + ", dbFile: "
-                        + otherFInfo.toDetailString());
+                    if (isFiner()) {
+                        logFiner("Found local diskfile with diffrent name-case in db. file: "
+                            + fileToScan.getAbsolutePath()
+                            + ", dbFile: "
+                            + otherFInfo.toDetailString());
+                    }
                     // if (fInfo.getRelativeName().equals(
                     // otherFInfo.getRelativeName())
                     // && !fInfo.equals(otherFInfo))
