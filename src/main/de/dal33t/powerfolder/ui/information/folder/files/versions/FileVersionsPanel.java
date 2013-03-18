@@ -276,7 +276,8 @@ public class FileVersionsPanel extends PFUIComponent {
                     }
                 } catch (Exception e) {
                     // Huh?
-                    logSevere(e);
+                    logWarning("Unabel to retrieve file versions for "
+                        + fileInfo.toDetailString() + "." + e);
                 }
             }
         });
