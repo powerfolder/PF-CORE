@@ -85,7 +85,7 @@ public class TrayIconManager extends PFComponent {
             return;
         }
         trayIcon = new TrayIcon(image);
-        trayIcon.setImageAutoSize(false);
+        trayIcon.setImageAutoSize(true);
         updateConnectionStatus();
         updateIcon(NOT_STARTED);
         getController().getUIController().getApplicationModel()
