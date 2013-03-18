@@ -19,26 +19,32 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
+
+import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import javax.swing.Action;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.DirectoryInfo;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.awt.event.ActionEvent;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.util.FileUtils;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard
@@ -213,9 +219,7 @@ public class TextPanelPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             Folder folder = folderInfo.getFolder(getController());
-            DirectoryInfo directoryInfo = folder.getBaseDirectoryInfo();
-            FileUtils.openFile(directoryInfo.getDiskFile(
-                    getController().getFolderRepository()));
+            FileUtils.openFile(folder.getLocalBase());
         }
     }
 
