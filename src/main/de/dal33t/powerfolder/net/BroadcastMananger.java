@@ -424,10 +424,11 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
             if (senderSockets != null) {
                 for (int i = 0; i < senderSockets.length; i++) {
-                    if (senderSockets[i] != null) {
+                    DatagramSocket senderSocket = senderSockets[i];
+                    if (senderSocket != null) {
                         try {
                             logFine("closing socket");
-                            senderSockets[i].close();
+                            senderSocket.close();
                         } catch (Exception e) {
                             logSevere("closing socket", e);
                         }
