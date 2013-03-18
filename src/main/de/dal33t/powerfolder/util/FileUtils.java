@@ -282,12 +282,23 @@ public class FileUtils {
                 log.warning("Unable to open file " + file + ". " + e);
                 return false;
             }
+        } else if (OSUtil.isLinux()) {
+            // PFC-2314: Workaround for missing Java Desktop
+            try {
+                Runtime.getRuntime().exec(
+                    "/usr/bin/xdg-open " + file.toURI().toString());
+                return true;
+            } catch (Exception e) {
+                log.warning("Unable to open file " + file + ". " + e);
+                return false;
+            }
         } else {
             log.warning("Unable to open file " + file
                 + ". Java Desktop not supported");
             return false;
         }
     }
+
 
     /**
      * Sets file attributes on windows system
