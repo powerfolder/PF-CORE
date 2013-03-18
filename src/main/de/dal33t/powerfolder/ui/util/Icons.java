@@ -61,6 +61,7 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.ui.TrayIconManager;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -177,28 +178,51 @@ public class Icons {
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
         "sync09.icon", "sync10.icon", "sync11.icon"};
 
-    public static final String SYSTRAY_ALL_OK = "systray_sync_complete.icon";
-    public static final String[] SYSTRAY_SYNC_ANIMATION_LOW_RES = {
-        "systray_sync00LowRes.icon", "systray_sync01LowRes.icon", "systray_sync02LowRes.icon",
-        "systray_sync03LowRes.icon", "systray_sync04LowRes.icon", "systray_sync05LowRes.icon",
-        "systray_sync06LowRes.icon", "systray_sync07LowRes.icon", "systray_sync08LowRes.icon",
-        "systray_sync09LowRes.icon", "systray_sync10LowRes.icon", "systray_sync11LowRes.icon"};
+    // Systray icons
+    public static final String[] SYSTRAY_SYNC_ANIMATION;
+    private static final String[] SYSTRAY_SYNC_ANIMATION_LOW_RES = {
+        "systray_sync00_lowres.icon", "systray_sync01_lowres.icon", "systray_sync02_lowres.icon",
+        "systray_sync03_lowres.icon", "systray_sync04_lowres.icon", "systray_sync05_lowres.icon",
+        "systray_sync06_lowres.icon", "systray_sync07_lowres.icon", "systray_sync08_lowres.icon",
+        "systray_sync09_lowres.icon", "systray_sync10_lowres.icon", "systray_sync11_lowres.icon"};
+    
+    private static final String[] SYSTRAY_SYNC_ANIMATION_HI_RES = {
+        "systray_sync00_hires.icon", "systray_sync01_hires.icon", "systray_sync02_hires.icon",
+        "systray_sync03_hires.icon", "systray_sync04_hires.icon", "systray_sync05_hires.icon",
+        "systray_sync06_hires.icon", "systray_sync07_hires.icon", "systray_sync08_hires.icon",
+        "systray_sync09_hires.icon", "systray_sync10_hires.icon", "systray_sync11_hires.icon"};
+    
+    public static final String SYSTRAY_SYNC_COMPLETE;
+    private static final String SYSTRAY_SYNC_COMPLETE_LOW_RES = "systray_sync_complete_lowres.icon";
+    private static final String SYSTRAY_SYNC_COMPLETE_HIGH_RES = "systray_sync_complete_hires.icon";
+    
+    public static final String SYSTRAY_SYNC_INCOMPLETE;
+    private static final String SYSTRAY_SYNC_INCOMPLETE_LOW_RES = "systray_sync_incomplete_lowres.icon";
+    private static final String SYSTRAY_SYNC_INCOMPLETE_HIGH_RES = "systray_sync_incomplete_hires.icon";
 
-    public static final String[] SYSTRAY_SYNC_ANIMATION_HI_RES = {
-        "systray_sync00HiRes.icon", "systray_sync01HiRes.icon", "systray_sync02HiRes.icon",
-        "systray_sync03HiRes.icon", "systray_sync04HiRes.icon", "systray_sync05HiRes.icon",
-        "systray_sync06HiRes.icon", "systray_sync07HiRes.icon", "systray_sync08HiRes.icon",
-        "systray_sync09HiRes.icon", "systray_sync10HiRes.icon", "systray_sync11HiRes.icon"};
-
-    public static final String SYSTRAY_WARNING = "systray_warning.icon";
-    public static final String SYSTRAY_PAUSE = "systray_pause.icon";
-
-    // Online state icons
-    public static final String CONNECTION_GOOD = "connection_good.icon";
-    public static final String CONNECTION_MEDIUM = "connection_medium.icon";
-    public static final String CONNECTION_POOR = "connection_poor.icon";
-    public static final String DISCONNECTED = "connected_not.icon";
-    public static final String PENDING = "pending.icon";
+    public static final String SYSTRAY_WARNING;
+    private static final String SYSTRAY_WARNING_LOW_RES = "systray_warning_lowres.icon";
+    private static final String SYSTRAY_WARNING_HIGH_RES = "systray_warning_hires.icon";
+    
+    public static final String SYSTRAY_PAUSE;
+    private static final String SYSTRAY_PAUSE_LOW_RES = "systray_pause_lowres.icon";
+    private static final String SYSTRAY_PAUSE_HIGH_RES = "systray_pause_hires.icon";
+    
+    static {
+        if (!TrayIconManager.isHiRes()) {
+            SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_LOW_RES;
+            SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_LOW_RES;
+            SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_RES;
+            SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_RES;
+            SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_RES;
+        } else {
+            SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_HI_RES;
+            SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_HIGH_RES;
+            SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_RES;
+            SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_RES;
+            SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_RES;
+        }
+    }
 
     // Wizard pictos from the quick info panels
     public static final String LOGO128X128 = "picto_logo_128.icon";

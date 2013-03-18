@@ -19,7 +19,18 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NO_FOLDERS;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.PAUSED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCHRONIZED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCING;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNC_INCOMPLETE;
+
+import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.TrayIcon;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,11 +48,9 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.*;
-
 /**
- * Encapsultes tray icon functionality. Anything to do with the tray icon
- * should be done *HERE*. This keeps all tray functionality encapsulated.
+ * Encapsultes tray icon functionality. Anything to do with the tray icon should
+ * be done *HERE*. This keeps all tray functionality encapsulated.
  * <p/>
  * Blink has the highest priority. If blink is true, the 'P' icon will blink and
  * the blinkText will be the tool tip, explaining why it is blinking.
@@ -68,7 +77,7 @@ public class TrayIconManager extends PFComponent {
 
         iconUpdater = new DelayedUpdater(getController());
 
-        Image image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
+        Image image = Icons.getImageById(Icons.SYNC_COMPLETE);
         if (image == null) {
             logSevere("Unable to retrieve default system tray icon. "
                 + "System tray disabled");
@@ -79,21 +88,23 @@ public class TrayIconManager extends PFComponent {
         trayIcon.setImageAutoSize(true);
         updateConnectionStatus();
         updateIcon(NOT_STARTED);
-        getController().getUIController().getApplicationModel().addSyncStatusListener(new SyncStatusListener() {
-            public void syncStatusChanged(final SyncStatusEvent event) {
-                iconUpdater.schedule(new Runnable() {
-                    public void run() {
-                        updateIcon(event);
-                    }
-                });
-            }
+        getController().getUIController().getApplicationModel()
+            .addSyncStatusListener(new SyncStatusListener() {
+                public void syncStatusChanged(final SyncStatusEvent event) {
+                    iconUpdater.schedule(new Runnable() {
+                        public void run() {
+                            updateIcon(event);
+                        }
+                    });
+                }
 
-            public boolean fireInEventDispatchThread() {
-                return true;
-            }
-        });
+                public boolean fireInEventDispatchThread() {
+                    return true;
+                }
+            });
 
-        getController().scheduleAndRepeat(new SpinnerTask(), ROTATION_STEP_DELAY);
+        getController().scheduleAndRepeat(new SpinnerTask(),
+            ROTATION_STEP_DELAY);
     }
 
     /**
@@ -117,7 +128,9 @@ public class TrayIconManager extends PFComponent {
         {
             return;
         }
-        if (atomicConnectedAndLoggedIn.getAndSet(connected && loggedIn) != connected && loggedIn) {
+        if (atomicConnectedAndLoggedIn.getAndSet(connected && loggedIn) != connected
+            && loggedIn)
+        {
             // State changed, notify ui.
             String notificationText;
             String title = Translation
@@ -148,7 +161,8 @@ public class TrayIconManager extends PFComponent {
         }
         StringBuilder tooltip = new StringBuilder();
 
-        tooltip.append(Translation.getTranslation("general.application.name") + ' ' + Controller.PROGRAM_VERSION);
+        tooltip.append(Translation.getTranslation("general.application.name")
+            + ' ' + Controller.PROGRAM_VERSION);
         tooltip.append(" \n");
 
         Image image;
@@ -156,45 +170,49 @@ public class TrayIconManager extends PFComponent {
         boolean syncing = false;
         if (event.equals(PAUSED)) {
             image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
-            tooltip.append(Translation.getTranslation("systray.tooltip.paused"));
+            tooltip
+                .append(Translation.getTranslation("systray.tooltip.paused"));
         } else if (event.equals(NOT_STARTED)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
-            tooltip.append(Translation.getTranslation("systray.tooltip.not_started"));
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.not_started"));
         } else if (event.equals(NO_FOLDERS)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
-            tooltip.append(Translation.getTranslation("systray.tooltip.no_folders"));
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.no_folders"));
         } else if (event.equals(SYNCING)) {
             syncing = true;
-            if (isHiRes()) {
-                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_HI_RES[atomicAngle.get()]);
-            } else {
-                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_LOW_RES[atomicAngle.get()]);
-            }
+            image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[atomicAngle
+                .get()]);
             if (trayIcon != null) {
                 trayIcon.setImage(image);
             }
             tooltip.append(Translation
-                    .getTranslation("systray.tooltip.syncing"));
+                .getTranslation("systray.tooltip.syncing"));
             double overallSyncPercentage = getController().getUIController()
                 .getApplicationModel().getFolderRepositoryModel()
                 .getOverallSyncPercentage();
             if (overallSyncPercentage >= 0) {
                 tooltip.append(' ');
-                tooltip.append(Format.formatDecimal(overallSyncPercentage)
-                    + '%');
+                tooltip
+                    .append(Format.formatDecimal(overallSyncPercentage) + '%');
             }
         } else if (event.equals(SYNCHRONIZED)) {
-            image = Icons.getImageById(Icons.SYSTRAY_ALL_OK);
-            tooltip.append(Translation.getTranslation("systray.tooltip.in_sync"));
+            image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.in_sync"));
         } else if (event.equals(SYNC_INCOMPLETE)) {
-            image = Icons.getImageById(Icons.PENDING);
-            tooltip.append(Translation.getTranslation("systray.tooltip.sync_incomplete"));
+            image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.sync_incomplete"));
         } else if (event.equals(NOT_CONNECTED)) {
-            image = Icons.getImageById(Icons.PENDING);
-            tooltip.append(Translation.getTranslation("systray.tooltip.not_connected"));
+            image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.not_connected"));
         } else if (event.equals(NOT_LOGGED_IN)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
-            tooltip.append(Translation.getTranslation("systray.tooltip.not_logged_in"));
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.not_logged_in"));
         } else {
             logSevere("Not handling all sync states: " + event);
             image = Icons.getImageById(Icons.QUESTION);
@@ -209,30 +227,25 @@ public class TrayIconManager extends PFComponent {
     private void spinIcon() {
         if (atomicSyncing.get()) {
             int i = atomicAngle.incrementAndGet();
-            if (i >= Icons.SYSTRAY_SYNC_ANIMATION_HI_RES.length) {
+            if (i >= Icons.SYSTRAY_SYNC_ANIMATION.length) {
                 atomicAngle.set(0);
                 i = 0;
 
                 // Update tool tip every time we pass zero.
                 StringBuilder tooltip = new StringBuilder();
                 tooltip.append(Translation
-                        .getTranslation("systray.tooltip.syncing"));
-                double overallSyncPercentage = getController().getUIController()
-                    .getApplicationModel().getFolderRepositoryModel()
-                    .getOverallSyncPercentage();
+                    .getTranslation("systray.tooltip.syncing"));
+                double overallSyncPercentage = getController()
+                    .getUIController().getApplicationModel()
+                    .getFolderRepositoryModel().getOverallSyncPercentage();
                 if (overallSyncPercentage >= 0) {
                     tooltip.append(' ');
-                    tooltip.append(Format.formatDecimal(overallSyncPercentage)
-                        + '%');
+                    tooltip
+                        .append(Format.formatDecimal(overallSyncPercentage) + '%');
                 }
                 trayIcon.setToolTip(tooltip.toString());
             }
-            Image image;
-            if (isHiRes()) {
-                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_HI_RES[i]);
-            } else {
-                image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION_LOW_RES[i]);
-            }
+            Image image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[i]);
             if (trayIcon != null) {
                 trayIcon.setImage(image);
             }
@@ -240,12 +253,12 @@ public class TrayIconManager extends PFComponent {
     }
 
     /**
-     * Display tray sync icon in hi resolution?
-     * Linux needs to be low resolution, otherwise it looks rubbish.
-     *
+     * Display tray sync icon in hi resolution? Linux needs to be low
+     * resolution, otherwise it looks rubbish.
+     * 
      * @return
      */
-    private static boolean isHiRes() {
+    public static boolean isHiRes() {
         return OSUtil.isLinux() || OSUtil.isMacOS();
     }
 
