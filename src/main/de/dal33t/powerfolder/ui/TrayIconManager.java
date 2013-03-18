@@ -77,7 +77,7 @@ public class TrayIconManager extends PFComponent {
 
         iconUpdater = new DelayedUpdater(getController());
 
-        Image image = Icons.getImageById(Icons.SYNC_COMPLETE);
+        Image image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
         if (image == null) {
             logSevere("Unable to retrieve default system tray icon. "
                 + "System tray disabled");
