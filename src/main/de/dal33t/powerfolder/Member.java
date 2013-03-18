@@ -1039,10 +1039,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                     .triggerFileRequesting(folder.getInfo());
             }
             if (folder.getSyncProfile().isSyncDeletion()) {
-                folder.syncRemoteDeletedFiles(Collections.singleton(this),
-                    false);
-                // folder.triggerSyncRemoteDeletedFiles(Collections
-                // .singleton(this));
+                if (getController().getOSClient().isServer(this)) {
+                    // Put in separate thread. Otherwise blocks this one for
+                    // checking permissions
+                    folder.triggerSyncRemoteDeletedFiles(Collections
+                        .singleton(this));
+                } else {
+                    folder.syncRemoteDeletedFiles(Collections.singleton(this),
+                        false);
+                }
             }
         }
 
