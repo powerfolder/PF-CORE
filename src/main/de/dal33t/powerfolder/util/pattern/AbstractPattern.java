@@ -42,7 +42,7 @@ public abstract class AbstractPattern implements Pattern {
      * (non-Javadoc)
      * @see de.dal33t.powerfolder.util.pattern.Pattern#getPatternText()
      */
-    public final String getPatternText() {
+    public String getPatternText() {
         return patternText;
     }
 

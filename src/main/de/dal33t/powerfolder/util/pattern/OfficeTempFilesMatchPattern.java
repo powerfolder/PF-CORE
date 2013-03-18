@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2012 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -24,6 +24,7 @@ package de.dal33t.powerfolder.util.pattern;
  */
 public class OfficeTempFilesMatchPattern extends EndMatchPattern {
 
+    private boolean matchEnd;
     private String startStr;
 
     /**
@@ -37,13 +38,24 @@ public class OfficeTempFilesMatchPattern extends EndMatchPattern {
     public OfficeTempFilesMatchPattern(String startStr, String endPattern) {
         super(endPattern);
         this.startStr = startStr;
+        this.matchEnd = !endPattern.equals("*");
     }
 
     public boolean isMatch(String matchString) {
-        if (!super.isMatch(matchString)) {
+        if (matchEnd && !super.isMatch(matchString)) {
             return false;
         }
         return matchString.indexOf(startStr) >= 0;
+    }
+
+    public String getPatternText() {
+        // startstring: ~
+        // superpattern: *.tmp
+        // Resultpattern: *~*.tmp
+        return "*" + startStr + super.getPatternText();
+        // startstring: ~$
+        // superpattern: *
+        // Resultpattern: *~$*
     }
 
 }
