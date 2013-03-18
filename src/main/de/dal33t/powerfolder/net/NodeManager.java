@@ -1516,12 +1516,13 @@ public class NodeManager extends PFComponent {
         {
             getController().getIOProvider().startIO(new Runnable() {
                 public void run() {
-                    String webURL = getController().getOSClient().getWebURL();
-                    if (StringUtils.isBlank(webURL)) {
+                    String serverNodesURL = getController().getOSClient()
+                        .getWebURL(SERVER_NODES_URI, false);
+                    if (StringUtils.isBlank(serverNodesURL)) {
                         return;
                     }
                     try {
-                        loadNodesFrom(new URL(webURL + SERVER_NODES_URI));
+                        loadNodesFrom(new URL(serverNodesURL));
                     } catch (MalformedURLException e) {
                         logWarning(e.toString());
                     }
