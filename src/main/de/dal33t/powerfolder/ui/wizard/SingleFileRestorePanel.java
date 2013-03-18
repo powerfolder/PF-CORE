@@ -218,27 +218,33 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         SingleFileRestoreItem restoreItem = table.getSelectedRestoreItem();
         if (restoreItem == null) {
             // Nothing available until a row is selected.
-            originalRadio.setEnabled(false);
-            originalLabel.setEnabled(false);
+            originalRadio.setVisible(false);
+            originalLabel.setVisible(false);
 
-            alternateLocationRadio.setEnabled(false);
-            alternateLocationTF.setEnabled(false);
-            alternateLocationButton.setEnabled(false);
+            alternateLocationRadio.setVisible(false);
+            alternateLocationTF.setVisible(false);
+            alternateLocationButton.setVisible(false);
 
-            alternateNameRadio.setEnabled(false);
-            alternateNameTF.setEnabled(false);
+            alternateNameRadio.setVisible(false);
+            alternateNameTF.setVisible(false);
+
             hasNext = false;
+
         } else {
 
-            // Default buttons on.
-            originalRadio.setEnabled(true);
-            alternateLocationRadio.setEnabled(true);
-            alternateNameRadio.setEnabled(true);
-
-            hasNext = true;
+            originalRadio.setVisible(true);
+            originalLabel.setVisible(true);
+            originalLabel.setEnabled(originalRadio.isSelected());
 
             // Local restores can't use alternate name.
             if (restoreItem.isLocal()) {
+                alternateLocationRadio.setVisible(true);
+                alternateLocationTF.setVisible(true);
+                alternateLocationButton.setVisible(true);
+                alternateNameRadio.setVisible(false);
+                alternateNameTF.setVisible(false);
+
+                // Make sure the hidden alternateNameRadio is not selected.
                 if (alternateNameRadio.isSelected()) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -246,8 +252,16 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                         }
                     });
                 }
-                alternateNameRadio.setEnabled(false);
+
             } else { // Server restores can't use alternate location.
+                alternateLocationRadio.setVisible(false);
+                alternateLocationTF.setVisible(false);
+                alternateLocationButton.setVisible(false);
+                alternateNameRadio.setVisible(true);
+                alternateNameTF.setVisible(true);
+                alternateNameTF.setEnabled(alternateNameRadio.isSelected());
+
+                // Make sure the hidden alternateLocationRadio is not selected.
                 if (alternateLocationRadio.isSelected()) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -255,23 +269,12 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                         }
                     });
                 }
-                alternateLocationRadio.setEnabled(false);
             }
 
-            originalLabel.setEnabled(originalRadio.isSelected());
+            hasNext = originalRadio.isSelected() ||
+                    alternateLocationRadio.isSelected() && alternateLocationTF.getText().length() > 0 ||
+                    alternateNameRadio.isSelected() && alternateNameTF.getText().length() > 0;
 
-            alternateLocationTF.setEnabled(alternateLocationButton.isSelected());
-            if (!alternateLocationRadio.isSelected()) {
-                alternateLocationTF.setText("");
-            }
-            alternateLocationButton.setEnabled(true);
-
-            alternateNameTF.setEnabled(alternateNameRadio.isSelected());
-        }
-
-        if (alternateLocationRadio.isSelected() && alternateLocationTF.getText().length() == 0 ||
-                alternateNameRadio.isSelected() && alternateNameTF.getText().length() == 0) {
-            hasNext = false;
         }
 
         updateButtons();
