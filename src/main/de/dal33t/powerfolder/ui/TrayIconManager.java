@@ -246,7 +246,7 @@ public class TrayIconManager extends PFComponent {
      * @return
      */
     private static boolean isHiRes() {
-        return !OSUtil.isLinux();
+        return OSUtil.isLinux() || OSUtil.isMacOS();
     }
 
     /**
