@@ -27,6 +27,8 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 /**
  * Bare Bones Browser Launch
  * <p>
@@ -45,7 +47,8 @@ import java.util.logging.Logger;
  */
 public class BrowserLauncher {
 
-    private static final Logger log = Logger.getLogger(BrowserLauncher.class.getName());
+    private static final Logger log = Logger.getLogger(BrowserLauncher.class
+        .getName());
 
     private static final String errMsg = "Error attempting to launch web browser";
 
@@ -55,12 +58,12 @@ public class BrowserLauncher {
         }
         String osName = System.getProperty("os.name");
         try {
-            if (osName.startsWith("Mac OS")) {
+            if (OSUtil.isMacOS()) {
                 Class fileMgr = Class.forName("com.apple.eio.FileManager");
                 Method openURL = fileMgr.getDeclaredMethod("openURL",
                     new Class[]{String.class});
                 openURL.invoke(null, new Object[]{url});
-            } else if (osName.startsWith("Windows")) {
+            } else if (OSUtil.isWindowsSystem()) {
                 Runtime.getRuntime().exec(
                     "rundll32 url.dll,FileProtocolHandler " + url);
             } else { // assume Unix or Linux
@@ -68,8 +71,8 @@ public class BrowserLauncher {
                     "epiphany", "mozilla", "netscape"};
                 String browser = null;
                 for (int count = 0; count < browsers.length && browser == null; count++)
-                    if (Runtime.getRuntime().exec(
-                        new String[]{"which", browsers[count]}).waitFor() == 0)
+                    if (Runtime.getRuntime()
+                        .exec(new String[]{"which", browsers[count]}).waitFor() == 0)
                         browser = browsers[count];
                 if (browser == null) {
                     throw new Exception("Could not find web browser");
@@ -84,7 +87,7 @@ public class BrowserLauncher {
     private static boolean java6impl(String url) throws IOException {
         try {
             if (Desktop.isDesktopSupported()) {
-                log.fine("Using Java6 Desktop.browse()") ;
+                log.fine("Using Java6 Desktop.browse()");
                 Desktop.getDesktop().browse(new URI(url));
                 return true;
             }
