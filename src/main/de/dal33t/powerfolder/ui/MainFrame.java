@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NO_FOLDERS;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.PAUSED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCHRONIZED;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCING;
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNC_INCOMPLETE;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -89,12 +98,16 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
-import de.dal33t.powerfolder.ui.util.*;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
+import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -103,8 +116,6 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
-
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.*;
 
 /**
  * Powerfolder gui mainframe
@@ -1162,6 +1173,11 @@ public class MainFrame extends PFUIComponent {
                 minusButton.setToolTipText(
                         Translation.getTranslation("main_frame.compact.tips"));
                 configureNormalSize();
+                UIUtil.invokeLaterInEDT(new Runnable() {
+                    public void run() {
+                        configureNormalSize();
+                    }
+                });
                 break;
             case COMPACT:
                 uiComponent.setExtendedState(Frame.NORMAL);
@@ -1170,7 +1186,6 @@ public class MainFrame extends PFUIComponent {
                     closeInlineInfoPanel();
                     getUIController().hideChildPanels();
                 }
-
                 uiComponent.setSize(uiComponent.getMinimumSize());
                 uiComponent.setResizable(false);
                 plusButton.setToolTipText(
@@ -1185,6 +1200,11 @@ public class MainFrame extends PFUIComponent {
                 minusButton.setVisible(!OSUtil.isSystraySupported() ||
                         PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 toFront();
+                UIUtil.invokeLaterInEDT(new Runnable() {
+                    public void run() {
+                        uiComponent.setSize(uiComponent.getMinimumSize());
+                    }
+                });
                 break;
             case MINIMIZED:
                 uiComponent.setExtendedState(Frame.ICONIFIED);
