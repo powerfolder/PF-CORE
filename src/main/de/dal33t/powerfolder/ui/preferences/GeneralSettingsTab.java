@@ -122,9 +122,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         try {
                             MacUtils.getInstance().setPFStartup(true,
                                 getController());
-                        } catch (IOException e1) {
+                        } catch (IOException ex) {
                             logWarning("Unable to setup auto start on logon. "
-                                + e);
+                                + ex);
                         }
                     }
                 });
@@ -217,8 +217,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
-                builder.add(new JLabel(Translation.getTranslation("preferences.general.non_windows_info"),
-                        SwingConstants.CENTER), cc.xyw(1, row, 4));
                 if (startWithMacOSLabel != null) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
