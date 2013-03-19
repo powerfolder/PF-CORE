@@ -1418,6 +1418,12 @@ public class NodeManager extends PFComponent {
             nodeList.load(url);
             logInfo("Loaded " + nodeList.getServersSet().size()
                 + " servers from " + url + " : " + nodeList.getServersSet());
+            // Clean old servers
+            for (Member node : knownNodes.values()) {
+                if (node.isServer()) {
+                    node.setServer(false);
+                }
+            }
             return processNodeList(nodeList);
         } catch (IOException e) {
             logWarning("Unable to load servers from url '" + url + "'. "
