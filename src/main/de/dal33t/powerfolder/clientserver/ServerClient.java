@@ -866,6 +866,11 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                 }
                 return accountDetails.getAccount();
+            } catch (Exception e) {
+                logWarning("Unable to login: " + e);
+                setAnonAccount();
+                fireLogin(accountDetails, false);
+                return accountDetails.getAccount();
             } finally {
                 loggingIn.set(false);
             }
