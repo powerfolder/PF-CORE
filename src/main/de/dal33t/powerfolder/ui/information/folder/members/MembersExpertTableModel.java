@@ -857,28 +857,32 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                     getAllFolderPermission(member.getAccountInfo(), folder.getInfo());
                 }
             }
-            defaultPermission = getController().getOSClient()
-                .getSecurityService().getDefaultPermission(folder.getInfo());
 
             try {
+                defaultPermission = getController().getOSClient()
+                    .getSecurityService()
+                    .getDefaultPermission(folder.getInfo());
+
                 return getController().getOSClient().getSecurityService()
                     .getAllFolderPermissions(refreshFor.getInfo());
-            }
-            catch (RemoteCallException rce) {
+            } catch (RemoteCallException rce) {
                 try {
-                    Map<AccountInfo, FolderPermission> perm = getController().getOSClient()
-                        .getSecurityService().getFolderPermissions(refreshFor.getInfo());
-                    Map<Serializable, FolderPermission> permissionMap = new HashMap<Serializable, FolderPermission>(perm.size());
+                    Map<AccountInfo, FolderPermission> perm = getController()
+                        .getOSClient().getSecurityService()
+                        .getFolderPermissions(refreshFor.getInfo());
+                    Map<Serializable, FolderPermission> permissionMap = new HashMap<Serializable, FolderPermission>(
+                        perm.size());
 
-                    for (Entry<AccountInfo, FolderPermission> entry : perm.entrySet()) {
+                    for (Entry<AccountInfo, FolderPermission> entry : perm
+                        .entrySet())
+                    {
                         permissionMap.put(entry.getKey(), entry.getValue());
                     }
 
                     return permissionMap;
-                }
-                catch (RuntimeException re) {
-                    logWarning("Could not retrive permission list from the server");
-
+                } catch (RuntimeException re) {
+                    logWarning("Could not retrive permission list from the server. "
+                        + re);
                     throw re;
                 }
             }
