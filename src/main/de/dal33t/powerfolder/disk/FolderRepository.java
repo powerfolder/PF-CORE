@@ -1699,9 +1699,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Actually create the directory
                 settings.getLocalBaseDir().mkdirs();
 
-                Folder folder = createFolder0(folderInfo, settings, true);
-                folder.addDefaultExcludes();
-                folderInfos.add(folderInfo);
+                try {
+                    Folder folder = createFolder0(folderInfo, settings, true);
+                    folder.addDefaultExcludes();
+                    folderInfos.add(folderInfo);
+                } catch (Exception e) {
+                    logWarning("Unable to create folder "
+                        + folderInfo.getName() + ". " + e);
+                }
             }
         }
 
