@@ -136,7 +136,6 @@ public class FolderInformationCard extends InformationCard {
         if (StringUtils.isNotBlank(subDir)) {
             filesTab.selectionChanged(subDir);
         }
-        filesTab.set
     }
 
     /**
