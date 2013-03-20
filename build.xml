@@ -332,7 +332,7 @@ For creation of the installer:
 		         classname="net.sourceforge.jarbundler.JarBundler" />
 		
 		<jarbundler dir="${dist.dir}"
-		            name="${distribution.name}"
+		            name="${dis.name}"
 		            mainclass="${mainclass}" 
 		            jar="${dist.dir}/${jar.name}"
 					icon="${distribution.installer.dir}/files/Icon128x128.icns"
@@ -342,11 +342,11 @@ For creation of the installer:
 		/>
 		<tar destfile="${dist.dir}/${distribution.name}_v${versionString}_Mac.tar.gz" compression="gzip">
 			<tarfileset dir="${dist.dir}" filemode="744">
-				<include name="${distribution.name}.app/Contents/MacOS/**/*" />
+				<include name="${dist.name}.app/Contents/MacOS/**/*" />
 			</tarfileset>
 			<fileset dir="${dist.dir}">
-				<include name="${distribution.name}.app/**/*" />
-				<exclude name="${distribution.name}.app/Contents/MacOS/**/*" />
+				<include name="${dist.name}.app/**/*" />
+				<exclude name="${dist.name}.app/Contents/MacOS/**/*" />
 			</fileset>
 		</tar>
 		<delete file="${dist.dir}/${jar.name}" />
