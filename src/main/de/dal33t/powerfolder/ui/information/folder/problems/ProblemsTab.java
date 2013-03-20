@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
@@ -185,12 +186,13 @@ public class ProblemsTab extends PFUIComponent {
                 selectedRow, 0);
             String wikiArticleURL = Help.getWikiArticleURL(getController(),
                 problem.getWikiLinkKey());
-            try {
-                BrowserLauncher.openURL(wikiArticleURL);
-            } catch (IOException e1) {
-                logSevere("IOException", e1);
+            if (StringUtils.isNotBlank(wikiArticleURL)) {
+                try {
+                    BrowserLauncher.openURL(wikiArticleURL);
+                } catch (IOException e1) {
+                    logSevere("IOException", e1);
+                }
             }
-
         }
     }
 
