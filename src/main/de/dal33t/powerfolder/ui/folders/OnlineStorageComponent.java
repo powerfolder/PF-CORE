@@ -107,7 +107,7 @@ public class OnlineStorageComponent extends PFUIComponent {
                     : Translation
                         .getTranslation("online_storage_component.online_storage_tip"));
             webButton.setToolTipText(Translation
-                .getTranslation("online_storage_component.online_storage_tip"));
+                .getTranslation("online_storage_component.online_storage_remove"));
         } else {
             syncActionLabel
                 .setText(Translation
