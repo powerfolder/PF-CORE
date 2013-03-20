@@ -332,7 +332,7 @@ For creation of the installer:
 		         classname="net.sourceforge.jarbundler.JarBundler" />
 		
 		<jarbundler dir="${dist.dir}"
-		            name="${dis.name}"
+		            name="${dist.name}"
 		            mainclass="${mainclass}" 
 		            jar="${dist.dir}/${jar.name}"
 					icon="${distribution.installer.dir}/files/Icon128x128.icns"
