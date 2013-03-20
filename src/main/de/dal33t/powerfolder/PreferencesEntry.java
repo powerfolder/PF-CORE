@@ -118,12 +118,7 @@ public enum PreferencesEntry {
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
 
     SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
-
-    /**
-     * Show PowerFolder application short cut on the desk top.
-     */
-    CREATE_APPLICATION_DESKTOP_SHORTCUT("display.application.shortcut", true),
-
+    
     /**
      * Show PowerFolder base dir short cut on the desk top.
      */
@@ -141,7 +136,7 @@ public enum PreferencesEntry {
     /**
      * Show hidden files in the file browser.
      */
-    SHOW_HIDDEN_FILES("show.hidden.files", true);
+    SHOW_HIDDEN_FILES("show.hidden.files", false);
 
 
     /** String, Boolean, Integer */

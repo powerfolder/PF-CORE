@@ -19,8 +19,14 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +35,6 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -38,6 +43,9 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -51,9 +59,6 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 
 /**
  * Util helper class.
@@ -97,7 +102,7 @@ public class Util {
 
     /**
      * Answers if we have the AWT libs available
-     *
+     * 
      * @return
      */
     public static boolean isAwtAvailable() {
@@ -351,6 +356,16 @@ public class Util {
         }
         LOG.finer("created target for resource: " + destinationFile);
         return destinationFile;
+    }
+
+    public static boolean isDesktopShortcut(String shortcutName) {
+        WinUtils util = WinUtils.getInstance();
+        if (util == null) {
+            return false;
+        }
+        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
+            false), shortcutName + Constants.LINK_EXTENSION);
+        return scut.exists();
     }
 
     /**

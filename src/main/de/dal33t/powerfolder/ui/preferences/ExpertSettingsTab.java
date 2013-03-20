@@ -26,10 +26,18 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -41,8 +49,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Icons;
@@ -52,8 +60,6 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -70,9 +76,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox conflictDetectionCB;
     private JCheckBox massDeleteCB;
     private JSlider massDeleteSlider;
-    private JCheckBox createFavoritesShortcutCB;
-    private JCheckBox createApplicationDesktopShortcutsCB;
-    private JCheckBox createBasedirDesktopShortcutsCB;
     private JCheckBox usePowerFolderIconCB;
     private JCheckBox folderAutoSetupCB;
     private JCheckBox autoDetectFoldersCB;
@@ -104,45 +107,40 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
 
         if (OSUtil.isWindowsSystem()) {
-        createApplicationDesktopShortcutsCB  = new JCheckBox(
-                    Translation.getTranslation("preferences.expert.create_application_desktop_shortcut"),
-                    PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.getValueBoolean(getController()));
-        createBasedirDesktopShortcutsCB = new JCheckBox(
-                    Translation.getTranslation("preferences.expert.create_basedir_desktop_shortcut"),
-                    PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT.getValueBoolean(getController()));
             usePowerFolderIconCB = new JCheckBox(
-                    Translation.getTranslation("preferences.expert.use_pf_icon"),
-                    ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
+                Translation.getTranslation("preferences.expert.use_pf_icon"),
+                ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
 
-        if (OSUtil.isWindowsVistaSystem() || OSUtil.isMacOS()) {
-            createFavoritesShortcutCB = new JCheckBox(
-                    Translation.getTranslation("preferences.expert.create_favorites_shortcut"),
-                    PreferencesEntry.CREATE_FAVORITES_SHORTCUT.getValueBoolean(getController()));
-        }
-
-        massDeleteCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.expert.use_mass_delete"));
-        massDeleteCB.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
+        massDeleteCB = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.expert.use_mass_delete"));
+        massDeleteCB.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION
+            .getValueBoolean(getController()));
         massDeleteCB.addItemListener(new MassDeleteItemListener());
-        massDeleteSlider = new JSlider(20, 100, ConfigurationEntry.MASS_DELETE_THRESHOLD
+        massDeleteSlider = new JSlider(20, 100,
+            ConfigurationEntry.MASS_DELETE_THRESHOLD
                 .getValueInt(getController()));
         massDeleteSlider.setMajorTickSpacing(20);
         massDeleteSlider.setMinorTickSpacing(5);
         massDeleteSlider.setPaintTicks(true);
         massDeleteSlider.setPaintLabels(true);
         Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing()) {
+        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing())
+        {
             dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
         }
         massDeleteSlider.setLabelTable(dictionary);
         enableMassDeleteSlider();
 
-        conflictDetectionCB = new JCheckBox(Translation.getTranslation("preferences.expert.use_conflict_handling"));
-        conflictDetectionCB.setSelected(ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController()));
+        conflictDetectionCB = new JCheckBox(
+            Translation
+                .getTranslation("preferences.expert.use_conflict_handling"));
+        conflictDetectionCB.setSelected(ConfigurationEntry.CONFLICT_DETECTION
+            .getValueBoolean(getController()));
 
         // Local base selection
-        locationModel = new ValueHolder(getController().getFolderRepository().getFoldersBasedirString());
+        locationModel = new ValueHolder(getController().getFolderRepository()
+            .getFoldersBasedirString());
 
         // Behavior
         locationModel.addValueChangeListener(new PropertyChangeListener() {
@@ -153,55 +151,68 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         locationField = createLocationField();
 
-        useZipOnLanCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.expert.use_zip_on_lan"));
-        useZipOnLanCB.setToolTipText(Translation.getTranslation("preferences.expert.use_zip_on_lan_tooltip"));
-        useZipOnLanCB.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(getController()));
+        useZipOnLanCB = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.expert.use_zip_on_lan"));
+        useZipOnLanCB.setToolTipText(Translation
+            .getTranslation("preferences.expert.use_zip_on_lan_tooltip"));
+        useZipOnLanCB.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
+            .getValueBoolean(getController()));
 
         // Always uses compression on internet
-        useZipOnInternetCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.expert.use_zip_on_internet"));
+        useZipOnInternetCB = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.expert.use_zip_on_internet"));
         useZipOnInternetCB.setSelected(true);
         useZipOnInternetCB.setEnabled(false);
 
-        useDeltaSyncOnLanCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.expert.use_delta_on_lan"));
-        useDeltaSyncOnLanCB.setToolTipText(
-                Translation.getTranslation("preferences.expert.use_delta_on_lan_tooltip"));
-        useDeltaSyncOnLanCB.setSelected(
-                ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(getController()));
+        useDeltaSyncOnLanCB = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.expert.use_delta_on_lan"));
+        useDeltaSyncOnLanCB.setToolTipText(Translation
+            .getTranslation("preferences.expert.use_delta_on_lan_tooltip"));
+        useDeltaSyncOnLanCB.setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
+            .getValueBoolean(getController()));
 
-        useDeltaSyncOnInternetCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.expert.use_delta_on_internet"));
-        useDeltaSyncOnInternetCB.setToolTipText(
-                Translation.getTranslation("preferences.expert.use_delta_on_internet_tooltip"));
-        useDeltaSyncOnInternetCB.setSelected(
-                ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(getController()));
+        useDeltaSyncOnInternetCB = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.expert.use_delta_on_internet"));
+        useDeltaSyncOnInternetCB
+            .setToolTipText(Translation
+                .getTranslation("preferences.expert.use_delta_on_internet_tooltip"));
+        useDeltaSyncOnInternetCB
+            .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
+                .getValueBoolean(getController()));
 
-        useSwarmingOnLanCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.expert.swarming_lan"));
-        useSwarmingOnLanCB.setToolTipText(
-                Translation.getTranslation("preferences.expert.swarming_lan_tooltip"));
-        useSwarmingOnLanCB.setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(getController()));
+        useSwarmingOnLanCB = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.expert.swarming_lan"));
+        useSwarmingOnLanCB.setToolTipText(Translation
+            .getTranslation("preferences.expert.swarming_lan_tooltip"));
+        useSwarmingOnLanCB.setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN
+            .getValueBoolean(getController()));
 
-        useSwarmingOnInternetCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.expert.swarming_internet"));
-        useSwarmingOnInternetCB.setToolTipText(
-                Translation.getTranslation("preferences.expert.swarming_internet_tooltip"));
-        useSwarmingOnInternetCB.setSelected(
-                ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(getController()));
+        useSwarmingOnInternetCB = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.expert.swarming_internet"));
+        useSwarmingOnInternetCB.setToolTipText(Translation
+            .getTranslation("preferences.expert.swarming_internet_tooltip"));
+        useSwarmingOnInternetCB
+            .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
+                .getValueBoolean(getController()));
         folderAutoSetupCB = new JCheckBox(
             Translation.getTranslation("preferences.expert.auto_setup_folders"),
-                ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()));
+            ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
+                .getValueBoolean(getController()));
 
         autoDetectFoldersCB = new JCheckBox(
-                Translation.getTranslation("preferences.expert.auto_detect_folders"),
-                ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController()));
+            Translation
+                .getTranslation("preferences.expert.auto_detect_folders"),
+            ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
+                .getValueBoolean(getController()));
 
         // Logical inverse of the config entry.
         allowFoldersOutsideDefaultCB = new JCheckBox(
-                Translation.getTranslation("dialog.expert.allow_folders_outside_default"),
-                !ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController()));
+            Translation
+                .getTranslation("dialog.expert.allow_folders_outside_default"),
+            !ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+                .getValueBoolean(getController()));
     }
 
     /**
@@ -236,9 +247,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButtonMini(Icons
-            .getIconById(Icons.DIRECTORY), Translation
-            .getTranslation("preferences.expert.select_directory_text"));
+        JButton locationButton = new JButtonMini(
+            Icons.getIconById(Icons.DIRECTORY),
+            Translation
+                .getTranslation("preferences.expert.select_directory_text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -252,7 +264,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -265,8 +277,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.expert.base_dir")), cc.xy(1, row));
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.expert.base_dir")), cc.xy(1,
+                    row));
             builder.add(locationField, cc.xyw(3, row, 2));
 
             row += 2;
@@ -275,21 +289,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(allowFoldersOutsideDefaultCB, cc.xyw(3, row, 2));
 
-            if (createApplicationDesktopShortcutsCB != null) {
-                row += 2;
-                builder.add(createApplicationDesktopShortcutsCB, cc.xyw(3, row, 2));
-            }
-
-            if (createBasedirDesktopShortcutsCB != null) {
-                row += 2;
-                builder.add(createBasedirDesktopShortcutsCB, cc.xyw(3, row, 2));
-            }
-
-            if (createFavoritesShortcutCB != null) {
-                row += 2;
-                builder.add(createFavoritesShortcutCB, cc.xyw(3, row, 2));
-            }
-
             row += 2;
             builder.add(conflictDetectionCB, cc.xyw(3, row, 2));
 
@@ -297,16 +296,21 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(massDeleteCB, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.expert.mass_delete_threshold")),
-                cc.xy(1, row));
+            builder
+                .add(
+                    new JLabel(
+                        Translation
+                            .getTranslation("preferences.expert.mass_delete_threshold")),
+                    cc.xy(1, row));
             builder.add(massDeleteSlider, cc.xy(3, row));
 
             row += 2;
             builder.add(folderAutoSetupCB, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("preferences.expert.zip_compression"), cc.xy(1, row));
+            builder.addLabel(Translation
+                .getTranslation("preferences.expert.zip_compression"), cc.xy(1,
+                row));
             ButtonBarBuilder zipBar = ButtonBarBuilder
                 .createLeftToRightBuilder();
             zipBar.addGridded(useZipOnInternetCB);
@@ -315,16 +319,22 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(zipBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("preferences.expert.delta_sync"), cc.xy(1, row));
-            ButtonBarBuilder deltaBar = ButtonBarBuilder.createLeftToRightBuilder();
+            builder.addLabel(
+                Translation.getTranslation("preferences.expert.delta_sync"),
+                cc.xy(1, row));
+            ButtonBarBuilder deltaBar = ButtonBarBuilder
+                .createLeftToRightBuilder();
             deltaBar.addGridded(useDeltaSyncOnInternetCB);
             deltaBar.addRelatedGap();
             deltaBar.addGridded(useDeltaSyncOnLanCB);
             builder.add(deltaBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("preferences.expert.swarming"), cc.xy(1, row));
-            ButtonBarBuilder swarmingBar = ButtonBarBuilder.createLeftToRightBuilder();
+            builder.addLabel(
+                Translation.getTranslation("preferences.expert.swarming"),
+                cc.xy(1, row));
+            ButtonBarBuilder swarmingBar = ButtonBarBuilder
+                .createLeftToRightBuilder();
             swarmingBar.addGridded(useSwarmingOnInternetCB);
             swarmingBar.addRelatedGap();
             swarmingBar.addGridded(useSwarmingOnLanCB);
@@ -344,27 +354,30 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the advanced settings.
      */
     public void save() {
+        ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(),
+            conflictDetectionCB.isSelected());
 
-        ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(), conflictDetectionCB.isSelected());
-
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(), massDeleteCB.isSelected());
-        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(), massDeleteSlider.getValue());
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
+            massDeleteCB.isSelected());
+        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
+            massDeleteSlider.getValue());
 
         // Set folder base
-        String oldFolderBaseString = getController().getFolderRepository()
-            .getFoldersBasedirString();
+        FolderRepository repo = getController().getFolderRepository();
+        String oldFolderBaseString = repo.getFoldersBasedirString();
+        String oldBaseDirName = repo.getFoldersBasedir().getName();
         String newFolderBaseString = (String) locationModel.getValue();
-        getController().getFolderRepository().setFoldersBasedir(newFolderBaseString);
+        repo.setFoldersBasedir(newFolderBaseString);
         if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
-            getController().getUIController().configureBasedirDesktopShortcut(true);
+            repo.updateShortcuts(oldBaseDirName);
         }
 
         // zip on lan?
         boolean current = ConfigurationEntry.USE_ZIP_ON_LAN
             .getValueBoolean(getController());
         if (current != useZipOnLanCB.isSelected()) {
-            ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(), String
-                .valueOf(useZipOnLanCB.isSelected()));
+            ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
+                String.valueOf(useZipOnLanCB.isSelected()));
         }
 
         if (usePowerFolderIconCB != null) {
@@ -403,44 +416,21 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         if (current != useSwarmingOnInternetCB.isSelected()) {
             ConfigurationEntry.USE_SWARMING_ON_INTERNET.setValue(
-                getController(), Boolean.toString(useSwarmingOnInternetCB
-                    .isSelected()));
+                getController(),
+                Boolean.toString(useSwarmingOnInternetCB.isSelected()));
             needsRestart = true;
         }
 
-        if (createFavoritesShortcutCB != null) {
-            boolean newValue = createFavoritesShortcutCB.isSelected();
-            configureLinksPlaces(newValue);
-            PreferencesEntry.CREATE_FAVORITES_SHORTCUT.setValue(getController(),newValue);
-        }
-
         // Logical inverse of the displayed.
-        ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.setValue(getController(),
-                !allowFoldersOutsideDefaultCB.isSelected());
-
-        if (createBasedirDesktopShortcutsCB != null) {
-            boolean oldValue = PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT.getValueBoolean(getController());
-            boolean newValue = createBasedirDesktopShortcutsCB.isSelected();
-            if (oldValue ^ newValue) {
-                PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT.setValue(getController(), newValue);
-                getController().getUIController().configureBasedirDesktopShortcut(false);
-            }
-        }
-
-        if (createApplicationDesktopShortcutsCB != null) {
-            boolean oldValue = PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.getValueBoolean(getController());
-            boolean newValue = createApplicationDesktopShortcutsCB.isSelected();
-            if (oldValue ^ newValue) {
-                PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.setValue(getController(), newValue);
-                getController().getUIController().configureApplicationDesktopShortcut();
-            }
-        }
+        ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.setValue(
+            getController(), !allowFoldersOutsideDefaultCB.isSelected());
 
         ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(),
             folderAutoSetupCB.isSelected());
         // Re-run setup if selected.
         if (folderAutoSetupCB.isSelected()
-            && getController().getOSClient().isLoggedIn()) {
+            && getController().getOSClient().isLoggedIn())
+        {
             getController().schedule(new Runnable() {
                 public void run() {
                     getController().getFolderRepository().updateFolders(
@@ -449,30 +439,15 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             }, 0);
         }
 
-        boolean originalLookForFolders = ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(getController());
-        ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(), autoDetectFoldersCB.isSelected());
+        boolean originalLookForFolders = ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
+            .getValueBoolean(getController());
+        ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(),
+            autoDetectFoldersCB.isSelected());
         if (originalLookForFolders ^ autoDetectFoldersCB.isSelected()) {
             needsRestart = true;
         }
-
     }
-
-    private void configureLinksPlaces(boolean newValue) {
-        if (WinUtils.isSupported()) {
-            try {
-                WinUtils.getInstance().setPFLinks(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
-        } else if (MacUtils.isSupported()) {
-            try {
-                MacUtils.getInstance().setPFPlaces(newValue, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
-        }
-    }
-
+    
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -494,9 +469,14 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                     .getFolders(true))
                 {
                     if (folder.getLocalBase().equals(newLocation)) {
-                        DialogFactory.genericDialog(getController(),
-                                Translation.getTranslation("preferences.expert.duplicate_local_base_title"),
-                                Translation.getTranslation("preferences.expert.duplicate_local_base_message",
+                        DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("preferences.expert.duplicate_local_base_title"),
+                                Translation
+                                    .getTranslation(
+                                        "preferences.expert.duplicate_local_base_message",
                                         folder.getName()),
                                 GenericDialogType.ERROR);
                         return;

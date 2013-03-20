@@ -124,10 +124,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.update.Updater;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
-import de.schlichtherle.truezip.file.TFile;
 
 /**
  * The ui controller.
@@ -345,65 +343,10 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        configureApplicationDesktopShortcut();
-        configureBasedirDesktopShortcut(false);
-
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().getFolderRepository().addFolderAutoCreateListener(
             new MyFolderAutoCreateListener());
-    }
-
-    /**
-     * Creates / removes a desktop shortcut of the folders base dir.
-     * 
-     * @param removeFirst
-     *            remove any shortcut before creating a new one.
-     */
-    public void configureBasedirDesktopShortcut(boolean removeFirst) {
-        String shortcutName = getController().getFolderRepository()
-            .getFoldersBasedir().getName();
-        if (removeFirst
-            || !PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT
-                .getValueBoolean(getController()))
-        {
-            Util.removeDesktopShortcut(shortcutName);
-        }
-        if (PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT
-            .getValueBoolean(getController()))
-        {
-            Util.createDesktopShortcut(shortcutName, getController()
-                .getFolderRepository().getFoldersBasedir());
-        }
-    }
-
-    /**
-     * Creates / removes a desktop shortcut to application exe.
-     *
-     */
-    public void configureApplicationDesktopShortcut() {
-
-        // Try to find path to the PowerFolder exe.
-        File hereFile = new TFile("");
-        String herePath = hereFile.getAbsolutePath();
-        String exeName = getController().getDistribution().getBinaryName()
-            + ".exe";
-        File powerFolderFile = new TFile(herePath, exeName);
-        if (!powerFolderFile.exists() && OSUtil.isWindowsSystem()) {
-            // Try harder
-            powerFolderFile = new TFile(WinUtils.getProgramInstallationPath(),
-                exeName);
-            if (!powerFolderFile.exists()) {
-                return;
-            }
-        }
-
-        if (PreferencesEntry.CREATE_APPLICATION_DESKTOP_SHORTCUT.getValueBoolean(getController())) {
-            Util.createDesktopShortcut(Translation.getTranslation("general.application.name"), powerFolderFile);
-        } else {
-            Util.removeDesktopShortcut(Translation.getTranslation("general.application.name"));
-        }
-
     }
 
     public void askToPauseResume() {
@@ -850,6 +793,11 @@ public class UIController extends PFComponent {
                 (JPanel) informationFrame.getUIComponent().getContentPane(),
                 informationFrame.getUIComponent().getTitle());
     }
+    
+    public void openFileInformation(FileInfo fileInfo) {
+        informationFrame.displayFile(fileInfo);
+        displayInformationWindow();
+    }
 
     /**
      * Opens the Files information for a folder.
@@ -861,17 +809,6 @@ public class UIController extends PFComponent {
         informationFrame.displayFolderFilesLatest(folderInfo);
         displayInformationWindow();
     }
-
-    /**
-     * Opens the Files information for a folder.
-     * 
-     * @param folderInfo
-     *            info of the folder to display files information for.
-     */
-    // public void openFilesInformationIncoming(FolderInfo folderInfo) {
-    // informationFrame.displayFolderFilesIncoming(folderInfo);
-    // displayInformationWindow();
-    // }
 
     public void openFilesInformationDeleted(FolderInfo folderInfo) {
         informationFrame.displayFolderFilesDeleted(folderInfo);

@@ -77,6 +77,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -228,24 +229,67 @@ public class FolderRepository extends PFComponent implements Runnable {
         processV4Format();
 
         // Maintain link
-        boolean useFavLink = PreferencesEntry.CREATE_FAVORITES_SHORTCUT
-            .getValueBoolean(getController());
-        if (useFavLink && WinUtils.isSupported()) {
-            try {
-                WinUtils.getInstance().setPFLinks(true, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
-        }
-        if (useFavLink && MacUtils.isSupported()) {
-            try {
-                MacUtils.getInstance().setPFPlaces(true, getController());
-            } catch (IOException e) {
-                logSevere(e);
-            }
+        if (getController().isFirstStart()) {
+            createShortcuts();
         }
 
         tidyOldLinks();
+    }
+
+    public void createShortcuts() {
+        if (PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT
+            .getValueBoolean(getController()))
+        {
+            String shortcutName = getController().getFolderRepository()
+                .getFoldersBasedir().getName();
+            if (Util.isDesktopShortcut(shortcutName)) {
+                Util.removeDesktopShortcut(shortcutName);
+            }
+            Util.createDesktopShortcut(shortcutName, getController()
+                .getFolderRepository().getFoldersBasedir());
+        }
+        if (PreferencesEntry.CREATE_FAVORITES_SHORTCUT
+            .getValueBoolean(getController()))
+        {
+            try {
+                if (WinUtils.isSupported()) {
+                    WinUtils.getInstance().setPFLinks(true, getController());
+                } else if (MacUtils.isSupported()) {
+                    MacUtils.getInstance().setPFPlaces(true, getController());
+                }
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        }
+    }
+
+    public void updateShortcuts(String oldShortcutName) {
+        if (PreferencesEntry.CREATE_BASEDIR_DESKTOP_SHORTCUT
+            .getValueBoolean(getController()))
+        {
+            if (Util.isDesktopShortcut(oldShortcutName)) {
+                Util.removeDesktopShortcut(oldShortcutName);
+                String shortcutName = getController().getFolderRepository()
+                    .getFoldersBasedir().getName();
+                Util.createDesktopShortcut(shortcutName, getController()
+                    .getFolderRepository().getFoldersBasedir());
+            }
+        }
+        if (PreferencesEntry.CREATE_FAVORITES_SHORTCUT
+            .getValueBoolean(getController()))
+        {
+            try {
+                if (WinUtils.isSupported()
+                    && WinUtils.isPFLinks(getController()))
+                {
+                    WinUtils.getInstance().setPFLinks(true, getController());
+                } else if (MacUtils.isSupported()) {
+                    MacUtils.getInstance().setPFPlaces(true, getController());
+                }
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        }
     }
 
     /**

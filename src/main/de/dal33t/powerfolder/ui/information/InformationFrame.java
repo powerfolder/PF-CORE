@@ -19,20 +19,22 @@
  */
 package de.dal33t.powerfolder.ui.information;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.information.debug.DebugInformationCard;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
 import de.dal33t.powerfolder.ui.information.notices.NoticesInformationCard;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The information window.
@@ -79,6 +81,14 @@ public class InformationFrame extends PFUIComponent {
 
     public boolean isShowingFolder() {
         return showingFolder;
+    }
+    
+    public void displayFile(FileInfo fileInfo) {
+        if (fileInfo.isDeleted()) {
+            displayFolderFilesDeleted(fileInfo.getFolderInfo());
+        } else {
+            displayFolderFiles(fileInfo.getFolderInfo());
+        }
     }
 
     /**
