@@ -1619,29 +1619,33 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             // Actually create the directory
-            settings.getLocalBaseDir().mkdirs();
-            if (foInfo != null) {
-                // Load existing.
-                createFolder0(foInfo, settings, true);
-            } else {
-                // Spawn/Create a new one.
-                foInfo = new FolderInfo(folderName,
-                    '[' + IdGenerator.makeId() + ']');
-                Folder folder = createFolder(foInfo, settings);
-                folder.addDefaultExcludes();
-                logWarning("Folder NOT found on account " + a.getUsername()
-                    + ". Created new: " + foInfo);
+            try {
+                settings.getLocalBaseDir().mkdirs();
+                if (foInfo != null) {
+                    // Load existing.
+                    createFolder0(foInfo, settings, true);
+                } else {
+                    // Spawn/Create a new one.
+                    foInfo = new FolderInfo(folderName,
+                        '[' + IdGenerator.makeId() + ']');
+                    Folder folder = createFolder(foInfo, settings);
+                    folder.addDefaultExcludes();
+                    logWarning("Folder NOT found on account " + a.getUsername()
+                        + ". Created new: " + foInfo);
+                }
+
+                // Make sure it is backed up by the server.
+                CreateFolderOnServerTask task = new CreateFolderOnServerTask(
+                    a.createInfo(), foInfo, null);
+                task.setArchiveVersions(settings.getVersions());
+                getController().getTaskManager().scheduleTask(task);
+
+                // Remove from pending entries.
+                it.remove();
+                folderInfos.add(foInfo);
+            } catch (Exception e) {
+                logWarning("Unable to create folder " + folderName + ". " + e);
             }
-
-            // Make sure it is backed up by the server.
-            CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                a.createInfo(), foInfo, null);
-            task.setArchiveVersions(settings.getVersions());
-            getController().getTaskManager().scheduleTask(task);
-
-            // Remove from pending entries.
-            it.remove();
-            folderInfos.add(foInfo);
         }
 
         if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
