@@ -82,13 +82,14 @@ public class InformationFrame extends PFUIComponent {
     public boolean isShowingFolder() {
         return showingFolder;
     }
-    
+
     public void displayFile(FileInfo fileInfo) {
-        if (fileInfo.isDeleted()) {
-            displayFolderFilesDeleted(fileInfo.getFolderInfo());
-        } else {
-            displayFolderFiles(fileInfo.getFolderInfo());
-        }
+        buildFolderInformationCard();
+        folderInformationCard.setFileInfo(fileInfo);
+        folderInformationCard.showFiles();
+        displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = fileInfo.getFolderInfo();
     }
 
     /**

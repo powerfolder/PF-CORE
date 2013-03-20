@@ -182,8 +182,8 @@ public class UIController extends PFComponent {
     private final AtomicBoolean synchronizing = new AtomicBoolean();
     private final DelayedUpdater statusUpdater;
 
-    private final Map<Long, FileInfo> recentlyChangedFiles =
-            new HashMap<Long, FileInfo>(MAX_RECENTLY_CHANGED_FILES);
+    private final Map<Long, FileInfo> recentlyChangedFiles = new HashMap<Long, FileInfo>(
+        MAX_RECENTLY_CHANGED_FILES);
     private final MenuItem[] recentMenuItems = new MenuItem[MAX_RECENTLY_CHANGED_FILES];
     private final PreferencesDialog preferencesDialog;
     /**
@@ -193,7 +193,8 @@ public class UIController extends PFComponent {
 
     private Skin activeSkin;
 
-    private final DelayedUpdater recentlyChangedUpdater = new DelayedUpdater(getController(), 5000L);
+    private final DelayedUpdater recentlyChangedUpdater = new DelayedUpdater(
+        getController(), 5000L);
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -466,13 +467,11 @@ public class UIController extends PFComponent {
                         for (FileInfo fileInfo : recentlyChangedFiles.values())
                         {
                             if (i++ == item) {
-                                // Open file in the file browser, checking if deleted.
-                                UIController uiController = getController().getUIController();
-                                if (fileInfo.isDeleted()) {
-                                    uiController.openFilesInformationDeleted(fileInfo.getFolderInfo());
-                                } else {
-                                    uiController.openFilesInformation(fileInfo.getFolderInfo());
-                                }
+                                // Open file in the file browser, checking if
+                                // deleted.
+                                UIController uiController = getController()
+                                    .getUIController();
+                                uiController.openFileInformation(fileInfo);
                                 break;
                             }
                         }
@@ -789,11 +788,11 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     private void displayInformationWindow() {
-        mainFrame.showInlineInfoPanel(
-                (JPanel) informationFrame.getUIComponent().getContentPane(),
-                informationFrame.getUIComponent().getTitle());
+        mainFrame.showInlineInfoPanel((JPanel) informationFrame
+            .getUIComponent().getContentPane(), informationFrame
+            .getUIComponent().getTitle());
     }
-    
+
     public void openFileInformation(FileInfo fileInfo) {
         informationFrame.displayFile(fileInfo);
         displayInformationWindow();
@@ -918,8 +917,8 @@ public class UIController extends PFComponent {
      * window.
      * <p>
      * This returns most recently active PowerFolder frame. Possibly the
-     * InformationFrame or (default) MainFrame. Used by dialogs, so
-     * focus does not always jump to the wrong (Main) frame.
+     * InformationFrame or (default) MainFrame. Used by dialogs, so focus does
+     * not always jump to the wrong (Main) frame.
      * <P>
      * 
      * @return the active frame.
@@ -1067,7 +1066,8 @@ public class UIController extends PFComponent {
     }
 
     private void handleFolderAutoCreate(FolderAutoCreateEvent event) {
-        applicationModel.getNoticesModel().handleNotice(new FolderAutoCreateNotice(event.getFolderInfo()));
+        applicationModel.getNoticesModel().handleNotice(
+            new FolderAutoCreateNotice(event.getFolderInfo()));
     }
 
     /**
@@ -1237,7 +1237,9 @@ public class UIController extends PFComponent {
 
             // Only keep latest version of any particular file; remove earlier
             // versions.
-            for (Iterator<Long> iterator = recentlyChangedFiles.keySet().iterator(); iterator.hasNext(); ) {
+            for (Iterator<Long> iterator = recentlyChangedFiles.keySet()
+                .iterator(); iterator.hasNext();)
+            {
                 Long next = iterator.next();
                 FileInfo info = recentlyChangedFiles.get(next);
                 if (fileInfo.getRelativeName().equals(info.getRelativeName())) {
@@ -1259,7 +1261,8 @@ public class UIController extends PFComponent {
             }
         }
 
-        // Delay updating the actual menu so we don't spam the UI with multiple updates.
+        // Delay updating the actual menu so we don't spam the UI with multiple
+        // updates.
         recentlyChangedUpdater.schedule(new Runnable() {
             public void run() {
 
@@ -1272,7 +1275,8 @@ public class UIController extends PFComponent {
                         recentlyChangedMenu.add(menuItem);
                         menuItem.setLabel(info.getFilenameOnly());
                     }
-                    recentlyChangedMenu.setEnabled(!recentlyChangedFiles.isEmpty());
+                    recentlyChangedMenu.setEnabled(!recentlyChangedFiles
+                        .isEmpty());
                 }
             }
         });

@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationCardType;
@@ -44,6 +45,7 @@ import de.dal33t.powerfolder.ui.information.folder.problems.ProblemsTab;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -69,21 +71,22 @@ public class FolderInformationCard extends InformationCard {
         super(controller);
         filesTab = new FilesTab(getController());
 
-        if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
+        if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController()))
+        {
             if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
                 membersTab = new MembersExpertTab(getController());
             } else {
                 membersTab = new MembersSimpleTab(getController());
             }
-        }
-        else {
+        } else {
             membersTab = null;
         }
 
-        if (ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
+        if (ConfigurationEntry.SETTINGS_ENABLED
+            .getValueBoolean(getController()))
+        {
             settingsTab = new SettingsTab(getController());
-        }
-        else {
+        } else {
             settingsTab = null;
         }
 
@@ -114,6 +117,26 @@ public class FolderInformationCard extends InformationCard {
             settingsTab.setFolderInfo(folderInfo);
         }
         problemsTab.setFolderInfo(folderInfo);
+    }
+
+    /**
+     * Sets the folder in the tabs.
+     * 
+     * @param folderInfo
+     */
+    public void setFileInfo(FileInfo fileInfo) {
+        if (fileInfo.isDeleted()) {
+            setFolderInfoDeleted(fileInfo.getFolderInfo());
+        } else {
+            setFolderInfo(fileInfo.getFolderInfo());
+        }
+
+        String fn = fileInfo.getFilenameOnly();
+        String subDir = fileInfo.getRelativeName().replace(fn, "");
+        if (StringUtils.isNotBlank(subDir)) {
+            filesTab.selectionChanged(subDir);
+        }
+        filesTab.set
     }
 
     /**
@@ -282,8 +305,10 @@ public class FolderInformationCard extends InformationCard {
             }
 
             if (settingsTab != null) {
-                JScrollPane scrollPane = new JScrollPane(settingsTab.getUIComponent(),
-                        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                JScrollPane scrollPane = new JScrollPane(
+                    settingsTab.getUIComponent(),
+                    ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
                 UIUtil.removeBorder(scrollPane);
                 tabbedPane.addTab(Translation
                     .getTranslation("folder_information_card.settings.title"),
@@ -361,10 +386,14 @@ public class FolderInformationCard extends InformationCard {
      */
     private int getSettingsTabIndex() {
         int maxIndex = 2;
-        if (!ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.MEMBERS_ENABLED
+            .getValueBoolean(getController()))
+        {
             maxIndex -= 1;
         }
-        if (!ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.SETTINGS_ENABLED
+            .getValueBoolean(getController()))
+        {
             maxIndex -= 1;
         }
         return getController().isBackupOnly() ? 1 : maxIndex;
@@ -377,10 +406,14 @@ public class FolderInformationCard extends InformationCard {
      */
     private int getProblemsTabIndex() {
         int maxIndex = 3;
-        if (!ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.MEMBERS_ENABLED
+            .getValueBoolean(getController()))
+        {
             maxIndex -= 1;
         }
-        if (!ConfigurationEntry.SETTINGS_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.SETTINGS_ENABLED
+            .getValueBoolean(getController()))
+        {
             maxIndex -= 1;
         }
         return getController().isBackupOnly() ? 1 : maxIndex;
