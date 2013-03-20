@@ -280,8 +280,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         {
             try {
                 if (WinUtils.isSupported()
-                    && WinUtils.isPFLinks(getController()))
+                    && WinUtils.isPFLinks(oldShortcutName))
                 {
+                    WinUtils.removePFLinks(oldShortcutName);
                     WinUtils.getInstance().setPFLinks(true, getController());
                 } else if (MacUtils.isSupported()) {
                     MacUtils.getInstance().setPFPlaces(true, getController());

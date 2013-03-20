@@ -44,12 +44,12 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class WinUtils extends Loggable {
     private static final Logger LOG = Logger
         .getLogger(WinUtils.class.getName());
-    
+
     private static final String REGQUERY_UTIL = "reg query ";
     private static final String REGSTR_TOKEN = "REG_SZ";
-    private static final String DESKTOP_FOLDER_CMD = REGQUERY_UTIL 
-       + "\"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\" 
-       + "Explorer\\Shell Folders\" /v DESKTOP";
+    private static final String DESKTOP_FOLDER_CMD = REGQUERY_UTIL
+        + "\"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\"
+        + "Explorer\\Shell Folders\" /v DESKTOP";
 
     /**
      * The file system directory that contains the programs that appear in the
@@ -164,9 +164,9 @@ public class WinUtils extends Loggable {
             logWarning("Could not locate the Links directory in " + userHome);
             return;
         }
-        File baseDir = controller.getFolderRepository()
-            .getFoldersBasedir();
-        File shortCut = new File(linksDir, baseDir.getName() + Constants.LINK_EXTENSION);
+        File baseDir = controller.getFolderRepository().getFoldersBasedir();
+        File shortCut = new File(linksDir, baseDir.getName()
+            + Constants.LINK_EXTENSION);
         if (setup) {
             ShellLink link = new ShellLink(null, baseDir.getName(),
                 baseDir.getAbsolutePath(), null);
@@ -175,8 +175,22 @@ public class WinUtils extends Loggable {
             shortCut.delete();
         }
     }
+    
+    public static void removePFLinks(String shortcutName) {
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
+        String userHome = System.getProperty("user.home");
+        File linksDir = new File(userHome, "Links");
+        if (!linksDir.exists()) {
+            return;
+        }
+        File shortCut = new File(linksDir, shortcutName
+            + Constants.LINK_EXTENSION);
+        shortCut.delete();
+    }
 
-    public static boolean isPFLinks(Controller controller) {
+    public static boolean isPFLinks(String shortcutName) {
         if (!OSUtil.isWindowsSystem()) {
             return false;
         }
@@ -185,9 +199,8 @@ public class WinUtils extends Loggable {
         if (!linksDir.exists()) {
             return false;
         }
-        File baseDir = controller.getFolderRepository()
-            .getFoldersBasedir();
-        File shortCut = new File(linksDir, baseDir.getName() + Constants.LINK_EXTENSION);
+        File shortCut = new File(linksDir, shortcutName
+            + Constants.LINK_EXTENSION);
         return shortCut.exists();
     }
 
@@ -209,7 +222,8 @@ public class WinUtils extends Loggable {
             return;
         }
         logFiner("Found " + pfile.getAbsolutePath());
-        String shortCutname = controller.getDistribution().getName() + Constants.LINK_EXTENSION;
+        String shortCutname = controller.getDistribution().getName()
+            + Constants.LINK_EXTENSION;
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
@@ -238,7 +252,8 @@ public class WinUtils extends Loggable {
     }
 
     public boolean isPFStartup(Controller controller) {
-        String shortCutname = controller.getDistribution().getName() + Constants.LINK_EXTENSION;
+        String shortCutname = controller.getDistribution().getName()
+            + Constants.LINK_EXTENSION;
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
@@ -383,7 +398,7 @@ public class WinUtils extends Loggable {
     public static void killProcess(String serviceName) throws Exception {
         Runtime.getRuntime().exec(KILL + serviceName);
     }
-    
+
     /**
      * @return
      */
