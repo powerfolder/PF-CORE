@@ -1,3 +1,3 @@
 #!/bin/sh
 
-codesign -a "Developer ID Application: $1" $4
+codesign -f -s "$1" $2
