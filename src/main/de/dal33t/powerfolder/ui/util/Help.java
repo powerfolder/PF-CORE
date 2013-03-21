@@ -127,6 +127,7 @@ public class Help {
         String wikiURL = ConfigurationEntry.PROVIDER_WIKI_URL
             .getValue(controller);
         if (StringUtils.isBlank(wikiURL)) {
+            LOG.log(Level.SEVERE, "Unable to find wiki URL for article " + article);
             return null;
         }
         return wikiURL + '/' + article;
