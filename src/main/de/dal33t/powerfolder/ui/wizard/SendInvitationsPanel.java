@@ -35,9 +35,6 @@ import javax.swing.event.ListSelectionListener;
 
 import jwf.WizardPanel;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -53,7 +50,6 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -76,12 +72,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private AutoTextField viaPowerFolderText;
     private JList inviteesList;
     private JScrollPane inviteesListScrollPane;
-    private ActionLabel addMessageLink;
     private DefaultListModel inviteesListModel;
     private Invitation invitation;
-    private ValueModel messageModel;
     private JPanel removeButtonPanel;
-    private JComponent messageComp;
     private DefaultComboBoxModel permissionsComboModel;
     private JComboBox permissionsCombo;
 
@@ -176,14 +169,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        if (messageModel.getValue() != null) {
-            invitation.setInvitationText((String) messageModel.getValue());
-        }
         Runnable inviteTask = new Runnable() {
             public void run() {
-                if (messageModel.getValue() != null) {
-                    invitation.setInvitationText((String) messageModel.getValue());
-                }
                 if (!sendInvitation()) {
                     throw new RuntimeException(Translation.getTranslation("wizard.send_invitations.no_invitees"));
                 }
@@ -205,7 +192,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "140dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 10dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref),10dlu, pref");
         // inv join text inv fdl hint1 hint2 auto list remove, privs
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -246,10 +233,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         removeButtonPanel.setVisible(false);
         row += 2;
 
-        builder.add(addMessageLink.getUIComponent(), cc.xy(1, row));
-        builder.add(messageComp, cc.xy(1, row));
-        row += 2;
-
         FormLayout layout4 = new FormLayout("pref, 3dlu, pref:grow", "pref");
         PanelBuilder builder4 = new PanelBuilder(layout4);
         builder4.add(new JLabel(Translation.getTranslation("send_invitations.permissions_label")), cc.xy(1, 1));
@@ -263,10 +246,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
-        messageModel = new ValueHolder();
-
-        final FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
-            FOLDERINFO_ATTRIBUTE);
+        FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
         Reject.ifNull(folder, "Unable to send invitation, folder is null");
 
         // Clear folder attribute
@@ -290,28 +270,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         List<String> candidateAddresses = getCandidatesAddresses();
         viaPowerFolderText.setDataList(candidateAddresses);
-
-        addMessageLink = new ActionLabel(getController(),
-            new MyAttachMessageAction());
-        addMessageLink.setText(Translation
-            .getTranslation("wizard.send_invitations.add_message.text"));
-        addMessageLink.setToolTipText(Translation
-            .getTranslation("wizard.send_invitations.add_message.tip"));
-        addMessageLink.convertToBigLabel();
-
-        JScrollPane messagePane = new JScrollPane(
-            BasicComponentFactory.createTextArea(messageModel));
-        FormLayout layout2 = new FormLayout("fill:140dlu",
-            "pref, 3dlu, fill:40dlu");
-        PanelBuilder builder2 = new PanelBuilder(layout2);
-        CellConstraints cc = new CellConstraints();
-        builder2.addLabel(
-            Translation.getTranslation("dialog.personalized_message.hint"),
-            cc.xy(1, 1));
-        builder2.add(messagePane, cc.xy(1, 3));
-        messageComp = builder2.getPanel();
-        messageComp.setVisible(false);
-        messageComp.setOpaque(false);
 
         permissionsComboModel = new DefaultComboBoxModel();
         permissionsCombo = new JComboBox(permissionsComboModel);
@@ -467,14 +425,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         public void valueChanged(ListSelectionEvent e) {
             enableRemoveButton();
             updateButtons();
-        }
-    }
-
-    private class MyAttachMessageAction extends AbstractAction {
-
-        public void actionPerformed(ActionEvent e) {
-            messageComp.setVisible(true);
-            addMessageLink.getUIComponent().setVisible(false);
         }
     }
 }
