@@ -485,21 +485,6 @@ public class Folder extends PFComponent {
         if (diskItemFilter.getPatterns().isEmpty() && !isDeviceDisconnected()) {
             addDefaultExcludes();
         }
-
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                super.run();    //To change body of overridden methods use File | Settings | File Templates.
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-                FileInfo fileInfo = getController().getFolderRepository().getFolders().iterator().next().getKnownFiles().iterator().next();
-                addProblem(new FileConflictProblem(fileInfo));
-            }
-        };
-        t.start();
     }
 
     public void addProblemListener(ProblemListener l) {
