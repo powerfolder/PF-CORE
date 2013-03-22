@@ -130,6 +130,7 @@ public class Help {
             LOG.log(Level.SEVERE, "Unable to find wiki URL");
             return null;
         }
+        LOG.log(Level.FINE, "Wiki URL is " + wikiURL + '/' + article);
         return wikiURL + '/' + article;
     }
 
