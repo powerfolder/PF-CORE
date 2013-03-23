@@ -146,6 +146,13 @@ public class TextPanelPanel extends PFWizardPanel {
                     Action action = new OpenFolderAction(getController(), folderInfo);
                     builder.add(new ActionLabel(getController(), action)
                             .getUIComponent(), cc.xy(1, y));
+                    builder.appendRow("3dlu");
+                    y++;
+                    builder.appendRow("pref");
+                    y++;
+                    action = new SendInviteAction(getController(), folderInfo);
+                    builder.add(new ActionLabel(getController(), action)
+                            .getUIComponent(), cc.xy(1, y));
                 }
             }
         }
@@ -154,13 +161,18 @@ public class TextPanelPanel extends PFWizardPanel {
     }
 
     /**
-     * Initalizes all nessesary components
+     * Initializes all necessary components
      */
     protected void initComponents() {
     }
 
     protected String getTitle() {
         return title;
+    }
+
+    private JDialog getWizardDialog() {
+        return (JDialog) getWizardContext().getAttribute(
+                WizardContextAttributes.DIALOG_ATTRIBUTE);
     }
 
     // ////////////////
@@ -201,11 +213,6 @@ public class TextPanelPanel extends PFWizardPanel {
             diag.dispose();
         }
 
-        private JDialog getWizardDialog() {
-            return (JDialog) getWizardContext().getAttribute(
-                    WizardContextAttributes.DIALOG_ATTRIBUTE);
-        }
-
     }
 
     private static class OpenFolderAction extends BaseAction {
@@ -220,6 +227,27 @@ public class TextPanelPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             Folder folder = folderInfo.getFolder(getController());
             FileUtils.openFile(folder.getLocalBase());
+        }
+    }
+
+    private class SendInviteAction extends BaseAction {
+
+        private final FolderInfo folderInfo;
+
+        private SendInviteAction(Controller controller, FolderInfo folderInfo) {
+            super("action_invite_friend", controller);
+            this.folderInfo = folderInfo;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+
+            // Close this dialog.
+            JDialog diag = getWizardDialog();
+            diag.setVisible(false);
+            diag.dispose();
+
+            // Open the wizard to send an invitation.
+            PFWizard.openSendInvitationWizard(getController(), folderInfo);
         }
     }
 
