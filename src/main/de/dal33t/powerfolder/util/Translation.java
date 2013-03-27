@@ -25,9 +25,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,7 +45,7 @@ public class Translation {
         .getName());
 
     // Useful locales, which are not already included in Locale
-  //  public static final Locale DUTCH = new Locale("nl");
+    public static final Locale DUTCH = new Locale("nl");
     public static final Locale SPANISH = new Locale("es");
     public static final Locale RUSSIAN = new Locale("ru");
     public static final Locale SWEDISH = new Locale("sv");
@@ -82,7 +82,7 @@ public class Translation {
             supportedLocales.add(Locale.ENGLISH);
             // supportedLocales.add(Locale.UK);
             supportedLocales.add(Locale.GERMAN);
-         //   supportedLocales.add(DUTCH);
+            supportedLocales.add(DUTCH);
             // supportedLocales.add(Locale.JAPANESE);
             supportedLocales.add(Locale.ITALIAN);
             supportedLocales.add(SPANISH);
