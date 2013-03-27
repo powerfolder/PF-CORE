@@ -44,7 +44,8 @@ public class LoginUtil {
     }
 
     private final static int OBF_BYTE = 0xAA;
-    public final static String HASH_DIGEST = "MD5";
+    public final static String MD5_HASH_DIGEST = "MD5";
+    public final static String SHA256_HASH_DIGEST = "SHA-256";
 
     /**
      * Obfuscates a password into String. This does NOT mean the password is
@@ -174,16 +175,20 @@ public class LoginUtil {
         String[] parts = hashedPW.split(":");
         if (parts.length != 3) {
             // Legacy for clear text passwords
-            return hashedPW != null && !hashedPW.startsWith(HASH_DIGEST)
+            return hashedPW != null && !hashedPW.startsWith(MD5_HASH_DIGEST)
+                && !hashedPW.startsWith(SHA256_HASH_DIGEST)
                 && Arrays.equals(pwCandidate, Util.toCharArray(hashedPW));
         }
-        if (!parts[0].equalsIgnoreCase(HASH_DIGEST)) {
-            return false;
+        String digest = parts[0];
+        if (digest.equalsIgnoreCase(MD5_HASH_DIGEST)
+            || digest.equalsIgnoreCase(SHA256_HASH_DIGEST))
+        {
+            String salt = parts[1];
+            String expectedHash = parts[2];
+            String actualHash = hash(digest, Util.toString(pwCandidate), salt);
+            return expectedHash.equals(actualHash);
         }
-        String salt = parts[1];
-        String expectedHash = parts[2];
-        String actualHash = hash(Util.toString(pwCandidate), salt);
-        return expectedHash.equals(actualHash);
+        return false;
     }
 
     /**
@@ -193,8 +198,8 @@ public class LoginUtil {
      */
     public static String hashAndSalt(String password) {
         String salt = IdGenerator.makeId();
-        return getDigest().getAlgorithm() + ":" + salt + ":"
-            + hash(password, salt);
+        String digest = getPreferredDigest().getAlgorithm();
+        return digest + ":" + salt + ":" + hash(digest, password, salt);
     }
 
     /**
@@ -202,11 +207,11 @@ public class LoginUtil {
      *            the password to process
      * @return the hashed password and salt.
      */
-    public static String hash(String password, String salt) {
+    public static String hash(String digest, String password, String salt) {
         String input = password + salt;
         byte[] in = input.getBytes(Convert.UTF8);
         for (int i = 0; i < 1597; i++) {
-            in = digest(in);
+            in = digest(digest, in);
         }
         return Base64.encodeBytes(in);
     }
@@ -344,8 +349,8 @@ public class LoginUtil {
      *            Data to digest
      * @return digest
      */
-    private static byte[] digest(byte[] data) {
-        return getDigest().digest(data);
+    private static byte[] digest(String digest, byte[] data) {
+        return getDigest(digest).digest(data);
     }
 
     /**
@@ -374,7 +379,7 @@ public class LoginUtil {
      *             when a {@link java.security.NoSuchAlgorithmException} is
      *             caught,
      */
-    private static MessageDigest getDigest() {
-        return getDigest(HASH_DIGEST);
+    private static MessageDigest getPreferredDigest() {
+        return getDigest(SHA256_HASH_DIGEST);
     }
 }
