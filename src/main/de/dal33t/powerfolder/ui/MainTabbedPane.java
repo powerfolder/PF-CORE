@@ -27,6 +27,7 @@ import javax.swing.event.ChangeListener;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
@@ -176,6 +177,10 @@ public class MainTabbedPane extends PFUIComponent {
         if (expertMode) {
             tabbedPane.setSelectedIndex(tabIndex);
         }
+    }
+
+    public void folderCreated(FolderRepositoryEvent e) {
+        foldersTab.folderCreated(e);
     }
 
     /**

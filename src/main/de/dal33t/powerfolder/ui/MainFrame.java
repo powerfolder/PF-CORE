@@ -1018,7 +1018,8 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
-            // Don't care.
+            // Let the MainTabbedPane know so it can scroll the Folders tab to the new folder.
+            mainTabbedPane.folderCreated(e);
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {

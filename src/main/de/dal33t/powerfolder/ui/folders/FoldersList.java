@@ -22,9 +22,7 @@ package de.dal33t.powerfolder.ui.folders;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -51,6 +49,7 @@ import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
+import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -66,7 +65,7 @@ public class FoldersList extends PFUIComponent {
 
     private JPanel uiComponent;
     private JPanel folderListPanel;
-    private FolderRepository repo;
+    private FolderRepository repository;
     private ServerClient client;
     private JScrollPane scrollPane;
     private ExpansionListener expansionListener;
@@ -131,7 +130,7 @@ public class FoldersList extends PFUIComponent {
      */
     private void buildUI() {
 
-        repo = getController().getFolderRepository();
+        repository = getController().getFolderRepository();
         client = getController().getOSClient();
 
         folderListPanel = new JPanel();
@@ -146,9 +145,6 @@ public class FoldersList extends PFUIComponent {
 
         builder.add(folderListPanel, cc.xy(1, 1));
         uiComponent = builder.getPanel();
-
-        // First update via #populate() call
-        // updateFolders();
     }
 
     public boolean isEmpty() {
@@ -179,7 +175,7 @@ public class FoldersList extends PFUIComponent {
     }
 
     /**
-     * Makes sure that the folder views are correct for folder repositoy and
+     * Makes sure that the folder views are correct for folder repository and
      * server client folders.
      */
     private void updateFolders0() {
@@ -188,6 +184,7 @@ public class FoldersList extends PFUIComponent {
         if (!populated) {
             return;
         }
+
         if (getController().isShuttingDown()) {
             return;
         }
@@ -195,17 +192,17 @@ public class FoldersList extends PFUIComponent {
         // Get combined list of repo and account folders.
         List<ExpandableFolderModel> localFolders = new ArrayList<ExpandableFolderModel>();
 
-        for (Folder folder : repo.getFolders()) {
+        for (Folder folder : repository.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
             ExpandableFolderModel bean = new ExpandableFolderModel(
-                ExpandableFolderModel.Type.Local, folderInfo, folder,
+                Type.Local, folderInfo, folder,
                 getController().getOSClient().joinedByCloud(folder));
             localFolders.add(bean);
         }
 
         for (FolderInfo folderInfo : client.getAccountFolders()) {
             ExpandableFolderModel bean = new ExpandableFolderModel(
-                ExpandableFolderModel.Type.CloudOnly, folderInfo, null, true);
+                Type.CloudOnly, folderInfo, null, true);
             if (localFolders.contains(bean)) {
                 continue;
             }
@@ -221,7 +218,7 @@ public class FoldersList extends PFUIComponent {
                 FolderInfo folderInfo = new FolderInfo(name,
                     '[' + IdGenerator.makeId() + ']');
                 ExpandableFolderModel bean = new ExpandableFolderModel(
-                    ExpandableFolderModel.Type.Typical, folderInfo, null, false);
+                    Type.Typical, folderInfo, null, false);
 
                 if (!localFolders.contains(bean)) {
                     localFolders.add(bean);
@@ -337,8 +334,8 @@ public class FoldersList extends PFUIComponent {
     }
 
     /**
-     * Requird to make scroller repaint correctly.
-     * 
+     * Required to make scroller repaint correctly.
+     *
      * @param scrollPane
      */
     public void setScroller(JScrollPane scrollPane) {
@@ -364,9 +361,72 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
-    // /////////////////
+    public void folderCreated(final FolderRepositoryEvent e) {
+
+        // New folder created; try to show it in the list.
+        Thread t = new Thread() {
+            public void run() {
+
+                // At this point, the newly created folder does not exist in the views,
+                // so do this later, when the folder has appeared.
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    // Don't care.
+                }
+
+                // Run this in the AWT thread later.
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        scrollToFolderInfo(e.getFolderInfo());
+                    }
+                });
+            }
+        };
+        t.start();
+    }
+
+    /**
+     * This tries to find a view for a FolderInfo and if found, scrolls to it in the list.
+     *
+     * @param folderInfo
+     */
+    private void scrollToFolderInfo(FolderInfo folderInfo) {
+
+        // Sum view heights and calculate my position within that height.
+        boolean found = false;
+        int totalHeight = 0;
+        int myPosition = 0;
+        for (ExpandableFolderView view : views) {
+            view.getUIComponent().getHeight();
+            int height = view.getUIComponent().getHeight();
+            totalHeight += height;
+            if (view.getFolderInfo().equals(folderInfo)) {
+                found = true;
+            }
+            if (!found) {
+                myPosition += height;
+            }
+        }
+
+        if (found) {
+
+            int viewportHeight = scrollPane.getViewport().getHeight();
+
+            // Are all the views already on the screen?
+            if (viewportHeight > totalHeight) {
+                // All on screen with no vertical scrolling required. Nothing to do.
+                return;
+            }
+
+            // Scroll it so mine is at top.
+            scrollPane.getVerticalScrollBar().setValue(myPosition);
+        }
+    }
+
+    // ////////////////
     // Inner classes //
-    // /////////////////
+    // ////////////////
 
     /**
      * Listener for changes to folder repository folder set.
@@ -400,7 +460,7 @@ public class FoldersList extends PFUIComponent {
      * Listener for changes to server client folder set.
      */
     private class MyServerClientListener implements ServerClientListener {
-        private boolean lastLoginSuccess = false;
+        private boolean lastLoginSuccess;
 
         public void login(ServerClientEvent event) {
             if (event.isLoginSuccess()) {
