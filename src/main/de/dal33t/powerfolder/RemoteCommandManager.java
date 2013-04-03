@@ -466,9 +466,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 ServerClient client = getController().getOSClient();
                 FileInfo fInfo = FileInfoFactory.lookupInstance(folder, file);
                 String linkURL = client.getFileLinkURL(fInfo);
-                char[] pw = client.getPassword();
-                linkURL = LoginUtil.decorateURL(linkURL, client.getUsername(), pw);
-                LoginUtil.clear(pw);
                 try {
                     BrowserLauncher.openURL(linkURL);
                 } catch (IOException e) {
