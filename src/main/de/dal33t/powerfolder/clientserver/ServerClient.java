@@ -564,9 +564,10 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + Constants.GET_LINK_URI + '/'
-            + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
-            + Util.endcodeForURL(fInfo.getRelativeName());
+        return getWebURL(
+            Constants.GET_LINK_URI + '/'
+                + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
+                + Util.endcodeForURL(fInfo.getRelativeName()), true);
     }
 
     /**
