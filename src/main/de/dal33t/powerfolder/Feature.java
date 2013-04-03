@@ -102,11 +102,6 @@ public enum Feature {
      */
     MANUAL_SYNC_CB(false),
 
-    /**
-     * ENABLE for 8.1
-     */
-    MAC_CLIENT_INSTALLER_DMG(false),
-
     SYSTRAY_ALL_FOLDERS(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
