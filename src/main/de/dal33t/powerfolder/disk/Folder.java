@@ -128,7 +128,7 @@ public class Folder extends PFComponent {
     public static final String FOLDER_STATISTIC = "FolderStatistic";
 
     private static final int FIVE_MINUTES = 60 * 5;
-    private static final int THIRTY_SECONDS = 30;
+    //private static final int THIRTY_SECONDS = 30;
 
     /** The base location of the folder. */
     private final TFile localBase;
@@ -454,20 +454,20 @@ public class Folder extends PFComponent {
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         // Create invitation
-        if (folderSettings.isCreateInvitationFile()) {
-            try {
-                Invitation inv = createInvitation();
-                File invFile = new TFile(localBase,
-                    FileUtils.removeInvalidFilenameChars(inv.folder.name)
-                        + ".invitation");
-                InvitationUtil.save(inv, invFile);
-                scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
-            } catch (Exception e) {
-                // Failure to send invite is not fatal to folder create.
-                // Log it and move on.
-                logInfo(e);
-            }
-        }
+//        if (folderSettings.isCreateInvitationFile()) {
+//            try {
+//                Invitation inv = createInvitation();
+//                File invFile = new TFile(localBase,
+//                    FileUtils.removeInvalidFilenameChars(inv.folder.name)
+//                        + ".invitation");
+//                InvitationUtil.save(inv, invFile);
+//                scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
+//            } catch (Exception e) {
+//                // Failure to send invite is not fatal to folder create.
+//                // Log it and move on.
+//                logInfo(e);
+//            }
+//        }
 
         // Remove desktop.ini. Was accidentally created in 4.3.0 release.
         if (currentInfo.isMetaFolder()) {

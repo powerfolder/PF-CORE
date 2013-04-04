@@ -66,13 +66,7 @@ public interface WizardContextAttributes {
     String SET_DEFAULT_SYNCHRONIZED_FOLDER = "set_default_synced_folder";
 
     /**
-     * Whether to save a local invitation file. Only originators of folders save
-     * locally; joining members do not.
-     */
-    String SAVE_INVITE_LOCALLY = "save.invitation.locally";
-
-    /**
-     * Whether the folder being creaed is from an invition. If it is, do not try
+     * Whether the folder being created is from an invitation. If it is, do not try
      * to locate an existing online folder to join.
      */
     String FOLDER_IS_INVITE = "folder.is.invite";

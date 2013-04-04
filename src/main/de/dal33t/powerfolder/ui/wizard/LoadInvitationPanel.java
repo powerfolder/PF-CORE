@@ -23,7 +23,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_PERMISSION_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
@@ -139,8 +138,6 @@ public class LoadInvitationPanel extends PFWizardPanel {
                     FileUtils.removeInvalidFilenameChars(invitation.folder
                         .getName()));
             }
-
-            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
 
             return new ChooseDiskLocationPanel(getController(), base
                 .getAbsolutePath(), new FolderCreatePanel(getController()));

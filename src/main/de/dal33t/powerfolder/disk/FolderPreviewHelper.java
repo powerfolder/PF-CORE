@@ -94,7 +94,7 @@ public class FolderPreviewHelper {
         FolderSettings savedFolderSettings = new FolderSettings(
             initialFolderSettings.getLocalBaseDir(),
             initialFolderSettings.getSyncProfile(),
-            initialFolderSettings.isCreateInvitationFile(),
+            false,
             true,
             initialFolderSettings.getDownloadScript(),
             initialFolderSettings.getVersions(),

@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.wizard;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
@@ -184,8 +183,6 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         FolderCreatePanel createPanel = new FolderCreatePanel(controller);
 
-        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
-
         return new ChooseMultiDiskLocationPanel(controller, createPanel, true);
     }
 
@@ -217,8 +214,6 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         FolderCreatePanel createPanel = new FolderCreatePanel(controller);
 
-        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, false);
-
         return new ChooseMultiDiskLocationPanel(controller, createPanel, true);
     }
 
@@ -248,8 +243,6 @@ public class WhatToDoPanel extends PFWizardPanel {
                 .getTranslation("wizard.what_to_do.folder_backup_success")
                 + Translation.getTranslation("wizard.what_to_do.pcs_join"));
         wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
-
-        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, true);
 
         // #1991: Let the user choose if Backup source or target
         // MultiFolderSetupPanel setupPanel = new
@@ -290,8 +283,6 @@ public class WhatToDoPanel extends PFWizardPanel {
         wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         FolderCreatePanel createPanel = new FolderCreatePanel(controller);
-
-        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, true);
 
         return new ChooseMultiDiskLocationPanel(controller, createPanel,
                 cancelNotFinish);

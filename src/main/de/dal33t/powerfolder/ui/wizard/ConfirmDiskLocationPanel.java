@@ -94,8 +94,6 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
                     Translation.getTranslation("wizard.success_join"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
-
             return new FolderCreatePanel(getController());
         }
     }

@@ -121,9 +121,6 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                 .getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        getWizardContext().setAttribute(
-            WizardContextAttributes.SAVE_INVITE_LOCALLY, Boolean.TRUE);
-
         return new FolderCreatePanel(getController());
     }
 

@@ -141,15 +141,15 @@ public class InvitationUtil {
      *            the file to save to
      * @return true if succeeded
      */
-    public static boolean save(Invitation invitation, File file) {
-        try {
-            return save(invitation, new BufferedOutputStream(
-                new FileOutputStream(file)));
-        } catch (FileNotFoundException e) {
-            log.log(Level.SEVERE, "Unable to write invitation file stream", e);
-            return false;
-        }
-    }
+//    public static boolean save(Invitation invitation, File file) {
+//        try {
+//            return save(invitation, new BufferedOutputStream(
+//                new FileOutputStream(file)));
+//        } catch (FileNotFoundException e) {
+//            log.log(Level.SEVERE, "Unable to write invitation file stream", e);
+//            return false;
+//        }
+//    }
 
     /**
      * Save an Invitation to an Outputstream.
@@ -160,19 +160,19 @@ public class InvitationUtil {
      *            the stream to save to
      * @return true if successful
      */
-    public static boolean save(Invitation invitation, OutputStream out) {
-        log.finer("Saving invitation to " + out);
-        ObjectOutputStream oOut;
-        try {
-            oOut = new ObjectOutputStream(out);
-            oOut.writeObject(invitation);
-            oOut.close();
-            return true;
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to save invitation file stream", e);
-        }
-        return false;
-    }
+//    public static boolean save(Invitation invitation, OutputStream out) {
+//        log.finer("Saving invitation to " + out);
+//        ObjectOutputStream oOut;
+//        try {
+//            oOut = new ObjectOutputStream(out);
+//            oOut.writeObject(invitation);
+//            oOut.close();
+//            return true;
+//        } catch (IOException e) {
+//            log.log(Level.SEVERE, "Unable to save invitation file stream", e);
+//        }
+//        return false;
+//    }
 
     /**
      * Creates a file filter for powerfolder invitations

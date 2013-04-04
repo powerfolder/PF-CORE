@@ -100,8 +100,6 @@ public class NewFolderAction extends BaseAction {
 
                     wizard.getWizardContext().setAttribute(
                         PFWizard.SUCCESS_PANEL, successPanel);
-                    wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-                        false);
                     wizard.getWizardContext().setAttribute(
                         BACKUP_ONLINE_STOARGE,
                         getController().getOSClient().isBackupByDefault());

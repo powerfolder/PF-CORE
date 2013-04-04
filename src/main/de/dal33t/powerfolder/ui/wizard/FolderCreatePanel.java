@@ -26,7 +26,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
@@ -127,13 +126,6 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             Map<FolderInfo, FolderSettings> configurations = new HashMap<FolderInfo, FolderSettings>();
             Map<FolderInfo, String> joinFolders = new HashMap<FolderInfo, String>();
 
-            // Mandatory - save invite locally
-            Boolean saveLocalInvite = (Boolean) getWizardContext()
-                .getAttribute(SAVE_INVITE_LOCALLY);
-            if (saveLocalInvite == null) {
-                saveLocalInvite = Boolean.FALSE;
-            }
-
             // Preview folder
             Object attribute = getWizardContext().getAttribute(
                 PREVIEW_FOLDER_ATTIRBUTE);
@@ -185,7 +177,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                             folderCreateItem.getLinkToOnlineFolder());
                     }
                     FolderSettings folderSettings = new FolderSettings(
-                        localBase, syncProfile, saveLocalInvite,
+                        localBase, syncProfile, false,
                         previewFolder, null, archiveHistory, true);
                     configurations.put(folderInfo, folderSettings);
                 }
@@ -212,7 +204,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 }
 
                 FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite,
+                    syncProfile, false,
                     previewFolder, null,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()), true);

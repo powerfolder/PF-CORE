@@ -83,9 +83,6 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
         getWizardContext().setAttribute(
             WizardContextAttributes.FOLDER_CREATE_ITEMS, folderCreateItems);
 
-        getWizardContext().setAttribute(
-            WizardContextAttributes.SAVE_INVITE_LOCALLY, false);
-
         return new FolderCreatePanel(getController());
     }
 

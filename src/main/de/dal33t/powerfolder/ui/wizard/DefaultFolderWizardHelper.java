@@ -149,7 +149,6 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
             context.setAttribute(FOLDER_LOCAL_BASE, defaultSynchronizedFolder);
             // Create only if not already existing.
             context.setAttribute(BACKUP_ONLINE_STOARGE, accountFolder == null);
-            context.setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
             return new FolderCreatePanel(getController());
         }
         return nextPanel;

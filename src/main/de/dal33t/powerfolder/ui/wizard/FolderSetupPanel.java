@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.wizard;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
 import java.awt.event.KeyEvent;
@@ -101,8 +100,6 @@ public class FolderSetupPanel extends PFWizardPanel {
                 Translation.getTranslation("wizard.setup_success"),
                 Translation.getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
-
-        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
 
         return new FolderCreatePanel(getController());
     }

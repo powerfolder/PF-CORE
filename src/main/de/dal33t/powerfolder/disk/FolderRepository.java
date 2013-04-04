@@ -888,7 +888,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             SyncProfile syncProfile = SyncProfile.NO_SYNC;
 
             folderSettings = new FolderSettings(newBaseDir, syncProfile,
-                folderSettings.isCreateInvitationFile(),
+                false,
                 folderSettings.isPreviewOnly(),
                 folderSettings.getDownloadScript(),
                 folderSettings.getVersions(), folderSettings.isSyncPatterns(),

@@ -25,7 +25,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_PER
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
@@ -141,7 +140,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 Translation
                     .getTranslation("wizard.what_to_do.invite.select_local"));
 
-        // Setup sucess panel of this wizard path
+        // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
             Translation.getTranslation("wizard.setup_success"),
             Translation.getTranslation("wizard.success_join"));
@@ -152,8 +151,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             return (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
         } else {
-
-            getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
 
             getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
                 invitation.getInvitor());
