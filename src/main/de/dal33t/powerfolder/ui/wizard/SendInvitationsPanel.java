@@ -66,6 +66,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private static final Logger LOG = Logger.getLogger(SendInvitationsPanel.class.getName());
 
+    private FolderInfo folderInfo;
     private JButtonMini addButton;
     private JButtonMini searchButton;
     private JButtonMini removeButton;
@@ -192,24 +193,28 @@ public class SendInvitationsPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "140dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref),10dlu, pref");
-        // inv join text inv fdl hint1 hint2 auto list remove, privs
+            "pref, 10dlu, pref, 3dlu, pref, max(10dlu;pref), 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
-        int row = 1;
 
-        builder.addLabel(LoginUtil.getInviteUsernameLabel(getController()),
-            cc.xyw(1, row, 2));
+        FormLayout layout1 = new FormLayout("pref, 3dlu, pref:grow", "pref");
+        PanelBuilder builder1 = new PanelBuilder(layout1);
+        builder1.addLabel(Translation.getTranslation("send_invitations.folder_label"), cc.xy(1, 1));
+        int row = 1;
+        builder1.addLabel(folderInfo.getName(), cc.xy(3, row));
+        JPanel panel1 = builder1.getPanel();
+        panel1.setOpaque(false);
+        builder.add(panel1, cc.xy(1, row));
         row += 2;
 
-        FormLayout layout2 = new FormLayout("pref:grow, 3dlu, pref, pref",
-            "pref");
+        FormLayout layout2 = new FormLayout("pref, 3dlu, pref:grow, 3dlu, pref, pref", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
-        builder2.add(viaPowerFolderText, cc.xy(1, 1));
-        builder2.add(addButton, cc.xy(3, 1));
+        builder2.addLabel(LoginUtil.getInviteUsernameLabel(getController()), cc.xy(1, 1));
+        builder2.add(viaPowerFolderText, cc.xy(3, 1));
+        builder2.add(addButton, cc.xy(5, 1));
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder2.add(searchButton, cc.xy(4, 1));
+            builder2.add(searchButton, cc.xy(6, 1));
         }
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
@@ -246,13 +251,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
-        FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
-        Reject.ifNull(folder, "Unable to send invitation, folder is null");
+        folderInfo = (FolderInfo) getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
+        Reject.ifNull(folderInfo, "Unable to send invitation, folder is null");
 
         // Clear folder attribute
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
-        invitation = folder.getFolder(getController()).createInvitation();
+        invitation = folderInfo.getFolder(getController()).createInvitation();
 
         addButton = new JButtonMini(new MyAddAction(getController()));
         removeButton = new JButtonMini(new MyRemoveAction(getController()));
@@ -273,11 +278,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         permissionsComboModel = new DefaultComboBoxModel();
         permissionsCombo = new JComboBox(permissionsComboModel);
-        permissionsComboModel.addElement(FolderPermission.readWrite(folder).getName());
-        permissionsComboModel.addElement(FolderPermission.read(folder).getName());
+        permissionsComboModel.addElement(FolderPermission.readWrite(folderInfo).getName());
+        permissionsComboModel.addElement(FolderPermission.read(folderInfo).getName());
         if (ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController()))
         {
-            permissionsComboModel.addElement(FolderPermission.admin(folder).getName());
+            permissionsComboModel.addElement(FolderPermission.admin(folderInfo).getName());
         }
 
         enableAddButton();

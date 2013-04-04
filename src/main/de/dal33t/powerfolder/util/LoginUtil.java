@@ -43,9 +43,9 @@ public class LoginUtil {
     private LoginUtil() {
     }
 
-    private final static int OBF_BYTE = 0xAA;
-    public final static String MD5_HASH_DIGEST = "MD5";
-    public final static String SHA256_HASH_DIGEST = "SHA-256";
+    private static final int OBF_BYTE = 0xAA;
+    public static final String MD5_HASH_DIGEST = "MD5";
+    public static final String SHA256_HASH_DIGEST = "SHA-256";
 
     /**
      * Obfuscates a password into String. This does NOT mean the password is
@@ -199,7 +199,7 @@ public class LoginUtil {
     public static String hashAndSalt(String password) {
         String salt = IdGenerator.makeId();
         String digest = getPreferredDigest().getAlgorithm();
-        return digest + ":" + salt + ":" + hash(digest, password, salt);
+        return digest + ':' + salt + ':' + hash(digest, password, salt);
     }
 
     /**
@@ -241,7 +241,7 @@ public class LoginUtil {
      */
     public static String getInviteUsernameLabel(Controller controller) {
         if (isUsernameShibboleth(controller)) {
-            return Translation.getTranslation("general.email") + ":";
+            return Translation.getTranslation("general.email") + ':';
         }
         return getUsernameLabel(controller);
     }
@@ -254,7 +254,7 @@ public class LoginUtil {
      * @return
      */
     public static String getUsernameLabel(Controller controller) {
-        return getUsernameText(controller) + ":";
+        return getUsernameText(controller) + ':';
     }
 
     /**
@@ -269,7 +269,7 @@ public class LoginUtil {
         if (isUsernameEmailOnly(controller)) {
             return Translation.getTranslation("general.email");
         } else if (isUsernameAny(controller)) {
-            return Translation.getTranslation("general.username") + "/"
+            return Translation.getTranslation("general.username") + '/'
                 + Translation.getTranslation("general.email");
         } else if (isUsernameShibboleth(controller)) {
             // FIXME: Make nicer
@@ -343,8 +343,8 @@ public class LoginUtil {
 
     /**
      * Calculates the SHA digest and returns the value as a 16 element
-     * <code>byte[]</code>.
-     * 
+     * {@code byte[]}.
+     *
      * @param data
      *            Data to digest
      * @return digest
@@ -354,13 +354,13 @@ public class LoginUtil {
     }
 
     /**
-     * Returns a MessageDigest for the given <code>algorithm</code>.
-     * 
+     * Returns a MessageDigest for the given {@code algorithm}.
+     *
      * @param algorithm
      *            The MessageDigest algorithm name.
      * @return An MD5 digest instance.
      * @throws RuntimeException
-     *             when a {@link java.security.NoSuchAlgorithmException} is
+     *             when a {@link NoSuchAlgorithmException} is
      *             caught,
      */
     private static MessageDigest getDigest(String algorithm) {
@@ -376,7 +376,7 @@ public class LoginUtil {
      * 
      * @return An MD5 digest instance.
      * @throws RuntimeException
-     *             when a {@link java.security.NoSuchAlgorithmException} is
+     *             when a {@link NoSuchAlgorithmException} is
      *             caught,
      */
     private static MessageDigest getPreferredDigest() {
