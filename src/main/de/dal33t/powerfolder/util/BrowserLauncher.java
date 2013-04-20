@@ -53,16 +53,19 @@ public class BrowserLauncher {
     private static final String errMsg = "Error attempting to launch web browser";
 
     public static void openURL(String url) throws IOException {
+        if (StringUtils.isBlank(url)) {
+            log.fine("Not opening blank url!");
+            return;
+        }
         if (java6impl(url)) {
             return;
         }
-        String osName = System.getProperty("os.name");
         try {
             if (OSUtil.isMacOS()) {
                 Class fileMgr = Class.forName("com.apple.eio.FileManager");
                 Method openURL = fileMgr.getDeclaredMethod("openURL",
                     new Class[]{String.class});
-                openURL.invoke(null, new Object[]{url});
+                openURL.invoke(null, url);
             } else if (OSUtil.isWindowsSystem()) {
                 Runtime.getRuntime().exec(
                     "rundll32 url.dll,FileProtocolHandler " + url);
@@ -85,6 +88,7 @@ public class BrowserLauncher {
     }
 
     private static boolean java6impl(String url) throws IOException {
+        log.fine("Launching " + url);
         try {
             if (Desktop.isDesktopSupported()) {
                 log.fine("Using Java6 Desktop.browse()");
