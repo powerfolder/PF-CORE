@@ -15,20 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: LinkFolderOnlineDialog.java 17944 2012-01-31 12:10:03Z harry $
  */
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.io.File;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -36,15 +41,14 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.wizard.ChooseMultiDiskLocationPanel;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel displayed when wanting to link a synchronized directory to an online
@@ -63,7 +67,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     private DefaultComboBoxModel folderListModel;
     private JComboBox folderList;
     private final AtomicBoolean populated = new AtomicBoolean();
-    private final File file;
+    private final Path file;
     private final String currentFolderName;
     private final ChooseMultiDiskLocationPanel parent;
 
@@ -76,7 +80,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
      */
     public LinkFolderOnlineDialog(Controller controller,
                                   ChooseMultiDiskLocationPanel parent,
-                                  File file, String currentFolderName) {
+                                  Path file, String currentFolderName) {
         super(Senior.NONE, controller, true);
         this.parent = parent;
         this.file = file;

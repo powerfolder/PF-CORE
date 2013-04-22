@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FiveControllerTestCase.java 17501 2011-12-21 17:09:51Z tot $
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import de.dal33t.powerfolder.Controller;
@@ -28,7 +29,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -56,19 +57,16 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected static final String MAGGIE_ID = "Maggie";
 
     // For the optional test folder.
-    protected static final File TESTFOLDER_BASEDIR_BART = new File(
-        TestHelper.getTestDir(), "ControllerBart/testFolder").getAbsoluteFile();
-    protected static final File TESTFOLDER_BASEDIR_HOMER = new File(
-        TestHelper.getTestDir(), "ControllerHomer/testFolder")
-        .getAbsoluteFile();
-    protected static final File TESTFOLDER_BASEDIR_MARGE = new File(
-        TestHelper.getTestDir(), "ControllerMarge/testFolder")
-        .getAbsoluteFile();
-    protected static final File TESTFOLDER_BASEDIR_LISA = new File(
-        TestHelper.getTestDir(), "ControllerLisa/testFolder").getAbsoluteFile();
-    protected static final File TESTFOLDER_BASEDIR_MAGGIE = new File(
-        TestHelper.getTestDir(), "ControllerMaggie/testFolder")
-        .getAbsoluteFile();
+    protected static final Path TESTFOLDER_BASEDIR_BART = TestHelper
+        .getTestDir().resolve("ControllerBart/testFolder").toAbsolutePath();
+    protected static final Path TESTFOLDER_BASEDIR_HOMER = TestHelper
+        .getTestDir().resolve("ControllerHomer/testFolder").toAbsolutePath();
+    protected static final Path TESTFOLDER_BASEDIR_MARGE = TestHelper
+        .getTestDir().resolve("ControllerMarge/testFolder").toAbsolutePath();
+    protected static final Path TESTFOLDER_BASEDIR_LISA = TestHelper
+        .getTestDir().resolve("ControllerLisa/testFolder").toAbsolutePath();
+    protected static final Path TESTFOLDER_BASEDIR_MAGGIE = TestHelper
+        .getTestDir().resolve("ControllerMaggie/testFolder").toAbsolutePath();
 
     /**
      * The test folder info.
@@ -95,12 +93,11 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     }
 
     private void startController(String id) throws IOException {
-        FileUtils.copyFile(new File("src/test-resources/Controller" + id
-            + ".config"), new File("build/test/Controller" + id
-            + "/PowerFolder.config"));
-        File miscDic = new File(Controller.getMiscFilesLocation(),
+        PathUtils.copyFile(Paths.get("src/test-resources/Controller" + id + ".config"),
+            Paths.get("build/test/Controller" + id + "/PowerFolder.config"));
+        Path miscDic = Controller.getMiscFilesLocation().resolve(
             "build/test/Controller" + id);
-        FileUtils.recursiveDelete(miscDic);
+        PathUtils.recursiveDelete(miscDic);
         startController(id, "build/test/Controller" + id + "/PowerFolder");
     }
 

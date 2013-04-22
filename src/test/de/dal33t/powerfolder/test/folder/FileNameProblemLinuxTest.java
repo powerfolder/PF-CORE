@@ -19,7 +19,8 @@
 */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -96,21 +97,21 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
 
             int handlerCalledCount = 0;
             assertEquals(1, handlerCalledCount);
-            File folderBaseDir = getFolder().getLocalBase();
+            Path folderBaseDir = getFolder().getLocalBase();
 
           //  assertTrue("Files in dir: " + Arrays.asList(folderBaseDir.list()), false);
-            assertTrue(new File(folderBaseDir, "AUX-1").exists());
-            assertTrue(new File(folderBaseDir, "AUX-1.txt").exists());
-            assertTrue(new File(folderBaseDir, "LPT1-1").exists());
-            assertTrue(new File(folderBaseDir, "xLPT1").exists());
-            assertTrue(new File(folderBaseDir, "xAUX.txt").exists());
-            assertTrue(new File(folderBaseDir, "hhh").exists());
-            assertTrue(new File(folderBaseDir, "ddfgd").exists());
-            assertTrue(new File(folderBaseDir, "hhf").exists());
-            assertTrue(new File(folderBaseDir, "hjgfgfg").exists());
-            assertTrue(new File(folderBaseDir, "sds").exists());
-            assertTrue(new File(folderBaseDir, "gfgf").exists());
-            assertTrue(new File(folderBaseDir, "gfgf").exists());
+            assertTrue(Files.exists(folderBaseDir.resolve("AUX-1")));
+            assertTrue(Files.exists(folderBaseDir.resolve("AUX-1.txt")));
+            assertTrue(Files.exists(folderBaseDir.resolve("LPT1-1")));
+            assertTrue(Files.exists(folderBaseDir.resolve("xLPT1")));
+            assertTrue(Files.exists(folderBaseDir.resolve("xAUX.txt")));
+            assertTrue(Files.exists(folderBaseDir.resolve("hhh")));
+            assertTrue(Files.exists(folderBaseDir.resolve("ddfgd")));
+            assertTrue(Files.exists(folderBaseDir.resolve("hhf")));
+            assertTrue(Files.exists(folderBaseDir.resolve("hjgfgfg")));
+            assertTrue(Files.exists(folderBaseDir.resolve("sds")));
+            assertTrue(Files.exists(folderBaseDir.resolve("gfgf")));
+            assertTrue(Files.exists(folderBaseDir.resolve("gfgf")));
         }
     }
 

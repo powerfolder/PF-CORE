@@ -15,16 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderDBDebug.java 12618 2010-06-16 13:31:33Z tot $
  */
 package de.dal33t.powerfolder.util;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,14 +74,14 @@ public class FolderDBDebug {
             }
             totalSize += fileInfo.getSize();
         }
-        File f = new File(args[0] + ".csv");
+        Path f = Paths.get(args[0] + ".csv");
         // Write filelist to disk
-        File outFile = Debug.writeFileListCSV(f, Arrays.asList(files),
+        Path outFile = Debug.writeFileListCSV(f, Arrays.asList(files),
             "FileList of folder " + fName);
 
         System.out.println("Read " + files.length + " files ("
             + Format.formatBytesShort(totalSize) + ") from " + args[0]
-            + ". \nOutput: " + outFile.getCanonicalPath());
+            + ". \nOutput: " + outFile.toRealPath());
     }
 
     private static boolean checkForDupes(FileInfo[] list) {

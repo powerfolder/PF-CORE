@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FileRequestor.java 20866 2013-02-18 10:35:48Z sprajc $
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -281,7 +281,7 @@ public class FileRequestor extends PFComponent {
     }
 
     private void createDirectory(DirectoryInfo dirInfo) {
-        File dirFile = dirInfo.getDiskFile(getController()
+        Path dirFile = dirInfo.getDiskFile(getController()
             .getFolderRepository());
         Folder folder = dirInfo
             .getFolder(getController().getFolderRepository());

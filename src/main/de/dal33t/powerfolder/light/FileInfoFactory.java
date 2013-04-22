@@ -19,9 +19,10 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,9 +89,9 @@ public final class FileInfoFactory {
         return new FileInfo(folder, name);
     }
 
-    public static FileInfo lookupInstance(Folder folder, File file) {
+    public static FileInfo lookupInstance(Folder folder, Path file) {
         String fn = buildFileName(folder.getLocalBase(), file);
-        return lookupInstance(folder.getInfo(), fn, file.isDirectory());
+        return lookupInstance(folder.getInfo(), fn, Files.isDirectory(file));
     }
 
     /**
@@ -168,23 +169,29 @@ public final class FileInfoFactory {
      *            if the given file is a directory.
      * @return the new file
      */
-    public static FileInfo newFile(Folder folder, File localFile,
+    public static FileInfo newFile(Folder folder, Path localFile,
         MemberInfo creator, boolean directory)
     {
-        if (directory) {
-            return new DirectoryInfo(buildFileName(folder.getLocalBase(),
-                localFile), creator, new Date(localFile.lastModified()), 0,
-                false, folder.getInfo());
-        } else {
-            return new FileInfo(
-                buildFileName(folder.getLocalBase(), localFile),
-                localFile.length(), creator,
-                new Date(localFile.lastModified()), 0, false, folder.getInfo());
+        try {
+            if (directory) {
+                return new DirectoryInfo(buildFileName(folder.getLocalBase(),
+                    localFile), creator, new Date(Files.getLastModifiedTime(
+                    localFile).toMillis()), 0, false, folder.getInfo());
+            } else {
+                return new FileInfo(
+                    buildFileName(folder.getLocalBase(), localFile),
+                    Files.size(localFile), creator, new Date(Files
+                        .getLastModifiedTime(localFile).toMillis()), 0, false,
+                    folder.getInfo());
+            }
+        } catch (IOException ioe) {
+            LOG.warning(ioe.getMessage());
+            return null;
         }
     }
 
     public static FileInfo modifiedFile(FileInfo original, Folder folder,
-        File localFile, MemberInfo modby)
+        Path localFile, MemberInfo modby)
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
@@ -195,28 +202,33 @@ public final class FileInfoFactory {
             fn = original.getRelativeName();
         }
 
-        boolean isDir = localFile.isDirectory();
-        if (original.isFile()) {
-            if (isDir) {
-                return new DirectoryInfo(fn, localFile.length(), modby,
-                    new Date(localFile.lastModified()),
+        boolean isDir = Files.isDirectory(localFile);
+        try {
+            if (original.isFile()) {
+                if (isDir) {
+                    return new DirectoryInfo(fn, Files.size(localFile), modby,
+                        new Date(Files.getLastModifiedTime(localFile).toMillis()),
+                        original.getVersion() + 1, false, original.getFolderInfo());
+                }
+                return new FileInfo(fn, Files.size(localFile), modby, new Date(
+                    Files.getLastModifiedTime(localFile).toMillis()),
                     original.getVersion() + 1, false, original.getFolderInfo());
+            } else if (original.isDiretory()) {
+                if (!isDir) {
+                    return new FileInfo(fn, Files.size(localFile), modby, new Date(
+                        Files.getLastModifiedTime(localFile).toMillis()),
+                        original.getVersion() + 1, false, original.getFolderInfo());
+                }
+                return new DirectoryInfo(fn, Files.size(localFile), modby,
+                    new Date(Files.getLastModifiedTime(localFile).toMillis()),
+                    original.getVersion() + 1, false, original.getFolderInfo());
+            } else {
+                throw new IllegalArgumentException("Illegal original FileInfo: "
+                    + original.getClass() + ": " + original.toDetailString());
             }
-            return new FileInfo(fn, localFile.length(), modby, new Date(
-                localFile.lastModified()), original.getVersion() + 1, false,
-                original.getFolderInfo());
-        } else if (original.isDiretory()) {
-            if (!isDir) {
-                return new FileInfo(fn, localFile.length(), modby, new Date(
-                    localFile.lastModified()), original.getVersion() + 1,
-                    false, original.getFolderInfo());
-            }
-            return new DirectoryInfo(fn, localFile.length(), modby, new Date(
-                localFile.lastModified()), original.getVersion() + 1, false,
-                original.getFolderInfo());
-        } else {
-            throw new IllegalArgumentException("Illegal original FileInfo: "
-                + original.getClass() + ": " + original.toDetailString());
+        } catch (IOException ioe) {
+            LOG.warning(ioe.getMessage());
+            return null;
         }
     }
 
@@ -328,15 +340,15 @@ public final class FileInfoFactory {
         return output;
     }
 
-    protected static String buildFileName(File baseDirectory, File file) {
+    protected static String buildFileName(Path baseDirectory, Path file) {
         if (file.equals(baseDirectory)) {
             return "";
         }
-        String fn = decodeIllegalChars(file.getName());
+        String fn = decodeIllegalChars(file.getFileName().toString());
         if (fn.endsWith("/")) {
             fn = fn.substring(0, fn.length() - 1);
         }
-        File parent = file.getParentFile();
+        Path parent = file.getParent();
 
         while (!baseDirectory.equals(parent)) {
             if (parent == null) {
@@ -344,8 +356,8 @@ public final class FileInfoFactory {
                     "Local file seems not to be in a subdir of the local powerfolder copy. Basedir: "
                         + baseDirectory + ", file: " + file);
             }
-            fn = decodeIllegalChars(parent.getName()) + '/' + fn;
-            parent = parent.getParentFile();
+            fn = decodeIllegalChars(parent.getFileName().toString()) + '/' + fn;
+            parent = parent.getParent();
         }
         if (fn.endsWith("/")) {
             // Crop off last /

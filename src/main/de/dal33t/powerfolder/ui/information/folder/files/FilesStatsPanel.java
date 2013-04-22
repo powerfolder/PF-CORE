@@ -19,17 +19,21 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
+import java.awt.Dimension;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
 
 public class FilesStatsPanel extends PFUIComponent {
 
@@ -86,11 +90,13 @@ public class FilesStatsPanel extends PFUIComponent {
 
     public void setDirectory(DirectoryInfo dir) {
         String text = dir.getDiskFile(getController().getFolderRepository())
-                .getAbsolutePath();
+                .toAbsolutePath().toString();
         // Limit insanely long paths.
         if (text.length() > 100) {
             text = text.substring(0, 100);
-            int i = text.lastIndexOf(File.separator);
+            int i = text.lastIndexOf(dir
+                .getDiskFile(getController().getFolderRepository())
+                .getFileSystem().getSeparator());
             // Look for last separator inside the remaining path.
             if (i > -1) {
                 text = text.substring(0, i + 1);

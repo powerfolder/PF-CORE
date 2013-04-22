@@ -19,9 +19,10 @@
  */
 package de.dal33t.powerfolder.util.logging;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.FileHandler;
@@ -36,7 +37,7 @@ import javax.swing.text.StyledDocument;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.handlers.BufferedHandler;
 import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
@@ -243,9 +244,9 @@ public class LoggingManager {
                     logFilename += sdf.format(new Date());
                 }
                 logFilename += LOGFILE_SUFFIX;
-                fileLoggingFileName = new File(getDebugDir(),
-                    FileUtils.removeInvalidFilenameChars(logFilename))
-                    .getAbsolutePath();
+                fileLoggingFileName = getDebugDir().resolve(
+                    PathUtils.removeInvalidFilenameChars(logFilename))
+                    .toAbsolutePath().toString();
                 fileHandler = new FileHandler(fileLoggingFileName, true);
                 fileHandler.setFormatter(new LoggingFormatter(!fileRotate));
                 getRootLogger().addHandler(fileHandler);
@@ -328,15 +329,20 @@ public class LoggingManager {
     /**
      * @return the directory that the file logging is written to.
      */
-    public static File getDebugDir() {
-        File canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
-        if (canidate.exists() && canidate.isDirectory()) {
-            return canidate;
+    public static Path getDebugDir() {
+        Path candidate = Controller.getMiscFilesLocation().resolve(DEBUG_DIR);
+        if (Files.exists(candidate) && Files.isDirectory(candidate)) {
+            return candidate;
+        }
+        
+        try {
+            Files.createDirectories(candidate);
+        } catch (IOException ioe) {
+            return null;
         }
 
-        canidate.mkdirs();
-        if (canidate.exists() && canidate.isDirectory()) {
-            return canidate;
+        if (Files.exists(candidate) && Files.isDirectory(candidate)) {
+            return candidate;
         }
 
         return null;
@@ -449,24 +455,33 @@ public class LoggingManager {
      * @param maxAgeDays
      */
     public static void removeOldLogs(final int maxAgeDays) {
-        File[] oldFiles = getDebugDir().listFiles(new FileFilter() {
-            public boolean accept(File file) {
-                if (!file.isFile()) {
+        java.nio.file.DirectoryStream.Filter<Path> filter = new java.nio.file.DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) {
+                if (!Files.isRegularFile(entry)) {
                     return false;
                 }
-                if (!file.getName().startsWith(LOGFILE_PREFIX)) {
+                if (!entry.getFileName().toString().startsWith(LOGFILE_PREFIX)) {
                     return false;
                 }
-                if (!file.getName().contains(LOGFILE_SUFFIX)) {
+                if (!entry.getFileName().toString().contains(LOGFILE_SUFFIX)) {
                     return false;
                 }
-                long msOld = System.currentTimeMillis() - file.lastModified();
-                int daysOld = (int) (msOld / 1000 / 60 / 60 / 24);
-                return daysOld >= maxAgeDays;
+                try {
+                    long msOld = System.currentTimeMillis() - Files.getLastModifiedTime(entry).toMillis();
+                    int daysOld = (int) (msOld / 1000 / 60 / 60 / 24);
+                    return daysOld >= maxAgeDays;
+                } catch (IOException ioe) {
+                    return false;
+                }
             }
-        });
-        for (File logFile : oldFiles) {
-            logFile.delete();
+        };
+        try (DirectoryStream<Path> oldFiles = Files.newDirectoryStream(getDebugDir(), filter)) {
+            for (Path logFile : oldFiles) {
+                Files.delete(logFile);
+            }
+        } catch (IOException ioe) {
+            
         }
     }
 }

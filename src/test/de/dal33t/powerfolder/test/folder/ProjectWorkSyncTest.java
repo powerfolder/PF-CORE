@@ -19,7 +19,9 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -125,15 +127,15 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     /**
      * Test if the files are transferred after the sync was triggered manually
      */
-    public void testReceiveDeletes() {
+    public void testReceiveDeletes() throws IOException {
         // Create some random files
-        File rndFile1 = TestHelper.createRandomFile(getFolderAtBart()
+        Path rndFile1 = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
-        File rndFile2 = TestHelper.createRandomFile(getFolderAtBart()
+        Path rndFile2 = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
 
-        File rndFile3 = TestHelper.createRandomFile(getFolderAtLisa()
+        Path rndFile3 = TestHelper.createRandomFile(getFolderAtLisa()
             .getLocalBase());
         TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
 
@@ -185,9 +187,9 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(5, getFolderAtLisa().getKnownItemCount());
 
         // Delete
-        assertTrue(rndFile1.delete());
-        assertTrue(rndFile2.delete());
-        assertTrue(rndFile3.delete());
+        Files.delete(rndFile1);
+        Files.delete(rndFile2);
+        Files.delete(rndFile3);
 
         // Scan files
 
@@ -215,11 +217,11 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Check deleted files.
         // Directory should contain onyl 2 files (+2 = system dir)
         assertEquals("Files at lisa: "
-            + Arrays.asList(getFolderAtLisa().getLocalBase().list()), 2 + 1,
-            getFolderAtLisa().getLocalBase().list().length);
+            + Arrays.asList(getFolderAtLisa().getLocalBase().toFile().list()), 2 + 1,
+            getFolderAtLisa().getLocalBase().toFile().list().length);
         assertEquals("File at bart: "
-            + Arrays.asList(getFolderAtBart().getLocalBase().list()), 2 + 1,
-            getFolderAtBart().getLocalBase().list().length);
+            + Arrays.asList(getFolderAtBart().getLocalBase().toFile().list()), 2 + 1,
+            getFolderAtBart().getLocalBase().toFile().list().length);
     }
 
     private int countDeleted(Collection<FileInfo> files) {

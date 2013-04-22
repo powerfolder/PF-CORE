@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: ConfigurationEntry.java 21134 2013-03-17 01:20:03Z sprajc $
  */
 package de.dal33t.powerfolder;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -569,7 +569,7 @@ public enum ConfigurationEntry {
                     }
                 }
             }
-            return rootDir + File.separatorChar
+            return rootDir + Paths.get("").getFileSystem().getSeparator()
                 + Constants.FOLDERS_BASE_DIR_SUBDIR_NAME;
         }
     },

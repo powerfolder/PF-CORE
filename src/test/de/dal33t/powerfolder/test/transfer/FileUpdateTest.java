@@ -19,7 +19,10 @@
  */
 package de.dal33t.powerfolder.test.transfer;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.logging.Level;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -61,21 +64,25 @@ public class FileUpdateTest extends TwoControllerTestCase {
      * <p>
      * Ticket #345
      */
-    public void testInitalSync() {
+    public void testInitalSync() throws IOException {
         TestHelper.waitMilliSeconds(500);
-        File fileAtBart = TestHelper.createTestFile(getFolderAtBart()
+        Path fileAtBart = TestHelper.createTestFile(getFolderAtBart()
             .getLocalBase(), "TestInitalFile.bin",
             "A older version of the file".getBytes());
         // File @ Bart was modified one days before (=newer)
-        fileAtBart.setLastModified(System.currentTimeMillis() - 1000 * 60 * 60
-            * 24 * 1);
+        Files.setLastModifiedTime(
+            fileAtBart,
+            FileTime.fromMillis(System.currentTimeMillis() - 1000 * 60 * 60
+                * 24 * 1));
 
-        File fileAtLisa = TestHelper.createTestFile(getFolderAtLisa()
+        Path fileAtLisa = TestHelper.createTestFile(getFolderAtLisa()
             .getLocalBase(), "TestInitalFile.bin",
             "My newest version of the file".getBytes());
         // File @ Lisa was modified three days before (=older)
-        fileAtLisa.setLastModified(System.currentTimeMillis() - 1000 * 60 * 60
-            * 24 * 3);
+        Files.setLastModifiedTime(
+            fileAtLisa,
+            FileTime.fromMillis(System.currentTimeMillis() - 1000 * 60 * 60
+                * 24 * 3));
 
         // Let them scan the new content
         scanFolder(getFolderAtBart());
@@ -112,10 +119,10 @@ public class FileUpdateTest extends TwoControllerTestCase {
         FileInfo fileInfoAtBart = getFolderAtBart().getFile(
             FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart));
         assertEquals(1, fileInfoAtBart.getVersion());
-        assertEquals(fileAtBart.getName(), fileInfoAtBart.getFilenameOnly());
-        assertEquals(fileAtBart.length(), fileInfoAtBart.getSize());
-        assertEquals(fileAtBart.lastModified(), fileInfoAtBart
-            .getModifiedDate().getTime());
+        assertEquals(fileAtBart.getFileName().toString(), fileInfoAtBart.getFilenameOnly());
+        assertEquals(Files.size(fileAtBart), fileInfoAtBart.getSize());
+        assertEquals(Files.getLastModifiedTime(fileAtLisa).toMillis(),
+            fileInfoAtBart.getModifiedDate().getTime());
         assertEquals(getContollerBart().getMySelf().getInfo(),
             fileInfoAtBart.getModifiedBy());
 
@@ -126,10 +133,10 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getFolderRepository());
         assertFileMatch(fileAtLisa, fileInfoAtLisa, getContollerLisa());
         assertTrue(fileInfoAtLisa.inSyncWithDisk(fileAtLisa));
-        assertEquals(fileAtBart.getName(), fileInfoAtLisa.getFilenameOnly());
-        assertEquals(fileAtBart.length(), fileInfoAtLisa.getSize());
-        assertEquals(fileAtBart.lastModified(), fileInfoAtLisa
-            .getModifiedDate().getTime());
+        assertEquals(fileAtBart.getFileName().toString(), fileInfoAtLisa.getFilenameOnly());
+        assertEquals(Files.size(fileAtBart), fileInfoAtLisa.getSize());
+        assertEquals(Files.getLastModifiedTime(fileAtLisa).toMillis(),
+            fileInfoAtLisa.getModifiedDate().getTime());
         assertEquals(getContollerBart().getMySelf().getInfo(),
             fileInfoAtLisa.getModifiedBy());
     }
@@ -137,8 +144,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
     /**
      * Tests the when the internal db is out of sync with the disk. Ticket #387
      */
-    public void testFileChangedOnDisk() {
-        File fileAtBart = TestHelper.createTestFile(getFolderAtBart()
+    public void testFileChangedOnDisk() throws IOException {
+        Path fileAtBart = TestHelper.createTestFile(getFolderAtBart()
             .getLocalBase(), TEST_FILENAME, LONG_FILE_CONTENTS);
         // Scan the file
         scanFolder(getFolderAtBart());
@@ -150,11 +157,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
             SMALLER_FILE_CONTENTS);
         // Now the DB of Barts folder is out of sync with the disk!
         // = disk
-        assertEquals(SMALLER_FILE_CONTENTS.length, fileAtBart.length());
+        assertEquals(SMALLER_FILE_CONTENTS.length, Files.size(fileAtBart));
         // = db
         assertEquals(LONG_FILE_CONTENTS.length, getFolderAtBart()
             .getKnownFiles().iterator().next().getSize());
-        assertNotSame(fileAtBart.length(), getFolderAtBart().getKnownFiles()
+        assertNotSame(Files.size(fileAtBart), getFolderAtBart().getKnownFiles()
             .iterator().next().getSize());
 
         // Change sync profile = auto download.
@@ -186,17 +193,17 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        final File fileAtBart = TestHelper.createTestFile(getFolderAtBart()
+        final Path fileAtBart = TestHelper.createTestFile(getFolderAtBart()
             .getLocalBase(), TEST_FILENAME, LONG_FILE_CONTENTS);
         // Scan the file
         scanFolder(getFolderAtBart());
         assertEquals(1, getFolderAtBart().getKnownItemCount());
 
-        final File fileAtLisa = getFolderAtBart().getKnownFiles().iterator()
+        final Path fileAtLisa = getFolderAtBart().getKnownFiles().iterator()
             .next().getDiskFile(getContollerLisa().getFolderRepository());
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                return fileAtLisa.exists();
+                return Files.exists(fileAtLisa);
             }
 
             public String message() {
@@ -241,12 +248,20 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // Let them sync.
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                return fileAtLisa.length() == fileAtBart.length();
+                try {
+                    return Files.size(fileAtLisa) == Files.size(fileAtBart);
+                } catch (IOException ioe) {
+                    return true;
+                }
             }
 
             public String message() {
-                return "Lisa file.length: " + fileAtLisa.length()
-                    + ". Bart file.length: " + fileAtBart.length();
+                try {
+                    return "Lisa file.length: " + Files.size(fileAtLisa)
+                        + ". Bart file.length: " + Files.size(fileAtBart);
+                } catch (IOException ioe) {
+                    return "Could not retreive the file sizes";
+                }
             }
         });
         // Now Bart should have detected an conflict.
@@ -364,7 +379,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        final File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
+        final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 5000000);
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -380,11 +395,16 @@ public class FileUpdateTest extends TwoControllerTestCase {
         }
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                File fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
+                Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
                     .next()
                     .getDiskFile(getContollerLisa().getFolderRepository());
-                return fileAtLisa.length() == fileAtBart.length()
-                    && fileAtBart.lastModified() == fileAtLisa.lastModified();
+                try {
+                    return Files.size(fileAtLisa) == Files.size(fileAtBart)
+                        && Files.getLastModifiedTime(fileAtBart).equals(
+                            Files.getLastModifiedTime(fileAtLisa));
+                } catch (IOException ioe) {
+                    return true;
+                }
             }
         });
     }

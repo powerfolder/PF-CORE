@@ -15,18 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Invitation.java 20495 2012-12-08 14:15:00Z glasgow $
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.File;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -57,7 +59,7 @@ public class Invitation extends FolderRelatedMessage {
 
     private MemberInfo invitor;
     // For backward compatibilty to pre 3.1.2 versions.
-    private File suggestedLocalBase;
+    private Path suggestedLocalBase;
     private String invitationText;
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
@@ -116,51 +118,51 @@ public class Invitation extends FolderRelatedMessage {
      * @param suggestedLocalBase
      */
     public void setSuggestedLocalBase(Controller controller,
-        File suggestedLocalBase)
+        Path suggestedLocalBase)
     {
         Reject.ifNull(suggestedLocalBase, "File is null");
-        this.suggestedLocalBase = new File(suggestedLocalBase.getPath());
+        this.suggestedLocalBase = suggestedLocalBase;
         String folderBase = controller.getFolderRepository()
             .getFoldersBasedirString();
         String appsDir = getAppsDir();
         String userHomeDir = getUserHomeDir();
         if (OSUtil.isWindowsSystem() && appsDir != null
-            && suggestedLocalBase.getAbsolutePath().startsWith(appsDir))
+            && suggestedLocalBase.toAbsolutePath().toString().startsWith(appsDir))
         {
-            String filePath = suggestedLocalBase.getAbsolutePath();
+            String filePath = suggestedLocalBase.toAbsolutePath().toString();
             suggestedLocalBasePath = filePath.substring(appsDir.length());
 
             // Remove any leading file separators.
-            while (suggestedLocalBasePath.startsWith(File.separator)) {
+            while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
             relative = RELATIVE_APP_DATA;
         } else if (folderBase != null
-            && suggestedLocalBase.getAbsolutePath().startsWith(folderBase))
+            && suggestedLocalBase.toAbsolutePath().toString().startsWith(folderBase))
         {
-            String filePath = suggestedLocalBase.getAbsolutePath();
+            String filePath = suggestedLocalBase.toAbsolutePath().toString();
             String baseDirPath = controller.getFolderRepository()
                 .getFoldersBasedirString();
             suggestedLocalBasePath = filePath.substring(baseDirPath.length());
 
             // Remove any leading file separators.
-            while (suggestedLocalBasePath.startsWith(File.separator)) {
+            while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
             relative = RELATIVE_PF_BASE;
         } else if (userHomeDir != null
-            && suggestedLocalBase.getAbsolutePath().startsWith(userHomeDir))
+            && suggestedLocalBase.toAbsolutePath().toString().startsWith(userHomeDir))
         {
-            String filePath = suggestedLocalBase.getAbsolutePath();
+            String filePath = suggestedLocalBase.toAbsolutePath().toString();
             suggestedLocalBasePath = filePath.substring(userHomeDir.length());
 
             // Remove any leading file separators.
-            while (suggestedLocalBasePath.startsWith(File.separator)) {
+            while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
             relative = RELATIVE_USER_HOME;
         } else {
-            suggestedLocalBasePath = suggestedLocalBase.getAbsolutePath();
+            suggestedLocalBasePath = suggestedLocalBase.toAbsolutePath().toString();
             relative = ABSOLUTE;
         }
     }
@@ -172,32 +174,32 @@ public class Invitation extends FolderRelatedMessage {
      * @param controller
      * @return the suggestion path on the local computer
      */
-    public File getSuggestedLocalBase(Controller controller) {
+    public Path getSuggestedLocalBase(Controller controller) {
 
         if (suggestedLocalBasePath == null) {
-            return new File(controller.getFolderRepository()
-                .getFoldersBasedir(),
-                FileUtils.removeInvalidFilenameChars(folder.name));
+            return controller.getFolderRepository()
+                .getFoldersBasedir().resolve(
+                PathUtils.removeInvalidFilenameChars(folder.name));
         }
 
         if (OSUtil.isLinux() || OSUtil.isMacOS()) {
             suggestedLocalBasePath = Util.replace(suggestedLocalBasePath, "\\",
-                File.separator);
+                Paths.get("").getFileSystem().getSeparator());
         } else {
             suggestedLocalBasePath = Util.replace(suggestedLocalBasePath, "/",
-                File.separator);
+                Paths.get("").getFileSystem().getSeparator());
         }
 
         if (relative == RELATIVE_APP_DATA) {
-            return new File(getAppsDir(), suggestedLocalBasePath);
+            return Paths.get(getAppsDir(), suggestedLocalBasePath);
         } else if (relative == RELATIVE_PF_BASE) {
-            File powerFolderBaseDir = controller.getFolderRepository()
+            Path powerFolderBaseDir = controller.getFolderRepository()
                 .getFoldersBasedir();
-            return new File(powerFolderBaseDir, suggestedLocalBasePath);
+            return powerFolderBaseDir.resolve(suggestedLocalBasePath);
         } else if (relative == RELATIVE_USER_HOME) {
-            return new File(getUserHomeDir(), suggestedLocalBasePath);
+            return Paths.get(getUserHomeDir(), suggestedLocalBasePath);
         } else {
-            return new File(suggestedLocalBasePath);
+            return Paths.get(suggestedLocalBasePath);
         }
     }
 

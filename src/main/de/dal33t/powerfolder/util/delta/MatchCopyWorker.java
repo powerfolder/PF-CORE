@@ -15,24 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MatchCopyWorker.java 11713 2010-03-11 14:37:48Z tot $
  */
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.File;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 public class MatchCopyWorker implements Callable<FilePartsState> {
-    private final File srcFile;
-    private final File dstFile;
+    private final Path srcFile;
+    private final Path dstFile;
     private final FilePartsRecord record;
     private final List<MatchInfo> matchInfoList;
 
@@ -40,7 +40,7 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
     private RandomAccessFile dst;
     private final ProgressListener progressObserver;
 
-    public MatchCopyWorker(File srcFile, File dstFile, FilePartsRecord record,
+    public MatchCopyWorker(Path srcFile, Path dstFile, FilePartsRecord record,
         List<MatchInfo> matchInfoList, ProgressListener obs)
     {
         super();
@@ -53,9 +53,9 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
     }
 
     public FilePartsState call() throws Exception {
-        src = new RandomAccessFile(srcFile, "r");
+        src = new RandomAccessFile(srcFile.toFile(), "r");
         try {
-            dst = new RandomAccessFile(dstFile, "rw");
+            dst = new RandomAccessFile(dstFile.toFile(), "rw");
             try {
                 FilePartsState result = new FilePartsState(record
                     .getFileLength());
@@ -79,7 +79,7 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
                     int rem = (int) Math.min(record.getPartLength(), record
                         .getFileLength()
                         - dstPos);
-                    FileUtils.ncopy(src, dst, rem);
+                    PathUtils.ncopy(src, dst, rem);
                     // The copied data is now AVAILABLE
                     result.setPartState(Range.getRangeByLength(dstPos, rem),
                         PartState.AVAILABLE);

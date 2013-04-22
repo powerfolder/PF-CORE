@@ -17,11 +17,11 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 
 public enum DefaultExcludes {
-    DESKTOP_INI("*" + FileUtils.DESKTOP_INI_FILENAME),
+    DESKTOP_INI("*" + PathUtils.DESKTOP_INI_FILENAME),
     THUMBS_DB("*thumbs.db"),
     OFFICE_TEMP("*~*.tmp"),
     OFFICEX_TEMP("*~$*"),

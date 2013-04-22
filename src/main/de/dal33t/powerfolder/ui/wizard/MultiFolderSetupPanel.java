@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MultiFolderSetupPanel.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -53,8 +53,8 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -105,7 +105,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                     .getTranslation("wizard.multi_folder_setup.no_name.title"),
                     Translation.getTranslation(
                         "wizard.multi_folder_setup.no_name.text",
-                        folderCreateItem.getLocalBase().getAbsolutePath()),
+                        folderCreateItem.getLocalBase().toAbsolutePath().toString()),
                     GenericDialogType.ERROR);
                 return false;
             }
@@ -204,7 +204,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                     }
                     folderCreateItems.add(item);
                     localBaseComboModel.addElement(item.getLocalBase()
-                        .getAbsolutePath());
+                        .toAbsolutePath().toString());
                 }
             }
         }
@@ -222,7 +222,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private void localBaseComboSelectionChanged() {
         String dirName = (String) localBaseComboModel.getSelectedItem();
         for (FolderCreateItem item : folderCreateItems) {
-            if (item.getLocalBase().getAbsolutePath().equals(dirName)) {
+            if (item.getLocalBase().toAbsolutePath().toString().equals(dirName)) {
                 selectedItem = item;
                 FolderInfo folderInfo = item.getFolderInfo();
                 nameField.setText(folderInfo.name);
@@ -243,7 +243,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
      */
     private static void createFolderInfo(FolderCreateItem item) {
         // Default sync folder has user name...
-        String name = FileUtils.getSuggestedFolderName(item.getLocalBase());
+        String name = PathUtils.getSuggestedFolderName(item.getLocalBase());
         FolderInfo folderInfo = new FolderInfo(name,
             '[' + IdGenerator.makeId() + ']');
         item.setFolderInfo(folderInfo);

@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Folder.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.Externalizable;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -96,9 +98,8 @@ import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -111,9 +112,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TFileOutputStream;
+
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -131,13 +130,13 @@ public class Folder extends PFComponent {
     //private static final int THIRTY_SECONDS = 30;
 
     /** The base location of the folder. */
-    private final TFile localBase;
+    private final Path localBase;
 
     /**
      * #2056: The directory to commit/mirror the whole folder to when in reaches
      * 100% sync.
      */
-    private File commitDir;
+    private Path commitDir;
 
     /**
      * TRAC #1422: The DAO to store the FileInfos in.
@@ -309,42 +308,51 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
-        encrypted = folderSettings.getLocalBaseDir().getName()
-            .endsWith(".pfzip");
+        encrypted = folderSettings.getLocalBaseDir().toString().endsWith(".pfzip");
         problems = new CopyOnWriteArrayList<Problem>();
         if (encrypted) {
-            localBase = new TFile(folderSettings.getLocalBaseDir());
-            localBase.mkdirs();
+            localBase = folderSettings.getLocalBaseDir();
             try {
-                new TFile(localBase, "dummy.txt").createNewFile();
-                new TFile(localBase, "dummy.txt").rm();
-            } catch (IOException e) {
-                logWarning("Unable to initialize encrypted storage at "
-                    + localBase);
+                Files.createDirectory(localBase);
             }
-            if (!localBase.isArchive()) {
-                throw new IllegalStateException(
-                    "Unable to open encrypted container for folder "
-                        + getName() + " at " + localBase);
+            catch (IOException ioe) {
+                // Ignore.
             }
+//            try {
+//                new TFile(localBase, "dummy.txt").createNewFile();
+//                new TFile(localBase, "dummy.txt").rm();
+//            } catch (IOException e) {
+//                logWarning("Unable to initialize encrypted storage at "
+//                    + localBase);
+//            }
+//            if (!localBase.isArchive()) {
+//                throw new IllegalStateException(
+//                    "Unable to open encrypted container for folder "
+//                        + getName() + " at " + localBase);
+//            }
         } else if (folderSettings.getLocalBaseDir().isAbsolute()) {
-            localBase = new TFile(folderSettings.getLocalBaseDir());
+            localBase = folderSettings.getLocalBaseDir();
         } else {
-            localBase = new TFile(getController().getFolderRepository()
-                .getFoldersBasedir(), folderSettings.getLocalBaseDir()
-                .getPath());
+            localBase = getController().getFolderRepository()
+                .getFoldersBasedir()
+                .resolve(folderSettings.getLocalBaseDir());
             logWarning("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
-            if (folderSettings.getLocalBaseDir().exists()
-                && !localBase.exists())
+            if (Files.exists(folderSettings.getLocalBaseDir())
+                && Files.notExists(localBase))
             {
-                localBase.mkdirs();
+                try {
+                    Files.createDirectories(localBase);
+                }
+                catch (IOException ioe) {
+                    // Ignore.
+                }
             }
         }
 
         // Support for meta folder.
         if (fInfo.isMetaFolder()
-            && folderSettings.getLocalBaseDir().getAbsolutePath()
+            && folderSettings.getLocalBaseDir().toAbsolutePath().toString()
                 .contains(".pfzip"))
         {
             encrypted = true;
@@ -357,9 +365,9 @@ public class Folder extends PFComponent {
             if (folderSettings.getCommitDir().isAbsolute()) {
                 commitDir = folderSettings.getCommitDir();
             } else {
-                commitDir = new File(getController().getFolderRepository()
-                    .getFoldersBasedir(), folderSettings.getCommitDir()
-                    .getPath());
+                commitDir = getController().getFolderRepository()
+                    .getFoldersBasedir()
+                    .resolve(folderSettings.getCommitDir());
             }
         }
         syncProfile = folderSettings.getSyncProfile();
@@ -373,24 +381,21 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(false);
             logFine("Opened " + toString() + " at '"
-                + localBase.getAbsolutePath() + '\'');
+                + localBase.toAbsolutePath() + '\'');
         } catch (FolderException e) {
             logWarning("Unable to open " + toString() + " at '"
-                + localBase.getAbsolutePath()
+                + localBase.toAbsolutePath()
                 + "'. Local base directory is inaccessable.");
             deviceDisconnected = true;
         }
 
-        FileFilter allExceptSystemDirFilter = new FileFilter() {
-            public boolean accept(File pathname) {
+        Filter<Path> allExceptSystemDirFilter = new Filter<Path>() {
+            public boolean accept(Path pathname) {
                 return !isSystemSubDir(pathname);
             }
         };
 
-        if (localBase.list() != null
-            && localBase.listFiles(allExceptSystemDirFilter).length == 0)
-        {
-            // Empty folder... no scan required for database
+        if (PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter)) {
             hasOwnDatabase = true;
         }
 
@@ -416,7 +421,7 @@ public class Folder extends PFComponent {
 
         // Check desktop ini in Windows environments
         if (!currentInfo.isMetaFolder()) {
-            FileUtils.maintainDesktopIni(getController(), localBase);
+            PathUtils.maintainDesktopIni(getController(), localBase);
         }
 
         // Force the next time scan.
@@ -445,20 +450,27 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        File archive = new TFile(getSystemSubDir(), "archive");
-        if (!checkIfDeviceDisconnected() && !archive.exists() && !archive.mkdirs())
+        Path archive = getSystemSubDir().resolve("archive");
+        if (!checkIfDeviceDisconnected() && Files.notExists(archive))
         {
-            logWarning("Failed to create archive directory in system subdirectory: " + archive);
+            try {
+                Files.createDirectory(archive);
+            }
+            catch (IOException ioe) {
+                logWarning("Failed to create archive directory in system subdirectory: "
+                    + archive + "\n" + ioe.getMessage());
+            }
         }
-        archiver = new FileArchiver(archive, getController().getMySelf().getInfo());
+        archiver = new FileArchiver(archive, getController()
+            .getMySelf().getInfo());
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         // Create invitation
 //        if (folderSettings.isCreateInvitationFile()) {
 //            try {
 //                Invitation inv = createInvitation();
-//                File invFile = new TFile(localBase,
-//                    FileUtils.removeInvalidFilenameChars(inv.folder.name)
+//                Path invFile = localBase.resolve(
+//                    PathUtils.removeInvalidFilenameChars(inv.folder.name)
 //                        + ".invitation");
 //                InvitationUtil.save(inv, invFile);
 //                scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
@@ -471,20 +483,21 @@ public class Folder extends PFComponent {
 
         // Remove desktop.ini. Was accidentally created in 4.3.0 release.
         if (currentInfo.isMetaFolder()) {
-            File desktopIni = new TFile(localBase,
-                FileUtils.DESKTOP_INI_FILENAME);
-            if (desktopIni.exists() && desktopIni.delete()) {
-                scanChangedFile(FileInfoFactory
-                    .lookupInstance(this, desktopIni));
+            Path desktopIni = localBase.resolve(
+                PathUtils.DESKTOP_INI_FILENAME);
+            if (Files.exists(desktopIni)) {
+                try {
+                    Files.delete(desktopIni);
+                    scanChangedFile(FileInfoFactory
+                        .lookupInstance(this, desktopIni));
+                }
+                catch (IOException ioe) {
+                    // Ignore.
+                }
             }
         }
 
         watcher = new FolderWatcher(this);
-
-        // PFC-2318: Workaround
-        if (diskItemFilter.getPatterns().isEmpty() && !isDeviceDisconnected()) {
-            addDefaultExcludes();
-        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -699,20 +712,20 @@ public class Folder extends PFComponent {
      */
     private void checkBaseDir(boolean quite) throws FolderException {
         // Basic checks
-        if (!localBase.exists()) {
+        if (Files.notExists(localBase)) {
             // TRAC #1249
             if ((OSUtil.isMacOS() || OSUtil.isLinux())
-                && localBase.getAbsolutePath().toLowerCase()
+                && localBase.toAbsolutePath().toString().toLowerCase()
                     .startsWith("/volumes"))
             {
                 throw new FolderException(currentInfo,
                     "Unmounted volume not available at "
-                        + localBase.getAbsolutePath());
+                        + localBase.toAbsolutePath());
             }
 
             // #2329
             throw new FolderException(currentInfo,
-                "Local base dir not available " + localBase.getAbsolutePath());
+                "Local base dir not available " + localBase.toAbsolutePath());
 
             // Old code:
             // if (!localBase.mkdirs()) {
@@ -726,14 +739,14 @@ public class Folder extends PFComponent {
             // // logWarning("Created base dir at " + localBase, new
             // RuntimeException("here"));
             // }
-        } else if (!localBase.isDirectory()) {
+        } else if (!Files.isDirectory(localBase)) {
             if (!quite) {
                 logSevere(" not able to create folder(" + getName()
                     + "), (sub) dir (" + localBase + ") is no dir");
             }
             throw new FolderException(currentInfo, Translation.getTranslation(
                 "foldercreate.error.unable_to_open",
-                localBase.getAbsolutePath()));
+                localBase.toAbsolutePath().toString()));
         }
 
         // Complex checks
@@ -741,7 +754,7 @@ public class Folder extends PFComponent {
         if (repo.getFoldersBasedir().equals(localBase)) {
             throw new FolderException(currentInfo, Translation.getTranslation(
                 "foldercreate.error.it_is_base_dir",
-                localBase.getAbsolutePath()));
+                localBase.toAbsolutePath().toString()));
         }
     }
 
@@ -758,7 +771,7 @@ public class Folder extends PFComponent {
      * @return true if the download could be completed and the file got scanned.
      *         false if any problem happend.
      */
-    public boolean scanDownloadFile(FileInfo fInfo, File tempFile) {
+    public boolean scanDownloadFile(FileInfo fInfo, Path tempFile) {
         try {
             watcher.addIgnoreFile(fInfo);
             return scanDownloadFile0(fInfo, tempFile);
@@ -767,29 +780,42 @@ public class Folder extends PFComponent {
         }
     }
 
-    private boolean scanDownloadFile0(FileInfo fInfo, File tempFile) {
+    private boolean scanDownloadFile0(FileInfo fInfo, Path tempFile) {
         // FIXME What happens if the file was locally modified before the
         // download finished? There should be a check here if the current local
         // version differs from the version when the download began. In that
         // case a conflict has to be raised!
 
         // rename file
-        File targetFile = fInfo.getDiskFile(getController()
+        Path targetFile = fInfo.getDiskFile(getController()
             .getFolderRepository());
 
-        if (!targetFile.getParentFile().exists()) {
-            targetFile.getParentFile().mkdirs();
+        if (Files.notExists(targetFile.getParent())) {
+            try {
+                Files.createDirectory(targetFile.getParent());
+            }
+            catch (IOException ioe) {
+                // Ignore.
+            }
         }
-        if (!targetFile.getParentFile().isDirectory()) {
+        if (!Files.isDirectory(targetFile.getParent())) {
             boolean ok = false;
             // Hack to solve the rarely occurring 0 byte directory files
-            if (targetFile.getParentFile().isFile()
-                && targetFile.getParentFile().length() == 0)
-            {
-                if (targetFile.getParentFile().delete()) {
-                    ok = targetFile.getParentFile().mkdirs();
+
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(targetFile)) {
+                Iterator<Path> dirContent = stream.iterator();
+
+                if (Files.isRegularFile(targetFile.getParent())
+                    && !dirContent.hasNext())
+                {
+                    Files.delete(targetFile.getParent());
+                    Files.createDirectory(targetFile.getParent());
+                    ok = true;
                 }
+            } catch (IOException ioe) {
+                ok = false;
             }
+
             if (!ok) {
                 logWarning("Unable to scan downloaded file. Parent dir is not a directory: "
                     + targetFile + ". " + fInfo.toDetailString());
@@ -799,13 +825,17 @@ public class Folder extends PFComponent {
 
         synchronized (scanLock) {
             // Prepare last modification date of tempfile.
-            if (!tempFile.setLastModified(fInfo.getModifiedDate().getTime())) {
+            try {
+                Files.setLastModifiedTime(tempFile,
+                    FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
+            }
+            catch (IOException ioe) {
                 logSevere("Failed to set modified date on " + tempFile
                     + " for " + fInfo.getModifiedDate().getTime());
                 return false;
             }
 
-            if (targetFile.exists()) {
+            if (Files.exists(targetFile)) {
                 // if file was a "newer file" the file already exists here
                 // Using local var because of possible race condition!!
                 FileArchiver arch = archiver;
@@ -837,26 +867,35 @@ public class Folder extends PFComponent {
                         return false;
                     }
                 }
-                if (targetFile.exists() && !targetFile.delete()) {
-                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                        + targetFile.getAbsolutePath()
-                        + ". "
-                        + fInfo.toDetailString());
-                    return false;
+                if (Files.exists(targetFile)) {
+                    try {
+                        Files.delete(targetFile);
+                    }
+                    catch (IOException ioe) {
+                        logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                            + targetFile.toAbsolutePath()
+                            + ". "
+                            + fInfo.toDetailString());
+                        return false;
+                    }
                 }
             }
-            if (!tempFile.renameTo(targetFile)) {
+            
+            try {
+                Files.move(tempFile, targetFile);
+            }
+            catch (IOException ioe) {
                 logWarning("Was not able to rename tempfile, copiing "
-                    + tempFile.getAbsolutePath() + " to "
-                    + targetFile.getAbsolutePath() + ". "
+                    + tempFile.toAbsolutePath() + " to "
+                    + targetFile.toAbsolutePath() + ". "
                     + fInfo.toDetailString());
 
                 try {
-                    FileUtils.copyFile(tempFile, targetFile);
+                    Files.copy(tempFile, targetFile);
                 } catch (IOException e) {
                     // TODO give a diskfull warning?
                     logSevere("Unable to store completed download "
-                        + targetFile.getAbsolutePath() + ". " + e.getMessage()
+                        + targetFile.toAbsolutePath() + ". " + e.getMessage()
                         + ". " + fInfo.toDetailString());
                     logFiner(e);
                     return false;
@@ -864,16 +903,23 @@ public class Folder extends PFComponent {
 
                 // Set modified date of remote
                 // TODO: Set last modified only if required
-                if (!targetFile.setLastModified(fInfo.getModifiedDate()
-                    .getTime()))
-                {
+                try {
+                    Files.setLastModifiedTime(targetFile,
+                        FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
+                }
+                catch (IOException e) {
                     logSevere("Failed to set modified date on " + targetFile
                         + " to " + fInfo.getModifiedDate().getTime());
                     return false;
                 }
 
-                if (tempFile.exists() && !tempFile.delete()) {
-                    logSevere("Unable to remove temp file: " + tempFile);
+                if (Files.exists(tempFile)) {
+                    try {
+                        Files.delete(tempFile);
+                    }
+                    catch (IOException e) {
+                        logSevere("Unable to remove temp file: " + tempFile);
+                    }
                 }
             }
 
@@ -886,7 +932,7 @@ public class Folder extends PFComponent {
         return true;
     }
 
-    private FileInfo doSimpleConflictDetection(FileInfo fInfo, File targetFile,
+    private FileInfo doSimpleConflictDetection(FileInfo fInfo, Path targetFile,
         FileInfo oldLocalFileInfo)
     {
         boolean conflict = oldLocalFileInfo.getVersion() == fInfo.getVersion()
@@ -1130,7 +1176,6 @@ public class Folder extends PFComponent {
 
         // Check daily synchronization day of week.
         if (requiredSyncDay != SyncProfileConfiguration.DAILY_DAY_EVERY_DAY) {
-
             if (requiredSyncDay == SyncProfileConfiguration.DAILY_DAY_WEEKDAYS)
             {
                 if (currentDay == Calendar.SATURDAY
@@ -1267,11 +1312,11 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
         }
-        File file = getDiskFile(fInfo);
+        Path file = getDiskFile(fInfo);
 
         // ignore our database file
-        if (file.getName().equals(Constants.DB_FILENAME)
-            || file.getName().equals(Constants.DB_BACKUP_FILENAME))
+        if (file.getFileName().equals(Constants.DB_FILENAME)
+            || file.getFileName().equals(Constants.DB_BACKUP_FILENAME))
         {
             logFiner("Ignoring folder database file: " + file);
             return null;
@@ -1303,7 +1348,7 @@ public class Folder extends PFComponent {
                         if (fInfo.isLookupInstance()) {
                             size = 0;
                             modDate = new Date();
-                            deleted = !file.exists();
+                            deleted = Files.notExists(file);
                         } else {
                             size = fInfo.getSize();
                             modDate = fInfo.getModifiedDate();
@@ -1314,27 +1359,34 @@ public class Folder extends PFComponent {
                             modifiedBy = from.getInfo();
                         }
 
-                        if (file.exists()) {
-                            modDate = new Date(file.lastModified());
-                            size = file.length();
+                        if (Files.exists(file)) {
+                            try {
+                                modDate = new Date(Files.getLastModifiedTime(
+                                    file).toMillis());
+                                size = Files.size(file);
+                            } catch (IOException ioe) {
+                                logWarning("Could not read file meta data. " + ioe.getMessage());
+                                modDate = new Date(0);
+                                size = 0;
+                            }
                         }
 
                         if (deleted) {
                             fInfo = FileInfoFactory.unmarshallDeletedFile(
                                 currentInfo, fInfo.getRelativeName(),
                                 modifiedBy, modDate, fInfo.getVersion(),
-                                file.isDirectory());
+                                Files.isDirectory(file));
                         } else {
                             fInfo = FileInfoFactory.unmarshallExistingFile(
                                 currentInfo, fInfo.getRelativeName(), size,
                                 modifiedBy, modDate, fInfo.getVersion(),
-                                file.isDirectory());
+                                Files.isDirectory(file));
                         }
 
                         store(getController().getMySelf(), fInfo);
 
                         // get folder icon info and set it
-                        if (FileUtils.isDesktopIni(file)) {
+                        if (PathUtils.isDesktopIni(file)) {
                             makeFolderIcon(file);
                         }
 
@@ -1382,7 +1434,7 @@ public class Folder extends PFComponent {
      * @param dir
      *            the directory
      */
-    public void scanDirectory(FileInfo dirInfo, File dir) {
+    public void scanDirectory(FileInfo dirInfo, Path dir) {
         Reject.ifNull(dirInfo, "DirInfo is null");
         if (isFiner()) {
             logFiner("Scanning dir: " + dirInfo.toDetailString());
@@ -1403,20 +1455,28 @@ public class Folder extends PFComponent {
         try {
             synchronized (scanLock) {
                 if (dirInfo.isDeleted()) {
-                    if (!dir.delete()) {
+                    try {
+                        Files.delete(dir);
+                    }
+                    catch (IOException ioe) {
                         logSevere("Unable to deleted directory: " + dir + ". "
                             + dirInfo.toDetailString());
                         return;
                     }
                 } else {
                     // #2627 / ASR-771-79727
-                    if (dir.exists() && dir.isFile() && dir.length() == 0) {
-                        dir.delete();
+                    if (Files.exists(dir) && Files.isRegularFile(dir)
+                        && Files.size(dir) == 0)
+                    {
+                        Files.delete(dir);
                     }
-                    dir.mkdirs();
-                    dir.setLastModified(dirInfo.getModifiedDate().getTime());
+                    Files.createDirectories(dir);
+                    Files.setLastModifiedTime(dir, FileTime.fromMillis(dirInfo
+                        .getModifiedDate().getTime()));
                 }
             }
+        } catch (IOException ioe) {
+            
         } finally {
             watcher.removeIgnoreFile(dirInfo);
         }
@@ -1485,13 +1545,13 @@ public class Folder extends PFComponent {
             getController().getTransferManager().breakTransfers(fInfo);
         }
 
-        File diskFile = getDiskFile(fInfo);
+        Path diskFile = getDiskFile(fInfo);
         boolean folderChanged = false;
         synchronized (scanLock) {
-            if (diskFile != null && diskFile.exists()) {
+            if (diskFile != null && Files.exists(diskFile)) {
                 if (!deleteFile(fInfo, diskFile)) {
                     logWarning("Unable to remove local file. Was not able to move old file to file archive "
-                        + diskFile.getAbsolutePath()
+                        + diskFile.toAbsolutePath()
                         + ". "
                         + fInfo.toDetailString());
                     // Failure.
@@ -1600,17 +1660,17 @@ public class Folder extends PFComponent {
      */
     // @SuppressWarnings("unchecked")
     @SuppressWarnings({"unchecked"})
-    private boolean loadFolderDB(File dbFile) {
+    private boolean loadFolderDB(Path dbFile) {
         synchronized (scanLock) {
-            if (!dbFile.exists()) {
+            if (Files.notExists(dbFile)) {
                 logFine(this + ": Database file not found: "
-                    + dbFile.getAbsolutePath());
+                    + dbFile.toAbsolutePath());
                 return false;
             }
             try {
                 // load files and scan in
-                InputStream fIn = new BufferedInputStream(new TFileInputStream(
-                    dbFile));
+                InputStream fIn = new BufferedInputStream(
+                    Files.newInputStream(dbFile));
                 ObjectInputStream in = new ObjectInputStream(fIn);
                 FileInfo[] files = (FileInfo[]) in.readObject();
                 // Convert.cleanMemberInfos(getController().getNodeManager(),
@@ -1688,10 +1748,10 @@ public class Folder extends PFComponent {
                 fIn.close();
 
                 logFine("Loaded folder database (" + files.length
-                    + " files) from " + dbFile.getAbsolutePath());
+                    + " files) from " + dbFile.toAbsolutePath());
             } catch (Exception e) {
                 logWarning(this + ": Unable to read database file: "
-                    + dbFile.getAbsolutePath() + ". " + e);
+                    + dbFile.toAbsolutePath() + ". " + e);
                 logFiner(e);
                 return false;
             }
@@ -1710,7 +1770,7 @@ public class Folder extends PFComponent {
     private void loadMetadata() {
         loadFolderDB();
         loadLastSyncDate();
-        diskItemFilter.loadPatternsFrom(new TFile(getSystemSubDir0(),
+        diskItemFilter.loadPatternsFrom(getSystemSubDir0().resolve(
             DiskItemFilter.PATTERNS_FILENAME), false);
     }
 
@@ -1718,15 +1778,12 @@ public class Folder extends PFComponent {
      * Loads the folder db from disk
      */
     private void loadFolderDB() {
-        if (loadFolderDB(new TFile(localBase,
-            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + Constants.DB_FILENAME)))
-        {
+        if (loadFolderDB(getSystemSubDir0().resolve(Constants.DB_FILENAME))) {
             return;
         }
 
-        if (loadFolderDB(new TFile(localBase,
-            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/'
-                + Constants.DB_BACKUP_FILENAME)))
+        if (loadFolderDB(getSystemSubDir0().resolve(
+            Constants.DB_BACKUP_FILENAME)))
         {
             return;
         }
@@ -1747,7 +1804,7 @@ public class Folder extends PFComponent {
             persist();
         }
         if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
-            diskItemFilter.savePatternsTo(new TFile(getSystemSubDir(),
+            diskItemFilter.savePatternsTo(getSystemSubDir().resolve(
                 DiskItemFilter.PATTERNS_FILENAME), true);
             savePatternsToMetaFolder();
         }
@@ -1758,11 +1815,11 @@ public class Folder extends PFComponent {
             .removeAllListeners(folderMembershipListenerSupport);
         diskItemFilter.removeAllListener();
         if (encrypted && !currentInfo.isMetaFolder()) {
-            try {
-                TFile.umount(localBase);
-            } catch (Throwable e) {
-                logWarning("Problem unmounting " + localBase + ". " + e);
-            }
+//            try {
+//                TFile.umount(localBase);
+//            } catch (Throwable e) {
+//                logWarning("Problem unmounting " + localBase + ". " + e);
+//            }
         }
     }
 
@@ -1780,8 +1837,8 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private void storeFolderDB() {
-        File dbFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME);
-        File dbFileBackup = new TFile(getSystemSubDir(),
+        Path dbFile = getSystemSubDir().resolve(Constants.DB_FILENAME);
+        Path dbFileBackup = getSystemSubDir().resolve(
             Constants.DB_BACKUP_FILENAME);
         try {
             FileInfo[] diskItems;
@@ -1799,40 +1856,42 @@ public class Folder extends PFComponent {
                     i++;
                 }
             }
-            if (dbFile.exists()) {
-                if (!dbFile.delete()) {
+            if (Files.exists(dbFile)) {
+                try {
+                    Files.delete(dbFile);
+                }
+                catch (IOException ioe) {
                     logSevere("Failed to delete database file: " + dbFile);
                 }
             }
-            if (!dbFile.createNewFile()) {
+            try {
+                Files.createFile(dbFile);
+            }
+            catch (IOException ioe) {
                 logSevere("Failed to create database file: " + dbFile);
             }
-            OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
-                dbFile));
-            ObjectOutputStream oOut = new ObjectOutputStream(fOut);
-            // Store files
-            oOut.writeObject(diskItems);
-            // Store members
-            oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
-                .toArray(new Member[getMembersAsCollection().size()])));
-            // Old blacklist. Maintained for backward serialization
-            // compatability. Do not remove.
-            oOut.writeObject(new ArrayList<FileInfo>());
-
-            if (lastScan == null) {
-                if (isFiner()) {
-                    logFiner("write default time: " + new Date());
+            try (ObjectOutputStream oOut = new ObjectOutputStream(Files.newOutputStream(dbFile))) {
+                // Store files
+                oOut.writeObject(diskItems);
+                // Store members
+                oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
+                    .toArray(new Member[getMembersAsCollection().size()])));
+                // Old blacklist. Maintained for backward serialization
+                // compatability. Do not remove.
+                oOut.writeObject(new ArrayList<FileInfo>());
+    
+                if (lastScan == null) {
+                    if (isFiner()) {
+                        logFiner("write default time: " + new Date());
+                    }
+                    oOut.writeObject(new Date());
+                } else {
+                    if (isFiner()) {
+                        logFiner("write lastScan: " + lastScan);
+                    }
+                    oOut.writeObject(lastScan);
                 }
-                oOut.writeObject(new Date());
-            } else {
-                if (isFiner()) {
-                    logFiner("write lastScan: " + lastScan);
-                }
-                oOut.writeObject(lastScan);
             }
-
-            oOut.close();
-            fOut.close();
 
             if (isFine()) {
                 logFine("Successfully wrote folder database file ("
@@ -1840,17 +1899,27 @@ public class Folder extends PFComponent {
             }
 
             // Make backup
-            FileUtils.copyFile(dbFile, dbFileBackup);
+            try {
+                Files.copy(dbFile, dbFileBackup);
+            }
+            catch (FileAlreadyExistsException faee) {
+                // Ignore.
+            }
 
             // TODO Remove this in later version
             // Cleanup for older versions
-            File oldDbFile = new TFile(localBase, Constants.DB_FILENAME);
-            if (!oldDbFile.delete()) {
+            Path oldDbFile = localBase.resolve(Constants.DB_FILENAME);
+            try {
+                Files.delete(oldDbFile);
+            } catch (IOException ioe) {
                 logFiner("Failed to delete 'old' database file: " + oldDbFile);
             }
-            File oldDbFileBackup = new TFile(localBase,
-                Constants.DB_BACKUP_FILENAME);
-            if (!oldDbFileBackup.delete()) {
+            Path oldDbFileBackup = localBase
+                .resolve(Constants.DB_BACKUP_FILENAME);
+            try {
+                Files.delete(oldDbFileBackup);
+            }
+            catch (IOException ioe) {
                 logFiner("Failed to delete backup of 'old' database file: "
                     + oldDbFileBackup);
             }
@@ -1858,7 +1927,7 @@ public class Folder extends PFComponent {
             // TODO: if something failed shoudn't we try to restore the
             // backup (if backup exists and bd file not after this?
             logSevere(this + ": Unable to write database file "
-                + dbFile.getAbsolutePath() + ". " + e);
+                + dbFile.toAbsolutePath() + ". " + e);
             logFiner(e);
         }
     }
@@ -2030,10 +2099,6 @@ public class Folder extends PFComponent {
     }
 
     private boolean checkRevertLocalChanges(FileInfo fileInfo) {
-        if (getConnectedMembersCount() == 0) {
-            // Don't check anything. No other partner. Keep everything
-            return false;
-        }
         FileInfo newestVersion = fileInfo.getNewestVersion(getController()
             .getFolderRepository());
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
@@ -2050,10 +2115,10 @@ public class Folder extends PFComponent {
                     + fileInfo.toDetailString() + ". Found newer version: "
                     + newestVersion.toDetailString());
             }
-            File file = fileInfo.getDiskFile(getController()
+            Path file = fileInfo.getDiskFile(getController()
                 .getFolderRepository());
             synchronized (scanLock) {
-                if (file.exists()) {
+                if (Files.exists(file)) {
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
@@ -2076,20 +2141,20 @@ public class Folder extends PFComponent {
      * 
      * @param desktopIni
      */
-    private void makeFolderIcon(File desktopIni) {
+    private void makeFolderIcon(Path desktopIni) {
         if (desktopIni == null) {
             throw new NullPointerException("File (desktop.ini) is null");
         }
         if (!OSUtil.isWindowsSystem()) {
             logFiner("Not a windows system, ignoring folder icon. "
-                + desktopIni.getAbsolutePath());
+                + desktopIni.toAbsolutePath());
             return;
         }
 
         logFiner("Setting icon of "
-            + desktopIni.getParentFile().getAbsolutePath());
+            + desktopIni.getParent().toAbsolutePath());
 
-        FileUtils.setAttributesOnWindows(desktopIni, true, true);
+        PathUtils.setAttributesOnWindows(desktopIni, true, true);
     }
 
     /**
@@ -2109,7 +2174,7 @@ public class Folder extends PFComponent {
 
         if (active) {
             return Util.createDesktopShortcut(shortCutName,
-                localBase.getAbsoluteFile());
+                localBase);
         }
 
         // Remove shortcuts to folder if not wanted
@@ -2202,7 +2267,7 @@ public class Folder extends PFComponent {
         }
 
         if (syncProfile.isSyncDeletion()) {
-            triggerSyncRemoteDeletedFiles(members.keySet());
+            triggerSyncRemoteDeletedFiles(members.keySet(), false);
         }
         watcher.reconfigure(syncProfile);
         recommendScanOnNextMaintenance();
@@ -2418,7 +2483,7 @@ public class Folder extends PFComponent {
             return;
         }
         // Update in the meta directory.
-        File file = new TFile(metaFolder.localBase, METAFOLDER_MEMBERS);
+        Path file = metaFolder.localBase.resolve(METAFOLDER_MEMBERS);
         FileInfo fileInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         // Read in.
         Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
@@ -2473,35 +2538,16 @@ public class Folder extends PFComponent {
             logFine("Loading metafolder members from " + fileInfo + '.');
         }
         Map<String, MemberInfo> membersMap = new TreeMap<String, MemberInfo>();
-        InputStream is = null;
-        ObjectInputStream ois = null;
-        File f = fileInfo.getDiskFile(getController().getFolderRepository());
-        if (!f.exists()) {
+        Path f = fileInfo.getDiskFile(getController().getFolderRepository());
+        if (Files.notExists(f)) {
             return membersMap;
         }
-        try {
-            is = new BufferedInputStream(new FileInputStream(f));
-            ois = new ObjectInputStream(is);
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(f))) {
             membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
         } catch (IOException e) {
             logWarning("Unable to read members file " + fileInfo + ". " + e);
         } catch (ClassNotFoundException e) {
             logWarning("Unable to read members file " + fileInfo + ". " + e);
-        } finally {
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) {
-                    // Don't care.
-                }
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    // Don't care.
-                }
-            }
         }
         if (isFine()) {
             logFine("Loaded " + membersMap.size() + " metafolder members.");
@@ -2528,34 +2574,13 @@ public class Folder extends PFComponent {
             }
         }
 
-        OutputStream os = null;
-        ObjectOutputStream oos = null;
-        try {
-            os = new BufferedOutputStream(new TFileOutputStream(
-                fileInfo.getDiskFile(getController().getFolderRepository())));
-            oos = new ObjectOutputStream(os);
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+            Files.newOutputStream(fileInfo.getDiskFile(getController()
+                .getFolderRepository())))) {
             oos.writeObject(membersMap);
         } catch (IOException e) {
             logSevere(e);
-        } finally {
-            if (oos != null) {
-                try {
-                    oos.flush();
-                    oos.close();
-                } catch (IOException e) {
-                    // Don't care.
-                }
-            }
-            if (os != null) {
-                try {
-                    os.flush();
-                    os.close();
-                } catch (IOException e) {
-                    // Don't care.
-                }
-            }
         }
-
     }
 
     public boolean waitForScan() {
@@ -2687,13 +2712,14 @@ public class Folder extends PFComponent {
      * 
      * @param collection
      *            selected members to sync deletions with
+     * @param force
      */
     public void triggerSyncRemoteDeletedFiles(
-        final Collection<Member> collection)
+        final Collection<Member> collection, final boolean force)
     {
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
-                syncRemoteDeletedFiles(collection, false);
+                syncRemoteDeletedFiles(collection, force);
             }
         });
     }
@@ -2725,9 +2751,9 @@ public class Folder extends PFComponent {
             // Skip.
             return;
         }
-
         if (isFine()) {
-            logFine("Sync Remote file deltions with: " + collection);
+            logFine("Deleting files, which are deleted by friends. con-members: "
+                + Arrays.asList(getConnectedMembers()));
         }
 
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
@@ -2856,14 +2882,14 @@ public class Folder extends PFComponent {
         }
 
         // Local file NOT deleted / still existing. So do a local delete
-        File localCopy = localFile.getDiskFile(getController()
+        Path localCopy = localFile.getDiskFile(getController()
             .getFolderRepository());
         if (!localFile.inSyncWithDisk(localCopy)) {
             if (isFine()) {
                 logFine("Not deleting file from member " + member
                     + ", local file not in sync with disk: "
                     + localFile.toDetailString() + " at "
-                    + localCopy.getAbsolutePath());
+                    + localCopy.toAbsolutePath());
             }
 
             if (scanAllowedNow() && scanChangedFile(localFile) != null
@@ -2879,7 +2905,7 @@ public class Folder extends PFComponent {
         if (isFine()) {
             logFine("File was deleted by " + remoteFile.getModifiedBy()
                 + ", deleting local: " + localFile.toDetailString() + " at "
-                + localCopy.getAbsolutePath());
+                + localCopy.toAbsolutePath());
         }
 
         // Abort transfers on file.
@@ -2887,7 +2913,7 @@ public class Folder extends PFComponent {
             getController().getTransferManager().breakTransfers(remoteFile);
         }
 
-        if (localCopy.exists()) {
+        if (Files.exists(localCopy)) {
             synchronized (scanLock) {
                 if (localFile.isDiretory()) {
                     if (isFine()) {
@@ -2896,51 +2922,57 @@ public class Folder extends PFComponent {
                     }
                     watcher.addIgnoreFile(localFile);
                     try {
-                        if (!localCopy.delete()) {
-                            // #1977
-                            String[] remaining = localCopy.list();
-                            if (remaining != null) {
-                                // Basic cleanup stuff. Simply remove any caches
-                                // or meta info.
-                                for (String path : remaining) {
-                                    String pathL = path.toLowerCase();
-                                    if (pathL.endsWith("thumbs.db")
-                                        || pathL.endsWith(".ds_store")
-                                        || pathL.endsWith("desktop.ini"))
-                                    {
-                                        new TFile(path).delete();
-                                    }
-                                }
-
-                                // If structure is completely empty, just kill
-                                // it.
-                                // try {
-                                // removeEmptyDirectoryStructure(localCopy);
-                                // } catch (Exception e) {
-                                // logWarning("Unable remove empty directory structure at "
-                                // + localCopy + ". " + e.getMessage());
-                                // }
-
-                                if (!localCopy.delete()) {
-                                    if (isWarning()) {
-                                        remaining = localCopy.list();
-                                        String contentStr = remaining != null
-                                            ? Arrays.asList(remaining)
-                                                .toString()
-                                            : "(unable to access)";
-                                        logFine("Unable to delete directory locally: "
-                                            + localCopy
-                                            + ". Info: "
-                                            + localFile.toDetailString()
-                                            + ". contents: " + contentStr);
-                                    }
-                                    // Skip. Dir was not actually deleted /
-                                    // could
-                                    // not
-                                    // sync
-                                    return;
+                        Files.delete(localCopy);
+                    }
+                    catch (IOException ioe) {
+                        // #1977
+                        try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
+                            for (Path path : remaining) {
+                                String name = path.toString().toLowerCase();
+                                if (name.endsWith("thumbs.db")
+                                    || name.endsWith(".ds_store")
+                                    || name.endsWith("desktop.ini")) {
+                                    Files.delete(path);
                                 }
                             }
+                        }
+                        catch (IOException e) {
+                            logInfo(ioe.getMessage());
+                            return;
+                        }
+
+                        try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
+                            try {
+                                Files.delete(localCopy);
+                            }
+                            catch (IOException e) {
+                                if (isWarning()) {
+                                    int count = 0;
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append("[");
+                                    for (Path path : remaining) {
+                                        sb.append(path.toString());
+                                        sb.append(", ");
+                                        count++;
+                                    }
+                                    sb.append("]");
+
+                                    String contentStr = count > 0
+                                        ? sb.toString()
+                                            : "(unable to access)";
+                                            logFine("Unable to delete directory locally: "
+                                                + localCopy
+                                                + ". Info: "
+                                                + localFile.toDetailString()
+                                                + ". contents: " + contentStr);
+                                }
+                                // Skip. Dir was not actually deleted /
+                                // could not sync
+                                return;
+                            }
+                        }
+                        catch (IOException e) {
+                            logInfo(ioe.getMessage());
                         }
                     } finally {
                         watcher.removeIgnoreFile(localFile);
@@ -2949,7 +2981,7 @@ public class Folder extends PFComponent {
                 } else if (localFile.isFile()) {
                     if (!deleteFile(localFile, localCopy)) {
                         logWarning("Unable to deleted. was not able to move old file to recycle bin "
-                            + localCopy.getAbsolutePath()
+                            + localCopy.toAbsolutePath()
                             + ". "
                             + localFile.toDetailString());
                         return;
@@ -2967,28 +2999,36 @@ public class Folder extends PFComponent {
         store(getController().getMySelf(), remoteFile);
     }
 
-    private boolean removeEmptyDirectoryStructure(File dir) {
-        if (dir.isFile()) {
+    private boolean removeEmptyDirectoryStructure(Path dir) {
+        if (Files.isRegularFile(dir)) {
             return false;
-        } else if (dir.isDirectory()) {
-            File[] list = dir.listFiles();
-            if (list.length == 0) {
-                FileInfo fileInfo = FileInfoFactory.lookupInstance(this, dir);
-                fileInfo = fileInfo.getNewestVersion(getController()
-                    .getFolderRepository());
-                if (fileInfo != null && !fileInfo.isDeleted()) {
-                    // Meta info not matching. Directory not deleted.
-                    return false;
+        } else if (Files.isDirectory(dir)) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+                if (!stream.iterator().hasNext()) {
+                    for (Path p : stream) {
+                        if (!removeEmptyDirectoryStructure(p)) {
+                            return false;
+                        }
+                    }
+                    return true;
                 }
-                // Remove empty directory
-                return dir.delete();
-            } else {
-                for (File file : list) {
-                    if (!removeEmptyDirectoryStructure(file)) {
+                else {
+                    FileInfo fileInfo = FileInfoFactory.lookupInstance(this, dir);
+                    fileInfo = fileInfo.getNewestVersion(getController().getFolderRepository());
+                    if (fileInfo != null && !fileInfo.isDeleted()) {
+                        // Meta info not matching. Directory not deleted.
+                        return false;
+                    }
+                    // Remove empty directory
+                    try {
+                        Files.delete(dir);
+                        return true;
+                    } catch (IOException ioe) {
                         return false;
                     }
                 }
-                return true;
+            } catch (IOException ioe) {
+                return false;
             }
         } else {
             return false;
@@ -3064,7 +3104,7 @@ public class Folder extends PFComponent {
             return;
         }
 
-        File syncPatternsFile = metaFolder.getDiskFile(fileInfo);
+        Path syncPatternsFile = metaFolder.getDiskFile(fileInfo);
         logInfo("Reading syncPatterns " + syncPatternsFile);
         diskItemFilter.loadPatternsFrom(syncPatternsFile, true);
         // Trigger resync
@@ -3597,7 +3637,7 @@ public class Folder extends PFComponent {
         logFiner("Persisting settings");
 
         if ((hasOwnDatabase || getKnownItemCount() > 0)
-            && !getSystemSubDir0().exists())
+            && Files.notExists(getSystemSubDir0()))
         {
             logWarning("Not storing folder database. Local system directory does not exists: "
                 + getLocalBase());
@@ -3637,7 +3677,7 @@ public class Folder extends PFComponent {
     /**
      * @return the local base directory
      */
-    public File getLocalBase() {
+    public Path getLocalBase() {
         return localBase;
     }
 
@@ -3646,14 +3686,14 @@ public class Folder extends PFComponent {
      *         folder has been fully updated. null if no commit should be
      *         performed
      */
-    public File getCommitDir() {
+    public Path getCommitDir() {
         return commitDir;
     }
 
     /**
      * @return the commit dir or the local base if commit dir is null.
      */
-    public File getCommitOrLocalDir() {
+    public Path getCommitOrLocalDir() {
         if (commitDir != null) {
             return commitDir;
         }
@@ -3666,11 +3706,12 @@ public class Folder extends PFComponent {
      *            folder has been fully updated. null if no commit should be
      *            performed
      */
-    public void setCommitDir(File commitDir) {
+    public void setCommitDir(Path commitDir) {
         this.commitDir = commitDir;
         String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
             + FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
-        String confVal = commitDir != null ? commitDir.getAbsolutePath() : "";
+        String confVal = commitDir != null ? commitDir.toAbsolutePath()
+            .toString() : "";
         getController().getConfig().put(confKey, confVal);
         logInfo("Commit dir set to '" + confVal + '\'');
         getController().saveConfig();
@@ -3680,13 +3721,18 @@ public class Folder extends PFComponent {
      * @return the system subdir in the local base folder. subdir gets created
      *         if not exists
      */
-    public File getSystemSubDir() {
-        File systemSubDir = getSystemSubDir0();
-        if (!systemSubDir.exists()) {
-            if (!checkIfDeviceDisconnected() && systemSubDir.mkdirs()) {
-                // logWarning("Create local directory at: " + systemSubDir,
-                // new RuntimeException("here"));
-                FileUtils.setAttributesOnWindows(systemSubDir, true, true);
+    public Path getSystemSubDir() {
+        Path systemSubDir = getSystemSubDir0();
+        if (Files.notExists(systemSubDir)) {
+            if (!checkIfDeviceDisconnected()) {
+                try {
+                    Files.createDirectories(systemSubDir);
+                    // logWarning("Create local directory at: " + systemSubDir,
+                    // new RuntimeException("here"));
+                    PathUtils.setAttributesOnWindows(systemSubDir, true, true);
+                } catch (IOException e) {
+                    logWarning(e.getMessage());
+                }
             } else if (!deviceDisconnected) {
                 logSevere("Failed to create system subdir: " + systemSubDir);
             } else if (isFine()) {
@@ -3696,8 +3742,14 @@ public class Folder extends PFComponent {
         return systemSubDir;
     }
 
-    private File getSystemSubDir0() {
-        return new TFile(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
+    private Path getSystemSubDir0() {
+        if (localBase.toUri().getScheme().equals(Constants.ZYNCRO_SCHEME)) {
+            return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
+                .resolve(PathUtils.removeInvalidFilenameChars(getName()))
+                .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        } else {
+            return localBase.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        }
     }
 
     /**
@@ -3706,10 +3758,9 @@ public class Folder extends PFComponent {
      * @param aDir
      * @return
      */
-    public boolean isSystemSubDir(File aDir) {
-        return aDir.isDirectory()
-            && getSystemSubDir0().getAbsolutePath().equals(
-                aDir.getAbsolutePath());
+    public boolean isSystemSubDir(Path aDir) {
+        return Files.isDirectory(aDir)
+            && getSystemSubDir0().equals(aDir);
     }
 
     /**
@@ -3738,12 +3789,16 @@ public class Folder extends PFComponent {
 
         // #1249
         if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
-            boolean inaccessible = localBase.list() == null
-                || localBase.list().length == 0 || !localBase.exists();
-            if (inaccessible) {
-                logWarning("Local base empty on linux file system, but has known files. "
-                    + localBase);
-                return setDeviceDisconnected(true);
+            if (!localBase.getFileSystem().provider().getScheme()
+                .equals(Constants.ZYNCRO_SCHEME))
+            {
+                boolean inaccessible = Files.notExists(localBase)
+                    || !PathUtils.hasContents(localBase);
+                if (inaccessible) {
+                    logWarning("Local base empty on linux file system, but has known files. "
+                        + localBase);
+                    return setDeviceDisconnected(true);
+                }
             }
         }
 
@@ -3773,7 +3828,7 @@ public class Folder extends PFComponent {
                 .getFoldersBasedirString();
             boolean inBaseDir = false;
             if (bd != null) {
-                inBaseDir = getLocalBase().getAbsolutePath().startsWith(bd);
+                inBaseDir = getLocalBase().toAbsolutePath().startsWith(bd);
             }
 
             if (inBaseDir && !currentInfo.isMetaFolder()
@@ -3793,13 +3848,17 @@ public class Folder extends PFComponent {
 
         if (wasDeviceDisconnected && !deviceDisconnected) {
             if (!currentInfo.isMetaFolder()) {
-                logInfo("Device reconnected @ " + localBase);                
+                logInfo("Device reconnected @ " + localBase);
             }
             // Try to load db from connected device now.
             loadMetadata();
-            
-            if (!getSystemSubDir().exists()) {
-                getSystemSubDir().mkdirs();    
+
+            if (Files.notExists(getSystemSubDir())) {
+                try {
+                    Files.createDirectories(getSystemSubDir());
+                } catch (IOException e) {
+                    logInfo(e.getMessage());
+                }
             }
 
             // Re-attach folder watcher
@@ -3813,7 +3872,7 @@ public class Folder extends PFComponent {
                 Folder metaFolder = getController().getFolderRepository()
                     .getMetaFolderForParent(currentInfo);
                 if (metaFolder != null) {
-                    metaFolder.checkIfDeviceDisconnected();                    
+                    metaFolder.checkIfDeviceDisconnected();
                 }
             }
             
@@ -3871,7 +3930,7 @@ public class Folder extends PFComponent {
      * @param newFileInfo
      * @param file
      */
-    private boolean deleteFile(FileInfo newFileInfo, File file) {
+    private boolean deleteFile(FileInfo newFileInfo, Path file) {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         FileInfo fileInfo = getFile(newFileInfo);
         if (isFine()) {
@@ -3881,7 +3940,7 @@ public class Folder extends PFComponent {
         try {
             watcher.addIgnoreFile(newFileInfo);
             synchronized (scanLock) {
-                if (fileInfo != null && fileInfo.isFile() && file.exists()) {
+                if (fileInfo != null && fileInfo.isFile() && Files.exists(file)) {
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
@@ -3889,9 +3948,13 @@ public class Folder extends PFComponent {
                             + ". " + e, e);
                     }
                 }
-                if (file.exists() && !file.delete()) {
-                    logSevere("Unable to delete file " + file);
-                    return false;
+                if (Files.exists(file)) {
+                    try {
+                        Files.delete(file);
+                    } catch (IOException ioe) {
+                        logSevere("Unable to delete file " + file);
+                        return false;
+                    }
                 }
             }
             return true;
@@ -4289,8 +4352,8 @@ public class Folder extends PFComponent {
      * @return the local file from a file info Never returns null, file MAY NOT
      *         exist!! check before use
      */
-    public File getDiskFile(FileInfo fInfo) {
-        return new TFile(localBase, FileInfoFactory.encodeIllegalChars(fInfo
+    public Path getDiskFile(FileInfo fInfo) {
+        return localBase.resolve(FileInfoFactory.encodeIllegalChars(fInfo
             .getRelativeName()));
     }
 
@@ -4379,34 +4442,33 @@ public class Folder extends PFComponent {
      * Ensures that default ignore patterns are set.
      */
     public void addDefaultExcludes() {
-        File pFile = new TFile(getSystemSubDir(),
+        Path pFile = getSystemSubDir().resolve(
             DiskItemFilter.PATTERNS_FILENAME);
-        boolean init = !pFile.exists();
+        boolean init = Files.notExists(pFile);
 
         for (DefaultExcludes pattern : DefaultExcludes.values()) {
             addPattern(pattern.getPattern());
         }
 
         if (WinUtils.getAppDataCurrentUser() != null
-            && localBase.getAbsolutePath().equals(
-                WinUtils.getAppDataCurrentUser()))
+            && localBase.equals(Paths.get(WinUtils.getAppDataCurrentUser())))
         {
             addPattern("PowerFolder/logs/*");
         }
         // #2083
         if (UserDirectories.getDocumentsReported() != null
-            && localBase.getAbsolutePath().equals(
-                UserDirectories.getDocumentsReported()))
+            && localBase.equals(Paths.get(UserDirectories
+                .getDocumentsReported())))
         {
             logFine("My documents @ " + UserDirectories.getDocumentsReported());
-            logFine("Folder @ " + localBase.getAbsolutePath());
+            logFine("Folder @ " + localBase.toAbsolutePath());
 
             logWarning("Adding transition ignore patterns for My documents folder");
 
             // Ignore My Pictures, My Music, My Videos, PowerFolders (basedir)
-            File baseDir = getController().getFolderRepository()
+            Path baseDir = getController().getFolderRepository()
                 .getFoldersBasedir();
-            addPattern(baseDir.getName() + '*');
+            addPattern(baseDir.getFileName().toString() + '*');
 
             if (UserDirectories.getDocumentsReported() != null) {
                 int i = UserDirectories.getDocumentsReported().length();
@@ -4437,7 +4499,11 @@ public class Folder extends PFComponent {
         if (init) {
             diskItemFilter.savePatternsTo(pFile, false);
             // Defaults have 0
-            pFile.setLastModified(0);
+            try {
+                Files.setLastModifiedTime(pFile, FileTime.fromMillis(0));
+            } catch (IOException e) {
+                logWarning(e.getMessage());
+            }
         }
     }
 
@@ -4459,28 +4525,33 @@ public class Folder extends PFComponent {
     }
 
     private void storeLastSyncDate() {
-        File lastSyncFile = new TFile(getSystemSubDir0(),
-            LAST_SYNC_INFO_FILENAME);
-        if (!getSystemSubDir0().exists()) {
+        Path lastSyncFile = getSystemSubDir0().resolve(LAST_SYNC_INFO_FILENAME);
+        if (Files.notExists(getSystemSubDir0())) {
             return;
         }
         try {
-            lastSyncFile.createNewFile();
+            Files.createFile(lastSyncFile);
         } catch (IOException e) {
             // Ignore.
         }
         try {
-            lastSyncFile.setLastModified(lastSyncDate.getTime());
+            Files.setLastModifiedTime(lastSyncFile,
+                FileTime.fromMillis(lastSyncDate.getTime()));
         } catch (Exception e) {
             logSevere("Unable to update last synced date to " + lastSyncFile);
         }
     }
 
     private void loadLastSyncDate() {
-        File lastSyncFile = new TFile(getSystemSubDir0(),
+        Path lastSyncFile = getSystemSubDir0().resolve(
             LAST_SYNC_INFO_FILENAME);
-        if (lastSyncFile.exists()) {
-            lastSyncDate = new Date(lastSyncFile.lastModified());
+        if (Files.exists(lastSyncFile)) {
+            try {
+                lastSyncDate = new Date(Files.getLastModifiedTime(lastSyncFile)
+                    .toMillis());
+            } catch (IOException e) {
+                logWarning(e.getMessage());
+            }
         } else {
             lastSyncDate = null;
         }
@@ -4860,7 +4931,7 @@ public class Folder extends PFComponent {
             return;
         }
         // Write the patterns in the meta directory.
-        File file = new TFile(metaFolder.localBase,
+        Path file = metaFolder.localBase.resolve(
             DiskItemFilter.PATTERNS_FILENAME);
         FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         diskItemFilter.savePatternsTo(file, false);
@@ -4912,7 +4983,7 @@ public class Folder extends PFComponent {
                 persist();
             }
             if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
-                diskItemFilter.savePatternsTo(new TFile(getSystemSubDir(),
+                diskItemFilter.savePatternsTo(getSystemSubDir().resolve(
                     DiskItemFilter.PATTERNS_FILENAME), true);
                 if (!shutdown) {
                     savePatternsToMetaFolder();

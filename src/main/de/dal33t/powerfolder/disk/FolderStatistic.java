@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderStatistic.java 20344 2012-11-26 00:58:39Z sprajc $
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -45,7 +45,6 @@ import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
-import de.schlichtherle.truezip.file.TFile;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
@@ -107,7 +106,7 @@ public class FolderStatistic extends PFComponent {
             nodeManagerListener);
 
         if (!folder.isDeviceDisconnected()) {
-            File file = new TFile(folder.getSystemSubDir(),
+            Path file = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC);
             // Load cached disk results
             current = FolderStatisticInfo.load(file);
@@ -206,7 +205,7 @@ public class FolderStatistic extends PFComponent {
         calculating = null;
 
         if (!folder.isDeviceDisconnected()) {
-            File file = new TFile(folder.getSystemSubDir(),
+            Path file = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC);
             current.save(file);
         }

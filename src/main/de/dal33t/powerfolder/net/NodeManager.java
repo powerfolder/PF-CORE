@@ -15,18 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: NodeManager.java 21204 2013-03-18 02:39:45Z sprajc $
  */
 package de.dal33t.powerfolder.net;
 
 import java.io.Externalizable;
-import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1445,15 +1447,15 @@ public class NodeManager extends PFComponent {
      * @param nodeList
      */
     private boolean loadNodesFrom(String filename) {
-        File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
-        if (!nodesFile.exists()) {
+        Path nodesFile = Controller.getMiscFilesLocation().resolve(filename);
+        if (Files.notExists(nodesFile)) {
             // Try harder in local base
-            nodesFile = new File(filename);
+            nodesFile = Paths.get(filename).toAbsolutePath();
         }
 
-        if (!nodesFile.exists()) {
+        if (Files.notExists(nodesFile)) {
             logFine("Unable to load nodes, file not found "
-                + nodesFile.getAbsolutePath());
+                + nodesFile.toAbsolutePath());
             return false;
         }
 
@@ -1462,7 +1464,7 @@ public class NodeManager extends PFComponent {
             nodeList.load(nodesFile);
 
             logFine("Loaded " + nodeList.getNodeList().size() + " nodes from "
-                + nodesFile.getAbsolutePath());
+                + nodesFile.toAbsolutePath());
             return processNodeList(nodeList);
         } catch (IOException e) {
             logWarning("Unable to load nodes from file '" + filename + "'. "
@@ -1472,15 +1474,22 @@ public class NodeManager extends PFComponent {
             logWarning("Illegal format of supernodes files '" + filename
                 + "', deleted");
             logFiner("ClassCastException", e);
-            if (!nodesFile.delete()) {
+            try {
+                Files.delete(nodesFile);
+            } catch (IOException ioe) {
                 logSevere("Failed to delete supernodes file: "
-                    + nodesFile.getAbsolutePath());
+                    + nodesFile.toAbsolutePath());
             }
         } catch (ClassNotFoundException e) {
             logWarning("Illegal format of supernodes files '" + filename
                 + "', deleted");
             logFiner("ClassNotFoundException", e);
-            nodesFile.delete();
+            try {
+                Files.delete(nodesFile);
+            } catch (IOException ioe) {
+                logInfo("Could not delete file '" + nodesFile.toAbsolutePath()
+                    + "'");
+            }
         }
         return false;
     }
@@ -1599,13 +1608,15 @@ public class NodeManager extends PFComponent {
      * <p>
      */
     private boolean storeNodes0(String filename, NodeList nodeList) {
-        File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
-        if (!nodesFile.getParentFile().exists()) {
+        Path nodesFile = Controller.getMiscFilesLocation().resolve(filename);
+        if (nodesFile.getParent() != null && Files.notExists(nodesFile.getParent())) {
             // for testing this directory needs to be created because we have
             // subs in the config name
-            if (!nodesFile.getParentFile().mkdirs()) {
+            try {
+                Files.createDirectories(nodesFile.getParent());
+            } catch (IOException ioe) {
                 logSevere("Failed to create directory: "
-                    + nodesFile.getAbsolutePath());
+                    + nodesFile.toAbsolutePath());
             }
         }
 

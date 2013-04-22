@@ -15,15 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: TestHelper.java 18443 2012-04-01 01:40:52Z harry $
  */
 package de.dal33t.powerfolder.util.test;
 
 import java.awt.EventQueue;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +32,12 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,11 +54,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TFileOutputStream;
 
 /**
  * Offers several helping methods for junit tests.
@@ -74,7 +75,7 @@ public class TestHelper {
     private static final Collection<Controller> STARTED_CONTROLLER = Collections
         .synchronizedCollection(new ArrayList<Controller>());
 
-    private static File testFile;
+    private static Path testFile;
 
     private TestHelper() {
     }
@@ -132,26 +133,35 @@ public class TestHelper {
      */
     public static void assertIncompleteFilesGone(List<Folder> folderList) {
         for (Folder f : folderList) {
-            File transfers = new TFile(f.getSystemSubDir(), "transfers");
-            if (!transfers.exists()) {
+            Path transfers = f.getSystemSubDir().resolve("transfers");
+            if (Files.notExists(transfers)) {
                 return;
             }
-            File[] list = transfers.listFiles(new FileFilter() {
-                public boolean accept(File pathname) {
-                    return pathname.getName().contains("(incomplete)")
-                        && pathname.length() == 0L;
+            
+            Filter<Path> filter = new Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) {
+                    String name = entry.getFileName().toString();
+                    return name.contains("(incomplete)")
+                        && name.length() == 0L;
                 }
-            });
-            if (list != null && list.length != 0) { // Always fail in here
-                for (File file : list) {
-                    boolean deleted = file.delete();
-                    TestCase.assertTrue(
-                        "Incomplete file still open somewhere, couldn't delete: "
-                            + file, deleted);
+            };
+
+            try (DirectoryStream<Path> files = Files.newDirectoryStream(transfers, filter)) {
+                for (Path file : files) {
+                    try {
+                        Files.delete(file);
+                    } catch (IOException ioe) {
+                        TestCase.fail("Incomplete file still open somewhere, couldn't delete: "
+                            + file);
+                    }
                 }
-                TestCase
-                    .fail("(incomplete) files found, but all could be deleted!");
+                return;
+            } catch (IOException ioe) {
+                
             }
+            TestCase
+                .fail("(incomplete) files found, but all could be deleted!");
         }
     }
 
@@ -201,86 +211,91 @@ public class TestHelper {
             testCase.getFolderAtLisa());
     }
 
-    public static File getTestDir() {
+    public static Path getTestDir() {
         if (testFile == null) {
-            File localBuildProperties = new TFile("build-local.properties");
-            if (localBuildProperties.exists()) {
-                BufferedInputStream bis = null;
+            Path localBuildProperties = Paths.get("build-local.properties").toAbsolutePath();
+            if (Files.exists(localBuildProperties)) {
                 Properties props = new Properties();
-                try {
-                    bis = new BufferedInputStream(new TFileInputStream(
-                        localBuildProperties));
+                try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(localBuildProperties))) {
                     props.load(bis);
                 } catch (IOException e) {
 
-                } finally {
-                    try {
-                        if (bis != null) {
-                            bis.close();
-                        }
-                    } catch (IOException ioe) {
-                        // ignore
-                    }
                 }
                 if (props.containsKey("test.dir")) {
-                    testFile = new TFile(props.getProperty("test.dir"));
-                    if (!testFile.exists()) {
+                    testFile = Paths.get(props.getProperty("test.dir")).toAbsolutePath();
+                    if (Files.notExists(testFile)) {
                         testFile = null;
                     }
                 }
             }
             if (testFile == null) {
                 // propertie not set or not existing dir
-                testFile = new TFile("build/test/");
+                testFile = Paths.get("build/test/").toAbsolutePath();
             }
         }
-        testFile.mkdirs();
+        
+        try {
+            Files.createDirectories(testFile);
+        }
+        catch (IOException ioe) {
+            return null;
+        }
         return testFile;
     }
 
     /** deletes all files in the test dir */
     public static void cleanTestDir() {
-        File testDir = getTestDir();
+        Path testDir = getTestDir();
 
-        File[] files = testDir.listFiles();
-        if (files == null) {
-            return;
-        }
-        System.out.println("Cleaning test dir (" + testDir + ") ("
-            + files.length + " files/dirs)");
-        for (File file : files) {
-            try {
-                FileUtils.recursiveDelete(file);
-            } catch (IOException e) {
-                TestHelper.waitMilliSeconds(250);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(testDir)) {
+            int count = PathUtils.getNumberOfSiblings(testDir);
+            System.out.println("Cleaning test dir (" + testDir + ") ("
+                + count + " files/dirs)");
+
+            for (Path file : stream) {
+                count--;
                 try {
-                    FileUtils.recursiveDelete(file);
-                } catch (IOException e1) {
-                    TestHelper.waitMilliSeconds(5000);
+                    PathUtils.recursiveDelete(file);
+                } catch (IOException e) {
+                    TestHelper.waitMilliSeconds(250);
                     try {
-                        FileUtils.recursiveDelete(file);
-                    } catch (IOException e2) {
-                        e2.printStackTrace();
+                        PathUtils.recursiveDelete(file);
+                    } catch (IOException e1) {
+                        TestHelper.waitMilliSeconds(5000);
+                        try {
+                            PathUtils.recursiveDelete(file);
+                        } catch (IOException e2) {
+                            e2.printStackTrace();
+                        }
                     }
                 }
             }
+
+            if (0 != count) {
+                StringBuilder b = new StringBuilder();
+                listFiles(testDir, b);
+                throw new IllegalStateException(
+                    "cleaning test dir not succeded. " + count + " files left: " + b.toString());
+            }
         }
-        if (0 != testDir.listFiles().length) {
-            StringBuilder b = new StringBuilder();
-   listFiles(testDir, b);
-            throw new IllegalStateException(
-                "cleaning test dir not succeded. Files left: " + b.toString());
+        catch (IOException ioe) {
+            
+            return;
         }
     }
 
-    private static void listFiles(File base, StringBuilder b) {
-        File[] files = base.listFiles();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                listFiles(file, b);
-            } else {
-                b.append(file.getAbsolutePath() + ", ");
+    private static void listFiles(Path base, StringBuilder b) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(base)) {
+            for (Path file : stream) {
+                if (Files.isDirectory(file)) {
+                    listFiles(file, b);
+                } else {
+                    b.append(file.toAbsolutePath() + ", ");
+                }
             }
+        }
+        catch (IOException ioe) {
+            return;
         }
     }
 
@@ -315,7 +330,6 @@ public class TestHelper {
     {
         Reject.ifNull(condition, "Task is null");
 
-        int i = 0;
         long start = System.currentTimeMillis();
         while (!condition.reached()) {
             try {
@@ -323,7 +337,6 @@ public class TestHelper {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            i++;
             if (System.currentTimeMillis() > start + ((long) secondsTimeout)
                 * 1000)
             {
@@ -364,7 +377,7 @@ public class TestHelper {
      * @throws RuntimeException
      *             if something went wrong
      */
-    public static File createRandomFile(File directory) {
+    public static Path createRandomFile(Path directory) {
         return createRandomFile(directory, (long) (500 + Math.random() * 1024));
     }
 
@@ -380,29 +393,30 @@ public class TestHelper {
      * @throws RuntimeException
      *             if something went wrong
      */
-    public static File createRandomFile(File directory, long size) {
-        if (!directory.exists()) {
-            if (!directory.mkdirs()) {
+    public static Path createRandomFile(Path directory, long size) {
+        if (Files.notExists(directory)) {
+            try {
+                Files.createDirectories(directory);
+            } catch (IOException ioe) {
                 throw new RuntimeException(
                     "Unable to create directory of random file: "
-                        + directory.getAbsolutePath());
+                        + directory.toAbsolutePath());
             }
         }
-        File randomFile;
+        Path randomFile;
         do {
-            randomFile = new TFile(directory, createRandomFilename());
-        } while (randomFile.exists());
-        try {
-            OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
-                randomFile));
+            randomFile = directory.resolve(createRandomFilename());
+        } while (Files.exists(randomFile));
+        try (OutputStream fOut = new BufferedOutputStream(
+            Files.newOutputStream(randomFile, StandardOpenOption.CREATE)))
+        {
             for (int i = 0; i < size; i++) {
                 fOut.write((int) (Math.random() * 256));
             }
 
-            fOut.close();
-            if (!randomFile.exists()) {
+            if (Files.notExists(randomFile)) {
                 throw new IOException("Could not create random file '"
-                    + randomFile.getAbsolutePath() + "'");
+                    + randomFile.toAbsolutePath() + "'");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -416,7 +430,7 @@ public class TestHelper {
      * @param file
      *            the file to change.
      */
-    public static void changeFile(File file) {
+    public static void changeFile(Path file) {
         changeFile(file, -1);
     }
 
@@ -428,28 +442,31 @@ public class TestHelper {
      * @param size
      *            the size of the file.
      */
-    public static void changeFile(File file, long size) {
-        if (!file.exists() || !file.isFile() || !file.canWrite()) {
+    public static void changeFile(Path file, long size) {
+        if (Files.notExists(file) || !Files.isRegularFile(file) || !Files.isWritable(file)) {
             throw new IllegalArgumentException(
                 "file must be a writable existing file: "
-                    + file.getAbsolutePath());
+                    + file.toAbsolutePath());
         }
-        if (size < 0) {
-            size = (long) (500 + Math.random() * 1024);
-            if (size == file.length()) {
-                size += 10;
-            }
-        }
+
         try {
-            OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
-                file));
+            if (size < 0) {
+                size = (long) (500 + Math.random() * 1024);
+                if (size == Files.size(file)) {
+                    size += 10;
+                }
+            }
+        } catch (IOException ioe) {
+            size = 10;
+        }
+
+        try (OutputStream fOut = new BufferedOutputStream(Files.newOutputStream(file))) {
             for (int i = 0; i < size; i++) {
                 fOut.write((int) (Math.random() * 256));
             }
-            fOut.close();
-            if (!file.exists()) {
+            if (Files.notExists(file)) {
                 throw new IOException("Could not create random file '"
-                    + file.getAbsolutePath() + "'");
+                    + file.toAbsolutePath() + "'");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -466,7 +483,7 @@ public class TestHelper {
      * @throws RuntimeException
      *             if something went wrong
      */
-    public static File createRandomFile(File directory, String filename) {
+    public static Path createRandomFile(Path directory, String filename) {
         byte[] content = new byte[400 + (int) (Math.random() * 10000)];
         for (int i = 0; i < content.length; i++) {
             content[i] = (byte) (Math.random() * 256);
@@ -484,23 +501,23 @@ public class TestHelper {
      * @throws RuntimeException
      *             if something went wrong
      */
-    public static File createTestFile(File directory, String filename,
+    public static Path createTestFile(Path directory, String filename,
         byte[] contents)
     {
         try {
-            File file = new TFile(directory, filename);
-            File parent = file.getParentFile();
-            if (!parent.exists()) {
-                parent.mkdirs();
+            Path file = directory.resolve(filename);
+            Path parent = file.getParent();
+            if (Files.notExists(parent)) {
+                Files.createDirectories(parent);
             }
 
-            OutputStream fOut = new TFileOutputStream(file);
+            OutputStream fOut = Files.newOutputStream(file);
             fOut.write(contents);
             fOut.close();
 
-            if (!file.exists()) {
+            if (Files.notExists(file)) {
                 throw new IOException("Could not create random file '"
-                    + file.getAbsolutePath() + "'");
+                    + file.toAbsolutePath() + "'");
             }
 
             return file;
@@ -567,14 +584,14 @@ public class TestHelper {
         folder.getController().setPaused(pausedBefore);
     }
 
-    public static final boolean compareFiles(File a, File b) {
-        InputStream ain, bin;
-        try {
-            if (a.length() != b.length()) {
+    public static final boolean compareFiles(Path a, Path b) {
+        try (InputStream ain = Files.newInputStream(a);
+            InputStream bin = Files.newInputStream(b))
+        {
+            if (Files.size(a) != Files.size(b)) {
                 return false;
             }
-            ain = new TFileInputStream(a);
-            bin = new TFileInputStream(b);
+
             byte[] abuf = new byte[8192], bbuf = new byte[8192];
             int aread;
             while ((aread = ain.read(abuf)) > 0) {
@@ -590,8 +607,6 @@ public class TestHelper {
                 }
             }
 
-            ain.close();
-            bin.close();
             return true;
 
         } catch (IOException e) {

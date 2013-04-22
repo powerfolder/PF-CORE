@@ -15,13 +15,13 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: SingleFileAccept.java 6723 2009-01-30 14:08:38Z harry $
 */
 package de.dal33t.powerfolder.message;
 
-import de.dal33t.powerfolder.light.MemberInfo;
+import java.nio.file.Path;
 
-import java.io.File;
+import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Message accepting a single file transfer offer.
@@ -30,18 +30,18 @@ public class SingleFileAccept extends Message  {
 
     private static final long serialVersionUID = 100L;
 
-    private File file;
+    private Path file;
     private MemberInfo offeringMemberInfo;
     private MemberInfo acceptingMemberInfo;
 
-    public SingleFileAccept(File file, MemberInfo offeringMemberInfo,
+    public SingleFileAccept(Path file, MemberInfo offeringMemberInfo,
                             MemberInfo acceptingMemberInfo) {
         this.file = file;
         this.offeringMemberInfo = offeringMemberInfo;
         this.acceptingMemberInfo = acceptingMemberInfo;
     }
 
-    public File getFile() {
+    public Path getFile() {
         return file;
     }
 

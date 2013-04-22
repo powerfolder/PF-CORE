@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: ChooseDiskLocationPanel.java 20537 2012-12-15 17:11:45Z sprajc $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -33,16 +33,21 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -58,11 +63,13 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -122,7 +129,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     public boolean validateNext() {
 
-        File location = new File((String) locationModel.getValue());
+        Path location = Paths.get((String) locationModel.getValue());
 
         // Have to do this here as well as on choose directory
         // in case the incoming dir is bad and user does not change anything!
@@ -139,7 +146,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             sendInviteAfterCB.isSelected());
 
         getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
-            FileUtils.getSuggestedFolderName(location));
+            PathUtils.getSuggestedFolderName(location));
 
         // Change to manual sync if requested.
         if (manualSyncCheckBox.isSelected()) {
@@ -205,7 +212,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 dir = getController().getFolderRepository()
                     .getFoldersBasedirString();
             } else {
-                dir = folder1.getLocalBase().getAbsolutePath();
+                dir = folder1.getLocalBase().toAbsolutePath().toString();
             }
         }
 
@@ -284,40 +291,40 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         if (value != null) {
             if (value instanceof String) {
                 try {
-                    File f = new File((String) value);
+                    Path f = Paths.get((String) value);
 
                     // Try to create the directory if it does not exist.
-                    if (!f.exists()) {
-                        if (f.mkdirs()) {
-                            startFolderSizeCalculator();
-                        }
+                    if (Files.notExists(f)) {
+                        Files.createDirectories(f);
+                        startFolderSizeCalculator();
                     }
 
                     // If dir does not exist or is not writable,
                     // give user a choice to relocate in an alternate location.
                     boolean ok = true;
-                    if (!f.exists()) {
+                    if (Files.notExists(f)) {
                         ok = false;
-                    } else if (!f.canWrite()) {
+                    } else if (!Files.isWritable(f)) {
                         ok = false;
                     }
                     if (!ok) {
                         String baseDir = getController().getFolderRepository()
                             .getFoldersBasedirString();
-                        String name = f.getName();
+                        String name = f.getFileName().toString();
                         if (name.length() == 0) { // Like f == 'E:/'
                             name = "new";
                         }
-                        File alternate = new File(baseDir, name);
+                        Path alternate = Paths.get(baseDir, name);
 
                         // Check alternate is unique.
                         int x = 1;
-                        while (alternate.exists()) {
-                            alternate = new File(baseDir, name + '-' + x++);
+                        while (Files.exists(alternate)) {
+                            alternate = Paths.get(baseDir, name + '-' + x++);
                         }
-                        alternate.mkdirs();
+                        
+                        Files.createDirectories(alternate);
                         startFolderSizeCalculator();
-                        locationModel.setValue(alternate.getAbsolutePath());
+                        locationModel.setValue(alternate.toAbsolutePath().toString());
                     }
                 } catch (Exception e) {
                     // Ignore
@@ -362,19 +369,19 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private void displayChooseDirectory() {
         String initial = (String) locationModel.getValue();
-        List<File> files = DialogFactory.chooseDirectory(getController().getUIController(), initial, false);
+        List<Path> files = DialogFactory.chooseDirectory(getController().getUIController(), initial, false);
         if (!files.isEmpty()) {
-            File location = files.get(0);
+            Path location = files.get(0);
 
             if (!validDirectory(location)) {
                 return;
             }
 
-            locationModel.setValue(location.getAbsolutePath());
+            locationModel.setValue(location.toAbsolutePath().toString());
         }
     }
 
-    private boolean validDirectory(File location) {
+    private boolean validDirectory(Path location) {
         // Do not allow user to select folder base dir.
         if (location.equals(getController().getFolderRepository().getFoldersBasedir())) {
             String title = Translation.getTranslation("general.directory");
@@ -387,7 +394,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {
-            if (!location.getParentFile().equals(
+            if (!location.getParent().equals(
                 getController().getFolderRepository().getFoldersBasedir()))
             {
                 String title = Translation.getTranslation("general.directory");
@@ -435,13 +442,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             folderSizeLabel.setForeground(SystemColor.textText);
 
             try {
-                File f = new File(initial);
-                if (!f.exists()) {
+                Path f = Paths.get(initial);
+                if (Files.notExists(f)) {
                     nonExistent = true;
                 } else if (checkNoWrite && !canWriteDirectory(f)) {
                     noWrite = true;
                 } else {
-                    directorySize = FileUtils.calculateDirectorySizeAndCount(f)[0];
+                    directorySize = PathUtils.calculateDirectorySizeAndCount(f)[0];
                 }
             } catch (Exception e) {
                 Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
@@ -475,15 +482,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             }
         }
 
-        private boolean canWriteDirectory(File dir) {
-            File testFile;
+        private boolean canWriteDirectory(Path dir) {
+            Path testFile;
             do {
-                testFile = new File(dir, FileUtils.removeInvalidFilenameChars(IdGenerator.makeId()));
-            } while (testFile.exists());
+                testFile = dir.resolve(PathUtils.removeInvalidFilenameChars(IdGenerator.makeId()));
+            } while (Files.exists(testFile));
             try {
-                testFile.createNewFile();
-                boolean canWrite = testFile.canWrite();
-                canWrite = canWrite && testFile.delete();
+                Files.createFile(testFile);
+                boolean canWrite = Files.isWritable(testFile);
+                Files.delete(testFile);
                 return canWrite;
             } catch (IOException e) {
                 return false;

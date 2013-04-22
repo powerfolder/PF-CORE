@@ -19,9 +19,10 @@
  */
 package de.dal33t.powerfolder.test.transfer;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Random;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -64,7 +65,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         joinNTestFolder(SyncProfile.HOST_FILES);
         Folder barts = getFolderOf("0");
 
-        File tmpFile = TestHelper.createRandomFile(barts.getLocalBase(),
+        Path tmpFile = TestHelper.createRandomFile(barts.getLocalBase(),
             1000000);
         scanFolder(barts);
         final FileInfo fInfo = barts.getKnownFiles().iterator().next();
@@ -102,7 +103,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         joinNTestFolder(SyncProfile.HOST_FILES);
 
-        File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
+        Path tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), fsize);
         scanFolder(getFolderOf("0"));
         final FileInfo fInfo = getFolderOf("0").getKnownFiles().iterator()
@@ -246,9 +247,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     continue;
                 }
 
-                File f1 = getFolderOf(c1).getKnownFiles().iterator().next()
+                Path f1 = getFolderOf(c1).getKnownFiles().iterator().next()
                     .getDiskFile(c1.getFolderRepository());
-                File f2 = getFolderOf(c2).getKnownFiles().iterator().next()
+                Path f2 = getFolderOf(c2).getKnownFiles().iterator().next()
                     .getDiskFile(c2.getFolderRepository());
 
                 TestHelper.compareFiles(f1, f2);
@@ -281,7 +282,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         joinNTestFolder(SyncProfile.HOST_FILES);
 
-        File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
+        Path tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), 10000000);
         scanFolder(getFolderOf("0"));
         final FileInfo fInfo = getFolderOf("0").getKnownFiles().iterator()
@@ -304,10 +305,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
         disconnectAll();
         tmpFile = getFolderOf("1").getFile(fInfo).getDiskFile(
             getContoller("1").getFolderRepository());
-        assertTrue(tmpFile.delete());
+        Files.delete(tmpFile);
 
-        tmpFile = TestHelper.createRandomFile(tmpFile.getParentFile(), tmpFile
-            .getName());
+        tmpFile = TestHelper.createRandomFile(tmpFile.getParent(), tmpFile
+            .getFileName().toString());
         scanFolder(getFolderOf("1"));
 
         assertTrue(tryToConnect(getContoller("1"), getContoller("5")));
@@ -331,10 +332,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         tmpFile = getFolderOf("5").getFile(fInfo).getDiskFile(
             getContoller("5").getFolderRepository());
-        assertTrue(tmpFile.delete());
+        Files.delete(tmpFile);
 
-        tmpFile = TestHelper.createRandomFile(tmpFile.getParentFile(), tmpFile
-            .getName());
+        tmpFile = TestHelper.createRandomFile(tmpFile.getParent(), tmpFile
+            .getFileName().toString());
         scanFolder(getFolderOf("5"));
 
         assertTrue(tryToConnect(getContoller("4"), getContoller("5")));
@@ -398,7 +399,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     if (chosen.diskFileExists(getContoller(cont))) {
                         RandomAccessFile raf = new RandomAccessFile(chosen
                             .getDiskFile(getContoller(cont)
-                                .getFolderRepository()), "rw");
+                                .getFolderRepository()).toFile(), "rw");
                         if (prng.nextDouble() > 0.3) {
                             raf.seek(prng.nextInt(1000000 - 1000));
                             for (int j = 0; j < 1000; j++) {
@@ -550,7 +551,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         joinNTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
+        Path tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), 1000000);
         scanFolder(getFolderOf("0"));
         final FileInfo fInfo = getFolderOf("0").getKnownFiles().iterator()
@@ -569,7 +570,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     new FileInfo[0]);
                 if (fi.length > 0 && fi[0].diskFileExists(getContoller(cont))) {
                     RandomAccessFile raf = new RandomAccessFile(fi[0]
-                        .getDiskFile(getContoller(cont).getFolderRepository()),
+                        .getDiskFile(getContoller(cont).getFolderRepository()).toFile(),
                         "rw");
                     if (prng.nextDouble() > 0.3) {
                         raf.seek(prng.nextInt(1000000 - 1000));
@@ -652,13 +653,13 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 StringBuilder b = new StringBuilder();
                 b.append("Newest version is " + nver);
 
-                File reference = null;
+                Path reference = null;
 
                 for (int i = 0; i < numC; i++) {
                     if (getFolderOf("" + i).getKnownFiles().iterator().next()
                         .getVersion() == nver)
                     {
-                        File fb = getFolderOf("" + i).getKnownFiles()
+                        Path fb = getFolderOf("" + i).getKnownFiles()
                             .iterator().next().getDiskFile(
                                 getContoller("" + i).getFolderRepository());
                         b.append("Filecheck of " + i + ": ");
@@ -718,7 +719,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 return b.toString();
             }
         });
-        File a = getFolderOf("0").getKnownFiles().iterator().next()
+        Path a = getFolderOf("0").getKnownFiles().iterator().next()
             .getDiskFile(getContoller("0").getFolderRepository());
         for (int i = 1; i < numC; i++) {
             TestHelper.compareFiles(a, getFolderOf("" + i).getKnownFiles()

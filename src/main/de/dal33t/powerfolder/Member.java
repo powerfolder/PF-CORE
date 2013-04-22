@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Member.java 21238 2013-03-18 20:16:43Z sprajc $
  */
 package de.dal33t.powerfolder;
 
@@ -1040,7 +1040,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             if (folder.getSyncProfile().isSyncDeletion()) {
                 folder.triggerSyncRemoteDeletedFiles(Collections
-                    .singleton(this));
+                    .singleton(this), false);
             }
         }
 

@@ -19,14 +19,14 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-
-import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
@@ -36,7 +36,6 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.EqualsCondition;
@@ -73,20 +72,20 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public String message() {
                 return "Delete sync not completed. Files in folder: Homer "
-                    + getFolderAtHomer().getLocalBase().list().length
+                    + getFolderAtHomer().getLocalBase().toFile().list().length
                     + ", Marge "
-                    + getFolderAtMarge().getLocalBase().list().length
+                    + getFolderAtMarge().getLocalBase().toFile().list().length
                     + ", Lisa "
-                    + getFolderAtLisa().getLocalBase().list().length
+                    + getFolderAtLisa().getLocalBase().toFile().list().length
                     + ", Maggie "
-                    + getFolderAtMaggie().getLocalBase().list().length;
+                    + getFolderAtMaggie().getLocalBase().toFile().list().length;
             }
 
             public boolean reached() {
-                return getFolderAtHomer().getLocalBase().list().length == 71
-                    && getFolderAtMarge().getLocalBase().list().length == 71
-                    && getFolderAtLisa().getLocalBase().list().length == 71
-                    && getFolderAtMaggie().getLocalBase().list().length == 71;
+                return getFolderAtHomer().getLocalBase().toFile().list().length == 71
+                    && getFolderAtMarge().getLocalBase().toFile().list().length == 71
+                    && getFolderAtLisa().getLocalBase().toFile().list().length == 71
+                    && getFolderAtMaggie().getLocalBase().toFile().list().length == 71;
             }
         });
 
@@ -112,12 +111,20 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
         disconnectAll();
 
-        File testDirBart = new File(getFolderAtBart().getLocalBase(), "testdir");
-        assertTrue(testDirBart.mkdirs());
+        Path testDirBart = getFolderAtBart().getLocalBase().resolve("testdir");
+        try {
+            Files.createDirectory(testDirBart);
+        } catch (IOException ioe) {
+            fail(ioe.getMessage());
+        }
         scanFolder(getFolderAtBart());
 
-        File testDirLisa = new File(getFolderAtLisa().getLocalBase(), "TESTDIR");
-        assertTrue(testDirLisa.mkdirs());
+        Path testDirLisa = getFolderAtLisa().getLocalBase().resolve("TESTDIR");
+        try {
+            Files.createDirectory(testDirLisa);
+        } catch (IOException ioe) {
+            fail(ioe.getMessage());
+        }
 
         connectAll();
         getContollerLisa().getFolderRepository().getFileRequestor()
@@ -152,7 +159,12 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertTrue(getFolderAtLisa().hasOwnDatabase());
 
         for (int i = 0; i < 500; i++) {
-            new File(getFolderAtBart().getLocalBase(), "testdir-" + i).mkdirs();
+            try {
+                Files.createDirectory(getFolderAtBart().getLocalBase().resolve(
+                    "testdir-" + i));
+            } catch (IOException ioe) {
+                fail(ioe.getMessage());
+            }
         }
 
         // 20 MB testfile
@@ -194,7 +206,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         // DB Must have been stored
         assertTrue(
             "Database file was NOT saved at Lisa although directory have been synced",
-            new File(foLisa.getSystemSubDir(), Constants.DB_FILENAME).exists());
+            Files.exists(foLisa.getSystemSubDir().resolve(Constants.DB_FILENAME)));
     }
 
     public void testMixedCaseSubdirs() throws IOException {
@@ -209,13 +221,13 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
-        File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
+        Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), "subdirectory/sourcedir/Testfile.txt");
         scanFolder(getFolderAtBart());
-        File fileAtLisa = new File(getFolderAtLisa().getLocalBase(),
+        Path fileAtLisa = getFolderAtLisa().getLocalBase().resolve(
             "subdirectory/Sourcedir/Testfile.txt");
-        FileUtils.copyFile(fileAtBart, fileAtLisa);
-        fileAtLisa.setLastModified(fileAtBart.lastModified());
+        Files.copy(fileAtBart, fileAtLisa);
+        Files.setLastModifiedTime(fileAtLisa, Files.getLastModifiedTime(fileAtBart));
         scanFolder(getFolderAtLisa());
         connectSimpsons();
 
@@ -271,23 +283,44 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             getFolderAtMaggie().getLocalBase());
     }
 
-    private static void assertIdenticalContent(File dir1, File dir2) {
-        assertEquals(dir1.listFiles().length, dir2.listFiles().length);
-        String[] files1 = dir1.list();
-        Arrays.sort(files1);
-        String[] files2 = dir2.list();
-        Arrays.sort(files2);
+    private static void assertIdenticalContent(Path dir1, Path dir2) {
+        int size1 = 0, size2 = 0;
+        List<Path> entries1 = new ArrayList<Path>();
+        List<Path> entries2 = new ArrayList<Path>();
+        try (DirectoryStream<Path> stream1 = Files.newDirectoryStream(dir1);
+            DirectoryStream<Path> stream2 = Files.newDirectoryStream(dir2))
+        {
+            for (Path path : stream1) {
+                entries1.add(path);
+                size1++;
+            }
+            for (Path path : stream2) {
+                entries2.add(path);
+                size2++;
+            }
+        }
+        catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
 
-        for (int i = 0; i < files1.length; i++) {
+        assertEquals(size1, size2);
+        Collections.sort(entries1);
+        Collections.sort(entries2);
 
-            File file1 = new File(dir1, files1[i]);
-            File file2 = new File(dir2, files2[i]);
-            if (file1.isDirectory() && file2.isDirectory()) {
+        for (int i = 0; i < entries1.size(); i++) {
+            Path path1 = entries1.get(i);
+            Path path2 = entries2.get(i);
+            if (Files.isDirectory(path1) && Files.isDirectory(path2)) {
                 // Skip
                 continue;
             }
-            assertEquals("File lenght mismatch: " + file1.getAbsolutePath(),
-                file1.length(), file2.length());
+
+            try {
+                assertEquals("File length mismatch: " + path1.toAbsolutePath(),
+                    Files.size(path1), Files.size(path2));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         //        
         // int size1 = 0;
@@ -303,7 +336,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
     }
 
     private static void performRandomOperations(int nAdded, int nChanged,
-        int nRemoved, File dir)
+        int nRemoved, Path dir)
     {
         for (int i = 0; i < nAdded; i++) {
             new AddFileOperation(dir).run();
@@ -317,9 +350,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
     }
 
     private static class AddFileOperation implements Runnable {
-        private File dir;
+        private Path dir;
 
-        private AddFileOperation(File dir) {
+        private AddFileOperation(Path dir) {
             super();
             this.dir = dir;
         }
@@ -330,42 +363,62 @@ public class MirrorFolderTest extends FiveControllerTestCase {
     }
 
     private static class ChangeFileOperation implements Runnable {
-        private File dir;
+        private Path dir;
         private int index;
 
-        private ChangeFileOperation(File dir, int index) {
+        private ChangeFileOperation(Path dir, int index) {
             super();
             this.dir = dir;
             this.index = index;
         }
 
         public void run() {
-            File[] files = dir.listFiles((FileFilter) FileFilterUtils
-                .fileFileFilter());
-            if (files.length == 0) {
-                return;
+            Filter<Path> filter = new Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) {
+                    return Files.isRegularFile(entry);
+                }
+            };
+
+            List<Path> fList = new ArrayList<Path>();
+            try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, filter)) {
+                for (Path file : files) {
+                    fList.add(file);
+                }
+                Path file = fList.get(index % fList.size());
+                TestHelper.changeFile(file);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
             }
-            File file = files[index % files.length];
-            TestHelper.changeFile(file);
         }
     }
 
     private static class RemoveFileOperation implements Runnable {
-        private File dir;
+        private Path dir;
 
-        private RemoveFileOperation(File dir) {
+        private RemoveFileOperation(Path dir) {
             super();
             this.dir = dir;
         }
 
         public void run() {
-            File[] files = dir.listFiles((FileFilter) FileFilterUtils
-                .fileFileFilter());
-            if (files.length == 0) {
-                return;
+            Filter<Path> filter = new Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) {
+                    return Files.isRegularFile(entry);
+                }
+            };
+
+            List<Path> fList = new ArrayList<Path>();
+            try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, filter)) {
+                for (Path file : files) {
+                    fList.add(file);
+                }
+                Path file = fList.get((int) (Math.random() * fList.size()));
+                Files.delete(file);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
             }
-            File file = files[(int) (Math.random() * files.length)];
-            file.delete();
         }
     }
 

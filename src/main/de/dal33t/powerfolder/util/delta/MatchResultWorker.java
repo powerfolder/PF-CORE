@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MatchResultWorker.java 11713 2010-03-11 14:37:48Z tot $
  */
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,10 +32,10 @@ import de.dal33t.powerfolder.util.Reject;
 
 public class MatchResultWorker implements Callable<List<MatchInfo>> {
     private final FilePartsRecord record;
-    private final File inFile;
+    private final Path inFile;
     private final ProgressListener progressListener;
 
-    public MatchResultWorker(FilePartsRecord record, File inFile,
+    public MatchResultWorker(FilePartsRecord record, Path inFile,
         ProgressListener obs)
     {
         Reject.noNullElements(record, inFile);
@@ -46,10 +45,9 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
     }
 
     public List<MatchInfo> call() throws Exception {
-        CountedInputStream in = new CountedInputStream(new BufferedInputStream(
-            new FileInputStream(inFile)));
+        CountedInputStream in = new CountedInputStream(Files.newInputStream(inFile));
         try {
-            final long fsize = inFile.length();
+            final long fsize = Files.size(inFile);
 
             PartInfoMatcher matcher = new PartInfoMatcher(in,
                 new RollingAdler32(record.getPartLength()), MessageDigest

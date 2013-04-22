@@ -15,17 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: PropertiesUtil.java 13219 2010-08-02 17:01:22Z tot $
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.util.MathUtil;
-
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -50,12 +48,11 @@ public class PropertiesUtil {
      * @param config
      * @throws IOException
      */
-    public static void saveConfig(File file, Properties config, String header)
+    public static void saveConfig(Path file, Properties config, String header)
         throws IOException
     {
-        FileOutputStream fOut = new FileOutputStream(file);
-        store0(config, new BufferedWriter(
-            new OutputStreamWriter(fOut, "8859_1")), header, true);
+        BufferedWriter fOut = Files.newBufferedWriter(file, Charset.forName("8859_1"));
+        store0(config, fOut, header, true);
         fOut.close();
     }
 

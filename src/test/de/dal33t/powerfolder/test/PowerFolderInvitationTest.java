@@ -19,9 +19,8 @@
  */
 package de.dal33t.powerfolder.test;
 
-import java.io.File;
+import java.nio.file.Path;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -29,9 +28,8 @@ import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.task.SendMessageTask;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
@@ -47,10 +45,8 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
             public void gotInvitation(Invitation invitation)
             {
-                File dir = new File(getContollerBart().getFolderRepository()
-                    .getFoldersBasedir()
-                    + System.getProperty("file.separator")
-                    + FileUtils
+                Path dir = getContollerBart().getFolderRepository()
+                    .getFoldersBasedir().resolve(PathUtils
                         .removeInvalidFilenameChars(invitation.folder.name));
                 try {
                     FolderSettings folderSettings = new FolderSettings(dir,
@@ -70,8 +66,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             .makeId());
 
         FolderSettings folderSettings = new FolderSettings(
-            TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false,
-            0);
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false, 0);
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
             testFolder, folderSettings);
 
@@ -80,7 +75,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
 //    public void testInviteViaFile() throws Exception {
 //        Invitation invitation = folderAtLisa.createInvitation();
-//        File inviteFile = new File(Controller.getTempFilesLocation(),
+//        Path inviteFile = Controller.getTempFilesLocation().resolve(
 //            folderAtLisa.getName());
 //        InvitationUtil.save(invitation, inviteFile);
 //

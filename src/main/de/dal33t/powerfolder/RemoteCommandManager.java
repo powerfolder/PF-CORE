@@ -15,18 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: RemoteCommandManager.java 21035 2013-03-13 14:14:58Z sprajc $
  */
 package de.dal33t.powerfolder;
 
 import java.awt.Frame;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
@@ -39,6 +35,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,10 +68,10 @@ import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;
@@ -363,10 +362,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
             FileInfo lookupFile = FileInfoFactory.lookupInstance(
                 folder.getInfo(), relativeName);
-            File file = lookupFile.getDiskFile(getController()
+            Path file = lookupFile.getDiskFile(getController()
                 .getFolderRepository());
             logInfo("Opening file: " + file);
-            FileUtils.openFile(file);
+            PathUtils.openFile(file);
         }
         w.close();
     }
@@ -405,7 +404,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             while (nizer.hasMoreTokens()) {
                 String token = nizer.nextToken();
                 // Must be a file
-                File file = new File(token);
+                Path file = Paths.get(token).toAbsolutePath();
                 openFile(file);
             }
         } else if (command.startsWith(MAKEFOLDER)) {
@@ -458,11 +457,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     protected void copyLink(String filename) {
-        File file = new File(filename);
-        String absPath = file.getAbsolutePath();
+        Path file = Paths.get(filename).toAbsolutePath();
+        String absPath = file.toString();
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
-            if (absPath.startsWith(folder.getLocalBase().getAbsolutePath())) {
+            if (absPath.startsWith(folder.getLocalBase().toAbsolutePath().toString())) {
                 ServerClient client = getController().getOSClient();
                 FileInfo fInfo = FileInfoFactory.lookupInstance(folder, file);
                 String linkURL = client.getFileLinkURL(fInfo);
@@ -490,19 +489,19 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      * 
      * @param file
      */
-    private void openFile(File file) {
-        if (!file.exists()) {
-            log.warning("File not found " + file.getAbsolutePath());
+    private void openFile(Path file) {
+        if (Files.notExists(file)) {
+            log.warning("File not found " + file.toAbsolutePath().toString());
             return;
         }
 
-        if (file.getName().endsWith(".invitation")) {
+        if (file.getFileName().toString().endsWith(".invitation")) {
             // Load invitation file
             Invitation invitation = InvitationUtil.load(file);
             if (invitation != null) {
                 getController().invitationReceived(invitation);
             }
-        } else if (file.getName().endsWith(".nodes")) {
+        } else if (file.getFileName().toString().endsWith(".nodes")) {
             // Load nodes file
             MemberInfo[] nodes = loadNodesFile(file);
             // Enqueue new nodes
@@ -517,7 +516,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         String id = config.get(FOLDER_SCRIPT_CONFIG_ID);
         String name = config.get(FOLDER_SCRIPT_CONFIG_NAME);
         String dirStr = config.get(FOLDER_SCRIPT_CONFIG_DIR);
-        File dir = StringUtils.isBlank(dirStr) ? null : new File(dirStr);
+        Path dir = StringUtils.isBlank(dirStr) ? null : Paths.get(dirStr);
         logFine("Remove folder command received. Config: " + folderConfig);
         if (StringUtils.isBlank(id) && StringUtils.isBlank(name) && dir == null)
         {
@@ -544,8 +543,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             if (dir != null) {
                 try {
                     if (!candidate.getLocalBase().equals(dir)
-                        && !candidate.getLocalBase().getCanonicalPath()
-                            .equals(dir.getCanonicalPath()))
+                        && !candidate.getLocalBase().toRealPath()
+                            .equals(dir.toRealPath()))
                     {
                         // path given, but no match. Skip
                         continue;
@@ -574,14 +573,14 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             return;
         }
         FolderRepository repository = getController().getFolderRepository();
-        File dir = new File(config.get(FOLDER_SCRIPT_CONFIG_DIR));
+        Path dir = Paths.get(config.get(FOLDER_SCRIPT_CONFIG_DIR));
 
         // Name
         String name;
         if (StringUtils.isNotBlank(config.get(FOLDER_SCRIPT_CONFIG_NAME))) {
             name = config.get(FOLDER_SCRIPT_CONFIG_NAME);
         } else {
-            name = FileUtils.getSuggestedFolderName(dir);
+            name = PathUtils.getSuggestedFolderName(dir);
         }
 
         if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
@@ -667,7 +666,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 Translation.getTranslation("wizard.success_join"));
             wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
             ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
-                getController(), dir.getAbsolutePath(), nextPanel);
+                getController(), dir.toAbsolutePath().toString(), nextPanel);
             wizard.open(panel);
         } else {
             if (syncProfile == null) {
@@ -713,10 +712,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      * @return array of MemberInfo, null if failed
      */
     @SuppressWarnings({"unchecked"})
-    private static MemberInfo[] loadNodesFile(File file) {
-        try {
-            InputStream fIn = new BufferedInputStream(new FileInputStream(file));
-            ObjectInputStream oIn = new ObjectInputStream(fIn);
+    private static MemberInfo[] loadNodesFile(Path file) {
+        try (ObjectInputStream oIn = new ObjectInputStream(Files.newInputStream(file))) {
             // Load nodes
             List<MemberInfo> nodes = (List<MemberInfo>) oIn.readObject();
 

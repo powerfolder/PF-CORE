@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: TextPanelPanel.java 21202 2013-03-18 01:37:47Z sprajc $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard
@@ -226,7 +226,7 @@ public class TextPanelPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             Folder folder = folderInfo.getFolder(getController());
-            FileUtils.openFile(folder.getLocalBase());
+            PathUtils.openFile(folder.getLocalBase());
         }
     }
 

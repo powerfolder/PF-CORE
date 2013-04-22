@@ -19,11 +19,14 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -141,9 +144,10 @@ public class MassDeletionTest extends TwoControllerTestCase {
         assertEquals(nFiles, getFolderAtLisa().getKnownFiles().size());
 
         // Delete all Bart's files
-        for (final File file : getFolderAtBart().getLocalBase().listFiles()) {
-            if (!file.isDirectory()) {
-                assertTrue(file.delete());
+        DirectoryStream<Path> files = Files.newDirectoryStream(getFolderAtBart().getLocalBase());
+        for (final Path file : files) {
+            if (Files.notExists(file)) {
+                Files.delete(file);
             }
         }
 
@@ -154,13 +158,13 @@ public class MassDeletionTest extends TwoControllerTestCase {
             // Files should survive and profile switch to HOST_FILE.
             TestHelper.waitForCondition(20, new ConditionWithMessage() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length == nFiles + 1;
+                    return PathUtils.getNumberOfSiblings(getFolderAtLisa().getLocalBase()) == nFiles + 1;
                     // The files + .PowerFolder dir
                 }
 
                 public String message() {
                     return "Folder at lisa has files:"
-                        + getFolderAtLisa().getLocalBase().listFiles().length;
+                        + PathUtils.getNumberOfSiblings(getFolderAtLisa().getLocalBase());
                 }
             });
             System.out.println("Protection: " + protection);
@@ -184,7 +188,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
             // Files should have been deleted and profile remains same.
             TestHelper.waitForCondition(40, new Condition() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length == 1;
+                    return PathUtils.getNumberOfSiblings(getFolderAtLisa().getLocalBase()) == 1;
                     // The .PowerFolder dir
                 }
             });

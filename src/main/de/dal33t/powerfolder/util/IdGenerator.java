@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: IdGenerator.java 20287 2012-11-24 23:04:06Z sprajc $
  */
 package de.dal33t.powerfolder.util;
 
@@ -44,7 +44,7 @@ public class IdGenerator {
     public static String makeId() {
         String id = Base58.encode(makeIdBytes());
         // Remove the last == at the end
-        return FileUtils.removeInvalidFilenameChars(
+        return PathUtils.removeInvalidFilenameChars(
             id.substring(0, id.length() - 2)).replace("+", "");
     }
 

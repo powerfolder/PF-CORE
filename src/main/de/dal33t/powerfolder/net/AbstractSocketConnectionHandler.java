@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: AbstractSocketConnectionHandler.java 20164 2012-11-24 19:47:08Z sprajc $
  */
 package de.dal33t.powerfolder.net;
 
@@ -826,7 +826,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 return;
             }
 
-            int i = 0;
             Message msg;
             while (true) {
                 senderSpawnLock.lock();
@@ -838,7 +837,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 }
                 senderSpawnLock.unlock();
 
-                i++;
                 if (!started) {
                     logFine("Peer shutdown while sending: " + msg);
                     senderSpawnLock.lock();

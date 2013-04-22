@@ -22,9 +22,10 @@ package de.dal33t.powerfolder.message;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +37,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.Util;
@@ -126,14 +127,14 @@ public class FolderList extends Message {
      * @see #load(File)
      * @deprecated #2569
      */
-    public synchronized boolean store(File file) {
+    public synchronized boolean store(Path file) {
         Reject.ifNull(file, "File");
-        if (file.getParentFile() != null) {
-            file.getParentFile().mkdirs();
-        }
         try {
+            if (file.getParent() != null) {
+                Files.createDirectories(file.getParent());
+            }
             byte[] buf = ByteSerializer.serializeStatic(this, false);
-            FileUtils.copyFromStreamToFile(new ByteArrayInputStream(buf), file);
+            PathUtils.copyFromStreamToFile(new ByteArrayInputStream(buf), file);
             return true;
         } catch (Exception e) {
             LOG.warning("Unable to store to " + file + ". " + e + ". " + this);
@@ -159,43 +160,34 @@ public class FolderList extends Message {
      * @return the loaded {@link FolderList} or null if failed or not existing.
      * @deprecated #2569
      */
-    public static FolderList load(File file) {
+    public static FolderList load(Path file) {
         Reject.ifNull(file, "File");
-        if (!file.exists()) {
+        if (Files.notExists(file)) {
             return null;
         }
-        InputStream in = null;
-        try {
-            in = new BufferedInputStream(new FileInputStream(file));
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file))) {
             byte[] buf = StreamUtils.readIntoByteArray(in);
             return (FolderList) ByteSerializer.deserializeStatic(buf, false);
         } catch (Exception e) {
             LOG.warning("Unable to load to " + file + ". " + e);
             return null;
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                }
-            }
         }
     }
 
     public static void removeMemberFiles(Controller controller) {
         try {
-            FileUtils.recursiveDelete(new File(Controller
-                .getMiscFilesLocation(), controller.getConfigName()
+            PathUtils.recursiveDelete(Controller
+                .getMiscFilesLocation().resolve(controller.getConfigName()
                 + ".temp/nodes"));
         } catch (IOException e) {
             LOG.severe("Unable to deleted FolderList temporary files. " + e);
         }
     }
 
-    private static File getMemberFile(Member member) {
+    private static Path getMemberFile(Member member) {
         String idPath = new String(Util.encodeHex(Util.md5(member.getId()
             .getBytes(Convert.UTF8))));
-        return new File(Controller.getMiscFilesLocation(), member
+        return Controller.getMiscFilesLocation().resolve(member
             .getController().getConfigName()
             + ".temp/nodes/"
             + idPath

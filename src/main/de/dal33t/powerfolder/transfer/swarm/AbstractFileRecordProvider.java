@@ -19,9 +19,10 @@
  */
 package de.dal33t.powerfolder.transfer.swarm;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -34,7 +35,6 @@ import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
-import de.schlichtherle.truezip.file.TFileInputStream;
 
 /**
  * Abstract {@link FileRecordProvider} which can compute {@link FilePartsRecord}
@@ -65,7 +65,7 @@ public abstract class AbstractFileRecordProvider implements FileRecordProvider {
     {
         assert fileInfo != null;
         long start = System.currentTimeMillis();
-        File f = fileInfo.getDiskFile(controller.getFolderRepository());
+        Path f = fileInfo.getDiskFile(controller.getFolderRepository());
 
         // TODO: Both, the RecordBuilder and the Matcher use "almost"
         // the same algorithms, there should be a shared config.
@@ -74,15 +74,14 @@ public abstract class AbstractFileRecordProvider implements FileRecordProvider {
         // But there should be a more thorough investigation on how to
         // calculate it.
         int partSize = Math
-            .max(4096, (int) (Math.pow(f.length(), 0.25) * 2048));
-        InputStream in = new TFileInputStream(f);
-        try {
+            .max(4096, (int) (Math.pow(Files.size(f), 0.25) * 2048));
+        try (InputStream in = Files.newInputStream(f)) {
             FilePartsRecordBuilder b = new FilePartsRecordBuilder(
                 new Adler32(), MessageDigest.getInstance("SHA-256"),
                 MessageDigest.getInstance("MD5"), partSize);
             int read = 0;
             byte buf[] = new byte[8192];
-            long processed = 0, size = f.length();
+            long processed = 0, size = Files.size(f);
             while ((read = in.read(buf)) > 0) {
                 b.update(buf, 0, read);
                 if (obs != null) {
@@ -99,8 +98,6 @@ public abstract class AbstractFileRecordProvider implements FileRecordProvider {
             return fileRecord;
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
-        } finally {
-            in.close();
         }
     }
 

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: UIController.java 20916 2013-02-23 04:05:10Z glasgow $
  */
 package de.dal33t.powerfolder.ui;
 
@@ -32,10 +32,12 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,8 +120,8 @@ import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -448,7 +450,7 @@ public class UIController extends PFComponent {
                         logWarning("Unable to goto web portal", e1);
                     }
                 } else if (COMMAND_BROWSE.equals(e.getActionCommand())) {
-                    FileUtils.openFile(getController().getFolderRepository()
+                    PathUtils.openFile(getController().getFolderRepository()
                         .getFoldersBasedir());
                 } else if (COMMAND_PAUSE.equals(e.getActionCommand())
                     || COMMAND_RESUME.equals(e.getActionCommand()))
@@ -653,11 +655,11 @@ public class UIController extends PFComponent {
             sysTrayFoldersMenu.add(menuItem);
         }
         sysTrayFoldersMenu.setEnabled(true);
-        final File localBase = folder.getCommitOrLocalDir();
+        final Path localBase = folder.getCommitOrLocalDir();
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (localBase.exists()) {
-                    FileUtils.openFile(localBase);
+                if (Files.exists(localBase)) {
+                    PathUtils.openFile(localBase);
                 }
             }
         });
@@ -905,7 +907,7 @@ public class UIController extends PFComponent {
      * @param file
      * @param node
      */
-    public void transferSingleFile(File file, Member node) {
+    public void transferSingleFile(Path file, Member node) {
         SingleFileTransferDialog sftd = new SingleFileTransferDialog(
             getController(), file, node);
         sftd.open();

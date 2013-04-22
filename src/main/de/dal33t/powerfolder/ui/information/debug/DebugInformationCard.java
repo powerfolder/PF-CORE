@@ -41,12 +41,12 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationCardType;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -150,7 +150,7 @@ public class DebugInformationCard extends InformationCard {
 
         openDebugDir.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                FileUtils.openFile(LoggingManager.getDebugDir());
+                PathUtils.openFile(LoggingManager.getDebugDir());
                 try {
                     BrowserLauncher
                         .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL

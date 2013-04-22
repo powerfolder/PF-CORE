@@ -1,13 +1,15 @@
 package de.dal33t.powerfolder.test.disk;
 
-import java.io.File;
 import java.io.IOException;
-
-import de.dal33t.powerfolder.disk.FolderWatcher;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import junit.framework.TestCase;
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyListener;
+import de.dal33t.powerfolder.disk.FolderWatcher;
+import de.dal33t.powerfolder.util.PathUtils;
 
 public class JNotifyTest extends TestCase {
     private static final boolean RUN_TEST = false;
@@ -43,11 +45,11 @@ public class JNotifyTest extends TestCase {
             System.err.println("Not checking JNotify. Unable to load lib.");
             return;
         }
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"),
+        Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"),
             "watchertest");
         int x = 1;
-        while (tmpDir.exists()) {
-            tmpDir = new File(System.getProperty("java.io.tmpdir"),
+        while (Files.exists(tmpDir)) {
+            tmpDir = Paths.get(System.getProperty("java.io.tmpdir"),
                 "watchertest (" + x + ")");
             x++;
         }
@@ -60,10 +62,11 @@ public class JNotifyTest extends TestCase {
             int[] watchIDs = new int[nWatches];
             MyJNotifyListener listener = new MyJNotifyListener();
             for (int i = 0; i < watchIDs.length; i++) {
-                File dir = new File(tmpDir, "testdir-" + i);
-                recursiveDelete(dir);
-                assertTrue(dir.mkdirs());
-                int watchID = JNotify.addWatch(dir.getAbsolutePath(), mask,
+                Path dir = tmpDir.resolve("testdir-" + i);
+//                recursiveDelete(dir);
+                PathUtils.recursiveDelete(dir);
+                Files.createDirectories(dir);
+                int watchID = JNotify.addWatch(dir.toAbsolutePath().toString(), mask,
                     watchSubtree, listener);
                 watchIDs[i] = watchID;
                 System.out.println("Installed watch " + watchID + " on " + dir);
@@ -103,7 +106,8 @@ public class JNotifyTest extends TestCase {
         } finally {
             if (REMOVE_TEST_DIR && REMOVE_WATCHERS) {
                 try {
-                    recursiveDelete(tmpDir);
+                    PathUtils.recursiveDelete(tmpDir);
+//                    recursiveDelete(tmpDir);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -111,17 +115,27 @@ public class JNotifyTest extends TestCase {
         }
     }
 
-    private static void writeFiles(File dir, int count) {
+    private static void writeFiles(Path dir, int count) {
         for (int i = 0; i < count; i++) {
-            File testFile = new File(dir, "testfile-" + i);
+            Path testFile = dir.resolve("testfile-" + i);
             try {
-                testFile.createNewFile();
+                Files.createFile(testFile);
             } catch (IOException e) {
                 System.err.println("Unable to create testfile: " + testFile
                     + ". " + e);
             }
-            testFile.renameTo(new File(dir, "testfile_moved-" + count));
-            new File(dir, "testfile_moved-" + count).delete();
+            try {
+                Files.move(testFile, dir.resolve("testfile_moved-" + count));
+            } catch (IOException ioe) {
+                System.err.println("Unable to move testfile: " + testFile
+                    + ". " + ioe);
+            }
+            try {
+                Files.delete(dir.resolve("testfile_moved-" + count));
+            } catch (IOException ioe) {
+                System.err.println("Unable to delete testfile: " + testFile
+                    + ". " + ioe);
+            }
         }
     }
 
@@ -163,18 +177,19 @@ public class JNotifyTest extends TestCase {
      * @throws IOException
      */
 
-    public static void recursiveDelete(File file) throws IOException {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            for (File nextFile : files) {
-                recursiveDelete(nextFile);
-            }
-        }
-
-        if (file.exists() && !file.delete()) {
-            throw new IOException("Could not delete file "
-                + file.getAbsolutePath());
-        }
-    }
+//    public static void recursiveDelete(Path file) throws IOException {
+//        if (Files.isDirectory(file)) {
+//            DirectoryStream<Path> files = Files.newDirectoryStream(file);
+//
+//            for (Path entry : files) {
+//                recursiveDelete(entry);
+//            }
+//        }
+//
+//        if (file.exists() && !file.delete()) {
+//            throw new IOException("Could not delete file "
+//                + file.getAbsolutePath());
+//        }
+//    }
 
 }

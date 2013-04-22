@@ -1,23 +1,26 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
-import de.schlichtherle.truezip.file.TFile;
 
 public enum ArchiveMode {
     FULL_BACKUP("archive.full_backup") {
 
         @Override
         public FileArchiver getInstance(Folder f) {
-            File archive = new TFile(f.getSystemSubDir(), "archive");
-            if (!f.checkIfDeviceDisconnected() && !archive.exists()
-                && !archive.mkdirs())
-            {
-                log.warning("Failed to create archive directory in system subdirectory: "
-                    + archive);
+            Path archive = f.getSystemSubDir().resolve("archive");
+            if (!f.checkIfDeviceDisconnected() && Files.notExists(archive)) {
+                try {
+                    Files.createDirectories(archive);
+                } catch (IOException ioe) {
+                    log.warning("Failed to create archive directory in system subdirectory: "
+                        + archive);
+                }
             }
             return new FileArchiver(archive, f.getController()
                 .getMySelf().getInfo());

@@ -15,18 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: DownloadManager.java 7541 2009-03-31 12:27:02Z harry $
  */
 package de.dal33t.powerfolder.transfer;
+
+import java.nio.file.Path;
+import java.util.Date;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.swarm.DownloadControl;
 import de.dal33t.powerfolder.transfer.swarm.DownloadSourceHandler;
 import de.dal33t.powerfolder.util.TransferCounter;
-
-import java.io.File;
-import java.util.Date;
 
 /**
  * @author Dennis "Bytekeeper" Waldherr
@@ -57,7 +57,7 @@ public interface DownloadManager extends DownloadSourceHandler, DownloadControl
      * 
      * @return
      */
-    File getTempFile();
+    Path getTempFile();
 
     /**
      * Returns true if there are sources left to download from.
