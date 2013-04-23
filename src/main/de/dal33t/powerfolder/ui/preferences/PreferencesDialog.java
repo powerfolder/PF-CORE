@@ -245,12 +245,11 @@ public class PreferencesDialog extends BaseDialog {
                             if (get()) {
                                 close();
                             }
-                        } catch (InterruptedException e1) {
+                        } catch (Exception e1) {
                             logSevere(e1);
-                        } catch (ExecutionException e1) {
-                            logSevere(e1);
+                        } finally {
+                            okButton.setEnabled(true);
                         }
-                        okButton.setEnabled(true);
                     }
                 };
                 worker.execute();
