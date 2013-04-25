@@ -247,6 +247,8 @@ public class PreferencesDialog extends BaseDialog {
                             }
                         } catch (Exception e1) {
                             logSevere(e1);
+                            DialogFactory.genericDialog(getController(), Translation.getTranslation("preferences.dialog.save_error.title"),
+                                    Translation.getTranslation("preferences.dialog.save_error.message"), GenericDialogType.ERROR);
                         } finally {
                             okButton.setEnabled(true);
                         }
