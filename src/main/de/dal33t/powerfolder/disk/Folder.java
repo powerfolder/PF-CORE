@@ -429,7 +429,7 @@ public class Folder extends PFComponent {
 
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
-        if (isInfo()) {
+        if (isFine()) {
             if (hasOwnDatabase) {
                 logFiner("Has own database (" + getName() + ")? "
                     + hasOwnDatabase);
@@ -885,10 +885,14 @@ public class Folder extends PFComponent {
                 Files.move(tempFile, targetFile);
             }
             catch (IOException ioe) {
-                logWarning("Was not able to rename tempfile, copiing "
-                    + tempFile.toAbsolutePath() + " to "
-                    + targetFile.toAbsolutePath() + ". "
-                    + fInfo.toDetailString());
+                if (!localBase.getFileSystem().provider().getScheme()
+                    .equals(Constants.ZYNCRO_SCHEME))
+                {
+                    logWarning("Was not able to rename tempfile, copiing "
+                        + tempFile.toAbsolutePath() + " to "
+                        + targetFile.toAbsolutePath() + ". "
+                        + fInfo.toDetailString());
+                }
 
                 try {
                     Files.copy(tempFile, targetFile);
@@ -2121,6 +2125,7 @@ public class Folder extends PFComponent {
                 if (Files.exists(file)) {
                     try {
                         archiver.archive(fileInfo, file, false);
+                        Files.deleteIfExists(file);
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
                             + ". Cannot overwrite local change. " + e);
@@ -3745,7 +3750,7 @@ public class Folder extends PFComponent {
     private Path getSystemSubDir0() {
         if (localBase.toUri().getScheme().equals(Constants.ZYNCRO_SCHEME)) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
-                .resolve(PathUtils.removeInvalidFilenameChars(getName()))
+                .resolve(PathUtils.removeInvalidFilenameChars(getId()))
                 .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
         } else {
             return localBase.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
@@ -3795,7 +3800,8 @@ public class Folder extends PFComponent {
                 boolean inaccessible = Files.notExists(localBase)
                     || !PathUtils.hasContents(localBase);
                 if (inaccessible) {
-                    logWarning("Local base empty on linux file system, but has known files. "
+                    // TODO: change back to Warning
+                    logFine("Local base empty on linux file system, but has known files. "
                         + localBase);
                     return setDeviceDisconnected(true);
                 }

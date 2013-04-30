@@ -539,7 +539,7 @@ public abstract class TwoControllerTestCase extends TestCase {
     protected void assertFileMatch(Path diskFile, FileInfo fInfo,
         Controller controller) throws IOException
     {
-        boolean nameMatch = diskFile.endsWith(fInfo.getFilenameOnly());
+        boolean nameMatch = diskFile.toString().endsWith(fInfo.getFilenameOnly());
         boolean sizeMatch = false;
         long size = 0L;
         try {

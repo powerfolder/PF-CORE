@@ -1184,15 +1184,17 @@ public class PathUtils {
         try (DirectoryStream<Path> contents = Files.newDirectoryStream(base,
             filter)) {
 
+            if (contents == null) {
+                return false;
+            }
+
             Iterator<Path> it = contents.iterator();
 
             if (it == null) {
                 return false;
             }
 
-            if (it.hasNext()) {
-                return true;
-            }
+            return it.hasNext();
         } catch (IOException ioe) {
             log.info(ioe.getMessage());
         }

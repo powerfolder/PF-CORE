@@ -2774,10 +2774,6 @@ public class TransferManager extends PFComponent {
 
         for (DownloadManager man : dlManagers.values()) {
             try {
-                if (!man.isDone()) {
-                    downloadNewestVersion(man.getFileInfo(),
-                        man.isRequestedAutomatic());
-                }
                 downloadNewestVersion(man.getFileInfo(),
                     man.isRequestedAutomatic());
                 for (Download download : man.getSources()) {

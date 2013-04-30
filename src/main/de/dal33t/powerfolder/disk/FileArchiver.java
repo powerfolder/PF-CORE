@@ -125,14 +125,9 @@ public class FileArchiver {
         if (versionsPerFile == 0) {
             // Optimization for zero-archive
             if (!forceKeepSource) {
-                if (Files.exists(source)) {
-                    try {
-                        Files.delete(source);
-                    } catch (IOException ioe) {
-                        log.warning("Unable to remove old file " + source);
-                    }
+                if (!Files.deleteIfExists(source)) {
+                    log.warning("Unable to remove old file " + source);
                 }
-                Files.delete(source);
                 return;
             }
         }

@@ -137,28 +137,29 @@ public class TestHelper {
             if (Files.notExists(transfers)) {
                 return;
             }
-            
+
             Filter<Path> filter = new Filter<Path>() {
                 @Override
                 public boolean accept(Path entry) {
                     String name = entry.getFileName().toString();
-                    return name.contains("(incomplete)")
-                        && name.length() == 0L;
+                    return name.contains("(incomplete)") && name.length() == 0L;
                 }
             };
 
-            try (DirectoryStream<Path> files = Files.newDirectoryStream(transfers, filter)) {
+            try (DirectoryStream<Path> files = Files.newDirectoryStream(
+                transfers, filter)) {
                 for (Path file : files) {
                     try {
                         Files.delete(file);
                     } catch (IOException ioe) {
-                        TestCase.fail("Incomplete file still open somewhere, couldn't delete: "
-                            + file);
+                        TestCase
+                            .fail("Incomplete file still open somewhere, couldn't delete: "
+                                + file);
                     }
                 }
                 return;
             } catch (IOException ioe) {
-                
+
             }
             TestCase
                 .fail("(incomplete) files found, but all could be deleted!");
@@ -213,16 +214,19 @@ public class TestHelper {
 
     public static Path getTestDir() {
         if (testFile == null) {
-            Path localBuildProperties = Paths.get("build-local.properties").toAbsolutePath();
+            Path localBuildProperties = Paths.get("build-local.properties")
+                .toAbsolutePath();
             if (Files.exists(localBuildProperties)) {
                 Properties props = new Properties();
-                try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(localBuildProperties))) {
+                try (BufferedInputStream bis = new BufferedInputStream(
+                    Files.newInputStream(localBuildProperties))) {
                     props.load(bis);
                 } catch (IOException e) {
 
                 }
                 if (props.containsKey("test.dir")) {
-                    testFile = Paths.get(props.getProperty("test.dir")).toAbsolutePath();
+                    testFile = Paths.get(props.getProperty("test.dir"))
+                        .toAbsolutePath();
                     if (Files.notExists(testFile)) {
                         testFile = null;
                     }
@@ -233,11 +237,10 @@ public class TestHelper {
                 testFile = Paths.get("build/test/").toAbsolutePath();
             }
         }
-        
+
         try {
             Files.createDirectories(testFile);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             return null;
         }
         return testFile;
@@ -249,8 +252,8 @@ public class TestHelper {
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testDir)) {
             int count = PathUtils.getNumberOfSiblings(testDir);
-            System.out.println("Cleaning test dir (" + testDir + ") ("
-                + count + " files/dirs)");
+            System.out.println("Cleaning test dir (" + testDir + ") (" + count
+                + " files/dirs)");
 
             for (Path file : stream) {
                 count--;
@@ -275,11 +278,11 @@ public class TestHelper {
                 StringBuilder b = new StringBuilder();
                 listFiles(testDir, b);
                 throw new IllegalStateException(
-                    "cleaning test dir not succeded. " + count + " files left: " + b.toString());
+                    "cleaning test dir not succeded. " + count
+                        + " files left: " + b.toString());
             }
-        }
-        catch (IOException ioe) {
-            
+        } catch (IOException ioe) {
+
             return;
         }
     }
@@ -293,8 +296,7 @@ public class TestHelper {
                     b.append(file.toAbsolutePath() + ", ");
                 }
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             return;
         }
     }
@@ -408,8 +410,7 @@ public class TestHelper {
             randomFile = directory.resolve(createRandomFilename());
         } while (Files.exists(randomFile));
         try (OutputStream fOut = new BufferedOutputStream(
-            Files.newOutputStream(randomFile, StandardOpenOption.CREATE)))
-        {
+            Files.newOutputStream(randomFile, StandardOpenOption.CREATE))) {
             for (int i = 0; i < size; i++) {
                 fOut.write((int) (Math.random() * 256));
             }
@@ -443,7 +444,9 @@ public class TestHelper {
      *            the size of the file.
      */
     public static void changeFile(Path file, long size) {
-        if (Files.notExists(file) || !Files.isRegularFile(file) || !Files.isWritable(file)) {
+        if (Files.notExists(file) || !Files.isRegularFile(file)
+            || !Files.isWritable(file))
+        {
             throw new IllegalArgumentException(
                 "file must be a writable existing file: "
                     + file.toAbsolutePath());
@@ -460,7 +463,8 @@ public class TestHelper {
             size = 10;
         }
 
-        try (OutputStream fOut = new BufferedOutputStream(Files.newOutputStream(file))) {
+        try (OutputStream fOut = new BufferedOutputStream(
+            Files.newOutputStream(file))) {
             for (int i = 0; i < size; i++) {
                 fOut.write((int) (Math.random() * 256));
             }
@@ -504,26 +508,25 @@ public class TestHelper {
     public static Path createTestFile(Path directory, String filename,
         byte[] contents)
     {
-        try {
-            Path file = directory.resolve(filename);
+        Path file = directory.resolve(filename);
+
+        try (OutputStream fOut = Files.newOutputStream(file)) {
             Path parent = file.getParent();
             if (Files.notExists(parent)) {
                 Files.createDirectories(parent);
             }
 
-            OutputStream fOut = Files.newOutputStream(file);
             fOut.write(contents);
-            fOut.close();
-
-            if (Files.notExists(file)) {
-                throw new IOException("Could not create random file '"
-                    + file.toAbsolutePath() + "'");
-            }
-
-            return file;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        if (Files.notExists(file)) {
+            throw new RuntimeException("Could not create random file '"
+                + file.toAbsolutePath() + "'");
+        }
+
+        return file;
     }
 
     /**
@@ -586,8 +589,7 @@ public class TestHelper {
 
     public static final boolean compareFiles(Path a, Path b) {
         try (InputStream ain = Files.newInputStream(a);
-            InputStream bin = Files.newInputStream(b))
-        {
+            InputStream bin = Files.newInputStream(b)) {
             if (Files.size(a) != Files.size(b)) {
                 return false;
             }

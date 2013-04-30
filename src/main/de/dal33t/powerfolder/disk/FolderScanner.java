@@ -82,7 +82,7 @@ public class FolderScanner extends PFComponent {
      * Maximum number of DirectoryCrawlers after test of a big folder this seams
      * the optimum number.
      */
-    private static final int MAX_CRAWLERS = 1;
+    private static final int MAX_CRAWLERS = 3;
 
     /**
      * The files which could not be scanned
@@ -416,10 +416,12 @@ public class FolderScanner extends PFComponent {
                 }
                 if (Files.isRegularFile(path)) {
                     if (PathUtils.isScannable(path,
-                        currentScanningFolder.getInfo()) && !scanFile(path, ""))
+                        currentScanningFolder.getInfo()))
                     {
-                        failure = true;
-                        return false;
+                        if (!scanFile(path, "")) {
+                            failure = true;
+                            return false;
+                        }
                     }
                 } else if (Files.isDirectory(path)) {
                     if (!PathUtils.isScannable(path,
@@ -722,7 +724,7 @@ public class FolderScanner extends PFComponent {
                     }
 
                 } catch (RuntimeException e) {
-                    logSevere("Folder scanner crashed! " + e, e);
+                    logSevere("Folder scanner crashed @ " + root + ". " + e, e);
                     failure = true;
                 } finally {
                     // scan of this directory is ready, notify FolderScanner we
@@ -757,6 +759,10 @@ public class FolderScanner extends PFComponent {
             
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirToScan)) {
                 Iterator<Path> it = stream.iterator();
+                
+                if (it == null) {
+                    throw new IOException("Unable to access directory");
+                }
 
                 while (it.hasNext()) {
                     Path path = it.next();
