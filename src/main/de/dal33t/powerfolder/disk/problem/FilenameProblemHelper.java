@@ -15,20 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FilenameProblemHelper.java 16658 2011-10-24 23:22:51Z tot $
  */
 package de.dal33t.powerfolder.disk.problem;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.PathUtils;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -205,14 +207,15 @@ public class FilenameProblemHelper {
 
         Folder folder = controller.getFolderRepository().getFolder(
             fileInfo.getFolderInfo());
-        File file = folder.getDiskFile(fileInfo);
-        if (!file.exists()) {
+        Path file = folder.getDiskFile(fileInfo);
+        if (Files.exists(file)) {
             return;
         }
 
-        File newFile = FileUtils.buildFileFromRelativeName(folder
+        Path newFile = PathUtils.buildFileFromRelativeName(folder
                 .getLocalBase(), newFilename);
-        if (file.renameTo(newFile)) {
+        try {
+            Files.move(file, newFile);
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
                 controller.getMySelf().getInfo(), false);
             if (folder.isKnown(fileInfo)) {
@@ -221,7 +224,8 @@ public class FilenameProblemHelper {
             folder.scanChangedFile(renamedFileInfo);
             fileInfo.getFolder(controller.getFolderRepository()).removeProblem(
                 problem);
-
+        }
+        catch (IOException e) {
         }
     }
 
@@ -263,9 +267,9 @@ public class FilenameProblemHelper {
         } else {
             path = "/";
         }
-        File newFile = FileUtils.buildFileFromRelativeName(folder
+        Path newFile = PathUtils.buildFileFromRelativeName(folder
             .getLocalBase(), path + newName);
-        return !newFile.exists();
+        return Files.notExists(newFile);
     }
 
     /**

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: ExpertSettingsTab.java 20858 2013-02-15 11:34:59Z glasgow $
  */
 package de.dal33t.powerfolder.ui.preferences;
 
@@ -25,7 +25,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -365,7 +365,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         // Set folder base
         FolderRepository repo = getController().getFolderRepository();
         String oldFolderBaseString = repo.getFoldersBasedirString();
-        String oldBaseDirName = repo.getFoldersBasedir().getName();
+        String oldBaseDirName = repo.getFoldersBasedir().getFileName().toString();
         String newFolderBaseString = (String) locationModel.getValue();
         repo.setFoldersBasedir(newFolderBaseString);
         if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
@@ -459,10 +459,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            List<File> files = DialogFactory.chooseDirectory(getController()
+            List<Path> files = DialogFactory.chooseDirectory(getController()
                 .getUIController(), initial, false);
             if (!files.isEmpty()) {
-                File newLocation = files.get(0);
+               Path newLocation = files.get(0);
                 // Make sure that the user is not setting this to the base dir
                 // of an existing folder.
                 for (Folder folder : getController().getFolderRepository()
@@ -482,7 +482,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                         return;
                     }
                 }
-                locationModel.setValue(newLocation.getAbsolutePath());
+                locationModel.setValue(newLocation.toAbsolutePath().toString());
             }
         }
     }

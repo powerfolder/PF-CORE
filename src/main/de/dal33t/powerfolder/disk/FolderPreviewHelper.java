@@ -15,11 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderPreviewHelper.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -50,17 +51,17 @@ public class FolderPreviewHelper {
      */
     public static FolderSettings createPreviewFolderSettings(String folderName)
     {
-        File localBase = makePreviewBaseDir(folderName);
+        Path localBase = makePreviewBaseDir(folderName);
         return new FolderSettings(localBase, SyncProfile.NO_SYNC, false,
             true, null, 0, false);
     }
 
     // Creates a preview folder directory for a folderName.
     // The folder is put in [java.io.tempdir]/.PowerFolder/folderName/
-    private static File makePreviewBaseDir(String folderName) {
+    private static Path makePreviewBaseDir(String folderName) {
         String javaTempDir = System.getProperty(JAVA_IO_TMPDIR);
-        File tempPF = new File(javaTempDir, DOT_POWER_FOLDER);
-        return new File(tempPF, folderName);
+        Path tempPF = Paths.get(javaTempDir, DOT_POWER_FOLDER);
+        return tempPF.resolve(folderName);
     }
 
     /**

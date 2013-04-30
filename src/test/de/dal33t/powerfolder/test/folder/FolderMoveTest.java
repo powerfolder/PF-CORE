@@ -19,15 +19,19 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
-import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 /**
@@ -52,55 +56,50 @@ public class FolderMoveTest extends ControllerTestCase {
         getController().setPaused(true);
         setupTestFolder(SyncProfile.HOST_FILES);
         folder = getFolder();
-        File localBase = folder.getLocalBase();
+        Path localBase = folder.getLocalBase();
 
         // Create a test.txt file
-        File testFile = new File(localBase, "test.txt");
-        if (testFile.exists()) {
-            testFile.delete();
-        }
-        assertTrue(testFile.createNewFile());
+        Path testFile = localBase.resolve("test.txt");
+        Files.deleteIfExists(testFile);
+        Files.createFile(testFile);
 
         // Create a text2.txt file in the 'sub' folder.
-        File sub = new File(localBase, "sub");
-        sub.mkdir();
-        assertTrue(sub.exists());
+        Path sub = localBase.resolve("sub");
+        Files.createDirectory(sub);
+        assertTrue(Files.exists(sub));
 
-        File testFile2 = new File(sub, "test2.txt");
-        if (testFile2.exists()) {
-            testFile2.delete();
-        }
-        assertTrue(testFile2.createNewFile());
+        Path testFile2 = sub.resolve("test2.txt");
+        Files.deleteIfExists(testFile2);
+        Files.createFile(testFile2);
 
-        File emptySub = new File(localBase, "emptySub");
-        emptySub.mkdir();
-        assertTrue(emptySub.exists());
+        Path emptySub = localBase.resolve("emptySub");
+        Files.createDirectory(emptySub);
+        assertTrue(Files.exists(emptySub));
 
         // Write a test files.
-        FileWriter writer = new FileWriter(testFile);
-        writer
-            .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
-        writer.close();
-        writer = new FileWriter(testFile2);
-        writer
-            .write("This is the test2 text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh osdjft");
-        writer.close();
+        try (BufferedWriter writer = Files.newBufferedWriter(testFile, Charset.forName("UTF-8"))) {
+            writer
+                .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(testFile2, Charset.forName("UTF-8"))) {
+            writer
+                .write("This is the test2 text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh osdjft");
+        }
+
         scanFolder(folder);
 
-        File testFolder3 = new File(localBase.getAbsolutePath() + '3');
-        testFolder3.mkdir();
-        assertTrue(testFolder3.exists());
+        Path testFolder3 = Paths.get(localBase.toAbsolutePath().toString() + "3");
+        Files.createDirectory(testFolder3);
+        assertTrue(Files.exists(testFolder3));
 
-        File dummyFile = new File(testFolder3, "dummy.txt");
-        if (dummyFile.exists()) {
-            dummyFile.delete();
-        }
-        assertTrue(dummyFile.createNewFile());
+        Path dummyFile = testFolder3.resolve("dummy.txt");
+        Files.deleteIfExists(dummyFile);
+        Files.createFile(dummyFile);
 
         // Write a test files.
-        writer = new FileWriter(dummyFile);
-        writer.write("This is the dummy text.\n\n sdlkja hsdjfksd f90a-7s w t");
-        writer.close();
+        try (BufferedWriter writer = Files.newBufferedWriter(dummyFile, Charset.forName("UTF-8"))) {
+            writer.write("This is the dummy text.\n\n sdlkja hsdjfksd f90a-7s w t");
+        }
     }
 
     public void testFolderMoveMultiple() throws Exception {
@@ -119,23 +118,23 @@ public class FolderMoveTest extends ControllerTestCase {
 
         // Create new directories
         // .../ControllerBart/testFolder2
-        File testFolder2 = new File(
-            folder.getLocalBase().getAbsolutePath() + '2');
+        Path testFolder2 = Paths.get(
+            folder.getLocalBase().toAbsolutePath().toString() + "2");
         FolderRepository repository = getController().getFolderRepository();
 
         // Remove original folder from the folder repository.
         repository.removeFolder(folder, false);
 
         // Simulate tests done in HomeTab to check the folder can be moved.
-        File oldLocalBase = folder.getLocalBase();
+        Path oldLocalBase = folder.getLocalBase();
         try {
             // Move the contents.
-            FileUtils.recursiveMove(oldLocalBase, testFolder2);
+            PathUtils.recursiveMove(oldLocalBase, testFolder2);
 
             // The new location should contain the
             // 1) .PowerFolder dir, 2) the test file, 3) sub dir and 4) emptySub
             // dir.
-            assertEquals(4, testFolder2.listFiles().length);
+            assertEquals(4, PathUtils.getNumberOfSiblings(testFolder2));
 
             // Create new folder
             FolderSettings folderSettings = new FolderSettings(testFolder2,
@@ -152,17 +151,19 @@ public class FolderMoveTest extends ControllerTestCase {
 
             // Sub dir should contain one file; test2.txt
             boolean foundTest2 = false;
-            for (File file : testFolder2.listFiles()) {
-                if (file.getName().equals("sub") && file.isDirectory()) {
-                    assertEquals(1, file.listFiles().length);
-                    foundTest2 = true;
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(testFolder2)) {
+                for (Path file : stream) {
+                    if (file.getFileName().toString().equals("sub") && Files.isDirectory(file)) {
+                        assertEquals(1, PathUtils.getNumberOfSiblings(file));
+                        foundTest2 = true;
+                    }
                 }
             }
             assertTrue(foundTest2);
 
             // The old location should be gone.
             assertFalse("Old location still existing!:  " + oldLocalBase,
-                oldLocalBase.exists());
+                Files.exists(oldLocalBase));
         } catch (IOException e) {
             e.printStackTrace();
         }

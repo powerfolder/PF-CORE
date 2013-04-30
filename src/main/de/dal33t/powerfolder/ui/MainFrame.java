@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MainFrame.java 20917 2013-02-24 06:30:05Z glasgow $
  */
 package de.dal33t.powerfolder.ui;
 
@@ -49,8 +49,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -110,8 +111,8 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -1326,7 +1327,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            FileUtils.openFile(getController().getFolderRepository()
+            PathUtils.openFile(getController().getFolderRepository()
                 .getFoldersBasedir());
         }
     }
@@ -1510,7 +1511,7 @@ public class MainFrame extends PFUIComponent {
         public boolean importData(TransferSupport support) {
             try {
                 Transferable t = support.getTransferable();
-                List<File> fileList = (List<File>)
+                List<Path> fileList = (List<Path>)
                         t.getTransferData(DataFlavor.javaFileListFlavor);
 
                 // One at a time!
@@ -1520,8 +1521,8 @@ public class MainFrame extends PFUIComponent {
                 }
 
                 // Directories only.
-                File file = fileList.get(0);
-                if (!file.isDirectory()) {
+                Path file = fileList.get(0);
+                if (!Files.isDirectory(file)) {
                     logInfo("Skipping importData (not directory).");
                     return false;
                 }

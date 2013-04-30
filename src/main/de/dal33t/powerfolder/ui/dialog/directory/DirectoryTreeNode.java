@@ -19,10 +19,11 @@
  */
 package de.dal33t.powerfolder.ui.dialog.directory;
 
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.Controller;
-
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,6 +31,9 @@ import java.util.TreeMap;
 import javax.swing.Icon;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 /**
  * Class to represent a directory node in the tree. Initially the node has a
@@ -63,41 +67,46 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
      * @param real
      */
     DirectoryTreeNode(Controller controller, String enhancedVolumeText,
-                      File directory, boolean volume, boolean real) {
+                      Path directory, boolean volume, boolean real) {
         super(directory);
         this.controller = controller;
         this.volume = volume;
         this.real = real;
-        if (volume) {
-            add(new DefaultMutableTreeNode());
-            this.enhancedVolumeText = enhancedVolumeText;
-        } else if (directory != null && directory.isDirectory()
-            && directory.canRead() && !directory.isHidden())
-        {
-
-            // A quick peek.
-            // If there are any subdirectories,
-            // set scanned false and add a dummy,
-            // deferring the real scan untll the node is expanded.
-            // Otherwise if there are no readable directories,
-            // set as scanned with no dummy node.
-            scanned = true;
-
-            // Patch for Windows Vista.
-            // Vista may deny access to directories
-            // and this results in a null file list.
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File f : files) {
-                    if (f != null && f.canRead() && f.isDirectory()
-                        && !f.isHidden())
-                    {
-                        add(new DefaultMutableTreeNode());
-                        scanned = false;
-                        break;
+        
+        try {
+            if (volume) {
+                add(new DefaultMutableTreeNode());
+                this.enhancedVolumeText = enhancedVolumeText;
+            } else if (directory != null && Files.isDirectory(directory)
+                && Files.isReadable(directory) && !Files.isHidden(directory))
+            {
+    
+                // A quick peek.
+                // If there are any subdirectories,
+                // set scanned false and add a dummy,
+                // deferring the real scan untll the node is expanded.
+                // Otherwise if there are no readable directories,
+                // set as scanned with no dummy node.
+                scanned = true;
+    
+                // Patch for Windows Vista.
+                // Vista may deny access to directories
+                // and this results in a null file list.
+                
+                try (DirectoryStream<Path> files = Files.newDirectoryStream(directory)) {
+                    for (Path entry : files) {
+                        if (entry != null && Files.isReadable(entry) && Files.isDirectory(entry)
+                            && !Files.isHidden(entry))
+                        {
+                            add(new DefaultMutableTreeNode());
+                            scanned = false;
+                            break;
+                        }
                     }
                 }
             }
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
         }
     }
 
@@ -109,35 +118,38 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
         while (getChildCount() > 0) {
             remove(0);
         }
-        File f = getDir();
-        if (f != null && f.isDirectory() && f.canRead()) {
-            File[] realFiles = f.listFiles();
-            Map<File, Boolean> files = new TreeMap<File, Boolean>();
-            for (File realFile : realFiles) {
-                files.put(realFile, true);
-            }
-            String baseDir = controller.getFolderRepository().getFoldersBasedirString();
-            if (baseDir.equals(getDir().getAbsolutePath()) &&
+        Path f = getDir();
+        if (f != null && Files.isDirectory(f) && Files.isReadable(f)) {
+            try (DirectoryStream<Path> realFiles = Files.newDirectoryStream(f)) {
+                Map<Path, Boolean> files = new TreeMap<Path, Boolean>();
+                for (Path realFile : realFiles) {
+                    files.put(realFile, true);
+                }
+                String baseDir = controller.getFolderRepository().getFoldersBasedirString();
+                if (baseDir.equals(getDir().toAbsolutePath().toString()) &&
                     virtualDirectories != null &&
                     !virtualDirectories.isEmpty()) {
-                for (String virtualDirectory : virtualDirectories) {
-                    File file = new File(baseDir, virtualDirectory);
-                    if (!file.exists()) {
-                        files.put(file, false);
+                    for (String virtualDirectory : virtualDirectories) {
+                        Path file = Paths.get(baseDir, virtualDirectory);
+                        if (Files.notExists(file)) {
+                            files.put(file, false);
+                        }
                     }
                 }
-            }
-            if (!files.isEmpty()) {
-                for (Map.Entry<File, Boolean> entry : files.entrySet()) {
-                    File f2 = entry.getKey();
-                    boolean realDirectory = entry.getValue();
-                    if (!realDirectory ||
-                            f2.isDirectory() && !f2.isHidden() && f2.canRead()) {
-                        DirectoryTreeNode dtn2 = new DirectoryTreeNode(controller,
+                if (!files.isEmpty()) {
+                    for (Map.Entry<Path, Boolean> entry : files.entrySet()) {
+                        Path f2 = entry.getKey();
+                        boolean realDirectory = entry.getValue();
+                        if (!realDirectory ||
+                            Files.isDirectory(f2) && !Files.isHidden(f2) && Files.isReadable(f2)) {
+                            DirectoryTreeNode dtn2 = new DirectoryTreeNode(controller,
                                 null, f2, false, realDirectory);
-                        add(dtn2);
+                            add(dtn2);
+                        }
                     }
                 }
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
             }
         }
         scanned = true;
@@ -161,14 +173,14 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
         return volume;
     }
 
-    public File getDir() {
-        return (File) getUserObject();
+    public Path getDir() {
+        return (Path) getUserObject();
     }
 
     public Icon getIcon() {
         if (icon == null) {
             if (real) {
-                icon = FileSystemView.getFileSystemView().getSystemIcon(getDir());
+                icon = FileSystemView.getFileSystemView().getSystemIcon(getDir().toFile());
             } else {
                 icon = Icons.getIconById(Icons.ONLINE_FOLDER_SMALL);
             }

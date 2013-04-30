@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: PreviewToJoinDialog.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.ui.dialog;
 
@@ -24,7 +24,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -43,11 +44,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 
 /**
  * Panel displayed when wanting to move a folder from preview to join
@@ -88,7 +89,7 @@ public class PreviewToJoinDialog extends BaseDialog {
             getController(), existingFoldersSettings.getSyncProfile());
 
         locationModel = new ValueHolder(existingFoldersSettings
-            .getLocalBaseDir().getAbsolutePath());
+            .getLocalBaseDir().toAbsolutePath().toString());
 
         // Behavior
         locationModel.addValueChangeListener(new PropertyChangeListener() {
@@ -109,7 +110,7 @@ public class PreviewToJoinDialog extends BaseDialog {
                 // Dispose before parent is closed.
                 close();
 
-                FolderSettings newFolderSettings = new FolderSettings(new File(
+                FolderSettings newFolderSettings = new FolderSettings(Paths.get(
                     (String) locationModel.getValue()),
                     syncProfileSelectorPanel.getSyncProfile(), false,
                     false,
@@ -208,10 +209,10 @@ public class PreviewToJoinDialog extends BaseDialog {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            List<File> files = DialogFactory.chooseDirectory(getController()
+            List<Path> files = DialogFactory.chooseDirectory(getController()
                 .getUIController(), initial, false);
             if (!files.isEmpty()) {
-                locationModel.setValue(files.get(0).getAbsolutePath());
+                locationModel.setValue(files.get(0).toAbsolutePath().toString());
             }
         }
     }

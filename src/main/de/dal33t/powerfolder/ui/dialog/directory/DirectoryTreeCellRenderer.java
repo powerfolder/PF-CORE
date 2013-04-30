@@ -20,14 +20,13 @@
 package de.dal33t.powerfolder.ui.dialog.directory;
 
 import java.awt.Component;
-import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.dialog.directory.DirectoryTreeNode;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /**
@@ -49,17 +48,17 @@ class DirectoryTreeCellRenderer extends DefaultTreeCellRenderer {
         // Set directory name.
         if (value instanceof DirectoryTreeNode) {
             DirectoryTreeNode dtn = (DirectoryTreeNode) value;
-            File directory = (File) dtn.getUserObject();
+            Path directory = (Path) dtn.getUserObject();
             if (directory != null) {
                 if (dtn.isVolume()) {
                     String text = dtn.getEnhancedVolumeText();
                     if (StringUtils.isEmpty(text)) {
                         // In case there was no enhanced volume text available.
-                        text = directory.getAbsolutePath();
+                        text = directory.toAbsolutePath().toString();
                     }
                     setText(text);
                 } else {
-                    setText(directory.getName());
+                    setText(directory.getFileName().toString());
                 }
             }
             icon = dtn.getIcon();

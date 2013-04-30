@@ -3,8 +3,8 @@ package de.dal33t.powerfolder.security;
 import java.util.Collection;
 import java.util.List;
 
+import de.dal33t.powerfolder.clientserver.GroupFilterModel;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.Group;
 import de.dal33t.powerfolder.util.db.GenericDAO;
 
 /**
@@ -15,6 +15,8 @@ public interface GroupDAO extends GenericDAO<Group> {
     Group findByGroupname(String groupname);
 
     List<Group> getGroups();
+    
+    List<Group> getGroups(GroupFilterModel filterModel);
 
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
 }

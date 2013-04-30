@@ -25,8 +25,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -96,7 +98,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -460,7 +462,7 @@ public class SettingsTab extends PFUIComponent {
     private void update() {
         rebuildPatterns();
         localFolderField
-            .setText(folder.getCommitOrLocalDir().getAbsolutePath());
+            .setText(folder.getCommitOrLocalDir().toAbsolutePath().toString());
         localFolderButton.setEnabled(!folder.isPreviewOnly());
     }
 
@@ -613,15 +615,15 @@ public class SettingsTab extends PFUIComponent {
 
         try {
 
-            File originalDirectory = folder.getCommitOrLocalDir();
+            Path originalDirectory = folder.getCommitOrLocalDir();
 
             // Select the new folder.
-            List<File> files = DialogFactory.chooseDirectory(getController()
+            List<Path> files = DialogFactory.chooseDirectory(getController()
                     .getUIController(), originalDirectory, false);
             if (!files.isEmpty()) {
-                File newDirectory = files.get(0);
+                Path newDirectory = files.get(0);
                 if (!folder.checkIfDeviceDisconnected() &&
-                        FileUtils.isSubdirectory(originalDirectory, newDirectory)) {
+                        PathUtils.isSubdirectory(originalDirectory, newDirectory)) {
                     // Can't move a folder to one of its subdirectories.
                     DialogFactory.genericDialog(getController(),
                             Translation.getTranslation("general.directory"),
@@ -630,7 +632,7 @@ public class SettingsTab extends PFUIComponent {
                     return;
                 }
 
-                File foldersBaseDir = getController().getFolderRepository().getFoldersBasedir();
+                Path foldersBaseDir = getController().getFolderRepository().getFoldersBasedir();
                 if (newDirectory.equals(foldersBaseDir)) {
                     // Can't move a folder to the base directory.
                     DialogFactory.genericDialog(getController(),
@@ -643,7 +645,7 @@ public class SettingsTab extends PFUIComponent {
                 if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
                     .getValueBoolean(getController()))
                 {
-                    if (!newDirectory.getParentFile().equals(
+                    if (!newDirectory.getParent().equals(
                         getController().getFolderRepository()
                             .getFoldersBasedir()))
                     {
@@ -703,7 +705,7 @@ public class SettingsTab extends PFUIComponent {
     /**
      * Move the directory.
      */
-    public void moveDirectory(File originalDirectory, File newDirectory,
+    public void moveDirectory(Path originalDirectory, Path newDirectory,
         boolean moveContent)
     {
         if (!newDirectory.equals(originalDirectory)) {
@@ -740,13 +742,13 @@ public class SettingsTab extends PFUIComponent {
      * @param newDirectory
      * @return true if the user wishes to move.
      */
-    private boolean shouldMoveLocal(File newDirectory) {
+    private boolean shouldMoveLocal(Path newDirectory) {
         String title = Translation
             .getTranslation("settings_tab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
             "settings_tab.confirm_local_folder_move.text", folder
-                .getCommitOrLocalDir().getAbsolutePath(), newDirectory
-                .getAbsolutePath());
+                .getCommitOrLocalDir().toAbsolutePath().toString(), newDirectory
+                .toAbsolutePath().toString());
 
         return DialogFactory.genericDialog(getController(), title, message,
             new String[]{Translation.getTranslation("general.continue"),
@@ -761,17 +763,17 @@ public class SettingsTab extends PFUIComponent {
      * @param newDirectory
      * @return
      */
-    private boolean checkNewLocalFolder(File newDirectory) {
+    private boolean checkNewLocalFolder(Path newDirectory) {
 
         // Warn if target directory is not empty.
-        if (newDirectory != null && newDirectory.exists()
-            && newDirectory.listFiles().length > 0)
+        if (newDirectory != null && Files.exists(newDirectory)
+            && PathUtils.getNumberOfSiblings(newDirectory) > 0)
         {
             int result = DialogFactory.genericDialog(getController(),
                 Translation
                     .getTranslation("settings_tab.folder_not_empty.title"),
                 Translation.getTranslation("settings_tab.folder_not_empty",
-                    newDirectory.getAbsolutePath()),
+                    newDirectory.toAbsolutePath().toString()),
                 new String[]{Translation.getTranslation("general.continue"),
                     Translation.getTranslation("general.cancel")}, 1,
                 GenericDialogType.WARN); // Default is cancel.
@@ -793,14 +795,16 @@ public class SettingsTab extends PFUIComponent {
      * @param newDirectory
      * @return
      */
-    private Object transferFolder(boolean moveContent, File originalDirectory,
-        File newDirectory)
+    private Object transferFolder(boolean moveContent, Path originalDirectory,
+        Path newDirectory)
     {
         try {
 
             // Copy the files to the new local base
-            if (!newDirectory.exists()) {
-                if (!newDirectory.mkdirs()) {
+            if (Files.notExists(newDirectory)) {
+                try {
+                    Files.createDirectories(newDirectory);
+                } catch (IOException ioe) {
                     throw new IOException("Failed to create directory: "
                         + newDirectory);
                 }
@@ -812,16 +816,16 @@ public class SettingsTab extends PFUIComponent {
 
             // Move it.
             if (moveContent) {
-                FileUtils.recursiveMove(originalDirectory, newDirectory);
+                PathUtils.recursiveMove(originalDirectory, newDirectory);
             }
 
-            File commitDir = null;
+            Path commitDir = null;
             boolean hasCommitDir = folder.getCommitDir() != null;
             if (hasCommitDir) {
                 commitDir = newDirectory;
-                newDirectory = new File(newDirectory,
+                newDirectory = newDirectory.resolve(
                     Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
-                FileUtils.setAttributesOnWindows(newDirectory, true, true);
+                PathUtils.setAttributesOnWindows(newDirectory, true, true);
             }
 
             // Remember patterns if content not moving.
@@ -1079,11 +1083,11 @@ public class SettingsTab extends PFUIComponent {
     {
 
         private final boolean moveContent;
-        private final File originalDirectory;
-        private final File newDirectory;
+        private final Path originalDirectory;
+        private final Path newDirectory;
 
         MyActivityVisualizationWorker(boolean moveContent,
-            File originalDirectory, File newDirectory)
+            Path originalDirectory, Path newDirectory)
         {
             super(getUIController());
             this.moveContent = moveContent;
@@ -1329,7 +1333,7 @@ public class SettingsTab extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) scriptModel.getValue();
             JFileChooser chooser = DialogFactory.createFileChooser();
-            chooser.setSelectedFile(new File(initial));
+            chooser.setSelectedFile(Paths.get(initial).toFile());
             int res = chooser
                 .showDialog(getUIController().getMainFrame().getUIComponent(),
                     Translation.getTranslation("general.select"));

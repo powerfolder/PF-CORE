@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: ReceivedInvitationPanel.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -156,7 +156,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 invitation.getInvitor());
 
             return new ChooseDiskLocationPanel(getController(), invitation
-                .getSuggestedLocalBase(getController()).getAbsolutePath(),
+                .getSuggestedLocalBase(getController()).toAbsolutePath().toString(),
                 new FolderCreatePanel(getController()));
         }
     }

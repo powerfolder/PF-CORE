@@ -19,13 +19,13 @@
 */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
 import java.io.IOException;
-
-import org.apache.commons.io.FileUtils;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -37,13 +37,13 @@ public class DetectHardwareFailure extends ControllerTestCase {
 
         setupTestFolder(SyncProfile.HOST_FILES);
         
-        File localbase = getFolder().getLocalBase();
+        Path localbase = getFolder().getLocalBase();
         // create 100 random files
         for (int i = 0; i < 100; i++) {
             TestHelper.createRandomFile(localbase);
         }
-        File sub = new File(localbase, "sub");
-        sub.mkdir();
+        Path sub = localbase.resolve("sub");
+        Files.createDirectories(sub);
 
         // create 100 random files in sub folder
         for (int i = 0; i < 100; i++) {
@@ -55,7 +55,7 @@ public class DetectHardwareFailure extends ControllerTestCase {
         scanFolder(getFolder());
         assertEquals(200, getFolder().getKnownFiles().size());
         // now delete the folder :-D
-        FileUtils.deleteDirectory(getFolder().getLocalBase());
+        PathUtils.recursiveDelete(getFolder().getLocalBase());
         
         scanFolder(getFolder());
         assertEquals(200, getFolder().getKnownFiles().size());

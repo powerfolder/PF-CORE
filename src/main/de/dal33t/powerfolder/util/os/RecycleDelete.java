@@ -15,11 +15,13 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: RecycleDelete.java 4282 2008-06-16 03:25:09Z tot $
 */
 package de.dal33t.powerfolder.util.os;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import de.dal33t.powerfolder.util.os.Win32.RecycleDeleteImpl;
 
@@ -74,8 +76,8 @@ public class RecycleDelete {
             throw new UnsupportedOperationException(
                 "delete not supported on this platform");
         }
-        File file = new File(filename);
-        if (!file.exists()) {
+        Path file = Paths.get(filename);
+        if (Files.notExists(file)) {
             throw new IllegalStateException("file does not exists");
         }
         RecycleDeleteImpl.delete(filename);
@@ -102,8 +104,8 @@ public class RecycleDelete {
             throw new UnsupportedOperationException(
                 "delete not supported on this platform");
         }
-        File file = new File(filename);
-        if (!file.exists()) {
+        Path file = Paths.get(filename);
+        if (Files.notExists(file)) {
             throw new IllegalStateException("file does not exists");
         }
         RecycleDeleteImpl.delete(filename, confirm);
@@ -139,8 +141,8 @@ public class RecycleDelete {
             throw new UnsupportedOperationException(
                 "delete with progress bar not supported on this platform");
         }
-        File file = new File(filename);
-        if (!file.exists()) {
+        Path file = Paths.get(filename);
+        if (Files.notExists(file)) {
             throw new IllegalStateException("file does not exists");
         }
         RecycleDeleteImpl.delete(filename, confirm, showProgress);

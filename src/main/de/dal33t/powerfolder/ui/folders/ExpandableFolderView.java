@@ -27,8 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -95,8 +95,8 @@ import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.WebDAV;
@@ -952,7 +952,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             transferMode = Translation.getTranslation(
                 "exp_folder_view.transfer_mode", folder.getSyncProfile()
                     .getName());
-            String path = folder.getCommitOrLocalDir().getAbsolutePath();
+            String path = folder.getCommitOrLocalDir().toAbsolutePath().toString();
             if (path.length() >= 35) {
                 path = path.substring(0, 15) + "..."
                     + path.substring(path.length() - 15, path.length());
@@ -1146,7 +1146,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void openExplorer() {
-        FileUtils.openFile(folder.getCommitOrLocalDir());
+        PathUtils.openFile(folder.getCommitOrLocalDir());
     }
 
     /**
@@ -1230,7 +1230,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                                 getController().getIOProvider().startIO(
                                     new Runnable() {
                                         public void run() {
-                                            FileUtils.openFile(new File(part));
+                                            PathUtils.openFile(Paths.get(part));
                                         }
                                     });
 

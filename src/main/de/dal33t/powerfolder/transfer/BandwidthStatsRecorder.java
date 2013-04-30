@@ -19,13 +19,26 @@
 */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.Reject;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-
-import java.util.*;
-import java.io.*;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Class to allow the transfer manager to record bandwidth stats.
@@ -54,34 +67,22 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
     @SuppressWarnings("unchecked")
     private void loadStats() {
         String filename = getController().getConfigName() + ".stats";
-        File file = new File(Controller.getMiscFilesLocation(), filename);
-        if (file.exists()) {
+        Path file = Controller.getMiscFilesLocation().resolve(filename);
+        if (Files.exists(file)) {
             logFiner("Loading stats");
-            ObjectInputStream inputStream = null;
-            try {
-                inputStream = new ObjectInputStream(
-                    new BufferedInputStream(new FileInputStream(file)));
+            try (ObjectInputStream inputStream = new ObjectInputStream(
+                new BufferedInputStream(Files.newInputStream(file))))
+            {
                 Map<StatKey, StatValue> stats = (Map<StatKey, StatValue>) inputStream
                     .readObject();
                 coalescedStats.putAll(stats);
-                inputStream.close();
                 logFine("Loaded " + stats.size() + " stats.");
-            } catch (FileNotFoundException e) {
-                logSevere("FileNotFoundException", e);
             } catch (IOException e) {
                 logSevere("IOException", e);
             } catch (ClassNotFoundException e) {
                 logSevere("ClassNotFoundException", e);
             } catch (ClassCastException e) {
                 logSevere("ClassCastException", e);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
-                }
             }
         } else {
             logFine("No stats found - probably first start of PF.");
@@ -158,25 +159,16 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
     public void persistStats() {
         synchronized (coalescedStats) {
             String filename = getController().getConfigName() + ".stats";
-            File file = new File(Controller.getMiscFilesLocation(), filename);
-            ObjectOutputStream outputStream = null;
-            try {
+            Path file = Controller.getMiscFilesLocation().resolve(filename);
+            try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(file))))
+            {
                 logInfo("There are " + coalescedStats.size() + " stats to persist.");
-                outputStream = new ObjectOutputStream(new BufferedOutputStream(
-                    new FileOutputStream(file)));
                 outputStream.writeUnshared(coalescedStats);
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {
                 logSevere("IOException", e);
-            } finally {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
-                }
             }
         }
     }

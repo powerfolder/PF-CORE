@@ -19,8 +19,10 @@ s * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  */
 package de.dal33t.powerfolder.util.os.mac;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -77,11 +79,17 @@ public class MacUtils extends Loggable {
 
     private boolean init() {
         String fileName = "placeshelper";
-        File targetFile = new File(Controller.getTempFilesLocation(), fileName);
-        targetFile.deleteOnExit();
-        File file = Util.copyResourceTo("mac/" + fileName, null, targetFile,
+        Path targetFile = Controller.getTempFilesLocation().resolve(fileName);
+        try {
+            Files.delete(targetFile);
+        } catch (IOException ioe) {
+            LOG.warning("Unable to delete the file '"
+                + targetFile.toAbsolutePath() + "'");
+            return false;
+        }
+        Path file = Util.copyResourceTo("mac/" + fileName, null, targetFile,
             false, false);
-        placesHelperPath = file.getAbsolutePath();
+        placesHelperPath = file.toAbsolutePath().toString();
         try {
             Runtime.getRuntime().exec(
                 new String[]{"chmod", "+x", placesHelperPath});
@@ -89,7 +97,7 @@ public class MacUtils extends Loggable {
             LOG.warning("Unable to initialize mac helper files. " + e);
             return false;
         }
-        return file.exists();
+        return Files.exists(file);
 
     }
 
@@ -105,9 +113,9 @@ public class MacUtils extends Loggable {
         throws IOException
     {
         if (setup) {
-            File baseDir = controller.getFolderRepository()
+            Path baseDir = controller.getFolderRepository()
                 .getFoldersBasedir();
-            createPlacesLink(baseDir.getAbsolutePath());
+            createPlacesLink(baseDir.toAbsolutePath().toString());
         } else {
             // TODO Remove link
         }
@@ -117,22 +125,22 @@ public class MacUtils extends Loggable {
         throws IOException
     {
         if (setup) {
-            File pfile = new File(new File(
-                System.getProperty("java.class.path")).getParentFile(),
-                controller.getDistribution().getBinaryName() + ".app");
-            if (!pfile.exists()) {
-                pfile = new File(controller.getDistribution().getBinaryName()
+            Path pfile = Paths.get(System.getProperty("java.class.path"))
+                .getParent()
+                .resolve(controller.getDistribution().getBinaryName() + ".app");
+            if (Files.notExists(pfile)) {
+                pfile = Paths.get(controller.getDistribution().getBinaryName()
                     + ".app");
-                if (!pfile.exists()) {
+                if (Files.notExists(pfile)) {
                     throw new IOException("Couldn't find executable! "
                         + "Note: Setting up a startup shortcut only works "
                         + "when "
                         + controller.getDistribution().getBinaryName()
-                        + " was started by " + pfile.getName());
+                        + " was started by " + pfile.getFileName());
                 }
             }
             Runtime.getRuntime().exec(
-                new String[]{placesHelperPath, "s", pfile.getAbsolutePath()});
+                new String[]{placesHelperPath, "s", pfile.toAbsolutePath().toString()});
         } else {
             // TODO Remove link
         }

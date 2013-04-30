@@ -19,23 +19,25 @@
 */
 package de.dal33t.powerfolder.ui.util;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.ImageReaderSpi;
-import javax.imageio.spi.ImageWriterSpi;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.spi.ImageWriterSpi;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  * Class with some convenience methods for image handeling.
@@ -105,18 +107,18 @@ public class ImageSupport {
      * @param file
      * @return A Dimension holding the width and height of this image
      */
-    public static Dimension getResolution(File file) {
-        if (!isReadSupportedImage(file.getName())) {
+    public static Dimension getResolution(Path file) {
+        if (!isReadSupportedImage(file.getFileName().toString())) {
             throw new IllegalStateException("unsuported image format: " + file);
         }
-        if (!file.exists()) {
+        if (Files.notExists(file)) {
             throw new IllegalStateException("File must exists: " + file);
         }
         try {
-            int index = file.getName().lastIndexOf('.');
+            int index = file.getFileName().toString().lastIndexOf('.');
             if (index > 0) {
-                String fileSuffix = file.getName().substring(index + 1,
-                    file.getName().length());
+                String fileSuffix = file.getFileName().toString().substring(index + 1,
+                    file.getFileName().toString().length());
                 ImageReader reader = getReader(fileSuffix);
                 ImageInputStream iis = ImageIO.createImageInputStream(file);
                 reader.setInput(iis, true);
@@ -128,23 +130,26 @@ public class ImageSupport {
                 return new Dimension(width, height);
             }
         } catch (Exception e) {
-            log.log(Level.FINER, "Unable to read image: " + file.getAbsolutePath(), e);
+            log.log(Level.FINER, "Unable to read image: " + file.toAbsolutePath(), e);
         }
         return null;
     }
 
-    public static BufferedImage getImage(File file) {
-        if (!isReadSupportedImage(file.getName())) {
+    public static BufferedImage getImage(Path file) {
+        if (!isReadSupportedImage(file.getFileName().toString())) {
             throw new IllegalStateException("unsuported image format: " + file);
         }
-        if (!file.exists()) {
+        if (Files.exists(file)) {
             throw new IllegalStateException("File must exists: " + file);
         }
         try {
-            int index = file.getName().lastIndexOf('.');
+            int index = file.getFileName().toString().lastIndexOf('.');
             if (index > 0) {
-                String fileSuffix = file.getName().substring(index + 1,
-                    file.getName().length());
+                String fileSuffix = file
+                    .getFileName()
+                    .toString()
+                    .substring(index + 1,
+                        file.getFileName().toString().length());
                 ImageReader reader = getReader(fileSuffix);
                 ImageInputStream iis = ImageIO.createImageInputStream(file);
                 reader.setInput(iis, true);
@@ -155,7 +160,7 @@ public class ImageSupport {
                 return image;
             }
         } catch (Exception e) {
-            log.log(Level.FINER, "Unable to read image: " + file.getAbsolutePath(), e);
+            log.log(Level.FINER, "Unable to read image: " + file.toAbsolutePath(), e);
         }
         return null;
     }

@@ -19,14 +19,16 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.util.test.TestHelper;
-import de.dal33t.powerfolder.util.test.Condition;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import java.io.File;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Test case to ensure that a file is re-downloaded if it is removed from the db
@@ -40,7 +42,7 @@ public class RedownloadTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
     }
 
-    public void testRedownload() {
+    public void testRedownload() throws IOException {
 
         final Folder folderBart = getFolderAtBart();
 
@@ -65,12 +67,15 @@ public class RedownloadTest extends TwoControllerTestCase {
 
         // Delete the file at Bart.
         FileInfo fileInfoBart = folderBart.getKnownFiles().iterator().next();
-        final File testFileBart = fileInfoBart.getDiskFile(getContollerBart()
+        final Path testFileBart = fileInfoBart.getDiskFile(getContollerBart()
             .getFolderRepository());
-        assertTrue("Bart file should exist", testFileBart.exists());
-        assertTrue("Unable to deleted file at bart: " + testFileBart,
-            testFileBart.delete());
-        assertFalse("Bart file should not exist", testFileBart.exists());
+        assertTrue("Bart file should exist", Files.exists(testFileBart));
+        try {
+            Files.delete(testFileBart);
+        } catch (IOException ioe) {
+            fail(ioe.getMessage());
+        }
+        assertFalse("Bart file should not exist", Files.exists(testFileBart));
 
         scanFolder(folderBart);
         scanFolder(folderLisa);
@@ -95,7 +100,7 @@ public class RedownloadTest extends TwoControllerTestCase {
         // Wait for copy.
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return testFileBart.exists()
+                return Files.exists(testFileBart)
                     && folderBart.getKnownItemCount() == 1;
             }
         });

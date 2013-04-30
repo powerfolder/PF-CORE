@@ -20,14 +20,14 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,22 +57,23 @@ public class CheckForDupeFiles extends TestCase {
 
         assertFalse("Detected duplicate fileinfos in database file",
             checkForDupes(files));
-        writeFileInfos(new File(TestHelper.getTestDir(),
+        writeFileInfos(TestHelper.getTestDir().resolve(
             "Database-raw-PowerFolder.db"), files);
         cleanMemberInfos(files);
         assertFalse("Detected duplicate fileinfos in database file",
             checkForDupes(files));
-        writeFileInfos(new File(TestHelper.getTestDir(),
+        writeFileInfos(TestHelper.getTestDir().resolve(
             "Database-cleaned-PowerFolder.db"), files);
     }
 
-    private void writeFileInfos(File file, FileInfo[] files)
+    private void writeFileInfos(Path file, FileInfo[] files)
         throws FileNotFoundException, IOException
     {
-        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(
-            file));
-        out.writeObject(files);
-        out.close();
+        try (ObjectOutputStream out = new ObjectOutputStream(
+            Files.newOutputStream(file)))
+         {
+            out.writeObject(files);
+        }
     }
 
     private static boolean checkForDupes(FileInfo[] list) {

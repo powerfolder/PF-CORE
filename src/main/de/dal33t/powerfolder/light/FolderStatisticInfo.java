@@ -21,13 +21,14 @@ package de.dal33t.powerfolder.light;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +40,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TFileOutputStream;
 
 /**
  * Contains the statistic calculation result / infos about one folder. This
@@ -256,13 +255,11 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
      * @param out
      * @throws IOException
      */
-    public boolean save(File file) {
-        OutputStream fout = null;
+    public boolean save(Path file) {
         if (isFiner()) {
             logFiner("Writing folder " + folder.getName() + " stats to " + file);
         }
-        try {
-            fout = new TFileOutputStream(file);
+        try (OutputStream fout = Files.newOutputStream(file)) {
             ObjectOutputStream oout = new ObjectOutputStream(
                 new BufferedOutputStream(fout));
             oout.writeObject(this);
@@ -270,38 +267,22 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         } catch (Exception e) {
             logWarning("Unable to store stats for folder " + folder.getName()
                 + " to " + file + ". " + e);
-        } finally {
-            if (fout != null) {
-                try {
-                    fout.close();
-                } catch (IOException e) {
-                }
-            }
         }
 
         return true;
     }
 
-    public static FolderStatisticInfo load(File file) {
-        if (!file.exists()) {
+    public static FolderStatisticInfo load(Path file) {
+        if (Files.notExists(file)) {
             return null;
         }
-        InputStream fin = null;
-        try {
-            fin = new TFileInputStream(file);
+        try (InputStream fin = Files.newInputStream(file)){
             ObjectInputStream oin = new ObjectInputStream(
                 new BufferedInputStream(fin));
             return (FolderStatisticInfo) oin.readObject();
         } catch (Exception e) {
             Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
                 "Unable to read folder stats from " + file + ". " + e);
-        } finally {
-            if (fin != null) {
-                try {
-                    fin.close();
-                } catch (IOException e) {
-                }
-            }
         }
         return null;
     }

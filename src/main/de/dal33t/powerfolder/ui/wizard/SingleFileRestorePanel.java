@@ -19,38 +19,54 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.ui.wizard.data.SingleFileRestoreItem;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTableModel;
-import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTable;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.clientserver.FolderService;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FileArchiver;
-import de.dal33t.powerfolder.light.FileInfo;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.PanelBuilder;
-
-import java.awt.event.*;
-import java.util.List;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.awt.*;
-import java.io.File;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import jwf.WizardPanel;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.wizard.data.SingleFileRestoreItem;
+import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTable;
+import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTableModel;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Call this class via PFWizard.
@@ -161,7 +177,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         bg.add(alternateNameRadio);
 
         originalRadio.setSelected(true);
-        originalLabel.setText(fileInfoToRestore.getDiskFile(getController().getFolderRepository()).getParent());
+        originalLabel.setText(fileInfoToRestore.getDiskFile(getController().getFolderRepository()).getParent().toString());
         originalRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateLocations();
@@ -315,8 +331,8 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         if (alternateLocationRadio.isSelected()) {
             String alternateDirectory = alternateLocationTF.getText();
             if (alternateDirectory != null && alternateDirectory.trim().length() > 0) {
-                File alternateFile = new File(alternateDirectory.trim());
-                if (alternateFile.isDirectory() && alternateFile.canWrite()) {
+                Path alternateFile = Paths.get(alternateDirectory.trim());
+                if (Files.isDirectory(alternateFile) && Files.isWritable(alternateFile)) {
                     return new FileRestoringPanel(getController(), folder, restoreItem.getFileInfo(), alternateFile);
                 }
             }
@@ -428,14 +444,14 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                     updateLocations();
                 }
             });
-            List<File> files = DialogFactory.chooseDirectory(getController().getUIController(), alternateLocationTF.getText(),
+            List<Path> files = DialogFactory.chooseDirectory(getController().getUIController(), alternateLocationTF.getText(),
                     false);
             if (files.isEmpty()) {
                 return;
             }
 
-            File file = files.get(0);
-            alternateLocationTF.setText(file.getPath());
+            Path file = files.get(0);
+            alternateLocationTF.setText(file.getParent().toString());
             updateLocations();
         }
     }

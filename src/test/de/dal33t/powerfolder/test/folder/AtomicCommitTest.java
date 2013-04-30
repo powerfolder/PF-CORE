@@ -19,12 +19,12 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Visitor;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -35,8 +35,8 @@ public class AtomicCommitTest extends TwoControllerTestCase {
     public void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
-        File lisaDir = new File(TESTFOLDER_BASEDIR_LISA, ".temp-dir");
-        File bartDir = TESTFOLDER_BASEDIR_BART;
+        Path lisaDir = TESTFOLDER_BASEDIR_LISA.resolve(".temp-dir");
+        Path bartDir = TESTFOLDER_BASEDIR_BART;
         joinTestFolder(bartDir, lisaDir, SyncProfile.MANUAL_SYNCHRONIZATION);
         getFolderAtLisa().setCommitDir(TESTFOLDER_BASEDIR_LISA);
     }
@@ -54,9 +54,9 @@ public class AtomicCommitTest extends TwoControllerTestCase {
         assertEquals(nFiles, v.count);
 
         // System subdir
-        assertEquals(1, getFolderAtLisa().getLocalBase().list().length);
+        assertEquals(1, getFolderAtLisa().getLocalBase().toFile().list().length);
         // TEMP subdir
-        assertEquals(1, getFolderAtLisa().getCommitDir().list().length);
+        assertEquals(1, getFolderAtLisa().getCommitDir().toFile().list().length);
         // Create some garbage/oldstuff
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtLisa().getCommitDir());
@@ -67,18 +67,18 @@ public class AtomicCommitTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getCommitDir().list().length == nFiles + 1;
+                return getFolderAtLisa().getCommitDir().toFile().list().length == nFiles + 1;
             }
 
             public String message() {
                 return "Files mismatch at lisas commit dir. Got: "
-                    + getFolderAtLisa().getCommitDir().list().length
+                    + getFolderAtLisa().getCommitDir().toFile().list().length
                     + ". Expected: " + (nFiles + 1);
             }
         });
 
         // Reset/New
-        FileUtils.recursiveDelete(getFolderAtBart().getLocalBase());
+        PathUtils.recursiveDelete(getFolderAtBart().getLocalBase());
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
@@ -86,12 +86,12 @@ public class AtomicCommitTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getCommitDir().list().length == nFiles + 1;
+                return getFolderAtLisa().getCommitDir().toFile().list().length == nFiles + 1;
             }
 
             public String message() {
                 return "Files mismatch at lisas commit dir. Got: "
-                    + getFolderAtLisa().getCommitDir().list().length
+                    + getFolderAtLisa().getCommitDir().toFile().list().length
                     + ". Expected: " + (nFiles + 1);
             }
         });

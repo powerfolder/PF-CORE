@@ -25,8 +25,9 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 import javax.swing.AbstractAction;
@@ -67,12 +68,12 @@ import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.SwingWorker;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -324,19 +325,19 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         for (DiskItem diskItem : diskItems) {
             if (diskItem instanceof DirectoryInfo) {
                 DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
-                File file = directoryInfo.getDiskFile(getController()
+                Path file = directoryInfo.getDiskFile(getController()
                     .getFolderRepository());
-                if (file.exists()) {
-                    FileUtils.openFile(file);
+                if (Files.exists(file)) {
+                    PathUtils.openFile(file);
                 }
             } else if (diskItem instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) diskItem;
-                File file = fileInfo.getDiskFile(getController()
+                Path file = fileInfo.getDiskFile(getController()
                     .getFolderRepository());
-                if (file != null && file.exists()) {
+                if (file != null && Files.exists(file)) {
                     // Open file ...
                     table.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    FileUtils.openFile(file);
+                    PathUtils.openFile(file);
                     table.setCursor(Cursor.getDefaultCursor());
                     // ... and clear completed download status.
                     TransferManager transferManager = getController()

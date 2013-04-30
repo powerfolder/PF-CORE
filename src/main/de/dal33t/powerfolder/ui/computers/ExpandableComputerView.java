@@ -26,14 +26,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -42,10 +48,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.event.ExpansionEvent;
-import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
@@ -57,13 +60,17 @@ import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.ExpandableView;
-import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
+import de.dal33t.powerfolder.ui.event.ExpansionEvent;
+import de.dal33t.powerfolder.ui.event.ExpansionListener;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.*;
 
 /**
  * Class to render expandable view of a folder.
@@ -665,7 +672,7 @@ public class ExpandableComputerView extends PFUIComponent implements
                 return false;
             }
 
-            final File file = getFileList(support);
+            final Path file = getFileList(support);
             if (file == null) {
                 return false;
             }
@@ -688,16 +695,16 @@ public class ExpandableComputerView extends PFUIComponent implements
          * @param support
          * @return
          */
-        private File getFileList(TransferSupport support) {
+        private Path getFileList(TransferSupport support) {
             Transferable t = support.getTransferable();
             try {
                 List list = (List) t
                     .getTransferData(DataFlavor.javaFileListFlavor);
                 if (list.size() == 1) {
                     for (Object o : list) {
-                        if (o instanceof File) {
-                            File file = (File) o;
-                            if (!file.isDirectory()) {
+                        if (o instanceof Path) {
+                            Path file = (Path) o;
+                            if (Files.isDirectory(file)) {
                                 return file;
                             }
                         }

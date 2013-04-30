@@ -19,11 +19,11 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -51,7 +51,7 @@ public class FindSameFilesTest extends TwoControllerTestCase {
     public void testFilelistAdapt() throws IOException {
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
 
-        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), "TestFile.txt");
         scanFolder(getFolderAtBart());
         // File should be found. version: 0
@@ -74,9 +74,9 @@ public class FindSameFilesTest extends TwoControllerTestCase {
             .getVersion());
 
         // File gets copied to lisa.
-        File testFileCopy = new File(getFolderAtLisa().getLocalBase(),
+        Path testFileCopy = getFolderAtLisa().getLocalBase().resolve(
             "TestFile.txt");
-        FileUtils.copyFile(testFile, testFileCopy);
+        Files.copy(testFile, testFileCopy);
 
         // somehow the copie process is not complete sometimes what results in
         // different filesizes!

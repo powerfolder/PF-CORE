@@ -15,16 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: WinUtils.java 20555 2012-12-25 04:15:08Z glasgow $
  */
 package de.dal33t.powerfolder.util.os.Win32;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
@@ -159,20 +161,21 @@ public class WinUtils extends Loggable {
         throws IOException
     {
         String userHome = System.getProperty("user.home");
-        File linksDir = new File(userHome, "Links");
-        if (!linksDir.exists()) {
+        Path linksDir = Paths.get(userHome, "Links");
+        if (Files.notExists(linksDir)) {
             logWarning("Could not locate the Links directory in " + userHome);
             return;
         }
-        File baseDir = controller.getFolderRepository().getFoldersBasedir();
-        File shortCut = new File(linksDir, baseDir.getName()
+        Path baseDir = controller.getFolderRepository()
+            .getFoldersBasedir();
+        Path shortCut = linksDir.resolve(baseDir.getFileName().toString()
             + Constants.LINK_EXTENSION);
         if (setup) {
-            ShellLink link = new ShellLink(null, baseDir.getName(),
-                baseDir.getAbsolutePath(), null);
-            createLink(link, shortCut.getAbsolutePath());
+            ShellLink link = new ShellLink(null, baseDir.getFileName().toString(),
+                baseDir.toAbsolutePath().toString(), null);
+            createLink(link, shortCut.toAbsolutePath().toString());
         } else {
-            shortCut.delete();
+            Files.delete(shortCut);
         }
     }
     
@@ -180,92 +183,101 @@ public class WinUtils extends Loggable {
         if (!OSUtil.isWindowsSystem()) {
             return;
         }
-        String userHome = System.getProperty("user.home");
-        File linksDir = new File(userHome, "Links");
-        if (!linksDir.exists()) {
+        Path linksDir = Paths.get(System.getProperty("user.home"), "Links");
+        if (Files.notExists(linksDir)) {
             return;
         }
-        File shortCut = new File(linksDir, shortcutName
+        Path shortCut = linksDir.resolve(shortcutName
             + Constants.LINK_EXTENSION);
-        shortCut.delete();
+        try {
+            Files.delete(shortCut);
+        } catch (IOException ioe) {
+            LOG.warning(ioe.getMessage());
+        }
     }
 
     public static boolean isPFLinks(String shortcutName) {
         if (!OSUtil.isWindowsSystem()) {
             return false;
         }
-        String userHome = System.getProperty("user.home");
-        File linksDir = new File(userHome, "Links");
-        if (!linksDir.exists()) {
+        Path linksDir = Paths.get(System.getProperty("user.home"), "Links");
+        if (Files.notExists(linksDir)) {
             return false;
         }
-        File shortCut = new File(linksDir, shortcutName
+        Path shortCut = linksDir.resolve(shortcutName
             + Constants.LINK_EXTENSION);
-        return shortCut.exists();
+
+        return Files.exists(shortCut);
     }
 
     public void setPFStartup(boolean setup, Controller controller)
         throws IOException
     {
-        File pfile = new File(
-            new File(System.getProperty("java.class.path")).getParentFile(),
-            controller.getDistribution().getBinaryName() + ".exe");
-        if (!pfile.exists()) {
-            pfile = new File(controller.getDistribution().getBinaryName()
-                + ".exe");
-            if (!pfile.exists()) {
+        Path pfile = Paths.get(System.getProperty("java.class.path"))
+            .getParent()
+            .resolve(controller.getDistribution().getBinaryName() + ".exe");
+        if (Files.notExists(pfile)) {
+            pfile = Paths.get(controller.getDistribution().getBinaryName()
+                + ".exe").toAbsolutePath();
+            if (Files.notExists(pfile)) {
                 throw new IOException("Couldn't find executable! "
                     + "Note: Setting up a startup shortcut only works "
                     + "when " + controller.getDistribution().getBinaryName()
-                    + " was started by " + pfile.getName());
+                    + " was started by " + pfile.getFileName());
             }
             return;
         }
-        logFiner("Found " + pfile.getAbsolutePath());
+        logFiner("Found " + pfile.toAbsolutePath());
         String shortCutname = controller.getDistribution().getName()
             + Constants.LINK_EXTENSION;
-        File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
+        Path pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
-        File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
+        Path pflnkAll = Paths.get(getSystemFolderPath(CSIDL_COMMON_STARTUP,
             false), shortCutname);
         if (setup) {
             ShellLink sl = new ShellLink("--minimized",
                 Translation.getTranslation("winutils.shortcut.description"),
-                pfile.getAbsolutePath(), pfile.getParent());
-            logInfo("Creating startup link: " + pflnk.getAbsolutePath());
-            createLink(sl, pflnk.getAbsolutePath());
+                pfile.toAbsolutePath().toString(), pfile.getParent().toString());
+            logInfo("Creating startup link: " + pflnk.toAbsolutePath());
+            createLink(sl, pflnk.toAbsolutePath().toString());
         } else {
             logInfo("Deleting startup link.");
-            pflnk.delete();
-            pflnkAll.delete();
+            try {
+                Files.delete(pflnk);
+                Files.delete(pflnkAll);
 
-            // PFC-2164: Fallback. Also delete binary name links
-            shortCutname = controller.getDistribution().getBinaryName()
-                + Constants.LINK_EXTENSION;
-            pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
-                shortCutname);
-            pflnkAll = new File(
-                getSystemFolderPath(CSIDL_COMMON_STARTUP, false), shortCutname);
-            pflnk.delete();
-            pflnkAll.delete();
+                // PFC-2164: Fallback. Also delete binary name links
+                shortCutname = controller.getDistribution().getBinaryName()
+                    + Constants.LINK_EXTENSION;
+                pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
+                    shortCutname);
+                pflnkAll = Paths.get(
+                    getSystemFolderPath(CSIDL_COMMON_STARTUP, false), shortCutname);
+                
+                Files.delete(pflnk);
+                Files.delete(pflnkAll);
+            } catch (IOException ioe) {
+                logInfo("Could not delete files '" + pflnk.toAbsolutePath()
+                    + "' and '" + pflnkAll.toAbsolutePath() + "'");
+            }
         }
     }
 
     public boolean isPFStartup(Controller controller) {
         String shortCutname = controller.getDistribution().getName()
             + Constants.LINK_EXTENSION;
-        File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
+        Path pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
-        File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
+        Path pflnkAll = Paths.get(getSystemFolderPath(CSIDL_COMMON_STARTUP,
             false), shortCutname);
         String shortCutname2 = controller.getDistribution().getBinaryName()
             + Constants.LINK_EXTENSION;
-        File pflnk2 = new File(getSystemFolderPath(CSIDL_STARTUP, false),
+        Path pflnk2 = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname2);
-        File pflnkAll2 = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
+        Path pflnkAll2 = Paths.get(getSystemFolderPath(CSIDL_COMMON_STARTUP,
             false), shortCutname2);
-        return pflnk.exists() || pflnkAll.exists() || pflnk2.exists()
-            || pflnkAll2.exists();
+        return Files.exists(pflnk) || Files.exists(pflnkAll) || Files.exists(pflnk2)
+            || Files.exists(pflnkAll2);
     }
 
     /**
@@ -274,25 +286,25 @@ public class WinUtils extends Loggable {
      * 
      * @return the path on a Windows installation or null if unable to resolve.
      */
-    public static File getProgramInstallationPath() {
+    public static Path getProgramInstallationPath() {
         String programFiles = System.getenv("PROGRAMFILES");
         if (StringUtils.isBlank(programFiles)) {
             LOG.warning("Unable find installation path. Program files directory not found");
             return null;
         }
-        File f = new File(programFiles + "/PowerFolder.com/PowerFolder");
-        if (f.exists()) {
+        Path f = Paths.get(programFiles + "/PowerFolder.com/PowerFolder");
+        if (Files.exists(f)) {
             return f;
         }
 
-        f = new File(programFiles + " (x86)/PowerFolder.com/PowerFolder");
-        if (f.exists()) {
+        f = Paths.get(programFiles + " (x86)/PowerFolder.com/PowerFolder");
+        if (Files.exists(f)) {
             return f;
         }
         // Try harder
         try {
-            f = new File("").getCanonicalFile();
-            if (f.exists()) {
+            f = Paths.get("").toRealPath();
+            if (Files.exists(f)) {
                 return f;
             }
         } catch (IOException e) {
@@ -333,8 +345,8 @@ public class WinUtils extends Loggable {
             // Source:
             // http://en.wikipedia.org/wiki/Environment_variable#Default_Values_on_Microsoft_Windows
             String appDataAllUsers = System.getenv("ProgramData");
-            File dir = new File(appDataAllUsers);
-            if (dir.exists()) {
+            Path dir = Paths.get(appDataAllUsers);
+            if (Files.exists(dir)) {
                 LOG.warning("Retrieved APPDATA (all users) via ENV(ProgramData): "
                     + appDataAllUsers);
                 return appDataAllUsers;
@@ -359,8 +371,8 @@ public class WinUtils extends Loggable {
             String allUsersProfile = System.getenv("ALLUSERSPROFILE");
             String temp = appData.replace(userProfile, "");
             String appDataAllUsers = allUsersProfile + temp;
-            File dir = new File(appDataAllUsers);
-            if (dir.exists()) {
+            Path dir = Paths.get(appDataAllUsers);
+            if (Files.exists(dir)) {
                 LOG.warning("Retrieved APPDATA (all users) via ENV(USERPROFILE/APPDATA/ALLUSERSPROFILE): "
                     + appDataAllUsers);
                 return appDataAllUsers;

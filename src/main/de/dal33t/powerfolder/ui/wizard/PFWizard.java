@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: PFWizard.java 19934 2012-10-14 07:29:40Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -24,7 +24,8 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,9 +267,9 @@ public class PFWizard extends PFUIComponent {
     }
 
     public static void openExistingDirectoryWizard(Controller controller,
-        File directory)
+        Path directory)
     {
-        Reject.ifTrue(directory == null || !directory.exists(),
+        Reject.ifTrue(directory == null || !Files.exists(directory),
             "No directory supplied");
         PFWizard wizard = new PFWizard(controller,
             Translation.getTranslation("wizard.pfwizard.folder_title"));

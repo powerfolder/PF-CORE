@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Base64.java 16506 2011-10-05 14:16:58Z tot $
  */
 package de.dal33t.powerfolder.util;
 
@@ -1212,23 +1212,23 @@ public class Base64 {
         Base64.InputStream bis = null;
         try {
             // Set up some useful variables
-            java.io.File file = new java.io.File(filename);
+            java.nio.file.Path file = java.nio.file.Paths.get(filename);
             byte[] buffer = null;
             int length = 0;
             int numBytes = 0;
 
             // Check for size of file
-            if (file.length() > Integer.MAX_VALUE) {
+            if (java.nio.file.Files.size(file) > Integer.MAX_VALUE) {
                 System.err
                     .println("File is too big for this convenience method ("
-                        + file.length() + " bytes).");
+                        + java.nio.file.Files.size(file) + " bytes).");
                 return null;
             } // end if: file too big for int index
-            buffer = new byte[(int) file.length()];
+            buffer = new byte[(int) java.nio.file.Files.size(file)];
 
             // Open a stream
-            bis = new Base64.InputStream(new java.io.BufferedInputStream(
-                new java.io.FileInputStream(file)), Base64.DECODE);
+            bis = new Base64.InputStream(
+                java.nio.file.Files.newInputStream(file), Base64.DECODE);
 
             // Read until done
             while ((numBytes = bis.read(buffer, length, 4096)) >= 0)
@@ -1265,8 +1265,8 @@ public class Base64 {
         Base64.InputStream bis = null;
         try {
             // Set up some useful variables
-            java.io.File file = new java.io.File(filename);
-            byte[] buffer = new byte[Math.max((int) (file.length() * 1.4), 40)]; // Need
+            java.nio.file.Path file = java.nio.file.Paths.get(filename);
+            byte[] buffer = new byte[Math.max((int) (java.nio.file.Files.size(file) * 1.4), 40)]; // Need
             // max()
             // for
             // math
@@ -1278,8 +1278,8 @@ public class Base64 {
             int numBytes = 0;
 
             // Open a stream
-            bis = new Base64.InputStream(new java.io.BufferedInputStream(
-                new java.io.FileInputStream(file)), Base64.ENCODE);
+            bis = new Base64.InputStream(
+                java.nio.file.Files.newInputStream(file), Base64.ENCODE);
 
             // Read until done
             while ((numBytes = bis.read(buffer, length, 4096)) >= 0)

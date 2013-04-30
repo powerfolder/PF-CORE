@@ -19,8 +19,9 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -58,7 +59,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
      * @throws IOException
      */
     public void testOverwriteToRecycleAndRestore() throws IOException {
-        final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
+        final Path testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
 
         scanFolder(getFolderAtBart());
@@ -73,16 +74,16 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         });
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next();
-        final File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
+        final Path testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
         assertTrue(fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart));
-        assertEquals(testFileBart.length(), testFileLisa.length());
+        assertEquals(Files.size(testFileBart), Files.size(testFileLisa));
 
         TestHelper.waitMilliSeconds(2500);
         // overwrite file at Bart
         TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
-            testFileBart.getName(), new byte[]{6, 5, 6, 7});
+            testFileBart.getFileName().toString(), new byte[]{6, 5, 6, 7});
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
@@ -91,8 +92,12 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
                     .iterator().next();
                 FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
                     .iterator().next();
-                return fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart)
-                    && (testFileBart.length() == testFileLisa.length());
+                try {
+                    return fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart)
+                        && (Files.size(testFileBart) == Files.size(testFileLisa));
+                } catch (IOException ioe) {
+                    return false;
+                }
             }
 
             public String message() {
@@ -128,8 +133,12 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
                     .iterator().next();
                 FileInfo fInfoBart = getFolderAtBart().getKnownFiles()
                     .iterator().next();
-                return fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart)
-                    && (testFileBart.length() == testFileLisa.length());
+                try {
+                    return fInfoLisa.isVersionDateAndSizeIdentical(fInfoBart)
+                        && (Files.size(testFileBart) == Files.size(testFileLisa));
+                } catch (IOException ioe) {
+                    return false;
+                }
             }
 
             public String message() {

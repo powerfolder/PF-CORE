@@ -15,34 +15,43 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: SingleFileTransferDialog.java 18009 2012-02-04 11:46:51Z harry $
  */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Dialog for offering a file to transfer to another computer..
@@ -55,7 +64,7 @@ public class SingleFileTransferDialog extends BaseDialog {
     private JButton transferButton;
     private JButton cancelButton;
 
-    private File file;
+    private Path file;
 
     private JTextField computersText;
     private JButton computersSelectButton;
@@ -66,7 +75,7 @@ public class SingleFileTransferDialog extends BaseDialog {
     /**
      * Constructor.
      */
-    public SingleFileTransferDialog(Controller controller, File file,
+    public SingleFileTransferDialog(Controller controller, Path file,
         Member node)
     {
         super(Senior.NONE, controller, true);
@@ -118,7 +127,7 @@ public class SingleFileTransferDialog extends BaseDialog {
         builder.add(new JLabel(Translation
             .getTranslation("dialog.single_file_transfer.file_name")), cc.xy(1,
             1));
-        JTextField fileNameTextField = new JTextField(file.getAbsolutePath());
+        JTextField fileNameTextField = new JTextField(file.toAbsolutePath().toString());
         fileNameTextField.setEnabled(false);
         FormLayout layout2 = new FormLayout("140dlu", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);

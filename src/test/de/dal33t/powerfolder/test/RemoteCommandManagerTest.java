@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.test;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.RemoteCommandManager;
@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  * @version $Revision: 1.10 $
  */
 public class RemoteCommandManagerTest extends TwoControllerTestCase {
-    private File oldDir;
+    private Path oldDir;
 
     @Override
     protected void setUp() throws Exception {
@@ -62,7 +62,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
     public void testJoinExistingFolder() {
         assertEquals(1, getFolderAtLisa().getMembersCount());
         boolean sent = RemoteCommandManager.sendCommand(3458,
-            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.getAbsolutePath()
+            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.toAbsolutePath()
                 + ";id=" + getFolderAtLisa().getId() + ";dlscript=what.bat");
         assertTrue(sent);
 
@@ -94,7 +94,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 3458,
                 RemoteCommandManager.MAKEFOLDER
                     + "dir="
-                    + oldDir.getAbsolutePath()
+                    + oldDir.toAbsolutePath()
                     + ";name=XXX"
                     + ";syncprofile=false,false,false,false,5,true,22,0,m,Backup daily at 2200");
         assertTrue(sent);
@@ -119,7 +119,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
             getContollerBart(), Boolean.TRUE.toString());
         Folder oldFolderAtBart = folderAtBart;
         sent = RemoteCommandManager.sendCommand(3458,
-            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.getAbsolutePath()
+            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.toAbsolutePath()
                 + ";name=XXX"
                 + ";syncprofile=true,true,true,true,5,false,22,0,m,Auto-sync");
         assertTrue(sent);

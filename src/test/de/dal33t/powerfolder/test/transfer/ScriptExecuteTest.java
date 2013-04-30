@@ -20,22 +20,21 @@
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
 
 /**
  * Tests the script execution ability of PowerFolder.
@@ -47,8 +46,8 @@ import de.schlichtherle.truezip.file.TFileInputStream;
  * @author sprajc
  */
 public class ScriptExecuteTest extends TwoControllerTestCase {
-    private File outputFile;
-    private File testScript;
+    private Path outputFile;
+    private Path testScript;
 
     @Override
     protected void setUp() throws Exception {
@@ -61,8 +60,8 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        testScript.delete();
-        outputFile.delete();
+        Files.delete(testScript);
+        Files.delete(outputFile);
     }
 
     public void testExecuteAfterDownloadMutli() throws Exception {
@@ -74,21 +73,25 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
     }
 
     public void testExecuteAfterDownload() throws IOException {
-        assertEquals(0, outputFile.length());
-        File f = TestHelper.createRandomFile(new TFile(getFolderAtBart()
-            .getLocalBase(), "subdir1"));
+        assertEquals(0, Files.size(outputFile));
+        Path f = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase().resolve("subdir1"));
         scanFolder(getFolderAtBart());
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertFileMatch(f, fInfo, getContollerBart());
 
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                return outputFile.length() > 0;
+                try {
+                    return Files.size(outputFile) > 0;
+                } catch (IOException ioe) {
+                    return false;
+                }
             }
 
             public String message() {
                 try {
-                    InputStream in = new TFileInputStream(outputFile);
+                    InputStream in = Files.newInputStream(outputFile);
                     String content = new String(StreamUtils
                         .readIntoByteArray(in));
                     in.close();
@@ -99,35 +102,35 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
                 }
             }
         });
-        assertTrue(outputFile.length() > 0);
-        InputStream in = new TFileInputStream(outputFile);
+        assertTrue(Files.size(outputFile) > 0);
+        InputStream in = Files.newInputStream(outputFile);
         String content = new String(StreamUtils.readIntoByteArray(in));
         in.close();
 
-        File fLisa = fInfo
+        Path fLisa = fInfo
             .getDiskFile(getContollerLisa().getFolderRepository());
         assertNotNull(fInfo);
-        assertTrue(fLisa.exists());
+        assertTrue(Files.exists(fLisa));
 
         // Content of output file should contain name with full path info of
         // downloaded file
-        String expected = fLisa.getAbsolutePath();
+        String expected = fLisa.toAbsolutePath().toString();
         expected += " ";
         expected += fLisa.getParent();
         expected += " ";
-        expected += getFolderAtLisa().getLocalBase().getAbsolutePath();
+        expected += getFolderAtLisa().getLocalBase().toAbsolutePath().toString();
         expected += " Bart";
 
         assertEquals(expected, content.trim());
     }
 
     public void testMultiDownloadExecute() throws IOException {
-        assertEquals(0, outputFile.length());
+        assertEquals(0, Files.size(outputFile));
         int nFiles = 20;
-        List<File> testFiles = new ArrayList<File>();
+        List<Path> testFiles = new ArrayList<Path>();
         for (int i = 0; i < nFiles; i++) {
-            File f = TestHelper.createRandomFile(new TFile(getFolderAtBart()
-                .getLocalBase(), "subdir1"));
+            Path f = TestHelper.createRandomFile(getFolderAtBart()
+                .getLocalBase().resolve("subdir1"));
             testFiles.add(f);
         }
 
@@ -136,12 +139,16 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                return outputFile.length() > 0;
+                try {
+                    return Files.size(outputFile) > 0;
+                } catch (IOException ioe) {
+                    return false;
+                }
             }
 
             public String message() {
                 try {
-                    InputStream in = new TFileInputStream(outputFile);
+                    InputStream in = Files.newInputStream(outputFile);
                     String content = new String(StreamUtils
                         .readIntoByteArray(in));
                     in.close();
@@ -154,24 +161,24 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         });
         TestHelper.waitMilliSeconds(2500);
 
-        assertTrue(outputFile.length() > 0);
-        InputStream in = new TFileInputStream(outputFile);
+        assertTrue(Files.size(outputFile) > 0);
+        InputStream in = Files.newInputStream(outputFile);
         String content = new String(StreamUtils.readIntoByteArray(in));
         in.close();
 
-        for (File file : testFiles) {
+        for (Path file : testFiles) {
             assertTrue(
-                "Content file did not contain filename " + file.getName()
-                    + ":\n" + content, content.contains(file.getName()));
+                "Content file did not contain filename " + file.getFileName().toString()
+                    + ":\n" + content, content.contains(file.getFileName().toString()));
         }
         System.out.println(content);
     }
 
     public void testExecuteBrokenScript() throws IOException {
         getFolderAtLisa().setDownloadScript(createBrokenScript());
-        assertEquals(0, outputFile.length());
-        File f = TestHelper.createRandomFile(new TFile(getFolderAtBart()
-            .getLocalBase(), "subdir1"));
+        assertEquals(0, Files.size(outputFile));
+        Path f = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase().resolve("subdir1"));
         scanFolder(getFolderAtBart());
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertFileMatch(f, fInfo, getContollerBart());
@@ -191,23 +198,23 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
     }
 
     private String createTestScript() throws IOException {
-        testScript = File.createTempFile("script", ".bat");
-        outputFile = File.createTempFile("output", ".txt");
+        testScript = Files.createTempFile("script", ".bat");
+        outputFile = Files.createTempFile("output", ".txt");
         byte[] content;
         String cmdLine;
         String params = "$file $path $folderpath $sources";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.getAbsolutePath() + "\nexit")
+            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.toAbsolutePath().toString() + "\nexit")
                 .getBytes();
-            cmdLine = "cmd /C start " + testScript.getAbsolutePath() + ' '
+            cmdLine = "cmd /C start " + testScript.toAbsolutePath().toString() + ' '
                 + params;
         } else {
-            content = ("echo $* >>\"" + outputFile.getAbsolutePath() + '"')
+            content = ("echo $* >>\"" + outputFile.toAbsolutePath().toString() + '"')
                 .getBytes();
-            cmdLine = "sh " + testScript.getAbsolutePath() + ' ' + params;
+            cmdLine = "sh " + testScript.toAbsolutePath().toString() + ' ' + params;
         }
-        FileUtils.copyFromStreamToFile(new ByteArrayInputStream(content),
+        PathUtils.copyFromStreamToFile(new ByteArrayInputStream(content),
             testScript);
 
         return cmdLine;
@@ -215,23 +222,23 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
     }
 
     private String createBrokenScript() throws IOException {
-        testScript = File.createTempFile("script", ".bat");
-        outputFile = File.createTempFile("output", ".txt");
+        testScript = Files.createTempFile("script", ".bat");
+        outputFile = Files.createTempFile("output", ".txt");
         byte[] content;
         String cmdLine;
         String params = "$file $path $folderpath $sources";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.getAbsolutePath() + "\npause")
+            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.toAbsolutePath().toString() + "\npause")
                 .getBytes();
-            cmdLine = "cmd /C start " + testScript.getAbsolutePath() + ' '
+            cmdLine = "cmd /C start " + testScript.toAbsolutePath().toString() + ' '
                 + params;
         } else {
-            content = ("echo $* >>\"" + outputFile.getAbsolutePath() + "\"\nread -p \"Press any key ...\"")
+            content = ("echo $* >>\"" + outputFile.toAbsolutePath().toString() + "\"\nread -p \"Press any key ...\"")
                 .getBytes();
-            cmdLine = "sh " + testScript.getAbsolutePath() + ' ' + params;
+            cmdLine = "sh " + testScript.toAbsolutePath().toString() + ' ' + params;
         }
-        FileUtils.copyFromStreamToFile(new ByteArrayInputStream(content),
+        PathUtils.copyFromStreamToFile(new ByteArrayInputStream(content),
             testScript);
 
         return cmdLine;

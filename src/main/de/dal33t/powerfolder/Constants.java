@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Constants.java 21097 2013-03-15 16:12:22Z sprajc $
  */
 package de.dal33t.powerfolder;
 
@@ -69,6 +69,8 @@ public class Constants {
      */
     public static final String METAFOLDER_SUBDIR = "meta";
 
+    public static final String SYSTEM_SUBDIR = "foldermeta";
+    
     /**
      * The prefix for meta folder IDs.
      */
@@ -371,6 +373,8 @@ public class Constants {
     public static final int DEFAULT_NORMAL_HEIGHT = 600;
 
     public static final String LINK_EXTENSION = ".lnk";
+    
+    public static final String ZYNCRO_SCHEME = "zyncro";
 
     private Constants() {
         // No instance allowed

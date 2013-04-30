@@ -188,7 +188,7 @@ For creation of the installer:
 	<target name="compile" depends="init">
 		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build.dir}" source="1.6" target="1.6" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="off">
+		<javac destdir="${build.dir}" source="1.7" target="1.7" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="off">
 			<classpath>
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />

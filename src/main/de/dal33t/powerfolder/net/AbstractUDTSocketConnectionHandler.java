@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: AbstractUDTSocketConnectionHandler.java 19112 2012-06-04 00:38:24Z sprajc $
  */
 package de.dal33t.powerfolder.net;
 
@@ -822,7 +822,6 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             // "Sender started with " + messagesToSendQueue.size()
             // + " messages in queue");
 
-            int i = 0;
             Message msg;
             // long start = System.currentTimeMillis();
             while (true) {
@@ -835,7 +834,6 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 }
                 senderSpawnLock.unlock();
 
-                i++;
                 if (!started) {
                     logFine("Peer shutdown while sending: " + msg);
                     senderSpawnLock.lock();

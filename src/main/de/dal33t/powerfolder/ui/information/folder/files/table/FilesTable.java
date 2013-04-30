@@ -28,7 +28,8 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -227,17 +228,17 @@ public class FilesTable extends JTable {
                         myValue = fileInfo.getFilenameOnly();
 
                         // Prepare diskfile
-                        File diskFile = fileInfo.getDiskFile(controller
+                        Path diskFile = fileInfo.getDiskFile(controller
                             .getFolderRepository());
                         if (diskFile != null) {
-                            if (!diskFile.exists()) {
+                            if (Files.notExists(diskFile)) {
                                 diskFile = null;
                             }
                         }
                         String fileNameForTooltip;
                         if (diskFile != null) {
                             fileNameForTooltip = replaceSpacesWithNBSP(diskFile
-                                .getAbsolutePath());
+                                .toAbsolutePath().toString());
                         } else {
                             fileNameForTooltip = replaceSpacesWithNBSP(fileInfo
                                 .getFilenameOnly());

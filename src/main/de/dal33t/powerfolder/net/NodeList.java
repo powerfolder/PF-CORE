@@ -15,21 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: NodeList.java 19796 2012-09-11 21:50:56Z sprajc $
  */
 package de.dal33t.powerfolder.net;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -175,8 +174,8 @@ public class NodeList {
      * @param file
      * @throws IOException
      */
-    public void load(File file) throws IOException, ClassNotFoundException {
-        InputStream in = new FileInputStream(file);
+    public void load(Path file) throws IOException, ClassNotFoundException {
+        InputStream in = Files.newInputStream(file);
         load(in);
         in.close();
     }
@@ -208,8 +207,8 @@ public class NodeList {
      * @param file
      * @throws IOException
      */
-    public void save(File file) throws IOException {
-        OutputStream out = new FileOutputStream(file);
+    public void save(Path file) throws IOException {
+        OutputStream out = Files.newOutputStream(file);
         save(out);
         out.close();
     }

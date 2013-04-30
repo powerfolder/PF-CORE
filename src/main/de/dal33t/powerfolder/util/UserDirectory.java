@@ -19,14 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.File;
+import java.nio.file.Path;
+
 
 public class UserDirectory {
     private String translatedName;
     private String placeholder;
-    private File directory;
+    private Path directory;
 
-    UserDirectory(String translatedName, String placeholder, File directory) {
+    UserDirectory(String translatedName, String placeholder, Path directory) {
         this.translatedName = translatedName;
         this.placeholder = placeholder;
         this.directory = directory;
@@ -40,7 +41,7 @@ public class UserDirectory {
         return placeholder;
     }
 
-    public File getDirectory() {
+    public Path getDirectory() {
         return directory;
     }
     

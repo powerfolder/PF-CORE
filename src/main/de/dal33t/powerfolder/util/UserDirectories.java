@@ -19,7 +19,11 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -69,10 +73,10 @@ public class UserDirectories {
     private static final String USER_DIR_SITES = "Sites";
     private static final String USER_DIR_DROPBOX = "My Dropbox";
 
-    private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
-        + "Firefox";
-    private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
-        + "Sunbird";
+    private static final String APPS_DIR_FIREFOX = "Mozilla"
+        + FileSystems.getDefault().getSeparator() + "Firefox";
+    private static final String APPS_DIR_SUNBIRD = "Mozilla"
+        + FileSystems.getDefault().getSeparator() + "Sunbird";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
     private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
     private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
@@ -83,7 +87,9 @@ public class UserDirectories {
             if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
                 APPS_DIR_OUTLOOK = WinUtils.getInstance().getSystemFolderPath(
                     WinUtils.CSIDL_LOCAL_APP_DATA, false)
-                    + File.separator + "Microsoft" + File.separator + "Outlook";
+                    + FileSystems.getDefault().getSeparator()
+                    + "Microsoft"
+                    + FileSystems.getDefault().getSeparator() + "Outlook";
             } else {
                 APPS_DIR_OUTLOOK = null;
             }
@@ -100,9 +106,9 @@ public class UserDirectories {
             if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
                 APPS_DIR_WINDOWS_MAIL = WinUtils.getInstance()
                     .getSystemFolderPath(WinUtils.CSIDL_LOCAL_APP_DATA, false)
-                    + File.separator
+                    + FileSystems.getDefault().getSeparator()
                     + "Microsoft"
-                    + File.separator
+                    + FileSystems.getDefault().getSeparator()
                     + "Windows Mail";
             } else {
                 APPS_DIR_WINDOWS_MAIL = null;
@@ -183,7 +189,7 @@ public class UserDirectories {
                 continue;
             }
 
-            File directory = userDir.getDirectory();
+            Path directory = userDir.getDirectory();
             // See if any folders already exists for this directory.
             // No reason to show if already subscribed.
             for (Folder folder : controller.getFolderRepository().getFolders())
@@ -202,7 +208,7 @@ public class UserDirectories {
      * that is okay.
      */
     private static void findUserDirectories() {
-        File userHome = new File(System.getProperty("user.home"));
+        Path userHome = Paths.get(System.getProperty("user.home"));
         addTargetDirectory(userHome, USER_DIR_CONTACTS, "user.dir.contacts",
             false);
         addTargetDirectory(userHome, USER_DIR_DESKTOP, "user.dir.desktop",
@@ -228,31 +234,31 @@ public class UserDirectories {
 
             if (USER_DIR_DOCUMENTS_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundDocuments = addTargetDirectory(new File(
+                foundDocuments = addTargetDirectory(Paths.get(
                     USER_DIR_DOCUMENTS_REPORTED), "user.dir.documents", false,
                     "user.dir.documents");
             }
             if (USER_DIR_MUSIC_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundMusic = addTargetDirectory(new File(
+                foundMusic = addTargetDirectory(Paths.get(
                     USER_DIR_MUSIC_REPORTED), "user.dir.music", false,
                     "user.dir.music");
             }
             if (USER_DIR_PICTURES_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundPictures = addTargetDirectory(new File(
+                foundPictures = addTargetDirectory(Paths.get(
                     USER_DIR_PICTURES_REPORTED), "user.dir.pictures", false,
                     "user.dir.pictures");
             }
             if (USER_DIR_VIDEOS_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundVideos = addTargetDirectory(new File(
+                foundVideos = addTargetDirectory(Paths.get(
                     USER_DIR_VIDEOS_REPORTED), "user.dir.videos", false,
                     "user.dir.videos");
             }
             if (USER_DIR_FAVORITES_REPORTED != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundVideos = addTargetDirectory(new File(
+                foundVideos = addTargetDirectory(Paths.get(
                     USER_DIR_FAVORITES_REPORTED), "user.dir.favorites", false);
             }
         }
@@ -287,7 +293,7 @@ public class UserDirectories {
         if (OSUtil.isWindowsSystem()) {
             String appDataname = WinUtils.getAppDataCurrentUser();
             if (appDataname != null) {
-                File appData = new File(appDataname);
+                Path appData = Paths.get(appDataname);
                 addTargetDirectory(appData, "apps.dir", true);
 
                 addTargetDirectory(appData, APPS_DIR_FIREFOX,
@@ -299,11 +305,11 @@ public class UserDirectories {
                         "apps.dir.thunderbird", false);
                 }
                 if (APPS_DIR_OUTLOOK != null) {
-                    addTargetDirectory(new File(APPS_DIR_OUTLOOK),
+                    addTargetDirectory(Paths.get(APPS_DIR_OUTLOOK),
                         "apps.dir.outlook", false);
                 }
                 if (APPS_DIR_WINDOWS_MAIL != null) {
-                    addTargetDirectory(new File(APPS_DIR_WINDOWS_MAIL),
+                    addTargetDirectory(Paths.get(APPS_DIR_WINDOWS_MAIL),
                         "apps.dir.windows_mail", false);
                 }
             } else {
@@ -311,7 +317,7 @@ public class UserDirectories {
                     "Application data directory not found.");
             }
         } else if (OSUtil.isLinux()) {
-            File appData = new File("/etc");
+            Path appData = Paths.get("/etc");
             addTargetDirectory(appData, APPS_DIR_FIREFOX2, "apps.dir.firefox",
                 false);
             addTargetDirectory(appData, APPS_DIR_SUNBIRD2, "apps.dir.sunbird",
@@ -321,7 +327,7 @@ public class UserDirectories {
                     "apps.dir.thunderbird", false);
             }
         } else if (OSUtil.isMacOS()) {
-            File appData = new File(userHome, "Library");
+            Path appData = userHome.resolve("Library");
             addTargetDirectory(appData, APPS_DIR_FIREFOX, "apps.dir.firefox",
                 false);
             addTargetDirectory(appData, APPS_DIR_SUNBIRD, "apps.dir.sunbird",
@@ -342,15 +348,15 @@ public class UserDirectories {
      * @param allowHidden
      *            allow display of hidden dirs
      */
-    private static void addTargetDirectory(File root, String subdir,
+    private static void addTargetDirectory(Path root, String subdir,
         String translationId, boolean allowHidden)
     {
-        File directory = joinFile(root, subdir);
+        Path directory = joinFile(root, subdir);
         addTargetDirectory(directory, translationId, allowHidden);
     }
 
-    private static File joinFile(File root, String subdir) {
-        return new File(root + File.separator + subdir);
+    private static Path joinFile(Path root, String subdir) {
+        return root.resolve(subdir);
     }
 
     /**
@@ -360,7 +366,7 @@ public class UserDirectories {
      * @param allowHidden
      *            allow display of hidden dirs
      */
-    private static boolean addTargetDirectory(File directory,
+    private static boolean addTargetDirectory(Path directory,
         String translationId, boolean allowHidden)
     {
         return addTargetDirectory(directory, translationId, allowHidden,
@@ -370,17 +376,21 @@ public class UserDirectories {
     /**
      * Adds a generic user directory if if exists for this os.
      */
-    private static boolean addTargetDirectory(File directory,
+    private static boolean addTargetDirectory(Path directory,
         String translationId, boolean allowHidden, String placeholder)
     {
-        if (directory.exists() && directory.isDirectory()
-            && (allowHidden || !directory.isHidden()))
-        {
-            String translation = Translation.getTranslation(translationId);
-            UserDirectory userDir = new UserDirectory(translation,
-                '$' + placeholder, directory);
-            userDirectories.put(translation, userDir);
-            return true;
+        try {
+            if (Files.exists(directory) && Files.isDirectory(directory)
+                && (allowHidden || !Files.isHidden(directory)))
+            {
+                String translation = Translation.getTranslation(translationId);
+                UserDirectory userDir = new UserDirectory(translation,
+                    '$' + placeholder, directory);
+                userDirectories.put(translation, userDir);
+                return true;
+            }
+        } catch (IOException ioe) {
+            // TODO: 
         }
         return false;
     }

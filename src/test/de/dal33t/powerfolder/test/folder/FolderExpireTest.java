@@ -19,7 +19,9 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -38,21 +40,23 @@ public class FolderExpireTest extends ControllerTestCase {
         // Setup a test folder.
         setupTestFolder(SyncProfile.HOST_FILES);
 
-        File localBase = getFolder().getLocalBase();
+        Path localBase = getFolder().getLocalBase();
 
         // This file should not be affected because it is not deleted.
-        File baseLineFile = new File(localBase, "baseLine.txt");
-        if (baseLineFile.exists()) {
-            baseLineFile.delete();
+        Path baseLineFile = localBase.resolve("baseLine.txt");
+        if (Files.exists(baseLineFile)) {
+            Files.delete(baseLineFile);
         }
-        assertTrue(baseLineFile.createNewFile());
+
+        Files.createFile(baseLineFile);
 
         // This file should get removed from known files after expiry period.
-        File deletedFile = new File(localBase, "deleted.txt");
-        if (deletedFile.exists()) {
-            deletedFile.delete();
+        Path deletedFile = localBase.resolve("deleted.txt");
+        if (Files.exists(deletedFile)) {
+            Files.delete(deletedFile);
         }
-        assertTrue(deletedFile.createNewFile());
+        
+        Files.createFile(deletedFile);
 
         // Speed things up!
         ConfigurationEntry.DB_MAINTENANCE_SECONDS
@@ -65,15 +69,15 @@ public class FolderExpireTest extends ControllerTestCase {
     /**
      * Test the file info gets deleted after expiry time.
      */
-    public void testFolderExpire() {
+    public void testFolderExpire() throws IOException {
 
         // Start with two files...
         assertEquals(2, getFolder().getKnownItemCount());
 
-        File localBase = getFolder().getLocalBase();
+        Path localBase = getFolder().getLocalBase();
 
-        File deletedFile = new File(localBase, "deleted.txt");
-        deletedFile.delete();
+        Path deletedFile = localBase.resolve("deleted.txt");
+        Files.delete(deletedFile);
 
         try {
             Thread.sleep(15000);

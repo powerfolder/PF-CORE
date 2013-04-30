@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderService.java 20771 2013-02-05 12:01:32Z krickl $
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +53,7 @@ public interface FolderService {
     void createFolder(FolderInfo foInfo, SyncProfile profile);
     
     void createFolder(FolderInfo foInfo, SyncProfile profile,
-        File targetDir);
+        Path targetDir);
 
     /**
      * Removes a folder from the account. Required owner permission if

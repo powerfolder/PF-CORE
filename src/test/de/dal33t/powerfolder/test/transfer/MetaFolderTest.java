@@ -19,7 +19,9 @@
  */
 package de.dal33t.powerfolder.test.transfer;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -31,7 +33,6 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
-import de.schlichtherle.truezip.file.TFile;
 
 /**
  * Test cases for MetaFolder synchronization.
@@ -58,7 +59,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
         assertEquals(2, lisaMeta.getMembersCount());
 
         final int nCount = lisaMeta.getKnownItemCount();
-        final File bartFile = TestHelper.createRandomFile(bartMeta
+        final Path bartFile = TestHelper.createRandomFile(bartMeta
             .getLocalBase());
         scanFolder(bartMeta);
         final FileInfo fInfo = FileInfoFactory.lookupInstance(bartMeta,
@@ -79,7 +80,12 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return bartFile.delete();
+                try {
+                    Files.delete(bartFile);
+                    return true;
+                } catch (IOException ioe) {
+                    return false;
+                }
             }
 
             public String message() {
@@ -113,29 +119,29 @@ public class MetaFolderTest extends TwoControllerTestCase {
         Folder bartFolder = getFolderAtBart();
 
         // Check the mata folder was created.
-        File localBase = bartFolder.getLocalBase();
-        File systemSubdir = new TFile(localBase,
+        Path localBase = bartFolder.getLocalBase();
+        Path systemSubdir = localBase.resolve(
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        assertTrue("bart system subdir does not exist", systemSubdir.exists());
-        File metaFolderDir = new TFile(systemSubdir, Constants.METAFOLDER_SUBDIR);
-        assertTrue("bart metaFolder dir does not exist", metaFolderDir.exists());
-        File metaFolderSystemSubdir = new TFile(metaFolderDir,
+        assertTrue("bart system subdir does not exist", Files.exists(systemSubdir));
+        Path metaFolderDir = systemSubdir.resolve(Constants.METAFOLDER_SUBDIR);
+        assertTrue("bart metaFolder dir does not exist", Files.exists(metaFolderDir));
+        Path metaFolderSystemSubdir = metaFolderDir.resolve(
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         assertTrue("bart metaFolder system subdir does not exist",
-            metaFolderSystemSubdir.exists());
+            Files.exists(metaFolderSystemSubdir));
 
         Folder lisaFolder = getFolderAtLisa();
 
         // Check the meta folder was created.
         localBase = lisaFolder.getLocalBase();
-        systemSubdir = new TFile(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        assertTrue("lisa system subdir does not exist", systemSubdir.exists());
-        metaFolderDir = new TFile(systemSubdir, Constants.METAFOLDER_SUBDIR);
-        assertTrue("lisa metaFolder dir does not exist", metaFolderDir.exists());
-        metaFolderSystemSubdir = new TFile(metaFolderDir,
+        systemSubdir = localBase.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        assertTrue("lisa system subdir does not exist", Files.exists(systemSubdir));
+        metaFolderDir = systemSubdir.resolve(Constants.METAFOLDER_SUBDIR);
+        assertTrue("lisa metaFolder dir does not exist", Files.exists(metaFolderDir));
+        metaFolderSystemSubdir = metaFolderDir.resolve(
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         assertTrue("lisa metaFolder system subdir does not exist",
-            metaFolderSystemSubdir.exists());
+            Files.exists(metaFolderSystemSubdir));
 
         // Check folders are in repo
         Controller contollerBart = getContollerBart();
