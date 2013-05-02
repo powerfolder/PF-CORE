@@ -236,7 +236,7 @@ public class Account implements Serializable {
 
     // Basic permission stuff *************************************************
 
-    public void grant(Permission... newPermissions) {
+    public synchronized void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
@@ -258,7 +258,7 @@ public class Account implements Serializable {
             + Arrays.asList(newPermissions));
     }
 
-    public void revoke(Permission... revokePermissions) {
+    public synchronized void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
         for (Permission p : revokePermissions) {
             if (permissions.remove(p)) {
@@ -291,7 +291,7 @@ public class Account implements Serializable {
         }
     }
 
-    public void revokeAllPermissions() {
+    public synchronized void revokeAllPermissions() {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Revoking all permission from " + this + ": "
                 + permissions);
