@@ -31,10 +31,13 @@ import java.io.ObjectOutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -880,7 +883,19 @@ public class Folder extends PFComponent {
                     }
                 }
             }
-            
+
+            try {
+                String username = fInfo.getModifiedBy()
+                    .getNode(getController(), false).getAccountInfo().getUsername();
+                FileSystem fs = targetFile.getFileSystem();
+                UserPrincipalLookupService upls = fs.getUserPrincipalLookupService();
+                UserPrincipal up = upls
+                    .lookupPrincipalByName(username);
+                Files.setOwner(targetFile, up);
+            } catch (IOException | UnsupportedOperationException ioe) {
+                logInfo("Could not set owner to " + targetFile.toString());
+            }
+
             try {
                 Files.move(tempFile, targetFile);
             }
@@ -2926,6 +2941,20 @@ public class Folder extends PFComponent {
                             + localFile.toDetailString());
                     }
                     watcher.addIgnoreFile(localFile);
+
+                    UserPrincipal owner = null;
+
+                    try {
+                        String username = member.getAccountInfo().getUsername();
+                        owner = localCopy.getFileSystem().getUserPrincipalLookupService()
+                            .lookupPrincipalByName(username);
+
+                        localCopy = Files.setOwner(localCopy, owner);
+                    } catch (IOException | UnsupportedOperationException e) {
+                        logInfo("Could not set Owner on '"
+                            + localCopy.toString() + ": " + e.getMessage());
+                    }
+
                     try {
                         Files.delete(localCopy);
                     }
@@ -2937,6 +2966,11 @@ public class Folder extends PFComponent {
                                 if (name.endsWith("thumbs.db")
                                     || name.endsWith(".ds_store")
                                     || name.endsWith("desktop.ini")) {
+
+                                    if (owner != null) {
+                                        Files.setOwner(path, owner);
+                                    }
+
                                     Files.delete(path);
                                 }
                             }
@@ -2946,38 +2980,38 @@ public class Folder extends PFComponent {
                             return;
                         }
 
-                        try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
-                            try {
-                                Files.delete(localCopy);
-                            }
-                            catch (IOException e) {
-                                if (isWarning()) {
-                                    int count = 0;
-                                    StringBuilder sb = new StringBuilder();
-                                    sb.append("[");
+                        try {
+                            Files.delete(localCopy);
+                        }
+                        catch (IOException ioe2) {
+                            if (isWarning()) {
+                                int count = 0;
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("[");
+                                try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
                                     for (Path path : remaining) {
                                         sb.append(path.toString());
                                         sb.append(", ");
                                         count++;
                                     }
-                                    sb.append("]");
-
-                                    String contentStr = count > 0
-                                        ? sb.toString()
-                                            : "(unable to access)";
-                                            logFine("Unable to delete directory locally: "
-                                                + localCopy
-                                                + ". Info: "
-                                                + localFile.toDetailString()
-                                                + ". contents: " + contentStr);
                                 }
-                                // Skip. Dir was not actually deleted /
-                                // could not sync
-                                return;
+                                catch (IOException e) {
+                                    logInfo(e.getMessage());
+                                }
+                                sb.append("]");
+
+                                String contentStr = count > 0
+                                    ? sb.toString()
+                                        : "(unable to access)";
+                                    logFine("Unable to delete directory locally: "
+                                        + localCopy
+                                        + ". Info: "
+                                        + localFile.toDetailString()
+                                        + ". contents: " + contentStr);
                             }
-                        }
-                        catch (IOException e) {
-                            logInfo(ioe.getMessage());
+                            // Skip. Dir was not actually deleted /
+                            // could not sync
+                            return;
                         }
                     } finally {
                         watcher.removeIgnoreFile(localFile);
