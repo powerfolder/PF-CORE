@@ -104,7 +104,7 @@ public enum Feature {
 
     SYSTRAY_ALL_FOLDERS(false),
 
-    ZYNCRO_PROFILING(true);
+    ZYNCRO_PROFILING(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
