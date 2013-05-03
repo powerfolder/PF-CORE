@@ -2950,7 +2950,7 @@ public class Folder extends PFComponent {
                             .lookupPrincipalByName(username);
 
                         localCopy = Files.setOwner(localCopy, owner);
-                    } catch (IOException | UnsupportedOperationException e) {
+                    } catch (Exception e) {
                         logInfo("Could not set Owner on '"
                             + localCopy.toString() + ": " + e.getMessage());
                     }
