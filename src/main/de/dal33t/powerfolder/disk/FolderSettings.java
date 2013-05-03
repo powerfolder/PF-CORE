@@ -511,9 +511,9 @@ public class FolderSettings {
         }
 
         try {
-            return Paths.get(URI.create(str));
+            return Paths.get(URI.create(res));
         } catch (IllegalArgumentException iae) {
-            return Paths.get(str);
+            return Paths.get(res);
         }
     }
 }
