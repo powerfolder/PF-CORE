@@ -1179,8 +1179,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getTranslation("exp_folder_view.expand"));
             }
         }
+        
+        String folderName = folderInfo.name;
 
-        nameLabel.setText(folderInfo.name + newCountString);
+        folderName = folderName.replace("$group",
+            Translation.getTranslation("general.group")).replace("$department",
+            Translation.getTranslation("general.department"));
+
+        nameLabel.setText(folderName + newCountString);
         nameLabel.setFont(new Font(nameLabel.getFont().getName(), newFiles
             ? Font.BOLD
             : Font.PLAIN, nameLabel.getFont().getSize()));

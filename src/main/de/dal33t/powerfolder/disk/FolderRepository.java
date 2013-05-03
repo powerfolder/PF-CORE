@@ -79,6 +79,7 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
 import de.dal33t.powerfolder.util.Util;
@@ -1745,15 +1746,22 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (hasJoinedFolder(folderInfo)) {
                     continue;
                 }
+                
+                String folderName = folderInfo.name;
+                folderName = folderName.replace("$group",
+                    Translation.getTranslation("general.group")).replace(
+                    "$department",
+                    Translation.getTranslation("general.department"));
+
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()
-                    .getFoldersBasedir().resolve(folderInfo.name);
+                    .getFoldersBasedir().resolve(folderName);
                 if (removedFolderDirectories.contains(suggestedLocalBase)) {
                     continue;
                 }
 
                 UserDirectory userDir = UserDirectories.getUserDirectories()
-                    .get(folderInfo.name);
+                    .get(folderName);
 
                 if (userDir != null) {
                     if (removedFolderDirectories.contains(userDir
@@ -1767,7 +1775,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 {
                     // Moderate strategy. Use existing folders.
                     suggestedLocalBase = getController().getFolderRepository()
-                        .getFoldersBasedir().resolve(folderInfo.name);
+                        .getFoldersBasedir().resolve(folderName);
                     if (Files.exists(suggestedLocalBase)) {
                         logWarning("Using existing directory "
                             + suggestedLocalBase + " for " + folderInfo);
@@ -1775,7 +1783,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } else {
                     // Take folder name as subdir name
                     suggestedLocalBase = getController().getFolderRepository()
-                        .getFoldersBasedir().resolve(folderInfo.name);
+                        .getFoldersBasedir().resolve(folderName);
                 }
 
                 logInfo("Auto setting up folder " + folderInfo
