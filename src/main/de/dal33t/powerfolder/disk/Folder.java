@@ -892,8 +892,8 @@ public class Folder extends PFComponent {
                 UserPrincipal up = upls
                     .lookupPrincipalByName(username);
                 Files.setOwner(targetFile, up);
-            } catch (IOException | UnsupportedOperationException ioe) {
-                logInfo("Could not set owner to " + targetFile.toString());
+            } catch (Exception e) {
+                logInfo("Could not set owner to " + targetFile.toString() + ": " + e.getMessage());
             }
 
             try {
