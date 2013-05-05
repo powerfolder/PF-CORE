@@ -34,6 +34,12 @@ import de.dal33t.powerfolder.security.Account;
  * @version $Revision: 1.5 $
  */
 public interface AccountService {
+
+    /**
+     * For internal use. Empty password may never login
+     */
+    static final String EMPTY_PASSWORD = "$BL4NK.P4SSW0RD$";
+
     /**
      * Tries to register a new account.
      * 
