@@ -264,9 +264,9 @@ public enum ConfigurationEntry {
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),
 
-    MEMBERS_ENABLED("web.members.enabled", true),
+    MEMBERS_ENABLED("members.enabled", true),
 
-    SETTINGS_ENABLED("web.settings.enabled", true),
+    SETTINGS_ENABLED("settings.enabled", true),
 
     MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
 

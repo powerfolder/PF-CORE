@@ -1483,7 +1483,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         ServerClient client = controller.getOSClient();
         if (client.isConnected() && client.isLoggedIn()) {
             for (FolderInfo folderInfo : client.getAccountFolders()) {
-                if (folderInfo.getName().equals(file.getFileName().toString()))
+                if (folderInfo.getLocalizedName().equals(file.getFileName().toString()))
                 {
                     fi = folderInfo;
                     break;
@@ -1748,9 +1748,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 
                 String folderName = folderInfo.name;
-                folderName = folderName.replace(Constants.ZYNCRO_GROUP_TOKEN,
+                folderName = folderName.replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
                     Translation.getTranslation("general.group")).replace(
-                    Constants.ZYNCRO_DEPARTMENT_TOKEN,
+                    Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
                     Translation.getTranslation("general.department"));
 
                 SyncProfile profile = SyncProfile.getDefault(getController());
