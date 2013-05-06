@@ -374,7 +374,11 @@ public class Constants {
 
     public static final String LINK_EXTENSION = ".lnk";
     
+    // Zyncro related *********************************************************
+
     public static final String ZYNCRO_SCHEME = "zyncro";
+    public static final String ZYNCRO_GROUP_TOKEN = "$group ";
+    public static final String ZYNCRO_DEPARTMENT_TOKEN = "$department ";
 
     private Constants() {
         // No instance allowed

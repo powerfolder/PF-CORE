@@ -884,16 +884,22 @@ public class Folder extends PFComponent {
                 }
             }
 
-            try {
-                String username = fInfo.getModifiedBy()
-                    .getNode(getController(), false).getAccountInfo().getUsername();
-                FileSystem fs = targetFile.getFileSystem();
-                UserPrincipalLookupService upls = fs.getUserPrincipalLookupService();
-                UserPrincipal up = upls
-                    .lookupPrincipalByName(username);
-                Files.setOwner(targetFile, up);
-            } catch (Exception e) {
-                logInfo("Could not set owner to " + targetFile.toString() + ": " + e.getMessage());
+            if (targetFile.getFileSystem().provider().getScheme()
+                .equals(Constants.ZYNCRO_SCHEME))
+            {
+                try {
+                    String username = fInfo.getModifiedBy()
+                        .getNode(getController(), false).getAccountInfo()
+                        .getUsername();
+                    FileSystem fs = targetFile.getFileSystem();
+                    UserPrincipalLookupService upls = fs
+                        .getUserPrincipalLookupService();
+                    UserPrincipal up = upls.lookupPrincipalByName(username);
+                    Files.setOwner(targetFile, up);
+                } catch (Exception e) {
+                    logInfo("Could not set owner to " + targetFile.toString()
+                        + ": " + e.getMessage());
+                }
             }
 
             try {
@@ -2944,15 +2950,21 @@ public class Folder extends PFComponent {
 
                     UserPrincipal owner = null;
 
-                    try {
-                        String username = member.getAccountInfo().getUsername();
-                        owner = localCopy.getFileSystem().getUserPrincipalLookupService()
-                            .lookupPrincipalByName(username);
+                    if (localCopy.getFileSystem().provider().getScheme()
+                        .equals(Constants.ZYNCRO_SCHEME))
+                    {
+                        try {
+                            String username = member.getAccountInfo()
+                                .getUsername();
+                            owner = localCopy.getFileSystem()
+                                .getUserPrincipalLookupService()
+                                .lookupPrincipalByName(username);
 
-                        localCopy = Files.setOwner(localCopy, owner);
-                    } catch (Exception e) {
-                        logInfo("Could not set Owner on '"
-                            + localCopy.toString() + ": " + e.getMessage());
+                            localCopy = Files.setOwner(localCopy, owner);
+                        } catch (Exception e) {
+                            logInfo("Could not set Owner on '"
+                                + localCopy.toString() + ": " + e.getMessage());
+                        }
                     }
 
                     try {

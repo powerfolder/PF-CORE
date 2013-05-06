@@ -1748,9 +1748,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 
                 String folderName = folderInfo.name;
-                folderName = folderName.replace("$group",
+                folderName = folderName.replace(Constants.ZYNCRO_GROUP_TOKEN,
                     Translation.getTranslation("general.group")).replace(
-                    "$department",
+                    Constants.ZYNCRO_DEPARTMENT_TOKEN,
                     Translation.getTranslation("general.department"));
 
                 SyncProfile profile = SyncProfile.getDefault(getController());

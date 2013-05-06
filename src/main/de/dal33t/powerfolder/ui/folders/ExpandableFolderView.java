@@ -50,6 +50,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -1182,8 +1183,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         
         String folderName = folderInfo.name;
 
-        folderName = folderName.replace("$group",
-            Translation.getTranslation("general.group")).replace("$department",
+        folderName = folderName.replace(Constants.ZYNCRO_GROUP_TOKEN,
+            Translation.getTranslation("general.group")).replace(
+            Constants.ZYNCRO_DEPARTMENT_TOKEN,
             Translation.getTranslation("general.department"));
 
         nameLabel.setText(folderName + newCountString);
