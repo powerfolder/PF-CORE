@@ -49,6 +49,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -239,7 +240,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         // If we have just one folder info, display as text field,
         // BUT still have the combo, as this is linked to the maps.
         if (folderInfoList.size() == 1) {
-            folderInfoField.setText(folderInfoList.get(0).getName());
+            folderInfoField.setText(folderInfoList.get(0).getLocalizedName());
             folderInfoCombo.setVisible(false);
         } else {
             folderInfoField.setVisible(false);
@@ -250,14 +251,14 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
             // Suggest user dir.
             Path dirSuggestion;
-            if (userDirs.get(folderInfo.name) == null) {
+            if (userDirs.get(folderInfo.getLocalizedName()) == null) {
                 dirSuggestion = Paths.get(folderBasedirString,
-                    PathUtils.removeInvalidFilenameChars(folderInfo.name));
+                    PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName()));
             } else {
-                dirSuggestion = userDirs.get(folderInfo.name).getDirectory();
+                dirSuggestion = userDirs.get(folderInfo.getLocalizedName()).getDirectory();
             }
             folderLocalBaseMap.put(folderInfo, dirSuggestion);
-            folderInfoComboModel.addElement(folderInfo.name);
+            folderInfoComboModel.addElement(folderInfo.getLocalizedName());
         }
     }
 
@@ -275,14 +276,20 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         Object selectedItem = folderInfoCombo.getSelectedItem();
         FolderInfo selectedFolderInfo = null;
         for (FolderInfo folderInfo : folderProfileMap.keySet()) {
-            if (folderInfo.name.equals(selectedItem)) {
+            if (folderInfo.getLocalizedName().equals(selectedItem)) {
                 selectedFolderInfo = folderInfo;
                 break;
             }
         }
         if (selectedFolderInfo != null) {
-            localFolderField.setText(folderLocalBaseMap.get(selectedFolderInfo)
-                .toAbsolutePath().toString());
+            localFolderField.setText(folderLocalBaseMap
+                .get(selectedFolderInfo)
+                .toAbsolutePath()
+                .toString()
+                .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
+                    Translation.getTranslation("general.group"))
+                .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
+                    Translation.getTranslation("general.department")));
             syncProfileSelectorPanel.setSyncProfile(
                 folderProfileMap.get(selectedFolderInfo), false);
         }
@@ -295,7 +302,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             Object selectedItem = folderInfoCombo.getSelectedItem();
             FolderInfo selectedFolderInfo = null;
             for (FolderInfo folderInfo : folderProfileMap.keySet()) {
-                if (folderInfo.name.equals(selectedItem)) {
+                if (folderInfo.getLocalizedName().equals(selectedItem)) {
                     selectedFolderInfo = folderInfo;
                     break;
                 }
@@ -442,7 +449,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         Object selectedItem = folderInfoCombo.getSelectedItem();
         FolderInfo selectedFolderInfo = null;
         for (FolderInfo folderInfo : folderLocalBaseMap.keySet()) {
-            if (folderInfo.name.equals(selectedItem)) {
+            if (folderInfo.getLocalizedName().equals(selectedItem)) {
                 selectedFolderInfo = folderInfo;
                 break;
             }
