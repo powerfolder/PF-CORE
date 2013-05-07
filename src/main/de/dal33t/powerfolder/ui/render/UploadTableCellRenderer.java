@@ -206,7 +206,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
             setHorizontalAlignment(RIGHT);
         } else if (value instanceof FolderInfo) {
             FolderInfo foInfo = (FolderInfo) value;
-            setText(foInfo.name);
+            setText(foInfo.getLocalizedName());
             setHorizontalAlignment(LEFT);
         } else if (value instanceof Member) {
             Member node = (Member) value;
