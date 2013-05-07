@@ -56,6 +56,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -444,7 +445,10 @@ public class Account implements Serializable {
     }
 
     public String getDisplayName() {
-        if (username.contains("!") && !emails.isEmpty()) {
+        // TODO Rework completely
+        if (username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR)
+            && !emails.isEmpty())
+        {
             return emails.get(0);
         }
         return username;
