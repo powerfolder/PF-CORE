@@ -1434,10 +1434,8 @@ public class Controller extends PFComponent {
             backupFile = backupFile.resolve(getConfigName() + ".config.backup");
         }
         try {
-            // make backup
-            if (Files.exists(file)) {
-                PathUtils.copyFile(file, backupFile);
-            }
+            // Backup is done in #backupConfigAssets
+            Files.deleteIfExists(backupFile);
             String distName = "PowerFolder";
             if (distribution != null
                 && StringUtils.isNotBlank(distribution.getName()))
