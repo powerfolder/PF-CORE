@@ -75,6 +75,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 
 /**
@@ -463,14 +464,29 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (absPath.startsWith(folder.getLocalBase().getAbsolutePath())) {
-                ServerClient client = getController().getOSClient();
-                FileInfo fInfo = FileInfoFactory.lookupInstance(folder, file);
-                String linkURL = client.getFileLinkURL(fInfo);
+                final ServerClient client = getController().getOSClient();
+                final FileInfo fInfo = FileInfoFactory.lookupInstance(folder,
+                    file);
+
+                if (client.isConnected()) {
+                    getController().getIOProvider().startIO(new Runnable() {
+                        public void run() {
+                            // COOL MODE: Directly get file link without web
+                            // browser.
+                            String altURL = client.getFolderService()
+                                .getFileLink(fInfo);
+                            Util.setClipboardContents(altURL);
+                        }
+                    });
+                }
+
+                final String linkURL = client.getFileLinkURL(fInfo);
                 try {
                     BrowserLauncher.openURL(linkURL);
                 } catch (IOException e) {
                     logWarning("Unable to open in browser: " + linkURL);
                 }
+
                 return;
             }
         }
