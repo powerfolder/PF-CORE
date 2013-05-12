@@ -2,3 +2,6 @@
 /build
 /dist
 /build-local.properties
+/transfers
+/test-reports
+/junit*.properties
