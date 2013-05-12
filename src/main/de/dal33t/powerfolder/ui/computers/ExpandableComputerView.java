@@ -450,8 +450,8 @@ public class ExpandableComputerView extends PFUIComponent implements
     public JPopupMenu createPopupMenu() {
         if (contextMenu == null) {
             contextMenu = new JPopupMenu();
-            contextMenu.add(addRemoveFriendAction);
-            contextMenu.add(reconnectAction);
+            contextMenu.add(addRemoveFriendAction).setIcon(null);
+            contextMenu.add(reconnectAction).setIcon(null);
         }
         return contextMenu;
     }
