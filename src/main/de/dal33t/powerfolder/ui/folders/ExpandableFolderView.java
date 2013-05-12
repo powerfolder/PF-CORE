@@ -1147,7 +1147,12 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void openExplorer() {
-        PathUtils.openFile(folder.getCommitOrLocalDir());
+        // PFC-2349 : Don't freeze UI
+        getController().getIOProvider().startIO(new Runnable() {
+            public void run() {
+                PathUtils.openFile(folder.getCommitOrLocalDir());
+            }
+        });
     }
 
     /**

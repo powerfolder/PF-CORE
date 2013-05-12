@@ -31,7 +31,10 @@ import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNC_INCOMPLETE;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.TrayIcon;
+import java.io.IOException;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -75,6 +78,11 @@ public class TrayIconManager extends PFComponent {
         super(uiController.getController());
         this.uiController = uiController;
 
+        if (OSUtil.isLinux()) {
+            // PFC-2331
+            whitelistSystray();
+        }
+
         iconUpdater = new DelayedUpdater(getController());
 
         Image image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
@@ -105,6 +113,28 @@ public class TrayIconManager extends PFComponent {
 
         getController().scheduleAndRepeat(new SpinnerTask(),
             ROTATION_STEP_DELAY);
+    }
+
+    private void whitelistSystray() {
+        ScheduledFuture<?> fut = getController().schedule(new Runnable() {
+            public void run() {
+                try {
+                    Runtime
+                        .getRuntime()
+                        .exec(
+                            "gsettings set com.canonical.Unity.Panel systray-whitelist \"['all']\"");
+                } catch (IOException e) {
+                    logWarning("Unable to whitelist application for system tray icon. "
+                        + e);
+                }
+            }
+        }, 0);
+        try {
+            fut.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            logWarning("Unable to whitelist application for system tray icon. "
+                + e);
+        }
     }
 
     /**

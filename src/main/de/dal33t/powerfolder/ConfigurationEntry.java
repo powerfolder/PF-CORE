@@ -337,6 +337,12 @@ public enum ConfigurationEntry {
      * PFS-485 If it should be possible to send invite others.
      */
     SERVER_INVITE_ENABLED("server.invite.enabled", true),
+    
+    /**
+     * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
+     * Will create a new user account with server default settings for invitee. 
+     */
+    SERVER_INVITE_NEW_USERS_ENABLED("server.invite.new_users.enabled", true),
 
     /**
      * If "Password recovery" should be enabled. If not the server automatically

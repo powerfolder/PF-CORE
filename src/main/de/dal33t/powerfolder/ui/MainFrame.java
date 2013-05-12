@@ -1327,8 +1327,13 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PathUtils.openFile(getController().getFolderRepository()
-                .getFoldersBasedir());
+            // PFC-2349 : Don't freeze UI
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    PathUtils.openFile(getController().getFolderRepository()
+                        .getFoldersBasedir());
+                }
+            });
         }
     }
 

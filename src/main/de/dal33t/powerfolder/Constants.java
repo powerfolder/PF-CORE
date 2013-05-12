@@ -352,6 +352,8 @@ public class Constants {
     public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
 
     public static final String SESSIONS_SUB_DIR = "database/sessions";
+    
+    public static final String SHIBBOLETH_USERNAME_SEPARATOR = "!";
 
     // Web stuff **************************************************************
 

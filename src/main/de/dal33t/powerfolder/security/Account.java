@@ -56,6 +56,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -444,7 +445,8 @@ public class Account implements Serializable {
     }
 
     public String getDisplayName() {
-        if (username.contains("!") && !emails.isEmpty()) {
+        // TODO Rework completely
+        if (authByShibboleth() && !emails.isEmpty()) {
             return emails.get(0);
         }
         return username;
@@ -551,6 +553,24 @@ public class Account implements Serializable {
 
     public void setCustom3(String custom3) {
         this.custom3 = custom3;
+    }
+
+    public boolean authByShibboleth() {
+        // Fine a better way:
+        return username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
+    }
+
+    public boolean authByLDAP() {
+        return StringUtils.isNotBlank(ldapDN);
+    }
+
+    public boolean authByRADIUS() {
+        // Fine a better way:
+        return notes != null && notes.toLowerCase().contains("radius");
+    }
+    
+    public boolean authByDatabase() {
+        return !authByLDAP() && !authByRADIUS() && !authByShibboleth();
     }
 
     // PFS-742: TODO Add EXTRA Field for this later
