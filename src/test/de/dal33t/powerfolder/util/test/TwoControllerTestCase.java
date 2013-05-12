@@ -64,7 +64,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
     public static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
-        .getTestDir().getAbsoluteFile(), "ControllerBart/testFolder.pfzip");
+        .getTestDir().getAbsoluteFile(), "ControllerBart/testFolder");
     public static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper
         .getTestDir().getAbsoluteFile(), "ControllerLisa/testFolder");
 
