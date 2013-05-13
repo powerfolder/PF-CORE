@@ -49,6 +49,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     protected void setUp() throws Exception {
         System.out.println("DeletionSyncTest.setUp()");
         super.setUp();
+        ConfigurationEntry.FOLDER_WATCHER_ENABLED.setValue(getContollerBart(),
+            false);
+        ConfigurationEntry.FOLDER_WATCHER_ENABLED.setValue(getContollerLisa(),
+            false);
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
             getContollerBart(), Integer.MAX_VALUE);
         ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(

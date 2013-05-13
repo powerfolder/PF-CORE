@@ -1,5 +1,9 @@
-/build-local.properties
 /bin
 .PowerFolder
 /build
-/dist*
+/dists
+/dist
+/build-local.properties
+/transfers
+/test-reports
+/junit*.properties

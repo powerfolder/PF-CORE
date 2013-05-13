@@ -79,8 +79,8 @@ public abstract class TwoControllerTestCase extends TestCase {
     @Override
     protected void setUp() throws Exception {
         SyncProfile.META_FOLDER_SYNC = SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT;
-        System.setProperty("user.home",
-            Paths.get("build/test/home").toAbsolutePath().toString());
+        System.setProperty("user.home", Paths.get("build/test/home")
+            .toAbsolutePath().toString());
         Loggable.setLogNickPrefix(true);
         super.setUp();
 
@@ -109,8 +109,8 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         // Cleanup
         TestHelper.cleanTestDir();
-        PathUtils.recursiveDelete(Controller.getMiscFilesLocation()
-            .resolve("build"));
+        PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve(
+            "build"));
         cleanPreferences(Preferences.userNodeForPackage(PowerFolder.class)
             .node("build/test/ControllerBart/PowerFolder"));
         cleanPreferences(Preferences.userNodeForPackage(PowerFolder.class)
@@ -539,7 +539,8 @@ public abstract class TwoControllerTestCase extends TestCase {
     protected void assertFileMatch(Path diskFile, FileInfo fInfo,
         Controller controller) throws IOException
     {
-        boolean nameMatch = diskFile.toString().endsWith(fInfo.getFilenameOnly());
+        boolean nameMatch = diskFile.toString().endsWith(
+            fInfo.getFilenameOnly());
         boolean sizeMatch = false;
         long size = 0L;
         try {
@@ -547,12 +548,12 @@ public abstract class TwoControllerTestCase extends TestCase {
         } catch (IOException ioe) {
             // Ignore
         } finally {
-            sizeMatch = fInfo.isDeleted()
-                || size == fInfo.getSize();
+            sizeMatch = fInfo.isDeleted() || size == fInfo.getSize();
         }
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
-        boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo.isDeleted();
+        boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo
+            .isDeleted();
         boolean lastModifiedMatch = false;
         long lastModified = 0L;
         try {
@@ -560,21 +561,21 @@ public abstract class TwoControllerTestCase extends TestCase {
         } catch (IOException ioe) {
             // Ignore
         } finally {
-            lastModifiedMatch = lastModified == fInfo.getModifiedDate().getTime();
+            lastModifiedMatch = lastModified == fInfo.getModifiedDate()
+                .getTime();
         }
 
         // Skip last modification test when diskfile is deleted.
-        boolean matches = !Files.isDirectory(diskFile) && nameMatch && sizeMatch
-            && (Files.notExists(diskFile) || lastModifiedMatch) && deleteStatusMatch
-            && fileObjectEquals;
+        boolean matches = !Files.isDirectory(diskFile) && nameMatch
+            && sizeMatch && (Files.notExists(diskFile) || lastModifiedMatch)
+            && deleteStatusMatch && fileObjectEquals;
 
         assertTrue(
             "FileInfo does not match physical file. \nFileInfo:\n "
                 + fInfo.toDetailString() + "\nFile:\n "
                 + diskFile.getFileName().toString() + ", size: "
                 + Format.formatBytes(size) + ", lastModified: "
-                + new Date(lastModified)
-                + " (" + lastModified + ")"
+                + new Date(lastModified) + " (" + lastModified + ")"
                 + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: "
                 + sizeMatch + "\nlastModifiedMatch: " + lastModifiedMatch
                 + "\ndeleteStatus: " + deleteStatusMatch

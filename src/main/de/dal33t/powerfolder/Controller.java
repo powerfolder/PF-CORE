@@ -1437,6 +1437,7 @@ public class Controller extends PFComponent {
         try {
             // Backup is done in #backupConfigAssets
             Files.deleteIfExists(backupFile);
+
             String distName = "PowerFolder";
             if (distribution != null
                 && StringUtils.isNotBlank(distribution.getName()))
