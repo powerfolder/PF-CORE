@@ -136,7 +136,7 @@ public class ReconnectManager extends PFComponent {
             logFiner("Marking node for immediate reconnect: " + node);
         }
         if (node.isConnected() || node.isConnecting()) {
-            // Skip, not neccessary.
+            // Skip, not necessary.
             return;
         }
         synchronized (reconnectionQueue) {
