@@ -131,12 +131,23 @@ public class PathUtils {
         });
     }
 
-    @SuppressWarnings("unused")
     public static int getNumberOfSiblings(Path base, Filter<Path> filter) {
         int i = 0;
         try (DirectoryStream<Path> files = Files.newDirectoryStream(base,
             filter)) {
-            for (Path path : files) {
+
+            if (files == null) {
+                return 0;
+            }
+
+            Iterator<Path> it = files.iterator();
+
+            if (it == null) {
+                return 0;
+            }
+
+            while (it.hasNext()) {
+                it.next();
                 i++;
             }
         } catch (IOException ioe) {
