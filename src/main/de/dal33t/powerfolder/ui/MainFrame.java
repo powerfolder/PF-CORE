@@ -1289,11 +1289,17 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            try {
-                BrowserLauncher.openURL(client.getLoginURLWithCredentials());
-            } catch (IOException e1) {
-                logWarning("Unable to open web portal", e1);
-            }
+            // PFC-2349 : Don't freeze UI
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    try {
+                        BrowserLauncher.openURL(client
+                            .getLoginURLWithCredentials());
+                    } catch (IOException e1) {
+                        logWarning("Unable to open web portal", e1);
+                    }
+                }
+            });
         }
     }
 

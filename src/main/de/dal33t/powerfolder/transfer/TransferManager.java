@@ -15,23 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: TransferManager.java 21079 2013-03-15 02:10:37Z sprajc $
+ * $Id$
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,6 +61,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -809,12 +812,10 @@ public class TransferManager extends PFComponent {
         }
         removeDownloadManager(dlManager);
 
-        // Auto cleanup of Downloads
-        boolean autoClean = dlManager.getFileInfo().getFolderInfo()
-            .isMetaFolder();
-        autoClean = autoClean
-            || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController()) == 0;
+        // Auto cleanup of Downloads for meta folders, immediate clean up or non-experts.
+        boolean autoClean = dlManager.getFileInfo().getFolderInfo().isMetaFolder() ||
+            ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.getValueInt(getController()) == 0 ||
+            !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
         if (autoClean) {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());
@@ -844,12 +845,12 @@ public class TransferManager extends PFComponent {
     {
         Reject
             .ifBlank(folder.getDownloadScript(), "Download script is not set");
-        Path dlFile = fInfo.getDiskFile(getController().getFolderRepository());
+        File dlFile = fInfo.getDiskFile(getController().getFolderRepository());
         String command = folder.getDownloadScript();
-        command = command.replace("$file", dlFile.toAbsolutePath().toString());
-        command = command.replace("$path", dlFile.getParent().toString());
+        command = command.replace("$file", dlFile.getAbsolutePath());
+        command = command.replace("$path", dlFile.getParent());
         command = command.replace("$folderpath", folder.getLocalBase()
-            .toAbsolutePath().toString());
+            .getAbsolutePath());
 
         StringBuilder sourcesStr = new StringBuilder();
         for (Download source : dlManager.getSources()) {
@@ -1225,7 +1226,7 @@ public class TransferManager extends PFComponent {
         }
 
         FolderRepository repo = getController().getFolderRepository();
-        Path diskFile = dl.file.getDiskFile(repo);
+        File diskFile = dl.file.getDiskFile(repo);
         boolean fileInSyncWithDisk = diskFile != null
             && dl.file.inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
@@ -1233,14 +1234,9 @@ public class TransferManager extends PFComponent {
                 return null;
             }
             if (isWarning()) {
-                try {
-                    logWarning("File not in sync with disk: '"
-                        + dl.file.toDetailString() + "', disk file at "
-                        + Files.getLastModifiedTime(diskFile).toMillis());
-                } catch (IOException ioe) {
-                    logSevere("Could not access modification time of file "
-                        + diskFile.toAbsolutePath().toString());
-                }
+                logWarning("File not in sync with disk: '"
+                    + dl.file.toDetailString() + "', disk file at "
+                    + diskFile.lastModified());
             }
 
             // This should free up an otherwise waiting for download partner
@@ -2482,16 +2478,15 @@ public class TransferManager extends PFComponent {
      * Loads all pending downloads and enqueus them for re-download
      */
     private void loadDownloads() {
-        Path transferFile = Controller.getMiscFilesLocation().resolve(
+        File transferFile = new File(Controller.getMiscFilesLocation(),
             getController().getConfigName() + ".transfers");
-        if (Files.notExists(transferFile)) {
+        if (!transferFile.exists()) {
             logFine("No downloads to restore, "
-                + transferFile.toAbsolutePath() + " does not exists");
+                + transferFile.getAbsolutePath() + " does not exists");
             return;
         }
         try {
-            FileInputStream fIn = new FileInputStream(transferFile
-                .toAbsolutePath().toString());
+            FileInputStream fIn = new FileInputStream(transferFile);
             ObjectInputStream oIn = new ObjectInputStream(fIn);
             List<?> storedDownloads = (List<?>) oIn.readObject();
             oIn.close();
@@ -2554,23 +2549,17 @@ public class TransferManager extends PFComponent {
             logFine("Loaded " + storedDownloads.size() + " downloads");
         } catch (IOException e) {
             logSevere("Unable to load pending downloads", e);
-            try {
-                Files.delete(transferFile);
-            } catch (IOException ioe) {
+            if (!transferFile.delete()) {
                 logSevere("Unable to delete transfer file!");
             }
         } catch (ClassNotFoundException e) {
             logSevere("Unable to load pending downloads", e);
-            try {
-                Files.delete(transferFile);
-            } catch (IOException ioe) {
+            if (!transferFile.delete()) {
                 logSevere("Unable to delete pending downloads file!");
             }
         } catch (ClassCastException e) {
             logSevere("Unable to load pending downloads", e);
-            try {
-                Files.delete(transferFile);
-            } catch (IOException ioe) {
+            if (!transferFile.delete()) {
                 logSevere("Unable to delete pending downloads file!");
             }
         }
@@ -2598,18 +2587,17 @@ public class TransferManager extends PFComponent {
 
             logFiner("Storing " + storedDownloads.size() + " downloads ("
                 + nPending + " pending, " + nCompleted + " completed)");
-            Path transferFile = Controller.getMiscFilesLocation().resolve(
+            File transferFile = new File(Controller.getMiscFilesLocation(),
                 getController().getConfigName() + ".transfers");
             // for testing we should support getConfigName() with subdirs
-            if (Files.notExists(transferFile.getParent())) {
-                try {
-                    Files.createDirectories(transferFile.getParent());
-                } catch (IOException ioe) {
-                    logSevere("Failed to mkdir misc directory!");
-                }
+            if (!transferFile.getParentFile().exists()
+                && !new File(transferFile.getParent()).mkdirs())
+            {
+                logSevere("Failed to mkdir misc directory!");
             }
-            ObjectOutputStream oOut = new ObjectOutputStream(
-                Files.newOutputStream(transferFile));
+            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+                transferFile));
+            ObjectOutputStream oOut = new ObjectOutputStream(fOut);
             oOut.writeObject(storedDownloads);
             oOut.close();
         } catch (IOException e) {
