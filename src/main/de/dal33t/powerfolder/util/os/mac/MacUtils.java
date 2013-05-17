@@ -81,7 +81,7 @@ public class MacUtils extends Loggable {
         String fileName = "placeshelper";
         Path targetFile = Controller.getTempFilesLocation().resolve(fileName);
         try {
-            Files.delete(targetFile);
+            Files.deleteIfExists(targetFile);
         } catch (IOException ioe) {
             LOG.warning("Unable to delete the file '"
                 + targetFile.toAbsolutePath() + "'");
