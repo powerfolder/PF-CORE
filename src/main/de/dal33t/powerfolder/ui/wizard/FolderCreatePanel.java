@@ -347,14 +347,14 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 }
             }
 
-            Path existingFolder = baseDir.resolve(folderInfo.name);
+            Path existingFolder = baseDir.resolve(folderInfo.getLocalizedName());
             if (Files.exists(existingFolder)) {
                 log.finer("Folder is an existing subdirectory in basedir: "
                     + existingFolder);
                 return;
             }
 
-            Path shortcutFile = baseDir.resolve(folderInfo.getName() + Constants.LINK_EXTENSION);
+            Path shortcutFile = baseDir.resolve(folderInfo.getLocalizedName() + Constants.LINK_EXTENSION);
             String shortcutPath = shortcutFile.toAbsolutePath().toString();
             String filePath = folderSettings.getLocalBaseDir()
                 .toAbsolutePath().toString();
