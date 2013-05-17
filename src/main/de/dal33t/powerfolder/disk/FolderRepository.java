@@ -910,9 +910,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.addProblemListener(valveProblemListenerSupport);
 
         // Now create metaFolder and map to the same FolderInfo key.
-        FolderInfo metaFolderInfo = new FolderInfo(
-            Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
-            Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
+        FolderInfo metaFolderInfo = folderInfo.getMetaFolderInfo();
         File systemSubdir = new TFile(folder.getLocalBase(),
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         FolderSettings metaFolderSettings = new FolderSettings(new TFile(
@@ -1510,10 +1508,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!metaFolderInfo.isMetaFolder()) {
             return null;
         }
-        int i = metaFolderInfo.getId().indexOf(Constants.METAFOLDER_ID_PREFIX);
-        String folderId = metaFolderInfo.getId().substring(
-            i + Constants.METAFOLDER_ID_PREFIX.length());
-        return getFolder(folderId);
+        return getFolder(metaFolderInfo.getParentFolderInfo());
     }
 
     /**
