@@ -833,7 +833,7 @@ public class Folder extends PFComponent {
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
                         // TODO Maybe raise folder-problem....
-                        logWarning("Unable to archive old file!", e);
+                        logWarning("Unable to archive old file. " + e);
                         return false;
                     }
                 }
