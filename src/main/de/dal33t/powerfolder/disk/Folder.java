@@ -4546,18 +4546,7 @@ public class Folder extends PFComponent {
         if (!currentInfo.isMetaFolder()) {
             return currentInfo;
         }
-        Folder parentFolder = getController().getFolderRepository()
-            .getParentFolder(currentInfo);
-        if (parentFolder == null) {
-            if (currentInfo.isMetaFolder()) {
-                logFine("Unable to retrieve parent folder for " + currentInfo);
-            } else {
-                logWarning("Unable to retrieve parent folder for "
-                    + currentInfo);
-            }
-            return currentInfo;
-        }
-        return parentFolder.currentInfo;
+        return currentInfo.getParentFolderInfo();
     }
 
     // General stuff **********************************************************
