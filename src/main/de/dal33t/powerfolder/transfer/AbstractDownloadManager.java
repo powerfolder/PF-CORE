@@ -1246,7 +1246,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             || !getTempFile().setLastModified(
                 getFileInfo().getModifiedDate().getTime()))
         {
-            logSevere("Failed to update modification date! Detail:" + this);
+            logWarning("Failed to update modification date! Detail:" + this);
         }
     }
 }
