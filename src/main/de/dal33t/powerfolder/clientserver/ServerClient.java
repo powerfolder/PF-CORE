@@ -1449,7 +1449,9 @@ public class ServerClient extends PFComponent {
         Identity id = conHan != null ? conHan.getIdentity() : null;
         supportsQuickLogin = id != null && id.isSupportsQuickLogin();
         if (supportsQuickLogin) {
-            logFine("Quick login at server supported");
+            if (isFiner()) {
+                logFiner("Quick login at server supported");                
+            }
             serverConnected0(newNode);
         } else {
             logFine("Quick login at server NOT supported. Using regular login");
