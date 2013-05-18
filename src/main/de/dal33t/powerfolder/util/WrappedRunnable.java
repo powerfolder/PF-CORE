@@ -48,17 +48,26 @@ public class WrappedRunnable implements Runnable {
     public void run() {
         try {
             deligate.run();
+        } catch (OutOfMemoryError oom) {
+            oom.printStackTrace();
+            log.log(Level.SEVERE,
+                "Out of memory in " + deligate + ": " + oom.toString(), oom);
+            log.log(Level.SEVERE,
+                "Shutting down java virtual machine. Exit code: 107");
+            System.exit(107);
+            throw oom;
         } catch (Error t) {
             t.printStackTrace();
             log.log(Level.SEVERE, "Error in " + deligate + ": " + t.toString(),
                 t);
             throw t;
         } catch (HibernateException he) {
-            log.log(Level.SEVERE, "Database connection problem: " + he.getMessage());
+            log.log(Level.SEVERE,
+                "Database connection problem: " + he.getMessage());
         } catch (RuntimeException t) {
             t.printStackTrace();
-            log.log(Level.SEVERE, "RuntimeException in " + deligate + ": "
-                + t.toString(), t);
+            log.log(Level.SEVERE,
+                "RuntimeException in " + deligate + ": " + t.toString(), t);
             throw t;
         }
     }
