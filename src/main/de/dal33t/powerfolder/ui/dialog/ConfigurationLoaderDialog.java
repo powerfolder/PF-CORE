@@ -373,36 +373,40 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                         preConfig = loadFromInput(input + ":8080");
                     } catch (IOException e2) {
                         // Try even harder to connect via TCP directly
-                        Socket socket = new Socket();
-                        try {
-                            InetSocketAddress addr = Util
-                                .parseConnectionString(input);
-                            socket = new Socket();
-                            socket.connect(addr,
-                                Constants.SOCKET_CONNECT_TIMEOUT);
-                            if (socket.isConnected()) {
-                                logInfo("Got direct TCP connect to server "
-                                    + input);
-                                ConfigurationEntry.SERVER_HOST.setValue(
-                                    getController(), input);
-                                ConfigurationEntry.SERVER_NODEID
-                                    .removeValue(getController());
-                                ConfigurationEntry.SERVER_WEB_URL
-                                    .removeValue(getController());
-                                preConfig = new Properties();
-                                preConfig.put(ConfigurationEntry.SERVER_HOST
-                                    .getConfigKey(), input);
-                                preConfig.put(ConfigurationEntry.SERVER_WEB_URL
-                                    .getConfigKey(), "http://" + input
-                                    + ":8080");
-                            }
-                        } catch (Exception e3) {
-                            logInfo("Not direct TCP connect possible to "
-                                + input + ". " + e3);
-                        } finally {
+                        if (!input.toLowerCase().startsWith("http")) {
+                            Socket socket = new Socket();
                             try {
-                                socket.close();
+                                InetSocketAddress addr = Util
+                                    .parseConnectionString(input);
+                                socket = new Socket();
+                                socket.connect(addr,
+                                    Constants.SOCKET_CONNECT_TIMEOUT);
+                                if (socket.isConnected()) {
+                                    logInfo("Got direct TCP connect to server "
+                                        + input);
+                                    ConfigurationEntry.SERVER_HOST.setValue(
+                                        getController(), input);
+                                    ConfigurationEntry.SERVER_NODEID
+                                        .removeValue(getController());
+                                    ConfigurationEntry.SERVER_WEB_URL
+                                        .removeValue(getController());
+                                    preConfig = new Properties();
+                                    preConfig.put(
+                                        ConfigurationEntry.SERVER_HOST
+                                            .getConfigKey(), input);
+                                    preConfig.put(
+                                        ConfigurationEntry.SERVER_WEB_URL
+                                            .getConfigKey(), "http://" + input
+                                            + ":8080");
+                                }
                             } catch (Exception e3) {
+                                logInfo("Not direct TCP connect possible to "
+                                    + input + ". " + e3);
+                            } finally {
+                                try {
+                                    socket.close();
+                                } catch (Exception e3) {
+                                }
                             }
                         }
                     }
