@@ -510,7 +510,7 @@ public class TestHelper {
     }
 
     /**
-     * Creats a random name for a file.
+     * Creates a random name for a file.
      * <p>
      * Ensures, that there are upper and lower case characters in the filename.
      * 
@@ -529,7 +529,11 @@ public class TestHelper {
             }
             buf.append(c);
         }
-        buf.append(".test");
+        
+        // Not all file names have extensions. So half the time, do not add an extension.
+        if (Math.random() >= 0.5) {
+            buf.append(".test");
+        }
         return buf.toString();
     }
 
