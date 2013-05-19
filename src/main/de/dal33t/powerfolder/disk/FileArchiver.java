@@ -59,17 +59,15 @@ import de.schlichtherle.truezip.file.TFile;
  * version number. So 'data/info.txt' archive version 6 would be
  * 'archive/data/info.txt_K_6'.
  * 
- * The new format is to include the '_K_nnn' before any extension, so that the archive directory can be read normally.
- * So 'data/info.txt' archive version 6 would be 'archive/data/info_K_6.txt'.
- * 
  * @author dante
  */
 public class FileArchiver {
 
-    private static final Logger log = Logger.getLogger(FileArchiver.class.getName());
+    private static final Logger log = Logger.getLogger(FileArchiver.class
+        .getName());
     private static final VersionComparator VERSION_COMPARATOR = new VersionComparator();
-
-    private static final Pattern BASE_NAME_PATTERN = Pattern.compile("(.*)_K_\\d+(.*)");
+    private static final Pattern BASE_NAME_PATTERN = Pattern
+        .compile("(.*)_K_\\d+");
     private static final String SIZE_INFO_FILE = "Size";
 
     private final File archiveDirectory;
@@ -268,15 +266,15 @@ public class FileArchiver {
                 }
                 allSuccessful &= thisSuccessfuly;
             } else {
-                String oldBaseName = getBaseName(f);
-                File vf = new TFile(dir, oldBaseName);
+                String baseName = getBaseName(f);
+                File vf = new TFile(dir, baseName);
                 if (!checked.contains(vf)) {
                     checked.add(vf);
                 }
-                Collection<File> files = fileMap.get(oldBaseName);
+                Collection<File> files = fileMap.get(baseName);
                 if (files == null) {
                     files = new LinkedList<File>();
-                    fileMap.put(oldBaseName, files);
+                    fileMap.put(baseName, files);
                 }
                 files.add(f);
             }
@@ -292,63 +290,19 @@ public class FileArchiver {
         return allSuccessful;
     }
 
-    /**
-     * Get the parent name for an archived file.
-     * So file_K_6.txt yields file.txt, file_k_6 yields file
-     * and also supports the old way of archiving: file.txt_K_6 yields file.txt
-     * 
-     * THis method is only public for unit test, not intended for external use.
-     * 
-     * @param file
-     * @return
-     */
-    public static String getBaseName(File file) {
+    private static String getBaseName(File file) {
         Matcher m = BASE_NAME_PATTERN.matcher(file.getName());
         if (m.matches()) {
-            if (m.groupCount() == 1) {
-                // Ends with _K_n, so return the first group.
-                return m.group(1);
-            } if (m.groupCount() == 2) {
-                // Contained _K_n, so return the first group + second group.
-                return m.group(1) + m.group(2);
-            }
-        }
-        throw new IllegalArgumentException("File not in archive: " + file);
-    }
-
-    /**
-     * Convert a file name and version into archive file name, something like /bob/file_K_4.txt .
-     * 
-     * @param fileInfo
-     * @return
-     */
-    private TFile getArchiveTarget(FileInfo fileInfo) {
-        String relativeName = fileInfo.getRelativeName();
-        
-        // Split something like 'file.txt' into 'file' and '.txt', so we can insert the '_K_nnn' stuff.
-        String[] parts = new String[2];
-        if (relativeName.contains(".")) {
-            int pos = relativeName.lastIndexOf(".");
-            parts[0] = relativeName.substring(0, pos);
-            parts[1] = relativeName.substring(pos); // Includes the '.';
+            return m.group(1);
         } else {
-            parts[0] = relativeName;
-            parts[1] = "";
+            throw new IllegalArgumentException("File not in archive: " + file);
         }
-        return new TFile(archiveDirectory, FileInfoFactory.encodeIllegalChars(parts[0]) + "_K_" + fileInfo.getVersion() + 
-            FileInfoFactory.encodeIllegalChars(parts[1]));
     }
 
-    /**
-     * Convert a file name and version into archive file name, something like /bob/file.txt_K_4 .
-     * This is the old way of doing it, kept for compatibility.
-     * 
-     * @param fileInfo
-     * @return
-     */
-    private TFile getOldArchiveTarget(FileInfo fileInfo) {
-        String relativeName = fileInfo.getRelativeName();
-        return new TFile(archiveDirectory, FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName() + "_K_" + fileInfo.getVersion()));
+    private TFile getArchiveTarget(FileInfo fileInfo) {
+        return new TFile(archiveDirectory,
+            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName())
+                + "_K_" + fileInfo.getVersion());
     }
 
     private String getFileInfoName(File fileInArchive) {
@@ -376,21 +330,17 @@ public class FileArchiver {
     }
 
     /**
-     * Parse the file name for the last '_' and extract the following version number. 
-     * Like 'file_K_45.txt' returns 45.
-     * The old way is like 'file.txt_K_45' returns 45, so still support that.
+     * Parse the file name for the last '_' and extract the following version
+     * number. Like 'file.txt_K_45' returns 45.
      * 
-     * @param file file to parse name.
+     * @param file
+     *            file to parse name.
      * @return the version.
      */
     private static int getVersionNumber(File file) {
-        String fileName = file.getName();
-        String lastPart = fileName.substring(fileName.lastIndexOf('_') + 1);
-        if (lastPart.contains(".")) {
-            // Strip the extension.
-            lastPart = lastPart.substring(0, lastPart.lastIndexOf("."));
-        }
-        return Integer.parseInt(lastPart);
+        String tmp = file.getName();
+        tmp = tmp.substring(tmp.lastIndexOf('_') + 1);
+        return Integer.parseInt(tmp);
     }
 
     private static File[] getArchivedFiles(File directory, final String baseName)
@@ -402,26 +352,10 @@ public class FileArchiver {
         });
     }
 
-    /**
-     * See if an archive file name belongs to a base file.
-     * So see if 'file_K_nnn.txt', 'file_K_nnn' or 'file.txt_K_nnn' belong to 'file.txt'
-     * Putting '_K_nnn' at the end of an archive file was the old way, so still support these.
-     *  
-     * This method is only public for the test case. It should not be used externally.
-     * @param name
-     * @param baseName
-     * @return
-     */
-    public static boolean belongsTo(String name, String baseName) {
+    private static boolean belongsTo(String name, String baseName) {
         Matcher m = BASE_NAME_PATTERN.matcher(name);
         if (m.matches()) {
-            if (m.groupCount() == 1) {
-                // Ends with _K_nnn, so use the first group.
-                return Util.equalsRelativeName(m.group(1), baseName);
-            } if (m.groupCount() == 2) {
-                // Contained _K_nnn, so use the first group + second group.
-                return Util.equalsRelativeName(m.group(1) + m.group(2), baseName);
-            }
+            return Util.equalsRelativeName(m.group(1), baseName);
         }
         return false;
     }
@@ -501,10 +435,6 @@ public class FileArchiver {
         throws IOException
     {
         TFile archiveFile = getArchiveTarget(versionInfo);
-        if (!archiveFile.exists()) {
-            // Try with the old format, adding _K_nnn to end of file name, after extension.
-            archiveFile = getOldArchiveTarget(versionInfo);
-        }
         if (archiveFile.exists()) {
             log.fine("Restoring " + versionInfo.getRelativeName() + " to "
                 + target.getAbsolutePath());

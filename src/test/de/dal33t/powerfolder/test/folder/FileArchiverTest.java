@@ -19,7 +19,6 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import de.schlichtherle.truezip.file.TFile;
 
 public class FileArchiverTest extends TwoControllerTestCase {
-    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -28,33 +27,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
     }
-    
-    /**
-     * Helper utility to split a file name into name part and extension.
-     * The extension part, if present, includes the '.' separator.
-     * 
-     * "testFile.txt" --> String[2]{"testFile",".txt"}
-     * "testFileName" --> String[2]{"testFileName",""}
-     * 
-     * @param fileName
-     * @return
-     */
-    private static String[] splitFileName(String fileName) {
-        String[] fileNamePair = new String[2];
-        if (fileName.contains(".")) {
-            int pos = fileName.lastIndexOf(".");
-            fileNamePair[0] = fileName.substring(0, pos);
-            fileNamePair[1] = fileName.substring(pos); // Include the '.' with the extension.
-        } else {
-            fileNamePair[0] = fileName;
-            fileNamePair[1] = "";
-        }
-        return fileNamePair;
-    }
 
-    /**
-     * Check we can archive a file in the form <fileName>_K_n.<ext> .
-     */
     public void testCopyOrMoveFileArchiver() {
         Folder fb = getFolderAtBart();
         File tb = TestHelper.createRandomFile(fb.getLocalBase(), 1024);
@@ -74,15 +47,12 @@ public class FileArchiverTest extends TwoControllerTestCase {
         }
 
         File expected = new TFile(fb.getSystemSubDir(), "archive");
-        String[] fileNameParts = splitFileName(fib.getRelativeName()); 
-        expected = new TFile(expected, fileNameParts[0] + "_K_" + fib.getVersion() + fileNameParts[1]);
+        expected = new TFile(expected, fib.getRelativeName() + "_K_"
+            + fib.getVersion());
         assertTrue(expected.exists());
         assertEquals(expected.lastModified(), fib.getModifiedDate().getTime());
     }
 
-    /**
-     * Check that files backup on download.
-     */
     public void testBackupOnDownload() {
         final Folder fb = getFolderAtBart();
 
@@ -98,22 +68,19 @@ public class FileArchiverTest extends TwoControllerTestCase {
         });
 
         FileInfo fib = fb.getKnownFiles().iterator().next();
-        File expectedBart = new TFile(fb.getSystemSubDir(), "archive");
-        String[] fileNameParts = splitFileName(fib.getRelativeName());
-        expectedBart = new TFile(expectedBart, fileNameParts[0] + "_K_" + fib.getVersion() + fileNameParts[1]);
-        
-        File expectedLisa = new TFile(fl.getSystemSubDir(), "archive");
-        expectedLisa = new TFile(expectedLisa, fileNameParts[0] + "_K_" + fib.getVersion() + fileNameParts[1]);
+        File eBart = new TFile(fb.getSystemSubDir(), "archive");
+        eBart = new TFile(eBart, fib.getRelativeName() + "_K_"
+            + fib.getVersion());
+        File eLisa = new TFile(fl.getSystemSubDir(), "archive");
+        eLisa = new TFile(eLisa, fib.getRelativeName() + "_K_"
+            + fib.getVersion());
 
         modLisaFile(tl, fib);
 
-        assertTrue(expectedBart.exists());
-        assertFalse(expectedLisa.exists());
+        assertTrue(eBart.exists());
+        assertFalse(eLisa.exists());
     }
 
-    /**
-     * Check versioning works, limited to the required number of files.
-     */
     public void testLimitedVersions() {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(3);
@@ -141,10 +108,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         File ver[] = new TFile[4];
         File archdir = new TFile(fb.getSystemSubDir(), "archive");
-        String[] fileNameParts = splitFileName(fib.getRelativeName());
         for (int i = 0; i < ver.length; i++) {
-            
-            ver[i] = new TFile(archdir, fileNameParts[0] + "_K_" + i + fileNameParts[1]);
+            ver[i] = new TFile(archdir, fib.getRelativeName() + "_K_" + i);
         }
 
         assertFalse(ver[0].exists());
@@ -167,9 +132,6 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(ver[3].exists());
     }
 
-    /**
-     * Check actual versions change when archive versions change
-     */
     public void testChangeVersionsPerFile() {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(3);
@@ -193,9 +155,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
             modLisaFile(tl, fib);
         }
         File archdir = new TFile(fb.getSystemSubDir(), "archive");
-        String[] fileNameParts = splitFileName(fib.getRelativeName());
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = new TFile(archdir, fileNameParts[0] + "_K_" + i + fileNameParts[1]);
+            ver[i] = new TFile(archdir, fib.getRelativeName() + "_K_" + i);
         }
         assertEquals(0, fl.getFileArchiver().getSize());
         assertFalse(ver[0].exists());
@@ -237,9 +198,10 @@ public class FileArchiverTest extends TwoControllerTestCase {
         for (int i = 0; i < nVersion; i++) {
             TestHelper.waitMilliSeconds(2100);
             assertEquals(i + 2, modLisaFile(f, fInfo).getVersion());
-            assertTrue("Archived versions not found. Got: " +
-                    aBart.getArchivedFilesInfos(fInfo), 
-                    aBart.getArchivedFilesInfos(fInfo).size() > 0);
+            assertTrue(
+                "Archived versions not found. Got: "
+                    + aBart.getArchivedFilesInfos(fInfo), aBart
+                    .getArchivedFilesInfos(fInfo).size() > 0);
         }
         assertTrue(getFolderAtBart().getFileArchiver().getSize() > 0);
         assertEquals(nVersion + 1, aBart.getArchivedFilesInfos(fInfo).size());
@@ -264,7 +226,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
             .getLocalBase(), "subdir"));
         scanFolder(getFolderAtLisa());
         FileInfo fInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), f);
-        FileInfo dInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), f.getParentFile());
+        FileInfo dInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(),
+            f.getParentFile());
         getFolderAtLisa().removeFilesLocal(dInfo);
 
         assertTrue(getFolderAtLisa().getFileArchiver().restore(fInfo, f));
@@ -348,59 +311,5 @@ public class FileArchiverTest extends TwoControllerTestCase {
             }
         });
         return fInfo.getLocalFileInfo(getContollerLisa().getFolderRepository());
-    }
-    
-    /**
-     * Test the getBaseName method in FileArchiver.
-     * Check that it can get base names for 'file_K_nnn.txt', 'file_K_nnn' and the old way of 'file.txt_K_nnn'.
-     */
-    public void testGetBaseName() {
-        assertEquals("New way with extension", "file.txt", FileArchiver.getBaseName(new File("/bob/file_K_6.txt")));
-        assertEquals("New way with no extension", "file", FileArchiver.getBaseName(new File("bob/file_K_6")));
-        assertEquals("Old way with extension", "file.txt", FileArchiver.getBaseName(new File("file.txt_K_6")));
-        try {
-            FileArchiver.getBaseName(new File("file.txt"));
-            fail("Not an archive file");
-        } catch (IllegalArgumentException e) {
-            // Expected.
-        }
-    }
-    
-    /**
-     * Test the getBaseName method in FileArchiver.
-     * Check that archive files belong to parent files.
-     * Check for archive names like 'file_K_nnn.txt', 'file_K_nnn' and the old way of 'file.txt_K_nnn'.
-     */
-    public void testBelongsTo() {
-        assertTrue("New way with extension", FileArchiver.belongsTo("/bob/file_K_6.txt", "/bob/file.txt"));
-        assertTrue("New way with no extension", FileArchiver.belongsTo("bob/file_K_6", "bob/file"));
-        assertTrue("Old way with extension", FileArchiver.belongsTo("file.txt_K_6", "file.txt"));
-        assertFalse("Does not belong to", FileArchiver.belongsTo("file.txt_K_6", "word.doc"));
-    }
-    
-    /**
-     * The old way of storing archive files was like 'file.txt_K_nnn'.
-     * The current way is like 'file_K_nnn.txt'.
-     * So need to be sure that if there is an old archive file, it can be restored.
-     */
-    public void testOldArchiveVersions() throws IOException {
-        
-        // Create a file for Lisa and delete it.
-        getFolderAtLisa().setArchiveVersions(1);
-        File randomFile = TestHelper.createRandomFile(new File(getFolderAtLisa().getLocalBase(), "subdir"));
-        scanFolder(getFolderAtLisa());
-        FileInfo fileInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), randomFile);
-        FileInfo directoryInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), randomFile.getParentFile());
-        getFolderAtLisa().removeFilesLocal(directoryInfo);
-        
-        // Tinker with archive file name to make it look like the old archive type, with the '_K_nnn' at the end.
-        File archiveFolder = new TFile(getFolderAtLisa().getSystemSubDir(), "archive/subdir");
-        TFile archiveFile = (TFile) archiveFolder.listFiles()[0];
-        File oldFileForamt = new File(archiveFile.getParent(), randomFile.getName() + "_K_" + fileInfo.getVersion());
-        ((File)archiveFile).renameTo(oldFileForamt);  
-
-        // Can we restore the old file format?
-        assertTrue("File restore", getFolderAtLisa().getFileArchiver().restore(fileInfo, randomFile));
-        assertTrue("Restored file", randomFile.exists());
     }
 }
