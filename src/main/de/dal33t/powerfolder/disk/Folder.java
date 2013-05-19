@@ -2056,6 +2056,12 @@ public class Folder extends PFComponent {
                 if (file.exists()) {
                     try {
                         archiver.archive(fileInfo, file, false);
+                        if (file.exists()) {
+                            if (!file.delete()) {
+                                throw new IOException("Unable to revert: "
+                                    + file);
+                            }
+                        }
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
                             + ". Cannot overwrite local change. " + e);
