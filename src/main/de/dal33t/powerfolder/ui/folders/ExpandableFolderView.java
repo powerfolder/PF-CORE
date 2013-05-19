@@ -168,6 +168,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private FolderRemoveAction removeFolderLocalAction;
     private FolderRemoveAction removeFolderOnlineAction;
     private BackupOnlineStorageAction backupOnlineStorageAction;
+    private BrowseArchiveAction browseArchiveAction;
     private StopOnlineStorageAction stopOnlineStorageAction;
     private WebdavAction webdavAction;
     private WebViewAction webViewAction;
@@ -529,6 +530,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         backupOnlineStorageAction = new BackupOnlineStorageAction(
             getController());
+        browseArchiveAction = new BrowseArchiveAction(getController());
         stopOnlineStorageAction = new StopOnlineStorageAction(getController());
 
         syncFolderAction = new MySyncFolderAction(getController());
@@ -1141,6 +1143,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                     contextMenu.add(backupOnlineStorageAction).setIcon(null);
                 }
             }
+            if (expert) {
+                contextMenu.add(browseArchiveAction).setIcon(null);
+            }
         }
         return contextMenu;
     }
@@ -1150,6 +1155,14 @@ public class ExpandableFolderView extends PFUIComponent implements
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
                 FileUtils.openFile(folder.getCommitOrLocalDir());
+            }
+        });
+    }
+
+    private void openArchiveInExplorer() {
+        getController().getIOProvider().startIO(new Runnable() {
+            public void run() {
+                FileUtils.openFile(new File(folder.getSystemSubDir(), "archive"));
             }
         });
     }
@@ -1683,18 +1696,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    // private class MyProblemAction extends BaseAction {
-    //
-    // private MyProblemAction(Controller controller) {
-    // super("action_folder_problem", controller);
-    // }
-    //
-    // public void actionPerformed(ActionEvent e) {
-    // getController().getUIController().openProblemsInformation(
-    // folderInfo);
-    // }
-    // }
-    //
     private class MyClearCompletedDownloadsAction extends BaseAction {
 
         private MyClearCompletedDownloadsAction(Controller controller) {
@@ -1728,14 +1729,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    // private class MyFilesAvailableAction extends AbstractAction {
-    //
-    // public void actionPerformed(ActionEvent e) {
-    // getController().getUIController().openFilesInformationIncoming(
-    // folderInfo);
-    // }
-    // }
-
     private class MyDeletedFilesAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
@@ -1752,6 +1745,17 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             openExplorer();
+        }
+    }
+    
+    @SuppressWarnings("serial")
+    private class BrowseArchiveAction extends BaseAction {
+        private BrowseArchiveAction(Controller controller) {
+            super("action_browse_archive", controller);
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            openArchiveInExplorer();
         }
     }
 
