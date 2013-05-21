@@ -104,6 +104,8 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_LICENSE_KEY_FILES = "licenseKeyFiles";
     public static final String PROPERTYNAME_COMPUTERS = "computers";
     public static final String PROPERTYNAME_GROUPS = "groups";
+    public static final String PROPERTYNAME_FULLNAME = "fullname";
+    public static final String PROPERTYNAME_CONTACT_DATA = "contactData";
 
     @Id
     private String oid;
@@ -121,6 +123,10 @@ public class Account implements Serializable {
     @JoinColumn(name = "lastLoginFrom_id")
     private MemberInfo lastLoginFrom;
     private boolean proUser;
+
+    private String fullname;
+//    private Image / Path image;
+    private String contactData;
 
     // PFS-605
     private String custom1;
@@ -529,6 +535,22 @@ public class Account implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    public String getContactData() {
+        return contactData;
+    }
+
+    public void setContactData(String contactData) {
+        this.contactData = contactData;
     }
 
     public String getCustom1() {
