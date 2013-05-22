@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -104,7 +105,10 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_LICENSE_KEY_FILES = "licenseKeyFiles";
     public static final String PROPERTYNAME_COMPUTERS = "computers";
     public static final String PROPERTYNAME_GROUPS = "groups";
-    public static final String PROPERTYNAME_FULLNAME = "fullname";
+    public static final String PROPERTYNAME_DISPLAYNAME = "displayName";
+    public static final String PROPERTYNAME_FIRSTNAME = "firstname";
+    public static final String PROPERTYNAME_SURNAME = "surname";
+    public static final String PROPERTYNAME_IMAGE_URL = "imageURL";
     public static final String PROPERTYNAME_CONTACT_DATA = "contactData";
 
     @Id
@@ -124,9 +128,14 @@ public class Account implements Serializable {
     private MemberInfo lastLoginFrom;
     private boolean proUser;
 
-    private String fullname;
-//    private Image / Path image;
+    private String displayName;
+    private String firstname;
+    private String surname;
+    @Column(length = 1024)
     private String contactData;
+    @Type(type = "urlType")
+    @Column(length = 1024)
+    private URL imageURL;
 
     // PFS-605
     private String custom1;
@@ -451,11 +460,31 @@ public class Account implements Serializable {
     }
 
     public String getDisplayName() {
-        // TODO Rework completely
-        if (authByShibboleth() && !emails.isEmpty()) {
+        if (StringUtils.isNotBlank(displayName)) {
+            return displayName;
+        } else if (StringUtils.isNotBlank(firstname)
+            && StringUtils.isNotBlank(surname))
+        {
+            return firstname + " " + surname;
+        } else if (authByShibboleth() && !emails.isEmpty()) {
+            return emails.get(0);
+        } else if (!emails.isEmpty() && StringUtils.isNotBlank(emails.get(0))) {
             return emails.get(0);
         }
+
         return username;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public URL getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(URL imageURL) {
+        this.imageURL = imageURL;
     }
 
     public String getPassword() {
@@ -537,12 +566,20 @@ public class Account implements Serializable {
         this.notes = notes;
     }
 
-    public String getFullname() {
-        return fullname;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+    
+    public String getSurname() {
+        return surname;
+    }
+    
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getContactData() {
