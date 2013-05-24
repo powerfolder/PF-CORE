@@ -97,7 +97,6 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -4280,6 +4279,7 @@ public class Folder extends PFComponent {
      * @return the local fileinfo instance
      */
     public FileInfo getFile(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "FileInfo is null");
         FileInfo localInfo = dao.find(fInfo, null);
         if (localInfo != null) {
             return localInfo;
