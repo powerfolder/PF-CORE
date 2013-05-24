@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
@@ -902,7 +903,12 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                 permissionsRetrieved = true;
                 rebuild(res, defaultPermission);
             } catch (Exception e) {
-                logWarning(e.toString(), e);
+                if (e.getCause() instanceof SecurityException) {
+                    logWarning("Security Exception: "
+                        + e.getCause().getMessage());
+                } else {
+                    logWarning(e.toString(), e);
+                }
                 permissionsRetrieved = false;
                 rebuild(new HashMap<Serializable, FolderPermission>(), null);
             } finally {
