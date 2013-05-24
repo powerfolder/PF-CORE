@@ -247,9 +247,6 @@ public class Account implements Serializable {
         this.licenseKeyFileList = new CopyOnWriteArrayList<String>();
         this.groups = new CopyOnWriteArrayList<Group>();
         this.emails = new CopyOnWriteArrayList<String>();
-        this.firstname = "";
-        this.surname = "";
-        this.telephone = "";
     }
 
     /**
