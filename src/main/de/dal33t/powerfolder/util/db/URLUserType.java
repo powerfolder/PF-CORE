@@ -11,12 +11,12 @@ import java.sql.Types;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
-import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * @author <a href="krickl@powerfolder.com">Maximilian Krickl</a>
  */
-public class URLUserType extends Loggable implements UserType {
+public class URLUserType implements UserType {
 
     private static final int[] sqlTypes = {Types.VARCHAR};
 
@@ -65,6 +65,10 @@ public class URLUserType extends Loggable implements UserType {
         String urlString = rs.getString(names[0]);
 
         try {
+            if (StringUtils.isBlank(urlString)) {
+                return new URL("file://");
+            }
+
             return new URL(urlString);
         } catch (MalformedURLException e) {
             throw new HibernateException(e);

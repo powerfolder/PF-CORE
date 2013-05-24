@@ -56,6 +56,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -71,14 +72,20 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
+import de.dal33t.powerfolder.util.db.URLUserType;
 
 /**
  * A access to the system indentified by username & password.
  *
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-@TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
+@TypeDefs(
+    {
+        @TypeDef(name = "permissionType", typeClass = PermissionUserType.class),
+        @TypeDef(name = "urlType", typeClass = URLUserType.class)
+    }
+)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Account implements Serializable {
@@ -131,8 +138,7 @@ public class Account implements Serializable {
     private String displayName;
     private String firstname;
     private String surname;
-    @Column(length = 1024)
-    private String contactData;
+    private String telephone;
     @Type(type = "urlType")
     @Column(length = 1024)
     private URL imageURL;
@@ -582,12 +588,12 @@ public class Account implements Serializable {
         this.surname = surname;
     }
 
-    public String getContactData() {
-        return contactData;
+    public String getTelephone() {
+        return telephone;
     }
 
-    public void setContactData(String contactData) {
-        this.contactData = contactData;
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 
     public String getCustom1() {

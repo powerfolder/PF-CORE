@@ -172,21 +172,29 @@ public final class FileInfoFactory {
     public static FileInfo newFile(Folder folder, Path localFile,
         MemberInfo creator, boolean directory)
     {
+        long date = new Date().getTime();
+        long size = 0;
+
         try {
-            if (directory) {
-                return new DirectoryInfo(buildFileName(folder.getLocalBase(),
-                    localFile), creator, new Date(Files.getLastModifiedTime(
-                    localFile).toMillis()), 0, false, folder.getInfo());
-            } else {
-                return new FileInfo(
-                    buildFileName(folder.getLocalBase(), localFile),
-                    Files.size(localFile), creator, new Date(Files
-                        .getLastModifiedTime(localFile).toMillis()), 0, false,
-                    folder.getInfo());
-            }
+            date = Files.getLastModifiedTime(localFile).toMillis();
         } catch (IOException ioe) {
-            LOG.warning(ioe.getMessage());
-            return null;
+            LOG.fine(ioe.getMessage());
+        }
+
+        if (directory) {
+            return new DirectoryInfo(buildFileName(folder.getLocalBase(),
+                localFile), creator, new Date(date), 0, false, folder.getInfo());
+        } else {
+            try {
+                size = Files.size(localFile);
+            } catch (IOException ioe) {
+                LOG.fine(ioe.getMessage());
+            }
+
+            return new FileInfo(
+                buildFileName(folder.getLocalBase(), localFile),
+                size, creator, new Date(date), 0, false,
+                folder.getInfo());
         }
     }
 
