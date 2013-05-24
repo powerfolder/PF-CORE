@@ -27,6 +27,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
@@ -100,10 +101,14 @@ public class ServerClient extends PFComponent {
     private final AtomicBoolean loggingIn = new AtomicBoolean();
 
     /**
-     * ONLY FOR TESTS: If this client should connect to the server where his
-     * folders are hosted on.
+     * ONLY FOR TESTS: If this client should connect to the server where it is
+     * assigned to.
      */
     private boolean allowServerChange;
+
+    // Prevent HAMMERING on the cluster.
+    private int recentServerSwitches;
+    private Date recentServerSwitch;
     /**
      * Update the config with new HOST/ID infos if retrieved from server.
      */
@@ -247,7 +252,7 @@ public class ServerClient extends PFComponent {
         getController().scheduleAndRepeat(new AutoLoginTask(), 10L * 1000L,
             1000L * 30);
         // Wait 10 seconds at start
-        getController().scheduleAndRepeat(new HostingServerRetriever(),
+        getController().scheduleAndRepeat(new HostingServersConnector(),
             10L * 1000L, 1000L * Constants.HOSTING_FOLDERS_REQUEST_INTERVAL);
         // Don't start, not really required?
         // getController().scheduleAndRepeat(new AccountRefresh(), 1000L * 30,
@@ -1013,20 +1018,34 @@ public class ServerClient extends PFComponent {
         updateServer(a);
         updateFriendsList(a);
         getController().getFolderRepository().updateFolders(a);
-        getController().schedule(new HostingServerRetriever(), 1000L);
+        scheduleConnectHostingServers();
     }
 
     private void updateServer(Account a) {
         // Possible switch to new server
-        ServerInfo targetServer = a.getServer();
+        final ServerInfo targetServer = a.getServer();
         if (targetServer != null && allowServerChange) {
             // Not hosted on the server we just have logged into.
             boolean changeServer = !server.getInfo().equals(
                 targetServer.getNode());
             if (changeServer) {
-                logInfo("Switching from " + server.getNick() + " to "
-                    + targetServer.getNode().getNick());
-                changeToServer(targetServer);
+                boolean delay = currentlyHammeringServers()
+                    && !targetServer.getNode().getNode(getController(), true)
+                        .isConnected();
+                if (!delay) {
+                    logInfo("Switching from " + server.getNick() + " to "
+                        + targetServer.getNode().getNick());
+                    changeToServer(targetServer);
+                } else {
+                    logInfo("Switching from " + server.getNick() + " to "
+                        + targetServer.getNode().getNick() + " in "
+                        + HAMMER_DELAY / 1000 + "s");
+                    getController().scheduleAndRepeat(new Runnable() {
+                        public void run() {
+                            changeToServer(targetServer);
+                        }
+                    }, HAMMER_DELAY);
+                }
             }
         }
     }
@@ -1118,6 +1137,16 @@ public class ServerClient extends PFComponent {
         }
         // TODO: #2435
         return folderInCloud;
+    }
+
+    private void scheduleConnectHostingServers() {
+        boolean currentlyHammering = currentlyHammeringServers();
+        if (currentlyHammering) {
+            logWarning("Detected hammering of server/cluster. Throttling reconnect speed. (Stop! Hammer time). Next try in "
+                + HAMMER_DELAY / 1000 + "s");
+        }
+        getController().schedule(new HostingServersConnector(),
+            currentlyHammering ? HAMMER_DELAY : 1000L);
     }
 
     /**
@@ -1281,6 +1310,21 @@ public class ServerClient extends PFComponent {
     // Internal ***************************************************************
 
     private void setNewServerNode(Member newServerNode) {
+        // Hammering detection
+        if (server != null && newServerNode != null) {
+            boolean changed = !server.equals(newServerNode);
+            if (changed) {
+                if (recentServerSwitch != null
+                    && (System.currentTimeMillis() - recentServerSwitch
+                        .getTime()) > HAMMER_TIME)
+                {
+                    // Reset counter if last switch was "long" ago.
+                    recentServerSwitches = 0;
+                }
+                recentServerSwitch = new Date();
+                recentServerSwitches++;
+            }
+        }
         server = newServerNode;
         server.setServer(true);
         listenerSupport.nodeServerStatusChanged(new ServerClientEvent(this,
@@ -1294,6 +1338,16 @@ public class ServerClient extends PFComponent {
         // }
         // Re-initalize the service stubs on new server node.
         initializeServiceStubs();
+    }
+
+    private static final long HAMMER_TIME = 10000L;
+    private static final int HAMMER_HITS = 20;
+    private static final long HAMMER_DELAY = 30000L;
+
+    private boolean currentlyHammeringServers() {
+        return recentServerSwitch != null
+            && (System.currentTimeMillis() - recentServerSwitch.getTime()) <= HAMMER_TIME
+            && recentServerSwitches >= HAMMER_HITS;
     }
 
     private void initializeServiceStubs() {
@@ -1450,7 +1504,7 @@ public class ServerClient extends PFComponent {
         supportsQuickLogin = id != null && id.isSupportsQuickLogin();
         if (supportsQuickLogin) {
             if (isFiner()) {
-                logFiner("Quick login at server supported");                
+                logFiner("Quick login at server supported");
             }
             serverConnected0(newNode);
         } else {
@@ -1479,7 +1533,7 @@ public class ServerClient extends PFComponent {
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
                 login(username, passwordObf);
-                getController().schedule(new HostingServerRetriever(), 1000L);
+                scheduleConnectHostingServers();
             } catch (Exception ex) {
                 logWarning("Unable to login. " + ex);
                 logFine(ex);
@@ -1613,7 +1667,7 @@ public class ServerClient extends PFComponent {
     /**
      * Task to retrieve hosting Online Storage servers which host my files.
      */
-    private class HostingServerRetriever extends TimerTask {
+    private class HostingServersConnector extends TimerTask {
         @Override
         public void run() {
             connectHostingServers();
