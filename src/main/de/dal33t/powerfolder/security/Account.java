@@ -116,7 +116,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_FIRSTNAME = "firstname";
     public static final String PROPERTYNAME_SURNAME = "surname";
     public static final String PROPERTYNAME_IMAGE_URL = "imageURL";
-    public static final String PROPERTYNAME_CONTACT_DATA = "contactData";
+    public static final String PROPERTYNAME_TELEPHONE = "telephone";
 
     @Id
     private String oid;
@@ -247,6 +247,9 @@ public class Account implements Serializable {
         this.licenseKeyFileList = new CopyOnWriteArrayList<String>();
         this.groups = new CopyOnWriteArrayList<Group>();
         this.emails = new CopyOnWriteArrayList<String>();
+        this.firstname = "";
+        this.surname = "";
+        this.telephone = "";
     }
 
     /**
