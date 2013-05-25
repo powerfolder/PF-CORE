@@ -440,6 +440,8 @@ public class LoggingManager {
             // Close off the old one first.
             fileHandler.flush();
             fileHandler.close();
+            
+            fileHandler = null;
         }
     }
 
