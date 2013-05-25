@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -357,8 +356,7 @@ public class SecurityManagerClient extends PFComponent implements
     {
         Runnable refresher = new Refresher(node, refreshFolderMemberships);
         if (getController().isStarted()) {
-            getController().getThreadPool().schedule(refresher, 0,
-                TimeUnit.SECONDS);
+            getController().getIOProvider().startIO(refresher);
         }
     }
 
