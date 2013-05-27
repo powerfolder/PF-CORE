@@ -37,6 +37,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -80,7 +81,7 @@ public class TrayIconManager extends PFComponent {
 
         if (OSUtil.isLinux()) {
             // PFC-2331
-            whitelistSystray();
+            whitelistSystray(getController());
         }
 
         iconUpdater = new DelayedUpdater(getController());
@@ -115,8 +116,8 @@ public class TrayIconManager extends PFComponent {
             ROTATION_STEP_DELAY);
     }
 
-    private void whitelistSystray() {
-        ScheduledFuture<?> fut = getController().schedule(new Runnable() {
+    public static void whitelistSystray(Controller controller) {
+        ScheduledFuture<?> fut = controller.schedule(new Runnable() {
             public void run() {
                 try {
                     Runtime
@@ -124,16 +125,17 @@ public class TrayIconManager extends PFComponent {
                         .exec(
                             "gsettings set com.canonical.Unity.Panel systray-whitelist \"['all']\"");
                 } catch (IOException e) {
-                    logWarning("Unable to whitelist application for system tray icon. "
-                        + e);
+                    Logger.getLogger(TrayIconManager.class.getName()).warning(
+                        "Unable to whitelist application for system tray icon. "
+                            + e);
                 }
             }
         }, 0);
         try {
             fut.get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logWarning("Unable to whitelist application for system tray icon. "
-                + e);
+            Logger.getLogger(TrayIconManager.class.getName()).warning(
+                "Unable to whitelist application for system tray icon. " + e);
         }
     }
 

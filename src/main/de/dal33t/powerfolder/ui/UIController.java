@@ -299,6 +299,11 @@ public class UIController extends PFComponent {
             .getTransferManager());
         transferManagerModel.initialize();
 
+        if (OSUtil.isLinux()) {
+            // PFC-2331
+            TrayIconManager.whitelistSystray(getController());
+        }
+
         if (OSUtil.isSystraySupported()) {
             initializeSystray();
         } else {
