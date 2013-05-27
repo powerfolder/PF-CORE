@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
@@ -38,6 +39,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -838,55 +840,54 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-            if (Files.exists(targetFile)) {
-                // if file was a "newer file" the file already exists here
-                // Using local var because of possible race condition!!
-                FileArchiver arch = archiver;
-                if (arch != null) {
-                    try {
-                        FileInfo oldLocalFileInfo = fInfo
-                            .getLocalFileInfo(getController()
-                                .getFolderRepository());
-                        if (oldLocalFileInfo != null) {
-                            if (!currentInfo.isMetaFolder()
-                                && ConfigurationEntry.CONFLICT_DETECTION
-                                    .getValueBoolean(getController()))
-                            {
-                                try {
-                                    doSimpleConflictDetection(fInfo,
-                                        targetFile, oldLocalFileInfo);
-                                } catch (Exception e) {
-                                    logSevere("Problem withe conflict detection. "
-                                        + e);
-                                }
-                            }
-
-                            arch.archive(oldLocalFileInfo, targetFile, false);
-                        }
-                    } catch (IOException e) {
-                        // Same behavior as below, on failure drop out
-                        // TODO Maybe raise folder-problem....
-                        logWarning("Unable to archive old file!", e);
-                        return false;
-                    }
-                }
-                if (Files.exists(targetFile)) {
-                    try {
-                        Files.delete(targetFile);
-                    }
-                    catch (IOException ioe) {
-                        logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                            + targetFile.toAbsolutePath()
-                            + ". "
-                            + fInfo.toDetailString());
-                        return false;
-                    }
-                }
-            }
-
-            if (targetFile.getFileSystem().provider().getScheme()
-                .equals(Constants.ZYNCRO_SCHEME))
+            if (!PathUtils.isZyncroPath(targetFile))
             {
+                if (Files.exists(targetFile)) {
+                    // if file was a "newer file" the file already exists here
+                    // Using local var because of possible race condition!!
+                    FileArchiver arch = archiver;
+                    if (arch != null) {
+                        try {
+                            FileInfo oldLocalFileInfo = fInfo
+                                .getLocalFileInfo(getController()
+                                    .getFolderRepository());
+                            if (oldLocalFileInfo != null) {
+                                if (!currentInfo.isMetaFolder()
+                                    && ConfigurationEntry.CONFLICT_DETECTION
+                                        .getValueBoolean(getController()))
+                                {
+                                    try {
+                                        doSimpleConflictDetection(fInfo,
+                                            targetFile, oldLocalFileInfo);
+                                    } catch (Exception e) {
+                                        logSevere("Problem withe conflict detection. "
+                                            + e);
+                                    }
+                                }
+
+                                arch.archive(oldLocalFileInfo, targetFile,
+                                    false);
+                            }
+                        } catch (IOException e) {
+                            // Same behavior as below, on failure drop out
+                            // TODO Maybe raise folder-problem....
+                            logWarning("Unable to archive old file!", e);
+                            return false;
+                        }
+                    }
+                    if (Files.exists(targetFile)) {
+                        try {
+                            Files.delete(targetFile);
+                        } catch (IOException ioe) {
+                            logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                                + targetFile.toAbsolutePath()
+                                + ". "
+                                + fInfo.toDetailString());
+                            return false;
+                        }
+                    }
+                }
+            } else {
                 try {
                     String username = fInfo.getModifiedBy()
                         .getNode(getController(), false).getAccountInfo()
@@ -903,11 +904,15 @@ public class Folder extends PFComponent {
             }
 
             try {
+                if (PathUtils.isZyncroPath(targetFile))
+                {
+                    throw new IOException();
+                }
+
                 Files.move(tempFile, targetFile);
             }
             catch (IOException ioe) {
-                if (!localBase.getFileSystem().provider().getScheme()
-                    .equals(Constants.ZYNCRO_SCHEME))
+                if (!PathUtils.isZyncroPath(localBase))
                 {
                     logWarning("Was not able to rename tempfile, copiing "
                         + tempFile.toAbsolutePath() + " to "
@@ -915,16 +920,20 @@ public class Folder extends PFComponent {
                         + fInfo.toDetailString());
                 }
 
-                try {
-                    Files.copy(tempFile, targetFile);
-                } catch (IOException e) {
-                    // TODO give a diskfull warning?
-                    logSevere("Unable to store completed download "
-                        + targetFile.toAbsolutePath() + ". " + e.getMessage()
-                        + ". " + fInfo.toDetailString());
-                    logFiner(e);
-                    return false;
-                }
+                    try {
+                        if (PathUtils.isZyncroPath(targetFile)) {
+                            PathUtils.rawCopy(tempFile, targetFile);
+                        } else {
+                            Files.copy(tempFile, targetFile);
+                        }
+                    } catch (IOException e) {
+                        // TODO give a diskfull warning?
+                        logSevere("Unable to store completed download "
+                            + targetFile.toAbsolutePath() + ". " + e.getMessage()
+                            + ". " + fInfo.toDetailString());
+                        logFiner(e);
+                        return false;
+                    }
 
                 // Set modified date of remote
                 // TODO: Set last modified only if required
@@ -2950,8 +2959,7 @@ public class Folder extends PFComponent {
 
                     UserPrincipal owner = null;
 
-                    if (localCopy.getFileSystem().provider().getScheme()
-                        .equals(Constants.ZYNCRO_SCHEME))
+                    if (PathUtils.isZyncroPath(localCopy))
                     {
                         try {
                             String username = member.getAccountInfo()
@@ -3794,7 +3802,7 @@ public class Folder extends PFComponent {
     }
 
     private Path getSystemSubDir0() {
-        if (localBase.toUri().getScheme().equals(Constants.ZYNCRO_SCHEME)) {
+        if (PathUtils.isZyncroPath(localBase)) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
                 .resolve(PathUtils.removeInvalidFilenameChars(getId()))
                 .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
@@ -3840,8 +3848,7 @@ public class Folder extends PFComponent {
 
         // #1249
         if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
-            if (!localBase.getFileSystem().provider().getScheme()
-                .equals(Constants.ZYNCRO_SCHEME))
+            if (!PathUtils.isZyncroPath(localBase))
             {
                 boolean inaccessible = Files.notExists(localBase)
                     || !PathUtils.hasContents(localBase);
