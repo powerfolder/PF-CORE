@@ -138,7 +138,7 @@ public abstract class AbstractDistribution extends Loggable implements
             }
             int n = ConfigurationLoader.merge(preConfig,
                 controller.getConfig(), controller.getPreferences(), overWrite);
-            logInfo("Loaded " + n + " preconfiguration file "
+            logFine("Loaded " + n + " preconfiguration file "
                 + DEFAULT_CONFIG_FILENAME + " from jar file");
             return true;
         } catch (IOException e) {
