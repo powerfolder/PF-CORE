@@ -146,7 +146,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 8;
     private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 11;
+    private static final int REVISION_VERSION = 13;
     /**
      * Program version.
      */
@@ -839,10 +839,10 @@ public class Controller extends PFComponent {
             }
 
             if (LoggingManager.isLogToFile()) {
-                logInfo("Running in VERBOSE mode, logging to file '"
+                logFine("Logging to file '"
                     + LoggingManager.getLoggingFileName() + '\'');
             } else {
-                logInfo("Running in VERBOSE mode, no logging to file");
+                logInfo("No logging to file");
             }
         }
 
