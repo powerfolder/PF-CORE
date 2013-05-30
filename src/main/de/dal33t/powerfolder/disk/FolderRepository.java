@@ -993,6 +993,19 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param deleteSystemSubDir
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
+        removeFolder(folder, deleteSystemSubDir, true);
+    }
+
+    /**
+     * Removes a folder from active folders, will be added as non-local folder
+     * 
+     * @param folder
+     * @param deleteSystemSubDir
+     * @param saveConfig
+     */
+    public void removeFolder(Folder folder, boolean deleteSystemSubDir,
+        boolean saveConfig)
+    {
         Reject.ifNull(folder, "Folder is null");
         try {
             suspendNewFolderSearch.incrementAndGet();
@@ -1016,7 +1029,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             removeConfigEntries(folder.getConfigEntryId());
 
             // Save config
-            getController().saveConfig();
+            if (saveConfig) {                
+                getController().saveConfig();
+            }
 
             // Shutdown meta folder as well
             Folder metaFolder = getMetaFolderForParent(folder.getInfo());
