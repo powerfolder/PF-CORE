@@ -848,11 +848,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folderSettings.getLocalBaseDir()))
                 {
                     logSevere("Tried to create duplicate folder "
-                        + folder.getName() + " at "
-                        + folder.getCommitOrLocalDir());
+                        + folder.getName() + ". at "
+                        + folder.getCommitOrLocalDir()
+                        + ". Existing folder ID: " + folder.getId()
+                        + ". Requested folder ID: " + folderInfo.getId());
                     throw new IllegalStateException(
                         "Tried to create duplicate folder " + folder.getName()
-                            + " at " + folder.getCommitOrLocalDir());
+                            + ". at " + folder.getCommitOrLocalDir()
+                            + ". Existing folder ID: " + folder.getId()
+                            + ". Requested folder ID: " + folderInfo.getId());
                 }
             }
         }
