@@ -78,7 +78,6 @@ import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.message.SingleFileAccept;
 import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.message.TransferStatus;
@@ -1841,10 +1840,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 getController().getFolderRepository().getFileRequestor()
                     .receivedFileHistory((FileHistoryReply) message);
 
-            } else if (message instanceof SingleFileAccept) {
-                // getController().getTransferManager().processSingleFileAcceptance(
-                // (SingleFileAccept) message, fromPeer.getMember().getInfo());
-                expectedTime = 50;
             } else if (message instanceof AccountStateChanged) {
                 AccountStateChanged asc = (AccountStateChanged) message;
                 if (isFine()) {
