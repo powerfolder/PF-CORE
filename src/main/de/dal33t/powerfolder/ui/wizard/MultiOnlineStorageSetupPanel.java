@@ -49,6 +49,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -161,7 +162,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 "wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
-        builder.add(localFolderButton, cc.xy(5, 3));
+        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            builder.add(localFolderButton, cc.xy(5, 3));
+        }
 
         // manualSyncCB is disabled for Luna (6.0) - #2726.
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
@@ -189,14 +192,17 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
-
         localFolderField = new JTextField();
-        localFolderButton = new JButtonMini(
-            Icons.getIconById(Icons.DIRECTORY),
-            Translation
-                .getTranslation("wizard.multi_online_storage_setup.select_directory"));
-        MyActionListener myActionListener = new MyActionListener();
-        localFolderButton.addActionListener(myActionListener);
+        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            localFolderButton = new JButtonMini(
+                Icons.getIconById(Icons.DIRECTORY),
+                Translation
+                    .getTranslation("wizard.multi_online_storage_setup.select_directory"));
+            MyActionListener myActionListener = new MyActionListener();
+            localFolderButton.addActionListener(myActionListener);
+        } else {
+           localFolderField.setEnabled(false);
+        }
 
         // For non-experts - just choose between auto sync and manual.
         manualSyncCB = new JCheckBox(Translation.getTranslation(
