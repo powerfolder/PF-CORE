@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.util.db.GenericDAO;
 /**
  * Data Access Object for FolderInfo objects.
  * 
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
     /**
