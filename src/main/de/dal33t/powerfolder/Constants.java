@@ -213,7 +213,7 @@ public class Constants {
     /**
      * The timeout for a service request in seconds
      */
-    public static final long REQUEST_RESPONSE_TIMEOUT = 30;
+    public static final long REQUEST_RESPONSE_TIMEOUT = 60;
 
     // Basic networking options ***********************************************
 
