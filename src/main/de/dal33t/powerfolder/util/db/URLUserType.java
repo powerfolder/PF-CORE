@@ -66,7 +66,7 @@ public class URLUserType implements UserType {
 
         try {
             if (StringUtils.isBlank(urlString)) {
-                return new URL("file://");
+                return null;
             }
 
             return new URL(urlString);
