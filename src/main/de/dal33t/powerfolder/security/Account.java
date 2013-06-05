@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.security;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,7 +55,6 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -72,7 +70,6 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
-import de.dal33t.powerfolder.util.db.URLUserType;
 
 /**
  * A access to the system indentified by username & password.
@@ -80,12 +77,7 @@ import de.dal33t.powerfolder.util.db.URLUserType;
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-@TypeDefs(
-    {
-        @TypeDef(name = "permissionType", typeClass = PermissionUserType.class),
-        @TypeDef(name = "urlType", typeClass = URLUserType.class)
-    }
-)
+@TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Account implements Serializable {
@@ -115,7 +107,6 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_DISPLAYNAME = "displayName";
     public static final String PROPERTYNAME_FIRSTNAME = "firstname";
     public static final String PROPERTYNAME_SURNAME = "surname";
-    public static final String PROPERTYNAME_IMAGE_URL = "imageURL";
     public static final String PROPERTYNAME_TELEPHONE = "telephone";
 
     @Id
@@ -135,13 +126,12 @@ public class Account implements Serializable {
     private MemberInfo lastLoginFrom;
     private boolean proUser;
 
-    private String displayName;
+    @Column(length = 256)
     private String firstname;
+    @Column(length = 255)
     private String surname;
+    @Column(length = 255)
     private String telephone;
-    @Type(type = "urlType")
-    @Column(length = 1024)
-    private URL imageURL;
 
     // PFS-605
     private String custom1;
@@ -466,12 +456,10 @@ public class Account implements Serializable {
     }
 
     public String getDisplayName() {
-        if (StringUtils.isNotBlank(displayName)) {
-            return displayName;
-        } else if (StringUtils.isNotBlank(firstname)
-            && StringUtils.isNotBlank(surname))
+        if (StringUtils.isNotBlank(firstname)
+            || StringUtils.isNotBlank(surname))
         {
-            return firstname + " " + surname;
+            return (firstname + " " + surname).trim();
         } else if (authByShibboleth() && !emails.isEmpty()) {
             return emails.get(0);
         } else if (!emails.isEmpty() && StringUtils.isNotBlank(emails.get(0))) {
@@ -479,18 +467,6 @@ public class Account implements Serializable {
         }
 
         return username;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public URL getImageURL() {
-        return imageURL;
-    }
-
-    public void setImageURL(URL imageURL) {
-        this.imageURL = imageURL;
     }
 
     public String getPassword() {
