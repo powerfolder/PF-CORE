@@ -1890,13 +1890,12 @@ public class Folder extends PFComponent {
                     i++;
                 }
             }
-            if (Files.exists(dbFile)) {
-                try {
-                    Files.delete(dbFile);
-                }
-                catch (IOException ioe) {
-                    logSevere("Failed to delete database file: " + dbFile);
-                }
+            
+            try {
+                Files.deleteIfExists(dbFile);
+            }
+            catch (IOException ioe) {
+                logSevere("Failed to delete database file: " + dbFile);
             }
             try {
                 Files.createFile(dbFile);
