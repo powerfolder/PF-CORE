@@ -196,6 +196,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             } catch (Exception e) {
                 // Hmmmmm.
             }
+            Collections.reverse(versions);
             return versions;
         }
 
