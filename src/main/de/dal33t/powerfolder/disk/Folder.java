@@ -26,8 +26,8 @@ import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -380,15 +380,14 @@ public class Folder extends PFComponent {
             deviceDisconnected = true;
         }
 
-        FileFilter allExceptSystemDirFilter = new FileFilter() {
-            public boolean accept(File pathname) {
-                return !isSystemSubDir(pathname);
+        FilenameFilter allExceptSystemDirFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return !name
+                    .equalsIgnoreCase(Constants.POWERFOLDER_SYSTEM_SUBDIR);
             }
         };
-
-        if (localBase.list() != null
-            && localBase.listFiles(allExceptSystemDirFilter).length == 0)
-        {
+        String[] filenames = localBase.list(allExceptSystemDirFilter);
+        if (filenames != null && filenames.length == 0) {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
         }
