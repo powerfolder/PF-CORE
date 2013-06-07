@@ -59,6 +59,11 @@ public class DiskItemFilter {
      * Patterns file name.
      */
     public static final String PATTERNS_FILENAME = "ignore.patterns";
+    
+    /**
+     * Never allow this.
+     */
+    private static final String PATTERN_IGNORE_ALL = "*";
 
     /**
      * The patterns that will be used to match DiskItems with.
@@ -109,20 +114,22 @@ public class DiskItemFilter {
         if (file.exists()) {
             BufferedReader reader = null;
             try {
-                Set<Pattern> tempPatterns = new HashSet<Pattern>();
+                Set<Pattern> loadedPatterns = new HashSet<Pattern>();
                 reader = new BufferedReader(new TFileReader(new TFile(file)));
                 String readPattern;
                 while ((readPattern = reader.readLine()) != null) {
                     String trimmedPattern = readPattern.trim();
-                    if (trimmedPattern.length() > 0) {
-                        tempPatterns.add(createPattern(trimmedPattern));
+                    if (trimmedPattern.length() > 0
+                        && !trimmedPattern.equals(PATTERN_IGNORE_ALL))
+                    {
+                        loadedPatterns.add(createPattern(trimmedPattern));
                     }
                 }
 
                 // Did anything change?
                 boolean allTheSame = true;
-                if (tempPatterns.size() == patterns.size()) {
-                    for (Pattern tempPattern : tempPatterns) {
+                if (loadedPatterns.size() == patterns.size()) {
+                    for (Pattern tempPattern : loadedPatterns) {
                         if (!patterns.contains(tempPattern)) {
                             allTheSame = false;
                             break;
@@ -145,7 +152,7 @@ public class DiskItemFilter {
                     listenerSupport.patternRemoved(new PatternChangedEvent(
                         this, oldPattern.getPatternText(), false));
                 }
-                for (Pattern newPattern : tempPatterns) {
+                for (Pattern newPattern : loadedPatterns) {
                     patterns.add(newPattern);
                     listenerSupport.patternAdded(new PatternChangedEvent(this,
                         newPattern.getPatternText(), true));
@@ -234,6 +241,10 @@ public class DiskItemFilter {
     private void addPattern0(Pattern pattern) {
         if (patterns.contains(pattern)) {
             // Already contained
+            return;
+        }
+        if (pattern.getPatternText().equals(PATTERN_IGNORE_ALL)) {
+            // Don't add
             return;
         }
         try {
