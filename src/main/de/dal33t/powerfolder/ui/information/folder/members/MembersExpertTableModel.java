@@ -906,6 +906,10 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                 if (e.getCause() instanceof SecurityException) {
                     logWarning("Security Exception: "
                         + e.getCause().getMessage());
+                }
+                if (e.getCause() instanceof RemoteCallException) {
+                    logWarning("Remote Call Exception: "
+                        + e.getCause().getMessage());
                 } else {
                     logWarning(e.toString(), e);
                 }
