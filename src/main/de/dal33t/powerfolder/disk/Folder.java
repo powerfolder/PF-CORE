@@ -2337,7 +2337,8 @@ public class Folder extends PFComponent {
                         + ". Myself got no read permission";
                     if (getController().isStarted()
                         && member.isCompletelyConnected()
-                        && getController().getOSClient().isConnected())
+                        && getController().getOSClient().isConnected()
+                        && getController().getOSClient().isLoggedIn())
                     {
                         logWarning(msg);
                     } else {
