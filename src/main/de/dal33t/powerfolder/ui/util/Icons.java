@@ -38,6 +38,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -477,6 +479,30 @@ public class Icons {
         return icon;
     }
 
+    public static Icon getIconByMember(Member member) {
+        String username = member.getAccountInfo().getUsername();
+        String host = member.getHostName();
+        String urlString = host + "/avatars/" + username + ".png";
+
+        try {
+            URL url = new URL(urlString);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.connect();
+            int code = con.getResponseCode();
+
+            if (code == 200) {
+                return new ImageIcon(url);
+            }
+        } catch (MalformedURLException e) {
+            log.warning("Avatar URL was malformed: " + urlString);
+        } catch (IOException e) {
+            log.fine("");
+        }
+        return getIconFor(member);
+    }
+    
     /**
      * returns a icon based on the state of the fileinfo this maybe a normal
      * gray or red icon

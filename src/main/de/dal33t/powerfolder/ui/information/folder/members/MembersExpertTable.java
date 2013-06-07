@@ -170,6 +170,11 @@ public class MembersExpertTable extends JTable {
                 }
                 else {
                     Member member = folderMember.getMember();
+                    if (member != null) {
+                        icon = Icons.getIconByMember(member);
+                    } else {
+                        icon = Icons.getIconById(Icons.NODE_DISCONNECTED);
+                    }
                     icon = member != null ? Icons.getIconFor(member) : Icons
                         .getIconById(Icons.NODE_DISCONNECTED);
                 }
