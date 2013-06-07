@@ -839,8 +839,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             return ConnectResult.failure("Peer is not set");
         }
 
-        if (getController().getOSClient().isServer(this)) {
-            getController().getOSClient().serverConnected(this);
+        if (getController().getOSClient().isPrimaryServer(this)) {
+            getController().getOSClient().primaryServerConnected(this);
         }
 
         boolean wasHandshaked = handshaked;
@@ -1349,7 +1349,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         int expectedTime = -1;
         long start = System.currentTimeMillis();
         try {
-            if (getController().getOSClient().isServer(this)) {
+            if (getController().getOSClient().isPrimaryServer(this)) {
                 ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(true);
             }
             // related folder is filled if message is a folder related message
@@ -1692,7 +1692,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                 // Server is the only one who is allowed to send invitations
                 // with a different invitor
-                if (!getController().getOSClient().isServer(this)) {
+                if (!getController().getOSClient().isPrimaryServer(this)) {
                     // To ensure invitor is correct for all other computers
                     invitation.setInvitor(getInfo());
                 }
