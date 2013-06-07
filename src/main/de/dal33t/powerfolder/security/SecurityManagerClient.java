@@ -286,7 +286,7 @@ public class SecurityManagerClient extends PFComponent implements
      * @see de.dal33t.powerfolder.security.SecurityManager#getAccountInfo(de.dal33t.powerfolder.Member)
      */
     public AccountInfo getAccountInfo(Member node) {
-        if (client.isServer(node)) {
+        if (client.isPrimaryServer(node)) {
             return NULL_ACCOUNT;
         }
         Session session = sessions.get(node);
@@ -351,11 +351,22 @@ public class SecurityManagerClient extends PFComponent implements
         return aInfo;
     }
 
+    private final Map<String, Member> refreshing = Util.createConcurrentHashMap();
+    
     public void nodeAccountStateChanged(final Member node,
         boolean refreshFolderMemberships)
     {
+        if (!getController().isStarted()) {
+            return;
+        }
+        String key = node.getId() + refreshFolderMemberships;
+        if (refreshing.containsKey(key)) {
+            // Currently refreshing
+            return;
+        }
         Runnable refresher = new Refresher(node, refreshFolderMemberships);
         if (getController().isStarted()) {
+            refreshing.put(key, node);
             getController().getIOProvider().startIO(refresher);
         }
     }
@@ -495,7 +506,7 @@ public class SecurityManagerClient extends PFComponent implements
         public void run() {
             // The server connected!
             boolean server = false;
-            if (client.isServer(node) && node.isConnected()) {
+            if (client.isPrimaryServer(node) && node.isConnected()) {
                 prefetchAccountInfos();
                 server = true;
             }
@@ -524,6 +535,9 @@ public class SecurityManagerClient extends PFComponent implements
                     node.synchronizeFolderMemberships();
                 }
             }
+
+            // Not longer refreshing this node.
+            refreshing.remove(node.getId() + syncFolderMemberships);
         }
     }
 
