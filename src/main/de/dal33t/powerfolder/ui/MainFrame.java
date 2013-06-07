@@ -467,8 +467,12 @@ public class MainFrame extends PFUIComponent {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     try {
-                        BrowserLauncher.openURL(client.getWebURL(
-                            Constants.MY_ACCOUNT_URI, true));
+                        if (StringUtils.isBlank(client.getUsername())) {
+                            PFWizard.openLoginWizard(getController(), client);
+                        } else {
+                            BrowserLauncher.openURL(client.getWebURL(
+                                Constants.MY_ACCOUNT_URI, true));
+                        }
                     } catch (IOException ex) {
                         logSevere(ex);
                     }
