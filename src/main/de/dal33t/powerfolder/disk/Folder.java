@@ -3850,10 +3850,9 @@ public class Folder extends PFComponent {
             if (!PathUtils.isZyncroPath(localBase))
             {
                 boolean inaccessible = Files.notExists(localBase)
-                    || !PathUtils.hasContents(localBase);
+                    || PathUtils.getNumberOfSiblings(localBase) == 0;
                 if (inaccessible) {
-                    // TODO: change back to Warning
-                    logFine("Local base empty on linux file system, but has known files. "
+                    logWarning("Local base empty on linux file system, but has known files. "
                         + localBase);
                     return setDeviceDisconnected(true);
                 }
