@@ -885,16 +885,18 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {
-            boolean inBaseDir = folderSettings.getLocalBaseDir()
-                .getParent().equals(getFoldersBasedir());
-            if (!inBaseDir) {
-                logSevere("Not allowed to create " + folderInfo.getName()
-                    + " at " + folderSettings.getLocalBaseDirString()
-                    + ". Must be in base directory: " + getFoldersBasedir());
-                throw new IllegalStateException("Not allowed to create "
-                    + folderInfo.getName() + " at "
-                    + folderSettings.getLocalBaseDirString()
-                    + ". Must be in base directory: " + getFoldersBasedir());
+            Path localBaseDirParent = folderSettings.getLocalBaseDir().getParent();
+            if (localBaseDirParent != null) {
+                boolean inBaseDir = localBaseDirParent.equals(getFoldersBasedir());
+                if (!inBaseDir) {
+                    logSevere("Not allowed to create " + folderInfo.getName()
+                        + " at " + folderSettings.getLocalBaseDirString()
+                        + ". Must be in base directory: " + getFoldersBasedir());
+                    throw new IllegalStateException("Not allowed to create "
+                        + folderInfo.getName() + " at "
+                        + folderSettings.getLocalBaseDirString()
+                        + ". Must be in base directory: " + getFoldersBasedir());
+                }
             }
         }
 
