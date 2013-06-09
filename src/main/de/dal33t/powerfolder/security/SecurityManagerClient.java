@@ -504,40 +504,43 @@ public class SecurityManagerClient extends PFComponent implements
         }
 
         public void run() {
-            // The server connected!
-            boolean server = false;
-            if (client.isPrimaryServer(node) && node.isConnected()) {
-                prefetchAccountInfos();
-                server = true;
-            }
-
-            // Myself changed!
-            if (node.isMySelf() && client.isConnected()) {
-                try {
-                    client.refreshAccountDetails();
-                } catch (Exception e) {
-                    logWarning("Unable to refresh account details. " + e);
-                    logFiner(e);
+            try {
+                // The server connected!
+                boolean server = false;
+                if (client.isPrimaryServer(node) && node.isConnected()) {
+                    prefetchAccountInfos();
+                    server = true;
                 }
-            }
 
-            // Refresh MemberInfo->AccountInfo cache
-            clearNodeCache(node);
-            refresh(node);
-
-            // This is required because of probably changed access
-            // permissions to any folder.
-            if (syncFolderMemberships) {
-                if (node.isMySelf() || server) {
-                    getController().getFolderRepository()
-                        .triggerSynchronizeAllFolderMemberships();
-                } else if (node.isCompletelyConnected()) {
-                    node.synchronizeFolderMemberships();
+                // Myself changed!
+                if (node.isMySelf() && client.isConnected()) {
+                    try {
+                        client.refreshAccountDetails();
+                    } catch (Exception e) {
+                        logWarning("Unable to refresh account details. " + e);
+                        logFiner(e);
+                    }
                 }
+
+                // Refresh MemberInfo->AccountInfo cache
+                clearNodeCache(node);
+                refresh(node);
+
+                // This is required because of probably changed access
+                // permissions to any folder.
+                if (syncFolderMemberships) {
+                    if (node.isMySelf() || server) {
+                        getController().getFolderRepository()
+                            .triggerSynchronizeAllFolderMemberships();
+                    } else if (node.isCompletelyConnected()) {
+                        node.synchronizeFolderMemberships();
+                    }
+                }
+            } finally {
+                // Not longer refreshing this node.
+                refreshing.remove(node.getId() + syncFolderMemberships);
             }
 
-            // Not longer refreshing this node.
-            refreshing.remove(node.getId() + syncFolderMemberships);
         }
     }
 
