@@ -1024,45 +1024,52 @@ public class ServerClient extends PFComponent {
     private void updateServer(Account a) {
         // Possible switch to new server
         final ServerInfo targetServer = a.getServer();
-        if (targetServer != null && allowServerChange) {
-            // Not hosted on the server we just have logged into.
-            boolean changeServer = !server.getInfo().equals(
-                targetServer.getNode());
-            if (changeServer) {
-                final Member targetServerNode = targetServer.getNode().getNode(
-                    getController(), true);
-                boolean delayedAndChecked = currentlyHammeringServers()
-                    || !targetServerNode.isConnected();
-                if (!delayedAndChecked) {
-                    logInfo("Switching from " + server.getNick() + " to "
-                        + targetServerNode.getNick());
-                    changeToServer(targetServer);
-                } else {
-                    logInfo("Switching from " + server.getNick() + " to "
-                        + targetServerNode.getNick() + " in " + HAMMER_DELAY
-                        / 1000 + "s");
-                    getController().scheduleAndRepeat(new Runnable() {
-                        public void run() {
-                            if (!targetServerNode.isConnected()) {
-                                if (!isConnected()) {
-                                    logWarning("Unable to connect to server: "
-                                        + targetServerNode.getNick()
-                                        + ". Searching for alternatives...");
-                                    findAlternativeServer();
-                                }
-                            } else {
-                                boolean changeServer = !server.getInfo()
-                                    .equals(targetServer.getNode());
-                                if (changeServer) {
-                                    changeToServer(targetServer);
-                                }
-                            }
-
-                        }
-                    }, HAMMER_DELAY);
-                }
-            }
+        if (targetServer == null || !allowServerChange) {
+            return;
         }
+        // Not hosted on the server we just have logged into.
+        boolean changeServer = !server.getInfo().equals(targetServer.getNode());
+        if (!changeServer) {
+            return;
+        }
+        final Member targetServerNode = targetServer.getNode().getNode(
+            getController(), true);
+        boolean delayedAndChecked = currentlyHammeringServers()
+            || !targetServerNode.isConnected();
+        if (!delayedAndChecked) {
+            logInfo("Switching from " + server.getNick() + " to "
+                + targetServerNode.getNick());
+            changeToServer(targetServer);
+        } else {
+            logInfo("Switching from " + server.getNick() + " to "
+                + targetServerNode.getNick() + " in " + HAMMER_DELAY / 1000
+                + "s");
+            try {
+                Thread.sleep(HAMMER_DELAY);
+            } catch (InterruptedException e) {
+                logFiner(e);
+                return;
+            }
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    if (!targetServerNode.isConnected()) {
+                        if (!isConnected()) {
+                            logWarning("Unable to connect to server: "
+                                + targetServerNode.getNick()
+                                + ". Searching for alternatives...");
+                            findAlternativeServer();
+                        }
+                    } else {
+                        boolean changeServer = !server.getInfo().equals(
+                            targetServer.getNode());
+                        if (changeServer) {
+                            changeToServer(targetServer);
+                        }
+                    }
+                }
+            });
+        }
+
     }
 
     private void updateFriendsList(Account a) {
@@ -1188,9 +1195,16 @@ public class ServerClient extends PFComponent {
 
     private void retrieveAndConnectoClusterServers() {
         try {
+            if (ConfigurationEntry.SERVER_LOAD_NODES
+                .getValueBoolean(getController()))
+            {
+                getController().getNodeManager().loadServerNodes();
+            }
+            
             if (!isConnected() || !isLoggedIn()) {
                 return;
             }
+            
             Collection<FolderInfo> infos = getController()
                 .getFolderRepository().getJoinedFolderInfos();
             FolderInfo[] folders = infos.toArray(new FolderInfo[infos.size()]);
@@ -1200,13 +1214,6 @@ public class ServerClient extends PFComponent {
                 logFine("Got " + hostingServers.size() + " servers for our "
                     + folders.length + " folders: " + hostingServers);
             }
-
-            if (ConfigurationEntry.SERVER_LOAD_NODES
-                .getValueBoolean(getController()))
-            {
-                getController().getNodeManager().loadServerNodes();
-            }
-
             for (MemberInfo hostingServerInfo : hostingServers) {
                 Member hostingServer = hostingServerInfo.getNode(
                     getController(), true);
