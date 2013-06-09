@@ -412,8 +412,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Find all folder entries.
         Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
-        // Load on all processor
-        int loaders = Math.min(Runtime.getRuntime().availableProcessors(), 8);
+        // Load on many processors
+        int loaders = Math.min(Runtime.getRuntime().availableProcessors() - 2,
+            8);
+        if (loaders <= 0) {
+            loaders = 1;
+        }
         final Semaphore loadPermit = new Semaphore(loaders);
         final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder MD5s.
