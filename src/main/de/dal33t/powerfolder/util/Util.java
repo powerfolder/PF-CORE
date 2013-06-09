@@ -670,32 +670,56 @@ public class Util {
     }
 
     /**
+     * Checks if a program version is between (including border versions) two
+     * versions
+     * 
+     * @param lowVersion
+     * @param compareVersion
+     * @param highVersion
+     * @return
+     */
+    public static boolean betweenVersion(String lowVersion,
+        String compareVersion, String highVersion)
+    {
+        Reject.ifNull(lowVersion, "lowVersion is null");
+        Reject.ifNull(compareVersion, "compareVersion is null");
+        Reject.ifNull(highVersion, "highVersion is null");
+
+        boolean isBetween = !compareVersions(lowVersion, compareVersion);
+        if (!isBetween) {
+            return false;
+        }
+        return compareVersions(highVersion, compareVersion);
+    }
+
+    /**
      * Comparse two version string which have the format "x.x.x aaa".
      * <p>
      * The last " aaa" is optional.
      * 
-     * @param versionStr1
-     * @param versionStr2
-     * @return true if versionStr1 is greater than versionStr2
+     * @param higherVersion
+     * @param compareVersion
+     * @return true if higherVersion is greater than compareVersion
      */
-    public static boolean compareVersions(String versionStr1, String versionStr2)
+    public static boolean compareVersions(String higherVersion,
+        String compareVersion)
     {
-        Reject.ifNull(versionStr1, "Version1 is null");
-        Reject.ifNull(versionStr2, "Version2 is null");
+        Reject.ifNull(higherVersion, "higherVersion is null");
+        Reject.ifNull(compareVersion, "compareVersion is null");
 
-        versionStr1 = versionStr1.trim();
-        versionStr2 = versionStr2.trim();
+        higherVersion = higherVersion.trim();
+        compareVersion = compareVersion.trim();
 
         String addition1 = "";
-        int addStart1 = versionStr1.indexOf(' ');
+        int addStart1 = higherVersion.indexOf(' ');
         if (addStart1 >= 0) {
             // Get addition text "x.x.x additionaltext"
-            addition1 = versionStr1.substring(addStart1 + 1,
-                versionStr1.length());
-            versionStr1 = versionStr1.substring(0, addStart1);
+            addition1 = higherVersion.substring(addStart1 + 1,
+                higherVersion.length());
+            higherVersion = higherVersion.substring(0, addStart1);
         }
 
-        StringTokenizer nizer1 = new StringTokenizer(versionStr1, ".");
+        StringTokenizer nizer1 = new StringTokenizer(higherVersion, ".");
         int major1 = 0;
         try {
             major1 = Integer.valueOf(nizer1.nextToken());
@@ -714,15 +738,15 @@ public class Util {
         }
 
         String addition2 = "";
-        int addStart2 = versionStr2.indexOf(' ');
+        int addStart2 = compareVersion.indexOf(' ');
         if (addStart2 >= 0) {
             // Get addition text "x.x.x additionaltext"
-            addition2 = versionStr2.substring(addStart2 + 1,
-                versionStr2.length());
-            versionStr2 = versionStr2.substring(0, addStart2);
+            addition2 = compareVersion.substring(addStart2 + 1,
+                compareVersion.length());
+            compareVersion = compareVersion.substring(0, addStart2);
         }
 
-        StringTokenizer nizer2 = new StringTokenizer(versionStr2, ".");
+        StringTokenizer nizer2 = new StringTokenizer(compareVersion, ".");
         int major2 = 0;
         try {
             major2 = Integer.valueOf(nizer2.nextToken());
