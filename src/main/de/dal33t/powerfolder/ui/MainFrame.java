@@ -1148,6 +1148,9 @@ public class MainFrame extends PFUIComponent {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
                     .getTranslation("main_frame.log_in_failed.text"));
+                if (!PFWizard.isWizardOpen()) {
+                    PFWizard.openLoginWizard(getController(), client);
+                }
             }
         } else {
             loginActionLabel.setText(Translation
