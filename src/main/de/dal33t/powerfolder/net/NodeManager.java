@@ -1062,7 +1062,7 @@ public class NodeManager extends PFComponent {
                 + handler + ", disconnecting").with(handler);
         }
         if (!remoteIdentity.getMemberInfo().isOnSameNetwork(getController())) {
-            if (getController().getOSClient().isServer(handler)
+            if (getController().getOSClient().isPrimaryServer(handler)
                 && !mySelf.isServer())
             {
                 logWarning("Server not on same network " + handler
@@ -1080,6 +1080,23 @@ public class NodeManager extends PFComponent {
                 + handler + ", disconnecting. remote network ID: "
                 + remoteIdentity.getMemberInfo().networkId
                 + ". Expected/Ours: " + getNetworkId()).with(handler);
+        }
+
+        if (!mySelf.isServer()
+            && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                .getValueBoolean(getController()))
+        {
+            ServerClient client = getController().getOSClient();
+            // Only actually connect to other clients if logged into server.
+            if (!client.isLoggedIn() && !client.isPrimaryServer(handler)) {
+                handler.shutdown();
+                logWarning("Not connected to server ("
+                    + client.getServer().getNick() + ") yet. Disconnecting "
+                    + handler.getMyIdentity().getMemberInfo());
+                throw new ConnectionException("Not connected to server ("
+                    + client.getServer().getNick() + ") yet. Disconnecting "
+                    + handler.getMyIdentity().getMemberInfo()).with(handler);
+            }
         }
 
         Member member;
