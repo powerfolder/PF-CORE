@@ -2038,6 +2038,10 @@ public class Folder extends PFComponent {
             // Ok in sync
             return false;
         }
+        if (diskItemFilter.isExcluded(fileInfo)) {
+            // Is excluded from sync. Don't delete. Might be meta-data.
+            return false;
+        }
         getFolderWatcher().addIgnoreFile(fileInfo);
         try {
             if (newestVersion == null) {
@@ -2378,7 +2382,7 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
-            logInfo("Member joined " + member.getNick());
+            logInfo("Member " + member.getNick() + " joined");
         }
         if (!init) {
             if (!wasMember && member.isCompletelyConnected()) {
