@@ -78,8 +78,8 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
  * Class to model a folder's members. provides columns for image, name, sync
  * status, folder size, local size.
  */
-public class MembersExpertTableModel extends PFUIComponent implements TableModel,
-    SortedTableModel
+public class MembersExpertTableModel extends PFUIComponent implements
+    TableModel, SortedTableModel
 {
 
     static final int COL_TYPE = 0;
@@ -855,7 +855,19 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             refreshFor = folder;
             for (Member member : folder.getMembersAsCollection()) {
                 if (!member.isServer()) {
-                    getAllFolderPermission(member.getAccountInfo(), folder.getInfo());
+                    getAllFolderPermission(member.getAccountInfo(),
+                        folder.getInfo());
+                }
+                if (member.isConnected() || member.isMySelf()) {
+                    logWarning("Refreshed "
+                        + folder.getName()
+                        + ". Filelist received? "
+                        + (member.hasCompleteFileListFor(folder.getInfo()) || member
+                            .isMySelf()) + ". Files/Dirs: "
+                        + folder.getDAO().count(member.getId(), true, false)
+                        + ". Sync: "
+                        + folder.getStatistic().getSyncPercentage(member)
+                        + " for " + member);
                 }
             }
 
