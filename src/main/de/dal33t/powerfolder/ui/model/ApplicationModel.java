@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
@@ -135,6 +136,8 @@ public class ApplicationModel extends PFUIComponent {
 
             // Let other nodes scan now!
             folder.broadcastScanCommand();
+
+            folder.broadcastMessages(new FileListRequest(folder.getInfo()));
 
             // Recommend scan on this. User request, so recommend with true.
             folder.recommendScanOnNextMaintenance(true);

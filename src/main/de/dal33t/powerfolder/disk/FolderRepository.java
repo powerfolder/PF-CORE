@@ -61,6 +61,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
@@ -1872,6 +1873,39 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
                 folder.checkSync();
+
+                if (folder.getStatistic().getHarmonizedSyncPercentage() == 100.0d)
+                {
+                    continue;
+                }
+                if (folder.getConnectedMembersCount() == 0) {
+                    continue;
+                }
+                if (folder.getKnownItemCount() == 0) {
+                    continue;
+                }
+                if (!folder.hasReadPermission(getController().getMySelf())) {
+                    continue;
+                }
+                // Rationale: We might have not received file list from a server
+                // PFC-2368
+                for (Member member : folder.getConnectedMembers()) {
+                    if (!member.hasCompleteFileListFor(folder.getInfo())) {
+                        // Might still be transferring those filelists.
+                        continue;
+                    }
+                    int nMemberItems = folder.getDAO().count(member.getId(),
+                        true, false);
+                    if (nMemberItems > 0) {
+                        continue;
+                    }
+                    // OK: Handle it. There is a connected member on an unsyced
+                    // folder, which has send ZERO files.
+                    logInfo("Re-requesting file list for " + folder.getName()
+                        + " from " + member.getNick());
+                    member.sendMessageAsynchron(new FileListRequest(folder
+                        .getInfo()));
+                }
             }
         }
     }
