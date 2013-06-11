@@ -2729,7 +2729,7 @@ public class Controller extends PFComponent {
             String filename = getConfigName() + ".notices";
             File file = new File(getMiscFilesLocation(), filename);
             if (file.exists()) {
-                logInfo("Loading notices");
+                logFiner("Loading notices");
                 ObjectInputStream inputStream = null;
                 try {
                     inputStream = new ObjectInputStream(
@@ -2741,7 +2741,7 @@ public class Controller extends PFComponent {
                         uiController.getApplicationModel().getNoticesModel()
                             .handleSystemNotice(notice, true);
                     }
-                    logInfo("Loaded " + notices.size() + " notices.");
+                    logFine("Loaded " + notices.size() + " notices.");
                 } catch (FileNotFoundException e) {
                     logSevere("FileNotFoundException", e);
                 } catch (IOException e) {
