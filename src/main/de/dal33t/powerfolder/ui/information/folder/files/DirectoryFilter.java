@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -265,8 +266,16 @@ public class DirectoryFilter extends FilterModel {
         FilteredDirectory filteredDirectory;
 
         synchronized (refilter) {
+            Date ignoreDeletedBeforeDate = null;
+            if (fileFilterMode == FILE_FILTER_MODE_UNSYNCHRONIZED) {
+                ignoreDeletedBeforeDate = new Date(
+                    System.currentTimeMillis()
+                        - ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
+                            .getValueInt(getController()));
+            }
             filteredDirectoryModel = new FilteredDirectoryModel(
-                folder.getName(), currentDirectoryInfo.getRelativeName());
+                folder.getName(), currentDirectoryInfo.getRelativeName(),
+                ignoreDeletedBeforeDate);
             filteredDirectory = filteredDirectoryModel.getFilteredDirectory();
         }
 
@@ -389,7 +398,7 @@ public class DirectoryFilter extends FilterModel {
                     if (fileFilterMode != FILE_FILTER_MODE_DELETED_PREVIOUS
                         ^ di.isDeleted())
                     {
-                        filteredDirectoryModel.getFileInfos().add(di);
+                        filteredDirectoryModel.addFileInfo(di);
                     }
                 }
             } else {
@@ -461,8 +470,9 @@ public class DirectoryFilter extends FilterModel {
 
         if (showFile) {
             if (addFiles) {
-                result.getFilteredCount().incrementAndGet();
-                filteredDirectoryModel.getFileInfos().add(fileInfo);
+                if (filteredDirectoryModel.addFileInfo(fileInfo)) {
+                    result.getFilteredCount().incrementAndGet();                    
+                }
             }
         }
 

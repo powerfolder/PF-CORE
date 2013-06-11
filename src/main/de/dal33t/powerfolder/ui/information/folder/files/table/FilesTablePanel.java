@@ -28,6 +28,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -47,6 +48,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -67,8 +69,8 @@ import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.SwingWorker;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -304,8 +306,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     public void invalidate() {
-        tableModel
-            .setFilteredDirectoryModel(new FilteredDirectoryModel("", ""));
+        tableModel.setFilteredDirectoryModel(new FilteredDirectoryModel("", "",
+            null));
         emptyLabel.setText(Translation
             .getTranslation("files_table_panel.finding_files"));
         emptyResetLink.setVisible(false);
