@@ -619,20 +619,20 @@ public class MainFrame extends PFUIComponent {
         Date syncDate = folderRepositoryModel.getLastSyncDate();
 
         // Upper text / setup text stuff.
-        double overallSyncPercentage =
-                folderRepositoryModel.getOverallSyncPercentage();
+        double overallSyncPercentage = folderRepositoryModel
+            .getOverallSyncPercentage();
         String upperText = " ";
         String setupText = " ";
 
         if (event.equals(PAUSED)) {
-                String pausedTemp = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d ?
-                        Format.formatDecimal(overallSyncPercentage) + '%' : "";
-                upperText = Translation.getTranslation("main_frame.paused", pausedTemp);
+            String pausedTemp = overallSyncPercentage >= 0
+                && overallSyncPercentage < 99.5d ? Format
+                .formatPercent(overallSyncPercentage) : "";
+            upperText = Translation.getTranslation("main_frame.paused",
+                pausedTemp);
         } else if (event.equals(NOT_STARTED)) {
-                upperText = Translation.getTranslation(
-                        "main_frame.not_running");
-                setupText = Translation.getTranslation(
-                        "main_frame.activate_now");
+            upperText = Translation.getTranslation("main_frame.not_running");
+            setupText = Translation.getTranslation("main_frame.activate_now");
         } else if (event.equals(NO_FOLDERS)) {
                 upperText = Translation.getTranslation("main_frame.no_folders");
                 setupText = getApplicationModel().getActionModel()
