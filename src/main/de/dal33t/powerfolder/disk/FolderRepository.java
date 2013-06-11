@@ -1748,12 +1748,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (hasJoinedFolder(folderInfo)) {
                     continue;
                 }
-                
-                String folderName = folderInfo.name;
-                folderName = folderName.replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
-                    Translation.getTranslation("general.group")).replace(
-                    Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-                    Translation.getTranslation("general.department"));
+
+                String folderName = folderInfo.getLocalizedName();
 
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()

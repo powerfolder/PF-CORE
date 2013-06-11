@@ -469,7 +469,9 @@ public class MainFrame extends PFUIComponent {
                     try {
                         if (StringUtils.isBlank(client.getUsername())) {
                             PFWizard.openLoginWizard(getController(), client);
-                        } else {
+                        } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+                            .getValueBoolean(getController()))
+                        {
                             BrowserLauncher.openURL(client.getWebURL(
                                 Constants.MY_ACCOUNT_URI, true));
                         }

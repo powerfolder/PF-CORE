@@ -295,7 +295,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
                     Translation.getTranslation("general.group"))
                 .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-                    Translation.getTranslation("general.department")));
+                    Translation.getTranslation("general.department"))
+                .replace(Constants.ZYNCRO_COMPANY_TOKEN,
+                    Translation.getTranslation("general.company")));
             syncProfileSelectorPanel.setSyncProfile(
                 folderProfileMap.get(selectedFolderInfo), false);
         }
