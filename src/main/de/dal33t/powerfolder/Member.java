@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FileHistoryReply;
 import de.dal33t.powerfolder.message.FileHistoryRequest;
 import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.FileRequestCommand;
 import de.dal33t.powerfolder.message.FolderDBMaintCommando;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
@@ -1621,6 +1622,37 @@ public class Member extends PFComponent implements Comparable<Member> {
                     setNick(settingsChange.newInfo.nick);
                 }
                 expectedTime = 50;
+            } else if (message instanceof FileListRequest) {
+                // Re-Send file list to client.
+
+                if (targetFolder != null) {
+                    Runnable filelistSender = new Runnable() {
+                        public void run() {
+                            if (targetFolder.hasReadPermission(Member.this)) {
+                                // FIX for #924
+                                targetFolder.waitForScan();
+                                // Send filelist of joined folders
+                                logInfo("Resending file list of "
+                                    + targetFolder.getName() + " to "
+                                    + getNick());
+                                Message[] filelistMsgs = FileList.create(
+                                    targetFolder, targetFolder
+                                        .supportExternalizable(Member.this));
+                                for (Message filelistMsg : filelistMsgs) {
+                                    try {
+                                        sendMessage(filelistMsg);
+                                    } catch (ConnectionException e) {
+                                        logWarning("Unable to send new filelist of "
+                                            + targetFolder.getName()
+                                            + " to "
+                                            + getNick());
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    getController().getIOProvider().startIO(filelistSender);
+                }
 
             } else if (message instanceof FileList) {
                 final FileList remoteFileList = (FileList) message;
