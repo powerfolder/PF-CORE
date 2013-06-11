@@ -319,11 +319,15 @@ public class FolderSettings {
     public static FolderSettings load(Controller c, String entryId) {
         int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
             .getValueInt(c);
-        return load(c.getConfig(), entryId, defaultVersions, true);
+        String defSyncProfile = ConfigurationEntry.DEFAULT_TRANSFER_MODE
+            .getValue(c);
+        return load(c.getConfig(), entryId, defaultVersions, defSyncProfile,
+            true);
     }
 
     public static FolderSettings load(Properties properties, String entryId,
-        int fallbackDefaultVersions, boolean verify)
+        int fallbackDefaultVersions, String fallbackDefaultProfile,
+        boolean verify)
     {
         Reject.ifNull(properties, "Config");
         Reject.ifBlank(entryId, "Entry Id");
@@ -364,6 +368,10 @@ public class FolderSettings {
         {
             // Migration for #2074 (new backup source uses JNotify).
             syncProfile = SyncProfile.BACKUP_SOURCE;
+        } else if (StringUtils.isBlank(syncProfConfig)) {
+            // Take default:
+            syncProfile = SyncProfile
+                .getSyncProfileByFieldList(fallbackDefaultProfile);
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
