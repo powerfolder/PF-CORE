@@ -857,7 +857,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                     } else {
                         syncPercentText = Translation.getTranslation(
                             "exp_folder_view.synchronized",
-                            Format.formatDecimal(sync));
+                            Format.formatPercent(sync));
+                        // Workaround: Prevent double %%
+                        syncPercentText = syncPercentText.replace("%%", "%");
                     }
                 }
 
@@ -874,7 +876,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
                 if (sync >= 0 && sync < 100) {
                     upperSyncPercentageLabel
-                        .setText(Format.formatDecimal(sync) + '%');
+                        .setText(Format.formatPercent(sync));
                 } else {
                     upperSyncPercentageLabel.setText("");
                 }
