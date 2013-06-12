@@ -626,7 +626,8 @@ public class MainFrame extends PFUIComponent {
         // Set visibility of buttons and labels.
         pauseButton.setVisible(event.equals(PAUSED));
         if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
         {
             setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
         }
@@ -679,7 +680,8 @@ public class MainFrame extends PFUIComponent {
 
         upperMainTextActionLabel.setText(upperText);
         if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
         {
             setupLabel.setText(setupText);
         }
