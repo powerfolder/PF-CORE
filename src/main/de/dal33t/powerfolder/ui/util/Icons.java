@@ -481,8 +481,12 @@ public class Icons {
 
     public static Icon getIconByMember(Member member) {
         String username = member.getAccountInfo().getUsername();
-        String host = member.getHostName();
-        String urlString = host + "/avatars/" + username + ".png";
+
+        if (username == null) {
+            return getIconFor(member);
+        }
+
+        String urlString = member.getController().getOSClient().getAvatarURL(member.getAccountInfo());
 
         try {
             URL url = new URL(urlString);

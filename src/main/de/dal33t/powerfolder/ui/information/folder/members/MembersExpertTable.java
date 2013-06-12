@@ -175,8 +175,6 @@ public class MembersExpertTable extends JTable {
                     } else {
                         icon = Icons.getIconById(Icons.NODE_DISCONNECTED);
                     }
-                    icon = member != null ? Icons.getIconFor(member) : Icons
-                        .getIconById(Icons.NODE_DISCONNECTED);
                 }
                 setIcon(icon);
                 setText("");
