@@ -11,6 +11,7 @@ import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.spi.FileSystemProvider;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -77,6 +78,17 @@ public class PathUtils {
         return true;
     }
 
+    /**
+     * Check the path if it is a zyncro backend.
+     * 
+     * @param path
+     * @return true if path is a zyncro path, false otherwise.
+     */
+    public static boolean isZyncroPath(Path path) {
+        return path.getFileSystem().provider().getScheme()
+            .equals(Constants.ZYNCRO_SCHEME);
+    }
+    
     /**
      * Searches and takes care that this directory is new and not yet existing.
      * If dir already exists with the same raw name it appends (1), (2), and so
@@ -323,6 +335,37 @@ public class PathUtils {
                 in.close();
             } catch (IOException e) {
             }
+        }
+    }
+
+    /**
+     * Copy a file using raw file system access using input/output streams.
+     * 
+     * @param from
+     * @param to
+     * @throws IOException
+     */
+    public static void rawCopy(Path from, Path to) throws IOException {
+        Reject.ifNull(from, "Source file is null");
+        Reject.ifNull(to, "Target file is null");
+
+        FileSystemProvider outProv = to.getFileSystem().provider();
+        FileSystemProvider inProv = from.getFileSystem().provider();
+
+        try (OutputStream os = outProv.newOutputStream(to);
+            InputStream is = inProv.newInputStream(from))
+        {
+            int BUFFER_SIZE = 8192;
+            byte[] BUFFER = new byte[BUFFER_SIZE];
+
+            int ret = is.read(BUFFER);
+
+            while (ret != -1) {
+                os.write(BUFFER);
+                ret = is.read(BUFFER);
+            }
+        } catch (IOException ioe) {
+            throw ioe;
         }
     }
 

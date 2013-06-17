@@ -1186,12 +1186,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
         
-        String folderName = folderInfo.name;
-
-        folderName = folderName.replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
-            Translation.getTranslation("general.group")).replace(
-            Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-            Translation.getTranslation("general.department"));
+        String folderName = folderInfo.getLocalizedName();
 
         nameLabel.setText(folderName + newCountString);
         nameLabel.setFont(new Font(nameLabel.getFont().getName(), newFiles

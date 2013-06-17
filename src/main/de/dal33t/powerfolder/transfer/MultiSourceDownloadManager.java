@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -44,8 +43,6 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
  */
 public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
-    private static final Logger log = Logger
-        .getLogger(MultiSourceDownloadManager.class.getName());
     private final ConcurrentMap<MemberInfo, Download> downloads = Util
         .createConcurrentHashMap(4);
 

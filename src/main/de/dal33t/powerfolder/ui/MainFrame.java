@@ -234,7 +234,14 @@ public class MainFrame extends PFUIComponent {
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper.add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
+        } else {
+            // TODO: this is just a quick and dirty fix. Do something reasonable here.
+            builderUpper.add(new JLabel(" "), cc.xy(3, 2));
+        }
         // UPPER PART END
 
         // LOWER PART
@@ -441,7 +448,11 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
-        setupLabel = new ActionLabel(getController(), mySetupAction);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            setupLabel = new ActionLabel(getController(), mySetupAction);
+        }
 
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
@@ -456,8 +467,14 @@ public class MainFrame extends PFUIComponent {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     try {
-                        BrowserLauncher.openURL(client.getWebURL(
-                            Constants.MY_ACCOUNT_URI, true));
+                        if (StringUtils.isBlank(client.getUsername())) {
+                            PFWizard.openLoginWizard(getController(), client);
+                        } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+                            .getValueBoolean(getController()))
+                        {
+                            BrowserLauncher.openURL(client.getWebURL(
+                                Constants.MY_ACCOUNT_URI, true));
+                        }
                     } catch (IOException ex) {
                         logSevere(ex);
                     }
@@ -608,7 +625,12 @@ public class MainFrame extends PFUIComponent {
 
         // Set visibility of buttons and labels.
         pauseButton.setVisible(event.equals(PAUSED));
-        setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
+        }
         setupButton.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
         allInSyncButton.setVisible(event.equals(SYNCHRONIZED));
         syncingButton.setVisible(event.equals(SYNCING));
@@ -657,12 +679,21 @@ public class MainFrame extends PFUIComponent {
         }
 
         upperMainTextActionLabel.setText(upperText);
-        setupLabel.setText(setupText);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setText(setupText);
+        }
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
         boolean notStartedOrNoFolders = event.equals(NOT_STARTED) || event.equals(NO_FOLDERS);
-        setupLabel.setVisible(notStartedOrNoFolders);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            setupLabel.setVisible(notStartedOrNoFolders);
+        }
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
 
         // Lower text - sync date stuff.
@@ -1121,6 +1152,9 @@ public class MainFrame extends PFUIComponent {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
                     .getTranslation("main_frame.log_in_failed.text"));
+                if (!PFWizard.isWizardOpen()) {
+                    PFWizard.openLoginWizard(getController(), client);
+                }
             }
         } else {
             loginActionLabel.setText(Translation
@@ -1289,11 +1323,17 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            try {
-                BrowserLauncher.openURL(client.getLoginURLWithCredentials());
-            } catch (IOException e1) {
-                logWarning("Unable to open web portal", e1);
-            }
+            // PFC-2349 : Don't freeze UI
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    try {
+                        BrowserLauncher.openURL(client
+                            .getLoginURLWithCredentials());
+                    } catch (IOException e1) {
+                        logWarning("Unable to open web portal", e1);
+                    }
+                }
+            });
         }
     }
 

@@ -24,8 +24,16 @@ import de.dal33t.powerfolder.util.db.GenericDAO;
 
 /**
  * Data Access Object for FolderInfo objects.
- *
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * 
+ * @author <a href="krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
+    /**
+     * PFS-809
+     * 
+     * @param folder
+     * @return the number of potential entities (accounts or groups) which can
+     *         access this folder by permissions. Does not count admins.
+     */
+    int countMembers(FolderInfo folder);
 }

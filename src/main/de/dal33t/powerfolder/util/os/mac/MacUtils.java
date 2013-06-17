@@ -20,10 +20,11 @@ s * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
 package de.dal33t.powerfolder.util.os.mac;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Util;
@@ -37,8 +38,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @version $Revision$
  */
 public class MacUtils extends Loggable {
-    private static final Logger LOG = Logger
-        .getLogger(MacUtils.class.getName());
 
     private static MacUtils instance;
     private static boolean error = false;
@@ -81,9 +80,9 @@ public class MacUtils extends Loggable {
         String fileName = "placeshelper";
         Path targetFile = Controller.getTempFilesLocation().resolve(fileName);
         try {
-            Files.delete(targetFile);
+            Files.deleteIfExists(targetFile);
         } catch (IOException ioe) {
-            LOG.warning("Unable to delete the file '"
+            logWarning("Unable to delete the file '"
                 + targetFile.toAbsolutePath() + "'");
             return false;
         }
@@ -94,7 +93,7 @@ public class MacUtils extends Loggable {
             Runtime.getRuntime().exec(
                 new String[]{"chmod", "+x", placesHelperPath});
         } catch (IOException e) {
-            LOG.warning("Unable to initialize mac helper files. " + e);
+            logWarning("Unable to initialize mac helper files. " + e);
             return false;
         }
         return Files.exists(file);
@@ -125,12 +124,28 @@ public class MacUtils extends Loggable {
         throws IOException
     {
         if (setup) {
-            Path pfile = Paths.get(System.getProperty("java.class.path"))
-                .getParent()
-                .resolve(controller.getDistribution().getBinaryName() + ".app");
+            String bundleLocation = null;
+
+            try {
+                Class<?> c = Class.forName("com.apple.eio.FileManager");
+                Method getPathToAppBundle = c
+                    .getMethod("getPathToApplicationBundle");
+                bundleLocation = (String) getPathToAppBundle.invoke(null);
+            } catch (ClassNotFoundException | NoSuchMethodException
+                | SecurityException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException e)
+            {
+                throw new IOException(
+                    "Enabling start up item is not supported on your system. Your system is a "
+                        + System.getProperty("os.name") + " "
+                        + System.getProperty("os.version"));
+            }
+
+            Path pfile = Paths.get(bundleLocation);
             if (Files.notExists(pfile)) {
-                pfile = Paths.get(controller.getDistribution().getBinaryName()
-                    + ".app");
+                pfile = Paths.get(
+                    controller.getDistribution().getBinaryName() + ".app")
+                    .toAbsolutePath();
                 if (Files.notExists(pfile)) {
                     throw new IOException("Couldn't find executable! "
                         + "Note: Setting up a startup shortcut only works "
@@ -140,7 +155,8 @@ public class MacUtils extends Loggable {
                 }
             }
             Runtime.getRuntime().exec(
-                new String[]{placesHelperPath, "s", pfile.toAbsolutePath().toString()});
+                new String[]{placesHelperPath, "s",
+                    pfile.toAbsolutePath().toString()});
         } else {
             // TODO Remove link
         }
