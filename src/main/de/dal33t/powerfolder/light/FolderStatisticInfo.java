@@ -31,13 +31,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
@@ -85,7 +85,8 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     private final Map<MemberInfo, Long> sizesInSync = new HashMap<MemberInfo, Long>();
 
     /** Map of bytes received for a file for a member. */
-    private final Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = new ConcurrentHashMap<MemberInfo, Map<FileInfo, Long>>();
+    private transient Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = Util
+        .createConcurrentHashMap();
 
     public FolderStatisticInfo(FolderInfo folder) {
         super();
@@ -304,5 +305,87 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             }
         }
         return null;
+    }
+
+    // Serialization *********************************************
+
+    private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        if (this.partialSyncStatMap == null) {
+            this.partialSyncStatMap = Util.createConcurrentHashMap();
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (archiveSize ^ (archiveSize >>> 32));
+        result = prime * result
+            + ((estimatedSyncDate == null) ? 0 : estimatedSyncDate.hashCode());
+        result = prime * result
+            + ((filesCount == null) ? 0 : filesCount.hashCode());
+        result = prime * result
+            + ((filesCountInSync == null) ? 0 : filesCountInSync.hashCode());
+        result = prime * result + ((folder == null) ? 0 : folder.hashCode());
+        result = prime * result + incomingFilesCount;
+        result = prime * result + ((sizes == null) ? 0 : sizes.hashCode());
+        result = prime * result
+            + ((sizesInSync == null) ? 0 : sizesInSync.hashCode());
+        result = prime * result + totalFilesCount;
+        result = prime * result + (int) (totalSize ^ (totalSize >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FolderStatisticInfo other = (FolderStatisticInfo) obj;
+        if (archiveSize != other.archiveSize)
+            return false;
+        if (estimatedSyncDate == null) {
+            if (other.estimatedSyncDate != null)
+                return false;
+        } else if (!estimatedSyncDate.equals(other.estimatedSyncDate))
+            return false;
+        if (filesCount == null) {
+            if (other.filesCount != null)
+                return false;
+        } else if (!filesCount.equals(other.filesCount))
+            return false;
+        if (filesCountInSync == null) {
+            if (other.filesCountInSync != null)
+                return false;
+        } else if (!filesCountInSync.equals(other.filesCountInSync))
+            return false;
+        if (folder == null) {
+            if (other.folder != null)
+                return false;
+        } else if (!folder.equals(other.folder))
+            return false;
+        if (incomingFilesCount != other.incomingFilesCount)
+            return false;
+        if (sizes == null) {
+            if (other.sizes != null)
+                return false;
+        } else if (!sizes.equals(other.sizes))
+            return false;
+        if (sizesInSync == null) {
+            if (other.sizesInSync != null)
+                return false;
+        } else if (!sizesInSync.equals(other.sizesInSync))
+            return false;
+        if (totalFilesCount != other.totalFilesCount)
+            return false;
+        if (totalSize != other.totalSize)
+            return false;
+        return true;
     }
 }
