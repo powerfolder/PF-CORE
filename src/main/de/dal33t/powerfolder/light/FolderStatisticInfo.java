@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -50,6 +51,8 @@ import de.schlichtherle.truezip.file.TFileOutputStream;
  * @author sprajc
  */
 public class FolderStatisticInfo extends Loggable implements Serializable {
+
+    private static final int MAX_FILE_SIZE = 50 * 1024;
 
     private static final long serialVersionUID = 1L;
 
@@ -285,6 +288,12 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
 
     public static FolderStatisticInfo load(File file) {
         if (!file.exists()) {
+            return null;
+        }
+        if (file.length() > MAX_FILE_SIZE) {
+            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
+                "Not reading folder stats from " + file + ". File is too big: "
+                    + Format.formatBytes(file.length()));
             return null;
         }
         InputStream fin = null;
