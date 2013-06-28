@@ -50,7 +50,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -98,6 +97,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.WebDAV;
@@ -447,15 +447,17 @@ public class ExpandableFolderView extends PFUIComponent implements
                 lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
             }
 
-            row += 2;
+            if (!ProUtil.isZyncro(getController())) {
+                row += 2;
+                lowerBuilder.add(transferModeLabel.getUIComponent(),
+                    cc.xy(2, row));
+                lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
 
-            lowerBuilder.add(transferModeLabel.getUIComponent(), cc.xy(2, row));
-            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
+                row += 2;
 
-            row += 2;
-
-            lowerBuilder.add(localDirectoryLabel.getUIComponent(),
-                cc.xy(2, row));
+                lowerBuilder.add(localDirectoryLabel.getUIComponent(),
+                    cc.xy(2, row));
+            }
 
         }
 
@@ -550,6 +552,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncPercentageLabel = new ActionLabel(getController(),
             new MyOpenFilesUnsyncedAction(getController()));
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
+        openFilesInformationButton.setVisible(!ProUtil.isZyncro(getController()));
 
         inviteButton = new JButtonMini(inviteAction);
 

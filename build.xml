@@ -67,11 +67,14 @@ For creation of the installer:
 			var prjDir = project.getProperty("powerfolder.project.dir");
 			if (!prjDir)  {
 				prjDir = '../PF-CORE';
+				if (!new java.io.File(prjDir).exists()) {
+					prjDir = '.';
+				}
 			} else {
 				prjDir += '';
 			}
 			var reader = new java.io.BufferedReader(java.io.FileReader(prjDir + '/src/main/de/dal33t/powerfolder/Controller.java'));
-				    
+					    
 			var line = "";
 			while ((line = reader.readLine()) != null) {
 				if (line.indexOf("int MAJOR_VERSION") >= 0) {
