@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
@@ -84,7 +85,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     private final Map<MemberInfo, Long> sizesInSync = new HashMap<MemberInfo, Long>();
 
     /** Map of bytes received for a file for a member. */
-    private final Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = new ConcurrentHashMap<MemberInfo, Map<FileInfo, Long>>();
+    private Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = new ConcurrentHashMap<MemberInfo, Map<FileInfo, Long>>();
 
     public FolderStatisticInfo(FolderInfo folder) {
         super();
@@ -161,6 +162,9 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     }
 
     public Map<MemberInfo, Map<FileInfo, Long>> getPartialSyncStatMap() {
+        if (partialSyncStatMap == null) {
+            partialSyncStatMap = Util.createConcurrentHashMap();
+        }
         return partialSyncStatMap;
     }
 
@@ -182,7 +186,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             return 0;
         } else {
             // Total up partial transfers for this member.
-            Map<FileInfo, Long> map = partialSyncStatMap.get(memberInfo);
+            Map<FileInfo, Long> map = getPartialSyncStatMap().get(memberInfo);
             long partialTotal = 0;
             if (map != null) {
                 for (FileInfo fileInfo : map.keySet()) {
