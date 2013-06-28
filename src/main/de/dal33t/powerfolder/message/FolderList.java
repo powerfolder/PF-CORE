@@ -35,11 +35,13 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -96,6 +98,18 @@ public class FolderList extends Message {
         this.secretFolders = new FolderInfo[secretFos.size()];
         this.joinedMetaFolders = true;
         secretFos.toArray(secretFolders);
+    }
+
+    public boolean contains(FolderInfo foInfo, Member node) {
+        ConnectionHandler peer = node.getPeer();
+        if (peer == null) {
+            return false;
+        }
+        String magicId = peer.getMyMagicId();
+        if (StringUtils.isBlank(magicId)) {
+            return false;
+        }
+        return contains(foInfo, magicId);
     }
 
     public boolean contains(FolderInfo foInfo, String magicId) {
