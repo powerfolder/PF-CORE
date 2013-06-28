@@ -688,9 +688,11 @@ public class MainFrame extends PFUIComponent {
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
-        boolean notStartedOrNoFolders = event.equals(NOT_STARTED) || event.equals(NO_FOLDERS);
+        boolean notStartedOrNoFolders = event.equals(NOT_STARTED)
+            || event.equals(NO_FOLDERS);
         if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
         {
             setupLabel.setVisible(notStartedOrNoFolders);
         }
