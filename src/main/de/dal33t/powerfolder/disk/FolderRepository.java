@@ -174,9 +174,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValue(getController());
         String[] parts = list.split("\\$");
         for (String s : parts) {
-            Path p = Paths.get(s);
-            if (Files.exists(p) && Files.isDirectory(p)) {
-                removedFolderDirectories.add(p);
+            try {
+                Path p = Paths.get(s);
+                if (Files.exists(p) && Files.isDirectory(p)) {
+                    removedFolderDirectories.add(p);
+                }
+            } catch (Exception e) {
+                logWarning("Unable to check removed dir: " + s + ". " + e);
             }
         }
     }
@@ -1115,13 +1119,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Remove the folder if totally empty.
                 try {
                     Files.delete(folder.getLocalBase());
-                }
-                catch (DirectoryNotEmptyException dnee) {
+                } catch (DirectoryNotEmptyException dnee) {
                     // this can happen, and is just fine
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     logSevere("Failed to delete local base: "
-                        + folder.getLocalBase().toAbsolutePath(), ioe);
+                        + folder.getLocalBase().toAbsolutePath() + ": " + ioe);
                 }
             }
         } finally {
@@ -1148,13 +1150,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderRepository repository = getController().getFolderRepository();
         Path baseDir = repository.getFoldersBasedir();
         if (Files.exists(baseDir)) {
-            Path shortcutFile = baseDir.resolve(folder.getName()
-                + Constants.LINK_EXTENSION);
             try {
+                Path shortcutFile = baseDir.resolve(folder.getName()
+                    + Constants.LINK_EXTENSION);
                 boolean deleted = Files.deleteIfExists(shortcutFile);
-                logInfo("Removed link " + shortcutFile.getFileName() + "? "
+                logFine("Removed link " + shortcutFile.getFileName() + "? "
                     + deleted);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logWarning(e.getMessage());
             }
         }
