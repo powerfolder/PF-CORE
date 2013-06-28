@@ -66,6 +66,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
@@ -265,6 +266,10 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
             folderLocalBaseMap.put(folderInfo, dirSuggestion);
             folderInfoComboModel.addElement(folderInfo.getLocalizedName());
+        }
+        
+        if (ProUtil.isZyncro(getController())) {
+            getWizard().next();
         }
     }
 

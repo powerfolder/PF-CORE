@@ -33,6 +33,7 @@ import javax.swing.event.ChangeListener;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -45,6 +46,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 public class PreferencesDialog extends BaseDialog {
@@ -97,7 +99,12 @@ public class PreferencesDialog extends BaseDialog {
     public JComponent getContent() {
         initComponents();
 
-        return tabbedPane;
+        if (ProUtil.isZyncro(getController())) {
+            generalSettingsTab.getUIPanel().setBorder(Borders.createEmptyBorder("14dlu, 14dlu, 14dlu, 14dlu"));
+            return generalSettingsTab.getUIPanel();
+        } else {
+            return tabbedPane;
+        }
     }
 
     public void initComponents() {

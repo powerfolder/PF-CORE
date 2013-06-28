@@ -39,6 +39,16 @@ public class ProUtil {
 
     private ProUtil() {
     }
+    
+    /**
+     * Remove this hack.
+     * 
+     * @param controller
+     * @return
+     */
+    public static final boolean isZyncro(Controller controller) {
+        return controller.getDistribution().getBinaryName().toLowerCase().contains("zyncro");
+    }
 
     public static final boolean isServerConfig(Controller controller) {
         return controller.getConfig().get("plugin.server.maintenancefolderid") != null;
