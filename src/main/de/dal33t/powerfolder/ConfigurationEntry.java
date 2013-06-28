@@ -229,7 +229,7 @@ public enum ConfigurationEntry {
      * HTTP tunnel relay URL.
      */
     SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
-        "http://os005.powerfolder.com/rpc"),
+        "http://my.powerfolder.com/rpc"),
 
     /**
      * #1687: How this computer should behave when the server is not connected.
