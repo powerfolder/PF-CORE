@@ -1112,9 +1112,8 @@ public class ServerClient extends PFComponent {
         }
         boolean folderInCloud = false;
         FolderList fList = server.getLastFolderList();
-        ConnectionHandler conHan = server.getPeer();
-        if (conHan != null && fList != null) {
-            folderInCloud = fList.contains(foInfo, conHan.getMyMagicId());
+        if (fList != null) {
+            folderInCloud = fList.contains(foInfo, server);
         }
         // TODO: #2435
         return folderInCloud;
@@ -1600,6 +1599,9 @@ public class ServerClient extends PFComponent {
                 return;
             }
             if (isLoggedIn()) {
+                return;
+            }
+            if (isLoggingIn()) {
                 return;
             }
             if (username != null && StringUtils.isNotBlank(passwordObf)) {
