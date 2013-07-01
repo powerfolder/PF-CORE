@@ -486,7 +486,8 @@ public class Icons {
             return getIconFor(member);
         }
 
-        String urlString = member.getController().getOSClient().getAvatarURL(member.getAccountInfo());
+        String urlString = member.getController().getOSClient()
+            .getAvatarURL(member.getAccountInfo());
 
         try {
             URL url = new URL(urlString);
@@ -497,12 +498,15 @@ public class Icons {
             int code = con.getResponseCode();
 
             if (code == 200) {
-                return new ImageIcon(url);
+                ImageIcon tempIcon = new ImageIcon(url);
+                Image img = tempIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+
+                return new ImageIcon(img);
             }
         } catch (MalformedURLException e) {
             log.warning("Avatar URL was malformed: " + urlString);
         } catch (IOException e) {
-            log.fine("");
+            log.fine(e.getMessage());
         }
         return getIconFor(member);
     }
