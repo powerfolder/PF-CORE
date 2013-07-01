@@ -48,6 +48,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -583,7 +584,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
                     openFileAction.setEnabled(diskItem != null);
                 }
-                browserAction.setEnabled(diskItem != null && diskItem instanceof FileInfo && getSelectedRows().length == 1);
+                browserAction.setEnabled(diskItem != null
+                    && diskItem instanceof FileInfo
+                    && getSelectedRows().length == 1
+                    && ConfigurationEntry.WEB_LOGIN_ALLOWED
+                        .getValueBoolean(getController()));
                 if (diskItem != null && diskItem instanceof DirectoryInfo) {
                     DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
                     boolean retained = tableModel.getFolder()

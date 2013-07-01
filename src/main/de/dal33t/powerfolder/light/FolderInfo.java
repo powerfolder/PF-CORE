@@ -209,9 +209,12 @@ public class FolderInfo implements Serializable, Cloneable {
     }
 
     public String getLocalizedName() {
-        return name.replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
-            Translation.getTranslation("general.group")).replace(
-            Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-            Translation.getTranslation("general.department"));
+        return name
+            .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
+                Translation.getTranslation("general.group"))
+            .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
+                Translation.getTranslation("general.department"))
+            .replace(Constants.ZYNCRO_COMPANY_TOKEN.trim(),
+                Translation.getTranslation("general.company"));
     }
 }

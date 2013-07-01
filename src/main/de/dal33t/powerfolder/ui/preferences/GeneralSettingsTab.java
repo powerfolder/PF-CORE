@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -229,15 +230,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation.getTranslation("preferences.general.exit_behavior")), cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
-            row += 2;
-            builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.general.default_archive_mode_text")),
-                    cc.xy(1, row));
-            builder.add(
-                threePanel(
-                        archiveModeSelectorPanel.getUIComponent(),
-                        archiveCleanupCombo, new JButton(cleanupAction)),
-                    cc.xyw(3, row, 2));
+            if (!ProUtil.isZyncro(getController())) {
+                row += 2;
+                builder
+                    .add(
+                        new JLabel(
+                            Translation
+                                .getTranslation("preferences.general.default_archive_mode_text")),
+                        cc.xy(1, row));
+                builder.add(
+                    threePanel(archiveModeSelectorPanel.getUIComponent(),
+                        archiveCleanupCombo, new JButton(cleanupAction)), cc
+                        .xyw(3, row, 2));
+            }
             panel = builder.getPanel();
         }
         return panel;

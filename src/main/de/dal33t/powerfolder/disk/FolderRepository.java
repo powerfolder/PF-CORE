@@ -174,9 +174,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValue(getController());
         String[] parts = list.split("\\$");
         for (String s : parts) {
-            Path p = Paths.get(s);
-            if (Files.exists(p) && Files.isDirectory(p)) {
-                removedFolderDirectories.add(p);
+            try {
+                Path p = Paths.get(s);
+                if (Files.exists(p) && Files.isDirectory(p)) {
+                    removedFolderDirectories.add(p);
+                }
+            } catch (Exception e) {
+                logWarning("Unable to check removed dir: " + s + ". " + e);
             }
         }
     }
@@ -885,16 +889,18 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {
-            boolean inBaseDir = folderSettings.getLocalBaseDir()
-                .getParent().equals(getFoldersBasedir());
-            if (!inBaseDir) {
-                logSevere("Not allowed to create " + folderInfo.getName()
-                    + " at " + folderSettings.getLocalBaseDirString()
-                    + ". Must be in base directory: " + getFoldersBasedir());
-                throw new IllegalStateException("Not allowed to create "
-                    + folderInfo.getName() + " at "
-                    + folderSettings.getLocalBaseDirString()
-                    + ". Must be in base directory: " + getFoldersBasedir());
+            Path localBaseDirParent = folderSettings.getLocalBaseDir().getParent();
+            if (localBaseDirParent != null) {
+                boolean inBaseDir = localBaseDirParent.equals(getFoldersBasedir());
+                if (!inBaseDir) {
+                    logSevere("Not allowed to create " + folderInfo.getName()
+                        + " at " + folderSettings.getLocalBaseDirString()
+                        + ". Must be in base directory: " + getFoldersBasedir());
+                    throw new IllegalStateException("Not allowed to create "
+                        + folderInfo.getName() + " at "
+                        + folderSettings.getLocalBaseDirString()
+                        + ". Must be in base directory: " + getFoldersBasedir());
+                }
             }
         }
 
@@ -1113,13 +1119,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Remove the folder if totally empty.
                 try {
                     Files.delete(folder.getLocalBase());
-                }
-                catch (DirectoryNotEmptyException dnee) {
+                } catch (DirectoryNotEmptyException dnee) {
                     // this can happen, and is just fine
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     logSevere("Failed to delete local base: "
-                        + folder.getLocalBase().toAbsolutePath(), ioe);
+                        + folder.getLocalBase().toAbsolutePath() + ": " + ioe);
                 }
             }
         } finally {
@@ -1146,13 +1150,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderRepository repository = getController().getFolderRepository();
         Path baseDir = repository.getFoldersBasedir();
         if (Files.exists(baseDir)) {
-            Path shortcutFile = baseDir.resolve(folder.getName()
-                + Constants.LINK_EXTENSION);
             try {
+                Path shortcutFile = baseDir.resolve(folder.getName()
+                    + Constants.LINK_EXTENSION);
                 boolean deleted = Files.deleteIfExists(shortcutFile);
-                logInfo("Removed link " + shortcutFile.getFileName() + "? "
+                logFine("Removed link " + shortcutFile.getFileName() + "? "
                     + deleted);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logWarning(e.getMessage());
             }
         }
@@ -1746,12 +1750,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (hasJoinedFolder(folderInfo)) {
                     continue;
                 }
-                
-                String folderName = folderInfo.name;
-                folderName = folderName.replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
-                    Translation.getTranslation("general.group")).replace(
-                    Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-                    Translation.getTranslation("general.department"));
+
+                String folderName = folderInfo.getLocalizedName();
 
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()

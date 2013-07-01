@@ -159,8 +159,8 @@ public class FileArchiver {
                 try {
                     Files.move(source, target);
                 } catch (IOException ioe) {
-                    log.severe("Failed to rename " + source
-                        + ", falling back to copying");
+                    log.warning("Failed to rename " + source
+                        + ", falling back to copying: " + ioe);
                     tryCopy = true;
                 }
                 if (size != null) {

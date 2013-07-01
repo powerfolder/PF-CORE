@@ -122,6 +122,7 @@ import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -796,6 +797,9 @@ public class UIController extends PFComponent {
     }
 
     public void openFileInformation(FileInfo fileInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFile(fileInfo);
         displayInformationWindow();
     }
@@ -807,16 +811,25 @@ public class UIController extends PFComponent {
      *            info of the folder to display files information for.
      */
     public void openFilesInformationLatest(FolderInfo folderInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFolderFilesLatest(folderInfo);
         displayInformationWindow();
     }
 
     public void openFilesInformationDeleted(FolderInfo folderInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFolderFilesDeleted(folderInfo);
         displayInformationWindow();
     }
 
     public void openFilesInformationUnsynced(FolderInfo folderInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFolderFilesUnsynced(folderInfo);
         displayInformationWindow();
     }
@@ -828,6 +841,9 @@ public class UIController extends PFComponent {
      *            info of the folder to display files information for.
      */
     public void openFilesInformation(FolderInfo folderInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFolderFiles(folderInfo);
         displayInformationWindow();
     }
@@ -839,6 +855,9 @@ public class UIController extends PFComponent {
      *            info of the folder to display member settings information for.
      */
     public void openSettingsInformation(FolderInfo folderInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFolderSettings(folderInfo);
         displayInformationWindow();
     }
@@ -860,6 +879,9 @@ public class UIController extends PFComponent {
      *            info of the folder to display member computer information for.
      */
     public void openMembersInformation(FolderInfo folderInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFolderMembers(folderInfo);
         displayInformationWindow();
     }
@@ -871,6 +893,9 @@ public class UIController extends PFComponent {
      *            info of the folder to display problems information for.
      */
     public void openProblemsInformation(FolderInfo folderInfo) {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         informationFrame.displayFolderProblems(folderInfo);
         displayInformationWindow();
     }

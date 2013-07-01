@@ -113,6 +113,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -151,7 +152,8 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel upperMainTextActionLabel;
     private ActionLabel lowerMainTextActionLabel;
     private ActionLabel setupLabel;
-
+    private JLabel zyncroLabel;
+    
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
     private ActionLabel noticesActionLabel;
@@ -233,8 +235,21 @@ public class MainFrame extends PFUIComponent {
         b.add(notConnectedLoggedInLabel, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
-        builderUpper.add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
+        builderUpper
+            .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
+        } else {
+            // TODO: this is just a quick and dirty fix. Do something reasonable
+            // here.
+            if (ProUtil.isZyncro(getController())) {
+                builderUpper.add(zyncroLabel, cc.xy(3, 2));
+            } else {
+                builderUpper.add(new JLabel(" "), cc.xy(3, 2));
+            }
+        }
         // UPPER PART END
 
         // LOWER PART
@@ -441,8 +456,13 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
-        setupLabel = new ActionLabel(getController(), mySetupAction);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            setupLabel = new ActionLabel(getController(), mySetupAction);
+        }
 
+        zyncroLabel = new JLabel();
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
         noticesActionLabel = new ActionLabel(getController(),
@@ -456,8 +476,14 @@ public class MainFrame extends PFUIComponent {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     try {
-                        BrowserLauncher.openURL(client.getWebURL(
-                            Constants.MY_ACCOUNT_URI, true));
+                        if (StringUtils.isBlank(client.getUsername())) {
+                            PFWizard.openLoginWizard(getController(), client);
+                        } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+                            .getValueBoolean(getController()))
+                        {
+                            BrowserLauncher.openURL(client.getWebURL(
+                                Constants.MY_ACCOUNT_URI, true));
+                        }
                     } catch (IOException ex) {
                         logSevere(ex);
                     }
@@ -591,6 +617,9 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void handleSyncTextClick() {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         if (getController().isPaused()) {
             getController().setPaused(false);
         } else if (frameMode == FrameMode.COMPACT) {
@@ -608,7 +637,12 @@ public class MainFrame extends PFUIComponent {
 
         // Set visibility of buttons and labels.
         pauseButton.setVisible(event.equals(PAUSED));
-        setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
+        }
         setupButton.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
         allInSyncButton.setVisible(event.equals(SYNCHRONIZED));
         syncingButton.setVisible(event.equals(SYNCING));
@@ -624,25 +658,30 @@ public class MainFrame extends PFUIComponent {
                 folderRepositoryModel.getOverallSyncPercentage();
         String upperText = " ";
         String setupText = " ";
+        zyncroLabel.setText(" ");
 
         if (event.equals(PAUSED)) {
-                String pausedTemp = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d ?
-                        Format.formatDecimal(overallSyncPercentage) + '%' : "";
-                upperText = Translation.getTranslation("main_frame.paused", pausedTemp);
+            String pausedTemp = overallSyncPercentage >= 0
+                && overallSyncPercentage < 99.5d ? Format
+                .formatDecimal(overallSyncPercentage) + '%' : "";
+            upperText = Translation.getTranslation("main_frame.paused",
+                pausedTemp);
         } else if (event.equals(NOT_STARTED)) {
-                upperText = Translation.getTranslation(
-                        "main_frame.not_running");
-                setupText = Translation.getTranslation(
-                        "main_frame.activate_now");
+            upperText = Translation.getTranslation("main_frame.not_running");
+            setupText = Translation.getTranslation("main_frame.activate_now");
         } else if (event.equals(NO_FOLDERS)) {
-                upperText = Translation.getTranslation("main_frame.no_folders");
-                setupText = getApplicationModel().getActionModel()
-                        .getNewFolderAction().getName();
+            upperText = Translation.getTranslation("main_frame.no_folders");
+            setupText = getApplicationModel().getActionModel()
+                .getNewFolderAction().getName();
+            zyncroLabel
+                .setText("Choose folders from the list to be synchronized.");
         } else if (event.equals(SYNCING)) {
-                syncDate = folderRepositoryModel.getEstimatedSyncDate();
-                String syncingTemp = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d ?
-                        Format.formatDecimal(overallSyncPercentage) + '%' : "...";
-                upperText = Translation.getTranslation("main_frame.syncing", syncingTemp);
+            syncDate = folderRepositoryModel.getEstimatedSyncDate();
+            String syncingTemp = overallSyncPercentage >= 0
+                && overallSyncPercentage < 99.5d ? Format
+                .formatDecimal(overallSyncPercentage) + '%' : "...";
+            upperText = Translation.getTranslation("main_frame.syncing",
+                syncingTemp);
         } else if (event.equals(SYNCHRONIZED)) {
                 upperText = Translation.getTranslation("main_frame.in_sync");
         } else if (event.equals(SYNC_INCOMPLETE)) {
@@ -657,12 +696,23 @@ public class MainFrame extends PFUIComponent {
         }
 
         upperMainTextActionLabel.setText(upperText);
-        setupLabel.setText(setupText);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setText(setupText);
+        }
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
-        boolean notStartedOrNoFolders = event.equals(NOT_STARTED) || event.equals(NO_FOLDERS);
-        setupLabel.setVisible(notStartedOrNoFolders);
+        boolean notStartedOrNoFolders = event.equals(NOT_STARTED)
+            || event.equals(NO_FOLDERS);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setVisible(notStartedOrNoFolders);
+        }
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
 
         // Lower text - sync date stuff.
@@ -1121,6 +1171,9 @@ public class MainFrame extends PFUIComponent {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
                     .getTranslation("main_frame.log_in_failed.text"));
+                if (!PFWizard.isWizardOpen()) {
+                    PFWizard.openLoginWizard(getController(), client);
+                }
             }
         } else {
             loginActionLabel.setText(Translation

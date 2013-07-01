@@ -381,6 +381,7 @@ public class Constants {
     public static final String ZYNCRO_SCHEME = "zyncro";
     public static final String ZYNCRO_GROUP_TOKEN = "$group ";
     public static final String ZYNCRO_DEPARTMENT_TOKEN = "$department ";
+    public static final String ZYNCRO_COMPANY_TOKEN = "$company ";
 
     private Constants() {
         // No instance allowed

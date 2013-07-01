@@ -838,55 +838,54 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-            if (Files.exists(targetFile)) {
-                // if file was a "newer file" the file already exists here
-                // Using local var because of possible race condition!!
-                FileArchiver arch = archiver;
-                if (arch != null) {
-                    try {
-                        FileInfo oldLocalFileInfo = fInfo
-                            .getLocalFileInfo(getController()
-                                .getFolderRepository());
-                        if (oldLocalFileInfo != null) {
-                            if (!currentInfo.isMetaFolder()
-                                && ConfigurationEntry.CONFLICT_DETECTION
-                                    .getValueBoolean(getController()))
-                            {
-                                try {
-                                    doSimpleConflictDetection(fInfo,
-                                        targetFile, oldLocalFileInfo);
-                                } catch (Exception e) {
-                                    logSevere("Problem withe conflict detection. "
-                                        + e);
-                                }
-                            }
-
-                            arch.archive(oldLocalFileInfo, targetFile, false);
-                        }
-                    } catch (IOException e) {
-                        // Same behavior as below, on failure drop out
-                        // TODO Maybe raise folder-problem....
-                        logWarning("Unable to archive old file!", e);
-                        return false;
-                    }
-                }
-                if (Files.exists(targetFile)) {
-                    try {
-                        Files.delete(targetFile);
-                    }
-                    catch (IOException ioe) {
-                        logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                            + targetFile.toAbsolutePath()
-                            + ". "
-                            + fInfo.toDetailString());
-                        return false;
-                    }
-                }
-            }
-
-            if (targetFile.getFileSystem().provider().getScheme()
-                .equals(Constants.ZYNCRO_SCHEME))
+            if (!PathUtils.isZyncroPath(targetFile))
             {
+                if (Files.exists(targetFile)) {
+                    // if file was a "newer file" the file already exists here
+                    // Using local var because of possible race condition!!
+                    FileArchiver arch = archiver;
+                    if (arch != null) {
+                        try {
+                            FileInfo oldLocalFileInfo = fInfo
+                                .getLocalFileInfo(getController()
+                                    .getFolderRepository());
+                            if (oldLocalFileInfo != null) {
+                                if (!currentInfo.isMetaFolder()
+                                    && ConfigurationEntry.CONFLICT_DETECTION
+                                        .getValueBoolean(getController()))
+                                {
+                                    try {
+                                        doSimpleConflictDetection(fInfo,
+                                            targetFile, oldLocalFileInfo);
+                                    } catch (Exception e) {
+                                        logSevere("Problem withe conflict detection. "
+                                            + e);
+                                    }
+                                }
+
+                                arch.archive(oldLocalFileInfo, targetFile,
+                                    false);
+                            }
+                        } catch (IOException e) {
+                            // Same behavior as below, on failure drop out
+                            // TODO Maybe raise folder-problem....
+                            logWarning("Unable to archive old file!", e);
+                            return false;
+                        }
+                    }
+                    if (Files.exists(targetFile)) {
+                        try {
+                            Files.delete(targetFile);
+                        } catch (IOException ioe) {
+                            logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                                + targetFile.toAbsolutePath()
+                                + ". "
+                                + fInfo.toDetailString());
+                            return false;
+                        }
+                    }
+                }
+            } else {
                 try {
                     String username = fInfo.getModifiedBy()
                         .getNode(getController(), false).getAccountInfo()
@@ -903,11 +902,15 @@ public class Folder extends PFComponent {
             }
 
             try {
+                if (PathUtils.isZyncroPath(targetFile))
+                {
+                    throw new IOException();
+                }
+
                 Files.move(tempFile, targetFile);
             }
             catch (IOException ioe) {
-                if (!localBase.getFileSystem().provider().getScheme()
-                    .equals(Constants.ZYNCRO_SCHEME))
+                if (!PathUtils.isZyncroPath(localBase))
                 {
                     logWarning("Was not able to rename tempfile, copiing "
                         + tempFile.toAbsolutePath() + " to "
@@ -915,16 +918,20 @@ public class Folder extends PFComponent {
                         + fInfo.toDetailString());
                 }
 
-                try {
-                    Files.copy(tempFile, targetFile);
-                } catch (IOException e) {
-                    // TODO give a diskfull warning?
-                    logSevere("Unable to store completed download "
-                        + targetFile.toAbsolutePath() + ". " + e.getMessage()
-                        + ". " + fInfo.toDetailString());
-                    logFiner(e);
-                    return false;
-                }
+                    try {
+                        if (PathUtils.isZyncroPath(targetFile)) {
+                            PathUtils.rawCopy(tempFile, targetFile);
+                        } else {
+                            Files.copy(tempFile, targetFile);
+                        }
+                    } catch (IOException e) {
+                        // TODO give a diskfull warning?
+                        logSevere("Unable to store completed download "
+                            + targetFile.toAbsolutePath() + ". " + e.getMessage()
+                            + ". " + fInfo.toDetailString());
+                        logFiner(e);
+                        return false;
+                    }
 
                 // Set modified date of remote
                 // TODO: Set last modified only if required
@@ -1881,13 +1888,12 @@ public class Folder extends PFComponent {
                     i++;
                 }
             }
-            if (Files.exists(dbFile)) {
-                try {
-                    Files.delete(dbFile);
-                }
-                catch (IOException ioe) {
-                    logSevere("Failed to delete database file: " + dbFile);
-                }
+            
+            try {
+                Files.deleteIfExists(dbFile);
+            }
+            catch (IOException ioe) {
+                logSevere("Failed to delete database file: " + dbFile);
             }
             try {
                 Files.createFile(dbFile);
@@ -2950,8 +2956,7 @@ public class Folder extends PFComponent {
 
                     UserPrincipal owner = null;
 
-                    if (localCopy.getFileSystem().provider().getScheme()
-                        .equals(Constants.ZYNCRO_SCHEME))
+                    if (PathUtils.isZyncroPath(localCopy))
                     {
                         try {
                             String username = member.getAccountInfo()
@@ -3794,7 +3799,7 @@ public class Folder extends PFComponent {
     }
 
     private Path getSystemSubDir0() {
-        if (localBase.toUri().getScheme().equals(Constants.ZYNCRO_SCHEME)) {
+        if (PathUtils.isZyncroPath(localBase)) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
                 .resolve(PathUtils.removeInvalidFilenameChars(getId()))
                 .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
@@ -3840,14 +3845,12 @@ public class Folder extends PFComponent {
 
         // #1249
         if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
-            if (!localBase.getFileSystem().provider().getScheme()
-                .equals(Constants.ZYNCRO_SCHEME))
+            if (!PathUtils.isZyncroPath(localBase))
             {
                 boolean inaccessible = Files.notExists(localBase)
-                    || !PathUtils.hasContents(localBase);
+                    || PathUtils.getNumberOfSiblings(localBase) == 0;
                 if (inaccessible) {
-                    // TODO: change back to Warning
-                    logFine("Local base empty on linux file system, but has known files. "
+                    logWarning("Local base empty on linux file system, but has known files. "
                         + localBase);
                     return setDeviceDisconnected(true);
                 }

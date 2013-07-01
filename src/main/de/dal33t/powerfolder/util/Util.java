@@ -414,12 +414,13 @@ public class Util {
             return false;
         }
         LOG.finer("Removing desktop shortcut: " + shortcutName);
-        Path scut = Paths.get(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
-            false), shortcutName + Constants.LINK_EXTENSION);
         try {
+            Path scut = Paths.get(
+                util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false),
+                shortcutName + Constants.LINK_EXTENSION);
             Files.delete(scut);
             return true;
-        } catch (IOException ioe) {
+        } catch (Exception ioe) {
             return false;
         }
     }
