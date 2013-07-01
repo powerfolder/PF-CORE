@@ -1697,6 +1697,9 @@ public class ServerClient extends PFComponent {
             if (isLoggedIn()) {
                 return;
             }
+            if (isLoggingIn()) {
+                return;
+            }
             if (username != null && StringUtils.isNotBlank(passwordObf)) {
                 login(username, passwordObf);
             }
