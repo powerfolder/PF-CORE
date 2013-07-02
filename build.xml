@@ -67,6 +67,9 @@ For creation of the installer:
 			var prjDir = project.getProperty("powerfolder.project.dir");
 			if (!prjDir)  {
 				prjDir = '../PF-CORE';
+				if (!new java.io.File(prjDir).exists()) {
+					prjDir = '.';
+				}
 			} else {
 				prjDir += '';
 			}
