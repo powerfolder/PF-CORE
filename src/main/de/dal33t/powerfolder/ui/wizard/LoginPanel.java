@@ -20,14 +20,15 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -50,14 +51,14 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
+import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
@@ -67,6 +68,8 @@ public class LoginPanel extends PFWizardPanel {
     private ServerClient client;
     private boolean showUseOS;
 
+    private JComboBox<String> serverURLBox;
+    private JLabel serverURLLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
@@ -128,13 +131,31 @@ public class LoginPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
+        String layoutRows;
+
+        if (StringUtils.isBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
+            .getValue(getController())))
+        {
+            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
+        } else {
+            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
+        }
+
         FormLayout layout = new FormLayout("50dlu, 3dlu, 80dlu, 40dlu, pref",
-            "15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref");
+            layoutRows);
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
+
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
+            .getValue(getController())))
+        {
+            builder.add(serverURLLabel, cc.xy(1, row));
+            builder.add(serverURLBox, cc.xy(3, row));
+            row += 2;
+        }
 
         // usernameField and connectingLabel have the same slot.
         builder.add(usernameLabel, cc.xy(1, row));
@@ -204,6 +225,28 @@ public class LoginPanel extends PFWizardPanel {
         serverInfoLabel.setText(client.getServerString());
         serverInfoLabel.setEnabled(changeLoginAllowed);
 
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
+            .getValue(getController())))
+        {
+            serverURLLabel = new JLabel(
+                Translation.getTranslation("general.server"));
+
+            String allServers = ConfigurationEntry.SERVER_CONNECTION_URLS
+                .getValue(getController());
+            String[] allServersArray = allServers.split(";");
+            String[] serverLabels = new String[allServersArray.length];
+
+            for (int i = 0; i < allServersArray.length; i++) {
+                String server = allServersArray[i];
+                serverLabels[i] = server.substring(0, server.indexOf("="));
+            }
+
+            serverURLBox = new JComboBox<String>(serverLabels);
+            serverURLBox.setSelectedIndex(0);
+            serverURLBox.setEditable(true);
+            serverURLBox.addActionListener(new ServerSelectAction());
+        }
+
         usernameLabel = new JLabel(LoginUtil.getUsernameLabel(getController()));
         usernameField = new JTextField();
         usernameField.addKeyListener(new MyKeyListener());
@@ -239,7 +282,9 @@ public class LoginPanel extends PFWizardPanel {
             && rememberPasswordAllowed);
 
         useOSBox = new JCheckBox(
-            Translation.getTranslation("wizard.login_online_storage.no_os")); // @todo                                                     // "Use online storage"?
+            Translation.getTranslation("wizard.login_online_storage.no_os")); // @todo
+                                                                              // //
+                                                                              // "Use online storage"?
         useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE
             .getValueBoolean(getController()));
         useOSBox.addActionListener(new ActionListener() {
@@ -364,6 +409,35 @@ public class LoginPanel extends PFWizardPanel {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private class ServerSelectAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JComboBox<String> source = (JComboBox<String>) e.getSource();
+
+            String configURL;
+
+            if (source.getSelectedIndex() == -1) {
+                configURL = (String) source.getSelectedItem();
+            } else {
+                String item = (String) source.getSelectedItem();
+                String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
+
+                // find the item, skip it an the equals-sign
+                int begin = serversList.indexOf(item) + item.length() + 1;
+                int end   = serversList.indexOf(";", begin);
+
+                if (end == -1) {
+                    end = serversList.length();
+                }
+
+                configURL = serversList.substring(begin, end);
+            }
+
+            client.loadConfigURL(configURL);
+        }
+    }
+    
     private static class BooleanNotConverter extends AbstractConverter {
         private BooleanNotConverter(ValueModel subject) {
             super(subject);

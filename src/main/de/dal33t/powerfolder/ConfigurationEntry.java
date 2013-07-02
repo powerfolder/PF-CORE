@@ -247,6 +247,8 @@ public enum ConfigurationEntry {
      */
     SERVER_LOAD_NODES("server.load.nodes", true),
 
+    SERVER_CONNECTION_URLS("server.connection.urls", ""),
+
     // Server WEB settings ****************************************************
 
     /**
