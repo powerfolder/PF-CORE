@@ -19,13 +19,25 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -36,12 +48,13 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -230,6 +243,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation.getTranslation("preferences.general.exit_behavior")), cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
+            row += 2;
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.general.account_label")), cc
+                    .xy(1, row));
+            builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
+
             if (!ProUtil.isZyncro(getController())) {
                 row += 2;
                 builder
@@ -271,6 +291,35 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return checkForUpdatesButton;
     }
 
+    private JPanel createChangeAccountLogoutPanel() {
+        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(createChangeAccountButton(), cc.xy(1, 1));
+        builder.add(createLogoutButton(), cc.xy(3, 1));
+        return builder.getPanel();
+    }
+
+    private JButton createChangeAccountButton() {
+        JButton changeAccountButton = new JButton(Translation.getTranslation("preferences.general.change_account_text"));
+        changeAccountButton.setToolTipText(Translation.getTranslation("preferences.general.change_account_tips"));
+        changeAccountButton.setMnemonic(Translation.getTranslation("preferences.general.change_account_key").trim().charAt(0));
+        changeAccountButton.addActionListener(new ChangeAccountAction());
+        changeAccountButton.setBackground(Color.WHITE);
+        return changeAccountButton;
+    }
+
+    private JButton createLogoutButton() {
+        JButton logoutButton = new JButton(
+            Translation.getTranslation("preferences.general.logout_text"));
+        logoutButton.setToolTipText(Translation
+            .getTranslation("preferences.general.logout_tips"));
+        logoutButton.setMnemonic(Translation
+            .getTranslation("preferences.general.logout_key").trim().charAt(0));
+        logoutButton.addActionListener(new LogoutAction());
+        logoutButton.setBackground(Color.WHITE);
+        return logoutButton;
+    }
 
     private JComboBox createLanguageChooser() {
         // Create combobox
@@ -425,6 +474,37 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 updater.start();
             }
             PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);
+        }
+    }
+
+    private class LogoutAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            SwingWorker<Object, Object> logout = new SwingWorker<Object, Object>() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    getController().getOSClient().logout();
+                    return null;
+                }
+            };
+
+            logout.execute();
+        }
+    }
+
+    private class ChangeAccountAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            SwingWorker<Object, Object> logout = new SwingWorker<Object, Object>() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    getController().getOSClient().logout();
+                    return null;
+                }
+                
+            };
+            logout.execute();
+
+            PFWizard.openLoginWizard(getController(), getController()
+                .getOSClient());
         }
     }
 
