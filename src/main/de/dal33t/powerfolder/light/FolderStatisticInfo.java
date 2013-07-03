@@ -262,19 +262,25 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
      */
     public boolean save(File file) {
         OutputStream fout = null;
+        ObjectOutputStream oout = null;
         if (isFiner()) {
             logFiner("Writing folder " + folder.getName() + " stats to " + file);
         }
         try {
             fout = new TFileOutputStream(file);
-            ObjectOutputStream oout = new ObjectOutputStream(
-                new BufferedOutputStream(fout));
+            oout = new ObjectOutputStream(new BufferedOutputStream(fout));
             oout.writeObject(this);
             oout.close();
         } catch (Exception e) {
             logWarning("Unable to store stats for folder " + folder.getName()
                 + " to " + file + ". " + e);
         } finally {
+            if (oout != null) {
+                try {
+                    oout.close();
+                } catch (IOException e) {
+                }
+            }
             if (fout != null) {
                 try {
                     fout.close();
@@ -297,11 +303,15 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             return null;
         }
         InputStream fin = null;
+        ObjectInputStream oin = null;
         try {
             fin = new TFileInputStream(file);
-            ObjectInputStream oin = new ObjectInputStream(
-                new BufferedInputStream(fin));
-            return (FolderStatisticInfo) oin.readObject();
+            oin = new ObjectInputStream(new BufferedInputStream(fin));
+            FolderStatisticInfo stats = (FolderStatisticInfo) oin.readObject();
+            // PFS-818: Check if not corrupt;
+            if (stats.isValid()) {
+                return stats;
+            }
         } catch (Exception e) {
             Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
                 "Unable to read folder stats from " + file + ". " + e);
@@ -309,6 +319,12 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
                 "Unable to read folder stats from " + file + ". " + e);
         } finally {
+            if (oin != null) {
+                try {
+                    oin.close();
+                } catch (IOException e) {
+                }
+            }
             if (fin != null) {
                 try {
                     fin.close();

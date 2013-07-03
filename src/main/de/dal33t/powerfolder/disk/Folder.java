@@ -1605,11 +1605,12 @@ public class Folder extends PFComponent {
                     + dbFile.getAbsolutePath());
                 return false;
             }
+            InputStream fIn = null;
+            ObjectInputStream in = null;
             try {
                 // load files and scan in
-                InputStream fIn = new BufferedInputStream(new TFileInputStream(
-                    dbFile));
-                ObjectInputStream in = new ObjectInputStream(fIn);
+                fIn = new BufferedInputStream(new TFileInputStream(dbFile));
+                in = new ObjectInputStream(fIn);
                 FileInfo[] files = (FileInfo[]) in.readObject();
                 // Convert.cleanMemberInfos(getController().getNodeManager(),
                 // files);
@@ -1695,6 +1696,19 @@ public class Folder extends PFComponent {
                     + dbFile.getAbsolutePath() + ". " + e);
                 logFiner(e);
                 return false;
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                    }
+                }
+                if (fIn != null) {
+                    try {
+                        fIn.close();
+                    } catch (IOException e) {
+                    }
+                }
             }
 
             // Ok has own database
@@ -1781,10 +1795,13 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private boolean storeFolderDB() {
-        File dbTempFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME + ".writing");
+        File dbTempFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME
+            + ".writing");
         File dbFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME);
         File dbFileBackup = new TFile(getSystemSubDir(),
             Constants.DB_BACKUP_FILENAME);
+        OutputStream fOut = null;
+        ObjectOutputStream oOut = null;
         try {
             FileInfo[] diskItems;
             synchronized (dbAccessLock) {
@@ -1803,7 +1820,8 @@ public class Folder extends PFComponent {
             }
             if (dbTempFile.exists()) {
                 if (!dbTempFile.delete()) {
-                    logSevere("Failed to delete temp database file: " + dbTempFile);
+                    logSevere("Failed to delete temp database file: "
+                        + dbTempFile);
                     return false;
                 }
             }
@@ -1811,9 +1829,8 @@ public class Folder extends PFComponent {
                 logSevere("Failed to create temp database file: " + dbTempFile);
                 return false;
             }
-            OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
-                dbTempFile));
-            ObjectOutputStream oOut = new ObjectOutputStream(fOut);
+            fOut = new BufferedOutputStream(new TFileOutputStream(dbTempFile));
+            oOut = new ObjectOutputStream(fOut);
             // Store files
             oOut.writeObject(diskItems);
             // Store members
@@ -1883,6 +1900,15 @@ public class Folder extends PFComponent {
                 + dbFile.getAbsolutePath() + ". " + e);
             logFiner(e);
             return false;
+        } finally {
+            try {
+                oOut.close();
+            } catch (Exception e2) {
+            }
+            try {
+                fOut.close();
+            } catch (IOException e) {
+            }
         }
     }
 
