@@ -1665,6 +1665,9 @@ public class Folder extends PFComponent {
                     logFiner("No ignore list");
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
+                } catch (OutOfMemoryError e) {
+                    logWarning("Read ignore error: " + this + " on " + dbFile
+                        + ": " + e.getMessage());
                 }
 
                 try {
@@ -1777,7 +1780,8 @@ public class Folder extends PFComponent {
     /**
      * Stores the current file-database to disk
      */
-    private void storeFolderDB() {
+    private boolean storeFolderDB() {
+        File dbTempFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME + ".writing");
         File dbFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME);
         File dbFileBackup = new TFile(getSystemSubDir(),
             Constants.DB_BACKUP_FILENAME);
@@ -1797,16 +1801,18 @@ public class Folder extends PFComponent {
                     i++;
                 }
             }
-            if (dbFile.exists()) {
-                if (!dbFile.delete()) {
-                    logSevere("Failed to delete database file: " + dbFile);
+            if (dbTempFile.exists()) {
+                if (!dbTempFile.delete()) {
+                    logSevere("Failed to delete temp database file: " + dbTempFile);
+                    return false;
                 }
             }
-            if (!dbFile.createNewFile()) {
-                logSevere("Failed to create database file: " + dbFile);
+            if (!dbTempFile.createNewFile()) {
+                logSevere("Failed to create temp database file: " + dbTempFile);
+                return false;
             }
             OutputStream fOut = new BufferedOutputStream(new TFileOutputStream(
-                dbFile));
+                dbTempFile));
             ObjectOutputStream oOut = new ObjectOutputStream(fOut);
             // Store files
             oOut.writeObject(diskItems);
@@ -1815,7 +1821,7 @@ public class Folder extends PFComponent {
                 .toArray(new Member[getMembersAsCollection().size()])));
             // Old blacklist. Maintained for backward serialization
             // compatability. Do not remove.
-            oOut.writeObject(new ArrayList<FileInfo>());
+            oOut.writeObject(Collections.emptyList());
 
             if (lastScan == null) {
                 if (isFiner()) {
@@ -1837,8 +1843,25 @@ public class Folder extends PFComponent {
                     + diskItems.length + " disk items)");
             }
 
-            // Make backup
-            FileUtils.copyFile(dbFile, dbFileBackup);
+            // Put in the right place:
+            boolean copy = true;
+            if (dbFile.exists()) {
+                if (dbFile.delete()) {
+                    if (dbTempFile.renameTo(dbFile)) {
+                        copy = false;
+                    }
+                }
+            }
+            if (copy) {
+                FileUtils.copyFile(dbTempFile, dbFile);
+            }
+            if (dbFileBackup.exists()) {
+                dbFileBackup.delete();
+            }
+
+            if (copy && !dbTempFile.delete()) {
+                logWarning("Failed to delete temp database file: " + dbTempFile);
+            }
 
             // TODO Remove this in later version
             // Cleanup for older versions
@@ -1852,12 +1875,14 @@ public class Folder extends PFComponent {
                 logFiner("Failed to delete backup of 'old' database file: "
                     + oldDbFileBackup);
             }
+            return true;
         } catch (IOException e) {
             // TODO: if something failed shoudn't we try to restore the
             // backup (if backup exists and bd file not after this?
             logSevere(this + ": Unable to write database file "
                 + dbFile.getAbsolutePath() + ". " + e);
             logFiner(e);
+            return false;
         }
     }
 
@@ -3613,7 +3638,27 @@ public class Folder extends PFComponent {
             return;
         }
 
-        storeFolderDB();
+        int tries = 1;
+        boolean success = storeFolderDB();
+        while (!success && tries < 10) {
+            try {
+                // Wait a bit and try again.
+                Thread.sleep(144L * tries);
+            } catch (InterruptedException e) {
+                break;
+            }
+            tries += 1;
+            success = storeFolderDB();
+        }
+        if (tries > 1) {
+            if (success) {
+                logWarning("Was able to write folder database, but only after "
+                    + tries + " trys.");
+            } else {
+                logSevere("Was NOT able to write folder database, even after "
+                    + tries + " trys.");
+            }
+        }
 
         // Write filelist
         if (LoggingManager.isLogToFile()
