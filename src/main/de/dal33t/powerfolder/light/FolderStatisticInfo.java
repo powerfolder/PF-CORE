@@ -305,6 +305,9 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         } catch (Exception e) {
             Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
                 "Unable to read folder stats from " + file + ". " + e);
+        } catch (OutOfMemoryError e) {
+            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+                "Unable to read folder stats from " + file + ". " + e);
         } finally {
             if (fin != null) {
                 try {

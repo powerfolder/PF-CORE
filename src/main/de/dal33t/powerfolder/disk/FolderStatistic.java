@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -42,6 +43,7 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
@@ -206,9 +208,23 @@ public class FolderStatistic extends PFComponent {
         calculating = null;
 
         if (!folder.isDeviceDisconnected()) {
+            // Try to cache statistic on filesystem.
+            File tempFile = new TFile(folder.getSystemSubDir(),
+                Folder.FOLDER_STATISTIC + ".writing");
             File file = new TFile(folder.getSystemSubDir(),
                 Folder.FOLDER_STATISTIC);
-            current.save(file);
+            if (current.save(tempFile)) {
+                if (file.exists()) {
+                    file.delete();
+                }
+                if (!tempFile.renameTo(file)) {
+                    try {
+                        FileUtils.copyFile(tempFile, file);
+                        tempFile.delete();
+                    } catch (IOException e) {
+                    }
+                }
+            }
         }
 
         // Recalculate the last modified date of the folder.
