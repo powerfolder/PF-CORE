@@ -270,6 +270,8 @@ public enum ConfigurationEntry {
 
     SETTINGS_ENABLED("settings.enabled", true),
 
+    FILES_ENABLED("files.enabled", true),
+
     MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
 
     // Config META information ************************************************

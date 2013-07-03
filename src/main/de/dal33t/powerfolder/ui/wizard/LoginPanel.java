@@ -321,6 +321,8 @@ public class LoginPanel extends PFWizardPanel {
             .getValueBoolean(getController());
         boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
             .getValueBoolean(getController());
+        serverURLLabel.setVisible(connected);
+        serverURLBox.setVisible(connected);
         usernameLabel.setVisible(connected);
         usernameField.setVisible(connected);
         passwordLabel.setVisible(connected);
@@ -415,26 +417,20 @@ public class LoginPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             JComboBox<String> source = (JComboBox<String>) e.getSource();
 
-            String configURL;
+            String item = (String) source.getSelectedItem();
+            String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
 
-            if (source.getSelectedIndex() == -1) {
-                configURL = (String) source.getSelectedItem();
-            } else {
-                String item = (String) source.getSelectedItem();
-                String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
+            // find the item, skip it an the equals-sign
+            int begin = serversList.indexOf(item) + item.length() + 1;
+            int end   = serversList.indexOf(";", begin);
 
-                // find the item, skip it an the equals-sign
-                int begin = serversList.indexOf(item) + item.length() + 1;
-                int end   = serversList.indexOf(";", begin);
-
-                if (end == -1) {
-                    end = serversList.length();
-                }
-
-                configURL = serversList.substring(begin, end);
+            if (end == -1) {
+                end = serversList.length();
             }
+            
+            String server = serversList.substring(begin, end);
 
-            client.loadConfigURL(configURL);
+            client.loadConfigURL(server);
         }
     }
     

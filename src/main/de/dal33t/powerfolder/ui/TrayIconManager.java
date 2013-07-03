@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.LOGGING_IN;
 import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
 import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
 import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
@@ -239,7 +240,7 @@ public class TrayIconManager extends PFComponent {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.not_connected"));
-        } else if (event.equals(NOT_LOGGED_IN)) {
+        } else if (event.equals(NOT_LOGGED_IN) || event.equals(LOGGING_IN)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.not_logged_in"));

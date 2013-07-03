@@ -37,7 +37,6 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -797,11 +796,10 @@ public class UIController extends PFComponent {
     }
 
     public void openFileInformation(FileInfo fileInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFile(fileInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFile(fileInfo);
-        displayInformationWindow();
     }
 
     /**
@@ -811,27 +809,24 @@ public class UIController extends PFComponent {
      *            info of the folder to display files information for.
      */
     public void openFilesInformationLatest(FolderInfo folderInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFilesLatest(folderInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFolderFilesLatest(folderInfo);
-        displayInformationWindow();
     }
 
     public void openFilesInformationDeleted(FolderInfo folderInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFilesDeleted(folderInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFolderFilesDeleted(folderInfo);
-        displayInformationWindow();
     }
 
     public void openFilesInformationUnsynced(FolderInfo folderInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFilesUnsynced(folderInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFolderFilesUnsynced(folderInfo);
-        displayInformationWindow();
     }
 
     /**
@@ -841,11 +836,10 @@ public class UIController extends PFComponent {
      *            info of the folder to display files information for.
      */
     public void openFilesInformation(FolderInfo folderInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFiles(folderInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFolderFiles(folderInfo);
-        displayInformationWindow();
     }
 
     /**
@@ -855,11 +849,12 @@ public class UIController extends PFComponent {
      *            info of the folder to display member settings information for.
      */
     public void openSettingsInformation(FolderInfo folderInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.SETTINGS_ENABLED
+            .getValueBoolean(getController()))
+        {
+            informationFrame.displayFolderSettings(folderInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFolderSettings(folderInfo);
-        displayInformationWindow();
     }
 
     /**
@@ -879,11 +874,11 @@ public class UIController extends PFComponent {
      *            info of the folder to display member computer information for.
      */
     public void openMembersInformation(FolderInfo folderInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController()))
+        {
+            informationFrame.displayFolderMembers(folderInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFolderMembers(folderInfo);
-        displayInformationWindow();
     }
 
     /**

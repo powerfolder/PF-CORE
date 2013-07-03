@@ -927,11 +927,17 @@ public class ServerClient extends PFComponent {
             Properties props = ConfigurationLoader
                 .loadPreConfiguration(configURL);
 
-            String name = (String) props.get("server.name");
-            String host = (String) props.get("server.host");
-            String nodeId = (String) props.get("server.nodeid");
-            String tunnelURL = (String) props.get("provider.url.httptunnel");
-            String webURL = (String) props.get("server.url");
+            String name = (String) props.get(ConfigurationEntry.SERVER_NAME
+                .getConfigKey());
+            String host = (String) props.get(ConfigurationEntry.SERVER_HOST
+                .getConfigKey());
+            String nodeId = (String) props.get(ConfigurationEntry.SERVER_NODEID
+                .getConfigKey());
+            String tunnelURL = (String) props
+                .get(ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
+                    .getConfigKey());
+            String webURL = (String) props
+                .get(ConfigurationEntry.SERVER_WEB_URL.getConfigKey());
 
             // ... and set the new values
             setServerWebURLInConfig(webURL);
@@ -941,7 +947,11 @@ public class ServerClient extends PFComponent {
             MemberInfo serverNode = new MemberInfo(name, nodeId, networkId);
             serverNode.setConnectAddress(Util.parseConnectionString(host));
 
+            Member newServer = serverNode.getNode(getController(), true);
+            newServer.updateInfo(serverNode, true);
+
             setServerInConfig(serverNode);
+            setNewServerNode(newServer);
         } catch (IOException e) {
             logInfo("Could not load properties: " + e.getMessage());
         }

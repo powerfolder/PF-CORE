@@ -27,6 +27,7 @@ public class SyncStatusEvent {
     public static final SyncStatusEvent PAUSED = new SyncStatusEvent("Paused");
     public static final SyncStatusEvent NOT_STARTED = new SyncStatusEvent("Not Started");
     public static final SyncStatusEvent NOT_CONNECTED = new SyncStatusEvent("Not Connected");
+    public static final SyncStatusEvent LOGGING_IN = new SyncStatusEvent("Logging in");
     public static final SyncStatusEvent NOT_LOGGED_IN = new SyncStatusEvent("Not Logged In");
     public static final SyncStatusEvent NO_FOLDERS = new SyncStatusEvent("No Folders");
     public static final SyncStatusEvent SYNCING = new SyncStatusEvent("Syncing");
