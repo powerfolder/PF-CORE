@@ -113,6 +113,10 @@ public class FolderStatistic extends PFComponent {
                 Folder.FOLDER_STATISTIC);
             // Load cached disk results
             current = FolderStatisticInfo.load(file);
+            // PFS-818: Check if not corrupt;
+            if (current != null && !current.isValid()) {
+                current = null;
+            }
         }
         if (current == null) {
             current = new FolderStatisticInfo(folder.getInfo());

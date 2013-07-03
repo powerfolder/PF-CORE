@@ -400,4 +400,24 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             return false;
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return "FolderStatisticInfo [folder=" + folder + ", totalSize="
+            + totalSize + ", archiveSize=" + archiveSize + ", totalFilesCount="
+            + totalFilesCount + ", estimatedSyncDate=" + estimatedSyncDate
+            + ", incomingFilesCount=" + incomingFilesCount + ", filesCount="
+            + filesCount + ", filesCountInSync=" + filesCountInSync
+            + ", sizes=" + sizes + ", sizesInSync=" + sizesInSync + "]";
+    }
+
+    /**
+     * PFS-818
+     * @return
+     */
+    public boolean isValid() {
+        return folder != null && filesCount != null && filesCountInSync != null
+            && sizes != null && sizesInSync != null
+            && partialSyncStatMap != null;
+    }
 }
