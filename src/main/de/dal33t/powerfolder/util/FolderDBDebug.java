@@ -56,6 +56,8 @@ public class FolderDBDebug {
         InputStream fIn = new BufferedInputStream(new FileInputStream(args[0]));
         ObjectInputStream in = new ObjectInputStream(fIn);
         FileInfo[] files = (FileInfo[]) in.readObject();
+        System.err.println(in.readObject());
+        System.err.println(in.readObject());
 
         if (!checkForDupes(files)) {
             System.out.println("OK: DB contain NO dupes.");
