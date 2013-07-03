@@ -923,6 +923,7 @@ public class ServerClient extends PFComponent {
      */
     public void loadConfigURL(String configURL) {
         try {
+            // load the configuration from the url ...
             Properties props = ConfigurationLoader
                 .loadPreConfiguration(configURL);
 
@@ -932,20 +933,17 @@ public class ServerClient extends PFComponent {
             String tunnelURL = (String) props.get("provider.url.httptunnel");
             String webURL = (String) props.get("server.url");
 
-            ConfigurationEntry.SERVER_WEB_URL.setValue(getController(), webURL);
-
+            // ... and set the new values
+            setServerWebURLInConfig(webURL);
             setServerHTTPTunnelURLInConfig(tunnelURL);
 
             String networkId = getController().getNodeManager().getNetworkId();
             MemberInfo serverNode = new MemberInfo(name, nodeId, networkId);
             serverNode.setConnectAddress(Util.parseConnectionString(host));
 
-            Member node = new Member(getController(), serverNode);
-
-            setServer(node, true);
+            setServerInConfig(serverNode);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logInfo("Could not load properties: " + e.getMessage());
         }
     }
 

@@ -57,8 +57,6 @@ public enum PreferencesEntry {
 
     UNDERLINE_LINKS("UnderlineLinks", false),
 
-    NEVER_UNDERLINE_LINKS("NeverUnderlineLinks", false),
-
     FILE_NAME_CHECK("folder.check_filenames", false),
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),

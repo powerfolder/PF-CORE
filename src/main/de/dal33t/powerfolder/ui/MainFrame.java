@@ -456,6 +456,11 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
+        if (ProUtil.isZyncro(getController())) {
+            upperMainTextActionLabel.setNeverUnderline(true);
+            lowerMainTextActionLabel.setNeverUnderline(true);
+        }
+
         if (getController().getOSClient().getAccount()
             .hasPermission(FolderCreatePermission.INSTANCE))
         {

@@ -1574,6 +1574,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == Type.Local) {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
+                        if (ProUtil.isZyncro(getController())) {
+                            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
+                                folderInfo);
+                            panel.open();
+                        }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
                         PFWizard.openOnlineStorageJoinWizard(getController(),

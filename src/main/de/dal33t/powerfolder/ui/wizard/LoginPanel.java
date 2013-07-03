@@ -243,7 +243,7 @@ public class LoginPanel extends PFWizardPanel {
 
             serverURLBox = new JComboBox<String>(serverLabels);
             serverURLBox.setSelectedIndex(0);
-            serverURLBox.setEditable(true);
+            serverURLBox.setEditable(false);
             serverURLBox.addActionListener(new ServerSelectAction());
         }
 
