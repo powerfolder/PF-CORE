@@ -680,7 +680,7 @@ public class MainFrame extends PFUIComponent {
             setupText = getApplicationModel().getActionModel()
                 .getNewFolderAction().getName();
             zyncroLabel
-                .setText("Choose folders from the list to be synchronized.");
+                .setText(Translation.getTranslation("main_frame.choose_folders"));
         } else if (event.equals(SYNCING)) {
             syncDate = folderRepositoryModel.getEstimatedSyncDate();
             String syncingTemp = overallSyncPercentage >= 0

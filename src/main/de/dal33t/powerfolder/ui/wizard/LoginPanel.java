@@ -418,22 +418,23 @@ public class LoginPanel extends PFWizardPanel {
             JComboBox<String> source = (JComboBox<String>) e.getSource();
 
             String item = (String) source.getSelectedItem();
-            String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
+            String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS
+                .getValue(getController());
 
             // find the item, skip it an the equals-sign
             int begin = serversList.indexOf(item) + item.length() + 1;
-            int end   = serversList.indexOf(";", begin);
+            int end = serversList.indexOf(";", begin);
 
             if (end == -1) {
                 end = serversList.length();
             }
-            
+
             String server = serversList.substring(begin, end);
 
             client.loadConfigURL(server);
         }
     }
-    
+
     private static class BooleanNotConverter extends AbstractConverter {
         private BooleanNotConverter(ValueModel subject) {
             super(subject);
