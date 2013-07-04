@@ -417,28 +417,6 @@ public class LoginPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             JComboBox<String> source = (JComboBox<String>) e.getSource();
 
-<<<<<<< HEAD
-            String configURL;
-
-            if (source.getSelectedIndex() == -1) {
-                configURL = (String) source.getSelectedItem();
-            } else {
-                String item = (String) source.getSelectedItem();
-                String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
-
-                // find the item, skip it an the equals-sign
-                int begin = serversList.indexOf(item) + item.length() + 1;
-                int end   = serversList.indexOf(";", begin);
-
-                if (end == -1) {
-                    end = serversList.length();
-                }
-
-                configURL = serversList.substring(begin, end);
-            }
-
-            client.loadConfigURL(configURL);
-=======
             String item = (String) source.getSelectedItem();
             String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
 
@@ -453,7 +431,6 @@ public class LoginPanel extends PFWizardPanel {
             String server = serversList.substring(begin, end);
 
             client.loadConfigURL(server);
->>>>>>> branch 'development' of https://forge.powerfolder.com/git/PF-CORE
         }
     }
     
