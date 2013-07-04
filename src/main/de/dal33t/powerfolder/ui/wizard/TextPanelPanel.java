@@ -69,8 +69,7 @@ public class TextPanelPanel extends PFWizardPanel {
         super(controller);
         this.title = title;
         this.text = text;
-        // Tiny wizards don't have a "Finish" button. So automatically close.
-        this.autoFadeOut = autoFadeOut || getWizard().isTiny();
+        this.autoFadeOut = autoFadeOut;
     }
 
     public boolean hasNext() {
@@ -84,7 +83,8 @@ public class TextPanelPanel extends PFWizardPanel {
             diag.setVisible(false);
             diag.dispose();
         }
-        if (autoFadeOut) {
+        // Tiny wizards don't have a "Finish" button. So automatically close.
+        if (autoFadeOut || getWizard().isTiny()) {
             new FadeOutWorker().execute();
         }
 
@@ -94,7 +94,7 @@ public class TextPanelPanel extends PFWizardPanel {
             Object p = getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
             if (p != null && p instanceof FolderInfo) {
                 getController().getUIController().displayInviteFolderContents(
-                        (FolderInfo) p);
+                    (FolderInfo) p);
             }
         }
     }
@@ -139,7 +139,6 @@ public class TextPanelPanel extends PFWizardPanel {
         // If it is a locally synced folder,
         // show link to open the folder in explorer.
         if (!autoFadeOut) {
-
             FolderInfo folderInfo = (FolderInfo) getWizardContext()
                     .getAttribute(FOLDERINFO_ATTRIBUTE);
             if (folderInfo != null) {
