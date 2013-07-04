@@ -45,7 +45,6 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard
@@ -78,7 +77,7 @@ public class TextPanelPanel extends PFWizardPanel {
 
     @Override
     protected void afterDisplay() {
-        if (ProUtil.isZyncro(getController())) {
+        if (PFWizard.hideFolderJoinWizard(getController())) {
             JDialog diag = getWizardDialog();
             diag.setVisible(false);
             diag.dispose();

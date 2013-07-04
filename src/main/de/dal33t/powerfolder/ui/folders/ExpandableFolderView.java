@@ -1036,8 +1036,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
-                primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_sync_complete"));
+                if (ProUtil.isZyncro(getController())) {
+                    primaryButton.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.explore"));
+                } else {
+                    primaryButton.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.folder_sync_complete"));
+                }
             }
         } else if (type == Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.TYPICAL_FOLDER));
@@ -1184,11 +1189,21 @@ public class ExpandableFolderView extends PFUIComponent implements
                 nameLabel.setToolTipText(Translation
                     .getTranslation("exp_folder_view.collapse"));
             } else {
-                nameLabel.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.expand"));
+                if (ProUtil.isZyncro(getController())) {
+                    nameLabel.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.remove"));
+                } else {
+                    nameLabel.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.expand"));
+                }
             }
         }
-        
+
+        if (folder == null && ProUtil.isZyncro(getController())) {
+            nameLabel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.create"));
+        }
+
         String folderName = folderInfo.getLocalizedName();
 
         nameLabel.setText(folderName + newCountString);
@@ -1574,6 +1589,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == Type.Local) {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
+                        if (ProUtil.isZyncro(getController())) {
+                            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
+                                folderInfo);
+                            panel.open();
+                        }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
                         PFWizard.openOnlineStorageJoinWizard(getController(),

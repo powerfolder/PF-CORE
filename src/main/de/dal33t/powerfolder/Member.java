@@ -2523,6 +2523,11 @@ public class Member extends PFComponent implements Comparable<Member> {
         return getController().getSecurityManager().getAccountInfo(this);
     }
 
+    public boolean updateInfo(MemberInfo newInfo) {
+        return updateInfo(newInfo, false);
+    }
+
+    
     /**
      * Updates connection information, if the other is more 'valueble'.
      * <p>
@@ -2532,9 +2537,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            The new MemberInfo to use if more valueble
      * @return true if we found valueble information
      */
-    public boolean updateInfo(MemberInfo newInfo) {
+    public boolean updateInfo(MemberInfo newInfo, boolean force) {
         boolean updated = false;
-        if (!isConnected() && newInfo.isConnected) {
+        if (force || (!isConnected() && newInfo.isConnected)) {
             // take info, if this is now a supernode
             if (newInfo.isSupernode && !info.isSupernode) {
                 if (isFiner()) {

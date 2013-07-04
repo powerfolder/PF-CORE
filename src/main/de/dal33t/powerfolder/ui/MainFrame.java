@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.LOGGING_IN;
 import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
 import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
 import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
@@ -456,6 +457,11 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
+        if (ProUtil.isZyncro(getController())) {
+            upperMainTextActionLabel.setNeverUnderline(true);
+            lowerMainTextActionLabel.setNeverUnderline(true);
+        }
+
         if (getController().getOSClient().getAccount()
             .hasPermission(FolderCreatePermission.INSTANCE))
         {
@@ -689,8 +695,10 @@ public class MainFrame extends PFUIComponent {
                         "main_frame.sync_incomplete");
         } else if (event.equals(NOT_CONNECTED)) {
             upperText = Translation.getTranslation("main_frame.connecting.text");
-        } else if (event.equals(NOT_LOGGED_IN)) {
+        } else if (event.equals(LOGGING_IN)) {
             upperText = Translation.getTranslation("main_frame.logging_in.text");
+        } else if (event.equals(NOT_LOGGED_IN)) {
+            upperText = Translation.getTranslation("main_frame.log_in_failed.text");
         } else {
             logSevere("Not handling all sync states: " + event);
         }
@@ -1170,7 +1178,7 @@ public class MainFrame extends PFUIComponent {
             } else {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
-                    .getTranslation("main_frame.log_in_failed.text"));
+                    .getTranslation("main_frame.log_in_failed.text_click"));
                 if (!PFWizard.isWizardOpen()) {
                     PFWizard.openLoginWizard(getController(), client);
                 }

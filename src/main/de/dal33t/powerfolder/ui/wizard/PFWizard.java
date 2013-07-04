@@ -29,8 +29,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JDialog;
 
@@ -38,13 +38,15 @@ import jwf.Wizard;
 import jwf.WizardContext;
 import jwf.WizardListener;
 import jwf.WizardPanel;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -279,6 +281,12 @@ public class PFWizard extends PFUIComponent {
         wizard.open(new ConfirmDiskLocationPanel(controller, directory));
     }
 
+    public static boolean hideFolderJoinWizard(Controller controller) {
+        return ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+            .getValueBoolean(controller)
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller);
+    }
+    
     /**
      * Opens the wizard on a panel.
      * 
@@ -290,7 +298,14 @@ public class PFWizard extends PFUIComponent {
             buildUI();
         }
         wizard.start(wizardPanel, false);
-        dialog.setVisible(true);
+
+        if (PFWizard.hideFolderJoinWizard(getController())
+            && wizardPanel instanceof MultiOnlineStorageSetupPanel)
+        {
+            dialog.setVisible(false);
+        } else {
+            dialog.setVisible(true);
+        }
     }
 
     /**

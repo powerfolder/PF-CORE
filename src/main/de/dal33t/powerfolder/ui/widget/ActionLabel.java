@@ -56,6 +56,7 @@ public class ActionLabel extends PFComponent {
     private String text;
     private Action action;
     private volatile boolean mouseOver;
+    private boolean neverUnderline;
     private boolean underline;
 
     public ActionLabel(Controller controller, final Action action) {
@@ -64,6 +65,7 @@ public class ActionLabel extends PFComponent {
         this.action = action;
         underline = PreferencesEntry.UNDERLINE_LINKS
             .getValueBoolean(getController());
+        neverUnderline = false;
         uiComponent = new JLabel();
         text = (String) action.getValue(Action.NAME);
         displayText();
@@ -130,6 +132,11 @@ public class ActionLabel extends PFComponent {
         displayText();
     }
 
+    public void setNeverUnderline(boolean neverUnderline) {
+        this.neverUnderline = neverUnderline;
+        displayText();
+    }
+    
     public void setVisible(boolean visible) {
         uiComponent.setVisible(visible);
     }
@@ -151,7 +158,7 @@ public class ActionLabel extends PFComponent {
 
     public void displayText() {
         if (enabled) {
-            if (mouseOver || underline) {
+            if (!neverUnderline && (mouseOver || underline)) {
                 if (StringUtils.isNotBlank(text)) {
                     Color color = ColorUtil.getTextForegroundColor();
                     String rgb = ColorUtil.getRgbForColor(color);

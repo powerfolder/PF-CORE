@@ -247,6 +247,8 @@ public enum ConfigurationEntry {
      */
     SERVER_LOAD_NODES("server.load.nodes", true),
 
+    SERVER_CONNECTION_URLS("server.connection.urls", ""),
+
     // Server WEB settings ****************************************************
 
     /**
@@ -267,6 +269,8 @@ public enum ConfigurationEntry {
     MEMBERS_ENABLED("members.enabled", true),
 
     SETTINGS_ENABLED("settings.enabled", true),
+
+    FILES_ENABLED("files.enabled", true),
 
     MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
 

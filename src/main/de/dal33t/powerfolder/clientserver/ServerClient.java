@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -29,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -61,6 +63,7 @@ import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -910,6 +913,47 @@ public class ServerClient extends PFComponent {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Load a new configuration from URL configURL
+     * 
+     * @param configURL
+     */
+    public void loadConfigURL(String configURL) {
+        try {
+            // load the configuration from the url ...
+            Properties props = ConfigurationLoader
+                .loadPreConfiguration(configURL);
+
+            String name = (String) props.get(ConfigurationEntry.SERVER_NAME
+                .getConfigKey());
+            String host = (String) props.get(ConfigurationEntry.SERVER_HOST
+                .getConfigKey());
+            String nodeId = (String) props.get(ConfigurationEntry.SERVER_NODEID
+                .getConfigKey());
+            String tunnelURL = (String) props
+                .get(ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
+                    .getConfigKey());
+            String webURL = (String) props
+                .get(ConfigurationEntry.SERVER_WEB_URL.getConfigKey());
+
+            // ... and set the new values
+            setServerWebURLInConfig(webURL);
+            setServerHTTPTunnelURLInConfig(tunnelURL);
+
+            String networkId = getController().getNodeManager().getNetworkId();
+            MemberInfo serverNode = new MemberInfo(name, nodeId, networkId);
+            serverNode.setConnectAddress(Util.parseConnectionString(host));
+
+            Member newServer = serverNode.getNode(getController(), true);
+            newServer.updateInfo(serverNode, true);
+
+            setServerInConfig(serverNode);
+            setNewServerNode(newServer);
+        } catch (IOException e) {
+            logInfo("Could not load properties: " + e.getMessage());
         }
     }
 
