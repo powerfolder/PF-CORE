@@ -814,24 +814,16 @@ public class PathUtils {
             // Need to set up desktop ini.
             PrintWriter pw = null;
             try {
-                // @todo Does anyone know a nicer way of finding the run time
-                // directory?
-                Path hereFile = Paths.get("");
-                String herePath = hereFile.toAbsolutePath().toString();
-                String exeName = controller.getDistribution().getBinaryName()
-                    + ".exe";
-                Path powerFolderFile = Paths.get(herePath, exeName);
-                if (Files.notExists(powerFolderFile)) {
-                    // Try harder
-                    powerFolderFile = WinUtils.getProgramInstallationPath()
-                        .resolve(exeName);
+                Path iconFile = findDistributionFile("Folder.ico");
+                if (iconFile == null) {
+                    // Try harder, use EXE file icon
+                    String exeName = controller.getDistribution()
+                        .getBinaryName() + ".exe";
+                    iconFile = findDistributionFile(exeName);
+                }
 
-                    if (Files.notExists(powerFolderFile)) {
-                        log.fine("Could not find "
-                            + powerFolderFile.getFileName() + " at "
-                            + powerFolderFile.getParent().toAbsolutePath());
-                        return;
-                    }
+                if (iconFile == null || Files.notExists(iconFile)) {
+                    return;
                 }
 
                 // Write desktop ini directory
@@ -839,13 +831,12 @@ public class PathUtils {
                     .resolve(DESKTOP_INI_FILENAME)));
                 pw.println("[.ShellClassInfo]");
                 pw.println("ConfirmFileOp=0");
-                pw.println("IconFile=" + powerFolderFile.toAbsolutePath());
+                pw.println("IconFile=" + iconFile.toAbsolutePath());
                 pw.println("IconIndex=0");
                 pw.println("InfoTip="
                     + Translation.getTranslation("folder.info_tip"));
                 // Required on Win7
-                pw.println("IconResource=" + powerFolderFile.toAbsolutePath()
-                    + ",0");
+                pw.println("IconResource=" + iconFile.toAbsolutePath() + ",0");
                 pw.println("[ViewState]");
                 pw.println("Mode=");
                 pw.println("Vid=");
@@ -880,6 +871,24 @@ public class PathUtils {
 
             }
         }
+    }
+
+    private static Path findDistributionFile(String filename) {
+        Path hereFile = Paths.get("");
+        String herePath = hereFile.toAbsolutePath().toString();
+        Path distroFile = Paths.get(herePath, filename);
+        if (Files.notExists(distroFile)) {
+            // Try harder
+            distroFile = WinUtils.getProgramInstallationPath()
+                .resolve(filename);
+
+            if (Files.notExists(distroFile)) {
+                log.fine("Could not find " + distroFile.getFileName() + " at "
+                    + distroFile.getParent().toAbsolutePath());
+                return null;
+            }
+        }
+        return distroFile;
     }
 
     /**
