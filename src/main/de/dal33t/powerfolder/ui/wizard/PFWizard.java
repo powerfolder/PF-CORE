@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -81,12 +82,21 @@ public class PFWizard extends PFUIComponent {
      * @param title
      */
     public PFWizard(Controller controller, String title) {
+        this(controller, title, false);
+    }
+
+    /**
+     * @param controller
+     *            the controller
+     * @param title
+     */
+    public PFWizard(Controller controller, String title, boolean tiny) {
         super(controller);
         this.title = title;
         NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
-        //controller.getUIController().getMainFrame().checkOnTop();
+        // controller.getUIController().getMainFrame().checkOnTop();
         setSuspendNewFolderSearch(true);
-        wizard = new Wizard();
+        wizard = new Wizard(tiny);
     }
 
     /**
@@ -244,8 +254,9 @@ public class PFWizard extends PFUIComponent {
     public static void openLoginWizard(Controller controller,
         ServerClient client)
     {
+        boolean tiny = ProUtil.isZyncro(controller);
         PFWizard wizard = new PFWizard(controller,
-            Translation.getTranslation("wizard.pfwizard.login_title"));
+            Translation.getTranslation("wizard.pfwizard.login_title"), tiny);
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.finish.os_login_title"),
             Translation.getTranslation("wizard.finish.os_login_text"), true);
@@ -374,12 +385,12 @@ public class PFWizard extends PFUIComponent {
         });
 
         dialog.getContentPane().add(wizard);
-            // GradientPanel.create(wizard, GradientPanel.VERY_LIGHT_GRAY));
+        // GradientPanel.create(wizard, GradientPanel.VERY_LIGHT_GRAY));
         dialog.pack();
         int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
             .getWidth()) / 2;
         int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
-            .getHeight()) / 2;
+            .getHeight()) / 3;
         dialog.setLocation(x, y);
         wizard.getContext().setAttribute(
             WizardContextAttributes.DIALOG_ATTRIBUTE, dialog);

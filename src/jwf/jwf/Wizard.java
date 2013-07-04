@@ -53,6 +53,8 @@ public class Wizard extends JPanel implements ActionListener {
     public static final String FINISH_I18N_DESCRIPTION = "FINISH_I18N_DESCRIPTION";
     public static final String CANCEL_I18N_DESCRIPTION = "CANCEL_I18N_DESCRIPTION";
     public static final String HELP_I18N_DESCRIPTION = "HELP_I18N_DESCRIPTION";
+    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(
+        333, 333);
     public static final Dimension WIZARD_DEFAULT_WINDOW_SIZE = new Dimension(
         650, 480);
     public static final Dimension WIZARD_MAC_WINDOW_SIZE = new Dimension(750,
@@ -71,11 +73,15 @@ public class Wizard extends JPanel implements ActionListener {
     private WizardContext ctx;
 
     /** Creates a new wizard. */
-    public Wizard() {
-        init();
+    public Wizard(boolean tiny) {
+        init(tiny);
+    }
+    
+    public boolean isTiny() {
+        return getPreferredSize().equals(WIZARD_TINY_WINDOW_SIZE);
     }
 
-    private void init() {
+    private void init(boolean tiny) {
         ctx = new WizardContext();
 
         nextButton.addActionListener(this);
@@ -99,8 +105,10 @@ public class Wizard extends JPanel implements ActionListener {
         barBuilder.addGridded(nextButton);
         barBuilder.addUnrelatedGap();
         barBuilder.addGridded(cancelButton);
-        barBuilder.addRelatedGap();
-        barBuilder.addGridded(finishButton);
+        if (!tiny) {
+            barBuilder.addRelatedGap();
+            barBuilder.addGridded(finishButton);
+        }
 
         JComponent navButtons = barBuilder.getPanel();
         navButtons.setOpaque(false);
@@ -121,7 +129,10 @@ public class Wizard extends JPanel implements ActionListener {
 
         add(buttons, BorderLayout.SOUTH);
 
-        if (OSUtil.isMacOS()) {
+        if (tiny) {
+            setMinimumSize(WIZARD_TINY_WINDOW_SIZE);
+            setPreferredSize(WIZARD_TINY_WINDOW_SIZE);
+        } else if (OSUtil.isMacOS()) {
             setMinimumSize(WIZARD_MAC_WINDOW_SIZE);
             setPreferredSize(WIZARD_MAC_WINDOW_SIZE);
         } else {

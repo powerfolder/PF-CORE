@@ -64,11 +64,13 @@ public class TextPanelPanel extends PFWizardPanel {
     }
 
     public TextPanelPanel(Controller controller, String title, String text,
-                          boolean autoFadeOut) {
+        boolean autoFadeOut)
+    {
         super(controller);
         this.title = title;
         this.text = text;
-        this.autoFadeOut = autoFadeOut;
+        // Tiny wizards don't have a "Finish" button. So automatically close.
+        this.autoFadeOut = autoFadeOut || getWizard().isTiny();
     }
 
     public boolean hasNext() {

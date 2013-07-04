@@ -129,6 +129,10 @@ public abstract class WizardPanel extends JPanel {
     }
 
     protected Border createFewContentBorder() {
-        return Borders.createEmptyBorder("30dlu, 10dlu, 0, 0");
+        if (getWizard().isTiny()) {
+            return Borders.createEmptyBorder("0, 0, 0, 0");
+        } else {
+            return Borders.createEmptyBorder("30dlu, 10dlu, 0, 0");            
+        }
     }
 }
