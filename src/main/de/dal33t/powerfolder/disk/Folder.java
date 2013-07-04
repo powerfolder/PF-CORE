@@ -1932,8 +1932,7 @@ public class Folder extends PFComponent {
             // Make backup
             try {
                 Files.copy(dbFile, dbFileBackup);
-            }
-            catch (FileAlreadyExistsException faee) {
+            } catch (FileAlreadyExistsException faee) {
                 // Ignore.
             }
 
@@ -1941,16 +1940,15 @@ public class Folder extends PFComponent {
             // Cleanup for older versions
             Path oldDbFile = localBase.resolve(Constants.DB_FILENAME);
             try {
-                Files.delete(oldDbFile);
+                Files.deleteIfExists(oldDbFile);
             } catch (IOException ioe) {
                 logFiner("Failed to delete 'old' database file: " + oldDbFile);
             }
             Path oldDbFileBackup = localBase
                 .resolve(Constants.DB_BACKUP_FILENAME);
             try {
-                Files.delete(oldDbFileBackup);
-            }
-            catch (IOException ioe) {
+                Files.deleteIfExists(oldDbFileBackup);
+            } catch (IOException ioe) {
                 logFiner("Failed to delete backup of 'old' database file: "
                     + oldDbFileBackup);
             }
