@@ -510,12 +510,16 @@ public class TestHelper {
     {
         Path file = directory.resolve(filename);
 
-        try (OutputStream fOut = Files.newOutputStream(file)) {
+        try {
             Path parent = file.getParent();
             if (Files.notExists(parent)) {
                 Files.createDirectories(parent);
             }
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        
+        try (OutputStream fOut = Files.newOutputStream(file)) {
             fOut.write(contents);
         } catch (IOException e) {
             throw new RuntimeException(e);
