@@ -397,6 +397,7 @@ For creation of the installer:
 			<batchtest fork="yes" todir="${build.reports.dir}/raw">
 				<fileset dir="${test.src.dir}">
 					<include name="**/*Test.java" />
+					<exclude name="**/BandwidthLimitTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
