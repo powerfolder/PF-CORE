@@ -441,9 +441,21 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Controller controller) throws IOException
     {
         boolean nameMatch = diskFile.getFileName().toString().equals(fInfo.getFilenameOnly());
+        long size = 0L;
+        try {
+            size = Files.size(diskFile);
+        } catch (IOException e) {
+            // ignore
+        }
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
         boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo.isDeleted();
+        long lastModified = 0L;
+        try {
+            lastModified = Files.getLastModifiedTime(diskFile).toMillis();
+        } catch (IOException e) {
+            // ignore
+        }
         // Skip directory match if not existing.
         boolean dirMatch = Files.notExists(diskFile)
             || fInfo.isDiretory() == Files.isDirectory(diskFile);
@@ -455,9 +467,9 @@ public abstract class MultipleControllerTestCase extends TestCase {
             "DirectoryInfo does not match physical dir. \nFileInfo:\n "
                 + fInfo.toDetailString() + "\nFile:\n "
                 + diskFile.getFileName().toString() + ", size: "
-                + Format.formatBytes(Files.size(diskFile)) + ", lastModified: "
-                + new Date(Files.getLastModifiedTime(diskFile).toMillis())
-                + " (" + Files.getLastModifiedTime(diskFile).toMillis() + ")"
+                + Format.formatBytes(size) + ", lastModified: "
+                + new Date(lastModified)
+                + " (" + lastModified + ")"
                 + "\n\nWhat matches?:\nName: " + nameMatch + "\ndeleteStatus: "
                 + deleteStatusMatch + "\ndirMatch: " + dirMatch
                 + "\nFileObjectEquals: " + fileObjectEquals, matches);
