@@ -495,7 +495,7 @@ public class UIController extends PFComponent {
         // Web //
         // //////
         MenuItem item;
-        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+        if (ConfigurationEntry.WEB_LINKS_ENABLED
             .getValueBoolean(getController()))
         {
             item = menu.add(new MenuItem(Translation

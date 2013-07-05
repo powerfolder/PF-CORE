@@ -285,7 +285,7 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
-        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+        if (ConfigurationEntry.WEB_LINKS_ENABLED
             .getValueBoolean(getController()))
         {
             builder.add(openWebInterfaceActionLabel.getUIComponent(),
@@ -484,7 +484,7 @@ public class MainFrame extends PFUIComponent {
                     try {
                         if (StringUtils.isBlank(client.getUsername())) {
                             PFWizard.openLoginWizard(getController(), client);
-                        } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+                        } else if (ConfigurationEntry.WEB_LINKS_ENABLED
                             .getValueBoolean(getController()))
                         {
                             BrowserLauncher.openURL(client.getWebURL(

@@ -261,6 +261,8 @@ public enum ConfigurationEntry {
      */
     WEB_PASSWORD_ALLOWED("web.login.password", true),
 
+    WEB_LINKS_ENABLED("web.links.enabled", true),
+
     /**
      * If WebDAV should be enabled.
      */

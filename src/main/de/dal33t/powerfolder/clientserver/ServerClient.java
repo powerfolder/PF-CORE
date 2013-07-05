@@ -491,6 +491,11 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return false;
         }
+        if (!ConfigurationEntry.WEB_LINKS_ENABLED
+            .getValueBoolean(getController()))
+        {
+            return false;
+        }
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {

@@ -587,7 +587,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 browserAction.setEnabled(diskItem != null
                     && diskItem instanceof FileInfo
                     && getSelectedRows().length == 1
-                    && ConfigurationEntry.WEB_LOGIN_ALLOWED
+                    && ConfigurationEntry.WEB_LINKS_ENABLED
                         .getValueBoolean(getController()));
                 if (diskItem != null && diskItem instanceof DirectoryInfo) {
                     DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
