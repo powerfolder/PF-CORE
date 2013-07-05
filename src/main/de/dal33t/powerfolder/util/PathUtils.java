@@ -873,9 +873,7 @@ public class PathUtils {
     }
 
     private static Path findDistributionFile(String filename) {
-        Path hereFile = Paths.get("");
-        String herePath = hereFile.toAbsolutePath().toString();
-        Path distroFile = Paths.get(herePath, filename);
+        Path distroFile = Paths.get(".").toAbsolutePath().resolve(filename);
         if (Files.notExists(distroFile)) {
             // Try harder
             distroFile = WinUtils.getProgramInstallationPath()
