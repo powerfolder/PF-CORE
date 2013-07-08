@@ -55,6 +55,10 @@ public enum PreferencesEntry {
 
     EXPERT_MODE("ExpertMode", false),
 
+    MINIMAL("minimal", false),
+
+    VIEW_ACHIVE("view.archive", true),
+
     UNDERLINE_LINKS("UnderlineLinks", false),
 
     FILE_NAME_CHECK("folder.check_filenames", false),

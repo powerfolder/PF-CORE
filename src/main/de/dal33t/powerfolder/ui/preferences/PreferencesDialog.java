@@ -99,7 +99,9 @@ public class PreferencesDialog extends BaseDialog {
     public JComponent getContent() {
         initComponents();
 
-        if (ProUtil.isZyncro(getController())) {
+        if (PreferencesEntry.MINIMAL
+            .getValueBoolean(getController()))
+        {
             generalSettingsTab.getUIPanel().setBorder(Borders.createEmptyBorder("14dlu, 14dlu, 14dlu, 14dlu"));
             return generalSettingsTab.getUIPanel();
         } else {

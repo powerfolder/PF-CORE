@@ -250,7 +250,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .xy(1, row));
             builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
 
-            if (!ProUtil.isZyncro(getController())) {
+            if (!PreferencesEntry.VIEW_ACHIVE.getValueBoolean(getController()))
+            {
                 row += 2;
                 builder
                     .add(
