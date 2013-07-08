@@ -19,16 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.LOGGING_IN;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NO_FOLDERS;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.PAUSED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCHRONIZED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCING;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNC_INCOMPLETE;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -345,7 +335,7 @@ public class MainFrame extends PFUIComponent {
                 UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
 
         configureInlineInfo();
-        updateMainStatus(NOT_STARTED);
+        updateMainStatus(SyncStatusEvent.NOT_STARTED);
         updateNoticesLabel();
     }
 
@@ -642,19 +632,19 @@ public class MainFrame extends PFUIComponent {
                 .getApplicationModel().getFolderRepositoryModel();
 
         // Set visibility of buttons and labels.
-        pauseButton.setVisible(event.equals(PAUSED));
+        pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
         if (getController().getOSClient().getAccount()
             .hasPermission(FolderCreatePermission.INSTANCE)
             && setupLabel != null)
         {
-            setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
+            setupLabel.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
         }
-        setupButton.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
-        allInSyncButton.setVisible(event.equals(SYNCHRONIZED));
-        syncingButton.setVisible(event.equals(SYNCING));
-        syncingButton.spin(event.equals(SYNCING));
-        syncIncompleteButton.setVisible(event.equals(SYNC_INCOMPLETE));
-        notConnectedLoggedInLabel.setVisible(event.equals(NOT_CONNECTED) || event.equals(NOT_LOGGED_IN));
+        setupButton.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
+        allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
+        syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
+        syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
+        syncIncompleteButton.setVisible(event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
+        notConnectedLoggedInLabel.setVisible(event.equals(SyncStatusEvent.NOT_CONNECTED) || event.equals(SyncStatusEvent.NOT_LOGGED_IN));
 
         // Default sync date.
         Date syncDate = folderRepositoryModel.getLastSyncDate();
@@ -666,38 +656,38 @@ public class MainFrame extends PFUIComponent {
         String setupText = " ";
         zyncroLabel.setText(" ");
 
-        if (event.equals(PAUSED)) {
+        if (event.equals(SyncStatusEvent.PAUSED)) {
             String pausedTemp = overallSyncPercentage >= 0
                 && overallSyncPercentage < 99.5d ? Format
                 .formatDecimal(overallSyncPercentage) + '%' : "";
             upperText = Translation.getTranslation("main_frame.paused",
                 pausedTemp);
-        } else if (event.equals(NOT_STARTED)) {
+        } else if (event.equals(SyncStatusEvent.NOT_STARTED)) {
             upperText = Translation.getTranslation("main_frame.not_running");
             setupText = Translation.getTranslation("main_frame.activate_now");
-        } else if (event.equals(NO_FOLDERS)) {
+        } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
             upperText = Translation.getTranslation("main_frame.no_folders");
             setupText = getApplicationModel().getActionModel()
                 .getNewFolderAction().getName();
             zyncroLabel
                 .setText(Translation.getTranslation("main_frame.choose_folders"));
-        } else if (event.equals(SYNCING)) {
+        } else if (event.equals(SyncStatusEvent.SYNCING)) {
             syncDate = folderRepositoryModel.getEstimatedSyncDate();
             String syncingTemp = overallSyncPercentage >= 0
                 && overallSyncPercentage < 99.5d ? Format
                 .formatDecimal(overallSyncPercentage) + '%' : "...";
             upperText = Translation.getTranslation("main_frame.syncing",
                 syncingTemp);
-        } else if (event.equals(SYNCHRONIZED)) {
+        } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
                 upperText = Translation.getTranslation("main_frame.in_sync");
-        } else if (event.equals(SYNC_INCOMPLETE)) {
+        } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
                 upperText = Translation.getTranslation(
                         "main_frame.sync_incomplete");
-        } else if (event.equals(NOT_CONNECTED)) {
+        } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
             upperText = Translation.getTranslation("main_frame.connecting.text");
-        } else if (event.equals(LOGGING_IN)) {
+        } else if (event.equals(SyncStatusEvent.LOGGING_IN)) {
             upperText = Translation.getTranslation("main_frame.logging_in.text");
-        } else if (event.equals(NOT_LOGGED_IN)) {
+        } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
             upperText = Translation.getTranslation("main_frame.log_in_failed.text");
         } else {
             logSevere("Not handling all sync states: " + event);
@@ -713,8 +703,8 @@ public class MainFrame extends PFUIComponent {
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
-        boolean notStartedOrNoFolders = event.equals(NOT_STARTED)
-            || event.equals(NO_FOLDERS);
+        boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
+            || event.equals(SyncStatusEvent.NO_FOLDERS);
         if (getController().getOSClient().getAccount()
             .hasPermission(FolderCreatePermission.INSTANCE)
             && setupLabel != null)

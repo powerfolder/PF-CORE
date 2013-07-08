@@ -19,16 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.LOGGING_IN;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NO_FOLDERS;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.PAUSED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCHRONIZED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCING;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNC_INCOMPLETE;
-
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.TrayIcon;
@@ -96,7 +86,7 @@ public class TrayIconManager extends PFComponent {
         trayIcon = new TrayIcon(image);
         trayIcon.setImageAutoSize(true);
         updateConnectionStatus();
-        updateIcon(NOT_STARTED);
+        updateIcon(SyncStatusEvent.NOT_STARTED);
         getController().getUIController().getApplicationModel()
             .addSyncStatusListener(new SyncStatusListener() {
                 public void syncStatusChanged(final SyncStatusEvent event) {
@@ -199,19 +189,19 @@ public class TrayIconManager extends PFComponent {
         Image image;
 
         boolean syncing = false;
-        if (event.equals(PAUSED)) {
+        if (event.equals(SyncStatusEvent.PAUSED)) {
             image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
             tooltip
                 .append(Translation.getTranslation("systray.tooltip.paused"));
-        } else if (event.equals(NOT_STARTED)) {
+        } else if (event.equals(SyncStatusEvent.NOT_STARTED)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.not_started"));
-        } else if (event.equals(NO_FOLDERS)) {
+        } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.no_folders"));
-        } else if (event.equals(SYNCING)) {
+        } else if (event.equals(SyncStatusEvent.SYNCING)) {
             syncing = true;
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[atomicAngle
                 .get()]);
@@ -228,19 +218,19 @@ public class TrayIconManager extends PFComponent {
                 tooltip
                     .append(Format.formatDecimal(overallSyncPercentage) + '%');
             }
-        } else if (event.equals(SYNCHRONIZED)) {
+        } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.in_sync"));
-        } else if (event.equals(SYNC_INCOMPLETE)) {
+        } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.sync_incomplete"));
-        } else if (event.equals(NOT_CONNECTED)) {
+        } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.not_connected"));
-        } else if (event.equals(NOT_LOGGED_IN) || event.equals(LOGGING_IN)) {
+        } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN) || event.equals(SyncStatusEvent.LOGGING_IN)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.not_logged_in"));

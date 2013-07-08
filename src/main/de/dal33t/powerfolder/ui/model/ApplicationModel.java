@@ -19,16 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.LOGGING_IN;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NO_FOLDERS;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.PAUSED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCHRONIZED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCING;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNC_INCOMPLETE;
-
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
@@ -282,23 +272,23 @@ public class ApplicationModel extends PFUIComponent {
         boolean loggingIn = client.isLoggingIn();
         boolean loggedIn = client.isLoggedIn();
 
-        SyncStatusEvent status = SYNC_INCOMPLETE;
+        SyncStatusEvent status = SyncStatusEvent.SYNC_INCOMPLETE;
         if (getController().isPaused()) {
-            status = PAUSED;
+            status = SyncStatusEvent.PAUSED;
         } else if (!getController().getNodeManager().isStarted()) {
-            status = NOT_STARTED;
+            status = SyncStatusEvent.NOT_STARTED;
         } else if (!connected) {
-            status = NOT_CONNECTED;
+            status = SyncStatusEvent.NOT_CONNECTED;
         } else if (loggingIn) {
-            status = LOGGING_IN;
+            status = SyncStatusEvent.LOGGING_IN;
         } else if (!loggedIn) {
-            status = NOT_LOGGED_IN;
+            status = SyncStatusEvent.NOT_LOGGED_IN;
         } else if (repository.getFoldersCount() == 0) {
-            status = NO_FOLDERS;
+            status = SyncStatusEvent.NO_FOLDERS;
         } else if (folderRepositoryModel.isSyncing()) {
-            status = SYNCING;
+            status = SyncStatusEvent.SYNCING;
         } else if (repository.areAllFoldersInSync()) {
-            status = SYNCHRONIZED;
+            status = SyncStatusEvent.SYNCHRONIZED;
         }
         triggerSyncStatusChange(status);
     }

@@ -22,17 +22,17 @@ package de.dal33t.powerfolder.ui.event;
 /**
  * Basic synchronization status events.
  */
-public class SyncStatusEvent {
+public enum SyncStatusEvent {
 
-    public static final SyncStatusEvent PAUSED = new SyncStatusEvent("Paused");
-    public static final SyncStatusEvent NOT_STARTED = new SyncStatusEvent("Not Started");
-    public static final SyncStatusEvent NOT_CONNECTED = new SyncStatusEvent("Not Connected");
-    public static final SyncStatusEvent LOGGING_IN = new SyncStatusEvent("Logging in");
-    public static final SyncStatusEvent NOT_LOGGED_IN = new SyncStatusEvent("Not Logged In");
-    public static final SyncStatusEvent NO_FOLDERS = new SyncStatusEvent("No Folders");
-    public static final SyncStatusEvent SYNCING = new SyncStatusEvent("Syncing");
-    public static final SyncStatusEvent SYNC_INCOMPLETE = new SyncStatusEvent("Sync Incomplete");
-    public static final SyncStatusEvent SYNCHRONIZED = new SyncStatusEvent("Synchronized");
+    PAUSED("Paused"),
+    NOT_STARTED("Not Started"),
+    NOT_CONNECTED("Not Connected"),
+    LOGGING_IN("Logging in"),
+    NOT_LOGGED_IN("Not Logged In"),
+    NO_FOLDERS("No Folders"),
+    SYNCING("Syncing"),
+    SYNC_INCOMPLETE("Sync Incomplete"),
+    SYNCHRONIZED("Synchronized");
 
     private final String description;
 
@@ -51,26 +51,5 @@ public class SyncStatusEvent {
         return "SyncStatusEvent{" +
                 "description='" + description + '\'' +
                 '}';
-    }
-
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-
-        SyncStatusEvent that = (SyncStatusEvent) obj;
-
-        if (description != null ? !description.equals(that.description) : that.description != null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public int hashCode() {
-        return description != null ? description.hashCode() : 0;
     }
 }
