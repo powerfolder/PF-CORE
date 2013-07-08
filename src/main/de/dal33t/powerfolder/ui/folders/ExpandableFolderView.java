@@ -552,7 +552,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncPercentageLabel = new ActionLabel(getController(),
             new MyOpenFilesUnsyncedAction(getController()));
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
-        openFilesInformationButton.setVisible(!ProUtil.isZyncro(getController()));
+        openFilesInformationButton.setVisible(ConfigurationEntry.FILES_ENABLED
+            .getValueBoolean(getController()));
 
         inviteButton = new JButtonMini(inviteAction);
 

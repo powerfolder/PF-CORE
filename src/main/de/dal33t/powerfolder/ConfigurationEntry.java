@@ -247,6 +247,11 @@ public enum ConfigurationEntry {
      */
     SERVER_LOAD_NODES("server.load.nodes", true),
 
+    /**
+     * Specify several server URLs with a name like
+     * "Server 1=http://pf.example.org/;Server 2=https://www.example.com/pf/"
+     * to be displayed on the log in dialog in a combo box.
+     */
     SERVER_CONNECTION_URLS("server.connection.urls", ""),
 
     // Server WEB settings ****************************************************
@@ -260,8 +265,6 @@ public enum ConfigurationEntry {
      * If the client is allowed to pass the current password to the web browser.
      */
     WEB_PASSWORD_ALLOWED("web.login.password", true),
-
-    WEB_LINKS_ENABLED("web.links.enabled", true),
 
     /**
      * If WebDAV should be enabled.

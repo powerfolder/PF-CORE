@@ -121,7 +121,6 @@ import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -495,7 +494,7 @@ public class UIController extends PFComponent {
         // Web //
         // //////
         MenuItem item;
-        if (ConfigurationEntry.WEB_LINKS_ENABLED
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
             item = menu.add(new MenuItem(Translation
