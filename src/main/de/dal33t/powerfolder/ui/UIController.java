@@ -888,11 +888,12 @@ public class UIController extends PFComponent {
      *            info of the folder to display problems information for.
      */
     public void openProblemsInformation(FolderInfo folderInfo) {
-        if (ProUtil.isZyncro(getController())) {
-            return;
+        if (ConfigurationEntry.PROBLEMS_ENABLED
+            .getValueBoolean(getController()))
+        {
+            informationFrame.displayFolderProblems(folderInfo);
+            displayInformationWindow();
         }
-        informationFrame.displayFolderProblems(folderInfo);
-        displayInformationWindow();
     }
 
     public void openTransfersInformation() {

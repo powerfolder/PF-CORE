@@ -1010,7 +1010,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (type == Type.Local) {
 
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
-            if (folder != null && folder.countProblems() > 0) {
+            if (folder != null
+                && folder.countProblems() > 0
+                && ConfigurationEntry.PROBLEMS_ENABLED
+                    .getValueBoolean(getController()))
+            {
                 // Got a problem.
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
                 primaryButton.setToolTipText(Translation
