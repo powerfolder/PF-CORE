@@ -52,7 +52,7 @@ import de.schlichtherle.truezip.file.TFileOutputStream;
  */
 public class FolderStatisticInfo extends Loggable implements Serializable {
 
-    private static final int MAX_FILE_SIZE = 50 * 1024;
+    private static final int MAX_FILE_SIZE = 100 * 1024;
 
     private static final long serialVersionUID = 1L;
 
@@ -88,7 +88,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     private final Map<MemberInfo, Long> sizesInSync = new HashMap<MemberInfo, Long>();
 
     /** Map of bytes received for a file for a member. */
-    private transient Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = Util
+    private Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = Util
         .createConcurrentHashMap();
 
     public FolderStatisticInfo(FolderInfo folder) {
@@ -166,6 +166,9 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     }
 
     public Map<MemberInfo, Map<FileInfo, Long>> getPartialSyncStatMap() {
+        if (partialSyncStatMap == null) {
+            partialSyncStatMap = Util.createConcurrentHashMap();
+        }
         return partialSyncStatMap;
     }
 
@@ -187,7 +190,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             return 0;
         } else {
             // Total up partial transfers for this member.
-            Map<FileInfo, Long> map = partialSyncStatMap.get(memberInfo);
+            Map<FileInfo, Long> map = getPartialSyncStatMap().get(memberInfo);
             long partialTotal = 0;
             if (map != null) {
                 for (FileInfo fileInfo : map.keySet()) {
