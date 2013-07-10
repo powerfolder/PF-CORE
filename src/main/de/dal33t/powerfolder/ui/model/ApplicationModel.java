@@ -238,7 +238,9 @@ public class ApplicationModel extends PFUIComponent {
         public void serverConnected(ServerClientEvent event) {
             handleSyncStatusChange();
             ServerClient client = event.getClient();
-            if (client.isPasswordEmpty() && !client.isLoggedIn()) {
+            if (client.isPasswordEmpty() && !client.isLoggedIn()
+                && !PFWizard.isWizardOpen())
+            {
                 PFWizard.openLoginWizard(getController(), client);
             }
         }
