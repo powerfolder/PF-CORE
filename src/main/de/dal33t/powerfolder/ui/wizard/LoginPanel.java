@@ -230,6 +230,9 @@ public class LoginPanel extends PFWizardPanel {
         {
             serverURLLabel = new JLabel(
                 Translation.getTranslation("general.server"));
+            
+            String webURL = client.getWebURL();
+            int selection = 0;
 
             String allServers = ConfigurationEntry.SERVER_CONNECTION_URLS
                 .getValue(getController());
@@ -237,12 +240,22 @@ public class LoginPanel extends PFWizardPanel {
             String[] serverLabels = new String[allServersArray.length];
 
             for (int i = 0; i < allServersArray.length; i++) {
-                String server = allServersArray[i];
-                serverLabels[i] = server.substring(0, server.indexOf("="));
+                try {
+                    String server = allServersArray[i];
+                    serverLabels[i] = server.substring(0, server.indexOf("="));
+                    String serverURL = server
+                        .substring(server.indexOf("=") + 1);
+                    if (serverURL.equals(webURL)) {
+                        selection = i;
+                    }
+                } catch (Exception e) {
+                    Logger.getLogger(LoginPanel.class.getName()).warning(
+                        "Unable to read servers config: " + allServers);
+                }
             }
 
             serverURLBox = new JComboBox<String>(serverLabels);
-            serverURLBox.setSelectedIndex(0);
+            serverURLBox.setSelectedIndex(selection);
             serverURLBox.setEditable(false);
             serverURLBox.addActionListener(new ServerSelectAction());
         }
@@ -321,8 +334,8 @@ public class LoginPanel extends PFWizardPanel {
             .getValueBoolean(getController());
         boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
             .getValueBoolean(getController());
-        serverURLLabel.setVisible(connected);
-        serverURLBox.setVisible(connected);
+        serverURLLabel.setVisible(true);
+        serverURLBox.setVisible(true);
         usernameLabel.setVisible(connected);
         usernameField.setVisible(connected);
         passwordLabel.setVisible(connected);
@@ -429,9 +442,13 @@ public class LoginPanel extends PFWizardPanel {
                 end = serversList.length();
             }
 
-            String server = serversList.substring(begin, end);
-
-            client.loadConfigURL(server);
+            final String server = serversList.substring(begin, end);
+            getController().getIOProvider().startIO(new Runnable() {                
+                @Override
+                public void run() {
+                    client.loadConfigURL(server);
+                }
+            });
         }
     }
 
