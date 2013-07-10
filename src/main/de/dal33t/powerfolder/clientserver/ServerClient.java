@@ -217,16 +217,22 @@ public class ServerClient extends PFComponent {
 
     private void init(Member serverNode, boolean serverChange) {
         Reject.ifNull(serverNode, "Server node is null");
-        listenerSupport = ListenerSupportFactory
-            .createListenerSupport(ServerClientListener.class);
+        boolean firstCall=listenerSupport == null;
+        if (firstCall) {
+            listenerSupport = ListenerSupportFactory
+                .createListenerSupport(ServerClientListener.class);
+        }
         setNewServerNode(serverNode);
         // Allowed by default
         allowServerChange = serverChange;
         setAnonAccount();
-        getController().getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new MyFolderRepositoryListener());
+        
+        if (firstCall) {
+            getController().getNodeManager().addNodeManagerListener(
+                new MyNodeManagerListener());
+            getController().getFolderRepository().addFolderRepositoryListener(
+                new MyFolderRepositoryListener());
+        }
     }
 
     private boolean isRememberPassword() {
@@ -922,11 +928,15 @@ public class ServerClient extends PFComponent {
      * @param configURL
      */
     public void loadConfigURL(String configURL) {
+        Reject.ifBlank(configURL, "configURL");
         try {
             // load the configuration from the url ...
             Properties props = ConfigurationLoader
-                .loadPreConfiguration(configURL);
+                .loadPreConfiguration(configURL.trim());
 
+            ConfigurationLoader.merge(props, getController());
+            String networkID = (String) props.get(ConfigurationEntry.NETWORK_ID
+                .getConfigKey());
             String name = (String) props.get(ConfigurationEntry.SERVER_NAME
                 .getConfigKey());
             String host = (String) props.get(ConfigurationEntry.SERVER_HOST
@@ -939,21 +949,43 @@ public class ServerClient extends PFComponent {
             String webURL = (String) props
                 .get(ConfigurationEntry.SERVER_WEB_URL.getConfigKey());
 
-            // ... and set the new values
+            logInfo("Loaded " + props.size() + " from " + configURL + " network ID: " + networkID);
+            if (StringUtils.isBlank(host)) {
+                throw new IOException("Hostname not found");
+            }
+
+            String oldNetworkID = getController().getMySelf().getInfo().networkId;
+            if (StringUtils.isNotBlank(networkID)) {
+                getController().getMySelf().getInfo().networkId = networkID;
+            } else {
+                getController().getMySelf().getInfo().networkId = ConfigurationEntry.NETWORK_ID
+                    .getDefaultValue();
+            }
+            String newNetworkID = getController().getMySelf().getInfo().networkId;
+            boolean networkIDChanged = !Util.equals(oldNetworkID, newNetworkID);
+            if (networkIDChanged) {
+                getController().getNodeManager().shutdown();
+            }
+            
+            init(getController(), name, host, nodeId, allowServerChange,
+                updateConfig);
+
+            // Store in config
             setServerWebURLInConfig(webURL);
             setServerHTTPTunnelURLInConfig(tunnelURL);
-
-            String networkId = getController().getNodeManager().getNetworkId();
-            MemberInfo serverNode = new MemberInfo(name, nodeId, networkId);
-            serverNode.setConnectAddress(Util.parseConnectionString(host));
-
-            Member newServer = serverNode.getNode(getController(), true);
-            newServer.updateInfo(serverNode, true);
-
-            setServerInConfig(serverNode);
-            setNewServerNode(newServer);
-        } catch (IOException e) {
-            logInfo("Could not load properties: " + e.getMessage());
+            setServerInConfig(getServer().getInfo());
+            
+            getController().saveConfig();
+            
+            if (networkIDChanged) {
+                // Restart nodemanager
+                getController().getNodeManager().start();
+            }
+            
+            connectHostingServers();
+        } catch (Exception e) {
+            logWarning("Could not load connection infos from " + configURL
+                + ": " + e.getMessage());
         }
     }
 
