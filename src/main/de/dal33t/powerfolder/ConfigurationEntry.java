@@ -252,7 +252,7 @@ public enum ConfigurationEntry {
      * "Server 1=http://pf.example.org/;Server 2=https://www.example.com/pf/"
      * to be displayed on the log in dialog in a combo box.
      */
-    SERVER_CONNECTION_URLS("server.connection.urls", ""),
+    SERVER_CONNECTION_URLS("server.connection.urls"),
 
     // Server WEB settings ****************************************************
 

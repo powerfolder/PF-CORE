@@ -20,11 +20,13 @@
 package de.dal33t.powerfolder.ui.folders;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -34,8 +36,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -53,6 +53,7 @@ public class FoldersTab extends PFUIComponent {
     private FoldersList foldersList;
     private JScrollPane scrollPane;
     private JLabel connectingLabel;
+    private JLabel couldNotConnect;
     private JLabel notLoggedInLabel;
     private ActionLabel loginActionLabel;
     private JLabel noFoldersFoundLabel;
@@ -70,6 +71,8 @@ public class FoldersTab extends PFUIComponent {
         super(controller);
         connectingLabel = new JLabel(
             Translation.getTranslation("folders_tab.connecting"));
+        couldNotConnect = new JLabel(
+            Translation.getTranslation("folders_tab.could_not_connect"));
         notLoggedInLabel = new JLabel(
             Translation.getTranslation("folders_tab.not_logged_in"));
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction());
@@ -91,7 +94,19 @@ public class FoldersTab extends PFUIComponent {
                 .getTranslation("folders_tab.new_folder"));
         }
         client = getApplicationModel().getServerClientModel().getClient();
-        client.addListener(new MyServerClientListener());
+//        client.addListener(new MyServerClientListener());
+
+        controller.getThreadPool().scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateEmptyLabel();
+                    }
+                });
+            }
+        }, 0, 30, TimeUnit.SECONDS);
     }
 
     /**
@@ -157,6 +172,7 @@ public class FoldersTab extends PFUIComponent {
         PanelBuilder builderInner = new PanelBuilder(layoutInner);
         CellConstraints cc = new CellConstraints();
         builderInner.add(connectingLabel, cc.xy(1, 1));
+        builderInner.add(couldNotConnect, cc.xy(1, 1));
         builderInner.add(notLoggedInLabel, cc.xy(1, 1));
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
@@ -175,53 +191,71 @@ public class FoldersTab extends PFUIComponent {
     }
 
     public void updateEmptyLabel() {
-        if (foldersList != null) {
-            if (emptyPanelOuter != null) {
-                if (foldersList.isEmpty()) {
-                    String username = client.getUsername();
-                    if (!client.isConnected()) {
-                        connectingLabel.setVisible(true);
-                        notLoggedInLabel.setVisible(false);
-                        loginActionLabel.setVisible(false);
-                        noFoldersFoundLabel.setVisible(false);
-                        if (getController().getOSClient().getAccount()
-                            .hasPermission(FolderCreatePermission.INSTANCE))
-                        {
-                            folderWizardActionLabel.setVisible(false);
-                            newFolderActionLabel.setVisible(false);
-                        }
-                    } else if (username == null
-                        || username.trim().length() == 0
-                        || client.isPasswordEmpty() || !client.isLoggedIn())
+        if (foldersList == null) {
+            return;
+        }
+        if (emptyPanelOuter != null) {
+            if (foldersList.isEmpty()) {
+                String username = client.getUsername();
+                if (client.getServer().isUnableToConnect()
+                    && !client.isConnected())
+                {
+                    connectingLabel.setVisible(false);
+                    couldNotConnect.setVisible(true);
+                    notLoggedInLabel.setVisible(false);
+                    loginActionLabel.setVisible(false);
+                    noFoldersFoundLabel.setVisible(false);
+                    if (getController().getOSClient().getAccount()
+                        .hasPermission(FolderCreatePermission.INSTANCE))
                     {
-                        connectingLabel.setVisible(false);
-                        notLoggedInLabel.setVisible(true);
-                        loginActionLabel.setVisible(true);
-                        noFoldersFoundLabel.setVisible(false);
-                        if (getController().getOSClient().getAccount()
-                            .hasPermission(FolderCreatePermission.INSTANCE))
-                        {
-                            folderWizardActionLabel.setVisible(false);
-                            newFolderActionLabel.setVisible(false);
-                        }
-                    } else {
-                        connectingLabel.setVisible(false);
-                        notLoggedInLabel.setVisible(false);
-                        loginActionLabel.setVisible(false);
-                        noFoldersFoundLabel.setVisible(true);
-                        if (getController().getOSClient().getAccount()
-                            .hasPermission(FolderCreatePermission.INSTANCE))
-                        {
-                            folderWizardActionLabel.setVisible(true);
-                            newFolderActionLabel.setVisible(true);
-                        }
+                        folderWizardActionLabel.setVisible(false);
+                        newFolderActionLabel.setVisible(false);
+                    }
+                } else if (!client.isConnected()) {
+                    connectingLabel.setVisible(true);
+                    couldNotConnect.setVisible(false);
+                    notLoggedInLabel.setVisible(false);
+                    loginActionLabel.setVisible(false);
+                    noFoldersFoundLabel.setVisible(false);
+                    if (getController().getOSClient().getAccount()
+                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    {
+                        folderWizardActionLabel.setVisible(false);
+                        newFolderActionLabel.setVisible(false);
+                    }
+                } else if (username == null
+                    || username.trim().length() == 0
+                    || client.isPasswordEmpty() || !client.isLoggedIn())
+                {
+                    connectingLabel.setVisible(false);
+                    couldNotConnect.setVisible(false);
+                    notLoggedInLabel.setVisible(true);
+                    loginActionLabel.setVisible(true);
+                    noFoldersFoundLabel.setVisible(false);
+                    if (getController().getOSClient().getAccount()
+                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    {
+                        folderWizardActionLabel.setVisible(false);
+                        newFolderActionLabel.setVisible(false);
+                    }
+                } else {
+                    connectingLabel.setVisible(false);
+                    couldNotConnect.setVisible(false);
+                    notLoggedInLabel.setVisible(false);
+                    loginActionLabel.setVisible(false);
+                    noFoldersFoundLabel.setVisible(true);
+                    if (getController().getOSClient().getAccount()
+                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    {
+                        folderWizardActionLabel.setVisible(true);
+                        newFolderActionLabel.setVisible(true);
                     }
                 }
-                emptyPanelOuter.setVisible(foldersList.isEmpty());
             }
-            if (scrollPane != null) {
-                scrollPane.setVisible(!foldersList.isEmpty());
-            }
+            emptyPanelOuter.setVisible(foldersList.isEmpty());
+        }
+        if (scrollPane != null) {
+            scrollPane.setVisible(!foldersList.isEmpty());
         }
     }
 
@@ -288,30 +322,30 @@ public class FoldersTab extends PFUIComponent {
         }
     }
 
-    private class MyServerClientListener implements ServerClientListener {
-        public void accountUpdated(ServerClientEvent event) {
-            updateEmptyLabel();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void login(ServerClientEvent event) {
-            updateEmptyLabel();
-        }
-
-        public void nodeServerStatusChanged(ServerClientEvent event) {
-            updateEmptyLabel();
-        }
-
-        public void serverConnected(ServerClientEvent event) {
-            updateEmptyLabel();
-        }
-
-        public void serverDisconnected(ServerClientEvent event) {
-            updateEmptyLabel();
-        }
-    }
+//    private class MyServerClientListener implements ServerClientListener {
+//        public void accountUpdated(ServerClientEvent event) {
+//            updateEmptyLabel();
+//        }
+//
+//        public boolean fireInEventDispatchThread() {
+//            return true;
+//        }
+//
+//        public void login(ServerClientEvent event) {
+//            updateEmptyLabel();
+//        }
+//
+//        public void nodeServerStatusChanged(ServerClientEvent event) {
+//            updateEmptyLabel();
+//        }
+//
+//        public void serverConnected(ServerClientEvent event) {
+//            updateEmptyLabel();
+//        }
+//
+//        public void serverDisconnected(ServerClientEvent event) {
+//            updateEmptyLabel();
+//        }
+//    }
 
 }

@@ -79,7 +79,6 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
 import de.dal33t.powerfolder.util.Util;
