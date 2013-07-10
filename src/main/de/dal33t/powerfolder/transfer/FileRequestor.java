@@ -269,14 +269,20 @@ public class FileRequestor extends PFComponent {
         Collections.sort(filesToDownload, folder.getTransferPriorities()
             .getComparator());
         for (FileInfo fInfo : filesToDownload) {
-            FileInfo newestVersion = fInfo.getNewestVersion(getController()
-                .getFolderRepository());
-            if (newestVersion == null) {
-                logWarning("Unable to download. Newest version not found: "
-                    + fInfo.toDetailString());
-                continue;
+            try {
+                // Safeguard:
+                FileInfo newestVersion = fInfo.getNewestVersion(getController()
+                    .getFolderRepository());
+                if (newestVersion == null) {
+                    logWarning("Unable to download. Newest version not found: "
+                        + fInfo.toDetailString());
+                    continue;
+                }
+                prepareDownload(newestVersion, autoDownload);
+            } catch (RuntimeException e) {
+                logWarning("Unable to download: " + fInfo.toDetailString()
+                    + ": " + e);
             }
-            prepareDownload(newestVersion, autoDownload);
         }
     }
 
