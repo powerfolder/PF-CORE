@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import jwf.WizardPanel;
@@ -79,9 +80,14 @@ public class TextPanelPanel extends PFWizardPanel {
     @Override
     protected void afterDisplay() {
         if (PFWizard.hideFolderJoinWizard(getController())) {
-            JDialog diag = getWizardDialog();
-            diag.setVisible(false);
-            diag.dispose();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JDialog diag = getWizardDialog();
+                    diag.setVisible(false);
+                    diag.dispose();
+                }
+            });
         }
         // Tiny wizards don't have a "Finish" button. So automatically close.
         if (autoFadeOut || getWizard().isTiny()) {
