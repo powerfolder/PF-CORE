@@ -97,7 +97,6 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.WebDAV;
@@ -447,7 +446,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
             }
 
-            if (!ProUtil.isZyncro(getController())) {
+            if (PreferencesEntry.MINIMAL_PREFERENCES
+                .getValueBoolean(getController())
+                && !PreferencesEntry.EXPERT_MODE
+                    .getValueBoolean(getController()))
+            {
                 row += 2;
                 lowerBuilder.add(transferModeLabel.getUIComponent(),
                     cc.xy(2, row));
@@ -1041,7 +1044,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
-                if (ProUtil.isZyncro(getController())) {
+                if (PreferencesEntry.MINIMAL_PREFERENCES
+                    .getValueBoolean(getController())
+                    && !PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(getController()))
+                {
                     primaryButton.setToolTipText(Translation
                         .getTranslation("exp_folder_view.explore"));
                 } else {
@@ -1194,7 +1201,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 nameLabel.setToolTipText(Translation
                     .getTranslation("exp_folder_view.collapse"));
             } else {
-                if (ProUtil.isZyncro(getController())) {
+                if (PreferencesEntry.MINIMAL_PREFERENCES
+                    .getValueBoolean(getController())
+                    && !PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(getController()))
+                {
                     nameLabel.setToolTipText(Translation
                         .getTranslation("exp_folder_view.remove"));
                 } else {
@@ -1204,7 +1215,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
 
-        if (folder == null && ProUtil.isZyncro(getController())) {
+        if (folder == null
+            && PreferencesEntry.MINIMAL_PREFERENCES
+                .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
             nameLabel.setToolTipText(Translation
                 .getTranslation("exp_folder_view.create"));
         }
@@ -1594,7 +1609,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == Type.Local) {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
-                        if (ProUtil.isZyncro(getController())) {
+                        if (PreferencesEntry.MINIMAL_PREFERENCES
+                            .getValueBoolean(getController())
+                            && !PreferencesEntry.EXPERT_MODE
+                                .getValueBoolean(getController()))
+                        {
                             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
                                 folderInfo);
                             panel.open();

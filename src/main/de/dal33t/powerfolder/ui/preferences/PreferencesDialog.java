@@ -25,9 +25,15 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -46,7 +52,6 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 public class PreferencesDialog extends BaseDialog {
@@ -99,8 +104,9 @@ public class PreferencesDialog extends BaseDialog {
     public JComponent getContent() {
         initComponents();
 
-        if (PreferencesEntry.MINIMAL
-            .getValueBoolean(getController()))
+        if (PreferencesEntry.MINIMAL_PREFERENCES
+            .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             generalSettingsTab.getUIPanel().setBorder(Borders.createEmptyBorder("14dlu, 14dlu, 14dlu, 14dlu"));
             return generalSettingsTab.getUIPanel();

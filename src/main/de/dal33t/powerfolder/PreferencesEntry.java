@@ -55,7 +55,7 @@ public enum PreferencesEntry {
 
     EXPERT_MODE("ExpertMode", false),
 
-    MINIMAL("minimal", false),
+    MINIMAL_PREFERENCES("minimal", false),
 
     VIEW_ACHIVE("view.archive", true),
 

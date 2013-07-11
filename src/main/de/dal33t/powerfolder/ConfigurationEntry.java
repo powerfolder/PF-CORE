@@ -930,7 +930,9 @@ public enum ConfigurationEntry {
      * #2485: {@link Integer#MAX_VALUE} for never resume. 0 for adaptive resume
      * = resume when user is not working on his PC
      */
-    PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600); // One hour default.
+    PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600), // One hour default.
+
+    SHOW_TINY_WIZARDS("show.tiny.wizards", false);
 
     // Methods/Constructors ***************************************************
 
