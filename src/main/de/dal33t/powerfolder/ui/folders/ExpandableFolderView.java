@@ -254,8 +254,17 @@ public class ExpandableFolderView extends PFUIComponent implements
         {
             expanded.set(true);
             updateWebDAVURL();
-            upperPanel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.collapse"));
+            if (PreferencesEntry.MINIMAL_PREFERENCES
+                .getValueBoolean(getController())
+                && !PreferencesEntry.EXPERT_MODE
+                    .getValueBoolean(getController()))
+            {
+                upperPanel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.remove"));
+            } else {
+                upperPanel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.collapse"));
+            }
             updateNameLabel();
             lowerOuterPanel.setVisible(true);
         }
@@ -268,8 +277,15 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void collapse() {
         expanded.set(false);
         updateWebDAVURL();
-        upperPanel.setToolTipText(Translation
-            .getTranslation("exp_folder_view.expand"));
+        if (PreferencesEntry.MINIMAL_PREFERENCES
+            .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            upperPanel.setToolTipText(Translation.getTranslation("exp_folder_view.create"));
+        } else {
+            upperPanel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.expand"));
+        }
         updateNameLabel();
         lowerOuterPanel.setVisible(false);
     }

@@ -1312,6 +1312,14 @@ public class MainFrame extends PFUIComponent {
                     "action_expand_interface.name"));
             lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_expand_interface.name"));
+        } else if (PreferencesEntry.MINIMAL_PREFERENCES
+            .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("main_frame.minimal.change_loging.tip"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("main_frame.minimal.change_loging.tip"));
         } else {
             upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_collapse_interface.name"));

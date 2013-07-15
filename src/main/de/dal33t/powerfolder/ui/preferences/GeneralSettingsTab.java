@@ -71,12 +71,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ActionLabel startWithMacOSLabel;
     private JCheckBox updateCheck;
     private boolean originalQuitOnX;
-    private JComboBox xBehaviorChooser;
+    private JComboBox<String> xBehaviorChooser;
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel versionModel;
-    private JComboBox archiveCleanupCombo;
+    private JComboBox<String> archiveCleanupCombo;
     private Action cleanupAction;
-    private JComboBox languageChooser;
+    private JComboBox<Locale> languageChooser;
 
     private boolean needsRestart;
 
@@ -149,7 +149,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         archiveModeSelectorPanel.setArchiveMode(
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(getController()));
 
-        archiveCleanupCombo = new JComboBox();
+        archiveCleanupCombo = new JComboBox<String>();
         archiveCleanupCombo.addItem(Translation
             .getTranslation("preferences.general.archive_cleanup_day")); // 1
         archiveCleanupCombo.addItem(Translation
@@ -239,7 +239,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation("preferences.general.exit_behavior")), cc.xy(1, row));
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.general.exit_behavior")), cc
+                    .xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
             row += 2;
@@ -249,8 +252,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .xy(1, row));
             builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
 
-            if (!PreferencesEntry.VIEW_ACHIVE.getValueBoolean(getController()))
-            {
+            if (PreferencesEntry.VIEW_ACHIVE.getValueBoolean(getController())) {
                 row += 2;
                 builder
                     .add(
@@ -321,9 +323,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return logoutButton;
     }
 
-    private JComboBox createLanguageChooser() {
+    private JComboBox<Locale> createLanguageChooser() {
         // Create combobox
-        JComboBox chooser = new JComboBox();
+        JComboBox<Locale> chooser = new JComboBox<>();
         for (Locale locale1 : Translation.getSupportedLocales()) {
             chooser.addItem(locale1);
         }
@@ -513,8 +515,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      * Option 0 is Exit program
      * Option 1 is Minimize to system tray
      */
-    private JComboBox createXBehaviorChooser() {
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
+    private JComboBox<String> createXBehaviorChooser() {
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement(Translation.getTranslation(
                 "preferences.general.exit_behavior_exit"));
         if (OSUtil.isSystraySupported()) {
@@ -522,7 +524,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     "preferences.general.exit_behavior_minimize"));
         }
 
-        JComboBox combo = new JComboBox(model);
+        JComboBox<String> combo = new JComboBox(model);
         combo.setEnabled(OSUtil.isSystraySupported());
         if (OSUtil.isSystraySupported() &&
                 !PreferencesEntry.QUIT_ON_X.getValueBoolean(
