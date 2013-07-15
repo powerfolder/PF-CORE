@@ -39,8 +39,7 @@ import javax.swing.table.TableModel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.GroupInfo;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
@@ -157,15 +156,14 @@ public class MembersSimpleTable extends JTable {
 
             if (actualColumn == MembersSimpleTableModel.COL_TYPE) {
                 if (folderMember.getGroupInfo() != null) {
-                    GroupInfo gInfo = folderMember.getGroupInfo();
                     Icon icon = Icons.getIconById(Icons.NODE_GROUP);
                     setIcon(icon);
                 }
                 else {
-                    Member member = folderMember.getMember();
+                    AccountInfo member = folderMember.getAccountInfo();
 //                    Icon icon = member != null ? Icons.getIconFor(member) : Icons
 //                        .getIconById(Icons.NODE_DISCONNECTED);
-                    setIcon(null);
+                    setIcon(Icons.getIconByAccount(member, folderMember.getFolder().getController()));
                     setText("");
                 }
             } else if (actualColumn == MembersSimpleTableModel.COL_USERNAME) {

@@ -59,6 +59,7 @@ import javax.swing.plaf.IconUIResource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
@@ -479,15 +480,17 @@ public class Icons {
         return icon;
     }
 
-    public static Icon getIconByMember(Member member) {
-        String username = member.getAccountInfo().getUsername();
+    public static Icon getIconByAccount(AccountInfo member,
+        Controller controller)
+    {
+        String username = member.getUsername();
 
         if (username == null) {
-            return getIconFor(member);
+            return getIconById(NODE_DISCONNECTED);
         }
 
-        String urlString = member.getController().getOSClient()
-            .getAvatarURL(member.getAccountInfo());
+        String urlString = controller.getOSClient()
+            .getAvatarURL(member);
 
         try {
             URL url = new URL(urlString);
@@ -508,7 +511,8 @@ public class Icons {
         } catch (IOException e) {
             log.fine(e.getMessage());
         }
-        return getIconFor(member);
+
+        return getIconById(NODE_DISCONNECTED);
     }
     
     /**
