@@ -536,7 +536,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + "/files/" + Base64.encode4URL(foInfo.id);
+        return getWebURL("/files/" + Base64.encode4URL(foInfo.id), false);
     }
 
     /**
@@ -627,7 +627,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + "/register";
+        return getWebURL("/register", false);
     }
 
     /**
@@ -665,7 +665,20 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + "/activate";
+        return getWebURL("/activate", false);
+    }
+
+    /**
+     * Convenience method to get the URL to an avatar
+     * 
+     * @param information about the account
+     * @return the avatar URL.
+     */
+    public String getAvatarURL(AccountInfo aInfo) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL("/avatars/" + aInfo.getUsername() + ".png", false);
     }
 
     /**

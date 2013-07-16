@@ -38,6 +38,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,6 +59,7 @@ import javax.swing.plaf.IconUIResource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
@@ -477,6 +480,41 @@ public class Icons {
         return icon;
     }
 
+    public static Icon getIconByAccount(AccountInfo member,
+        Controller controller)
+    {
+        String username = member.getUsername();
+
+        if (username == null) {
+            return getIconById(NODE_DISCONNECTED);
+        }
+
+        String urlString = controller.getOSClient()
+            .getAvatarURL(member);
+
+        try {
+            URL url = new URL(urlString);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.connect();
+            int code = con.getResponseCode();
+
+            if (code == 200) {
+                ImageIcon tempIcon = new ImageIcon(url);
+                Image img = tempIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+
+                return new ImageIcon(img);
+            }
+        } catch (MalformedURLException e) {
+            log.warning("Avatar URL was malformed: " + urlString);
+        } catch (IOException e) {
+            log.fine(e.getMessage());
+        }
+
+        return getIconById(NODE_DISCONNECTED);
+    }
+    
     /**
      * returns a icon based on the state of the fileinfo this maybe a normal
      * gray or red icon
