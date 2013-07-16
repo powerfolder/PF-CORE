@@ -1064,7 +1064,7 @@ public class NodeManager extends PFComponent {
                 + handler + ", disconnecting").with(handler);
         }
         if (!remoteIdentity.getMemberInfo().isOnSameNetwork(getController())) {
-            if (getController().getOSClient().isServer(handler)
+            if (getController().getOSClient().isPrimaryServer(handler)
                 && !mySelf.isServer())
             {
                 logWarning("Server not on same network " + handler
@@ -1407,6 +1407,23 @@ public class NodeManager extends PFComponent {
         }
 
         return nNodes;
+    }
+
+    /**
+     * Also cleansweeps all servers except primary server.
+     * 
+     * @return the number of total servers know now.
+     */
+    public void loadServerNodes() {
+        String serverNodesURL = getController().getOSClient().getWebURL(
+            SERVER_NODES_URI, false);
+        if (StringUtils.isNotBlank(serverNodesURL)) {
+            try {
+                loadNodesFrom(new URL(serverNodesURL));
+            } catch (MalformedURLException e) {
+                logWarning(e.toString());
+            }
+        }
     }
 
     /**

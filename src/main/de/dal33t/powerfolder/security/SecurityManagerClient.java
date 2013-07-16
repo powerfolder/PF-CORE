@@ -287,7 +287,7 @@ public class SecurityManagerClient extends PFComponent implements
      * @see de.dal33t.powerfolder.security.SecurityManager#getAccountInfo(de.dal33t.powerfolder.Member)
      */
     public AccountInfo getAccountInfo(Member node) {
-        if (client.isServer(node)) {
+        if (client.isPrimaryServer(node)) {
             return NULL_ACCOUNT;
         }
         Session session = sessions.get(node);
@@ -497,7 +497,7 @@ public class SecurityManagerClient extends PFComponent implements
         public void run() {
             // The server connected!
             boolean server = false;
-            if (client.isServer(node) && node.isConnected()) {
+            if (client.isPrimaryServer(node) && node.isConnected()) {
                 prefetchAccountInfos();
                 server = true;
             }
