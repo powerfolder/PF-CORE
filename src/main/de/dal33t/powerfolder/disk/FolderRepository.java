@@ -29,9 +29,7 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclEntryPermission;
-import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
@@ -1012,23 +1010,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         removeFromRemovedFolderDirectories(folder);
 
         Account a = getController().getOSClient().getAccount();
-        if (a.hasWritePermissions(folderInfo)) {
-            return folder;
-        }
-
-        Folder fo = folderInfo.getFolder(getController());
-        Path base = fo.getLocalBase();
-
-        Set<PosixFilePermission> perms = new HashSet<>();
-        perms.add(PosixFilePermission.OWNER_READ);
-        perms.add(PosixFilePermission.OWNER_EXECUTE);
-
-        try {
-            Files.setPosixFilePermissions(base, perms);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        setFolderPermissionsOnStorage(folderInfo, a, false);
 
         return folder;
     }
@@ -1694,11 +1676,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private void setFolderPermissionsOnStorage(FolderInfo foInfo, Account a, boolean write) {
-        if (!a.isValid()) {
-            return;
-        }
-
-        if (a.hasWritePermissions(foInfo)) {
+        if (!a.isValid() || a.hasWritePermissions(foInfo)) {
             return;
         }
 
@@ -1706,28 +1684,37 @@ public class FolderRepository extends PFComponent implements Runnable {
         Path base = folder.getLocalBase();
 
         if (OSUtil.isWindowsSystem()) {
-            AclFileAttributeView view = base.getFileSystem().provider()
-                .getFileAttributeView(base, AclFileAttributeView.class);
-
-            List<AclEntry> acl = new ArrayList<AclEntry>();
-            acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.READ_DATA).build());
-            acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.EXECUTE).build());
-            acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.LIST_DIRECTORY).build());
-
-            if (write) {
-                acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.WRITE_DATA).build());
-            }
+            DosFileAttributeView view = base.getFileSystem().provider()
+                .getFileAttributeView(base, DosFileAttributeView.class);
 
             try {
-                view.setAcl(acl);
-            } catch (Exception e) {
-                logWarning("Could not set permissions on folder " + folder.getName());
+                view.setReadOnly(true);
+            } catch (IOException e) {
+              logWarning("Could not set permissions on folder " + folder.getName());
             }
+
+//            AclFileAttributeView view = base.getFileSystem().provider()
+//                .getFileAttributeView(base, AclFileAttributeView.class);
+//
+//            List<AclEntry> acl = new ArrayList<AclEntry>();
+//            acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.READ_DATA).build());
+//            acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.EXECUTE).build());
+//            acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.LIST_DIRECTORY).build());
+//
+//            if (write) {
+//                acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.WRITE_DATA).build());
+//            }
+//
+//            try {
+//                view.setAcl(acl);
+//            } catch (Exception e) {
+//                logWarning("Could not set permissions on folder " + folder.getName());
+//            }
         } else {
             PosixFileAttributeView view = base.getFileSystem().provider()
                 .getFileAttributeView(base, PosixFileAttributeView.class);
 
-            Set<PosixFilePermission> perms = new HashSet<>(2);
+            Set<PosixFilePermission> perms = new HashSet<>(3);
             perms.add(PosixFilePermission.OWNER_READ);
             perms.add(PosixFilePermission.OWNER_EXECUTE);
 
