@@ -29,6 +29,11 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -1003,6 +1008,25 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         removeFromRemovedFolderDirectories(folder);
 
+        Account a = getController().getOSClient().getAccount();
+        if (a.hasWritePermissions(folderInfo)) {
+            return folder;
+        }
+
+        Folder fo = folderInfo.getFolder(getController());
+        Path base = fo.getLocalBase();
+
+        Set<PosixFilePermission> perms = new HashSet<>();
+        perms.add(PosixFilePermission.OWNER_READ);
+        perms.add(PosixFilePermission.OWNER_EXECUTE);
+
+        try {
+            Files.setPosixFilePermissions(base, perms);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         return folder;
     }
 
@@ -1647,8 +1671,49 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 removeLocalFolders(a, created);
             }
+
+            setFolderPermissionsOnStorage(created, a);
         } finally {
             accountSyncLock.unlock();
+        }
+    }
+
+    private void setFolderPermissionsOnStorage(Collection<FolderInfo> createdFolder, Account a) {
+        for (FolderInfo foInfo : createdFolder) {
+            if (a.hasWritePermissions(foInfo)) {
+                continue;
+            }
+
+            Folder fo = foInfo.getFolder(getController());
+            Path base = fo.getLocalBase();
+
+            if (OSUtil.isWindowsSystem()) {
+                AclFileAttributeView view = base.getFileSystem().provider()
+                    .getFileAttributeView(base, AclFileAttributeView.class);
+
+                List<AclEntry> acl = new ArrayList<AclEntry>();
+                acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.READ_DATA).build());
+                acl.add(AclEntry.newBuilder().setPermissions(AclEntryPermission.EXECUTE).build());
+
+                try {
+                    view.setAcl(acl);
+                } catch (Exception e) {
+                    logWarning("Could not set permissions on folder " + foInfo.getLocalizedName());
+                }
+            } else {
+                PosixFileAttributeView view = base.getFileSystem().provider()
+                    .getFileAttributeView(base, PosixFileAttributeView.class);
+
+                Set<PosixFilePermission> perms = new HashSet<>(2);
+                perms.add(PosixFilePermission.OWNER_READ);
+                perms.add(PosixFilePermission.OWNER_EXECUTE);
+
+                try {
+                    view.setPermissions(perms);
+                } catch (Exception e) {
+                    logWarning("Could not set permissions on folder " + foInfo.getLocalizedName());
+                }
+            }
         }
     }
 
