@@ -11,11 +11,14 @@ import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.spi.FileSystemProvider;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -642,6 +645,62 @@ public class PathUtils {
                 "Can only copy directory to directory or file to file: "
                     + source.toAbsolutePath() + " --> "
                     + target.toAbsolutePath());
+        }
+    }
+
+    public static void recursivePermissionsRead(Path base) throws IOException {
+        Reject.ifNull(base, "Base path is null");
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(base);
+        for (Path entry : stream) {
+            if (Files.isDirectory(entry)) {
+                recursivePermissionsRead(entry);
+            }
+            setPermission(entry, false);
+        }
+
+        setPermission(base, false);
+    }
+
+    public static void recursivePermissionsReadWrite(Path base)
+        throws IOException
+    {
+        Reject.ifNull(base, "Base path is null");
+
+        setPermission(base, true);
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(base);
+        for (Path entry : stream) {
+            setPermission(entry, true);
+
+            if (Files.isDirectory(entry)) {
+                recursivePermissionsReadWrite(entry);
+            }
+        }
+    }
+
+    private static void setPermission(Path file, boolean write) throws IOException {
+        if (OSUtil.isWindowsSystem()) {
+            DosFileAttributeView view = Files.getFileAttributeView(file,
+                DosFileAttributeView.class);
+            if (write) {
+                view.setReadOnly(false);
+            } else {
+                view.setReadOnly(true);
+            }
+        } else if (OSUtil.isLinux() || OSUtil.isMacOS()) {
+            PosixFileAttributeView view = Files.getFileAttributeView(file,
+                PosixFileAttributeView.class);
+
+            Set<PosixFilePermission> perms = new HashSet<>(3);
+            perms.add(PosixFilePermission.OWNER_READ);
+            perms.add(PosixFilePermission.OWNER_EXECUTE);
+
+            if (write) {
+                perms.add(PosixFilePermission.OWNER_WRITE);
+            }
+
+            view.setPermissions(perms);
         }
     }
 
