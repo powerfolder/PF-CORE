@@ -196,6 +196,10 @@ public class FileArchiver {
         }
     }
 
+    public final Path getArchiveDir() {
+        return archiveDirectory;
+    }
+    
     private void checkArchivedFile(Collection<Path> versions) throws IOException {
         assert versions != null;
         if (versionsPerFile < 0) {

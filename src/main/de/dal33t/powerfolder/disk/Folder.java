@@ -73,6 +73,7 @@ import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
 import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.FolderDatabaseProblem;
+import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
@@ -2150,7 +2151,11 @@ public class Folder extends PFComponent {
                 if (Files.exists(file)) {
                     try {
                         archiver.archive(fileInfo, file, false);
-                        Files.deleteIfExists(file);
+                        if (Files.deleteIfExists(file)) {
+                            addProblem(new FolderReadOnlyProblem(archiver
+                                .getArchiveDir().resolve(
+                                    fileInfo.getRelativeName())));
+                        }
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
                             + ". Cannot overwrite local change. " + e);
