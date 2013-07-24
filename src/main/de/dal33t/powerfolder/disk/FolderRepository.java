@@ -815,9 +815,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .getAccountInfo(), folder.getInfo()));
         }
 
-        Account a = getController().getOSClient().getAccount();
-        setFolderPermissionsOnStorage(folder.getInfo(), a, false);
-
         return folder;
     }
 
@@ -1006,9 +1003,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         removeFromRemovedFolderDirectories(folder);
 
-        Account a = getController().getOSClient().getAccount();
-        setFolderPermissionsOnStorage(folderInfo, a, false);
-
         return folder;
     }
 
@@ -1040,9 +1034,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
         Reject.ifNull(folder, "Folder is null");
-        
-        Account a = getController().getOSClient().getAccount();
-        setFolderPermissionsOnStorage(folder.getInfo(), a, true);
 
         try {
             suspendNewFolderSearch.incrementAndGet();
@@ -1657,37 +1648,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 removeLocalFolders(a, created);
             }
-
-            if (a.isValid()) {
-                revokeWritePermissionsOnStorage(created, a);
-            }
         } finally {
             accountSyncLock.unlock();
-        }
-    }
-
-    private void revokeWritePermissionsOnStorage(Collection<FolderInfo> createdFolder, Account a) {
-        for (FolderInfo foInfo : createdFolder) {
-            setFolderPermissionsOnStorage(foInfo, a, false);
-        }
-    }
-
-    private void setFolderPermissionsOnStorage(FolderInfo foInfo, Account a, boolean write) {
-        if (!a.isValid() || a.hasWritePermissions(foInfo)) {
-            return;
-        }
-
-        Folder folder = foInfo.getFolder(getController());
-        Path base = folder.getLocalBase();
-
-        try {
-            if (write) {
-                PathUtils.recursivePermissionsReadWrite(base);
-            } else {
-                PathUtils.recursivePermissionsRead(base);
-            }
-        } catch (IOException ioe) {
-            logInfo("Could not change permissions on " + base.toAbsolutePath().toString(), ioe);
         }
     }
 
