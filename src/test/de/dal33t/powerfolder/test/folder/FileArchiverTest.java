@@ -39,7 +39,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         Path archive = fb.getSystemSubDir().resolve("archive");
         Files.createDirectories(archive);
-        FileArchiver fa = new FileArchiver(archive, getContollerBart().getMySelf().getInfo());
+        FileArchiver fa = new FileArchiver(archive, getContollerBart()
+            .getMySelf().getInfo());
         try {
             fa.archive(fib, tb, false);
         } catch (IOException e) {
@@ -47,10 +48,11 @@ public class FileArchiverTest extends TwoControllerTestCase {
         }
 
         Path expected = fb.getSystemSubDir().resolve("archive");
-        expected = expected.resolve(fib.getRelativeName() + "_K_"
-            + fib.getVersion());
+        expected = expected.resolve(fib.getRelativeName().replace(".",
+            "_K_" + fib.getVersion() + "."));
         assertTrue(Files.exists(expected));
-        assertEquals(Files.getLastModifiedTime(expected).toMillis(), fib.getModifiedDate().getTime());
+        assertEquals(Files.getLastModifiedTime(expected).toMillis(), fib
+            .getModifiedDate().getTime());
     }
 
     public void testBackupOnDownload() {
@@ -69,11 +71,11 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         FileInfo fib = fb.getKnownFiles().iterator().next();
         Path eBart = fb.getSystemSubDir().resolve("archive");
-        eBart = eBart.resolve(fib.getRelativeName() + "_K_"
-            + fib.getVersion());
+        eBart = eBart.resolve(fib.getRelativeName().replace(".",
+            "_K_" + fib.getVersion() + "."));
         Path eLisa = fl.getSystemSubDir().resolve("archive");
-        eLisa = eLisa.resolve(fib.getRelativeName() + "_K_"
-            + fib.getVersion());
+        eLisa = eLisa.resolve(fib.getRelativeName().replace(".",
+            "_K_" + fib.getVersion() + "."));
 
         modLisaFile(tl, fib);
 
@@ -109,7 +111,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path ver[] = new Path[4];
         Path archdir = fb.getSystemSubDir().resolve("archive");
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = archdir.resolve(fib.getRelativeName() + "_K_" + i);
+            ver[i] = archdir.resolve(fib.getRelativeName().replace(".",
+                "_K_" + i + "."));
         }
 
         assertFalse(Files.exists(ver[0]));
@@ -156,7 +159,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
         }
         Path archdir = fb.getSystemSubDir().resolve("archive");
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = archdir.resolve(fib.getRelativeName() + "_K_" + i);
+            ver[i] = archdir.resolve(fib.getRelativeName().replace(".",
+                "_K_" + i + "."));
         }
         assertEquals(0, fl.getFileArchiver().getSize());
         assertFalse(Files.exists(ver[0]));
@@ -222,8 +226,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
     public void testRestoreInDeletedSubdir() throws IOException {
         getFolderAtLisa().setArchiveVersions(1);
-        Path f = TestHelper.createRandomFile(getFolderAtLisa()
-            .getLocalBase().resolve("subdir"));
+        Path f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase()
+            .resolve("subdir"));
         scanFolder(getFolderAtLisa());
         FileInfo fInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), f);
         FileInfo dInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(),
