@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 
@@ -13,7 +14,9 @@ public enum ArchiveMode {
 
         @Override
         public FileArchiver getInstance(Folder f) {
-            Path archive = f.getSystemSubDir().resolve("archive");
+            Path archive = f.getSystemSubDir().resolve(
+                (String)ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.getValue(f
+                    .getController()));
             if (!f.checkIfDeviceDisconnected() && Files.notExists(archive)) {
                 try {
                     Files.createDirectories(archive);

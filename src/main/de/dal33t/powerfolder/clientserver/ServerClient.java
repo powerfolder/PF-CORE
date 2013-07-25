@@ -978,7 +978,8 @@ public class ServerClient extends PFComponent {
             if (networkIDChanged) {
                 getController().getNodeManager().shutdown();
             }
-            
+
+
             init(getController(), name, host, nodeId, allowServerChange,
                 updateConfig);
 
@@ -986,14 +987,15 @@ public class ServerClient extends PFComponent {
             setServerWebURLInConfig(webURL);
             setServerHTTPTunnelURLInConfig(tunnelURL);
             setServerInConfig(getServer().getInfo());
-            
+            ConfigurationEntry.CONFIG_URL.setValue(getController(), configURL);
+
             getController().saveConfig();
-            
+
             if (networkIDChanged) {
                 // Restart nodemanager
                 getController().getNodeManager().start();
             }
-            
+
             connectHostingServers();
         } catch (Exception e) {
             logWarning("Could not load connection infos from " + configURL

@@ -454,7 +454,8 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        Path archive = getSystemSubDir().resolve("archive");
+        Path archive = getSystemSubDir().resolve(
+            ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.getValue(controller));
         if (!checkIfDeviceDisconnected() && Files.notExists(archive))
         {
             try {

@@ -276,6 +276,8 @@ public enum ConfigurationEntry {
     SETTINGS_ENABLED("settings.enabled", true),
 
     FILES_ENABLED("files.enabled", true),
+    
+    ARCHIVE_DIRECTORY_NAME("files.archive.dir.name", "archive"),
 
     PROBLEMS_ENABLED("problems.enabled", true),
 

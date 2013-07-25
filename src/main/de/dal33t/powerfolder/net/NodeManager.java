@@ -1515,6 +1515,16 @@ public class NodeManager extends PFComponent {
                 this.friends.put(node.getId(), node);
             }
         }
+        // Cleanup old servers:
+        for (Member node : knownNodes.values()) {
+            ServerClient client = getController().getOSClient();
+            if (client != null && client.isPrimaryServer(node)) {
+                continue;
+            }
+            if (!nodeList.getServersSet().contains(node.getInfo())) {
+                node.setServer(false);
+            }
+        }
         for (MemberInfo server : nodeList.getServersSet()) {
             Member node = server.getNode(getController(), true);
             node.updateInfo(server);
