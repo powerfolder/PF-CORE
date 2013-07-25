@@ -3883,16 +3883,15 @@ public class Folder extends PFComponent {
         if (addProblem) {
             logInfo("Device disconnected. Folder disappeared from "
                 + getLocalBase());
+            boolean remove = ConfigurationEntry.FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED
+                .getValueBoolean(getController());
             String bd = getController().getFolderRepository()
                 .getFoldersBasedirString();
             boolean inBaseDir = false;
             if (bd != null) {
                 inBaseDir = getLocalBase().toAbsolutePath().startsWith(bd);
             }
-
-            if (inBaseDir && !currentInfo.isMetaFolder()
-                && !getController().getMySelf().isServer())
-            {
+            if (inBaseDir && !currentInfo.isMetaFolder() && remove) {
                 // Schedule for removal
                 getController().schedule(new Runnable() {
                     public void run() {
@@ -3901,6 +3900,7 @@ public class Folder extends PFComponent {
                     }
                 }, 5000L);
             } else {
+                // Otherwise raise problem.
                 addProblem(new DeviceDisconnectedProblem(currentInfo));
             }
         }

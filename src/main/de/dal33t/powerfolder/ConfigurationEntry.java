@@ -904,6 +904,11 @@ public enum ConfigurationEntry {
      * PFC-2226: Option to restrict new folder creation to the default storage path
      */
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false),
+    
+    /**
+     * Remove folder from setup if disappeared/deleted from basedir.
+     */
+    FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED("remove.folder.basedir.when_disappeared", true),
 
     /** The number of file versions to use when creating a new folder. */
     DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 5),
