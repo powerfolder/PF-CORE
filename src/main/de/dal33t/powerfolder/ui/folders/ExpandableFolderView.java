@@ -1854,13 +1854,14 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (type == Type.Local && folder != null
                 && folder.countProblems() > 0)
             {
-                if (!ConfigurationEntry.PROBLEMS_ENABLED.getValueBoolean(getController())) {
-                    if (folder.getProblems().get(0) instanceof FolderReadOnlyProblem) {
-                        ResolvableProblem prob = (ResolvableProblem) folder.getProblems().get(0);
-                        SwingUtilities.invokeLater(prob
-                            .resolution(getController()));
-                        folder.removeProblem(prob);
-                    }
+                if (!ConfigurationEntry.PROBLEMS_ENABLED
+                    .getValueBoolean(getController()))
+                {
+                    ResolvableProblem prob = (ResolvableProblem) folder
+                        .getProblems().get(0);
+                    SwingUtilities
+                        .invokeLater(prob.resolution(getController()));
+                    folder.removeProblem(prob);
                 } else {
                     // Display the problem.
                     getController().getUIController().openProblemsInformation(
