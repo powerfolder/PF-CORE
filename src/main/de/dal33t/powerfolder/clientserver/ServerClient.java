@@ -987,6 +987,7 @@ public class ServerClient extends PFComponent {
             setServerWebURLInConfig(webURL);
             setServerHTTPTunnelURLInConfig(tunnelURL);
             setServerInConfig(getServer().getInfo());
+            ConfigurationEntry.NETWORK_ID.setValue(getController(), newNetworkID);
             ConfigurationEntry.CONFIG_URL.setValue(getController(), configURL);
 
             getController().saveConfig();
