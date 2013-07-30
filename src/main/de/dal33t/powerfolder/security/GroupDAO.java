@@ -42,4 +42,11 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return
      */
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
+
+    /**
+     * Store a list of groups.
+     * 
+     * @param grous
+     */
+    void store(Group... grous);
 }

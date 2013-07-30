@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A group of accounts.
- *
+ * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @version $Revision: 1.5 $
  */
@@ -97,8 +97,7 @@ public class Group implements Serializable {
             if (hasPermission(p)) {
                 // Skip
                 continue;
-            }
-            else {
+            } else {
                 permissions.add(p);
             }
         }
@@ -111,6 +110,11 @@ public class Group implements Serializable {
                 LOG.fine("Revoked permission from " + this + ": " + p);
             }
         }
+    }
+
+    public void revokeAllFolderPermissions(FolderInfo foInfo) {
+        revoke(FolderPermission.read(foInfo),
+            FolderPermission.readWrite(foInfo), FolderPermission.admin(foInfo));
     }
 
     public boolean hasPermission(Permission permission) {
@@ -140,11 +144,12 @@ public class Group implements Serializable {
     }
 
     public Collection<FolderInfo> getFolders() {
-        Collection<FolderInfo> folder = new ArrayList<FolderInfo>(permissions.size());
+        Collection<FolderInfo> folder = new ArrayList<FolderInfo>(
+            permissions.size());
 
         for (Permission p : permissions) {
             if (p instanceof FolderPermission) {
-                FolderPermission fp = (FolderPermission)p;
+                FolderPermission fp = (FolderPermission) p;
 
                 folder.add(fp.getFolder());
             }
@@ -168,7 +173,7 @@ public class Group implements Serializable {
     public String getDisplayName() {
         return name;
     }
-    
+
     public String getNotes() {
         return notes;
     }
@@ -180,7 +185,7 @@ public class Group implements Serializable {
     public GroupInfo createInfo() {
         return new GroupInfo(oid, name);
     }
-    
+
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Group)) {
             return false;
@@ -190,7 +195,7 @@ public class Group implements Serializable {
             return true;
         }
 
-        return (this.oid.equals(((Group)obj).oid));
+        return (this.oid.equals(((Group) obj).oid));
     }
 
     @Override
@@ -200,7 +205,11 @@ public class Group implements Serializable {
         result = prime * result + ((oid == null) ? 0 : oid.hashCode());
         return result;
     }
-    
+
+    public String toString() {
+        return "Group '" + name + "', " + permissions.size() + " permissions";
+    }
+
     synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
             Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
