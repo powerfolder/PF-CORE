@@ -497,17 +497,24 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if this member is on LAN.
      */
     public boolean isOnLAN() {
-        if (peer != null) {
-            return peer.isOnLAN();
-        }
-        if (info.getConnectAddress() == null) {
+        try {
+            if (peer != null) {
+                return peer.isOnLAN();
+            }
+            if (info.getConnectAddress() == null) {
+                return false;
+            }
+            InetAddress adr = info.getConnectAddress().getAddress();
+            if (adr == null) {
+                return false;
+            }
+            return getController().getNodeManager().isOnLANorConfiguredOnLAN(
+                adr);
+        } catch (RuntimeException e) {
+            logWarning("Unable to check if client is on LAN: " + this + ". "
+                + e);
             return false;
         }
-        InetAddress adr = info.getConnectAddress().getAddress();
-        if (adr == null) {
-            return false;
-        }
-        return getController().getNodeManager().isOnLANorConfiguredOnLAN(adr);
     }
 
     /**

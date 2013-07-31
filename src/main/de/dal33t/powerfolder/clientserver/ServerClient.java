@@ -1395,13 +1395,19 @@ public class ServerClient extends PFComponent {
         if (ProUtil.isRunningProVersion()
             && ProUtil.getPublicKey(getController(), newServerInfo.getNode()) == null)
         {
-            PublicKey serverKey = publicKeyService.getPublicKey(newServerInfo
-                .getNode());
-            if (serverKey != null) {
-                logFine("Retrieved new key for server "
-                    + newServerInfo.getNode() + ". " + serverKey);
-                ProUtil.addNodeToKeyStore(getController(),
-                    newServerInfo.getNode(), serverKey);
+            try {
+                PublicKey serverKey = publicKeyService
+                    .getPublicKey(newServerInfo.getNode());
+                if (serverKey != null) {
+                    logFine("Retrieved new key for server "
+                        + newServerInfo.getNode() + ". " + serverKey);
+                    ProUtil.addNodeToKeyStore(getController(),
+                        newServerInfo.getNode(), serverKey);
+                }
+            } catch (RuntimeException e) {
+                logWarning("Not changing server. Unable to retrieve new server key for "
+                    + newServerInfo.getName() + ". " + e);
+                return;
             }
         }
 
