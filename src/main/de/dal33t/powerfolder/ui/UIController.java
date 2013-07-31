@@ -565,7 +565,9 @@ public class UIController extends PFComponent {
         // ////////////////
         // Sync Shutdown //
         // ////////////////
-        if (SystemUtil.isShutdownSupported()) {
+        if (SystemUtil.isShutdownSupported()
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
             item = menu.add(new MenuItem(Translation
                 .getTranslation("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
@@ -575,10 +577,12 @@ public class UIController extends PFComponent {
         // ////////////
         // Sync Exit //
         // ////////////
-        item = menu.add(new MenuItem(Translation
-            .getTranslation("systray.sync_exit")));
-        item.setActionCommand(COMMAND_SYNC_EXIT);
-        item.addActionListener(systrayActionHandler);
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            item = menu.add(new MenuItem(Translation
+                .getTranslation("systray.sync_exit")));
+            item.setActionCommand(COMMAND_SYNC_EXIT);
+            item.addActionListener(systrayActionHandler);
+        }
 
         // ///////
         // Exit //
