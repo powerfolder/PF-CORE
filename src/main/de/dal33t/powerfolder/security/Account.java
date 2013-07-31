@@ -108,6 +108,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_FIRSTNAME = "firstname";
     public static final String PROPERTYNAME_SURNAME = "surname";
     public static final String PROPERTYNAME_TELEPHONE = "telephone";
+    public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
 
     @Id
     private String oid;
@@ -140,6 +141,10 @@ public class Account implements Serializable {
 
     @Column(length = 1024)
     private String notes;
+    
+    @Index(name = "IDX_ACC_ORG_ID")
+    @Column(nullable = true, unique = false)
+    private String organizationOID;
 
     /**
      * The list of computers associated with this account.
@@ -546,6 +551,14 @@ public class Account implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public String getOrganizationOID() {
+        return organizationOID;
+    }
+
+    public void setOrganizationOID(String organizationOID) {
+        this.organizationOID = organizationOID;
     }
 
     public String getFirstname() {

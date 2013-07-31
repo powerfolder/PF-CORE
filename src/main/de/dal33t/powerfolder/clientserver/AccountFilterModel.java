@@ -29,11 +29,13 @@ public class AccountFilterModel extends Model {
     public static final String PROPERTY_PAYING_OS_ONLY = "payingOSOnly";
     public static final String PROPERTY_ACTIVE_TRIAL = "activeTrial";
     public static final String PROPERTY_USERNAME = "username";
+    public static final String ORGANIZATION_ANY = "/ANY/";
 
     private boolean disabledOnly;
     private boolean proUsersOnly;
     private boolean activeTrial;
     private String username;
+    private String organizationID = ORGANIZATION_ANY;
 
     private int maxResults;
 
@@ -87,6 +89,18 @@ public class AccountFilterModel extends Model {
         firePropertyChange(PROPERTY_USERNAME, oldValue, this.username);
     }
 
+    public String getOrganizationID() {
+        return organizationID;
+    }
+
+    public void setOrganizationID(String organizationID) {
+        this.organizationID = organizationID;
+    }
+    
+    public boolean isAnyOrganization() {
+        return ORGANIZATION_ANY.equals(organizationID);
+    }
+
     // Logic ******************************************************************
 
     public void reset() {
@@ -94,6 +108,7 @@ public class AccountFilterModel extends Model {
         disabledOnly = false;
         proUsersOnly = false;
         username = null;
+        organizationID = ORGANIZATION_ANY;
         maxResults = 0;
     }
 }
