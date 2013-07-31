@@ -48,6 +48,7 @@ public class Organization implements Serializable {
         .getName());
     private static final long serialVersionUID = 100L;
 
+    public static final String FILTER_MATCH_ALL = "/ALL/";
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_NAME = "name";
 

@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.clientserver;
 
 import com.jgoodies.binding.beans.Model;
 
+import de.dal33t.powerfolder.security.Organization;
+
 public class AccountFilterModel extends Model {
     private static final long serialVersionUID = 100L;
 
@@ -29,13 +31,12 @@ public class AccountFilterModel extends Model {
     public static final String PROPERTY_PAYING_OS_ONLY = "payingOSOnly";
     public static final String PROPERTY_ACTIVE_TRIAL = "activeTrial";
     public static final String PROPERTY_USERNAME = "username";
-    public static final String ORGANIZATION_ANY = "/ANY/";
 
     private boolean disabledOnly;
     private boolean proUsersOnly;
     private boolean activeTrial;
     private String username;
-    private String organizationID = ORGANIZATION_ANY;
+    private String organizationID = Organization.FILTER_MATCH_ALL;
 
     private int maxResults;
 
@@ -98,7 +99,7 @@ public class AccountFilterModel extends Model {
     }
     
     public boolean isAnyOrganization() {
-        return ORGANIZATION_ANY.equals(organizationID);
+        return Organization.FILTER_MATCH_ALL.equals(organizationID);
     }
 
     // Logic ******************************************************************
@@ -108,7 +109,7 @@ public class AccountFilterModel extends Model {
         disabledOnly = false;
         proUsersOnly = false;
         username = null;
-        organizationID = ORGANIZATION_ANY;
+        organizationID = Organization.FILTER_MATCH_ALL;
         maxResults = 0;
     }
 }
