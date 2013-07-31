@@ -84,6 +84,7 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -889,17 +890,29 @@ public class Folder extends PFComponent {
                 }
             } else {
                 try {
-                    String username = fInfo.getModifiedBy()
-                        .getNode(getController(), false).getAccountInfo()
-                        .getUsername();
-                    FileSystem fs = targetFile.getFileSystem();
-                    UserPrincipalLookupService upls = fs
-                        .getUserPrincipalLookupService();
-                    UserPrincipal up = upls.lookupPrincipalByName(username);
-                    Files.setOwner(targetFile, up);
+                    AccountInfo aInfo = fInfo.getModifiedBy()
+                        .getNode(getController(), true).getAccountInfo();
+
+                    if (aInfo != null) {
+                        String username = aInfo.getUsername();
+                        FileSystem fs = targetFile.getFileSystem();
+                        UserPrincipalLookupService upls = fs
+                            .getUserPrincipalLookupService();
+                        UserPrincipal up = upls.lookupPrincipalByName(username);
+
+                        if (up != null) {
+                            Files.setOwner(targetFile, up);
+                        } else {
+                            logInfo("Could not find user '" + username
+                                + "' to set as owner");
+                        }
+                    } else {
+                        logWarning("Could not find an account for file '"
+                            + fInfo.toString() + "'");
+                    }
                 } catch (Exception e) {
-                    logInfo("Could not set owner to " + targetFile.toString()
-                        + ": " + e.getMessage());
+                    logWarning("Could not set owner to " + targetFile.toString()
+                        + ": " + e);
                 }
             }
 
