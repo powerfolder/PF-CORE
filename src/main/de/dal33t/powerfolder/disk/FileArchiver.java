@@ -625,6 +625,7 @@ public class FileArchiver {
             .valueOf(size).getBytes());
         try {
             PathUtils.copyFromStreamToFile(bin, sizeFile);
+            PathUtils.setAttributesOnWindows(sizeFile, true, true);
         } catch (IOException e) {
             log.fine("Unable to store size of archive to " + sizeFile);
         }
