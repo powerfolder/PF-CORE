@@ -1076,7 +1076,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Sleep a couple of seconds for things to settle,
                 // before removing dirs, to avoid conflicts.
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                 }
 
