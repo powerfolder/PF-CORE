@@ -1796,7 +1796,8 @@ public class Folder extends PFComponent {
      */
     private boolean storeFolderDB() {
         File dbTempFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME
-            + ".writing");
+            + FileUtils.removeInvalidFilenameChars(getController().getMySelf()
+                .getId()) + ".writing");
         File dbFile = new TFile(getSystemSubDir(), Constants.DB_FILENAME);
         File dbFileBackup = new TFile(getSystemSubDir(),
             Constants.DB_BACKUP_FILENAME);
@@ -1894,20 +1895,22 @@ public class Folder extends PFComponent {
             }
             return true;
         } catch (IOException e) {
-            // TODO: if something failed shoudn't we try to restore the
-            // backup (if backup exists and bd file not after this?
-            logSevere(this + ": Unable to write database file "
+            logWarning(this + ": Unable to write database file "
                 + dbFile.getAbsolutePath() + ". " + e);
             logFiner(e);
             return false;
         } finally {
-            try {
-                oOut.close();
-            } catch (Exception e2) {
+            if (oOut != null) {
+                try {
+                    oOut.close();
+                } catch (Exception e2) {
+                }
             }
-            try {
-                fOut.close();
-            } catch (IOException e) {
+            if (fOut != null) {
+                try {
+                    fOut.close();
+                } catch (IOException e) {
+                }
             }
         }
     }
@@ -2433,7 +2436,8 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
-            logInfo("Member " + member.getNick() + " joined");
+            logInfo("Member " + member.getNick() + " joined (connected? "
+                + member.isConnected() + ")");
         }
         if (!init) {
             if (!wasMember && member.isCompletelyConnected()) {
