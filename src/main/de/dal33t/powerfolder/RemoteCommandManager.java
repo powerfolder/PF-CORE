@@ -121,6 +121,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     // All possible commands
     public static final String QUIT = "QUIT";
     public static final String OPEN = "OPEN;";
+    public static final String SHOW_UI = "SHOWUI;";
     public static final String MAKEFOLDER = "MAKEFOLDER;";
     public static final String REMOVEFOLDER = "REMOVEFOLDER;";
     public static final String COPYLINK = "COPYLINK;";
@@ -406,6 +407,17 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 // Must be a file
                 Path file = Paths.get(token).toAbsolutePath();
                 openFile(file);
+            }
+        } else if (command.startsWith(SHOW_UI)) {
+            // SYNC-87
+            if (getController().isUIEnabled()) {
+                getController().getUIController().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        getController().getUIController().getMainFrame()
+                            .toFront();
+                    }
+                });
             }
         } else if (command.startsWith(MAKEFOLDER)) {
             String folderConfig = command.substring(MAKEFOLDER.length());

@@ -294,6 +294,9 @@ public class PowerFolder {
 
         // Not go into console mode if ui is open
         if (!startController) {
+            if (runningInstanceFound) {
+                RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
+            }
             return;
         }
 

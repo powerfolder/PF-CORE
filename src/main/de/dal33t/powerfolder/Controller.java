@@ -2553,7 +2553,7 @@ public class Controller extends PFComponent {
         if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
         {
             Object[] options = {Translation
-                .getTranslation("dialog.already_running.exit_button")};
+                .getTranslation("dialog.already_running.show_button")};
             int exitOption = 0;
             if (verbose) {
                 options = new Object[]{
@@ -2569,6 +2569,8 @@ public class Controller extends PFComponent {
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
                 null, options, options[0]) == exitOption)
             { // exit pressed
+                // Try to bring existing instance to the foreground.
+                RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
                 exit(1);
             }
         } else {
