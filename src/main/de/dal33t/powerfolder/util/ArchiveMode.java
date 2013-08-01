@@ -15,8 +15,13 @@ public enum ArchiveMode {
         @Override
         public FileArchiver getInstance(Folder f) {
             Path archive = f.getSystemSubDir().resolve(
-                (String)ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.getValue(f
+                (String) ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.getValue(f
                     .getController()));
+            try {
+                archive = archive.toRealPath();
+            } catch (IOException e) {
+                // Unable to resolve. Try unresolved...
+            }
             if (!f.checkIfDeviceDisconnected() && Files.notExists(archive)) {
                 try {
                     Files.createDirectories(archive);
@@ -25,8 +30,8 @@ public enum ArchiveMode {
                         + archive);
                 }
             }
-            return new FileArchiver(archive, f.getController()
-                .getMySelf().getInfo());
+            return new FileArchiver(archive, f.getController().getMySelf()
+                .getInfo());
         }
 
     };

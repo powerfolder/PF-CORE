@@ -100,11 +100,13 @@ import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -455,25 +457,12 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        Path archive = getSystemSubDir().resolve(
-            ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.getValue(controller));
-        if (!checkIfDeviceDisconnected() && Files.notExists(archive))
-        {
-            try {
-                Files.createDirectory(archive);
-            }
-            catch (IOException ioe) {
-                logWarning("Failed to create archive directory in system subdirectory: "
-                    + archive + "\n" + ioe.getMessage());
-            }
-        }
-        archiver = new FileArchiver(archive, getController()
-            .getMySelf().getInfo());
+        archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         // Create invitation
-//        if (folderSettings.isCreateInvitationFile()) {
-//            try {
+        // if (folderSettings.isCreateInvitationFile()) {
+        // try {
 //                Invitation inv = createInvitation();
 //                Path invFile = localBase.resolve(
 //                    PathUtils.removeInvalidFilenameChars(inv.folder.name)
@@ -2163,17 +2152,30 @@ public class Folder extends PFComponent {
                 .getFolderRepository());
             synchronized (scanLock) {
                 if (Files.exists(file)) {
+                    int version = archiver.getVersionsPerFile();
                     try {
-                        archiver.archive(fileInfo, file, false);
-                        if (Files.deleteIfExists(file)) {
-                            addProblem(new FolderReadOnlyProblem(archiver
-                                .getArchiveDir().resolve(
-                                    fileInfo.getRelativeName())));
+                        // SYNC-98 Start
+                        if (ProUtil.isZyncro(getController())) {
+                            archiver.setVersionsPerFile(100);
                         }
+                        // SYNC-98 End
+                        watcher.addIgnoreFile(fileInfo);
+                        archiver.archive(fileInfo, file, false);
+                        Files.deleteIfExists(file);
+                        addProblem(new FolderReadOnlyProblem(archiver
+                            .getArchiveDir()
+                            .resolve(fileInfo.getRelativeName())));
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
                             + ". Cannot overwrite local change. " + e);
                         return false;
+                    } finally {
+                        watcher.removeIgnoreFile(fileInfo);
+                        // SYNC-98 Start
+                        if (ProUtil.isZyncro(getController())) {
+                            archiver.setVersionsPerFile(version);
+                        }
+                        // SYNC-98 End
                     }
                 }
                 dao.delete(null, fileInfo);

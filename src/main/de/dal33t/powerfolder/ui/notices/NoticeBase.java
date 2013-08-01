@@ -31,8 +31,8 @@ public abstract class NoticeBase implements Notice {
 
     private final Date date;
     private Date readDate;
-    private final String title;
-    private final String summary;
+    protected final String title;
+    protected final String summary;
 
     /**
      * Allows this abstract ancestor to provide a consistent equals method

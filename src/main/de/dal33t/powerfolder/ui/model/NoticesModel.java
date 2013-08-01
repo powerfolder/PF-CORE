@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.model;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.SwingUtilities;
@@ -30,17 +29,22 @@ import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.notices.*;
-import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
-import de.dal33t.powerfolder.ui.wizard.*;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.*;
+import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
+import de.dal33t.powerfolder.ui.notices.RunnableNotice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
+import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -145,6 +149,16 @@ public class NoticesModel extends PFUIComponent {
                 Invitation i = in.getPayload(getController());
                 FolderInfo fi = i.folder;
                 if (getController().getFolderRepository().hasJoinedFolder(fi)) {
+                    return;
+                }
+            }
+            for (Notice candidate : notices) {
+                if (candidate.isRead()) {
+                    continue;
+                }
+                // If there is already the SAME notice unread. don't
+                // add this duplicate.
+                if (candidate.equals(notice)) {
                     return;
                 }
             }
