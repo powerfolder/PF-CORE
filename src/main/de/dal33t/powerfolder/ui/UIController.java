@@ -1536,7 +1536,8 @@ public class UIController extends PFComponent {
             if (!foldersToWarn.isEmpty()) {
                 StringBuilder folderslist = new StringBuilder();
                 for (Folder folder : foldersToWarn) {
-                    folderslist.append("\n     - " + folder.getName());
+                    folderslist.append("\n     - "
+                        + folder.getInfo().getLocalizedName());
                 }
                 String title = Translation
                     .getTranslation("uicontroller.warn_on_close.title");
