@@ -933,20 +933,20 @@ public class Folder extends PFComponent {
                         + fInfo.toDetailString());
                 }
 
-                    try {
-                        if (PathUtils.isZyncroPath(targetFile)) {
-                            PathUtils.rawCopy(tempFile, targetFile);
-                        } else {
-                            Files.copy(tempFile, targetFile);
-                        }
-                    } catch (IOException e) {
-                        // TODO give a diskfull warning?
-                        logSevere("Unable to store completed download "
-                            + targetFile.toAbsolutePath() + ". " + e.getMessage()
-                            + ". " + fInfo.toDetailString());
-                        logFiner(e);
-                        return false;
+                try {
+                    if (PathUtils.isZyncroPath(targetFile)) {
+                        PathUtils.rawCopy(tempFile, targetFile);
+                    } else {
+                        Files.copy(tempFile, targetFile);
                     }
+                } catch (IOException e) {
+                    // TODO give a diskfull warning?
+                    logSevere("Unable to store completed download "
+                        + targetFile.toAbsolutePath() + ". " + e.getMessage()
+                        + ". " + fInfo.toDetailString());
+                    logFiner(e);
+                    return false;
+                }
 
                 // Set modified date of remote
                 // TODO: Set last modified only if required
