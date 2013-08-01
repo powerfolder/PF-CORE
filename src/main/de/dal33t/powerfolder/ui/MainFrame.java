@@ -332,7 +332,12 @@ public class MainFrame extends PFUIComponent {
         // Pack elements and set to default size.
         uiComponent.pack();
         uiComponent.setSize(uiComponent.getWidth(),
-                UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
+            UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((screenSize.getWidth() - uiComponent.getWidth()) / 2.0);
+        int y = (int) ((screenSize.getHeight() - uiComponent.getHeight()) / 2.0);
+        uiComponent.setLocation(x, y);
 
         configureInlineInfo();
         updateMainStatus(SyncStatusEvent.NOT_STARTED);
@@ -1268,14 +1273,16 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureNormalSize() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int w = isShowingInfoInline() ? Constants.DEFAULT_NORMAL_DOCKED_WIDTH : (int) uiComponent.getMinimumSize().getWidth();
-        int x = (int) ((screenSize.getWidth() - w) / 2.0);
+        int w = isShowingInfoInline()
+            ? Constants.DEFAULT_NORMAL_DOCKED_WIDTH
+            : (int) uiComponent.getMinimumSize().getWidth();
         int h = Constants.DEFAULT_NORMAL_HEIGHT;
-        int y = (int) ((screenSize.getHeight() - h) / 2.0);
-
         uiComponent.setSize(w, h);
-        uiComponent.setLocation(x, y);
+
+        // Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        // int x = (int) ((screenSize.getWidth() - w) / 2.0);
+        // int y = (int) ((screenSize.getHeight() - h) / 2.0);
+        // uiComponent.setLocation(x, y);
         checkSplitMinWidth();
     }
 
