@@ -39,7 +39,6 @@ public class FolderCreateItem {
 
     public FolderCreateItem(Path localBase) {
         this.localBase = localBase;
-        archiveHistory = 5;
     }
 
     public Path getLocalBase() {

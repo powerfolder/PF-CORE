@@ -1078,14 +1078,21 @@ public class Controller extends PFComponent {
         // ============
         // Monitor the default directory for possible new folders.
         // ============
-        if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(this))
-        {
-            threadPool.scheduleAtFixedRate(new TimerTask() {
-                public void run() {
+
+        threadPool.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
+                    .getValueBoolean(Controller.this))
+                {
                     folderRepository.lookForNewFolders();
                 }
-            }, 10L, 10L, TimeUnit.SECONDS);
-        }
+                if (ConfigurationEntry.LOOK_FOR_FOLDERS_TO_BE_REMOVED
+                    .getValueBoolean(Controller.this))
+                {
+                    folderRepository.lookForFoldersToBeRemoved();
+                }
+            }
+        }, 10L, 10L, TimeUnit.SECONDS);
 
         // ============
         // Hourly tasks

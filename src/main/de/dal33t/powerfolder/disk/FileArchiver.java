@@ -251,6 +251,9 @@ public class FileArchiver {
      *         it failed for at least one file
      */
     public synchronized boolean maintain() {
+        if (Files.notExists(archiveDirectory)) {
+            return true;
+        }
         boolean check = checkRecursive(archiveDirectory, new HashSet<Path>());
         size = null;
         return check;
@@ -587,7 +590,9 @@ public class FileArchiver {
         log.info("Cleaning up " + archiveDirectory + " for files older than "
             + cleanupDate);
 
-        cleanupOldArchiveFiles(archiveDirectory, cleanupDate);
+        if (Files.exists(archiveDirectory)) {
+            cleanupOldArchiveFiles(archiveDirectory, cleanupDate);
+        }
     }
 
     private static void cleanupOldArchiveFiles(Path file, Date cleanupDate) {
@@ -621,6 +626,15 @@ public class FileArchiver {
 
     private void saveSize() {
         Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
+        if (size == 0) {
+            try {
+                Files.deleteIfExists(sizeFile);
+                return;
+            } catch (IOException e) {
+                log.fine("Unable to delete meta data file: " + sizeFile + ". "
+                    + e);
+            }
+        }
         ByteArrayInputStream bin = new ByteArrayInputStream(String
             .valueOf(size).getBytes());
         try {
