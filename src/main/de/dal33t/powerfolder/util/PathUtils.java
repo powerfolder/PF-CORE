@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -443,6 +442,7 @@ public class PathUtils {
             // Do nothing.
             return;
         }
+        boolean wasHidden = Files.isHidden(sourceFile);
 
         if (Files.isDirectory(sourceFile) && Files.notExists(targetFile)) {
             Files.createDirectories(targetFile);
@@ -476,7 +476,7 @@ public class PathUtils {
         }
 
         // Hide target if original is hidden.
-        if (Files.isHidden(sourceFile)) {
+        if (wasHidden) {
             setAttributesOnWindows(targetFile, true, null);
         }
     }
@@ -1263,19 +1263,13 @@ public class PathUtils {
         if (ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.hasValue(folder
             .getController()))
         {
-            FileArchiver fa = folder.getFileArchiver();
-            String archivePath = fa.getArchiveDir().toString();
-            String relativeArchivePath = archivePath.replace(folder
-                .getLocalBase().toString(), "");
-            if (relativeArchivePath.startsWith("/")
-                || relativeArchivePath.startsWith("\\"))
-            {
-                relativeArchivePath = relativeArchivePath.substring(1);
-            }
-            if (relOrAbsfilePath.startsWith(archivePath)
-                || relOrAbsfilePath.startsWith(relativeArchivePath))
-            {
-                System.out.println("NOT SCANNING: " + relOrAbsfilePath);
+            String archiveDirText = ConfigurationEntry.ARCHIVE_DIRECTORY_NAME
+                .getValue(folder.getController());
+            archiveDirText = archiveDirText.replace(".", "");
+            archiveDirText = archiveDirText.replace("\\", "");
+            archiveDirText = archiveDirText.replace("/", "");
+
+            if (relOrAbsfilePath.contains(archiveDirText)) {
                 return false;
             }
         }

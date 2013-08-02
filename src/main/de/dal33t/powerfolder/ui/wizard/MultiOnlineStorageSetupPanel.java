@@ -131,6 +131,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
             Path localBase = folderLocalBaseMap.get(entry.getKey());
             FolderCreateItem fci = new FolderCreateItem(localBase);
+            fci.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
+                .getValueInt(getController()));
             fci.setSyncProfile(sp);
             fci.setFolderInfo(entry.getKey());
             folderCreateItems.add(fci);

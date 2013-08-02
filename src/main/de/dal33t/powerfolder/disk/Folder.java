@@ -2156,7 +2156,7 @@ public class Folder extends PFComponent {
                     try {
                         // SYNC-98 Start
                         if (ProUtil.isZyncro(getController())) {
-                            archiver.setVersionsPerFile(100);
+                            archiver.setVersionsPerFile(1);
                         }
                         // SYNC-98 End
                         watcher.addIgnoreFile(fileInfo);

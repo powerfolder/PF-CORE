@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Logger;
@@ -17,18 +16,13 @@ public enum ArchiveMode {
             Path archive = f.getSystemSubDir().resolve(
                 (String) ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.getValue(f
                     .getController()));
-            try {
-                archive = archive.toRealPath();
-            } catch (IOException e) {
-                // Unable to resolve. Try unresolved...
-            }
             if (!f.checkIfDeviceDisconnected() && Files.notExists(archive)) {
-                try {
-                    Files.createDirectories(archive);
-                } catch (IOException ioe) {
-                    log.warning("Failed to create archive directory in system subdirectory: "
-                        + archive);
-                }
+                // try {
+                // Files.createDirectories(archive);
+                // } catch (IOException ioe) {
+                // log.warning("Failed to create archive directory in system subdirectory: "
+                // + archive);
+                // }
             }
             return new FileArchiver(archive, f.getController().getMySelf()
                 .getInfo());

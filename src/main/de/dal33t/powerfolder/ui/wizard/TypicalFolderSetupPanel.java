@@ -35,6 +35,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -77,6 +78,8 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
 
         Path localBase = Paths.get(localFolderField.getText());
         FolderCreateItem fci = new FolderCreateItem(localBase);
+        fci.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
+            .getValueInt(getController()));
         fci.setSyncProfile(syncProfileSelectorPanel.getSyncProfile());
         fci.setFolderInfo(folderInfo);
         folderCreateItems.add(fci);

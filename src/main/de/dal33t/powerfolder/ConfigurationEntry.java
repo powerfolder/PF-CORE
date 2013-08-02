@@ -600,6 +600,11 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
     
     /**
+     * Lets do this flexible.
+     */
+    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
+    
+    /**
      * Note - as of PFC-2182, mass delete protection should only be applied
      * if the user has expert mode.
      */
@@ -713,6 +718,8 @@ public enum ConfigurationEntry {
     CONFLICT_DETECTION("conflict.detection", true),
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
+    
+    LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
     /**
      * Whether to log verbose.
