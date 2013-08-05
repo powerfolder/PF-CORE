@@ -53,6 +53,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -279,6 +280,7 @@ public class Folder extends PFComponent {
      */
     private int syncWarnSeconds;
     private Persister persister;
+    private ScheduledFuture<?> persisterFuture;
 
     /**
      * Constructor for folder.
@@ -437,16 +439,18 @@ public class Folder extends PFComponent {
         }
 
         persister = new Persister();
-        getController().scheduleAndRepeat(
+        persisterFuture = getController().scheduleAndRepeat(
             persister,
             1000L,
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
         File archive = new TFile(getSystemSubDir(), "archive");
-        if (!checkIfDeviceDisconnected() && !archive.exists() && !archive.mkdirs())
+        if (!checkIfDeviceDisconnected() && !archive.exists()
+            && !archive.mkdirs())
         {
-            logWarning("Failed to create archive directory in system subdirectory: " + archive);
+            logWarning("Failed to create archive directory in system subdirectory: "
+                + archive);
         }
         archiver = new FileArchiver(archive, getController().getMySelf().getInfo());
         archiver.setVersionsPerFile(folderSettings.getVersions());
@@ -1766,6 +1770,8 @@ public class Folder extends PFComponent {
                 DiskItemFilter.PATTERNS_FILENAME), true);
             savePatternsToMetaFolder();
         }
+        getController().removeScheduled(persister);
+        getController().removeScheduled(persisterFuture);
         dao.stop();
         removeAllListeners();
         ListenerSupportFactory.removeAllListeners(folderListenerSupport);
