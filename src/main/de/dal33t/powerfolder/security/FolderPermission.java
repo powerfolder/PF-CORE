@@ -30,7 +30,8 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public abstract class FolderPermission implements Permission {
     private static final long serialVersionUID = 100L;
-
+    
+    public static final String ID_SEPARATOR = "_FP_";
     public static final String PROPERTYNAME_FOLDER = "folder";
 
     protected FolderInfo folder;
@@ -49,7 +50,7 @@ public abstract class FolderPermission implements Permission {
     }
 
     public String getId() {
-        return folder.id + "_FP_" + getClass().getSimpleName();
+        return folder.id + ID_SEPARATOR + getClass().getSimpleName();
     }
 
     @Override

@@ -36,7 +36,7 @@ public class AccountFilterModel extends Model {
     private boolean proUsersOnly;
     private boolean activeTrial;
     private String username;
-    private String organizationID = Organization.FILTER_MATCH_ALL;
+    private String organizationOID = Organization.FILTER_MATCH_ALL;
 
     private int maxResults;
 
@@ -90,16 +90,16 @@ public class AccountFilterModel extends Model {
         firePropertyChange(PROPERTY_USERNAME, oldValue, this.username);
     }
 
-    public String getOrganizationID() {
-        return organizationID;
+    public String getOrganizationOID() {
+        return organizationOID;
     }
 
-    public void setOrganizationID(String organizationID) {
-        this.organizationID = organizationID;
+    public void setOrganizationOID(String organizationOID) {
+        this.organizationOID = organizationOID;
     }
     
     public boolean isAnyOrganization() {
-        return Organization.FILTER_MATCH_ALL.equals(organizationID);
+        return Organization.FILTER_MATCH_ALL.equals(organizationOID);
     }
 
     // Logic ******************************************************************
@@ -109,7 +109,7 @@ public class AccountFilterModel extends Model {
         disabledOnly = false;
         proUsersOnly = false;
         username = null;
-        organizationID = Organization.FILTER_MATCH_ALL;
+        organizationOID = Organization.FILTER_MATCH_ALL;
         maxResults = 0;
     }
 }

@@ -21,20 +21,18 @@ package de.dal33t.powerfolder.security;
 
 import com.sun.xml.internal.bind.v2.schemagen.Util;
 
-import de.dal33t.powerfolder.util.Reject;
-
 /**
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @version $Revision: 1.75 $
  */
-public class GroupAdminPermission implements Permission {
+public class OrganizationAdminPermission implements Permission {
 
+    public static final String ID_SEPARATOR = "_OP_";
     private static final long serialVersionUID = 100L;
-    public static final String ID_SEPARATOR = "_GP_";
-    private Group group;
+    private String organizationOID;
 
-    public GroupAdminPermission(Group group) {
-        Reject.ifNull(group, "Group is null");
-        this.group = group;
+    public OrganizationAdminPermission(String organizationOID) {
+        this.organizationOID = organizationOID;
     }
 
     public boolean implies(Permission impliedPermision) {
@@ -42,14 +40,15 @@ public class GroupAdminPermission implements Permission {
     }
 
     public String getId() {
-        return group.getOID() + ID_SEPARATOR + getClass().getSimpleName();
+        return organizationOID + ID_SEPARATOR + getClass().getSimpleName();
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((group == null) ? 0 : group.hashCode());
+        result = prime * result
+            + ((organizationOID == null) ? 0 : organizationOID.hashCode());
         return result;
     }
 
