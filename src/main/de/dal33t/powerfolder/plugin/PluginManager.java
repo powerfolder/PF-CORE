@@ -40,7 +40,6 @@ public class PluginManager extends PFComponent {
     private static final Logger log = Logger.getLogger(PluginManager.class
         .getName());
     private static final String OLD_WEBINTERFACE_PLUGIN_CLASS_NAME = "de.dal33t.powerfolder.AB";
-    private static final String OLD_PLUGIN_CLASS_NAME = "de.dal33t.powerfolder.HI";
     
     private List<Plugin> plugins;
     private List<Plugin> disabledPlugins;
@@ -158,11 +157,6 @@ public class PluginManager extends PFComponent {
         {
             logFine("Not loading web interface. "
                 + "It not longer available in v4.0 of PowerFolder.");
-            return null;
-        }
-        if (OLD_PLUGIN_CLASS_NAME.equalsIgnoreCase(pluginClassName)) {
-            logFine("Not loading old plugin. "
-                + "It not longer available in v5.0 of PowerFolder.");
             return null;
         }
 
