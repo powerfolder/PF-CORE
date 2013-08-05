@@ -2165,11 +2165,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                                         }
                                     } else {
-                                        logSevere("Unable to join meta folder of "
+                                        logFine("Unable to join meta folder of "
                                             + folder);
                                     }
                                 } else {
-                                    logSevere("Unable to join meta folder. Not found "
+                                    logFine("Unable to join meta folder. Not found "
                                         + folder);
                                 }
                             }
