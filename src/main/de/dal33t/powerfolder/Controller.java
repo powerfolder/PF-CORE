@@ -1402,6 +1402,8 @@ public class Controller extends PFComponent {
         logFine("Saving config (" + getConfigName() + ".config)");
         File file = new File(getConfigLocationBase(), getConfigName()
             + ".config");
+        File tempFile = new File(getConfigLocationBase(), getConfigName()
+            + ".writing.config");
         File backupFile = new File(getConfigLocationBase(), getConfigName()
             + ".config.backup");
         try {
@@ -1417,24 +1419,23 @@ public class Controller extends PFComponent {
                 distName = distribution.getName();
             }
             // Store config in misc base
-            PropertiesUtil.saveConfig(file, config, distName
+            PropertiesUtil.saveConfig(tempFile, config, distName
                 + " config file (v" + PROGRAM_VERSION + ')');
+            if (file.exists()) {
+                file.delete();
+            }
+            if (!tempFile.renameTo(file)) {
+                FileUtils.copyFile(tempFile, file);
+                tempFile.delete();
+            }
         } catch (IOException e) {
             // FATAL
             logSevere("Unable to save config. " + e, e);
             exit(1);
         } catch (Exception e) {
             // major problem , setting code is wrong
-            System.out.println("major problem , setting code is wrong");
             e.printStackTrace();
             logSevere("major problem , setting code is wrong", e);
-            // restore old settings file because it was probably flushed with
-            // this error
-            try {
-                FileUtils.copyFile(backupFile, file);
-            } catch (Exception e2) {
-
-            }
         }
     }
 
