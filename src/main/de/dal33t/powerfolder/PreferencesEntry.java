@@ -81,7 +81,7 @@ public enum PreferencesEntry {
      */
     WARN_ON_NO_DIRECT_CONNECTIVITY("warn_on_no_direct_connectivity", false),
 
-    /** Warn user if cloud space is getting full (80%+). */
+    /** Warn user if cloud space is getting full (90%+). */
     WARN_FULL_CLOUD("warn.poor.quality", true),
 
     SETUP_DEFAULT_FOLDER("setup_default_folder", false),

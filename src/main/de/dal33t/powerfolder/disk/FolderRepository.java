@@ -69,6 +69,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -76,6 +77,7 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
 import de.dal33t.powerfolder.util.Util;
@@ -1394,6 +1396,23 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (isFine()) {
                     logFine("Skipping searching for new folders (no permission)...");
                 }
+                return;
+            }
+            Account a = getController().getOSClient().getAccount();
+            if (!a.hasOwnStorage()) {
+                if (isFine()) {
+                    logFine("Account "
+                        + a.getUsername()
+                        + " does not have storage, not checking for new folders.");
+                }
+                WarningNotice notice = new WarningNotice(
+                    Translation.getTranslation("warning_notice.title"),
+                    Translation
+                        .getTranslation("warning_notice.no_folder_create_summary"),
+                    Translation
+                        .getTranslation("warning_notice.no_folder_create_message"));
+                getController().getUIController().getApplicationModel()
+                    .getNoticesModel().handleNotice(notice);
                 return;
             }
         }

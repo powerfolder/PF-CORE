@@ -178,6 +178,31 @@ public class ApplicationModel extends PFUIComponent {
             .getTime()) / 1000;
         return forSeconds <= 10;
     }
+    
+    private void checkCloudSpace() {
+        if (!PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(getController()))
+        {
+            return;
+        }
+        ServerClient client = getServerClientModel().getClient();
+        if (client != null && client.isLoggedIn()) {
+            if (!client.getAccount().getOSSubscription().isDisabled()) {
+                long storageSize = client.getAccount().getOSSubscription()
+                    .getStorageSize();
+                long used = client.getAccountDetails().getSpaceUsed();
+                if (used >= storageSize * 9 / 10) {
+                    // More than 90% used. Notify.
+                    WarningNotice notice = new WarningNotice(
+                        Translation.getTranslation("warning_notice.title"),
+                        Translation
+                            .getTranslation("warning_notice.cloud_full_summary"),
+                        Translation
+                            .getTranslation("warning_notice.cloud_full_message"));
+                    noticesModel.handleNotice(notice);
+                }
+            }
+        }
+    }
 
     // Exposing ***************************************************************
 
@@ -217,6 +242,8 @@ public class ApplicationModel extends PFUIComponent {
 
         public void login(ServerClientEvent event) {
             handleSyncStatusChange();
+            checkCloudSpace();
+            
             if (event.getAccountDetails().getAccount()
                 .hasPermission(AdminPermission.INSTANCE))
             {
@@ -232,6 +259,7 @@ public class ApplicationModel extends PFUIComponent {
 
         public void accountUpdated(ServerClientEvent event) {
             handleSyncStatusChange();
+            checkCloudSpace();
         }
 
         public void serverConnected(ServerClientEvent event) {
