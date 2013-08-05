@@ -522,6 +522,10 @@ public class Account implements Serializable {
     public void setOSSubscription(OnlineStorageSubscription osSubscription) {
         this.osSubscription = osSubscription;
     }
+    
+    public boolean hasOwnStorage() {
+        return osSubscription.getStorageSize() != 0;
+    }
 
     public String getNotes() {
         return notes;
