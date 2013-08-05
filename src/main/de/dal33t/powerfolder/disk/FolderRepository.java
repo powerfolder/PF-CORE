@@ -181,7 +181,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     removedFolderDirectories.add(p);
                 }
             } catch (Exception e) {
-                logWarning("Unable to check removed dir: " + s + ". " + e);
+                logFine("Unable to check removed dir: " + s + ". " + e);
             }
         }
     }
