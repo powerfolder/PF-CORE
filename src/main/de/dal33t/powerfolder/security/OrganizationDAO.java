@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.security;
 
 import java.util.List;
 
+import de.dal33t.powerfolder.clientserver.OrganizationFilterModel;
 import de.dal33t.powerfolder.util.db.GenericDAO;
 
 /**
@@ -28,4 +29,11 @@ public interface OrganizationDAO extends GenericDAO<Organization> {
      */
     List<Organization> getAll();
 
+    /**
+     * Get all organizations that fit the filter model.
+     * 
+     * @param ofm
+     * @return
+     */
+    List<Organization> getAll(OrganizationFilterModel ofm);
 }
