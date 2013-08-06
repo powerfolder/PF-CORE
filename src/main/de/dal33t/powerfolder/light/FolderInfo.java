@@ -57,11 +57,16 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NAME = "name";
+    public static final String PROPERTYNAME_ORGANIZATION_OID = "organizationOID";
 
-    @Index(name="IDX_FOLDER_NAME")
-    public String name;
     @Id
     public String id;
+
+    @Index(name = "IDX_FOLDER_NAME")
+    public String name;
+    
+    @Index(name = "IDX_FOLDER_ORGID")
+    public String organizationOID;
 
     /**
      * The cached hash info.

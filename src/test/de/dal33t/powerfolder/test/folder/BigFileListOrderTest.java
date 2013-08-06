@@ -65,7 +65,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
 
     public void testTransferBigFileList() throws ConnectionException {
         FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
-            IdGenerator.makeId());
+            IdGenerator.makeFolderId());
 
         getContollerBart().getNodeManager().addMessageListenerToAllNodes(
             new MyMessageListener());

@@ -63,7 +63,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         });
 
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId());
+            .makeFolderId());
 
         FolderSettings folderSettings = new FolderSettings(
             TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false, 0);

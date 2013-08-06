@@ -638,7 +638,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         String id = config.get(FOLDER_SCRIPT_CONFIG_ID);
         boolean createInvitationFile = false;
         if (StringUtils.isEmpty(id)) {
-            id = '[' + IdGenerator.makeId() + ']';
+            id = IdGenerator.makeFolderId();
             createInvitationFile = true;
         }
 

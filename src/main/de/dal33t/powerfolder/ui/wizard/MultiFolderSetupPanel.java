@@ -244,8 +244,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private static void createFolderInfo(FolderCreateItem item) {
         // Default sync folder has user name...
         String name = PathUtils.getSuggestedFolderName(item.getLocalBase());
-        FolderInfo folderInfo = new FolderInfo(name,
-            '[' + IdGenerator.makeId() + ']');
+        FolderInfo folderInfo = new FolderInfo(name, IdGenerator.makeFolderId());
         item.setFolderInfo(folderInfo);
     }
 

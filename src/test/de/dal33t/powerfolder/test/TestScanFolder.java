@@ -49,7 +49,7 @@ public class TestScanFolder extends ControllerTestCase {
 
     private void doTest() throws Exception {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId());
+            .makeFolderId());
         FolderSettings folderSettings = new FolderSettings(Paths.get(location),
             SyncProfile.HOST_FILES, false,0);
         folder = getController().getFolderRepository().createFolder(testFolder,
