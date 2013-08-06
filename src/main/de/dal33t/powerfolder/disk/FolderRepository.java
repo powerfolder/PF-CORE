@@ -181,7 +181,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     removedFolderDirectories.add(p);
                 }
             } catch (Exception e) {
-                logWarning("Unable to check removed dir: " + s + ". " + e);
+                logFine("Unable to check removed dir: " + s + ". " + e);
             }
         }
     }
@@ -1106,26 +1106,29 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 // Try to delete the invitation.
-                Path invite = folder.getLocalBase()
-                    .resolve(folder.getName() + ".invitation");
+                Path invite = folder.getLocalBase().resolve(
+                    folder.getName() + ".invitation");
                 if (Files.exists(invite)) {
                     try {
                         Files.delete(invite);
                     } catch (Exception e) {
                         logSevere(
-                            "Failed to delete invitation: "
-                                + invite.toString(), e);
+                            "Failed to delete invitation: " + invite.toString(),
+                            e);
                     }
                 }
 
                 // Remove the folder if totally empty.
-                try {
-                    Files.delete(folder.getLocalBase());
-                } catch (DirectoryNotEmptyException dnee) {
-                    // this can happen, and is just fine
-                } catch (IOException ioe) {
-                    logSevere("Failed to delete local base: "
-                        + folder.getLocalBase().toAbsolutePath() + ": " + ioe);
+                if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
+                    try {
+                        Files.delete(folder.getLocalBase());
+                    } catch (DirectoryNotEmptyException dnee) {
+                        // this can happen, and is just fine
+                    } catch (IOException ioe) {
+                        logSevere("Failed to delete local base: "
+                            + folder.getLocalBase().toAbsolutePath() + ": "
+                            + ioe);
+                    }
                 }
             }
         } finally {

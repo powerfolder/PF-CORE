@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.security.Group;
 import de.dal33t.powerfolder.security.GroupAdminPermission;
 import de.dal33t.powerfolder.security.GroupDAO;
+import de.dal33t.powerfolder.security.OrganizationAdminPermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.security.SingletonPermission;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -100,8 +101,8 @@ public class PermissionUserType extends Loggable implements UserType {
             // throw new IllegalStateException("Permission ID is empty");
         }
         // FolderPermissions (e. g. 4711_FP_FolderAdminPermission)
-        else if (permissionID.contains("_FP_")) {
-            String[] idAndName = permissionID.split("_FP_");
+        else if (permissionID.contains(FolderPermission.ID_SEPARATOR)) {
+            String[] idAndName = permissionID.split(FolderPermission.ID_SEPARATOR);
             String fiId = idAndName[0];
             String clazzName = idAndName[1];
 
@@ -141,15 +142,27 @@ public class PermissionUserType extends Loggable implements UserType {
             {
                 p = FolderPermission.readWrite(fdInfo);
             }
-        }
-        else if (permissionID.contains("_GP_")) {
-            String[] idAndName = permissionID.split("_GP_");
-            String gId = idAndName[0];
+        } else if (permissionID.contains(GroupAdminPermission.ID_SEPARATOR)) {
+            String[] idAndName = permissionID.split(GroupAdminPermission.ID_SEPARATOR);
+            String groupID = idAndName[0];
             String clazzName = idAndName[1];
-            Group group = GROUP_DAO.findByID(gId);
+            Group group = GROUP_DAO.findByID(groupID);
 
             if (clazzName.equals(GroupAdminPermission.class.getSimpleName())) {
                 p = new GroupAdminPermission(group);
+            }
+        } else if (permissionID
+            .contains(OrganizationAdminPermission.ID_SEPARATOR))
+        {
+            String[] idAndName = permissionID
+                .split(OrganizationAdminPermission.ID_SEPARATOR);
+            String organizationID = idAndName[0];
+            String clazzName = idAndName[1];
+
+            if (clazzName.equals(OrganizationAdminPermission.class
+                .getSimpleName()))
+            {
+                p = new OrganizationAdminPermission(organizationID);
             }
         }
         // SingletonPermissions (e. g. ChangePreferencesPermission)

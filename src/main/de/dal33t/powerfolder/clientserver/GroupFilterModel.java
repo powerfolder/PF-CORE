@@ -10,7 +10,7 @@ public class GroupFilterModel extends Model {
     public static final String PROPERTY_GROUPNAME = "groupname";
 
     private String groupname;
-    private String organizationID = Organization.FILTER_MATCH_ALL;
+    private String organizationOID = Organization.FILTER_MATCH_ALL;
 
     private int maxResults;
 
@@ -36,16 +36,16 @@ public class GroupFilterModel extends Model {
         firePropertyChange(PROPERTY_GROUPNAME, oldValue, this.groupname);
     }
 
-    public String getOrganizationID() {
-        return organizationID;
+    public String getOrganizationOID() {
+        return organizationOID;
     }
 
-    public void setOrganizationID(String organizationID) {
-        this.organizationID = organizationID;
+    public void setOrganizationOID(String organizationOID) {
+        this.organizationOID = organizationOID;
     }
 
     public boolean isAnyOrganization() {
-        return Organization.FILTER_MATCH_ALL.equals(organizationID);
+        return Organization.FILTER_MATCH_ALL.equals(organizationOID);
     }
 
     // Logic
@@ -53,6 +53,6 @@ public class GroupFilterModel extends Model {
     public void reset() {
         groupname = null;
         maxResults = 0;
-        organizationID = Organization.FILTER_MATCH_ALL;
+        organizationOID = Organization.FILTER_MATCH_ALL;
     }
 }

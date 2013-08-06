@@ -56,6 +56,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
+import com.sun.xml.internal.bind.v2.schemagen.Util;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -362,6 +364,14 @@ public class Account implements Serializable {
             return FolderPermission.read(folder).getMode();
         }
         return AccessMode.NO_ACCESS;
+    }
+    
+    public boolean isOrganizationAdmin() {
+        return hasPermission(new OrganizationAdminPermission(organizationOID));
+    }
+    
+    public boolean isInSameOrganization(Account other) {
+        return Util.equal(organizationOID, other.getOrganizationOID());
     }
 
     /**
