@@ -36,6 +36,12 @@ public class OrganizationAdminPermission implements Permission {
     }
 
     public boolean implies(Permission impliedPermision) {
+        if (impliedPermision instanceof FolderPermission) {
+            FolderPermission fp = (FolderPermission) impliedPermision;
+            if (fp.getFolder().getId().contains(organizationOID)) {
+                return true;
+            }
+        }
         return false;
     }
 
