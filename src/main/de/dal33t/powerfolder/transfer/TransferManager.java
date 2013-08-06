@@ -2187,6 +2187,23 @@ public class TransferManager extends PFComponent {
         }
         return false;
     }
+    
+    /**
+     * @param fInfo
+     * @param internet
+     * @return if there is an active upload for the given file.
+     */
+    public boolean isUploadActive(FileInfo fInfo, boolean internet) {
+        for (Upload upload : activeUploads) {
+            if (internet && upload.getPartner().isOnLAN()) {
+                continue;
+            }
+            if (upload.getFile().equals(fInfo)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Returns the upload for the given file to the given member
@@ -2846,9 +2863,18 @@ public class TransferManager extends PFComponent {
                         if (upload.isAborted()) {
                             logWarning("Not starting aborted: " + upload);
                         } else {
-                            logFiner("Starting upload: " + upload);
-                            upload.start();
-                            uploadsStarted++;
+                            if (upload.getPartner().isOnLAN()
+                                || !isUploadActive(upload.getFile(), true))
+                            {
+                                logFiner("Starting upload: " + upload);
+                                upload.start();
+                                uploadsStarted++;
+                            } else {
+                                // PFS-843
+                                logInfo("Waiting with Internet upload of file "
+                                    + upload.getFile()
+                                    + ". already upload to an Internet device");
+                            }
                         }
                     }
                 }
