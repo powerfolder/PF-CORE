@@ -481,7 +481,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         if (folderId
                             .contains(FolderSettings.FOLDER_ID_GENERATE))
                         {
-                            String generatedId = '[' + IdGenerator.makeId() + ']';
+                            String generatedId = IdGenerator.makeFolderId();
                             folderId = folderId.replace(
                                 FolderSettings.FOLDER_ID_GENERATE, generatedId);
                             logInfo("Spawned new folder id for config entry "
@@ -1504,7 +1504,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         if (fi == null) {
             fi = new FolderInfo(file.getFileName().toString(),
-                '[' + IdGenerator.makeId() + ']');
+                IdGenerator.makeFolderId());
         }
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
@@ -1838,7 +1838,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } else {
                     // Spawn/Create a new one.
                     foInfo = new FolderInfo(folderName,
-                        '[' + IdGenerator.makeId() + ']');
+                        IdGenerator.makeFolderId());
                     Folder folder = createFolder(foInfo, settings);
                     folder.addDefaultExcludes();
                     logWarning("Folder NOT found on account " + a.getUsername()

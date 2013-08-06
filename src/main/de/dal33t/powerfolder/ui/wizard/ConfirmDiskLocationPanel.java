@@ -80,10 +80,11 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
             return new FolderSetupPanel(getController());
         } else {
             // Set FolderInfo
-            // NOTE: this is more or less a copy of FolderSetupPanel next(), for non experts.
+            // NOTE: this is more or less a copy of FolderSetupPanel next(), for
+            // non experts.
             // Changes may need to be applied to both.
             FolderInfo folderInfo = new FolderInfo(initialFolderName,
-                    '[' + IdGenerator.makeId() + ']');
+                IdGenerator.makeFolderId());
             getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
 
             // Set sync profile

@@ -216,7 +216,7 @@ public class FoldersList extends PFUIComponent {
                 getController(), showAppData).keySet())
             {
                 FolderInfo folderInfo = new FolderInfo(name,
-                    '[' + IdGenerator.makeId() + ']');
+                    IdGenerator.makeFolderId());
                 ExpandableFolderModel bean = new ExpandableFolderModel(
                     Type.Typical, folderInfo, null, false);
 
