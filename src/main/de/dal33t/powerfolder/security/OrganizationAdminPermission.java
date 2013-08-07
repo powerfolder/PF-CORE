@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.security;
 
-import com.sun.xml.internal.bind.v2.schemagen.Util;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -70,7 +70,7 @@ public class OrganizationAdminPermission implements Permission {
         if (!(obj instanceof Permission))
             return false;
         Permission other = (Permission) obj;
-        return Util.equal(getId(), other.getId());
+        return Util.equals(getId(), other.getId());
     }
 
     public static interface OrganizationPermissionHelper {

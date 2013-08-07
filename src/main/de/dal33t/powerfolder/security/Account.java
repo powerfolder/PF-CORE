@@ -56,8 +56,6 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import com.sun.xml.internal.bind.v2.schemagen.Util;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -71,6 +69,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
@@ -371,7 +370,7 @@ public class Account implements Serializable {
     }
     
     public boolean isInSameOrganization(Account other) {
-        return Util.equal(organizationOID, other.getOrganizationOID());
+        return Util.equals(organizationOID, other.getOrganizationOID());
     }
 
     /**
