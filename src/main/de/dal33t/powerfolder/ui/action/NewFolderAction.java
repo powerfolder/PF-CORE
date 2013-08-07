@@ -127,7 +127,7 @@ public class NewFolderAction extends BaseAction {
 
                         // FolderInfo
                         String name = PathUtils.getSuggestedFolderName(file);
-                        String folderId = '[' + IdGenerator.makeId() + ']';
+                        String folderId = IdGenerator.makeFolderId();
                         FolderInfo fi = new FolderInfo(name, folderId);
 
                         FolderCreateItem item = new FolderCreateItem(file);

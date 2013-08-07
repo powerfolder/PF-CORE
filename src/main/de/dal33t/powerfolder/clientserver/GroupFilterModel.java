@@ -14,6 +14,12 @@ public class GroupFilterModel extends Model {
 
     private int maxResults;
 
+    public static GroupFilterModel all(int maxResults) {
+        GroupFilterModel filterModel = new GroupFilterModel();
+        filterModel.maxResults = maxResults;
+        return filterModel;
+    }
+    
     // Getter and Setter
 
     public int getMaxResults() {

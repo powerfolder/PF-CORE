@@ -116,7 +116,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
     private static FolderInfo createFolderInfo(Path localBase) {
         // Create new folder info
         String name = PathUtils.getSuggestedFolderName(localBase);
-        String folderId = '[' + IdGenerator.makeId() + ']';
+        String folderId = IdGenerator.makeFolderId();
         return new FolderInfo(name, folderId);
     }
 
