@@ -28,6 +28,7 @@ import com.sun.xml.internal.bind.v2.schemagen.Util;
 public class OrganizationAdminPermission implements Permission {
 
     public static final String ID_SEPARATOR = "_OP_";
+    public static OrganizationPermissionHelper ORGANIZATION_PERMISSION_HELPER;
     private static final long serialVersionUID = 100L;
     private String organizationOID;
 
@@ -36,17 +37,19 @@ public class OrganizationAdminPermission implements Permission {
     }
 
     public boolean implies(Permission impliedPermision) {
-        if (impliedPermision instanceof FolderPermission) {
-            FolderPermission fp = (FolderPermission) impliedPermision;
-            if (fp.getFolder().getId().contains(organizationOID)) {
-                return true;
-            }
+        if (ORGANIZATION_PERMISSION_HELPER != null) {
+            return ORGANIZATION_PERMISSION_HELPER.implies(this,
+                impliedPermision);
         }
         return false;
     }
 
     public String getId() {
         return organizationOID + ID_SEPARATOR + getClass().getSimpleName();
+    }
+
+    public String getOrganizationOID() {
+        return organizationOID;
     }
 
     @Override
@@ -68,5 +71,10 @@ public class OrganizationAdminPermission implements Permission {
             return false;
         Permission other = (Permission) obj;
         return Util.equal(getId(), other.getId());
+    }
+
+    public static interface OrganizationPermissionHelper {
+        boolean implies(OrganizationAdminPermission organizationPermission,
+            Permission impliedPermision);
     }
 }

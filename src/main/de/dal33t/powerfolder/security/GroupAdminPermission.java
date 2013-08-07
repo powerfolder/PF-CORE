@@ -45,6 +45,10 @@ public class GroupAdminPermission implements Permission {
         return group.getOID() + ID_SEPARATOR + getClass().getSimpleName();
     }
 
+    public Group getGroup() {
+        return group;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
