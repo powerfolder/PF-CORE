@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -44,8 +43,6 @@ import de.dal33t.powerfolder.util.Reject;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Organization implements Serializable {
-    private static final Logger LOG = Logger.getLogger(Organization.class
-        .getName());
     private static final long serialVersionUID = 100L;
 
     public static final String FILTER_MATCH_ALL = "/ALL/";
@@ -90,5 +87,4 @@ public class Organization implements Serializable {
     public void setNotes(String notes) {
         this.notes = notes;
     }
-
 }
