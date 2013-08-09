@@ -543,10 +543,6 @@ public class Account implements Serializable {
     }
 
     public OnlineStorageSubscription getOSSubscription() {
-        if (osSubscription == null) {
-            // osSubscription = new OnlineStorageSubscription();
-            // osSubscription.setType(OnlineStorageSubscriptionType.TRIAL_5GB);
-        }
         return osSubscription;
     }
 
