@@ -20,13 +20,17 @@
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -43,6 +47,8 @@ import de.dal33t.powerfolder.util.Reject;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Organization implements Serializable {
+    private static final Logger LOG = Logger.getLogger(Organization.class
+        .getName());
     private static final long serialVersionUID = 100L;
 
     public static final String FILTER_MATCH_ALL = "/ALL/";
@@ -57,6 +63,10 @@ public class Organization implements Serializable {
 
     @Column(length = 1024)
     private String notes;
+    
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    private OnlineStorageSubscription osSubscription;
 
     public Organization() {
         // Generate unique id
@@ -66,6 +76,7 @@ public class Organization implements Serializable {
     Organization(String oid) {
         Reject.ifBlank(oid, "OID");
         this.oid = oid;
+        this.osSubscription = new OnlineStorageSubscription();
     }
 
     public String getOID() {
@@ -86,5 +97,13 @@ public class Organization implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public OnlineStorageSubscription getOSSubscription() {
+        return osSubscription;
+    }
+
+    public void setOSSubscription(OnlineStorageSubscription osSubscription) {
+        this.osSubscription = osSubscription;
     }
 }
