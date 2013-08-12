@@ -222,16 +222,22 @@ public class ServerClient extends PFComponent {
 
     private void init(Member serverNode, boolean serverChange) {
         Reject.ifNull(serverNode, "Server node is null");
-        listenerSupport = ListenerSupportFactory
-            .createListenerSupport(ServerClientListener.class);
+        boolean firstCall=listenerSupport == null;
+        if (firstCall) {
+            listenerSupport = ListenerSupportFactory
+                .createListenerSupport(ServerClientListener.class);
+        }
         setNewServerNode(serverNode);
         // Allowed by default
         allowServerChange = serverChange;
         setAnonAccount();
-        getController().getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new MyFolderRepositoryListener());
+        
+        if (firstCall) {
+            getController().getNodeManager().addNodeManagerListener(
+                new MyNodeManagerListener());
+            getController().getFolderRepository().addFolderRepositoryListener(
+                new MyFolderRepositoryListener());
+        }
     }
 
     private boolean isRememberPassword() {
