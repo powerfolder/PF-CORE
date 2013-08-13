@@ -404,7 +404,9 @@ public class Folder extends PFComponent {
             }
         };
 
-        if (PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter)) {
+        if (!PathUtils.isZyncroPath(localBase)
+            && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
+        {
             hasOwnDatabase = true;
         }
 
