@@ -1565,7 +1565,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         final Set<String> ignoredFoldersLC = new HashSet<>();
         Account a = getController().getOSClient().getAccount();
         for (FolderInfo foInfo : a.getFolders()) {
-            ignoredFoldersLC.add(foInfo.getName().toLowerCase().trim());
+            ignoredFoldersLC.add(foInfo.getLocalizedName().toLowerCase().trim());
         }
 
         // Get all directories

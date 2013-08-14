@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
@@ -562,6 +563,12 @@ public class FolderStatistic extends PFComponent {
             // Average of all folder member sync percentages.
             return getAverageSyncPercentage();
         }
+        // SYNC-143
+        if (ProUtil.isZyncro(getController())) {
+            return UNKNOWN_SYNC_STATUS;
+        }
+        // SYNC-143
+
         // Otherwise, just return the local sync percentage.
         return getLocalSyncPercentage();
     }
