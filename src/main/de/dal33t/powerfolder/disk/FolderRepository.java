@@ -1528,7 +1528,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folderAutoCreateListener
             .folderAutoCreated(new FolderAutoCreateEvent(fi));
     }
-    
+
     /**
      * Scan the PowerFolder base directory for directories that should be
      * deleted.
@@ -1562,6 +1562,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
             return;
         }
+        final Set<String> ignoredFoldersLC = new HashSet<>();
+        Account a = getController().getOSClient().getAccount();
+        for (FolderInfo foInfo : a.getFolders()) {
+            ignoredFoldersLC.add(foInfo.getName().toLowerCase().trim());
+        }
+
         // Get all directories
         Filter<Path> filter = new Filter<Path>() {
             @Override
@@ -1576,6 +1582,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                             .getDefaultValue()))
                 {
+                    return false;
+                }
+                if (ignoredFoldersLC.contains(name.toLowerCase())) {
                     return false;
                 }
                 if (!Files.isDirectory(entry)) {
