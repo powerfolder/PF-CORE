@@ -55,6 +55,8 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
+import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -1031,9 +1033,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
             if (folder != null
-                && folder.countProblems() > 0
-                && ConfigurationEntry.PROBLEMS_ENABLED
-                    .getValueBoolean(getController()))
+                && folder.countProblems() > 0)
             {
                 // Got a problem.
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
@@ -1854,9 +1854,19 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (type == Type.Local && folder != null
                 && folder.countProblems() > 0)
             {
-                // Display the problem.
-                getController().getUIController().openProblemsInformation(
-                    folderInfo);
+                if (!ConfigurationEntry.PROBLEMS_ENABLED
+                    .getValueBoolean(getController()))
+                {
+                    ResolvableProblem prob = (ResolvableProblem) folder
+                        .getProblems().get(0);
+                    SwingUtilities
+                        .invokeLater(prob.resolution(getController()));
+                    folder.removeProblem(prob);
+                } else {
+                    // Display the problem.
+                    getController().getUIController().openProblemsInformation(
+                        folderInfo);
+                }
             } else if (type == Type.CloudOnly) {
                 // Join the folder locally.
                 PFWizard.openOnlineStorageJoinWizard(getController(),

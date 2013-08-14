@@ -28,6 +28,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -103,10 +104,14 @@ public class ServerClient extends PFComponent {
     private final AtomicBoolean loggingIn = new AtomicBoolean();
 
     /**
-     * ONLY FOR TESTS: If this client should connect to the server where his
-     * folders are hosted on.
+     * ONLY FOR TESTS: If this client should connect to the server where it is
+     * assigned to.
      */
     private boolean allowServerChange;
+
+    // Prevent HAMMERING on the cluster.
+    private int recentServerSwitches;
+    private Date recentServerSwitch;
     /**
      * Update the config with new HOST/ID infos if retrieved from server.
      */
@@ -210,8 +215,8 @@ public class ServerClient extends PFComponent {
         if (theNode.getReconnectAddress() == null) {
             logSevere("Got server without reconnect address: " + theNode);
         }
-        logInfo("Using server from config: " + theNode.getNick() + ", ID: "
-            + theNodeId);
+        logInfo("Using server: " + theNode.getNick() + ", ID: "
+            + theNodeId + " @ " + theNode.getReconnectAddress());
         init(theNode, allowServerChange);
     }
 
@@ -256,7 +261,7 @@ public class ServerClient extends PFComponent {
         getController().scheduleAndRepeat(new AutoLoginTask(), 10L * 1000L,
             1000L * 30);
         // Wait 10 seconds at start
-        getController().scheduleAndRepeat(new HostingServerRetriever(),
+        getController().scheduleAndRepeat(new HostingServersConnector(),
             10L * 1000L, 1000L * Constants.HOSTING_FOLDERS_REQUEST_INTERVAL);
         // Don't start, not really required?
         // getController().scheduleAndRepeat(new AccountRefresh(), 1000L * 30,
@@ -297,7 +302,7 @@ public class ServerClient extends PFComponent {
      * @return true if the node is the primary login server for the current
      *         account. account.
      */
-    public boolean isServer(ConnectionHandler conHan) {
+    public boolean isPrimaryServer(ConnectionHandler conHan) {
         if (server.getInfo().equals(conHan.getIdentity().getMemberInfo())) {
             return true;
         }
@@ -332,7 +337,7 @@ public class ServerClient extends PFComponent {
      * @return true if the node is the primary login server for the current
      *         account. account.
      */
-    public boolean isServer(Member node) {
+    public boolean isPrimaryServer(Member node) {
         if (server.equals(node)) {
             return true;
         }
@@ -367,7 +372,7 @@ public class ServerClient extends PFComponent {
      * @return true if the node is a part of the server cloud.
      */
     public boolean isClusterServer(Member node) {
-        return node.isServer() || isServer(node);
+        return node.isServer() || isPrimaryServer(node);
     }
 
     /**
@@ -524,7 +529,7 @@ public class ServerClient extends PFComponent {
         {
             return getWebURL();
         }
-        return LoginUtil.decorateURL(getWebURL() + Constants.LOGIN_URI,
+        return LoginUtil.decorateURL(getWebURL(Constants.LOGIN_URI, false),
             username, passwordObf);
     }
 
@@ -600,7 +605,7 @@ public class ServerClient extends PFComponent {
         {
             return null;
         }
-        String url = getWebURL() + Constants.LOGIN_URI;
+        String url = getWebURL(Constants.LOGIN_URI, false);
         if (StringUtils.isNotBlank(username)) {
             url = LoginUtil.decorateURL(url, username, (char[]) null);
         }
@@ -911,7 +916,7 @@ public class ServerClient extends PFComponent {
         if (getController().isShuttingDown() || !getController().isStarted()) {
             return;
         }
-        logInfo("Considering servers to connect: " + getServersInCluster());
+        logFine("findAlternativeServer: " + getServersInCluster());
         for (Member server : getServersInCluster()) {
             if (!server.isConnected()) {
                 server.markForImmediateConnect();
@@ -979,7 +984,8 @@ public class ServerClient extends PFComponent {
             if (networkIDChanged) {
                 getController().getNodeManager().shutdown();
             }
-            
+
+
             init(getController(), name, host, nodeId, allowServerChange,
                 updateConfig);
 
@@ -987,14 +993,16 @@ public class ServerClient extends PFComponent {
             setServerWebURLInConfig(webURL);
             setServerHTTPTunnelURLInConfig(tunnelURL);
             setServerInConfig(getServer().getInfo());
-            
+            ConfigurationEntry.NETWORK_ID.setValue(getController(), newNetworkID);
+            ConfigurationEntry.CONFIG_URL.setValue(getController(), configURL);
+
             getController().saveConfig();
-            
+
             if (networkIDChanged) {
                 // Restart nodemanager
                 getController().getNodeManager().start();
             }
-            
+
             connectHostingServers();
         } catch (Exception e) {
             logWarning("Could not load connection infos from " + configURL
@@ -1102,22 +1110,58 @@ public class ServerClient extends PFComponent {
         updateServer(a);
         updateFriendsList(a);
         getController().getFolderRepository().updateFolders(a);
-        getController().schedule(new HostingServerRetriever(), 1000L);
+        scheduleConnectHostingServers();
     }
 
     private void updateServer(Account a) {
         // Possible switch to new server
-        ServerInfo targetServer = a.getServer();
-        if (targetServer != null && allowServerChange) {
-            // Not hosted on the server we just have logged into.
-            boolean changeServer = !server.getInfo().equals(
-                targetServer.getNode());
-            if (changeServer) {
-                logInfo("Switching from " + server.getNick() + " to "
-                    + targetServer.getNode().getNick());
-                changeToServer(targetServer);
-            }
+        final ServerInfo targetServer = a.getServer();
+        if (targetServer == null || !allowServerChange) {
+            return;
         }
+        // Not hosted on the server we just have logged into.
+        boolean changeServer = !server.getInfo().equals(targetServer.getNode());
+        if (!changeServer) {
+            return;
+        }
+        final Member targetServerNode = targetServer.getNode().getNode(
+            getController(), true);
+        boolean delayedAndChecked = currentlyHammeringServers()
+            || !targetServerNode.isConnected();
+        if (!delayedAndChecked) {
+            logInfo("Switching from " + server.getNick() + " to "
+                + targetServerNode.getNick());
+            changeToServer(targetServer);
+        } else {
+            logInfo("Switching from " + server.getNick() + " to "
+                + targetServerNode.getNick() + " in " + HAMMER_DELAY / 1000
+                + "s");
+            try {
+                Thread.sleep(HAMMER_DELAY);
+            } catch (InterruptedException e) {
+                logFiner(e);
+                return;
+            }
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    if (!targetServerNode.isConnected()) {
+                        if (!isConnected()) {
+                            logWarning("Unable to connect to server: "
+                                + targetServerNode.getNick()
+                                + ". Searching for alternatives...");
+                            findAlternativeServer();
+                        }
+                    } else {
+                        boolean changeServer = !server.getInfo().equals(
+                            targetServer.getNode());
+                        if (changeServer) {
+                            changeToServer(targetServer);
+                        }
+                    }
+                }
+            });
+        }
+
     }
 
     private void updateFriendsList(Account a) {
@@ -1201,11 +1245,22 @@ public class ServerClient extends PFComponent {
         }
         boolean folderInCloud = false;
         FolderList fList = server.getLastFolderList();
-        if (fList != null) {
-            folderInCloud = fList.contains(foInfo, server);
+        ConnectionHandler conHan = server.getPeer();
+        if (conHan != null && fList != null) {
+            folderInCloud = fList.contains(foInfo, conHan.getMyMagicId());
         }
         // TODO: #2435
         return folderInCloud;
+    }
+
+    private void scheduleConnectHostingServers() {
+        boolean currentlyHammering = currentlyHammeringServers();
+        if (currentlyHammering) {
+            logWarning("Detected hammering of server/cluster. Throttling reconnect speed. Next try in "
+                + HAMMER_DELAY / 1000 + "s");
+        }
+        getController().schedule(new HostingServersConnector(),
+            currentlyHammering ? HAMMER_DELAY : 1000L);
     }
 
     /**
@@ -1215,63 +1270,47 @@ public class ServerClient extends PFComponent {
      * background task to retrieve and connect those servers.
      */
     private void connectHostingServers() {
-        if (!isConnected() || !isLoggedIn()) {
-            if (!isConnected()) {
-                findAlternativeServer();
-            }
+        if (!(isConnected() || isLoggingIn() || isLoggedIn())) {
+            findAlternativeServer();
             return;
         }
         if (isFiner()) {
-            logFiner("Connecting to hosting servers");
+            logFiner("Connecting to cluster servers");
         }
         Runnable retriever = new Runnable() {
             public void run() {
-                retrieveCloudServers();
+                retrieveAndConnectoClusterServers();
             }
         };
         getController().getIOProvider().startIO(retriever);
     }
 
-    private void retrieveCloudServers() {
+    private void retrieveAndConnectoClusterServers() {
         try {
+            if (ConfigurationEntry.SERVER_LOAD_NODES
+                .getValueBoolean(getController()))
+            {
+                getController().getNodeManager().loadServerNodes();
+            }
+            
             if (!isConnected() || !isLoggedIn()) {
                 return;
             }
+            
             Collection<FolderInfo> infos = getController()
                 .getFolderRepository().getJoinedFolderInfos();
             FolderInfo[] folders = infos.toArray(new FolderInfo[infos.size()]);
-            Collection<MemberInfo> servers = getFolderService()
+            Collection<MemberInfo> hostingServers = getFolderService()
                 .getHostingServers(folders);
             if (isFine()) {
-                logFine("Got " + servers.size() + " servers for our "
-                    + folders.length + " folders: " + servers);
+                logFine("Got " + hostingServers.size() + " servers for our "
+                    + folders.length + " folders: " + hostingServers);
             }
-            for (Member node : getController().getNodeManager()
-                .getNodesAsCollection())
-            {
-                if (node.isMySelf()
-                    || getController().getOSClient().isServer(node))
-                {
-                    // never unmark myserver or our primary server.
-                    continue;
-                }
-                if (servers.contains(node.getInfo())) {
-                    continue;
-                }
-                node.setServer(false);
-            }
-            for (MemberInfo serverMInfo : servers) {
-                Member hostingServer = serverMInfo.getNode(getController(),
-                    true);
-                hostingServer.updateInfo(serverMInfo);
-                boolean wasServer = hostingServer.isServer();
+            for (MemberInfo hostingServerInfo : hostingServers) {
+                Member hostingServer = hostingServerInfo.getNode(
+                    getController(), true);
+                hostingServer.updateInfo(hostingServerInfo);
                 hostingServer.setServer(true);
-
-                if (!wasServer) {
-                    listenerSupport
-                        .nodeServerStatusChanged(new ServerClientEvent(
-                            ServerClient.this, hostingServer));
-                }
 
                 if (hostingServer.isConnected() || hostingServer.isConnecting()
                     || hostingServer.equals(server))
@@ -1283,7 +1322,7 @@ public class ServerClient extends PFComponent {
                 hostingServer.markForImmediateConnect();
             }
         } catch (Exception e) {
-            logWarning("Unable to retrieve hosting servers of folders." + e);
+            logWarning("Unable to retrieve servers of cluster." + e);
         }
     }
 
@@ -1369,10 +1408,25 @@ public class ServerClient extends PFComponent {
     // Internal ***************************************************************
 
     private void setNewServerNode(Member newServerNode) {
+        // Hammering detection
+        if (server != null && newServerNode != null) {
+            boolean changed = !server.equals(newServerNode);
+            if (changed) {
+                if (recentServerSwitch != null
+                    && (System.currentTimeMillis() - recentServerSwitch
+                        .getTime()) > HAMMER_TIME)
+                {
+                    // Reset counter if last switch was "long" ago.
+                    recentServerSwitches = 0;
+                }
+                recentServerSwitch = new Date();
+                recentServerSwitches++;
+            }
+        }
         server = newServerNode;
         server.setServer(true);
-        listenerSupport.nodeServerStatusChanged(new ServerClientEvent(this,
-            server));
+        logInfo("New primary server: " + server);
+
         // Why?
         // // Put on friendslist
         // if (!isTempServerNode(server)) {
@@ -1382,6 +1436,16 @@ public class ServerClient extends PFComponent {
         // }
         // Re-initalize the service stubs on new server node.
         initializeServiceStubs();
+    }
+
+    private static final long HAMMER_TIME = 10000L;
+    private static final int HAMMER_HITS = 20;
+    private static final long HAMMER_DELAY = 30000L;
+
+    private boolean currentlyHammeringServers() {
+        return recentServerSwitch != null
+            && (System.currentTimeMillis() - recentServerSwitch.getTime()) <= HAMMER_TIME
+            && recentServerSwitches >= HAMMER_HITS;
     }
 
     private void initializeServiceStubs() {
@@ -1511,7 +1575,7 @@ public class ServerClient extends PFComponent {
                         addrStr = addr.getHostName();
                     }
                 } else {
-                    addrStr = "n/a";
+                    addrStr = "";
                 }
 
                 if (addr != null
@@ -1521,9 +1585,16 @@ public class ServerClient extends PFComponent {
                 }
             }
         } else {
-            addrStr = "n/a";
+            addrStr = "";
         }
-        return addrStr;
+        if (hasWebURL()) {
+            return getWebURL();
+        } else if (StringUtils.isNotBlank(addrStr)) {
+            return "pf://" + addrStr;
+        } else {
+            return "n/a";
+        }
+
     }
 
     public String toString() {
@@ -1532,19 +1603,21 @@ public class ServerClient extends PFComponent {
 
     // Inner classes **********************************************************
 
-    public void serverConnected(Member newNode) {
+    public void primaryServerConnected(Member newNode) {
         ConnectionHandler conHan = newNode.getPeer();
         Identity id = conHan != null ? conHan.getIdentity() : null;
         supportsQuickLogin = id != null && id.isSupportsQuickLogin();
         if (supportsQuickLogin) {
-            logFine("Quick login at server supported");
-            serverConnected0(newNode);
+            if (isFiner()) {
+                logFiner("Quick login at server supported");
+            }
+            primaryServerConnected0(newNode);
         } else {
             logFine("Quick login at server NOT supported. Using regular login");
         }
     }
 
-    private void serverConnected0(Member newNode) {
+    private void primaryServerConnected0(Member newNode) {
         // Our server member instance is a temporary one. Lets get real.
         if (isTempServerNode(server)) {
             // Got connect to server! Take his ID and name.
@@ -1565,7 +1638,7 @@ public class ServerClient extends PFComponent {
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
                 login(username, passwordObf);
-                getController().schedule(new HostingServerRetriever(), 1000L);
+                scheduleConnectHostingServers();
             } catch (Exception ex) {
                 logWarning("Unable to login. " + ex);
                 logFine(ex);
@@ -1588,6 +1661,32 @@ public class ServerClient extends PFComponent {
      * http://dev.powerfolder.com/projects/powerfolder/wiki/GeneralDevelopRules
      */
     private class MyNodeManagerListener extends NodeManagerAdapter {
+        @Override
+        public void settingsChanged(NodeManagerEvent e) {
+            // Transition Member.setServer(true)
+            if (e.getNode().isServer()) {
+                logInfo("Discovered a new server of " + countServers()
+                    + " in cluster: " + e.getNode().getNick() + " @ "
+                    + e.getNode().getReconnectAddress());
+            } else {
+                logInfo("Not longer member of cluster: "
+                    + e.getNode().getNick() + " @ "
+                    + e.getNode().getReconnectAddress());
+            }
+            listenerSupport.nodeServerStatusChanged(new ServerClientEvent(
+                ServerClient.this, e.getNode()));
+        }
+
+        private int countServers() {
+            int n = 0;
+            for (Member node : getController().getNodeManager().getNodesAsCollection()) {
+                if (node.isServer()) {
+                    n++;
+                }
+            }
+            return n;
+        }
+
         public void nodeConnected(NodeManagerEvent e) {
             if (e.getNode().isServer() && !isConnected()) {
                 findAlternativeServer();
@@ -1599,13 +1698,13 @@ public class ServerClient extends PFComponent {
                 return;
             }
             // For JUnit tests only;
-            if (isServer(e.getNode())) {
-                serverConnected0(e.getNode());
+            if (isPrimaryServer(e.getNode())) {
+                primaryServerConnected0(e.getNode());
             }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            if (isServer(e.getNode())) {
+            if (isPrimaryServer(e.getNode())) {
                 findAlternativeServer();
                 // Invalidate account.
                 setAnonAccount();
@@ -1634,7 +1733,7 @@ public class ServerClient extends PFComponent {
             if (!getController().isStarted()) {
                 return;
             }
-            retrieveCloudServers();
+            retrieveAndConnectoClusterServers();
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
@@ -1702,7 +1801,7 @@ public class ServerClient extends PFComponent {
     /**
      * Task to retrieve hosting Online Storage servers which host my files.
      */
-    private class HostingServerRetriever extends TimerTask {
+    private class HostingServersConnector extends TimerTask {
         @Override
         public void run() {
             connectHostingServers();
@@ -1745,5 +1844,4 @@ public class ServerClient extends PFComponent {
             }
         }
     }
-
 }

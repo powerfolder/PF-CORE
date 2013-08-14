@@ -222,7 +222,7 @@ public class FileListTest extends TestCase {
 
     private static FolderInfo createRandomFolderInfo() {
         FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
-            IdGenerator.makeId());
+            IdGenerator.makeFolderId());
         return foInfo;
     }
 }

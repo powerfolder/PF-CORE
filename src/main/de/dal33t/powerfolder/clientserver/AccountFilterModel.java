@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.clientserver;
 
 import com.jgoodies.binding.beans.Model;
 
+import de.dal33t.powerfolder.security.Organization;
+
 public class AccountFilterModel extends Model {
     private static final long serialVersionUID = 100L;
 
@@ -34,6 +36,7 @@ public class AccountFilterModel extends Model {
     private boolean proUsersOnly;
     private boolean activeTrial;
     private String username;
+    private String organizationOID = Organization.FILTER_MATCH_ALL;
 
     private int maxResults;
 
@@ -87,6 +90,18 @@ public class AccountFilterModel extends Model {
         firePropertyChange(PROPERTY_USERNAME, oldValue, this.username);
     }
 
+    public String getOrganizationOID() {
+        return organizationOID;
+    }
+
+    public void setOrganizationOID(String organizationOID) {
+        this.organizationOID = organizationOID;
+    }
+    
+    public boolean isAnyOrganization() {
+        return Organization.FILTER_MATCH_ALL.equals(organizationOID);
+    }
+
     // Logic ******************************************************************
 
     public void reset() {
@@ -94,6 +109,7 @@ public class AccountFilterModel extends Model {
         disabledOnly = false;
         proUsersOnly = false;
         username = null;
+        organizationOID = Organization.FILTER_MATCH_ALL;
         maxResults = 0;
     }
 }

@@ -517,6 +517,34 @@ public class PathUtilsTest extends TestCase {
         assertTrue(Files.exists(existingDestDir));
     }
 
+    public void testRecursivePermissions() throws IOException {
+        Path base = Paths.get("build/test/a");
+        Path sub = base.resolve("b").resolve("c").resolve("d");
+
+        Files.createDirectories(sub);
+
+        assertTrue(Files.isWritable(base));
+        assertTrue(Files.isWritable(base.resolve("b")));
+        assertTrue(Files.isWritable(base.resolve("b").resolve("c")));
+        assertTrue(Files.isWritable(base.resolve("b").resolve("c").resolve("d")));
+
+        PathUtils.recursivePermissionsRead(base);
+
+        assertFalse(Files.isWritable(base));
+        assertFalse(Files.isWritable(base.resolve("b")));
+        assertFalse(Files.isWritable(base.resolve("b").resolve("c")));
+        assertFalse(Files.isWritable(base.resolve("b").resolve("c").resolve("d")));
+
+        PathUtils.recursivePermissionsReadWrite(base);
+
+        assertTrue(Files.isWritable(base));
+        assertTrue(Files.isWritable(base.resolve("b")));
+        assertTrue(Files.isWritable(base.resolve("b").resolve("c")));
+        assertTrue(Files.isWritable(base.resolve("b").resolve("c").resolve("d")));
+
+        PathUtils.recursiveDelete(base);
+    }
+
     private long buildCheckSum(Path file, long baseSum) throws IOException {
         try {
             baseSum += Files.size(file);

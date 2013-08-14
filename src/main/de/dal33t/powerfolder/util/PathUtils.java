@@ -11,11 +11,14 @@ import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.spi.FileSystemProvider;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,7 +33,7 @@ import java.util.zip.ZipOutputStream;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -439,6 +442,7 @@ public class PathUtils {
             // Do nothing.
             return;
         }
+        boolean wasHidden = Files.isHidden(sourceFile);
 
         if (Files.isDirectory(sourceFile) && Files.notExists(targetFile)) {
             Files.createDirectories(targetFile);
@@ -472,7 +476,7 @@ public class PathUtils {
         }
 
         // Hide target if original is hidden.
-        if (Files.isHidden(sourceFile)) {
+        if (wasHidden) {
             setAttributesOnWindows(targetFile, true, null);
         }
     }
@@ -645,6 +649,62 @@ public class PathUtils {
         }
     }
 
+    public static void recursivePermissionsRead(Path base) throws IOException {
+        Reject.ifNull(base, "Base path is null");
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(base);
+        for (Path entry : stream) {
+            if (Files.isDirectory(entry)) {
+                recursivePermissionsRead(entry);
+            }
+            setPermission(entry, false);
+        }
+
+        setPermission(base, false);
+    }
+
+    public static void recursivePermissionsReadWrite(Path base)
+        throws IOException
+    {
+        Reject.ifNull(base, "Base path is null");
+
+        setPermission(base, true);
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(base);
+        for (Path entry : stream) {
+            setPermission(entry, true);
+
+            if (Files.isDirectory(entry)) {
+                recursivePermissionsReadWrite(entry);
+            }
+        }
+    }
+
+    private static void setPermission(Path file, boolean write) throws IOException {
+        if (OSUtil.isWindowsSystem()) {
+            DosFileAttributeView view = Files.getFileAttributeView(file,
+                DosFileAttributeView.class);
+            if (write) {
+                view.setReadOnly(false);
+            } else {
+                view.setReadOnly(true);
+            }
+        } else if (OSUtil.isLinux() || OSUtil.isMacOS()) {
+            PosixFileAttributeView view = Files.getFileAttributeView(file,
+                PosixFileAttributeView.class);
+
+            Set<PosixFilePermission> perms = new HashSet<>(3);
+            perms.add(PosixFilePermission.OWNER_READ);
+            perms.add(PosixFilePermission.OWNER_EXECUTE);
+
+            if (write) {
+                perms.add(PosixFilePermission.OWNER_WRITE);
+            }
+
+            view.setPermissions(perms);
+        }
+    }
+
     /**
      * Helper method to perform hashing on a file.
      * 
@@ -684,6 +744,8 @@ public class PathUtils {
 
     /**
      * See if 'child' is a subdirectory of 'parent', recursively.
+     * <p>
+     * TODO This can be optimized. Just compare String paths!
      * 
      * @param parent
      * @param targetChild
@@ -1171,49 +1233,64 @@ public class PathUtils {
      * 
      * @param file
      *            Guess what
-     * @param foInfo
+     * @param folder
      *            Guess what
      * @return true if file scan is allowed
      */
-    public static boolean isScannable(Path file, FolderInfo foInfo) {
-        return isScannable(file.toString(), foInfo);
+    public static boolean isScannable(Path file, Folder folder) {
+        return isScannable(file.toString(), folder);
     }
 
     /**
      * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
      * 
-     * @param filePath
-     *            Guess what
-     * @param foInfo
+     * @param relOrAbsfilePath
+     *            The relative OR absolute path.
+     * @param folder
      *            Guess what
      * @return true if file scan is allowed
      */
-    public static boolean isScannable(String filePath, FolderInfo foInfo) {
-        if (filePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR)) {
+    public static boolean isScannable(String relOrAbsfilePath, Folder folder) {
+        if (relOrAbsfilePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR))
+        {
             return false;
         }
 
-        if (filePath.endsWith("Icon\r")) {
+        if (relOrAbsfilePath.endsWith("Icon\r")) {
             return false;
         }
 
-        int firstSystemDir = filePath
+        if (ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.hasValue(folder
+            .getController()))
+        {
+            String archiveDirText = ConfigurationEntry.ARCHIVE_DIRECTORY_NAME
+                .getValue(folder.getController());
+            archiveDirText = archiveDirText.replace(".", "");
+            archiveDirText = archiveDirText.replace("\\", "");
+            archiveDirText = archiveDirText.replace("/", "");
+
+            if (relOrAbsfilePath.contains(archiveDirText)) {
+                return false;
+            }
+        }
+
+        int firstSystemDir = relOrAbsfilePath
             .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (firstSystemDir < 0) {
             return true;
         }
-
-        if (foInfo.isMetaFolder()) {
+       
+        if (folder.getInfo().isMetaFolder()) {
             // MetaFolders are in the POWERFOLDER_SYSTEM_SUBDIR of the parent,
             // like
             // C:\Users\Harry\PowerFolders\1765X\.PowerFolder\meta\xyz
             // So look after the '.PowerFolder\meta' part
-            int metaDir = filePath.indexOf(Constants.METAFOLDER_SUBDIR,
+            int metaDir = relOrAbsfilePath.indexOf(Constants.METAFOLDER_SUBDIR,
                 firstSystemDir);
             if (metaDir >= 0) {
                 // File is somewhere in the metaFolder file structure.
                 // Make sure we are not in the metaFolder's system subdir.
-                int secondSystemDir = filePath.indexOf(
+                int secondSystemDir = relOrAbsfilePath.indexOf(
                     Constants.POWERFOLDER_SYSTEM_SUBDIR, metaDir
                         + Constants.METAFOLDER_SUBDIR.length());
                 return secondSystemDir < 0;

@@ -53,7 +53,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     public void testJoinSecretFolder() {
         // Join on testfolder
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId());
+            .makeFolderId());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
 
         assertEquals(2, getContollerBart().getFolderRepository().getFolder(
@@ -189,7 +189,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
     private FolderInfo createRandomFolder(String nameSuffix) {
         String folderName = "testFolder-" + nameSuffix;
-        return new FolderInfo(folderName, folderName + IdGenerator.makeId());
+        return new FolderInfo(folderName, folderName + IdGenerator.makeFolderId());
     }
 
     /**
@@ -202,7 +202,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      */
     public void testStartAutoDownload() throws FolderException, IOException {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId());
+            .makeFolderId());
 
         // Prepare folder on "host" Bart.
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
@@ -245,9 +245,11 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * @throws FolderException
      * @throws IOException
      */
-    public void testStartAutoDownloadInPausedMode() throws FolderException, IOException {
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId());
+    public void testStartAutoDownloadInPausedMode() throws FolderException,
+        IOException
+    {
+        FolderInfo testFolder = new FolderInfo("testFolder",
+            IdGenerator.makeFolderId());
         // Prepare folder on "host" Bart.
         FolderSettings folderSettingsBart = new FolderSettings(
             TESTFOLDER_BASEDIR_BART, SyncProfile.HOST_FILES, false, 0);
@@ -282,7 +284,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
     public void testReceiveFileListOnReconnect() {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId());
+            .makeFolderId());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
         disconnectBartAndLisa();
 

@@ -147,7 +147,17 @@ public class SwingWorkerPanel extends PFWizardPanel {
         LOG.warning(problem);
         bar.setVisible(false);
         statusLabel.setText(" ");
-        problemLabel.setText(problem.replace("de.dal33t.powerfolder.", ""));
+
+        String msg = problem.replace("de.dal33t.powerfolder.", "");
+        if (msg.contains("\n")) {
+            StringBuilder bob = new StringBuilder();
+            bob.append("<html>");
+            bob.append(msg.replace("\n", "<br />"));
+            bob.append("</html>");
+            msg = bob.toString();
+        }
+
+        problemLabel.setText(msg);
         problemLabel.setVisible(true);
         canFinish = false;
         updateButtons();

@@ -58,6 +58,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -73,6 +74,7 @@ import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
 import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.FolderDatabaseProblem;
+import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
@@ -83,6 +85,7 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -98,11 +101,13 @@ import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -282,6 +287,7 @@ public class Folder extends PFComponent {
      */
     private int syncWarnSeconds;
     private Persister persister;
+    private ScheduledFuture<?> persisterFuture;
 
     /**
      * Constructor for folder.
@@ -398,7 +404,9 @@ public class Folder extends PFComponent {
             }
         };
 
-        if (PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter)) {
+        if (!PathUtils.isZyncroPath(localBase)
+            && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
+        {
             hasOwnDatabase = true;
         }
 
@@ -447,30 +455,18 @@ public class Folder extends PFComponent {
         }
 
         persister = new Persister();
-        getController().scheduleAndRepeat(
+        persisterFuture = getController().scheduleAndRepeat(
             persister,
             1000L,
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        Path archive = getSystemSubDir().resolve("archive");
-        if (!checkIfDeviceDisconnected() && Files.notExists(archive))
-        {
-            try {
-                Files.createDirectory(archive);
-            }
-            catch (IOException ioe) {
-                logWarning("Failed to create archive directory in system subdirectory: "
-                    + archive + "\n" + ioe.getMessage());
-            }
-        }
-        archiver = new FileArchiver(archive, getController()
-            .getMySelf().getInfo());
+        archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         // Create invitation
-//        if (folderSettings.isCreateInvitationFile()) {
-//            try {
+        // if (folderSettings.isCreateInvitationFile()) {
+        // try {
 //                Invitation inv = createInvitation();
 //                Path invFile = localBase.resolve(
 //                    PathUtils.removeInvalidFilenameChars(inv.folder.name)
@@ -887,17 +883,29 @@ public class Folder extends PFComponent {
                 }
             } else {
                 try {
-                    String username = fInfo.getModifiedBy()
-                        .getNode(getController(), false).getAccountInfo()
-                        .getUsername();
-                    FileSystem fs = targetFile.getFileSystem();
-                    UserPrincipalLookupService upls = fs
-                        .getUserPrincipalLookupService();
-                    UserPrincipal up = upls.lookupPrincipalByName(username);
-                    Files.setOwner(targetFile, up);
+                    AccountInfo aInfo = fInfo.getModifiedBy()
+                        .getNode(getController(), true).getAccountInfo();
+
+                    if (aInfo != null) {
+                        String username = aInfo.getUsername();
+                        FileSystem fs = targetFile.getFileSystem();
+                        UserPrincipalLookupService upls = fs
+                            .getUserPrincipalLookupService();
+                        UserPrincipal up = upls.lookupPrincipalByName(username);
+
+                        if (up != null) {
+                            Files.setOwner(targetFile, up);
+                        } else {
+                            logInfo("Could not find user '" + username
+                                + "' to set as owner");
+                        }
+                    } else {
+                        logWarning("Could not find an account for file '"
+                            + fInfo.toString() + "'");
+                    }
                 } catch (Exception e) {
-                    logInfo("Could not set owner to " + targetFile.toString()
-                        + ": " + e.getMessage());
+                    logWarning("Could not set owner to " + targetFile.toString()
+                        + ": " + e);
                 }
             }
 
@@ -918,20 +926,20 @@ public class Folder extends PFComponent {
                         + fInfo.toDetailString());
                 }
 
-                    try {
-                        if (PathUtils.isZyncroPath(targetFile)) {
-                            PathUtils.rawCopy(tempFile, targetFile);
-                        } else {
-                            Files.copy(tempFile, targetFile);
-                        }
-                    } catch (IOException e) {
-                        // TODO give a diskfull warning?
-                        logSevere("Unable to store completed download "
-                            + targetFile.toAbsolutePath() + ". " + e.getMessage()
-                            + ". " + fInfo.toDetailString());
-                        logFiner(e);
-                        return false;
+                try {
+                    if (PathUtils.isZyncroPath(targetFile)) {
+                        PathUtils.rawCopy(tempFile, targetFile);
+                    } else {
+                        Files.copy(tempFile, targetFile);
                     }
+                } catch (IOException e) {
+                    // TODO give a diskfull warning?
+                    logSevere("Unable to store completed download "
+                        + targetFile.toAbsolutePath() + ". " + e.getMessage()
+                        + ". " + fInfo.toDetailString());
+                    logFiner(e);
+                    return false;
+                }
 
                 // Set modified date of remote
                 // TODO: Set last modified only if required
@@ -1840,6 +1848,8 @@ public class Folder extends PFComponent {
                 DiskItemFilter.PATTERNS_FILENAME), true);
             savePatternsToMetaFolder();
         }
+        getController().removeScheduled(persister);
+        getController().removeScheduled(persisterFuture);
         dao.stop();
         removeAllListeners();
         ListenerSupportFactory.removeAllListeners(folderListenerSupport);
@@ -2148,13 +2158,30 @@ public class Folder extends PFComponent {
                 .getFolderRepository());
             synchronized (scanLock) {
                 if (Files.exists(file)) {
+                    int version = archiver.getVersionsPerFile();
                     try {
+                        // SYNC-98 Start
+                        if (ProUtil.isZyncro(getController())) {
+                            archiver.setVersionsPerFile(1);
+                        }
+                        // SYNC-98 End
+                        watcher.addIgnoreFile(fileInfo);
                         archiver.archive(fileInfo, file, false);
                         Files.deleteIfExists(file);
+                        addProblem(new FolderReadOnlyProblem(archiver
+                            .getArchiveDir()
+                            .resolve(fileInfo.getRelativeName())));
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
                             + ". Cannot overwrite local change. " + e);
                         return false;
+                    } finally {
+                        watcher.removeIgnoreFile(fileInfo);
+                        // SYNC-98 Start
+                        if (ProUtil.isZyncro(getController())) {
+                            archiver.setVersionsPerFile(version);
+                        }
+                        // SYNC-98 End
                     }
                 }
                 dao.delete(null, fileInfo);
@@ -3877,16 +3904,15 @@ public class Folder extends PFComponent {
         if (addProblem) {
             logInfo("Device disconnected. Folder disappeared from "
                 + getLocalBase());
+            boolean remove = ConfigurationEntry.FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED
+                .getValueBoolean(getController());
             String bd = getController().getFolderRepository()
                 .getFoldersBasedirString();
             boolean inBaseDir = false;
             if (bd != null) {
                 inBaseDir = getLocalBase().toAbsolutePath().startsWith(bd);
             }
-
-            if (inBaseDir && !currentInfo.isMetaFolder()
-                && !getController().getMySelf().isServer())
-            {
+            if (inBaseDir && !currentInfo.isMetaFolder() && remove) {
                 // Schedule for removal
                 getController().schedule(new Runnable() {
                     public void run() {
@@ -3895,6 +3921,7 @@ public class Folder extends PFComponent {
                     }
                 }, 5000L);
             } else {
+                // Otherwise raise problem.
                 addProblem(new DeviceDisconnectedProblem(currentInfo));
             }
         }

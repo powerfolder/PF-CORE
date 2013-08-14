@@ -69,6 +69,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
@@ -108,6 +109,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_FIRSTNAME = "firstname";
     public static final String PROPERTYNAME_SURNAME = "surname";
     public static final String PROPERTYNAME_TELEPHONE = "telephone";
+    public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
 
     @Id
     private String oid;
@@ -140,6 +142,10 @@ public class Account implements Serializable {
 
     @Column(length = 1024)
     private String notes;
+    
+    @Index(name = "IDX_ACC_ORG_ID")
+    @Column(nullable = true, unique = false)
+    private String organizationOID;
 
     /**
      * The list of computers associated with this account.
@@ -358,6 +364,14 @@ public class Account implements Serializable {
         }
         return AccessMode.NO_ACCESS;
     }
+    
+    public boolean isOrganizationAdmin() {
+        return hasPermission(new OrganizationAdminPermission(organizationOID));
+    }
+    
+    public boolean isInSameOrganization(Account other) {
+        return Util.equals(organizationOID, other.getOrganizationOID());
+    }
 
     /**
      * @return the list of folders this account gets charged for.
@@ -529,10 +543,6 @@ public class Account implements Serializable {
     }
 
     public OnlineStorageSubscription getOSSubscription() {
-        if (osSubscription == null) {
-            // osSubscription = new OnlineStorageSubscription();
-            // osSubscription.setType(OnlineStorageSubscriptionType.TRIAL_5GB);
-        }
         return osSubscription;
     }
 
@@ -546,6 +556,14 @@ public class Account implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public String getOrganizationOID() {
+        return organizationOID;
+    }
+
+    public void setOrganizationOID(String organizationOID) {
+        this.organizationOID = organizationOID;
     }
 
     public String getFirstname() {

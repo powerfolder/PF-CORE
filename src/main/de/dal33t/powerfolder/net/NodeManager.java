@@ -1064,7 +1064,7 @@ public class NodeManager extends PFComponent {
                 + handler + ", disconnecting").with(handler);
         }
         if (!remoteIdentity.getMemberInfo().isOnSameNetwork(getController())) {
-            if (getController().getOSClient().isServer(handler)
+            if (getController().getOSClient().isPrimaryServer(handler)
                 && !mySelf.isServer())
             {
                 logWarning("Server not on same network " + handler
@@ -1410,6 +1410,23 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Also cleansweeps all servers except primary server.
+     * 
+     * @return the number of total servers know now.
+     */
+    public void loadServerNodes() {
+        String serverNodesURL = getController().getOSClient().getWebURL(
+            SERVER_NODES_URI, false);
+        if (StringUtils.isNotBlank(serverNodesURL)) {
+            try {
+                loadNodesFrom(new URL(serverNodesURL));
+            } catch (MalformedURLException e) {
+                logWarning(e.toString());
+            }
+        }
+    }
+
+    /**
      * Loads members from url and adds them
      * 
      * @param url
@@ -1420,12 +1437,6 @@ public class NodeManager extends PFComponent {
             nodeList.load(url);
             logInfo("Loaded " + nodeList.getServersSet().size()
                 + " servers from " + url + " : " + nodeList.getServersSet());
-            // Clean old servers
-            for (Member node : knownNodes.values()) {
-                if (node.isServer()) {
-                    node.setServer(false);
-                }
-            }
             return processNodeList(nodeList);
         } catch (IOException e) {
             logWarning("Unable to load servers from url '" + url + "'. "
@@ -1502,6 +1513,16 @@ public class NodeManager extends PFComponent {
             Member node = friend.getNode(getController(), true);
             if (!this.friends.containsKey(node.getId()) && !node.isMySelf()) {
                 this.friends.put(node.getId(), node);
+            }
+        }
+        // Cleanup old servers:
+        for (Member node : knownNodes.values()) {
+            ServerClient client = getController().getOSClient();
+            if (client != null && client.isPrimaryServer(node)) {
+                continue;
+            }
+            if (!nodeList.getServersSet().contains(node.getInfo())) {
+                node.setServer(false);
             }
         }
         for (MemberInfo server : nodeList.getServersSet()) {

@@ -198,8 +198,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     if (box.isSelected() && box.isEnabled()) {
                         FolderCreateItem item = new FolderCreateItem(
                                 stringUserDirectoryEntry.getValue().getDirectory());
+                        item.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(getController()));
                         item.setSyncProfile(syncProfile);
-                        item.setFolderInfo(createFolderInfo(stringUserDirectoryEntry.getKey()));
+                        item.setFolderInfo(createFolderInfo(stringUserDirectoryEntry
+                            .getKey()));
                         folderCreateItems.add(item);
                     }
                 }
@@ -211,6 +213,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             String dir = (String) customDirectoryListModel.getElementAt(i);
             Path file = Paths.get(dir);
             FolderCreateItem item = new FolderCreateItem(file);
+            item.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
+                .getValueInt(getController()));
             item.setSyncProfile(syncProfile);
             folderCreateItems.add(item);
         }
@@ -513,7 +517,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     private static FolderInfo createFolderInfo(String name) {
         // Create new folder info
-        String folderId = '[' + IdGenerator.makeId() + ']';
+        String folderId = IdGenerator.makeFolderId();
         return new FolderInfo(name, folderId);
     }
 

@@ -415,17 +415,14 @@ public class FolderScanner extends PFComponent {
                     break;
                 }
                 if (Files.isRegularFile(path)) {
-                    if (PathUtils.isScannable(path,
-                        currentScanningFolder.getInfo()))
-                    {
+                    if (PathUtils.isScannable(path, currentScanningFolder)) {
                         if (!scanFile(path, "")) {
                             failure = true;
                             return false;
                         }
                     }
                 } else if (Files.isDirectory(path)) {
-                    if (!PathUtils.isScannable(path,
-                        currentScanningFolder.getInfo())
+                    if (!PathUtils.isScannable(path, currentScanningFolder)
                         || currentScanningFolder.isSystemSubDir(path))
                     {
                         continue;
@@ -773,13 +770,13 @@ public class FolderScanner extends PFComponent {
                         break;
                     }
                     if (Files.isRegularFile(path)) {
-                        if (PathUtils.isScannable(path, currentScanningFolder.getInfo())
+                        if (PathUtils.isScannable(path, currentScanningFolder)
                             && !scanFile(path, currentDirName)) {
                             failure = true;
                             return false;
                         }
                     } else if (Files.isDirectory(path)) {
-                        if (PathUtils.isScannable(path, currentScanningFolder.getInfo())
+                        if (PathUtils.isScannable(path, currentScanningFolder)
                             && !scanDir(path)) {
                             failure = true;
                             return false;

@@ -276,6 +276,8 @@ public enum ConfigurationEntry {
     SETTINGS_ENABLED("settings.enabled", true),
 
     FILES_ENABLED("files.enabled", true),
+    
+    ARCHIVE_DIRECTORY_NAME("files.archive.dir.name", "archive"),
 
     PROBLEMS_ENABLED("problems.enabled", true),
 
@@ -598,6 +600,11 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
     
     /**
+     * Lets do this flexible.
+     */
+    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
+    
+    /**
      * Note - as of PFC-2182, mass delete protection should only be applied
      * if the user has expert mode.
      */
@@ -711,6 +718,8 @@ public enum ConfigurationEntry {
     CONFLICT_DETECTION("conflict.detection", true),
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
+    
+    LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
     /**
      * Whether to log verbose.
@@ -902,6 +911,11 @@ public enum ConfigurationEntry {
      * PFC-2226: Option to restrict new folder creation to the default storage path
      */
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false),
+    
+    /**
+     * Remove folder from setup if disappeared/deleted from basedir.
+     */
+    FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED("remove.folder.basedir.when_disappeared", true),
 
     /** The number of file versions to use when creating a new folder. */
     DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 5),

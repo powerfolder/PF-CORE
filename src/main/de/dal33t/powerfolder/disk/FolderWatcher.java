@@ -300,7 +300,7 @@ public class FolderWatcher extends PFComponent {
                 // Not allowed
                 return;
             }
-            if (!PathUtils.isScannable(name, folder.getInfo())) {
+            if (!PathUtils.isScannable(name, folder)) {
                 return;
             }
             if (ignoreAll) {

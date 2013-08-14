@@ -72,6 +72,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -79,6 +80,7 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
 import de.dal33t.powerfolder.util.Util;
@@ -179,7 +181,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     removedFolderDirectories.add(p);
                 }
             } catch (Exception e) {
-                logWarning("Unable to check removed dir: " + s + ". " + e);
+                logFine("Unable to check removed dir: " + s + ". " + e);
             }
         }
     }
@@ -479,7 +481,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         if (folderId
                             .contains(FolderSettings.FOLDER_ID_GENERATE))
                         {
-                            String generatedId = '[' + IdGenerator.makeId() + ']';
+                            String generatedId = IdGenerator.makeFolderId();
                             folderId = folderId.replace(
                                 FolderSettings.FOLDER_ID_GENERATE, generatedId);
                             logInfo("Spawned new folder id for config entry "
@@ -1034,6 +1036,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
         Reject.ifNull(folder, "Folder is null");
+
         try {
             suspendNewFolderSearch.incrementAndGet();
 
@@ -1103,26 +1106,29 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 // Try to delete the invitation.
-                Path invite = folder.getLocalBase()
-                    .resolve(folder.getName() + ".invitation");
+                Path invite = folder.getLocalBase().resolve(
+                    folder.getName() + ".invitation");
                 if (Files.exists(invite)) {
                     try {
                         Files.delete(invite);
                     } catch (Exception e) {
                         logSevere(
-                            "Failed to delete invitation: "
-                                + invite.toString(), e);
+                            "Failed to delete invitation: " + invite.toString(),
+                            e);
                     }
                 }
 
                 // Remove the folder if totally empty.
-                try {
-                    Files.delete(folder.getLocalBase());
-                } catch (DirectoryNotEmptyException dnee) {
-                    // this can happen, and is just fine
-                } catch (IOException ioe) {
-                    logSevere("Failed to delete local base: "
-                        + folder.getLocalBase().toAbsolutePath() + ": " + ioe);
+                if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
+                    try {
+                        Files.delete(folder.getLocalBase());
+                    } catch (DirectoryNotEmptyException dnee) {
+                        // this can happen, and is just fine
+                    } catch (IOException ioe) {
+                        logSevere("Failed to delete local base: "
+                            + folder.getLocalBase().toAbsolutePath() + ": "
+                            + ioe);
+                    }
                 }
             }
         } finally {
@@ -1425,56 +1431,59 @@ public class FolderRepository extends PFComponent implements Runnable {
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
         String baseDirName = getFoldersBasedirString();
         Path baseDir = Paths.get(baseDirName);
-        if (Files.exists(baseDir) && Files.isReadable(baseDir)) {
-            // Get all directories
-
-            Filter<Path> filter = new Filter<Path>() {
-                @Override
-                public boolean accept(Path entry) throws IOException {
-                    String name = entry.getFileName().toString();
-                    
-                    if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
-                        return false;
-                    }
-                    if (name.equals("BACKUP_REMOVE")) {
-                        return false;
-                    }
-                    if (!Files.isDirectory(entry)) {
-                        return false;
-                    }
-                    // Don't autocreate if it has been removed previously.
-                    if (removedFolderDirectories.contains(entry)) {
-                        return false;
-                    }
-
-                    return true;
+        if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
+            return;
+        }
+        // Get all directories
+        Filter<Path> filter = new Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                String name = entry.getFileName().toString();
+                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                    return false;
                 }
-            };
+                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                    .getValue(getController()))
+                    || name
+                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                            .getDefaultValue()))
+                {
+                    return false;
+                }
+                if (!Files.isDirectory(entry)) {
+                    return false;
+                }
+                if (removedFolderDirectories.contains(entry)) {
+                    return false;
+                }
+                return true;
+            }
+        };
 
-            try (DirectoryStream<Path> directories = Files.newDirectoryStream(baseDir, filter))
-            {
-                for (Path dir : directories) {
-                    boolean known = false;
-                    for (Folder folder : getFolders()) {
-                        if (folder.getName().equals(dir.getFileName().toString())) {
-                            known = true;
-                            break;
-                        }
-                        Path localBase = folder.getLocalBase();
-                        if (localBase.equals(dir)
-                            || localBase.toAbsolutePath().startsWith(dir.toAbsolutePath())) {
-                            known = true;
-                            break;
-                        }
+        try (DirectoryStream<Path> directories = Files.newDirectoryStream(
+            baseDir, filter)) {
+            for (Path dir : directories) {
+                boolean known = false;
+                for (Folder folder : getFolders()) {
+                    if (folder.getName().equals(dir.getFileName().toString())) {
+                        known = true;
+                        break;
                     }
-                    if (!known && PathUtils.hasContents(dir)) {
-                        handleNewFolder(dir);
+                    Path localBase = folder.getLocalBase();
+                    if (localBase.equals(dir)
+                        || localBase.toAbsolutePath().startsWith(
+                            dir.toAbsolutePath()))
+                    {
+                        known = true;
+                        break;
                     }
+                }
+                if (!known && PathUtils.hasContents(dir)) {
+                    handleNewFolder(dir);
                 }
             }
-            catch (IOException ioe) {
-                logWarning(ioe.getMessage());
-            }
+        } catch (IOException ioe) {
+            logWarning(ioe.getMessage());
         }
     }
 
@@ -1495,7 +1504,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         if (fi == null) {
             fi = new FolderInfo(file.getFileName().toString(),
-                '[' + IdGenerator.makeId() + ']');
+                IdGenerator.makeFolderId());
         }
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
@@ -1518,6 +1527,115 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         folderAutoCreateListener
             .folderAutoCreated(new FolderAutoCreateEvent(fi));
+    }
+    
+    /**
+     * Scan the PowerFolder base directory for directories that should be
+     * deleted.
+     */
+    public void lookForFoldersToBeRemoved() {
+        if (suspendNewFolderSearch.get() > 0) {
+            return;
+        }
+        if (!getController().getMySelf().isServer()) {
+            if (!getController().getOSClient().isLoggedIn()) {
+                if (isFine()) {
+                    logFine("Skipping searching for folders to be removed...");
+                }
+                return;
+            }
+            if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+                .getValueBoolean(getController()))
+            {
+                if (isFine()) {
+                    logFine("Skipping searching for folders to be deleted (no strict security)...");
+                }
+                return;
+            }
+        }
+        if (isFine()) {
+            logFine("Searching for folders to be removed...");
+        }
+        // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
+        String baseDirName = getFoldersBasedirString();
+        Path baseDir = Paths.get(baseDirName);
+        if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
+            return;
+        }
+        // Get all directories
+        Filter<Path> filter = new Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                String name = entry.getFileName().toString();
+                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                    return false;
+                }
+                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                    .getValue(getController()))
+                    || name
+                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                            .getDefaultValue()))
+                {
+                    return false;
+                }
+                if (!Files.isDirectory(entry)) {
+                    return false;
+                }
+                return true;
+            }
+        };
+
+        try (DirectoryStream<Path> directories = Files.newDirectoryStream(
+            baseDir, filter)) {
+            for (Path dir : directories) {
+                boolean known = false;
+                for (Folder folder : getFolders()) {
+                    if (folder.getName().equals(dir.getFileName().toString())) {
+                        known = true;
+                        break;
+                    }
+                    Path localBase = folder.getLocalBase();
+                    if (localBase.equals(dir)
+                        || localBase.toAbsolutePath().startsWith(
+                            dir.toAbsolutePath()))
+                    {
+                        known = true;
+                        break;
+                    }
+                }
+                if (known) {
+                    // Is know/a shared folder. don't delete
+                    continue;
+                }
+
+                String deletedBaseDir = ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                    .getValue(getController());
+                if (StringUtils.isNotBlank(deletedBaseDir)) {
+                    Path deletedTargetDir = PathUtils.createEmptyDirectory(
+                        getFoldersBasedir().resolve(deletedBaseDir), dir
+                            .getFileName().toString());
+                    PathUtils.recursiveMove(dir, deletedTargetDir);
+                } else {
+                    PathUtils.recursiveDelete(dir);
+                }
+                if (getController().isUIEnabled()) {
+                    WarningNotice notice = new WarningNotice(
+                        Translation
+                            .getTranslation("notice.folder_removed.title"),
+                        Translation.getTranslation(
+                            "notice.folder_removed.summary", dir.getFileName()
+                                .toString()), Translation.getTranslation(
+                            "notice.folder_removed.message", dir.getFileName()
+                                .toString()));
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().handleNotice(notice);
+                }
+
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            logWarning(ioe.getMessage());
+        }
     }
 
     /**
@@ -1720,7 +1838,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } else {
                     // Spawn/Create a new one.
                     foInfo = new FolderInfo(folderName,
-                        '[' + IdGenerator.makeId() + ']');
+                        IdGenerator.makeFolderId());
                     Folder folder = createFolder(foInfo, settings);
                     folder.addDefaultExcludes();
                     logWarning("Folder NOT found on account " + a.getUsername()

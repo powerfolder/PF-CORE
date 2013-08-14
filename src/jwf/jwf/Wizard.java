@@ -54,7 +54,7 @@ public class Wizard extends JPanel implements ActionListener {
     public static final String CANCEL_I18N_DESCRIPTION = "CANCEL_I18N_DESCRIPTION";
     public static final String HELP_I18N_DESCRIPTION = "HELP_I18N_DESCRIPTION";
     public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(
-        333, 333);
+        375, 333);
     public static final Dimension WIZARD_DEFAULT_WINDOW_SIZE = new Dimension(
         650, 480);
     public static final Dimension WIZARD_MAC_WINDOW_SIZE = new Dimension(750,

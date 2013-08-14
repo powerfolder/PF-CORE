@@ -334,8 +334,12 @@ public class LoginPanel extends PFWizardPanel {
             .getValueBoolean(getController());
         boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
             .getValueBoolean(getController());
-        serverURLLabel.setVisible(true);
-        serverURLBox.setVisible(true);
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
+            .getValue(getController())))
+        {
+            serverURLLabel.setVisible(true);
+            serverURLBox.setVisible(true);
+        }
         usernameLabel.setVisible(connected);
         usernameField.setVisible(connected);
         passwordLabel.setVisible(connected);

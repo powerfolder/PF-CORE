@@ -19,40 +19,45 @@
  */
 package de.dal33t.powerfolder.security;
 
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
 /**
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @version $Revision: 1.75 $
  */
-public class GroupAdminPermission implements Permission {
+public class OrganizationAdminPermission implements Permission {
 
+    public static final String ID_SEPARATOR = "_OP_";
+    public static OrganizationPermissionHelper ORGANIZATION_PERMISSION_HELPER;
     private static final long serialVersionUID = 100L;
-    public static final String ID_SEPARATOR = "_GP_";
-    private Group group;
+    private String organizationOID;
 
-    public GroupAdminPermission(Group group) {
-        Reject.ifNull(group, "Group is null");
-        this.group = group;
+    public OrganizationAdminPermission(String organizationOID) {
+        this.organizationOID = organizationOID;
     }
 
     public boolean implies(Permission impliedPermision) {
+        if (ORGANIZATION_PERMISSION_HELPER != null) {
+            return ORGANIZATION_PERMISSION_HELPER.implies(this,
+                impliedPermision);
+        }
         return false;
     }
 
     public String getId() {
-        return group.getOID() + ID_SEPARATOR + getClass().getSimpleName();
+        return organizationOID + ID_SEPARATOR + getClass().getSimpleName();
     }
 
-    public Group getGroup() {
-        return group;
+    public String getOrganizationOID() {
+        return organizationOID;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((group == null) ? 0 : group.hashCode());
+        result = prime * result
+            + ((organizationOID == null) ? 0 : organizationOID.hashCode());
         return result;
     }
 
@@ -66,5 +71,10 @@ public class GroupAdminPermission implements Permission {
             return false;
         Permission other = (Permission) obj;
         return Util.equals(getId(), other.getId());
+    }
+
+    public static interface OrganizationPermissionHelper {
+        boolean implies(OrganizationAdminPermission organizationPermission,
+            Permission impliedPermision);
     }
 }
