@@ -219,10 +219,6 @@ public class Group implements Serializable {
         return result;
     }
 
-    public String toString() {
-        return "Group '" + name + "', " + permissions.size() + " permissions";
-    }
-
     synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
             Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
