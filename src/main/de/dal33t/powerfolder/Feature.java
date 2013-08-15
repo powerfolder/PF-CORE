@@ -104,7 +104,17 @@ public enum Feature {
 
     SYSTRAY_ALL_FOLDERS(false),
 
-    ZYNCRO_PROFILING(false);
+    ZYNCRO_PROFILING(false),
+
+    /**
+     * Organize users into groups
+     */
+    GROUPS(false),
+
+    /**
+     * Multitenancy
+     */
+    ORGANIZATIONS(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
