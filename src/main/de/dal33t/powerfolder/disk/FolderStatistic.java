@@ -468,7 +468,7 @@ public class FolderStatistic extends PFComponent {
      */
     public int getLocalFilesCount() {
         Integer integer = current.getFilesCount().get(
-            getController().getMySelf().getInfo());
+            getMySelf().getInfo());
         return integer != null ? integer : 0;
     }
 
@@ -486,7 +486,7 @@ public class FolderStatistic extends PFComponent {
      * @return the local sync percentage.-1 if unknown.
      */
     public double getLocalSyncPercentage() {
-        return getSyncPercentage(getController().getMySelf());
+        return getSyncPercentage(getMySelf());
     }
 
     /**
@@ -560,14 +560,17 @@ public class FolderStatistic extends PFComponent {
         } else if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
             .getSyncProfile()))
         {
+            // SYNC-143
+            if (ProUtil.isZyncro(getController())
+                && folder.getMembersCount() == 1)
+            {
+                return UNKNOWN_SYNC_STATUS;
+            }
+            // SYNC-143
+            
             // Average of all folder member sync percentages.
             return getAverageSyncPercentage();
         }
-        // SYNC-143
-        if (ProUtil.isZyncro(getController())) {
-            return UNKNOWN_SYNC_STATUS;
-        }
-        // SYNC-143
 
         // Otherwise, just return the local sync percentage.
         return getLocalSyncPercentage();
@@ -584,8 +587,7 @@ public class FolderStatistic extends PFComponent {
      * @return my ACTUAL size of this folder.
      */
     public long getLocalSize() {
-        Long size = current.getSizes().get(
-            getController().getMySelf().getInfo());
+        Long size = current.getSizes().get(getMySelf().getInfo());
         return size != null ? size : 0;
     }
 

@@ -471,6 +471,7 @@ public class MainFrame extends PFUIComponent {
         updateNoticesLabel();
 
         usagePB = new JProgressBar();
+        usagePB.setVisible(!ProUtil.isZyncro(getController()));
         usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(new MouseAdapter() {
             @Override
@@ -1168,8 +1169,9 @@ public class MainFrame extends PFUIComponent {
                     }
                 }
             } else if (client.isLoggingIn()) {
-                loginActionLabel.setText(Translation
-                    .getTranslation("main_frame.logging_in.text"));
+//                loginActionLabel.setText(Translation
+//                    .getTranslation("main_frame.logging_in.text"));
+                loginActionLabel.setText("");
             } else {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
@@ -1179,8 +1181,9 @@ public class MainFrame extends PFUIComponent {
                 }
             }
         } else {
-            loginActionLabel.setText(Translation
-                .getTranslation("main_frame.connecting.text"));
+//            loginActionLabel.setText(Translation
+//                .getTranslation("main_frame.connecting.text"));
+            loginActionLabel.setText("");
         }
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
