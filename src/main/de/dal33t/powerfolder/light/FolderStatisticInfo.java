@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
@@ -289,5 +290,22 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
                 "Unable to read folder stats from " + file + ". " + e);
         }
         return null;
+    }
+    
+    @Override
+    public String toString() {
+        return "FolderStatisticInfo [folder=" + folder + ", totalSize="
+            + totalSize + ", archiveSize=" + archiveSize + ", totalFilesCount="
+            + totalFilesCount + ", estimatedSyncDate=" + estimatedSyncDate
+            + ", incomingFilesCount=" + incomingFilesCount + ", analyzedFiles="
+            + analyzedFiles + ", filesCount=" + filesCount
+            + ", filesCountInSync=" + filesCountInSync + ", sizes=" + sizes
+            + ", sizesInSync=" + sizesInSync + ", partialSyncStatMap="
+            + partialSyncStatMap + "]";
+    }
+
+    public static void main(String... args) {
+        FolderStatisticInfo info = load(FileSystems.getDefault().getPath("FolderStatistic"));
+        System.out.println(info);
     }
 }
