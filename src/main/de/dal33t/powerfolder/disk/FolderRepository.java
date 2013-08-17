@@ -1105,21 +1105,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     logSevere("Failed to delete: " + folder.getSystemSubDir());
                 }
 
-                // Try to delete the invitation.
-                Path invite = folder.getLocalBase().resolve(
-                    folder.getName() + ".invitation");
-                if (Files.exists(invite)) {
-                    try {
-                        Files.delete(invite);
-                    } catch (Exception e) {
-                        logSevere(
-                            "Failed to delete invitation: " + invite.toString(),
-                            e);
-                    }
-                }
-
-                // Remove the folder if totally empty.
                 if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
+                    // Remove the folder if totally empty.
                     try {
                         Files.delete(folder.getLocalBase());
                     } catch (DirectoryNotEmptyException dnee) {
