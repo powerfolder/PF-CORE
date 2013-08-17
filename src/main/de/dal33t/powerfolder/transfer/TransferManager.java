@@ -2946,75 +2946,86 @@ public class TransferManager extends PFComponent {
                     // Only one at a time.
                     return null;
                 }
-                // Get times.
-                Date startDate = new Date();
-                long downloadRate = 0;
-                long downloadSize = 1047552; // @todo, why 1023 * 1024 bytes?
-                boolean downloadOk = false;
+                // Pause all transfers
+                boolean wasPause = getController().isPaused();
+                getController().setPaused(true);
+                try {
+                    // Get times.
+                    Date startDate = new Date();
+                    long downloadRate = 0;
+                    long downloadSize = 1047552; // @todo, why 1023 * 1024
+                                                 // bytes?
+                    boolean downloadOk = false;
 
-                // downloadOk = countActiveDownloads() == 0
-                // && testAvailabilityDownload(downloadSize);
+                    // downloadOk = countActiveDownloads() == 0
+                    // && testAvailabilityDownload(downloadSize);
 
-                Date afterDownload = new Date();
-                // @todo please explain why / 4 ?
-                long uploadSize = 1047552 / 4;
-                boolean uploadOk = countActiveUploads() == 0
-                    && testAvailabilityUpload(uploadSize);
-                Date afterUpload = new Date();
+                    Date afterDownload = new Date();
+                    // @todo please explain why / 4 ?
+                    long uploadSize = 1047552 / 4;
+                    boolean uploadOk = countActiveUploads() == 0
+                        && testAvailabilityUpload(uploadSize);
+                    Date afterUpload = new Date();
 
-                // Calculate time differences.
-                long downloadTime = afterDownload.getTime()
-                    - startDate.getTime();
-                long uploadTime = afterUpload.getTime()
-                    - afterDownload.getTime();
-                // logWarning("Test availability download time " +
-                // downloadTime);
-                // logWarning("Test availability upload time " + uploadTime);
-                // Calculate rates in KiB/s.#
-                if (downloadOk) {
-                    downloadRate = downloadTime > 0 ? downloadSize * 1000
-                        / downloadTime : 0;
-                }
-                long uploadRate = uploadTime > 0 ? uploadSize * 1000
-                    / uploadTime : 0;
-                if (downloadOk) {
-                    logFine("Test availability download rate "
-                        + Format.formatBytesShort(downloadRate) + "/s");
-                }
-                if (uploadOk) {
-                    logFine("Test availability upload rate "
+                    // Calculate time differences.
+                    long downloadTime = afterDownload.getTime()
+                        - startDate.getTime();
+                    long uploadTime = afterUpload.getTime()
+                        - afterDownload.getTime();
+                    // logWarning("Test availability download time " +
+                    // downloadTime);
+                    // logWarning("Test availability upload time " +
+                    // uploadTime);
+                    // Calculate rates in KiB/s.#
+                    if (downloadOk) {
+                        downloadRate = downloadTime > 0 ? downloadSize * 1000
+                            / downloadTime : 0;
+                    }
+                    long uploadRate = uploadTime > 0 ? uploadSize * 1000
+                        / uploadTime : 0;
+                    if (downloadOk) {
+                        logFine("Test availability download rate "
+                            + Format.formatBytesShort(downloadRate) + "/s");
+                    }
+                    if (uploadOk) {
+                        logFine("Test availability upload rate "
+                            + Format.formatBytesShort(uploadRate) + "/s");
+                    }
+                    // Update bandwidth provider with 90% of new rates.
+                    // By experience: Measured rates usually lower than actual
+                    // speed.
+                    long modifiedDownloadRate = 90 * downloadRate / 100;
+                    long modifiedUploadRate = 90 * uploadRate / 100;
+
+                    logInfo("Speed test finished: Download "
+                        + Format.formatBytesShort(downloadRate) + "/s, Upload "
                         + Format.formatBytesShort(uploadRate) + "/s");
-                }
-                // Update bandwidth provider with 90% of new rates.
-                // By experience: Measured rates usually lower than actual
-                // speed.
-                long modifiedDownloadRate = 90 * downloadRate / 100;
-                long modifiedUploadRate = 90 * uploadRate / 100;
 
-                logInfo("Speed test finished: Download "
-                    + Format.formatBytesShort(downloadRate) + "/s, Upload "
-                    + Format.formatBytesShort(uploadRate) + "/s");
+                    // If the detected rate is too low the connection is
+                    // possibly
+                    // exhausted. Unlimt transfers? or keep the current rate
+                    // unchanged?
+                    if (uploadRate < 10240) {
+                        uploadRate = 0;
+                    }
+                    if (downloadRate < 102400 || downloadRate < uploadRate) {
+                        downloadRate = 0;
+                    }
 
-                // If the detected rate is too low the connection is possibly
-                // exhausted. Unlimt transfers? or keep the current rate
-                // unchanged?
-                if (uploadRate < 10240) {
-                    uploadRate = 0;
-                }
-                if (downloadRate < 102400 || downloadRate < uploadRate) {
-                    downloadRate = 0;
-                }
+                    if (downloadOk) {
+                        setDownloadCPSForWAN(modifiedDownloadRate);
+                    } else {
+                        // Set unlimited
+                        setDownloadCPSForWAN(0);
+                    }
+                    if (uploadOk) {
+                        setUploadCPSForWAN(modifiedUploadRate);
+                    }
 
-                if (downloadOk) {
-                    setDownloadCPSForWAN(modifiedDownloadRate);
-                } else {
-                    // Set unlimited
-                    setDownloadCPSForWAN(0);
+                } finally {
+                    recalculatingAutomaticRates.set(false);
+                    getController().setPaused(wasPause);
                 }
-                if (uploadOk) {
-                    setUploadCPSForWAN(modifiedUploadRate);
-                }
-                recalculatingAutomaticRates.set(false);
                 return null;
             }
         });
