@@ -451,7 +451,7 @@ public class Folder extends PFComponent {
         }
         if (hasOwnDatabase) {
             // Write filelist
-            writeFilelist(getController().getMySelf());
+            writeFilelist(getMySelf());
         }
 
         persister = new Persister();
@@ -626,13 +626,13 @@ public class Folder extends PFComponent {
                         + " to directory");
                 }
                 // New files
-                store(getController().getMySelf(), scanResult.newFiles);
+                store(getMySelf(), scanResult.newFiles);
                 // deleted files
-                store(getController().getMySelf(), scanResult.deletedFiles);
+                store(getMySelf(), scanResult.deletedFiles);
                 // restored files
-                store(getController().getMySelf(), scanResult.restoredFiles);
+                store(getMySelf(), scanResult.restoredFiles);
                 // changed files
-                store(getController().getMySelf(), scanResult.changedFiles);
+                store(getMySelf(), scanResult.changedFiles);
             }
         }
 
@@ -965,7 +965,7 @@ public class Folder extends PFComponent {
 
             synchronized (dbAccessLock) {
                 // Update internal database
-                store(getController().getMySelf(), correctFolderInfo(fInfo));
+                store(getMySelf(), correctFolderInfo(fInfo));
                 fileChanged(fInfo);
             }
         }
@@ -1378,7 +1378,7 @@ public class Folder extends PFComponent {
                         // Update last - modified data
                         MemberInfo modifiedBy = fInfo.getModifiedBy();
                         if (modifiedBy == null) {
-                            modifiedBy = getController().getMySelf().getInfo();
+                            modifiedBy = getMySelf().getInfo();
                         }
                         Member from = modifiedBy.getNode(getController(), true);
                         Date modDate;
@@ -1423,7 +1423,7 @@ public class Folder extends PFComponent {
                                 Files.isDirectory(file));
                         }
 
-                        store(getController().getMySelf(), fInfo);
+                        store(getMySelf(), fInfo);
 
                         // get folder icon info and set it
                         if (PathUtils.isDesktopIni(file)) {
@@ -1443,7 +1443,7 @@ public class Folder extends PFComponent {
                     FileInfo syncFile = localFile.syncFromDiskIfRequired(this,
                         file);
                     if (syncFile != null) {
-                        store(getController().getMySelf(), syncFile);
+                        store(getMySelf(), syncFile);
                         if (isFiner()) {
                             logFiner("Scan file changed: "
                                 + syncFile.toDetailString());
@@ -1521,7 +1521,7 @@ public class Folder extends PFComponent {
             watcher.removeIgnoreFile(dirInfo);
         }
 
-        store(getController().getMySelf(), correctFolderInfo(dirInfo));
+        store(getMySelf(), correctFolderInfo(dirInfo));
         setDBDirty();
     }
 
@@ -1602,7 +1602,7 @@ public class Folder extends PFComponent {
                     diskFile);
                 folderChanged = synced != null;
                 if (folderChanged) {
-                    store(getController().getMySelf(), synced);
+                    store(getMySelf(), synced);
                     return synced;
                 }
             }
@@ -1677,7 +1677,7 @@ public class Folder extends PFComponent {
             // Stop old DAO
             dao.stop();
         }
-        dao = new FileInfoDAOHashMapImpl(getController().getMySelf().getId(),
+        dao = new FileInfoDAOHashMapImpl(getMySelf().getId(),
             diskItemFilter);
 
         // File daoDir = new File(getSystemSubDir(), "db/h2");
@@ -2071,7 +2071,7 @@ public class Folder extends PFComponent {
                     fileInfo.isDiretory());
                 brokenExisting.set(i, newFileInfo);
             }
-            store(getController().getMySelf(), brokenExisting);
+            store(getMySelf(), brokenExisting);
             filesChanged(brokenExisting);
         }
 
@@ -2112,8 +2112,8 @@ public class Folder extends PFComponent {
      * @return
      */
     private boolean isRevertLocalChanges() {
-        boolean mySelfReadOnly = hasReadPermission(getController().getMySelf())
-            && !hasWritePermission(getController().getMySelf());
+        boolean mySelfReadOnly = hasReadPermission(getMySelf())
+            && !hasWritePermission(getMySelf());
         return mySelfReadOnly || syncProfile.equals(SyncProfile.BACKUP_TARGET);
     }
 
@@ -2225,7 +2225,7 @@ public class Folder extends PFComponent {
     public boolean setDesktopShortcut(boolean active) {
         String shortCutName = getName();
         if (getController().isVerbose()) {
-            shortCutName = '[' + getController().getMySelf().getNick() + "] "
+            shortCutName = '[' + getMySelf().getNick() + "] "
                 + shortCutName;
         }
 
@@ -2245,7 +2245,7 @@ public class Folder extends PFComponent {
     public void removeDesktopShortcut() {
         String shortCutName = getName();
         if (getController().isVerbose()) {
-            shortCutName = '[' + getController().getMySelf().getNick() + "] "
+            shortCutName = '[' + getMySelf().getNick() + "] "
                 + shortCutName;
         }
 
@@ -2445,7 +2445,7 @@ public class Folder extends PFComponent {
      */
     public boolean join(Member member) {
         boolean memberRead = hasReadPermission(member);
-        boolean mySelfRead = hasReadPermission(getController().getMySelf());
+        boolean mySelfRead = hasReadPermission(getMySelf());
         if (!memberRead || !mySelfRead) {
             if (memberRead) {
                 if (isFine()) {
@@ -2537,6 +2537,10 @@ public class Folder extends PFComponent {
         }
         if (metaFolder.deviceDisconnected) {
             logFine("Not writing members. Meta folder disconnected.");
+            return;
+        }
+        if (!hasWritePermission(getMySelf())) {
+            logFine("Not writing members. No permission.");
             return;
         }
         // Update in the meta directory.
@@ -2916,7 +2920,7 @@ public class Folder extends PFComponent {
                 }
                 // Take over info
                 remoteFile = correctFolderInfo(remoteFile);
-                store(getController().getMySelf(), remoteFile);
+                store(getMySelf(), remoteFile);
                 localFile = getFile(remoteFile);
                 // File has been marked as removed at our side
                 removedFiles.add(localFile);
@@ -2931,7 +2935,7 @@ public class Folder extends PFComponent {
                 }
                 // Take over modification infos
                 remoteFile = correctFolderInfo(remoteFile);
-                store(getController().getMySelf(), remoteFile);
+                store(getMySelf(), remoteFile);
                 localFile = getFile(remoteFile);
                 removedFiles.add(localFile);
             }
@@ -3077,7 +3081,7 @@ public class Folder extends PFComponent {
         // File has been removed
         // Changed localFile -> remoteFile
         removedFiles.add(remoteFile);
-        store(getController().getMySelf(), remoteFile);
+        store(getMySelf(), remoteFile);
     }
 
     private boolean removeEmptyDirectoryStructure(Path dir) {
@@ -3638,7 +3642,7 @@ public class Folder extends PFComponent {
         }
 
         if (!found.isEmpty()) {
-            store(getController().getMySelf(), found);
+            store(getMySelf(), found);
             filesChanged(found);
             return true;
         }
@@ -4890,7 +4894,7 @@ public class Folder extends PFComponent {
 
         // If others are in sync, do not warn because I can sync up with them.
         boolean othersInSync = false;
-        Member me = getController().getMySelf();
+        Member me = getMySelf();
         for (Member member : members.values()) {
             double memberSync = statistic.getSyncPercentage(member);
             if (!member.equals(me) && Double.compare(memberSync, 100.0) == 0) {
