@@ -464,38 +464,6 @@ public class Folder extends PFComponent {
         archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
-        // Create invitation
-        // if (folderSettings.isCreateInvitationFile()) {
-        // try {
-//                Invitation inv = createInvitation();
-//                Path invFile = localBase.resolve(
-//                    PathUtils.removeInvalidFilenameChars(inv.folder.name)
-//                        + ".invitation");
-//                InvitationUtil.save(inv, invFile);
-//                scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
-//            } catch (Exception e) {
-//                // Failure to send invite is not fatal to folder create.
-//                // Log it and move on.
-//                logInfo(e);
-//            }
-//        }
-
-        // Remove desktop.ini. Was accidentally created in 4.3.0 release.
-        if (currentInfo.isMetaFolder()) {
-            Path desktopIni = localBase.resolve(
-                PathUtils.DESKTOP_INI_FILENAME);
-            if (Files.exists(desktopIni)) {
-                try {
-                    Files.delete(desktopIni);
-                    scanChangedFile(FileInfoFactory
-                        .lookupInstance(this, desktopIni));
-                }
-                catch (IOException ioe) {
-                    // Ignore.
-                }
-            }
-        }
-
         watcher = new FolderWatcher(this);
     }
 
@@ -1948,19 +1916,22 @@ public class Folder extends PFComponent {
 
             // TODO Remove this in later version
             // Cleanup for older versions
-            Path oldDbFile = localBase.resolve(Constants.DB_FILENAME);
-            try {
-                Files.deleteIfExists(oldDbFile);
-            } catch (IOException ioe) {
-                logFiner("Failed to delete 'old' database file: " + oldDbFile);
-            }
-            Path oldDbFileBackup = localBase
-                .resolve(Constants.DB_BACKUP_FILENAME);
-            try {
-                Files.deleteIfExists(oldDbFileBackup);
-            } catch (IOException ioe) {
-                logFiner("Failed to delete backup of 'old' database file: "
-                    + oldDbFileBackup);
+            if (!PathUtils.isZyncroPath(localBase)) {
+                Path oldDbFile = localBase.resolve(Constants.DB_FILENAME);
+                try {
+                    Files.deleteIfExists(oldDbFile);
+                } catch (IOException ioe) {
+                    logFiner("Failed to delete 'old' database file: "
+                        + oldDbFile);
+                }
+                Path oldDbFileBackup = localBase
+                    .resolve(Constants.DB_BACKUP_FILENAME);
+                try {
+                    Files.deleteIfExists(oldDbFileBackup);
+                } catch (IOException ioe) {
+                    logFiner("Failed to delete backup of 'old' database file: "
+                        + oldDbFileBackup);
+                }
             }
         } catch (IOException e) {
             // TODO: if something failed shoudn't we try to restore the
@@ -2168,9 +2139,11 @@ public class Folder extends PFComponent {
                         watcher.addIgnoreFile(fileInfo);
                         archiver.archive(fileInfo, file, false);
                         Files.deleteIfExists(file);
-                        addProblem(new FolderReadOnlyProblem(archiver
-                            .getArchiveDir()
-                            .resolve(fileInfo.getRelativeName())));
+                        if (!currentInfo.isMetaFolder()) {
+                            addProblem(new FolderReadOnlyProblem(archiver
+                                .getArchiveDir().resolve(
+                                    fileInfo.getRelativeName())));
+                        }
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
                             + ". Cannot overwrite local change. " + e);
