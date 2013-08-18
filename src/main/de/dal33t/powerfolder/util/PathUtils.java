@@ -1128,6 +1128,33 @@ public class PathUtils {
             w -= read;
         }
     }
+    
+    /**
+     * Copies a given amount of data from one RandomAccessFile to another.
+     * 
+     * @param in
+     *            the inputstream to read the data from
+     * @param out
+     *            the file to write the data to
+     * @param n
+     *            the amount of bytes to transfer
+     * @throws IOException
+     *             if an Exception occurred while reading or writing the data
+     */
+    public static void ncopy(InputStream in, RandomAccessFile out, int n)
+        throws IOException
+    {
+        int w = n;
+        byte[] buf = new byte[BYTE_CHUNK_SIZE];
+        while (w > 0) {
+            int read = in.read(buf);
+            if (read < 0) {
+                throw new EOFException();
+            }
+            out.write(buf, 0, read);
+            w -= read;
+        }
+    }
 
     /**
      * Execute the file.
