@@ -1053,7 +1053,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder.clearAllProblemListeners();
 
             // Remove desktop ini if it exists
-            PathUtils.deleteDesktopIni(folder.getLocalBase());
+            if (OSUtil.isWindowsSystem()) {
+                PathUtils.deleteDesktopIni(folder.getLocalBase());
+            }
 
             // remove folder from config
             removeConfigEntries(folder.getConfigEntryId());
