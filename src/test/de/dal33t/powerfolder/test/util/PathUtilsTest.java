@@ -739,8 +739,6 @@ public class PathUtilsTest extends TestCase {
         Path s = TestHelper.createRandomFile(Paths.get("build/test/x"), 1);
         Path t = TestHelper.createRandomFile(Paths.get("build/test/x"), 1);
         PathUtils.rawCopy(s, t);
-
         assertEquals(Files.size(s), Files.size(t));
-
     }
 }
