@@ -128,7 +128,8 @@ public class PathUtilsTest extends TestCase {
         assertTrue(Files.exists(actual3));
         assertTrue(Files.isDirectory(actual3));
         assertEquals(0, PathUtils.getNumberOfSiblings(actual3));
-        assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3.getFileName().toString());
+        assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3
+            .getFileName().toString());
     }
 
     /**
@@ -168,25 +169,28 @@ public class PathUtilsTest extends TestCase {
         // Move it.
         Path moveDir = Paths.get("build/move").toAbsolutePath();
         Files.move(baseDir, moveDir);
-//        PathUtils.recursiveMove(baseDir, moveDir);
+        // PathUtils.recursiveMove(baseDir, moveDir);
 
         // Check move.
         assertTrue(Files.exists(moveDir));
         int count = 0;
-        try (DirectoryStream<Path> moveStream = Files.newDirectoryStream(moveDir)) {
+        try (DirectoryStream<Path> moveStream = Files
+            .newDirectoryStream(moveDir)) {
             boolean foundDir = false;
             boolean foundSub = false;
             for (Path dirFile : moveStream) {
                 count++;
                 if (Files.isDirectory(dirFile)) {
                     foundDir = true;
-                    try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dirFile)) {
+                    try (DirectoryStream<Path> dirStream = Files
+                        .newDirectoryStream(dirFile)) {
                         int dirCount = 0;
                         for (Path subFile : dirStream) {
                             dirCount++;
                             if (Files.isDirectory(subFile)) {
                                 foundSub = true;
-                                try (DirectoryStream<Path> subStream = Files.newDirectoryStream(subFile)) {
+                                try (DirectoryStream<Path> subStream = Files
+                                    .newDirectoryStream(subFile)) {
                                     Iterator<Path> it = subStream.iterator();
                                     it.next(); // d
                                     assertTrue(!it.hasNext()); // d
@@ -238,18 +242,23 @@ public class PathUtilsTest extends TestCase {
         assertTrue(PathUtils.getNumberOfSiblings(copyDir) == 2); // a and dir
         boolean foundDir = false;
         boolean foundSub = false;
-        
+
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(copyDir)) {
             for (Path dirFile : stream) {
                 if (Files.isDirectory(dirFile)) {
                     foundDir = true;
-                    assertTrue(PathUtils.getNumberOfSiblings(dirFile) == 3); // b, c and sub
+                    assertTrue(PathUtils.getNumberOfSiblings(dirFile) == 3); // b,
+                                                                             // c
+                                                                             // and
+                                                                             // sub
 
-                    try (DirectoryStream<Path> subStream = Files.newDirectoryStream(dirFile)) {
+                    try (DirectoryStream<Path> subStream = Files
+                        .newDirectoryStream(dirFile)) {
                         for (Path subFile : subStream) {
                             if (Files.isDirectory(subFile)) {
                                 foundSub = true;
-                                assertTrue(PathUtils.getNumberOfSiblings(subFile) == 1); // d
+                                assertTrue(PathUtils
+                                    .getNumberOfSiblings(subFile) == 1); // d
                             }
                         }
                     }
@@ -269,13 +278,18 @@ public class PathUtilsTest extends TestCase {
             for (Path dirFile : stream) { // a and dir
                 if (Files.isDirectory(dirFile)) {
                     foundDir = true;
-                    assertTrue(PathUtils.getNumberOfSiblings(dirFile) == 3); // b, c, and sub
-                    
-                    try (DirectoryStream<Path> subStream = Files.newDirectoryStream(dirFile)) {
+                    assertTrue(PathUtils.getNumberOfSiblings(dirFile) == 3); // b,
+                                                                             // c,
+                                                                             // and
+                                                                             // sub
+
+                    try (DirectoryStream<Path> subStream = Files
+                        .newDirectoryStream(dirFile)) {
                         for (Path subFile : subStream) {
                             if (Files.isDirectory(subFile)) {
                                 foundSub = true;
-                                assertTrue(PathUtils.getNumberOfSiblings(subFile) == 1); // d
+                                assertTrue(PathUtils
+                                    .getNumberOfSiblings(subFile) == 1); // d
                             }
                         }
                     }
@@ -467,8 +481,8 @@ public class PathUtilsTest extends TestCase {
                     currentSubDir = currentSubDir.getParent();
                 } else if (Math.random() > 0.95) {
                     // Go one directory up
-                    Path subDirCanidate = currentSubDir.resolve(
-                        TestHelper.createRandomFilename());
+                    Path subDirCanidate = currentSubDir.resolve(TestHelper
+                        .createRandomFilename());
                     // System.err.println("Moving down to "
                     // + currentSubDir.getAbsoluteFile());
                     if (!Files.isRegularFile(subDirCanidate)) {
@@ -526,21 +540,24 @@ public class PathUtilsTest extends TestCase {
         assertTrue(Files.isWritable(base));
         assertTrue(Files.isWritable(base.resolve("b")));
         assertTrue(Files.isWritable(base.resolve("b").resolve("c")));
-        assertTrue(Files.isWritable(base.resolve("b").resolve("c").resolve("d")));
+        assertTrue(Files
+            .isWritable(base.resolve("b").resolve("c").resolve("d")));
 
         PathUtils.recursivePermissionsRead(base);
 
         assertFalse(Files.isWritable(base));
         assertFalse(Files.isWritable(base.resolve("b")));
         assertFalse(Files.isWritable(base.resolve("b").resolve("c")));
-        assertFalse(Files.isWritable(base.resolve("b").resolve("c").resolve("d")));
+        assertFalse(Files.isWritable(base.resolve("b").resolve("c")
+            .resolve("d")));
 
         PathUtils.recursivePermissionsReadWrite(base);
 
         assertTrue(Files.isWritable(base));
         assertTrue(Files.isWritable(base.resolve("b")));
         assertTrue(Files.isWritable(base.resolve("b").resolve("c")));
-        assertTrue(Files.isWritable(base.resolve("b").resolve("c").resolve("d")));
+        assertTrue(Files
+            .isWritable(base.resolve("b").resolve("c").resolve("d")));
 
         PathUtils.recursiveDelete(base);
     }
@@ -609,7 +626,8 @@ public class PathUtilsTest extends TestCase {
 
         Path f = PathUtils.buildFileFromRelativeName(base, "bob");
         assertEquals("Bad file name", "bob", f.getFileName().toString());
-        assertEquals("Bad file name", "build", f.getParent().getFileName().toString());
+        assertEquals("Bad file name", "build", f.getParent().getFileName()
+            .toString());
 
         f = PathUtils.buildFileFromRelativeName(base, "bob/jim");
         assertEquals("Bad file name", "jim", f.getFileName().toString());
@@ -715,5 +733,14 @@ public class PathUtilsTest extends TestCase {
             PathUtils.recursiveDelete(base);
         } catch (IOException e) {
         }
+    }
+
+    public void testRawCopy() throws IOException {
+        Path s = TestHelper.createRandomFile(Paths.get("build/test/x"), 1);
+        Path t = TestHelper.createRandomFile(Paths.get("build/test/x"), 1);
+        PathUtils.rawCopy(s, t);
+
+        assertEquals(Files.size(s), Files.size(t));
+
     }
 }

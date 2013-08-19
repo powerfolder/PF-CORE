@@ -356,15 +356,14 @@ public class PathUtils {
         FileSystemProvider inProv = from.getFileSystem().provider();
 
         try (OutputStream os = outProv.newOutputStream(to);
-            InputStream is = inProv.newInputStream(from))
-        {
+            InputStream is = inProv.newInputStream(from)) {
             int BUFFER_SIZE = 8192;
             byte[] BUFFER = new byte[BUFFER_SIZE];
 
             int ret = is.read(BUFFER);
 
             while (ret != -1) {
-                os.write(BUFFER);
+                os.write(BUFFER, 0, ret);
                 ret = is.read(BUFFER);
             }
         } catch (IOException ioe) {
