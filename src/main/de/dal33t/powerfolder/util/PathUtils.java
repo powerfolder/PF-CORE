@@ -744,33 +744,20 @@ public class PathUtils {
 
     /**
      * See if 'child' is a subdirectory of 'parent', recursively.
-     * <p>
-     * TODO This can be optimized. Just compare String paths!
      * 
      * @param parent
      * @param targetChild
      * @return
      */
     public static boolean isSubdirectory(Path parent, Path targetChild) {
-        if (Files.isDirectory(parent) && Files.isDirectory(targetChild)) {
-            try (DirectoryStream<Path> list = Files.newDirectoryStream(parent)) {
-                for (Path child : list) {
-                    if (Files.isDirectory(child)) {
-                        if (child.equals(targetChild)) {
-                            return true;
-                        }
-                        if (isSubdirectory(child, targetChild)) {
-                            return true;
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                log.info("Error listing directory. " + e.getMessage());
-            }
+        String parentPathString = parent.toAbsolutePath().toString();
+        String childPathString  = targetChild.getParent().toAbsolutePath().toString();
+
+        if (parentPathString == null || childPathString == null) {
             return false;
-        } else {
-            throw new IllegalArgumentException("Can conly compare directories.");
         }
+
+        return childPathString.startsWith(parentPathString);
     }
 
     /**
