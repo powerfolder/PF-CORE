@@ -110,7 +110,7 @@ public class FolderRemoveDialog extends BaseDialog {
                     .getTranslation("folder_remove.dialog.sync_warning");
         } else {
             folderLeaveText = Translation
-                .getTranslation(removeKey, foInfo.name);
+                .getTranslation(removeKey, foInfo.getLocalizedName());
         }
         messageLabel = new JLabel(folderLeaveText);
 
