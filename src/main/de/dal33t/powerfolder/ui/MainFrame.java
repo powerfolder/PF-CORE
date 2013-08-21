@@ -1319,7 +1319,7 @@ public class MainFrame extends PFUIComponent {
                     "action_expand_interface.name"));
             lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_expand_interface.name"));
-        } else if (PreferencesEntry.MINIMAL_PREFERENCES
+        } else if (PreferencesEntry.BEGINNER_MODE
             .getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {

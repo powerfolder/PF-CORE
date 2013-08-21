@@ -256,7 +256,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         {
             expanded.set(true);
             updateWebDAVURL();
-            if (PreferencesEntry.MINIMAL_PREFERENCES
+            if (PreferencesEntry.BEGINNER_MODE
                 .getValueBoolean(getController())
                 && !PreferencesEntry.EXPERT_MODE
                     .getValueBoolean(getController()))
@@ -279,7 +279,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void collapse() {
         expanded.set(false);
         updateWebDAVURL();
-        if (PreferencesEntry.MINIMAL_PREFERENCES
+        if (PreferencesEntry.BEGINNER_MODE
             .getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
@@ -464,7 +464,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
             }
 
-            if (PreferencesEntry.MINIMAL_PREFERENCES
+            if (PreferencesEntry.BEGINNER_MODE
                 .getValueBoolean(getController())
                 && !PreferencesEntry.EXPERT_MODE
                     .getValueBoolean(getController()))
@@ -1060,7 +1060,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
-                if (PreferencesEntry.MINIMAL_PREFERENCES
+                if (PreferencesEntry.BEGINNER_MODE
                     .getValueBoolean(getController())
                     && !PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
@@ -1217,7 +1217,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 nameLabel.setToolTipText(Translation
                     .getTranslation("exp_folder_view.collapse"));
             } else {
-                if (PreferencesEntry.MINIMAL_PREFERENCES
+                if (PreferencesEntry.BEGINNER_MODE
                     .getValueBoolean(getController())
                     && !PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
@@ -1232,7 +1232,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         if (folder == null
-            && PreferencesEntry.MINIMAL_PREFERENCES
+            && PreferencesEntry.BEGINNER_MODE
                 .getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
@@ -1625,7 +1625,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == Type.Local) {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
-                        if (PreferencesEntry.MINIMAL_PREFERENCES
+                        if (PreferencesEntry.BEGINNER_MODE
                             .getValueBoolean(getController())
                             && !PreferencesEntry.EXPERT_MODE
                                 .getValueBoolean(getController()))
