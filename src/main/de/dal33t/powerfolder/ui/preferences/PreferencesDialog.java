@@ -104,7 +104,7 @@ public class PreferencesDialog extends BaseDialog {
     public JComponent getContent() {
         initComponents();
 
-        if (PreferencesEntry.MINIMAL_PREFERENCES
+        if (PreferencesEntry.BEGINNER_MODE
             .getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
@@ -208,6 +208,8 @@ public class PreferencesDialog extends BaseDialog {
             return null;
         }
         Action action = new BaseAction("action_help", getController()) {
+            private static final long serialVersionUID = 100L;
+
             public void actionPerformed(ActionEvent e) {
                 helpAction();
             }

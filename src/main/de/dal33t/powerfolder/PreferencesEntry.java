@@ -55,7 +55,7 @@ public enum PreferencesEntry {
 
     EXPERT_MODE("ExpertMode", false),
 
-    MINIMAL_PREFERENCES("minimal", false),
+    BEGINNER_MODE("BeginnerMode", false),
 
     VIEW_ACHIVE("view.archive", true),
 
@@ -140,11 +140,16 @@ public enum PreferencesEntry {
     /**
      * Show hidden files in the file browser.
      */
-    SHOW_HIDDEN_FILES("show.hidden.files", false);
+    SHOW_HIDDEN_FILES("show.hidden.files", false),
 
+    /**
+     * Enable the UI-Mode selector.
+     * PFC-2385
+     */
+    MODE_SELECT("mode.select.enabled", true);
 
     /** String, Boolean, Integer */
-    private Class type;
+    private Class<?> type;
 
     private String preferencesKey;
     private Object defaultValue;

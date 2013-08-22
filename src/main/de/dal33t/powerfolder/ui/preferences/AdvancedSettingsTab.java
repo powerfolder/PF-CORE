@@ -50,12 +50,11 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
     private JCheckBox useOnlineStorageCB;
     private JCheckBox verboseCB;
     private boolean originalVerbose;
-    private JCheckBox expertModeCB;
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkCB;
     private JCheckBox autoExpandCB;
     private JLabel skinLabel;
-    private JComboBox skinCombo;
+    private JComboBox<String> skinCombo;
 
     private boolean needsRestart;
 
@@ -93,10 +92,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         originalVerbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         verboseCB = SimpleComponentFactory.createCheckBox(Translation.getTranslation("preferences.advanced.verbose"));
         verboseCB.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
-
-        expertModeCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.advanced.expert_mode"));
-        expertModeCB.setSelected(PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
 
         lockUICB = SimpleComponentFactory.createCheckBox(Translation.getTranslation("preferences.advanced.ui_locked"));
         lockUICB.setSelected(ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(getController()));
@@ -137,7 +132,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         if (getUIController().getSkins().length > 1) {
             skinLabel = new JLabel(
                 Translation.getTranslation("preferences.advanced.skin_text"));
-            DefaultComboBoxModel skinComboModel = new DefaultComboBoxModel();
+            DefaultComboBoxModel<String> skinComboModel = new DefaultComboBoxModel<>();
             String skinName = PreferencesEntry.SKIN_NAME
                 .getValueString(getController());
             int selected = -1;
@@ -149,7 +144,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                 }
                 i++;
             }
-            skinCombo = new JComboBox(skinComboModel);
+            skinCombo = new JComboBox<>(skinComboModel);
 
             if (selected > -1) {
                 skinCombo.setSelectedIndex(selected);
@@ -168,7 +163,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -188,9 +183,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
             row += 2;
             builder.add(verboseCB, cc.xy(3, row));
-
-            row += 2;
-            builder.add(expertModeCB, cc.xy(3, row));
 
             row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
@@ -223,12 +215,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             needsRestart = true;
         }
         ConfigurationEntry.VERBOSE.setValue(getController(), Boolean.toString(verboseCB.isSelected()));
-
-        // Advanced
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()) ^ expertModeCB.isSelected()) {
-            needsRestart = true;
-        }
-        PreferencesEntry.EXPERT_MODE.setValue(getController(), expertModeCB.isSelected());
 
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),

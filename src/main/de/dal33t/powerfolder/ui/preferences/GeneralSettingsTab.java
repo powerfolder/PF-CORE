@@ -77,6 +77,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox<String> archiveCleanupCombo;
     private Action cleanupAction;
     private JComboBox<Locale> languageChooser;
+    private JComboBox<String> modeChooser;
 
     private boolean needsRestart;
 
@@ -115,7 +116,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
-
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
                 startWithWindowsBox = new JCheckBox(
                     Translation
@@ -123,7 +123,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 startWithWindowsBox.setSelected(WinUtils.getInstance()
                     .isPFStartup(getController()));
             }
-
         }
 
         if (MacUtils.isSupported()) {
@@ -131,6 +130,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 new BaseAction("action_preferences.dialog.start_with_macosx",
                     getController())
                 {
+                    private static final long serialVersionUID = 100L;
+
                     public void actionPerformed(ActionEvent e) {
                         try {
                             MacUtils.getInstance().setPFStartup(true,
@@ -185,6 +186,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         cleanupAction = new MyCleanupAction(getController());
+
+        // +++ PFC-2385
+        modeChooser = createModeChooser();
+        // END PFC-2385
     }
 
     /**
@@ -194,7 +199,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -265,6 +270,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         archiveCleanupCombo, new JButton(cleanupAction)), cc
                         .xyw(3, row, 2));
             }
+
+            // Start: PFC-2385
+            if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
+                row += 2;
+                builder.add(
+                    new JLabel(Translation
+                        .getTranslation("preferences.general.mode.title")), cc.xy(
+                        1, row));
+                builder.add(modeChooser, cc.xy(3, row));
+            }
+            // End: PFC-2385
+
             panel = builder.getPanel();
         }
         return panel;
@@ -332,7 +349,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Add renderer
         chooser.setRenderer(new DefaultListCellRenderer() {
-            public Component getListCellRendererComponent(JList list,
+            private static final long serialVersionUID = 100L;
+
+            public Component getListCellRendererComponent(JList<?> list,
                 Object value, int index, boolean isSelected,
                 boolean cellHasFocus)
             {
@@ -352,6 +371,28 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         chooser.setSelectedItem(Translation.getActiveLocale());
 
         return chooser;
+    }
+
+    private JComboBox<String> createModeChooser() {
+        JComboBox<String> box = new JComboBox<>();
+        box.addItem(Translation
+            .getTranslation("preferences.general.mode.beginner"));
+        box.addItem(Translation
+            .getTranslation("preferences.general.mode.advanced"));
+        box.addItem(Translation
+            .getTranslation("preferences.general.mode.expert"));
+        boolean expertModeActive = PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
+        boolean miniamlModeActive = PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
+
+        if (miniamlModeActive && !expertModeActive) {
+            box.setSelectedIndex(0);
+        } else if (!miniamlModeActive && !expertModeActive) {
+            box.setSelectedIndex(1);
+        } else if (expertModeActive) {
+            box.setSelectedIndex(2);
+        }
+
+        return box;
     }
 
     private static Component threePanel(Component component1,
@@ -443,6 +484,40 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         }
 
+        // Start: PFC-2385
+        if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
+            boolean expertModeActive = PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
+            boolean miniamlModeActive = PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
+
+            index = modeChooser.getSelectedIndex();
+            switch (index) {
+                case 1 :
+                    PreferencesEntry.EXPERT_MODE.setValue(getController(), false);
+                    PreferencesEntry.BEGINNER_MODE.setValue(getController(), false);
+                    if (expertModeActive || miniamlModeActive) {
+                        needsRestart = true;
+                    }
+                    break;
+                case 2 :
+                    PreferencesEntry.EXPERT_MODE.setValue(getController(), true);
+                    PreferencesEntry.BEGINNER_MODE.setValue(getController(), false);
+                    if (!expertModeActive || miniamlModeActive) {
+                        needsRestart = true;
+                    }
+                    break;
+                case 0 :
+                default :
+                    PreferencesEntry.EXPERT_MODE.setValue(getController(), false);
+                    PreferencesEntry.BEGINNER_MODE.setValue(getController(), true);
+                    if (expertModeActive || !miniamlModeActive) {
+                        needsRestart = true;
+                    }
+                    break;
+            }
+
+            getController().saveConfig();
+        }
+        // End: PFC-2385
     }
 
     // ////////////////
@@ -450,6 +525,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     // ////////////////
 
     private static class MyCleanupAction extends BaseAction {
+
+        private static final long serialVersionUID = 10L;
 
         private MyCleanupAction(Controller controller) {
             super("action_cleanup_archive", controller);
@@ -524,7 +601,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     "preferences.general.exit_behavior_minimize"));
         }
 
-        JComboBox<String> combo = new JComboBox(model);
+        JComboBox<String> combo = new JComboBox<>(model);
         combo.setEnabled(OSUtil.isSystraySupported());
         if (OSUtil.isSystraySupported() &&
                 !PreferencesEntry.QUIT_ON_X.getValueBoolean(
