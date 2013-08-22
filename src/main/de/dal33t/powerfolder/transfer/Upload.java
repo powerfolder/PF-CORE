@@ -197,24 +197,16 @@ public class Upload extends Transfer {
                     }
                     
                     debugState = "Opening file";
-                    Folder f = getFile().getFolder(
-                        getController().getFolderRepository());
-                    if (f.getLocalBase().getFileSystem().provider().getScheme()
-                        .equals("file"))
-                    {
-                        try {
-                            raf = new RandomAccessFile(getFile().getDiskFile(
-                                getController().getFolderRepository()).toFile(), "r");
-                        } catch (FileNotFoundException e) {
-                            throw new TransferException(e);
-                        }
-                    } else {
+                    try {
+                        raf = new RandomAccessFile(getFile().getDiskFile(
+                            getController().getFolderRepository()).toFile(), "r");
+                    } catch (FileNotFoundException e) {
                         try {
                             in = Files.newInputStream(getFile().getDiskFile(
                                 getController().getFolderRepository()));
                             inpos = 0;
-                        } catch (FileNotFoundException e) {
-                            throw new TransferException(e);
+                        } catch (FileNotFoundException fnfe) {
+                            throw new TransferException(fnfe);
                         } catch (IOException ioe) {
                             throw new TransferException(ioe);
                         }
