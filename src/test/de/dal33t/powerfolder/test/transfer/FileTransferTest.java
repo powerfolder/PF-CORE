@@ -1742,7 +1742,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait at least 3000ms
         TestHelper.waitMilliSeconds(3000);
         // Make a modification in bart's file
-        Path tmpCopy = Paths.get(System.getProperty("tmp.dir"),
+        Path tmpCopy = Paths.get(System.getProperty("java.io.tmpdir"),
             fbart.getFileName().toString());
         Files.copy(fbart, tmpCopy);
 //        FileUtils.copyFile(fbart, tmpCopy);
@@ -1789,7 +1789,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
