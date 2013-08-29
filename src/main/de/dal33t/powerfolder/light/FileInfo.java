@@ -137,9 +137,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        if (relativeName.contains("../")) {
+        if (relativeName.contains("/../")) {
             throw new IllegalArgumentException(
-                "relativeName must not contain ../: " + relativeName);
+                "relativeName must not contain /../: " + relativeName);
         }
 
         fileName = relativeName;
@@ -158,9 +158,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     protected FileInfo(FolderInfo folder, String relativeName) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        if (relativeName.contains("../")) {
+        if (relativeName.contains("/../")) {
             throw new IllegalArgumentException(
-                "relativeName must not contain ../: " + relativeName);
+                "relativeName must not contain /../: " + relativeName);
         }
 
         fileName = relativeName;
