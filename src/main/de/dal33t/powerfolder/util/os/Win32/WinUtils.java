@@ -243,8 +243,8 @@ public class WinUtils extends Loggable {
         } else {
             logInfo("Deleting startup link.");
             try {
-                Files.delete(pflnk);
-                Files.delete(pflnkAll);
+                Files.deleteIfExists(pflnk);
+                Files.deleteIfExists(pflnkAll);
 
                 // PFC-2164: Fallback. Also delete binary name links
                 shortCutname = controller.getDistribution().getBinaryName()
@@ -253,12 +253,12 @@ public class WinUtils extends Loggable {
                     shortCutname);
                 pflnkAll = Paths.get(
                     getSystemFolderPath(CSIDL_COMMON_STARTUP, false), shortCutname);
-                
-                Files.delete(pflnk);
-                Files.delete(pflnkAll);
+
+                Files.deleteIfExists(pflnk);
+                Files.deleteIfExists(pflnkAll);
             } catch (IOException ioe) {
                 logInfo("Could not delete files '" + pflnk.toAbsolutePath()
-                    + "' and '" + pflnkAll.toAbsolutePath() + "'");
+                    + "' and '" + pflnkAll.toAbsolutePath() + "'", ioe);
             }
         }
     }
