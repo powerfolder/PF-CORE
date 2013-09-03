@@ -36,4 +36,12 @@ public interface OrganizationDAO extends GenericDAO<Organization> {
      * @return
      */
     List<Organization> getAll(OrganizationFilterModel ofm);
+    
+    /**
+     * Calculate the total size used by the organization.
+     * 
+     * @param org
+     * @return
+     */
+    long getSpaceUsed(Organization org);
 }
