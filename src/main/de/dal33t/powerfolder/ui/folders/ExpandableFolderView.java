@@ -55,7 +55,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
@@ -572,6 +571,9 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperSyncPercentageLabel = new ActionLabel(getController(),
             new MyOpenFilesUnsyncedAction(getController()));
+        if (!ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            upperSyncPercentageLabel.setNeverUnderline(true);
+        }
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
         openFilesInformationButton.setVisible(ConfigurationEntry.FILES_ENABLED
             .getValueBoolean(getController()));

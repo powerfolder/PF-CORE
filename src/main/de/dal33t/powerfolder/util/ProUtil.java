@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
@@ -47,7 +48,10 @@ public class ProUtil {
      * @return
      */
     public static final boolean isZyncro(Controller controller) {
-        return controller.getDistribution().getBinaryName().toLowerCase().contains("zyncro");
+        return controller.getDistribution().getBinaryName().toLowerCase()
+            .contains("zyncro")
+            || controller.getDistribution().getName().toLowerCase()
+                .contains("zyncro");
     }
 
     public static final boolean isServerConfig(Controller controller) {

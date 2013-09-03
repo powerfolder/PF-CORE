@@ -274,22 +274,22 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
             builder.add(openWebInterfaceActionLabel.getUIComponent(),
-                cc.xy(1, 2));
+                cc.xy(1, 1));
         }
-        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 3));
-        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 4));
-        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 5));
+        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 2));
+        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4));
         if (getController().isVerbose()) {
-            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 6));
+            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5));
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 7));
+            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6));
         }
+        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 7));
 
         return builder.getPanel();
     }
@@ -1326,10 +1326,12 @@ public class MainFrame extends PFUIComponent {
             .getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
-            upperMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("main_frame.minimal.change_loging.tip"));
-            lowerMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("main_frame.minimal.change_loging.tip"));
+            if (!ProUtil.isZyncro(getController())) {
+                upperMainTextActionLabel.setToolTipText(Translation
+                    .getTranslation("main_frame.minimal.change_loging.tip"));
+                lowerMainTextActionLabel.setToolTipText(Translation
+                    .getTranslation("main_frame.minimal.change_loging.tip"));
+            }
         } else {
             upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
                     "action_collapse_interface.name"));
@@ -1380,7 +1382,7 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
-                setFrameMode(FrameMode.COMPACT);    
+                setFrameMode(FrameMode.COMPACT);
             } else {
                 setFrameMode(FrameMode.NORMAL);
             }
