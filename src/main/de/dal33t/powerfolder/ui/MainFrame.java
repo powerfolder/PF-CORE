@@ -302,7 +302,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, fill:0:grow, pref");
+            "pref, pref, fill:0:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -319,9 +319,9 @@ public class MainFrame extends PFUIComponent {
         builder.add(inlineInfoCloseButton,
             cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
 
-        builder.add(centralPanel, cc.xyw(1, 2, 4));
+        builder.add(centralPanel, cc.xyw(1, 3, 4));
 
-        builder.add(createMiniPanel(), cc.xyw(1, 3, 4));
+        builder.add(createMiniPanel(), cc.xyw(1, 2, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
