@@ -364,11 +364,15 @@ public class Account implements Serializable {
         }
         return AccessMode.NO_ACCESS;
     }
-    
+
     public boolean isOrganizationAdmin() {
+        if (StringUtils.isBlank(organizationOID)) {
+            return false;
+        }
+
         return hasPermission(new OrganizationAdminPermission(organizationOID));
     }
-    
+
     public boolean isInSameOrganization(Account other) {
         return Util.equals(organizationOID, other.getOrganizationOID());
     }
