@@ -43,5 +43,5 @@ public interface OrganizationDAO extends GenericDAO<Organization> {
      * @param org
      * @return
      */
-    long getSpaceUsed(Organization org);
+    long getSpaceUsed(String orgOID);
 }
