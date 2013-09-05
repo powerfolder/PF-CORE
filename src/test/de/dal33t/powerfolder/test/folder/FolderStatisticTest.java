@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -50,6 +51,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerHomer(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerMarge(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerMaggie(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);
     }
 

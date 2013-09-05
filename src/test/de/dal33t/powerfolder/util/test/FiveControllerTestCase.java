@@ -289,18 +289,23 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
                 return "Completed downloads. Homer: "
                     + getContollerHomer().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + h
                     + ", Bart: "
                     + getContollerBart().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + b
                     + ", Marge: "
                     + getContollerMarge().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + mar
                     + ", Lisa: "
                     + getContollerLisa().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + l
                     + ", Maggie: "
                     + getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size();
+                        .getCompletedDownloadsCollection().size()
+                    + "/" + mag;
             }
         });
     }

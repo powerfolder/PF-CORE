@@ -772,10 +772,8 @@ public class TransferManager extends PFComponent {
             // TODO PREVENT further uploads of this file unless it's "there"
             // Search for active uploads of the file and break them
             boolean abortedUL;
-            int tries = 0;
             do {
                 abortedUL = abortUploadsOf(fInfo);
-                tries++;
                 if (abortedUL) {
                     try {
                         Thread.sleep(50);

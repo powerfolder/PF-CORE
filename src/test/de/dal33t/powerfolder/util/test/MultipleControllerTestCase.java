@@ -209,8 +209,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected static boolean tryToConnect(final Controller cont1,
         final Controller cont2)
     {
-        Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
-        Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
+        Reject.ifFalse(cont1.isStarted(), "Controller1 not started yet");
+        Reject.ifFalse(cont2.isStarted(), "Controller2 not started yet");
 
         if (cont1.getNodeManager().getConnectedNodes()
             .contains(cont2.getMySelf()))
