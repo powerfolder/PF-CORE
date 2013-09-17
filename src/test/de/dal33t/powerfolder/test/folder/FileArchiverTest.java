@@ -53,6 +53,9 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(Files.exists(expected));
         assertEquals(Files.getLastModifiedTime(expected).toMillis(), fib
             .getModifiedDate().getTime());
+        
+        FileInfo fia = fa.getArchivedFilesInfos(fib).get(0);
+        assertEquals(fib.getRelativeName(), fia.getRelativeName());
     }
 
     public void testBackupOnDownload() {
