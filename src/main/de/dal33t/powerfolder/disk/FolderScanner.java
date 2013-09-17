@@ -652,11 +652,7 @@ public class FolderScanner extends PFComponent {
      * calculates the subdir of this file relative to the location of the folder
      */
     private static String getCurrentDirName(Folder folder, Path subFile) {
-        Path file = subFile.getFileName();
-        if (file == null) {
-            return "";
-        }
-        String fileName = file.toString();
+        String fileName = subFile.getFileName().toString();
         Path parent = subFile.getParent();
         Path folderBase = folder.getLocalBase();
         while (!folderBase.equals(parent)) {
