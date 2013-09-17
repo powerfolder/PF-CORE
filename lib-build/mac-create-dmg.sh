@@ -3,7 +3,7 @@
 DMG_NAME=$4_v$3
 
 echo "Creating uncompressed disk image: "
-hdiutil create -size 160m -fs HFS+ -volname "$2" $1/$DMG_NAME-temp.dmg
+hdiutil create -size 250m -fs HFS+ -volname "$2" $1/$DMG_NAME-temp.dmg
 
 echo "Mounting uncompressed disk image: "
 hdiutil attach $1/$DMG_NAME-temp.dmg -readwrite -mount required
