@@ -49,4 +49,12 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @param groups
      */
     void store(Group... groups);
+    
+    /**
+     * Get the number of groups, that belong to an organization.
+     * 
+     * @param org
+     * @return
+     */
+    int countGroupsWithOrganization(Organization org);
 }
