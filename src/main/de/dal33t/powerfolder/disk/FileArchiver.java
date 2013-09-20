@@ -366,8 +366,8 @@ public class FileArchiver {
      */
     private Path getOldArchiveTarget(FileInfo fileInfo) {
         return archiveDirectory.resolve(FileInfoFactory
-            .encodeIllegalChars(fileInfo.getRelativeName() + "_K_"
-                + fileInfo.getVersion()));
+            .encodeIllegalChars(fileInfo.getRelativeName()) + "_K_"
+                + fileInfo.getVersion());
     }
 
     private String getFileInfoName(Path fileInArchive) {
@@ -378,7 +378,10 @@ public class FileArchiver {
         String fn = FileInfoFactory.decodeIllegalChars(file.getFileName()
             .toString());
         int i = fn.lastIndexOf("_K_");
-        if (i >= 0) {
+        int ext = fn.lastIndexOf(".");
+        if (i >= 0 && ext >= 0) {
+            fn = fn.substring(0, i) + fn.substring(ext);
+        } else if (i >= 0 && ext < 0) {
             fn = fn.substring(0, i);
         }
         Path parent = file.getParent();
