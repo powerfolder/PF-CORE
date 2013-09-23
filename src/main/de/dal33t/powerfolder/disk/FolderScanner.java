@@ -762,7 +762,9 @@ public class FolderScanner extends PFComponent {
                 }
 
                 while (it.hasNext()) {
-                    Path path = it.next();
+                    // SYNC-180: Use the absolute path, otherwise .equals will return false
+                    // later on.
+                    Path path = it.next().toAbsolutePath();
                     if (failure) {
                         return false;
                     }
