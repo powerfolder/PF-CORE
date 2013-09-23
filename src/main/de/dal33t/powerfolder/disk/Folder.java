@@ -1697,6 +1697,9 @@ public class Folder extends PFComponent {
                     dao.store(null, files);
                 }
 
+                // Ok has own database
+                hasOwnDatabase = true;
+
                 // read them always ..
                 MemberInfo[] members1 = (MemberInfo[]) in.readObject();
                 // Do not load members
@@ -1763,9 +1766,6 @@ public class Folder extends PFComponent {
                 logFiner(e);
                 return false;
             }
-
-            // Ok has own database
-            hasOwnDatabase = true;
         }
 
         return true;
@@ -2475,8 +2475,15 @@ public class Folder extends PFComponent {
                 // FIX for #924
                 waitForScan();
 
-                Message[] filelistMsgs = FileList.create(this,
-                    supportExternalizable(member));
+                Message[] filelistMsgs;
+                if (hasOwnDatabase) {
+                    filelistMsgs = FileList.create(this,
+                        supportExternalizable(member));
+                } else {
+                    filelistMsgs = new Message[1];
+                    filelistMsgs[0] = FileList.createEmpty(getInfo(),
+                        supportExternalizable(member));
+                }
                 member.sendMessagesAsynchron(filelistMsgs);
             }
             if (!wasMember) {
