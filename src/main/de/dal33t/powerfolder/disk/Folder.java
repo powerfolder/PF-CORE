@@ -2115,6 +2115,10 @@ public class Folder extends PFComponent {
             // Ok in sync
             return false;
         }
+        if (diskItemFilter.isExcluded(fileInfo)) {
+            // Is excluded from sync. Don't delete. Might be meta-data.
+            return false;
+        }
         getFolderWatcher().addIgnoreFile(fileInfo);
         try {
             if (newestVersion == null) {
