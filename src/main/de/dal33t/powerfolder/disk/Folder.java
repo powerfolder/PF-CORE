@@ -802,8 +802,7 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-            if (!PathUtils.isZyncroPath(targetFile))
-            {
+            if (!PathUtils.isZyncroPath(targetFile)) {
                 if (Files.exists(targetFile)) {
                     // if file was a "newer file" the file already exists here
                     // Using local var because of possible race condition!!
@@ -2969,11 +2968,11 @@ public class Folder extends PFComponent {
 
                     UserPrincipal owner = null;
 
-                    if (PathUtils.isZyncroPath(localCopy))
-                    {
+                    if (PathUtils.isZyncroPath(localCopy)) {
                         try {
-                            String username = member.getAccountInfo()
-                                .getUsername();
+                            String username = remoteFile.getModifiedBy()
+                                .getNode(getController(), true)
+                                .getAccountInfo().getUsername();
                             owner = localCopy.getFileSystem()
                                 .getUserPrincipalLookupService()
                                 .lookupPrincipalByName(username);
@@ -2981,7 +2980,7 @@ public class Folder extends PFComponent {
                             localCopy = Files.setOwner(localCopy, owner);
                         } catch (Exception e) {
                             logInfo("Could not set Owner on '"
-                                + localCopy.toString() + ": " + e.getMessage());
+                                + localCopy.toString() + ": " + e.getMessage(), e);
                         }
                     }
 
