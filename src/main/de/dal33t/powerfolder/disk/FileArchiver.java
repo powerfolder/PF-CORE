@@ -445,8 +445,7 @@ public class FileArchiver {
     public boolean hasArchivedFileInfo(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
-        Path subdirectory = PathUtils.buildFileFromRelativeName(
-            archiveDirectory,
+        Path subdirectory = archiveDirectory.resolve(
             FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
             .getParent();
         if (Files.notExists(subdirectory)) {
@@ -457,6 +456,13 @@ public class FileArchiver {
             .newDirectoryStream(subdirectory)) {
             String fn = FileInfoFactory.encodeIllegalChars(fileInfo
                 .getFilenameOnly());
+
+            // get rid of the extension, if present
+            int ind = fn.lastIndexOf('.');
+            if (ind > -1) {
+                fn = fn.substring(0, ind);
+            }
+
             for (Path file : files) {
                 if (file.getFileName().toString().startsWith(fn)) {
                     return true;
