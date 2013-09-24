@@ -219,6 +219,23 @@ public class PathUtils {
     }
 
     /**
+     * PFC-2374 & SYNC-180
+     * Workaround for JNotify on Mac to get the "real" file name.
+     * 
+     * @param rootPath
+     * @param name
+     * @return
+     */
+    public static String getDiskFileName(String rootPath, String name) {
+        if (!OSUtil.isMacOS()) {
+            return name;
+        }
+        Path p = Paths.get(rootPath).relativize(
+            Paths.get(rootPath, name).toAbsolutePath());
+        return p.toString();
+    }
+
+    /**
      * Copies a file
      * 
      * @param from
