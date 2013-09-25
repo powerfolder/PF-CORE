@@ -436,7 +436,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertTrue(Files.exists(file));
             assertEquals(fileAtLisa.getSize(), Files.size(file));
             assertEquals(fileAtLisa.getModifiedDate().getTime(),
-                Files.getLastModifiedTime(file));
+                Files.getLastModifiedTime(file).toMillis());
         }
 
         TestHelper.waitForCondition(2, new ConditionWithMessage() {
