@@ -1312,31 +1312,35 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void setLinkTooltips() {
+        // SYNC-197
+        if (ProUtil.isZyncro(getController())) {
+            upperMainTextActionLabel.setToolTipText("");
+            lowerMainTextActionLabel.setToolTipText("");
+            return;
+        }
         if (getController().isPaused()) {
-            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_resume_sync.description"));
-            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_resume_sync.description"));
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_resume_sync.description"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_resume_sync.description"));
         } else if (frameMode == FrameMode.COMPACT) {
-            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_expand_interface.name"));
-            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_expand_interface.name"));
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_expand_interface.name"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_expand_interface.name"));
         } else if (PreferencesEntry.BEGINNER_MODE
             .getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
-            if (!ProUtil.isZyncro(getController())) {
-                upperMainTextActionLabel.setToolTipText(Translation
-                    .getTranslation("main_frame.minimal.change_loging.tip"));
-                lowerMainTextActionLabel.setToolTipText(Translation
-                    .getTranslation("main_frame.minimal.change_loging.tip"));
-            }
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("main_frame.minimal.change_loging.tip"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("main_frame.minimal.change_loging.tip"));
         } else {
-            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_collapse_interface.name"));
-            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_collapse_interface.name"));
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_collapse_interface.name"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_collapse_interface.name"));
         }
     }
 
