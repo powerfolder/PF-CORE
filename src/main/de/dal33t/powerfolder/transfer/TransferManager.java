@@ -2506,12 +2506,9 @@ public class TransferManager extends PFComponent {
                 + transferFile.toAbsolutePath() + " does not exists");
             return;
         }
-        try {
-            FileInputStream fIn = new FileInputStream(transferFile
-                .toAbsolutePath().toString());
-            ObjectInputStream oIn = new ObjectInputStream(fIn);
+        try (ObjectInputStream oIn = new ObjectInputStream(new FileInputStream(
+            transferFile.toAbsolutePath().toString()))) {
             List<?> storedDownloads = (List<?>) oIn.readObject();
-            oIn.close();
             // Reverse to restore in right order
             Collections.reverse(storedDownloads);
 
