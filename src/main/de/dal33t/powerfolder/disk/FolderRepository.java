@@ -1588,10 +1588,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             for (Path dir : directories) {
                 boolean known = false;
                 for (Folder folder : getFolders()) {
-                    if (folder.getName().equals(dir.getFileName().toString())) {
-                        known = true;
-                        break;
-                    }
                     Path localBase = folder.getLocalBase();
                     if (localBase.equals(dir)
                         || localBase.toAbsolutePath().startsWith(
