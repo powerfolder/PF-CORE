@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -50,7 +49,6 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
  * Provides basic testcase-setup with N controllers.
