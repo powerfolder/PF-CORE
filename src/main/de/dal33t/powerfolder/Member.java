@@ -1080,8 +1080,17 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
-            Message[] filelistMsgs = FileList.create(folder,
-                folder.supportExternalizable(this));
+
+            Message[] filelistMsgs;
+            if (folder.hasOwnDatabase()) {
+                filelistMsgs = FileList.create(folder,
+                    folder.supportExternalizable(this));
+            } else {
+                filelistMsgs = new Message[1];
+                filelistMsgs[0] = FileList.createEmpty(folder.getInfo(),
+                    folder.supportExternalizable(this));
+            }
+
             for (Message message : filelistMsgs) {
                 try {
                     sendMessage(message);
@@ -1350,6 +1359,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         int expectedTime = -1;
         long start = System.currentTimeMillis();
         try {
+            
             if (getController().getOSClient().isPrimaryServer(this)) {
                 ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(true);
             }
