@@ -329,30 +329,105 @@ For creation of the installer:
 			<arg value="${installer.exe}" />
 		</exec>
 	</target>
-	
+
+    <target name="appSign" if="isMac" unless="NoSign" description="Code sign the mac app">
+        <echo>
+            Sign ${dist.dir}/${dist.name}.app
+        </echo>
+
+        <exec dir="/usr/bin" executable="codesign" osfamily="mac">
+            <arg value="-f" />
+            <arg value="-s" />
+            <arg value="${AppSignAlias}" />
+            <arg value="${dist.dir}/${dist.name}.app" />
+        </exec>
+    </target>
+
 	<target name="jarbundler" depends="jar" if="isMac" description="Builds the MacOS JAR Bundle">
-		<taskdef name="jarbundler" 
-		         classname="net.sourceforge.jarbundler.JarBundler" />
-		
-		<jarbundler dir="${dist.dir}"
-		            name="${dist.name}"
-		            mainclass="${mainclass}" 
-		            jar="${dist.dir}/${jar.name}"
-					icon="${distribution.installer.dir}/files/Icon128x128.icns"
-					jvmversion="1.6+"
-					version="${versionString}"
-					vmoptions="-Xms16m -Xmx512m -XX:MaxPermSize=256m -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10"
-		/>
-		<tar destfile="${dist.dir}/${distribution.name}_v${versionString}_Mac.tar.gz" compression="gzip">
-			<tarfileset dir="${dist.dir}" filemode="744">
-				<include name="${dist.name}.app/Contents/MacOS/**/*" />
-			</tarfileset>
-			<fileset dir="${dist.dir}">
-				<include name="${dist.name}.app/**/*" />
-				<exclude name="${dist.name}.app/Contents/MacOS/**/*" />
-			</fileset>
-		</tar>
-		<delete file="${dist.dir}/${jar.name}" />
+        <taskdef name="bundleapp"
+            classname="com.oracle.appbundler.AppBundlerTask" />
+
+        <bundleapp outputDirectory="${dist.dir}"
+                   name="${dist.name}"
+                   displayname="${dist.name}"
+                   icon="${distribution.installer.dir}/files/Icon128x128.icns"
+                   identifier="${mainclass}"
+                   shortVersion="${versionString}"
+                   mainclassname="${mainclass}">
+
+            <classpath file="${dist.dir}/${jar.name}" />
+
+            <runtime dir="${java.env}" />
+
+            <option value="-Xms16m" />
+            <option value="-Xmx1g" />
+            <option value="-XX:NewRatio=8" />
+            <option value="-XX:MinHeapFreeRatio=5" />
+            <option value="-XX:MaxHeapFreeRatio=10" />
+            <option value="-Xdock:name=${dist.name}" />
+        </bundleapp>
+
+        <antcall target="appSign" />
+
+        <property name="bundle.name" value="${dist.dir}/${dist.binaryname}_v${versionString}" />
+
+        <exec dir="/usr/bin" executable="hdiutil" osfamily="mac">
+            <arg value="create" />
+            <arg value="-size" />
+            <arg value="250m" />
+            <arg value="-fs" />
+            <arg value="HFS+" />
+            <arg value="-volname" />
+            <arg value="${dist.name}" />
+            <arg value="${bundle.name}-temp.dmg" />
+        </exec>
+
+        <exec dir="/usr/bin" executable="hdiutil" osfamily="mac">
+            <arg value="attach" />
+            <arg value="${bundle.name}-temp.dmg" />
+            <arg value="-readwrite" />
+            <arg value="-mount" />
+            <arg value="required" />
+        </exec>
+
+        <copy todir="/Volumes/${dist.name}/">
+            <fileset dir="${dist.dir}">
+                <include name="*.app/**" />
+            </fileset>
+            <fileset file="${powerfolder.project.dir}/lib-build/Uninstall.command" />
+        </copy>
+
+        <symlink link="/Volumes/${dist.name}/Applications" resource="/Volumes/Applications" />
+
+        <exec dir="/bin" executable="chmod" osfamily="mac">
+            <arg value="u+x" />
+            <arg value="/Volumes/${dist.name}/${dist.name}.app/Contents/MacOS/JavaAppLauncher" />
+        </exec>
+
+        <exec dir="/bin" executable="chmod" osfamily="mac">
+            <arg value="u+x" />
+            <arg value="/Volumes/${dist.name}/Uninstall.command" />
+        </exec>
+
+        <exec dir="/usr/bin" executable="hdiutil" osfamily="mac">
+            <arg value="detach" />
+            <arg value="/Volumes/${dist.name}" />
+        </exec>
+
+        <exec dir="/usr/bin" executable="hdiutil" osfamily="mac">
+            <arg value="convert" />
+            <arg value="${bundle.name}-temp.dmg" />
+            <arg value="-format" />
+            <arg value="UDZO" />
+            <arg value="-imagekey" />
+            <arg value="zlib-level=9" />
+            <arg value="-o" />
+            <arg value="${bundle.name}.dmg" />
+        </exec>
+
+        <delete dir="${dist.dir}/${dist.name}.app" />
+        <delete file="${bundle.name}-temp.dmg" />
+        <delete file="${dist.dir}/${dist.name}.jar" />
 	</target>
 	
 	<target name="dist-client" description="Builds all client distribution files" depends="jarbundler, installer"/>
