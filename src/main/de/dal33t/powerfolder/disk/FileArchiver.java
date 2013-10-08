@@ -511,6 +511,20 @@ public class FileArchiver {
         return Collections.unmodifiableList(list);
     }
 
+    public List<Path> getArchivedFiles(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        Path subdirectory = archiveDirectory.resolve(
+            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
+            .getParent();
+        if (Files.notExists(subdirectory)) {
+            return Collections.emptyList();
+        }
+
+        Path target = getArchiveTarget(fileInfo);
+        return getArchivedFiles(target.getParent(),
+            FileInfoFactory.encodeIllegalChars(fileInfo.getFilenameOnly()));
+    }
+    
     /**
      * Comparator for comparing file versions.
      */
