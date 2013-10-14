@@ -109,12 +109,12 @@ public enum Feature {
     /**
      * Organize users into groups
      */
-    GROUPS(false),
+    GROUPS(true),
 
     /**
      * Multitenancy
      */
-    ORGANIZATIONS(false);
+    ORGANIZATIONS(true);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
