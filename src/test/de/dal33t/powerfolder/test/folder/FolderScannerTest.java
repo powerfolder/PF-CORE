@@ -19,7 +19,8 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 import de.dal33t.powerfolder.Feature;
@@ -29,7 +30,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import de.schlichtherle.truezip.file.TFile;
 
 public class FolderScannerTest extends ControllerTestCase {
 
@@ -53,15 +53,14 @@ public class FolderScannerTest extends ControllerTestCase {
             .getFolderRepository().getFolderScanner();
         // getController().setPaused(false);
 
-        File file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
-        assertTrue(file1.exists());
-        File file2 = TestHelper
-            .createRandomFile(new TFile(
-                getFolder().getLocalBase(),
+        Path file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
+        assertTrue(Files.exists(file1));
+        Path file2 = TestHelper
+            .createRandomFile(getFolder().getLocalBase().resolve(
                 "deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore"));
-        assertTrue(file2.exists());
-        File file3 = TestHelper.createRandomFile(getFolder().getLocalBase());
-        File file4 = TestHelper.createRandomFile(getFolder().getLocalBase());
+        assertTrue(Files.exists(file2));
+        Path file3 = TestHelper.createRandomFile(getFolder().getLocalBase());
+        Path file4 = TestHelper.createRandomFile(getFolder().getLocalBase());
 
         ScanResult result = scanFolderWaitIfBusy(folderScanner);
         getController().setPaused(true);
@@ -78,7 +77,7 @@ public class FolderScannerTest extends ControllerTestCase {
         assertEquals(4 + 20, getFolder().getKnownItemCount());
 
         // delete a file
-        file1.delete();
+        Files.delete(file1);
 
         getController().setPaused(false);
         result = scanFolderWaitIfBusy(folderScanner);
@@ -106,14 +105,14 @@ public class FolderScannerTest extends ControllerTestCase {
             1, result.getChangedFiles().size());
 
         // rename a file
-        assertTrue(file3
-            .renameTo(new File(file3.getParentFile(), "newname.txt")));
+        Files.move(file3, file3.getParent().resolve("newname.txt"));
 
         // move a file
-        File newFileLocation = new File(file4.getParentFile(),
-            "/sub/newname.txt");
-        newFileLocation.getParentFile().mkdirs();
-        assertTrue(file4.renameTo(newFileLocation));
+        Path newFileLocation = file4.getParent().resolve(
+            "sub/newname.txt");
+        Files.createDirectories(newFileLocation.getParent());
+        Files.move(file4, newFileLocation);
+
         result = scanFolderWaitIfBusy(folderScanner);
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 

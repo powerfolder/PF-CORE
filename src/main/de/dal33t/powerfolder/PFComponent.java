@@ -53,13 +53,22 @@ public abstract class PFComponent extends Loggable {
     }
 
     /**
-     * Returns the controller where this componentent belongs to, gives acces to
-     * all PowerFolder core classes.
+     * Returns the controller where this component belongs to, gives access to
+     * all PowerFolder core components.
      * 
      * @return the controller
      */
     public Controller getController() {
         return controller;
+    }
+
+    /**
+     * Convenience method for <code>getController().getMySelf()</code>
+     * 
+     * @return myself
+     */
+    public Member getMySelf() {
+        return controller.getMySelf();
     }
 
     // Property change event codes ********************************************

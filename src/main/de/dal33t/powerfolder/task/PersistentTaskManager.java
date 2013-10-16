@@ -15,18 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: PersistentTaskManager.java 17041 2011-11-26 22:33:00Z tot $
  */
 package de.dal33t.powerfolder.task;
 
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -67,11 +66,15 @@ public class PersistentTaskManager extends PFComponent {
      * 
      * @return the tasklist-file
      */
-    private File getTaskFile() {
+    private Path getTaskFile() {
         String filename = getController().getConfigName() + ".tasks";
-        File taskFile = new File(Controller.getMiscFilesLocation(), filename);
-        new File(taskFile.getParent()).mkdirs();
-        return taskFile;
+        Path taskFile = Controller.getMiscFilesLocation().resolve(filename);
+        try {
+            Files.createDirectories(taskFile.getParent());
+            return taskFile;
+        } catch (IOException ioe) {
+            return null;
+        }
     }
 
     /**
@@ -80,12 +83,10 @@ public class PersistentTaskManager extends PFComponent {
     public synchronized void start() {
         shuttingDown = false;
         pendingTasks = new Vector<PersistentTask>();
-        File taskfile = getTaskFile();
-        if (taskfile.exists()) {
+        Path taskfile = getTaskFile();
+        if (Files.exists(taskfile)) {
             logFine("Loading taskfile: " + taskfile);
-            ObjectInputStream oin = null;
-            try {
-                oin = new ObjectInputStream(new FileInputStream(taskfile));
+            try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(taskfile))) {
                 tasks = new LinkedList<PersistentTask>();
                 PersistentTask task = null;
                 while (true) {
@@ -113,14 +114,6 @@ public class PersistentTaskManager extends PFComponent {
                 logSevere("IOException", e);
             } catch (ClassCastException e) {
                 logSevere("ClassCastException", e);
-            } finally {
-                if (oin != null) {
-                    try {
-                        oin.close();
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
-                }
             }
         } else {
             logInfo("No taskfile found - probably first start of PF.");
@@ -159,11 +152,9 @@ public class PersistentTaskManager extends PFComponent {
                 logSevere("RuntimeException", e);
             }
         }
-        File taskFile = getTaskFile();
-        ObjectOutputStream oout = null;
-        try {
+        Path taskFile = getTaskFile();
+        try (ObjectOutputStream oout = new ObjectOutputStream(Files.newOutputStream(taskFile))) {
             logInfo("There are " + tasks.size() + " tasks not completed yet.");
-            oout = new ObjectOutputStream(new FileOutputStream(taskFile));
             for (PersistentTask task : tasks) {
                 oout.writeUnshared(task);
             }
@@ -171,15 +162,6 @@ public class PersistentTaskManager extends PFComponent {
             logSevere("FileNotFoundException", e);
         } catch (IOException e) {
             logSevere("IOException", e);
-        } finally {
-            if (oout != null) {
-                try {
-                    oout.close();
-                } catch (IOException e) {
-                    logSevere("IOException", e);
-                }
-            }
-            tasks = null;
         }
     }
 

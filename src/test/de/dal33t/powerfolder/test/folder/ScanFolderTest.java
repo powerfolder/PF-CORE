@@ -19,8 +19,10 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,7 +34,7 @@ import de.dal33t.powerfolder.disk.FolderWatcher;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -63,7 +65,7 @@ public class ScanFolderTest extends ControllerTestCase {
     public void testRootFileInfo() {
         FileInfo fInfo = FileInfoFactory.lookupInstance(getFolder().getInfo(),
             "");
-        File file = fInfo.getDiskFile(getController().getFolderRepository());
+        Path file = fInfo.getDiskFile(getController().getFolderRepository());
         assertNotNull(file);
         assertEquals(getFolder().getLocalBase(), file);
 
@@ -76,12 +78,14 @@ public class ScanFolderTest extends ControllerTestCase {
         }
     }
 
-    public void testScanChangedFileMethod() {
-        File file = TestHelper.createRandomFile(getFolder().getLocalBase(),
+    public void testScanChangedFileMethod() throws IOException {
+        Path file = TestHelper.createRandomFile(getFolder().getLocalBase(),
             10 + (int) (Math.random() * 100));
 
         FileInfo lookup = FileInfoFactory.lookupInstance(getFolder(), file);
         FileInfo fileInfo = getFolder().scanChangedFile(lookup);
+        assertFalse(fileInfo.isDeleted());
+        assertTrue(Files.exists(file));
         assertNotNull(fileInfo);
         assertNotSame(lookup, fileInfo);
         assertTrue(fileInfo.toDetailString(), lookup.equals(fileInfo));
@@ -99,8 +103,7 @@ public class ScanFolderTest extends ControllerTestCase {
             lookup.isVersionDateAndSizeIdentical(fileInfo));
         assertFileMatch(file, fileInfo);
         assertEquals(1, fileInfo.getVersion());
-
-        assertTrue(file.delete());
+        Files.delete(file);
         fileInfo = getFolder().scanChangedFile(lookup);
         assertNotNull(fileInfo);
         assertNotSame(lookup, fileInfo);
@@ -124,8 +127,8 @@ public class ScanFolderTest extends ControllerTestCase {
      * Tests the scan of one single file, including updates, deletion and
      * restore of the file.
      */
-    public void testScanSingleFile() {
-        File file = TestHelper.createRandomFile(getFolder().getLocalBase(),
+    public void testScanSingleFile() throws IOException {
+        Path file = TestHelper.createRandomFile(getFolder().getLocalBase(),
             10 + (int) (Math.random() * 100));
 
         scanFolder();
@@ -152,16 +155,16 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
 
         // Delete.
-        assertTrue(file.delete());
+        Files.delete(file);
         scanFolder();
-        assertTrue(!file.exists());
+        assertTrue(Files.notExists(file));
         assertTrue(getFolder().getKnownFiles().iterator().next().isDeleted());
         assertEquals(3, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
 
         // Restore.
-        TestHelper.createRandomFile(file.getParentFile(), file.getName());
+        TestHelper.createRandomFile(file.getParent(), file.getFileName().toString());
         scanFolder();
         assertEquals(4, getFolder().getKnownFiles().iterator().next()
             .getVersion());
@@ -186,14 +189,14 @@ public class ScanFolderTest extends ControllerTestCase {
     /**
      * #1531 -Mixed case names of filenames and sub directories cause problems
      */
-    public void testScanChangedSubdirName() {
+    public void testScanChangedSubdirName() throws IOException {
         if (!OSUtil.isWindowsSystem()) {
             return;
         }
-        File file = TestHelper.createRandomFile(new File(getFolder()
-            .getLocalBase(), "subdir"), 10 + (int) (Math.random() * 100));
-        File sameName = new File(getFolder().getLocalBase(), "SUBDIR/"
-            + file.getName());
+        Path file = TestHelper.createRandomFile(getFolder()
+            .getLocalBase().resolve("subdir"), 10 + (int) (Math.random() * 100));
+        Path sameName = getFolder().getLocalBase().resolve("SUBDIR/"
+            + file.getFileName());
 
         scanFolder();
         // File + dir
@@ -204,7 +207,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         assertFileMatch(sameName, getFolder().getKnownFiles().iterator().next());
 
-        assertTrue(file.renameTo(sameName));
+        Files.move(file, sameName);
         scanFolder();
 
         assertEquals(2, getFolder().getKnownItemCount());
@@ -231,43 +234,45 @@ public class ScanFolderTest extends ControllerTestCase {
      * Tests scanning of a file that only changes the last modification date,
      * but not the size.
      */
-    public void testScanLastModifiedOnlyChanged() {
-        File file = TestHelper.createRandomFile(getFolder().getLocalBase());
-        long s = file.length();
+    public void testScanLastModifiedOnlyChanged() throws IOException {
+        Path file = TestHelper.createRandomFile(getFolder().getLocalBase());
+        long s = Files.size(file);
         scanFolder();
         assertEquals(1, getFolder().getKnownItemCount());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         assertEquals(0, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
-        assertEquals(s, file.length());
+        assertEquals(s, Files.size(file));
         // 20 secs in future
-        file.setLastModified(file.lastModified() + 1000L * 20);
+        Files.setLastModifiedTime(file, FileTime.fromMillis(Files
+            .getLastModifiedTime(file).toMillis() + 1000L * 20));
         scanFolder();
         assertEquals(1, getFolder().getKnownItemCount());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         assertEquals(1, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
-        assertEquals(s, file.length());
-        // 100 seks into the past
-        file.setLastModified(file.lastModified() - 1000L * 100);
+        assertEquals(s, Files.size(file));
+        // 100 secs into the past
+        Files.setLastModifiedTime(file, FileTime.fromMillis(Files
+            .getLastModifiedTime(file).toMillis() - 1000L * 100));
         scanFolder();
         assertEquals(1, getFolder().getKnownItemCount());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         assertEquals(2, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
-        assertEquals(s, file.length());
+        assertEquals(s, Files.size(file));
     }
 
     /**
      * Tests the scan of a file that doesn't has changed the last modification
      * date, but the size only.
      */
-    public void testScanSizeOnlyChanged() {
-        File file = TestHelper.createRandomFile(getFolder().getLocalBase());
-        long lm = file.lastModified();
+    public void testScanSizeOnlyChanged() throws IOException {
+        Path file = TestHelper.createRandomFile(getFolder().getLocalBase());
+        long lm = Files.getLastModifiedTime(file).toMillis();
         scanFolder();
         assertEquals(1, getFolder().getKnownItemCount());
         assertEquals(0, getFolder().getKnownFiles().iterator().next()
@@ -278,7 +283,7 @@ public class ScanFolderTest extends ControllerTestCase {
             .getModifiedDate().getTime());
         // 20 secs in future
         TestHelper.changeFile(file);
-        file.setLastModified(lm);
+        Files.setLastModifiedTime(file, FileTime.fromMillis(lm));
         scanFolder();
         assertEquals(1, getFolder().getKnownItemCount());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
@@ -289,7 +294,7 @@ public class ScanFolderTest extends ControllerTestCase {
             .getModifiedDate().getTime());
         // 100 seks into the past
         TestHelper.changeFile(file);
-        file.setLastModified(lm);
+        Files.setLastModifiedTime(file, FileTime.fromMillis(lm));
         scanFolder();
         assertEquals(1, getFolder().getKnownItemCount());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
@@ -303,11 +308,11 @@ public class ScanFolderTest extends ControllerTestCase {
     /**
      * Tests the scan of one single file in a subdirectory.
      */
-    public void testScanSingleFileInSubdir() {
-        File subdir = new File(getFolder().getLocalBase(),
+    public void testScanSingleFileInSubdir() throws IOException {
+        Path subdir = getFolder().getLocalBase().resolve(
             "subDir1/SUBDIR2.ext");
-        assertTrue(subdir.mkdirs());
-        File file = TestHelper.createRandomFile(subdir,
+        Files.createDirectories(subdir);
+        Path file = TestHelper.createRandomFile(subdir,
             10 + (int) (Math.random() * 100));
 
         scanFolder();
@@ -324,16 +329,17 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
 
         // Delete.
-        assertTrue(file.delete());
+        Files.delete(file);
         scanFolder();
-        assertTrue(!file.exists());
+        assertTrue(Files.notExists(file));
         assertTrue(getFolder().getKnownFiles().iterator().next().isDeleted());
         assertEquals(2, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
 
         // Restore.
-        TestHelper.createRandomFile(file.getParentFile(), file.getName());
+        TestHelper.createRandomFile(file.getParent(), file.getFileName()
+            .toString());
         scanFolder();
         assertEquals(3, getFolder().getKnownFiles().iterator().next()
             .getVersion());
@@ -350,11 +356,11 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(3, getFolder().getKnownItemCount());
     }
 
-    public void testScanFileMovement() {
-        File subdir = new File(getFolder().getLocalBase(),
+    public void testScanFileMovement() throws IOException {
+        Path subdir = getFolder().getLocalBase().resolve(
             "subDir1/SUBDIR2.ext");
-        assertTrue(subdir.mkdirs());
-        File srcFile = TestHelper.createRandomFile(subdir,
+        Files.createDirectories(subdir);
+        Path srcFile = TestHelper.createRandomFile(subdir,
             10 + (int) (Math.random() * 100));
 
         scanFolder();
@@ -364,9 +370,9 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFileMatch(srcFile, getFolder().getKnownFiles().iterator().next());
 
         // Move file one subdirectory up
-        File destFile = new File(srcFile.getParentFile().getParentFile(),
-            srcFile.getName());
-        assertTrue(srcFile.renameTo(destFile));
+        Path destFile = srcFile.getParent().getParent().resolve(
+            srcFile.getFileName());
+        Files.move(srcFile, destFile);
         scanFolder();
 
         // Should have two fileinfos: one deleted and one new.
@@ -383,11 +389,11 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFileMatch(srcFile, srcFileInfo);
     }
 
-    public void testScanFileDeletion() {
-        File subdir = new File(getFolder().getLocalBase(),
+    public void testScanFileDeletion() throws IOException {
+        Path subdir = getFolder().getLocalBase().resolve(
             "subDir1/SUBDIR2.ext");
-        assertTrue(subdir.mkdirs());
-        File file = TestHelper.createRandomFile(subdir,
+        Files.createDirectories(subdir);
+        Path file = TestHelper.createRandomFile(subdir,
             10 + (int) (Math.random() * 100));
 
         scanFolder();
@@ -397,7 +403,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
 
         // Delete file
-        assertTrue(file.delete());
+        Files.delete(file);
         scanFolder();
 
         // Check
@@ -423,14 +429,14 @@ public class ScanFolderTest extends ControllerTestCase {
     /**
      * Tests the scan of multiple files in multiple subdirectories.
      */
-    public void testScanMulipleFilesInSubdirs() {
+    public void testScanMulipleFilesInSubdirs() throws IOException {
         int nFiles = 1000;
         int nDirs = 0; // Count them
-        Set<File> testFiles = new HashSet<File>();
+        Set<Path> testFiles = new HashSet<Path>();
 
         // Create a inital folder structure
-        File currentSubDir = new File(getFolder().getLocalBase(), "subDir1");
-        currentSubDir.mkdir();
+        Path currentSubDir = getFolder().getLocalBase().resolve("subDir1");
+        Files.createDirectory(currentSubDir);
         nDirs++;
         for (int i = 0; i < nFiles; i++) {
             if (Math.random() > 0.95) {
@@ -443,15 +449,19 @@ public class ScanFolderTest extends ControllerTestCase {
                         fileName += TestHelper.createRandomFilename() + "/";
                     }
                     fileName += TestHelper.createRandomFilename();
-                    currentSubDir = new File(getFolder().getLocalBase(),
+                    currentSubDir = getFolder().getLocalBase().resolve(
                         fileName);
-                    madeDir = currentSubDir.mkdirs();
-                    if (madeDir) {
+                    try {
+                        Files.createDirectory(currentSubDir);
                         nDirs++;
+                        madeDir = true;
+                    }
+                    catch (IOException ioe) {
+                        // Ignore.
                     }
                 } while (!madeDir);
                 System.err.println("New subdir: "
-                    + currentSubDir.getAbsolutePath());
+                    + currentSubDir.toAbsolutePath());
             }
 
             if (!currentSubDir.equals(getFolder().getLocalBase())) {
@@ -459,23 +469,28 @@ public class ScanFolderTest extends ControllerTestCase {
                     // Go one directory up
                     // System.err.println("Moving up from "
                     // + currentSubDir.getAbsoluteFile());
-                    currentSubDir = currentSubDir.getParentFile();
+                    currentSubDir = currentSubDir.getParent();
                 } else if (Math.random() > 0.95) {
                     // Go one directory up
 
-                    File subDirCanidate = new File(currentSubDir,
-                        TestHelper.createRandomFilename());
+                    Path subDirCanidate = currentSubDir.resolve(TestHelper
+                        .createRandomFilename());
                     // System.err.println("Moving down to "
                     // + currentSubDir.getAbsoluteFile());
-                    if (!subDirCanidate.isFile()) {
+                    if (!Files.isRegularFile(subDirCanidate)) {
                         currentSubDir = subDirCanidate;
-                        currentSubDir.mkdir();
-                        nDirs++;
+                        try {
+                            Files.createDirectory(currentSubDir);
+                            nDirs++;
+                        }
+                        catch (IOException ioe) {
+                            // Ignore.
+                        }
                     }
                 }
             }
 
-            File file = TestHelper.createRandomFile(currentSubDir);
+            Path file = TestHelper.createRandomFile(currentSubDir);
             testFiles.add(file);
         }
 
@@ -493,7 +508,7 @@ public class ScanFolderTest extends ControllerTestCase {
             for (FileInfo info : files) {
                 assertEquals(info.toDetailString(), 0, info.getVersion());
                 assertFalse(info.isDeleted());
-                File diskFile = info.getDiskFile(getController()
+                Path diskFile = info.getDiskFile(getController()
                     .getFolderRepository());
                 assertFileMatch(diskFile, info);
                 assertTrue(testFiles.contains(diskFile));
@@ -508,9 +523,9 @@ public class ScanFolderTest extends ControllerTestCase {
      * <p>
      * TOT Notes: This test takes @ 11000 files aprox. 40-107 (86) seconds.
      */
-    public void testScanExtremlyManyFiles() {
+    public void testScanExtremlyManyFiles() throws IOException {
         final int nFiles = 44000;
-        List<File> files = new ArrayList<File>();
+        List<Path> files = new ArrayList<Path>();
         for (int i = 0; i < nFiles; i++) {
             if (i % 1000 == 0) {
                 System.out.println("Still alive " + i + "/" + nFiles);
@@ -521,7 +536,7 @@ public class ScanFolderTest extends ControllerTestCase {
         scanFolder();
         assertEquals(nFiles, getFolder().getKnownItemCount());
 
-        for (File file : files) {
+        for (Path file : files) {
             FileInfo fInfo = retrieveFileInfo(file);
             assertFileMatch(file, fInfo);
             assertEquals(fInfo.getRelativeName(), 0, fInfo.getVersion());
@@ -533,9 +548,9 @@ public class ScanFolderTest extends ControllerTestCase {
      * <p>
      * TOT Notes: This test takes @ 11000 files aprox. 40-107 (86) seconds.
      */
-    public void testScanManyFileChanges() {
+    public void testScanManyFileChanges() throws IOException {
         final int nFiles = 10;
-        List<File> files = new ArrayList<File>();
+        List<Path> files = new ArrayList<Path>();
         for (int i = 0; i < nFiles; i++) {
             if (i % 1000 == 0) {
                 System.out.println("Still alive " + i + "/" + nFiles);
@@ -548,12 +563,12 @@ public class ScanFolderTest extends ControllerTestCase {
         for (int i = 0; i < 200; i++) {
             scanFolder();
             assertEquals(nFiles, getFolder().getKnownItemCount());
-            for (File file : files) {
+            for (Path file : files) {
                 FileInfo fInfo = retrieveFileInfo(file);
                 assertFileMatch(file, fInfo);
                 assertEquals(fInfo.getRelativeName(), i, fInfo.getVersion());
             }
-            for (File file : files) {
+            for (Path file : files) {
                 TestHelper.changeFile(file);
             }
         }
@@ -567,8 +582,8 @@ public class ScanFolderTest extends ControllerTestCase {
      * <p>
      * TRAC #232
      */
-    public void testCaseChangeScan() {
-        File testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
+    public void testCaseChangeScan() throws IOException {
+        Path testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
             "TESTFILE.TXT");
         scanFolder(getFolder());
         TestHelper.waitForCondition(10, new Condition() {
@@ -577,11 +592,11 @@ public class ScanFolderTest extends ControllerTestCase {
             }
         });
 
-        assertEquals(testFile.getName(), getFolder().getKnownFiles().iterator()
-            .next().getFilenameOnly());
+        assertEquals(testFile.getFileName().toString(), getFolder()
+            .getKnownFiles().iterator().next().getFilenameOnly());
 
         // Change case
-        testFile.renameTo(new File(getFolder().getLocalBase(), "testfile.txt"));
+        Files.move(testFile, getFolder().getLocalBase().resolve("testfile.txt"));
 
         scanFolder();
 
@@ -590,7 +605,7 @@ public class ScanFolderTest extends ControllerTestCase {
     }
 
     public void testSwitchDirFile() throws IOException {
-        File testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
+        Path testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
             "TESTFILE");
         scanFolder(getFolder());
         TestHelper.waitForCondition(10, new Condition() {
@@ -602,10 +617,10 @@ public class ScanFolderTest extends ControllerTestCase {
         TestHelper.waitMilliSeconds(4000);
 
         // Switch FILE -> DIR
-        assertTrue(testFile.delete());
-        assertTrue(testFile.mkdirs());
-        assertTrue(testFile.isDirectory());
-        assertFalse(testFile.isFile());
+        Files.delete(testFile);
+        Files.createDirectory(testFile);
+        assertTrue(Files.isDirectory(testFile));
+        assertFalse(Files.isRegularFile(testFile));
         scanFolder(getFolder());
 
         TestHelper.waitForCondition(10, new Condition() {
@@ -620,11 +635,11 @@ public class ScanFolderTest extends ControllerTestCase {
 
         TestHelper.waitMilliSeconds(4000);
         // Switch DIR -> FOLDER
-        assertTrue(testFile.delete());
-        testFile.createNewFile();
+        Files.delete(testFile);
+        Files.createFile(testFile);
         TestHelper.changeFile(testFile);
-        assertFalse(testFile.isDirectory());
-        assertTrue(testFile.isFile());
+        assertFalse(Files.isDirectory(testFile));
+        assertTrue(Files.isRegularFile(testFile));
         scanFolder(getFolder());
 
         TestHelper.waitForCondition(10, new Condition() {
@@ -641,8 +656,8 @@ public class ScanFolderTest extends ControllerTestCase {
      * <p>
      * Related TRAC ticket: #464
      */
-    public void testScanLastModificationDateInPast() {
-        File file = TestHelper.createRandomFile(getFolder().getLocalBase(),
+    public void testScanLastModificationDateInPast() throws IOException {
+        Path file = TestHelper.createRandomFile(getFolder().getLocalBase(),
             10 + (int) (Math.random() * 100));
 
         scanFolder();
@@ -661,9 +676,10 @@ public class ScanFolderTest extends ControllerTestCase {
 
         // Okay from now on we have a good state.
         // Now change the disk file 1 day into the past
-        File diskFile = getFolder().getKnownFiles().iterator().next()
+        Path diskFile = getFolder().getKnownFiles().iterator().next()
             .getDiskFile(getController().getFolderRepository());
-        diskFile.setLastModified(diskFile.lastModified() - 24 * 60 * 60 * 1000);
+        Files.setLastModifiedTime(diskFile, FileTime.fromMillis(Files.getLastModifiedTime(diskFile).toMillis()
+                - 24 * 60 * 60 * 1000));
         scanFolder();
         assertEquals(2, getFolder().getKnownFiles().iterator().next()
             .getVersion());
@@ -689,7 +705,7 @@ public class ScanFolderTest extends ControllerTestCase {
         getFolder().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         // Subdir with 2 files
-        File subdir1 = new File(getFolder().getLocalBase(), "subdir1");
+        Path subdir1 = getFolder().getLocalBase().resolve("subdir1");
         TestHelper.createRandomFile(subdir1);
         TestHelper.createRandomFile(subdir1);
 
@@ -705,8 +721,9 @@ public class ScanFolderTest extends ControllerTestCase {
         });
 
         // Now move
-        File subdir2 = new File(getFolder().getLocalBase(), "SUBDIR2");
-        FileUtils.recursiveMove(subdir1, subdir2);
+        Path subdir2 = getFolder().getLocalBase().resolve("SUBDIR2");
+        PathUtils.recursiveMove(subdir1, subdir2);
+        
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
@@ -723,7 +740,7 @@ public class ScanFolderTest extends ControllerTestCase {
         });
 
         // Make subdir1 reappear!
-        subdir1 = new File(getFolder().getLocalBase(), "subdir1");
+        subdir1 = getFolder().getLocalBase().resolve("subdir1");
         TestHelper.createRandomFile(subdir1);
         TestHelper.createRandomFile(subdir1);
 
@@ -748,7 +765,7 @@ public class ScanFolderTest extends ControllerTestCase {
      * @param file
      * @return the fileinfo in the test folder for this file.
      */
-    private FileInfo retrieveFileInfo(File file) {
+    private FileInfo retrieveFileInfo(Path file) {
         return getFolder().getFile(
             FileInfoFactory.lookupInstance(getFolder(), file));
     }

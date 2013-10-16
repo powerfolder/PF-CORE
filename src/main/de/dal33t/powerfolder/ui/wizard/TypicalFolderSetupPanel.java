@@ -15,11 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: TypicalFolderSetupPanel.java 19108 2012-06-03 23:18:59Z sprajc $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +35,14 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
 
@@ -74,8 +76,10 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
 
         List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
-        File localBase = new File(localFolderField.getText());
+        Path localBase = Paths.get(localFolderField.getText());
         FolderCreateItem fci = new FolderCreateItem(localBase);
+        fci.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
+            .getValueInt(getController()));
         fci.setSyncProfile(syncProfileSelectorPanel.getSyncProfile());
         fci.setFolderInfo(folderInfo);
         folderCreateItems.add(fci);
@@ -162,7 +166,7 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
             if (s.equals(folderInfo.name)) {
                 UserDirectory userDirectory = userDirectoryMap.get(s);
                 localFolderField.setText(userDirectory.getDirectory()
-                    .getAbsolutePath());
+                    .toAbsolutePath().toString());
             }
         }
     }

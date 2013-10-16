@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Date;
 
 import de.dal33t.powerfolder.util.Reject;
@@ -123,7 +123,7 @@ public class DirectoryInfo extends FileInfo {
      *            the file on disk.
      * @return true if the fileinfo is in sync with the file on disk.
      */
-    public boolean inSyncWithDisk(File diskFile) {
+    public boolean inSyncWithDisk(Path diskFile) {
         Reject.ifNull(diskFile, "Diskfile is null");
         return inSyncWithDisk0(diskFile, true);
     }

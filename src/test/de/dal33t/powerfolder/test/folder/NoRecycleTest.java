@@ -19,8 +19,11 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
-import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -39,15 +42,18 @@ public class NoRecycleTest extends ControllerTestCase {
         super.setUp();
 
         setupTestFolder(SyncProfile.HOST_FILES);
-        File localbase = getFolder().getLocalBase();
-        File testFile = new File(localbase, "test.txt");
-        if (testFile.exists()) {
-            testFile.delete();
+        Path localbase = getFolder().getLocalBase();
+        Path testFile = localbase.resolve("test.txt");
+        Files.deleteIfExists(testFile);
+
+        try {
+            Files.createFile(testFile);
+        }
+        catch (IOException ioe) {
+            fail(ioe.getMessage());
         }
 
-        assertTrue(testFile.createNewFile());
-
-        FileWriter writer = new FileWriter(testFile);
+        BufferedWriter writer = Files.newBufferedWriter(testFile, Charset.forName("UTF-8"));
         writer
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
@@ -57,12 +63,12 @@ public class NoRecycleTest extends ControllerTestCase {
 
     public void testRecycleBin() {
         FileInfo testfile = getFolder().getKnownFiles().iterator().next();
-        File file = getFolder().getDiskFile(testfile);
+        Path file = getFolder().getDiskFile(testfile);
 
         getFolder().removeFilesLocal(testfile);
 
         // Expecting the local copy to be removed.
-        assertFalse(file.exists());
+        assertFalse(Files.exists(file));
 
         // Not expecting the bin to have the removed copy.
         assertEquals(0, getFolder().getFileArchiver().getArchivedFilesInfos(

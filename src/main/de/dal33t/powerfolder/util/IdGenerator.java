@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: IdGenerator.java 20287 2012-11-24 23:04:06Z sprajc $
  */
 package de.dal33t.powerfolder.util;
 
@@ -44,9 +44,41 @@ public class IdGenerator {
     public static String makeId() {
         String id = Base58.encode(makeIdBytes());
         // Remove the last == at the end
-        return FileUtils.removeInvalidFilenameChars(
+        return PathUtils.removeInvalidFilenameChars(
             id.substring(0, id.length() - 2)).replace("+", "");
     }
+    
+
+    /**
+     * Generates a randomly unique, base58 encoded id for a UUID. The UUID is
+     * 128 bits (16 bytes) strong. String does NOT contain any special
+     * characters NOR url incompatible chars.
+     * 
+     * @see UUID
+     * @return the base58 encoded uuid
+     */
+    public static String makeFolderId() {
+        // Version 2 of folder IDs
+        return "2" + makeId();
+    }
+    
+    /**
+     * Generates a randomly unique, base58 encoded id for a UUID. The UUID is
+     * 128 bits (16 bytes) strong. String does NOT contain any special
+     * characters NOR url incompatible chars.
+     * 
+     * @see UUID
+     * @return the base58 encoded uuid
+     */
+    public static String makeFolderId(String organizationOID) {
+        // Version 2 of folder IDs
+        if (StringUtils.isNotBlank(organizationOID)) {
+            return "3" + organizationOID + "-" + makeId();
+        } else {
+            return "2" + makeId();
+        }
+    }
+
 
     /**
      * @return a random UUID as byte array (16 bytes strong)

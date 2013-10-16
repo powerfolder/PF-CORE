@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: UIController.java 20916 2013-02-23 04:05:10Z glasgow $
  */
 package de.dal33t.powerfolder.ui;
 
@@ -32,10 +32,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,8 +119,8 @@ import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -453,7 +454,7 @@ public class UIController extends PFComponent {
                         logWarning("Unable to goto web portal", e1);
                     }
                 } else if (COMMAND_BROWSE.equals(e.getActionCommand())) {
-                    FileUtils.openFile(getController().getFolderRepository()
+                    PathUtils.openFile(getController().getFolderRepository()
                         .getFoldersBasedir());
                 } else if (COMMAND_PAUSE.equals(e.getActionCommand())
                     || COMMAND_RESUME.equals(e.getActionCommand()))
@@ -569,7 +570,9 @@ public class UIController extends PFComponent {
         // ////////////////
         // Sync Shutdown //
         // ////////////////
-        if (SystemUtil.isShutdownSupported()) {
+        if (SystemUtil.isShutdownSupported()
+            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
             item = menu.add(new MenuItem(Translation
                 .getTranslation("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
@@ -579,10 +582,12 @@ public class UIController extends PFComponent {
         // ////////////
         // Sync Exit //
         // ////////////
-        item = menu.add(new MenuItem(Translation
-            .getTranslation("systray.sync_exit")));
-        item.setActionCommand(COMMAND_SYNC_EXIT);
-        item.addActionListener(systrayActionHandler);
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            item = menu.add(new MenuItem(Translation
+                .getTranslation("systray.sync_exit")));
+            item.setActionCommand(COMMAND_SYNC_EXIT);
+            item.addActionListener(systrayActionHandler);
+        }
 
         // ///////
         // Exit //
@@ -658,11 +663,11 @@ public class UIController extends PFComponent {
             sysTrayFoldersMenu.add(menuItem);
         }
         sysTrayFoldersMenu.setEnabled(true);
-        final File localBase = folder.getCommitOrLocalDir();
+        final Path localBase = folder.getCommitOrLocalDir();
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (localBase.exists()) {
-                    FileUtils.openFile(localBase);
+                if (Files.exists(localBase)) {
+                    PathUtils.openFile(localBase);
                 }
             }
         });
@@ -799,8 +804,10 @@ public class UIController extends PFComponent {
     }
 
     public void openFileInformation(FileInfo fileInfo) {
-        informationFrame.displayFile(fileInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFile(fileInfo);
+            displayInformationWindow();
+        }
     }
 
     /**
@@ -810,18 +817,24 @@ public class UIController extends PFComponent {
      *            info of the folder to display files information for.
      */
     public void openFilesInformationLatest(FolderInfo folderInfo) {
-        informationFrame.displayFolderFilesLatest(folderInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFilesLatest(folderInfo);
+            displayInformationWindow();
+        }
     }
 
     public void openFilesInformationDeleted(FolderInfo folderInfo) {
-        informationFrame.displayFolderFilesDeleted(folderInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFilesDeleted(folderInfo);
+            displayInformationWindow();
+        }
     }
 
     public void openFilesInformationUnsynced(FolderInfo folderInfo) {
-        informationFrame.displayFolderFilesUnsynced(folderInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFilesUnsynced(folderInfo);
+            displayInformationWindow();
+        }
     }
 
     /**
@@ -831,8 +844,10 @@ public class UIController extends PFComponent {
      *            info of the folder to display files information for.
      */
     public void openFilesInformation(FolderInfo folderInfo) {
-        informationFrame.displayFolderFiles(folderInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            informationFrame.displayFolderFiles(folderInfo);
+            displayInformationWindow();
+        }
     }
 
     /**
@@ -842,8 +857,12 @@ public class UIController extends PFComponent {
      *            info of the folder to display member settings information for.
      */
     public void openSettingsInformation(FolderInfo folderInfo) {
-        informationFrame.displayFolderSettings(folderInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.SETTINGS_ENABLED
+            .getValueBoolean(getController()))
+        {
+            informationFrame.displayFolderSettings(folderInfo);
+            displayInformationWindow();
+        }
     }
 
     /**
@@ -863,8 +882,11 @@ public class UIController extends PFComponent {
      *            info of the folder to display member computer information for.
      */
     public void openMembersInformation(FolderInfo folderInfo) {
-        informationFrame.displayFolderMembers(folderInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController()))
+        {
+            informationFrame.displayFolderMembers(folderInfo);
+            displayInformationWindow();
+        }
     }
 
     /**
@@ -874,8 +896,12 @@ public class UIController extends PFComponent {
      *            info of the folder to display problems information for.
      */
     public void openProblemsInformation(FolderInfo folderInfo) {
-        informationFrame.displayFolderProblems(folderInfo);
-        displayInformationWindow();
+        if (ConfigurationEntry.PROBLEMS_ENABLED
+            .getValueBoolean(getController()))
+        {
+            informationFrame.displayFolderProblems(folderInfo);
+            displayInformationWindow();
+        }
     }
 
     public void openTransfersInformation() {
@@ -910,7 +936,7 @@ public class UIController extends PFComponent {
      * @param file
      * @param node
      */
-    public void transferSingleFile(File file, Member node) {
+    public void transferSingleFile(Path file, Member node) {
         SingleFileTransferDialog sftd = new SingleFileTransferDialog(
             getController(), file, node);
         sftd.open();
@@ -1515,7 +1541,8 @@ public class UIController extends PFComponent {
             if (!foldersToWarn.isEmpty()) {
                 StringBuilder folderslist = new StringBuilder();
                 for (Folder folder : foldersToWarn) {
-                    folderslist.append("\n     - " + folder.getName());
+                    folderslist.append("\n     - "
+                        + folder.getInfo().getLocalizedName());
                 }
                 String title = Translation
                     .getTranslation("uicontroller.warn_on_close.title");

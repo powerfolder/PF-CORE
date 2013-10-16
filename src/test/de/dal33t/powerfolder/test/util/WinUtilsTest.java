@@ -19,8 +19,9 @@
  */
 package de.dal33t.powerfolder.test.util;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -55,14 +56,14 @@ public class WinUtilsTest extends TestCase {
         WinUtils wu = WinUtils.getInstance();
         assertNotNull(
             "Could not get instance. Is desktoputils.dll in the classpath?", wu);
-        File f = new File(TestHelper.getTestDir(), "test.lnk");
-        f.getParentFile().mkdirs();
-        wu.createLink(sl, f.getAbsolutePath());
-        assertTrue(f.exists());
-        f.delete();
-        wu.createLink(sl, f.getAbsolutePath());
-        assertTrue(f.exists());
-        f.delete();
+        Path f = TestHelper.getTestDir().resolve("test.lnk");
+        Files.createDirectories(f.getParent());
+        wu.createLink(sl, f.toAbsolutePath().toString());
+        assertTrue(Files.exists(f));
+        Files.delete(f);
+        wu.createLink(sl, f.toAbsolutePath().toString());
+        assertTrue(Files.exists(f));
+        Files.delete(f);
     }
 
     public void testGetAllUserAppData() {

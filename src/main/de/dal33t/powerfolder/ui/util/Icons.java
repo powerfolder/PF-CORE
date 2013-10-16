@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Icons.java 21220 2013-03-18 16:50:29Z sprajc $
  */
 package de.dal33t.powerfolder.ui.util;
 
@@ -34,12 +34,15 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
 import java.awt.image.PixelGrabber;
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +59,7 @@ import javax.swing.plaf.IconUIResource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
@@ -476,6 +480,41 @@ public class Icons {
         return icon;
     }
 
+    public static Icon getIconByAccount(AccountInfo member,
+        Controller controller)
+    {
+        String username = member.getUsername();
+
+        if (username == null) {
+            return getIconById(NODE_DISCONNECTED);
+        }
+
+        String urlString = controller.getOSClient()
+            .getAvatarURL(member);
+
+        try {
+            URL url = new URL(urlString);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.connect();
+            int code = con.getResponseCode();
+
+            if (code == 200) {
+                ImageIcon tempIcon = new ImageIcon(url);
+                Image img = tempIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+
+                return new ImageIcon(img);
+            }
+        } catch (MalformedURLException e) {
+            log.warning("Avatar URL was malformed: " + urlString);
+        } catch (IOException e) {
+            log.fine(e.getMessage());
+        }
+
+        return getIconById(NODE_DISCONNECTED);
+    }
+    
     /**
      * returns a icon based on the state of the fileinfo this maybe a normal
      * gray or red icon
@@ -491,14 +530,14 @@ public class Icons {
             return getUnknownIcon(fileInfo, controller);
         }
 
-        File file = fileInfo.getDiskFile(controller.getFolderRepository());
+        Path file = fileInfo.getDiskFile(controller.getFolderRepository());
 
-        boolean exists = file != null && file.exists();
+        boolean exists = file != null && Files.exists(file);
         Icon icon = getCachedIcon(extension, exists);
 
         if (icon == null) {// no icon found in cache
             if (exists) { // create one if local file is there
-                icon = FileSystemView.getFileSystemView().getSystemIcon(file);
+                icon = FileSystemView.getFileSystemView().getSystemIcon(file.toFile());
                 if (icon == null) {
                     return getIconById(UNKNOWN_FILE);
                 }
@@ -560,12 +599,12 @@ public class Icons {
             return EXTENSION_ICON_MAP.get(extension);
         }
 
-        File file = fileInfo.getDiskFile(controller.getFolderRepository());
-        boolean exists = file != null && file.exists();
+        Path file = fileInfo.getDiskFile(controller.getFolderRepository());
+        boolean exists = file != null && Files.exists(file);
 
         Icon icon;
         if (exists) {
-            icon = FileSystemView.getFileSystemView().getSystemIcon(file);
+            icon = FileSystemView.getFileSystemView().getSystemIcon(file.toFile());
             if (!hasUniqueIcon(extension)) { // do not cache executables
                 EXTENSION_ICON_MAP.put(extension, icon);// put in cache
                 Icon disabled = getGrayIcon(icon); // think ahead we may need
@@ -696,27 +735,25 @@ public class Icons {
      * @return the icon
      */
     private static Icon getIconExtension(String extension) {
-        File tempFile = new File(Controller.getTempFilesLocation(), "temp."
+        Path tempFile = Controller.getTempFilesLocation().resolve("temp."
             + extension);
-
-        try {
-            synchronized (FILE_LOCK) { // synchronized otherwise we may try
-                // to create the same file twice at once
-                if (tempFile.createNewFile()) {
-                    Icon icon = FileSystemView.getFileSystemView()
-                        .getSystemIcon(tempFile);
-                    if (!tempFile.delete()) {
-                        log.warning("Failed to delete temporary file.");
-                        tempFile.deleteOnExit();
-                    }
-                    return icon;
+        synchronized (FILE_LOCK) { // synchronized otherwise we may try
+            // to create the same file twice at once
+            try {
+                Files.createFile(tempFile);
+                Icon icon = FileSystemView.getFileSystemView()
+                    .getSystemIcon(tempFile.toFile());
+                try {
+                    Files.delete(tempFile);
+                } catch (IOException ioe) {
+                    log.warning("Failed to delete temporary file.");
+                    tempFile.toFile().deleteOnExit();
                 }
+                return icon;
+            } catch (IOException ioe) {
                 log.severe("Couldn't create temporary file for icon retrieval for extension:'"
                     + extension + '\'');
-
             }
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Exception", e);
         }
         return null;
     }

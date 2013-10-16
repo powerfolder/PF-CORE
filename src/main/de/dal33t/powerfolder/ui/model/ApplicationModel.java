@@ -38,7 +38,13 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.OverallFolderStatListener;
+import de.dal33t.powerfolder.event.PausedModeEvent;
+import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -49,8 +55,6 @@ import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
-
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.*;
 
 /**
  * Contains all core models for the application.
@@ -265,7 +269,9 @@ public class ApplicationModel extends PFUIComponent {
         public void serverConnected(ServerClientEvent event) {
             handleSyncStatusChange();
             ServerClient client = event.getClient();
-            if (client.isPasswordEmpty() && !client.isLoggedIn()) {
+            if (client.isPasswordEmpty() && !client.isLoggedIn()
+                && !PFWizard.isWizardOpen())
+            {
                 PFWizard.openLoginWizard(getController(), client);
             }
         }
@@ -296,23 +302,26 @@ public class ApplicationModel extends PFUIComponent {
         FolderRepository repository = getController().getFolderRepository();
         ServerClient client = getController().getOSClient();
         boolean connected = client.isConnected();
+        boolean loggingIn = client.isLoggingIn();
         boolean loggedIn = client.isLoggedIn();
 
-        SyncStatusEvent status = SYNC_INCOMPLETE;
+        SyncStatusEvent status = SyncStatusEvent.SYNC_INCOMPLETE;
         if (getController().isPaused()) {
-            status = PAUSED;
+            status = SyncStatusEvent.PAUSED;
         } else if (!getController().getNodeManager().isStarted()) {
-            status = NOT_STARTED;
+            status = SyncStatusEvent.NOT_STARTED;
         } else if (!connected) {
-            status = NOT_CONNECTED;
+            status = SyncStatusEvent.NOT_CONNECTED;
+        } else if (loggingIn) {
+            status = SyncStatusEvent.LOGGING_IN;
         } else if (!loggedIn) {
-            status = NOT_LOGGED_IN;
+            status = SyncStatusEvent.NOT_LOGGED_IN;
         } else if (repository.getFoldersCount() == 0) {
-            status = NO_FOLDERS;
+            status = SyncStatusEvent.NO_FOLDERS;
         } else if (folderRepositoryModel.isSyncing()) {
-            status = SYNCING;
+            status = SyncStatusEvent.SYNCING;
         } else if (repository.areAllFoldersInSync()) {
-            status = SYNCHRONIZED;
+            status = SyncStatusEvent.SYNCHRONIZED;
         }
         triggerSyncStatusChange(status);
     }

@@ -19,11 +19,11 @@
 */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.Reject;
+import java.nio.file.Path;
 
-import java.io.File;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * This class encapsulates requirements to create a folder in the Wizard flow.
@@ -31,22 +31,21 @@ import java.io.File;
  */
 public class FolderCreateItem {
 
-    private File localBase;
+    private Path localBase;
     private FolderInfo folderInfo;
     private SyncProfile syncProfile;
     private int archiveHistory;
     private String linkToOnlineFolder;
 
-    public FolderCreateItem(File localBase) {
+    public FolderCreateItem(Path localBase) {
         this.localBase = localBase;
-        archiveHistory = 5;
     }
 
-    public File getLocalBase() {
+    public Path getLocalBase() {
         return localBase;
     }
 
-    public void setLocalBase(File localBase) {
+    public void setLocalBase(Path localBase) {
         Reject.ifNull(localBase, "Local base cannot be set null");
         this.localBase = localBase;
     }

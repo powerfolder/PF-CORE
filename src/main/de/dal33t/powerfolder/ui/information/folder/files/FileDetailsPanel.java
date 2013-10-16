@@ -19,7 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,10 +162,10 @@ public class FileDetailsPanel extends PFUIComponent {
         }
 
         // Prepare diskfile
-        File diskFile = fileInfo.getDiskFile(getController()
+        Path diskFile = fileInfo.getDiskFile(getController()
             .getFolderRepository());
         if (diskFile != null) {
-            if (!diskFile.exists()) {
+            if (Files.notExists(diskFile)) {
                 diskFile = null;
             }
         }
@@ -190,7 +191,7 @@ public class FileDetailsPanel extends PFUIComponent {
         sourcesField.setText(sourcesText.toString());
 
         localCopyAtField
-            .setText(diskFile != null ? diskFile.getAbsolutePath() : "- "
+            .setText(diskFile != null ? diskFile.toAbsolutePath().toString() : "- "
                 + Translation.getTranslation("general.not_available") + " -");
         localCopyAtField.setCaretPosition(0);
     }

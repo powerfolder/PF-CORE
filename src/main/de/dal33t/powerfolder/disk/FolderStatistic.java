@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderStatistic.java 20344 2012-11-26 00:58:39Z sprajc $
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -43,11 +44,10 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
-import de.schlichtherle.truezip.file.TFile;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
@@ -109,7 +109,7 @@ public class FolderStatistic extends PFComponent {
             nodeManagerListener);
 
         if (!folder.isDeviceDisconnected()) {
-            File file = new TFile(folder.getSystemSubDir(),
+            Path file = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC);
             // Load cached disk results
             current = FolderStatisticInfo.load(file);
@@ -208,22 +208,22 @@ public class FolderStatistic extends PFComponent {
         calculating = null;
 
         if (!folder.isDeviceDisconnected()) {
-            // Try to cache statistic on filesystem.
-            File tempFile = new TFile(folder.getSystemSubDir(),
+            Path tempFile = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC + ".writing");
-            File file = new TFile(folder.getSystemSubDir(),
+            Path file = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC);
             if (current.save(tempFile)) {
-                if (file.exists()) {
-                    file.delete();
-                }
-                if (!tempFile.renameTo(file)) {
+                try {
+                    Files.deleteIfExists(file);
+                    Files.move(tempFile, file);
+                } catch (IOException e) {
                     try {
-                        FileUtils.copyFile(tempFile, file);
-                        tempFile.delete();
-                    } catch (IOException e) {
+                        Files.copy(tempFile, file);
+                        Files.delete(tempFile);
+                    } catch (IOException e2) {
                     }
                 }
+                // Ignore exceptions. Folder Statistics are not crucial for operations.
             }
         }
 
@@ -483,8 +483,7 @@ public class FolderStatistic extends PFComponent {
      * @return number of local files
      */
     public int getLocalFilesCount() {
-        Integer integer = current.getFilesCount().get(
-            getController().getMySelf().getInfo());
+        Integer integer = current.getFilesCount().get(getMySelf().getInfo());
         return integer != null ? integer : 0;
     }
 
@@ -502,7 +501,7 @@ public class FolderStatistic extends PFComponent {
      * @return the local sync percentage.-1 if unknown.
      */
     public double getLocalSyncPercentage() {
-        return getSyncPercentage(getController().getMySelf());
+        return getSyncPercentage(getMySelf());
     }
 
     /**
@@ -576,9 +575,18 @@ public class FolderStatistic extends PFComponent {
         } else if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
             .getSyncProfile()))
         {
+            // SYNC-143
+            if (ProUtil.isZyncro(getController())
+                && folder.getMembersCount() == 1)
+            {
+                return UNKNOWN_SYNC_STATUS;
+            }
+            // SYNC-143
+
             // Average of all folder member sync percentages.
             return getAverageSyncPercentage();
         }
+
         // Otherwise, just return the local sync percentage.
         return getLocalSyncPercentage();
     }
@@ -594,8 +602,7 @@ public class FolderStatistic extends PFComponent {
      * @return my ACTUAL size of this folder.
      */
     public long getLocalSize() {
-        Long size = current.getSizes().get(
-            getController().getMySelf().getInfo());
+        Long size = current.getSizes().get(getMySelf().getInfo());
         return size != null ? size : 0;
     }
 

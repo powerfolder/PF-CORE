@@ -102,7 +102,19 @@ public enum Feature {
      */
     MANUAL_SYNC_CB(false),
 
-    SYSTRAY_ALL_FOLDERS(false);
+    SYSTRAY_ALL_FOLDERS(false),
+
+    ZYNCRO_PROFILING(false),
+
+    /**
+     * Organize users into groups
+     */
+    GROUPS(true),
+
+    /**
+     * Multitenancy
+     */
+    ORGANIZATIONS(true);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
@@ -155,5 +167,6 @@ public enum Feature {
         // Feature.DETECT_UPDATE_BY_VERSION.enable();
         // Feature.CORRECT_MOVEMENT_DETECTION.enable();
         Feature.CREDITS_SYSTEM.enable();
+        Feature.ZYNCRO_PROFILING.enable();
     }
 }

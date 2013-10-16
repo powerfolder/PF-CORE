@@ -15,20 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: InvitationUtil.java 20526 2012-12-14 05:24:46Z glasgow $
  */
 package de.dal33t.powerfolder.util;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,17 +71,16 @@ public class InvitationUtil {
      *            The file to load the invitation from
      * @return the invitation, null if file not found or on other error.
      */
-    public static Invitation load(File file) {
+    public static Invitation load(Path file) {
         if (file == null) {
             throw new NullPointerException("File is null");
         }
-        if (!file.exists() || file.isDirectory() || !file.canRead()) {
+        if (Files.notExists(file) || Files.isDirectory(file) || !Files.isReadable(file)) {
             return null;
         }
         log.fine("Loading invitation " + file);
         try {
-            FileInputStream fIn = new FileInputStream(file);
-            return load(fIn);
+            return load(Files.newInputStream(file));
         } catch (IOException e) {
             log.log(Level.SEVERE, "Unable to read invitation file stream", e);
         }
@@ -141,11 +140,14 @@ public class InvitationUtil {
      *            the file to save to
      * @return true if succeeded
      */
-//    public static boolean save(Invitation invitation, File file) {
+//    public static boolean save(Invitation invitation, Path file) {
 //        try {
 //            return save(invitation, new BufferedOutputStream(
-//                new FileOutputStream(file)));
+//                Files.newOutputStream(file)));
 //        } catch (FileNotFoundException e) {
+//            log.log(Level.SEVERE, "Unable to write invitation file stream", e);
+//            return false;
+//        } catch (IOException e) {
 //            log.log(Level.SEVERE, "Unable to write invitation file stream", e);
 //            return false;
 //        }

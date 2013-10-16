@@ -15,14 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Upload.java 18906 2012-05-17 02:21:56Z sprajc $
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -47,7 +49,6 @@ import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.schlichtherle.truezip.file.TFileInputStream;
 
 /**
  * Simple class for a scheduled Upload
@@ -61,7 +62,7 @@ public class Upload extends Transfer {
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
     protected transient RandomAccessFile raf;
-    protected transient TFileInputStream in;
+    protected transient InputStream in;
     private long inpos;
     private String debugState;
 
@@ -196,22 +197,29 @@ public class Upload extends Transfer {
                     }
                     
                     debugState = "Opening file";
-                    if (!getFile().getFolder(
-                        getController().getFolderRepository()).isEncrypted())
+                    boolean useInputStream = true;
+                    Folder f = getFile().getFolder(
+                        getController().getFolderRepository());
+                    if (f.getLocalBase().getFileSystem().provider().getScheme()
+                        .equals("file"))
                     {
+                        useInputStream = false;
                         try {
                             raf = new RandomAccessFile(getFile().getDiskFile(
-                                getController().getFolderRepository()), "r");
+                                getController().getFolderRepository()).toFile(), "r");
                         } catch (FileNotFoundException e) {
-                            throw new TransferException(e);
+                            useInputStream = true;
                         }
-                    } else {
+                    }
+                    if (useInputStream) {
                         try {
-                            in = new TFileInputStream(getFile().getDiskFile(
+                            in = Files.newInputStream(getFile().getDiskFile(
                                 getController().getFolderRepository()));
                             inpos = 0;
                         } catch (FileNotFoundException e) {
                             throw new TransferException(e);
+                        } catch (IOException ioe) {
+                            throw new TransferException(ioe);
                         }
                     }
                     if (isAborted() || isBroken()) {
@@ -337,10 +345,10 @@ public class Upload extends Transfer {
             return false;
         }
         final FileInfo fi = r.getFile();
-        checkLastModificationDate(fi,
-            fi.getDiskFile(getController().getFolderRepository()));
-        FilePartsRecord fpr;
         try {
+            checkLastModificationDate(fi,
+                fi.getDiskFile(getController().getFolderRepository()));
+            FilePartsRecord fpr;
             state.setState(TransferState.FILEHASHING);
             fpr = getTransferManager().getFileRecordManager().retrieveRecord(
                 fi, new ProgressListener() {
@@ -411,7 +419,7 @@ public class Upload extends Transfer {
                 return false;
             }
         }
-        File f = pr.getFile()
+        Path f = pr.getFile()
             .getDiskFile(getController().getFolderRepository());
         try {
             byte[] data = new byte[(int) pr.getRange().getLength()];
@@ -429,7 +437,7 @@ public class Upload extends Transfer {
                         } catch (Exception e) {
                             logWarning(e.toString());
                         }
-                        in = new TFileInputStream(getFile().getDiskFile(
+                        in = Files.newInputStream(getFile().getDiskFile(
                             getController().getFolderRepository()));
                         in.skip(startOffset);
                         inpos = startOffset;
@@ -558,9 +566,9 @@ public class Upload extends Transfer {
                 + ", last contime: " + getPartner().getLastConnectTime());
         }
 
-        File diskFile = getFile().getDiskFile(
+        Path diskFile = getFile().getDiskFile(
             getController().getFolderRepository());
-        if (diskFile == null || !diskFile.exists()) {
+        if (diskFile == null || Files.notExists(diskFile)) {
             logWarning("Upload broken because diskfile is not available, folder: "
                 + getFile().getFolder(getController().getFolderRepository())
                 + ", diskfile: "
@@ -608,15 +616,15 @@ public class Upload extends Transfer {
         return msg;
     }
 
-    private void checkLastModificationDate(FileInfo theFile, File f)
-        throws TransferException
+    private void checkLastModificationDate(FileInfo theFile, Path f)
+        throws TransferException, IOException
     {
         assert theFile != null;
         assert f != null;
 
         boolean lastModificationDataMismatch = !DateUtil
-            .equalsFileDateCrossPlattform(f.lastModified(), theFile
-                .getModifiedDate().getTime());
+            .equalsFileDateCrossPlattform(Files.getLastModifiedTime(f)
+                .toMillis(), theFile.getModifiedDate().getTime());
         if (lastModificationDataMismatch) {
             Folder folder = theFile.getFolder(getController()
                 .getFolderRepository());
@@ -625,11 +633,11 @@ public class Upload extends Transfer {
             }
             // folder.recommendScanOnNextMaintenance();
             throw new TransferException("Last modification date mismatch. '"
-                + f.getAbsolutePath()
+                + f.toAbsolutePath().toString()
                 + "': expected "
                 + Convert.convertToGlobalPrecision(theFile.getModifiedDate()
                     .getTime()) + ", actual "
-                + Convert.convertToGlobalPrecision(f.lastModified()));
+                + Convert.convertToGlobalPrecision(Files.getLastModifiedTime(f).toMillis()));
         }
     }
 }

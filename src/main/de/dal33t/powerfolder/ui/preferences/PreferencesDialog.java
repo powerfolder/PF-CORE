@@ -25,14 +25,21 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -97,7 +104,15 @@ public class PreferencesDialog extends BaseDialog {
     public JComponent getContent() {
         initComponents();
 
-        return tabbedPane;
+        if (PreferencesEntry.BEGINNER_MODE
+            .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            generalSettingsTab.getUIPanel().setBorder(Borders.createEmptyBorder("14dlu, 14dlu, 14dlu, 14dlu"));
+            return generalSettingsTab.getUIPanel();
+        } else {
+            return tabbedPane;
+        }
     }
 
     public void initComponents() {
@@ -193,6 +208,8 @@ public class PreferencesDialog extends BaseDialog {
             return null;
         }
         Action action = new BaseAction("action_help", getController()) {
+            private static final long serialVersionUID = 100L;
+
             public void actionPerformed(ActionEvent e) {
                 helpAction();
             }

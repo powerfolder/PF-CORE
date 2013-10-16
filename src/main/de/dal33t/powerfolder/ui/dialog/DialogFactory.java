@@ -15,13 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: DialogFactory.java 20080 2012-11-09 13:05:49Z glasgow $
  */
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -32,8 +33,10 @@ import com.jgoodies.forms.builder.PanelBuilder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.dialog.directory.DirectoryChooser;
+import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.util.LinkedTextBuilder;
+import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -56,10 +59,10 @@ public class DialogFactory {
      *            optional name of the initial selected directory
      * @return the chosen directory
      */
-    public static List<File> chooseDirectory(UIController uiController,
+    public static List<Path> chooseDirectory(UIController uiController,
         String initialDirectoryName, boolean multiSelect)
     {
-        File file = initialDirectoryName != null ? new File(
+        Path file = initialDirectoryName != null ? Paths.get(
             initialDirectoryName) : null;
         return chooseDirectory(uiController, file, multiSelect);
     }
@@ -74,8 +77,8 @@ public class DialogFactory {
      *            optional initial selected directory
      * @return the chosen directory
      */
-    public static List<File> chooseDirectory(UIController uiController,
-        File initialDirectory, boolean multiSelect) {
+    public static List<Path> chooseDirectory(UIController uiController,
+        Path initialDirectory, boolean multiSelect) {
         return chooseDirectory(uiController, initialDirectory, null, multiSelect);
     }
     /**
@@ -93,7 +96,7 @@ public class DialogFactory {
      *            PF base dir that a user may want to create.
      * @return the chosen directory
      */
-    public static List<File> chooseDirectory(UIController uiController, File initialDirectory,
+    public static List<Path> chooseDirectory(UIController uiController, Path initialDirectory,
                                              List<String> onlineFolders, boolean multiSelect) {
         DirectoryChooser dc = new DirectoryChooser(uiController.getController(), initialDirectory, onlineFolders,
                 multiSelect);
@@ -107,13 +110,16 @@ public class DialogFactory {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(multiSelect);
         if (initialDirectory != null) {
-            chooser.setCurrentDirectory(initialDirectory);
+            chooser.setCurrentDirectory(initialDirectory.toFile());
         }
         int i = chooser.showDialog(uiController.getActiveFrame(), Translation.getTranslation("general.select"));
-        List<File> selectedDirs = new ArrayList<File>();
+        List<Path> selectedDirs = new ArrayList<Path>();
         if (i == JFileChooser.APPROVE_OPTION) {
             File[] selectedFiles = chooser.getSelectedFiles();
-            selectedDirs.addAll(Arrays.asList(selectedFiles));
+
+            for (File f : selectedFiles) {
+                selectedDirs.add(f.toPath());
+            }
         }
         return selectedDirs;
     }

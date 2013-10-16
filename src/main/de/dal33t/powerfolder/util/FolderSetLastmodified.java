@@ -19,13 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -41,30 +43,34 @@ public class FolderSetLastmodified {
         ClassNotFoundException
 
     {
-        File in = new File(args[0]);
-        if (!in.getName().equalsIgnoreCase("PowerFolders")) {
+        Path in = Paths.get(args[0]);
+        if (!in.getFileName().toString().equalsIgnoreCase("PowerFolders")) {
             correct(in);
-            correct(new File(in, ".PowerFolder/meta"));
+            correct(in.resolve(".PowerFolder/meta"));
             return;
         } else {
-            File[] dirs = in.listFiles(new FileFilter() {
-                public boolean accept(File pathname) {
-                    return pathname.isDirectory();
+            Filter<Path> filter = new Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) {
+                    return Files.isDirectory(entry);
                 }
-            });
-            for (File dir : dirs) {
-                correct(dir);
-                correct(new File(dir, ".PowerFolder/meta"));
+            };
+            try (DirectoryStream<Path> dirs = Files.newDirectoryStream(in, filter)) {
+                for (Path dir : dirs) {
+                    correct(dir);
+                    correct(dir.resolve(".PowerFolder/meta"));
+                }
+            } catch (IOException ioe) {
+                
             }
         }
     }
 
-    public static void correct(File localBase) {
+    public static void correct(Path localBase) {
         try {
 
-            File dbFile = new File(localBase, ".PowerFolder/.PowerFolder.db");
-            InputStream fIn = new BufferedInputStream(new FileInputStream(
-                dbFile));
+            Path dbFile = localBase.resolve(".PowerFolder/.PowerFolder.db");
+            InputStream fIn = Files.newInputStream(dbFile);
             ObjectInputStream in = new ObjectInputStream(fIn);
             FileInfo[] files = (FileInfo[]) in.readObject();
             int changed = 0;
@@ -75,22 +81,23 @@ public class FolderSetLastmodified {
                     continue;
                 }
                 total++;
-                File file = new File(localBase, fileInfo.getRelativeName());
-                if (!file.exists()) {
+                Path file = localBase.resolve(fileInfo.getRelativeName());
+                if (Files.notExists(file)) {
                     System.err.println("Skip file not found: " + file);
                     continue;
                 }
-                if (fileInfo.isFile() && file.length() != fileInfo.getSize()) {
+                if (fileInfo.isFile() && Files.size(file) != fileInfo.getSize()) {
                     System.err.println("Skip file size not identical found: "
-                        + file.length() + ". expected: " + fileInfo.getSize()
+                        + Files.size(file) + ". expected: " + fileInfo.getSize()
                         + ": " + file);
                     continue;
                 }
                 boolean lastModificationSync = DateUtil
-                    .equalsFileDateCrossPlattform(file.lastModified(), fileInfo
+                    .equalsFileDateCrossPlattform(Files.getLastModifiedTime(file).toMillis(), fileInfo
                         .getModifiedDate().getTime());
                 if (!lastModificationSync) {
-                    file.setLastModified(fileInfo.getModifiedDate().getTime());
+                    Files.setLastModifiedTime(file, FileTime.fromMillis(fileInfo
+                        .getModifiedDate().getTime()));
                     changed++;
                 } else {
                     same++;

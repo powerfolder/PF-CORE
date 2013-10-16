@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,6 +64,7 @@ import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -219,16 +222,22 @@ public class ServerClient extends PFComponent {
 
     private void init(Member serverNode, boolean serverChange) {
         Reject.ifNull(serverNode, "Server node is null");
-        listenerSupport = ListenerSupportFactory
-            .createListenerSupport(ServerClientListener.class);
+        boolean firstCall=listenerSupport == null;
+        if (firstCall) {
+            listenerSupport = ListenerSupportFactory
+                .createListenerSupport(ServerClientListener.class);
+        }
         setNewServerNode(serverNode);
         // Allowed by default
         allowServerChange = serverChange;
         setAnonAccount();
-        getController().getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new MyFolderRepositoryListener());
+        
+        if (firstCall) {
+            getController().getNodeManager().addNodeManagerListener(
+                new MyNodeManagerListener());
+            getController().getFolderRepository().addFolderRepositoryListener(
+                new MyFolderRepositoryListener());
+        }
     }
 
     private boolean isRememberPassword() {
@@ -520,7 +529,7 @@ public class ServerClient extends PFComponent {
         {
             return getWebURL();
         }
-        return LoginUtil.decorateURL(getWebURL() + Constants.LOGIN_URI,
+        return LoginUtil.decorateURL(getWebURL(Constants.LOGIN_URI, false),
             username, passwordObf);
     }
 
@@ -532,7 +541,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + "/files/" + Base64.encode4URL(foInfo.id);
+        return getWebURL("/files/" + Base64.encode4URL(foInfo.id), false);
     }
 
     /**
@@ -596,7 +605,7 @@ public class ServerClient extends PFComponent {
         {
             return null;
         }
-        String url = getWebURL() + Constants.LOGIN_URI;
+        String url = getWebURL(Constants.LOGIN_URI, false);
         if (StringUtils.isNotBlank(username)) {
             url = LoginUtil.decorateURL(url, username, (char[]) null);
         }
@@ -623,7 +632,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + "/register";
+        return getWebURL("/register", false);
     }
 
     /**
@@ -661,7 +670,20 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL() + "/activate";
+        return getWebURL("/activate", false);
+    }
+
+    /**
+     * Convenience method to get the URL to an avatar
+     * 
+     * @param information about the account
+     * @return the avatar URL.
+     */
+    public String getAvatarURL(AccountInfo aInfo) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL("/avatars/" + aInfo.getUsername() + ".png", false);
     }
 
     /**
@@ -915,6 +937,76 @@ public class ServerClient extends PFComponent {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Load a new configuration from URL configURL
+     * 
+     * @param configURL
+     */
+    public void loadConfigURL(String configURL) {
+        Reject.ifBlank(configURL, "configURL");
+        try {
+            // load the configuration from the url ...
+            Properties props = ConfigurationLoader
+                .loadPreConfiguration(configURL.trim());
+
+            ConfigurationLoader.merge(props, getController());
+            String networkID = (String) props.get(ConfigurationEntry.NETWORK_ID
+                .getConfigKey());
+            String name = (String) props.get(ConfigurationEntry.SERVER_NAME
+                .getConfigKey());
+            String host = (String) props.get(ConfigurationEntry.SERVER_HOST
+                .getConfigKey());
+            String nodeId = (String) props.get(ConfigurationEntry.SERVER_NODEID
+                .getConfigKey());
+            String tunnelURL = (String) props
+                .get(ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
+                    .getConfigKey());
+            String webURL = (String) props
+                .get(ConfigurationEntry.SERVER_WEB_URL.getConfigKey());
+
+            logInfo("Loaded " + props.size() + " from " + configURL + " network ID: " + networkID);
+            if (StringUtils.isBlank(host)) {
+                throw new IOException("Hostname not found");
+            }
+
+            String oldNetworkID = getController().getMySelf().getInfo().networkId;
+            if (StringUtils.isNotBlank(networkID)) {
+                getController().getMySelf().getInfo().networkId = networkID;
+            } else {
+                getController().getMySelf().getInfo().networkId = ConfigurationEntry.NETWORK_ID
+                    .getDefaultValue();
+            }
+            String newNetworkID = getController().getMySelf().getInfo().networkId;
+            boolean networkIDChanged = !Util.equals(oldNetworkID, newNetworkID);
+            if (networkIDChanged) {
+                getController().getNodeManager().shutdown();
+            }
+
+
+            init(getController(), name, host, nodeId, allowServerChange,
+                updateConfig);
+
+            // Store in config
+            setServerWebURLInConfig(webURL);
+            setServerHTTPTunnelURLInConfig(tunnelURL);
+            setServerInConfig(getServer().getInfo());
+            ConfigurationEntry.NETWORK_ID.setValue(getController(), newNetworkID);
+            ConfigurationEntry.CONFIG_URL.setValue(getController(), configURL);
+
+            getController().saveConfig();
+
+            if (networkIDChanged) {
+                // Restart nodemanager
+                getController().getNodeManager().start();
+            }
+
+            connectHostingServers();
+        } catch (Exception e) {
+            logWarning("Could not load connection infos from " + configURL
+                + ": " + e.getMessage());
         }
     }
 

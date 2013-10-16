@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: PFWizard.java 19934 2012-10-14 07:29:40Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -24,12 +24,13 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JDialog;
 
@@ -37,13 +38,15 @@ import jwf.Wizard;
 import jwf.WizardContext;
 import jwf.WizardListener;
 import jwf.WizardPanel;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -78,12 +81,21 @@ public class PFWizard extends PFUIComponent {
      * @param title
      */
     public PFWizard(Controller controller, String title) {
+        this(controller, title, false);
+    }
+
+    /**
+     * @param controller
+     *            the controller
+     * @param title
+     */
+    public PFWizard(Controller controller, String title, boolean tiny) {
         super(controller);
         this.title = title;
         NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
-        //controller.getUIController().getMainFrame().checkOnTop();
+        // controller.getUIController().getMainFrame().checkOnTop();
         setSuspendNewFolderSearch(true);
-        wizard = new Wizard();
+        wizard = new Wizard(tiny);
     }
 
     /**
@@ -241,8 +253,10 @@ public class PFWizard extends PFUIComponent {
     public static void openLoginWizard(Controller controller,
         ServerClient client)
     {
+        boolean tiny = ConfigurationEntry.SHOW_TINY_WIZARDS
+            .getValueBoolean(controller);
         PFWizard wizard = new PFWizard(controller,
-            Translation.getTranslation("wizard.pfwizard.login_title"));
+            Translation.getTranslation("wizard.pfwizard.login_title"), tiny);
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.finish.os_login_title"),
             Translation.getTranslation("wizard.finish.os_login_text"), true);
@@ -266,9 +280,9 @@ public class PFWizard extends PFUIComponent {
     }
 
     public static void openExistingDirectoryWizard(Controller controller,
-        File directory)
+        Path directory)
     {
-        Reject.ifTrue(directory == null || !directory.exists(),
+        Reject.ifTrue(directory == null || !Files.exists(directory),
             "No directory supplied");
         PFWizard wizard = new PFWizard(controller,
             Translation.getTranslation("wizard.pfwizard.folder_title"));
@@ -278,6 +292,12 @@ public class PFWizard extends PFUIComponent {
         wizard.open(new ConfirmDiskLocationPanel(controller, directory));
     }
 
+    public static boolean hideFolderJoinWizard(Controller controller) {
+        return ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+            .getValueBoolean(controller)
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller);
+    }
+    
     /**
      * Opens the wizard on a panel.
      * 
@@ -289,7 +309,14 @@ public class PFWizard extends PFUIComponent {
             buildUI();
         }
         wizard.start(wizardPanel, false);
-        dialog.setVisible(true);
+
+        if (PFWizard.hideFolderJoinWizard(getController())
+            && wizardPanel instanceof MultiOnlineStorageSetupPanel)
+        {
+            dialog.setVisible(false);
+        } else {
+            dialog.setVisible(true);
+        }
     }
 
     /**
@@ -358,12 +385,12 @@ public class PFWizard extends PFUIComponent {
         });
 
         dialog.getContentPane().add(wizard);
-            // GradientPanel.create(wizard, GradientPanel.VERY_LIGHT_GRAY));
+        // GradientPanel.create(wizard, GradientPanel.VERY_LIGHT_GRAY));
         dialog.pack();
         int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
             .getWidth()) / 2;
         int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
-            .getHeight()) / 2;
+            .getHeight()) / 3;
         dialog.setLocation(x, y);
         wizard.getContext().setAttribute(
             WizardContextAttributes.DIALOG_ATTRIBUTE, dialog);

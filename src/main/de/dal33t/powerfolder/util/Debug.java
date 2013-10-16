@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Debug.java 18809 2012-05-09 01:10:58Z tot $
  */
 package de.dal33t.powerfolder.util;
 
@@ -23,14 +23,13 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ public class Debug {
         if (!LoggingManager.isLogToFile()) {
             return;
         }
-        File file = new File(LoggingManager.getDebugDir(),
+        Path file = LoggingManager.getDebugDir().resolve(
             "system_properties.txt");
         try {
             Properties sysprops = System.getProperties();
@@ -120,17 +119,21 @@ public class Debug {
      * @param header
      * @return the CSV file. Or null if failed
      */
-    public static File writeFileListCSV(String folderName, String memberName,
+    public static Path writeFileListCSV(String folderName, String memberName,
         Collection<FileInfo> fileInfos, String header)
     {
         Reject.ifBlank(folderName, "folderName is null");
         Reject.ifBlank(memberName, "memberName is null");
         Reject.ifNull(fileInfos, "Files are null");
-        File filelistsDir = new File(LoggingManager.getDebugDir(), "filelists");
-        filelistsDir.mkdirs();
-        File logFile = new File(filelistsDir,
-            FileUtils.removeInvalidFilenameChars(folderName) + File.separator
-                + FileUtils.removeInvalidFilenameChars(memberName)
+        Path filelistsDir = LoggingManager.getDebugDir().resolve("filelists");
+        try {
+            Files.createDirectories(filelistsDir);
+        } catch (IOException ioe) {
+            return null;
+        }
+        Path logFile = filelistsDir.resolve(
+            PathUtils.removeInvalidFilenameChars(folderName) + "/"
+                + PathUtils.removeInvalidFilenameChars(memberName)
                 + ".list.txt");
         return writeFileListCSV(logFile, fileInfos, header);
     }
@@ -143,25 +146,29 @@ public class Debug {
      * @param header
      * @return the CSV file or null if failed.
      */
-    public static File writeFileListCSV(File logFile,
+    public static Path writeFileListCSV(Path logFile,
         Collection<FileInfo> fileInfos, String header)
     {
-        if (!logFile.exists()) {
+        if (Files.notExists(logFile)) {
             try {
-                if (logFile.getParentFile() != null) {
-                    logFile.getParentFile().mkdirs();
+                if (logFile.getParent() != null) {
+                    try {
+                        Files.createDirectories(logFile);
+                    } catch (IOException ioe) {
+                        return null;
+                    }
                 }
-                logFile.createNewFile();
+                Files.createFile(logFile);
             } catch (IOException e) {
                 log.severe("Unable to write filelist to "
-                    + logFile.getAbsolutePath());
+                    + logFile.toAbsolutePath().toString());
                 log.log(Level.FINER, "IOException", e);
                 return null;
             }
         }
-        if (!logFile.canWrite()) {
+        if (!Files.isWritable(logFile)) {
             log.severe("Unable to write filelist to "
-                + logFile.getAbsolutePath());
+                + logFile.toAbsolutePath().toString());
             return null;
         }
 
@@ -170,20 +177,17 @@ public class Debug {
         Arrays.sort(list, new FileInfoComparator(
             FileInfoComparator.BY_MODIFIED_DATE));
 
-        try {
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                logFile));
+        try (OutputStream fOut = Files.newOutputStream(logFile)) {
             fOut.write(("# " + header + "\n\n").getBytes("UTF-8"));
             fOut.write("Change time      ;Filename;Changer;Size;Version\n\n"
                 .getBytes());
             for (FileInfo aList : list) {
                 fOut.write(toCSVLine(aList).getBytes("UTF-8"));
             }
-            fOut.close();
             return logFile;
         } catch (IOException e) {
             log.severe("Unable to write nodelist to '"
-                + logFile.getAbsolutePath() + '\'');
+                + logFile.toAbsolutePath().toString() + '\'');
             log.log(Level.FINER, "IOException", e);
         }
 
@@ -557,7 +561,7 @@ public class Debug {
         }
         String fileName;
         if (nodeInfo.node != null) {
-            fileName = FileUtils.removeInvalidFilenameChars(nodeInfo.node.nick)
+            fileName = PathUtils.removeInvalidFilenameChars(nodeInfo.node.nick)
                 + ".report.txt";
         } else {
             fileName = "-unknown-.report.txt";
@@ -565,10 +569,9 @@ public class Debug {
         try {
             // Create in debug directory
             // Create dir
-            File dir = new File(LoggingManager.getDebugDir(), "nodeinfos");
-            dir.mkdirs();
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(dir, fileName)));
+            Path dir = LoggingManager.getDebugDir().resolve("nodeinfos");
+            Files.createDirectories(dir);
+            OutputStream fOut = new BufferedOutputStream(Files.newOutputStream(dir.resolve(fileName)));
             fOut.write(nodeInfo.debugReport.getBytes());
             fOut.close();
             return true;
@@ -589,11 +592,11 @@ public class Debug {
         Reject.ifNull(node, "Node is null");
         String fileName = "Node." + node.nick + ".report.txt";
         try {
-            File file = new File(LoggingManager.getDebugDir(), "nodeinfos/"
+            Path file = LoggingManager.getDebugDir().resolve("nodeinfos/"
                 + fileName);
-            InputStream fIn = new BufferedInputStream(new FileInputStream(file));
+            InputStream fIn = new BufferedInputStream(Files.newInputStream(file));
 
-            byte[] buffer = new byte[(int) file.length()];
+            byte[] buffer = new byte[(int) Files.size(file)];
             fIn.read(buffer);
             return new String(buffer);
         } catch (IOException e) {
@@ -615,14 +618,13 @@ public class Debug {
     public static void writeNodeList(Collection<Member> nodes, String fileName)
     {
         Reject.ifNull(nodes, "Nodelist is null");
-        try {
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(LoggingManager.getDebugDir(), fileName)));
+        try (OutputStream fOut = Files.newOutputStream(LoggingManager
+            .getDebugDir().resolve(fileName)))
+        {
             for (Member node : nodes) {
                 fOut.write(toDetailInfo(node).getBytes());
                 fOut.write("\n".getBytes());
             }
-            fOut.close();
         } catch (IOException e) {
             log.warning("Unable to write nodelist to '" + fileName + '\'');
             log.log(Level.FINER, "IOException", e);
@@ -641,9 +643,9 @@ public class Debug {
         String fileName)
     {
         Reject.ifNull(nodes, "Nodelist is null");
-        try {
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(LoggingManager.getDebugDir(), fileName)));
+        try (OutputStream fOut = Files.newOutputStream(LoggingManager
+            .getDebugDir().resolve(fileName)))
+        {
             fOut.write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
                 .getBytes());
             synchronized (nodes) {
@@ -652,7 +654,6 @@ public class Debug {
                     fOut.write("\n".getBytes());
                 }
             }
-            fOut.close();
         } catch (IOException e) {
             log.warning("Unable to write nodelist to '" + fileName + '\'');
             log.log(Level.FINER, "IOException", e);
@@ -668,10 +669,10 @@ public class Debug {
     public static void writeStatistics(Controller controller) {
         OutputStream fOut = null;
         try {
-            File file = new File(LoggingManager.getDebugDir(),
+            Path file = LoggingManager.getDebugDir().resolve(
                 controller.getConfigName() + ".netstat.csv");
-            file.getParentFile().mkdirs();
-            fOut = new BufferedOutputStream(new FileOutputStream(file, true));
+            Files.createDirectories(file.getParent());
+            fOut = new BufferedOutputStream(Files.newOutputStream(file));
             Date now = new Date();
             String statLine = Format.formatDateShort(now) + ';' + now.getTime()
                 + ';' + controller.getNodeManager().countConnectedNodes() + ';'

@@ -33,7 +33,7 @@ public class OutOfMemoryNotice extends NoticeBase {
 
     public OutOfMemoryNotice(OutOfMemoryError error) {
         super(Translation.getTranslation("out_of_memory_notice.title"),
-                Translation.getTranslation("out_of_memory_notice.summary"));
+            Translation.getTranslation("out_of_memory_notice.summary"));
         this.error = error;
     }
 
@@ -55,5 +55,30 @@ public class OutOfMemoryNotice extends NoticeBase {
 
     public boolean isPersistable() {
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((error == null) ? 0 : error.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        OutOfMemoryNotice other = (OutOfMemoryNotice) obj;
+        if (error == null) {
+            if (other.error != null)
+                return false;
+        } else if (!error.equals(other.error))
+            return false;
+        return true;
     }
 }

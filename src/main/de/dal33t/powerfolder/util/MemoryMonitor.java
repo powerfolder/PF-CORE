@@ -15,16 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MemoryMonitor.java 18011 2012-02-05 05:29:07Z harry $
  */
 package de.dal33t.powerfolder.util;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,10 +34,10 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
-import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Detects if PowerFolder is running out of memory.
@@ -197,12 +199,12 @@ public class MemoryMonitor implements Runnable {
         BufferedReader br = null;
         try {
             log.fine("Looking for Contents/Info.plist...");
-            File orig = new File(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist");
-            log.info("Modifing " + orig.getCanonicalPath());
-            File temp = new File(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist.temp");
-            File back = new File(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist.backup");
-            br = new BufferedReader(new FileReader(orig));
-            pw = new PrintWriter(new FileWriter(temp));
+            Path orig = Paths.get(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist");
+            log.info("Modifing " + orig.toRealPath());
+            Path temp = Paths.get(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist.temp");
+            Path back = Paths.get(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist.backup");
+            br = Files.newBufferedReader(orig, Charset.forName("UTF-8"));
+            pw = new PrintWriter(Files.newBufferedWriter(temp, Charset.forName("UTF-8")));
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().startsWith("<string>-Xm")
@@ -219,8 +221,8 @@ public class MemoryMonitor implements Runnable {
             }
             br.close();
             pw.close();
-            FileUtils.copyFile(orig, back);
-            FileUtils.copyFile(temp, orig);
+            PathUtils.copyFile(orig, back);
+            PathUtils.copyFile(temp, orig);
         } catch (IOException e) {
             log.log(Level.WARNING,
                 "Problem reconfiguring Contents/Info.plist: " + e.getMessage(),

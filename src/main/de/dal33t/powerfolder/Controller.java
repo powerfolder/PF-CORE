@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Controller.java 21251 2013-03-19 01:46:23Z sprajc $
  */
 package de.dal33t.powerfolder;
 
@@ -23,16 +23,17 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -109,12 +110,12 @@ import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.PropertiesUtil;
@@ -144,9 +145,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
 
-    private static final int MAJOR_VERSION = 8;
-    private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 46;
+    private static final int MAJOR_VERSION = 9;
+    private static final int MINOR_VERSION = 0;
+    private static final int REVISION_VERSION = 0;
+
     /**
      * Program version.
      */
@@ -164,7 +166,7 @@ public class Controller extends PFComponent {
     /**
      * The actual config file.
      */
-    private File configFile;
+    private Path configFile;
 
     /** The config properties */
     private Properties config;
@@ -884,20 +886,30 @@ public class Controller extends PFComponent {
 
         configFilename = null;
         config = new Properties();
+        configFilename = filename;
+        configFile = getConfigLocationBase();
+
+        if (configFile == null) {
+            configFile = Paths.get(filename).toAbsolutePath();
+        }
+        else {
+            configFile = configFile.resolve(filename);
+        }
+
         BufferedInputStream bis = null;
         try {
-            configFilename = filename;
-            configFile = new File(getConfigLocationBase(), filename);
-            if (configFile.exists()) {
-                logInfo("Loading configfile " + configFile);
+            if (Files.exists(configFile)) {
+                logInfo("Loading configfile " + configFile.toString());
             } else {
-                logFine("Config file does not exist. " + configFile);
+                logFine("Config file does not exist. " + configFile.toString());
+                throw new FileNotFoundException();
             }
             if (OSUtil.isWebStart()) {
                 logFine("WebStart, config file location: "
-                    + configFile.getAbsolutePath());
+                    + configFile.toString());
             }
-            bis = new BufferedInputStream(new FileInputStream(configFile));
+
+            bis = new BufferedInputStream(Files.newInputStream(configFile));
             config.load(bis);
         } catch (FileNotFoundException e) {
             logWarning("Unable to start config, file '" + filename
@@ -912,7 +924,7 @@ public class Controller extends PFComponent {
                     bis.close();
                 }
             } catch (Exception e) {
-                // ignore
+                // Ignore.
             }
         }
         return true;
@@ -1066,14 +1078,21 @@ public class Controller extends PFComponent {
         // ============
         // Monitor the default directory for possible new folders.
         // ============
-        if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(this))
-        {
-            threadPool.scheduleAtFixedRate(new TimerTask() {
-                public void run() {
+
+        threadPool.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
+                    .getValueBoolean(Controller.this))
+                {
                     folderRepository.lookForNewFolders();
                 }
-            }, 10L, 10L, TimeUnit.SECONDS);
-        }
+                if (ConfigurationEntry.LOOK_FOR_FOLDERS_TO_BE_REMOVED
+                    .getValueBoolean(Controller.this))
+                {
+                    folderRepository.lookForFoldersToBeRemoved();
+                }
+            }
+        }, 10L, 10L, TimeUnit.SECONDS);
 
         // ============
         // Hourly tasks
@@ -1188,32 +1207,37 @@ public class Controller extends PFComponent {
      * #2526
      */
     private void backupConfigAssets() {
-        File backupDir = new File(getMiscFilesLocation(), "backups/"
+        Path backupDir = getMiscFilesLocation().resolve("backups/"
             + Format.formatDateCanonical(new Date()));
-        if (!backupDir.exists()) {
-            backupDir.mkdirs();
+        if (Files.notExists(backupDir)) {
+            try {
+                Files.createDirectories(backupDir);
+            } catch (IOException ioe) {
+                logInfo("Could not create directory '"
+                    + backupDir.toAbsolutePath().toString() + "'");
+            }
         }
-        File configBackup = new File(backupDir, configFile.getName());
+        Path configBackup = backupDir.resolve(configFile.getFileName());
         try {
-            FileUtils.copyFile(configFile, configBackup);
+            PathUtils.copyFile(configFile, configBackup);
         } catch (IOException e) {
             logWarning("Unable to backup file " + configFile + ". " + e);
         }
-        File myKeyFile = new File(getMiscFilesLocation(), getConfigName()
+        Path myKeyFile = getMiscFilesLocation().resolve(getConfigName()
             + ".mykey");
-        File mykeyBackup = new File(backupDir, myKeyFile.getName());
-        if (myKeyFile.exists()) {
+        Path mykeyBackup = backupDir.resolve(myKeyFile.getFileName());
+        if (Files.exists(myKeyFile)) {
             try {
-                FileUtils.copyFile(myKeyFile, mykeyBackup);
+                PathUtils.copyFile(myKeyFile, mykeyBackup);
             } catch (IOException e) {
                 logWarning("Unable to backup file " + myKeyFile + ". " + e);
             }
         }
-        File dbFile = new File(getMiscFilesLocation(), "Accounts.h2.db");
-        File dbBackup = new File(backupDir, dbFile.getName());
-        if (dbFile.exists()) {
+        Path dbFile = getMiscFilesLocation().resolve("Accounts.h2.db");
+        Path dbBackup = backupDir.resolve(dbFile.getFileName());
+        if (Files.exists(dbFile)) {
             try {
-                FileUtils.copyFile(dbFile, dbBackup);
+                PathUtils.copyFile(dbFile, dbBackup);
             } catch (IOException e) {
                 logWarning("Unable to backup file " + dbFile + ". " + e);
             }
@@ -1400,18 +1424,28 @@ public class Controller extends PFComponent {
             return;
         }
         logFine("Saving config (" + getConfigName() + ".config)");
-        File file = new File(getConfigLocationBase(), getConfigName()
-            + ".config");
-        File tempFile = new File(getConfigLocationBase(), getConfigName()
-            + ".writing.config");
-        File backupFile = new File(getConfigLocationBase(), getConfigName()
-            + ".config.backup");
+
+        Path file;
+        Path tempFile;
+        Path backupFile;
+        if (getConfigLocationBase() == null) {
+            file = Paths.get(getConfigName() + ".config").toAbsolutePath();
+            tempFile = Paths.get(getConfigName() + ".writing.config")
+                .toAbsolutePath();
+            backupFile = Paths.get(getConfigName() + ".config.backup")
+                .toAbsolutePath();
+        } else {
+            file = getConfigLocationBase().resolve(getConfigName() + ".config");
+            tempFile = getConfigLocationBase().resolve(
+                getConfigName() + ".writing.config").toAbsolutePath();
+            backupFile = getConfigLocationBase().resolve(
+                getConfigName() + ".config.backup");
+        }
+
         try {
-            // make backup
             // Backup is done in #backupConfigAssets
-            if (backupFile.exists()) {
-                backupFile.delete();
-            }
+            Files.deleteIfExists(backupFile);
+
             String distName = "PowerFolder";
             if (distribution != null
                 && StringUtils.isNotBlank(distribution.getName()))
@@ -1421,13 +1455,16 @@ public class Controller extends PFComponent {
             // Store config in misc base
             PropertiesUtil.saveConfig(tempFile, config, distName
                 + " config file (v" + PROGRAM_VERSION + ')');
-            if (file.exists()) {
-                file.delete();
+            
+
+            Files.deleteIfExists(file);
+            try {
+                Files.move(tempFile, file);
+            } catch (IOException e) {
+                Files.copy(tempFile, file);
+                Files.delete(tempFile);
             }
-            if (!tempFile.renameTo(file)) {
-                FileUtils.copyFile(tempFile, file);
-                tempFile.delete();
-            }
+
         } catch (IOException e) {
             // FATAL
             logSevere("Unable to save config. " + e, e);
@@ -1908,7 +1945,7 @@ public class Controller extends PFComponent {
         return configName;
     }
 
-    public File getConfigFile() {
+    public Path getConfigFile() {
         return configFile;
     }
 
@@ -2319,9 +2356,13 @@ public class Controller extends PFComponent {
      * @return the Date the application jar was build.
      */
     public Date getBuildTime() {
-        File jar = new File(getJARName());
-        if (jar.exists()) {
-            return new Date(jar.lastModified());
+        Path jar = Paths.get(getJARName());
+        if (Files.exists(jar)) {
+            try {
+                return new Date(Files.getLastModifiedTime(jar).toMillis());
+            } catch (IOException ioe) {
+                return null;
+            }
         }
         return null;
     }
@@ -2356,14 +2397,14 @@ public class Controller extends PFComponent {
      * @return The File object representing the absolute location of where the
      *         config files are/should be stored.
      */
-    private File getConfigLocationBase() {
+    private Path getConfigLocationBase() {
         // First check if we have a config file in local path
-        File aConfigFile = new File(getConfigName() + ".config");
+        Path aConfigFile = Paths.get(getConfigName() + ".config").toAbsolutePath();
 
         // Load configuration in misc file if config file if in
-        if (OSUtil.isWebStart() || !aConfigFile.exists()) {
+        if (OSUtil.isWebStart() || Files.notExists(aConfigFile)) {
             logFine("Config location base: "
-                + getMiscFilesLocation().getAbsolutePath());
+                + getMiscFilesLocation().toString());
             return getMiscFilesLocation();
         }
 
@@ -2377,10 +2418,10 @@ public class Controller extends PFComponent {
      * 
      * @return the file base, a directory
      */
-    public static File getMiscFilesLocation() {
-        File base;
-        File unixConfigDir = new File(System.getProperty("user.home") + "/."
-            + Constants.MISC_DIR_NAME);
+    public static Path getMiscFilesLocation() {
+        Path base;
+        Path unixConfigDir = Paths.get(System.getProperty("user.home"), "."
+            + Constants.MISC_DIR_NAME).toAbsolutePath();
         if (OSUtil.isWindowsSystem()
             && Feature.WINDOWS_MISC_DIR_USE_APP_DATA.isEnabled())
         {
@@ -2396,19 +2437,26 @@ public class Controller extends PFComponent {
                 return unixConfigDir;
             }
 
-            File windowsConfigDir = new File(appData, Constants.MISC_DIR_NAME);
+            Path windowsConfigDir = Paths.get(appData, Constants.MISC_DIR_NAME).toAbsolutePath();
             base = windowsConfigDir;
 
             // Check if migration is necessary
-            if (unixConfigDir.exists()) {
+            if (Files.exists(unixConfigDir)) {
                 boolean migrateConfig;
-                if (windowsConfigDir.exists()) {
+                if (Files.exists(windowsConfigDir)) {
                     // APPDATA/PowerFolder does not yet contain a config file OR
-                    migrateConfig = windowsConfigDir.list(new FilenameFilter() {
-                        public boolean accept(File dir, String name) {
-                            return name.endsWith("config");
+                    Filter<Path> filter = new Filter<Path>() {
+                        @Override
+                        public boolean accept(Path entry) {
+                            return entry.getFileName().toString().endsWith("config");
                         }
-                    }).length == 0;
+                    };
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(windowsConfigDir, filter)) {
+                        migrateConfig = !stream.iterator().hasNext();
+                    } catch (IOException ioe) {
+                        log.info(ioe.getMessage());
+                        migrateConfig = true;
+                    }
                 } else {
                     // Migrate if APPDATA/PowerFolder not existing yet.
                     migrateConfig = true;
@@ -2426,9 +2474,11 @@ public class Controller extends PFComponent {
         } else {
             base = unixConfigDir;
         }
-        if (!base.exists()) {
-            if (!base.mkdirs()) {
-                log.severe("Failed to create " + base.getAbsolutePath());
+        if (Files.notExists(base)) {
+            try {
+                Files.createDirectories(base);
+            } catch (IOException ioe) {
+                log.severe("Failed to create " + base.toAbsolutePath().toString());
             }
         }
         return base;
@@ -2445,14 +2495,18 @@ public class Controller extends PFComponent {
      * @param windowsBaseDir
      *            the preferred APPDATA based config directory.
      */
-    private static boolean migrateWindowsMiscLocation(File unixBaseDir,
-        File windowsBaseDir)
+    private static boolean migrateWindowsMiscLocation(Path unixBaseDir,
+        Path windowsBaseDir)
     {
-        if (!windowsBaseDir.exists() && windowsBaseDir.mkdirs()) {
-            log.severe("Failed to create " + windowsBaseDir.getAbsolutePath());
+        if (Files.notExists(windowsBaseDir)) {
+            try {
+                Files.createDirectories(windowsBaseDir);
+            } catch (IOException ioe) {
+                log.severe("Failed to create " + windowsBaseDir.toAbsolutePath().toString());
+            }
         }
         try {
-            FileUtils.recursiveMove(unixBaseDir, windowsBaseDir);
+            PathUtils.recursiveMove(unixBaseDir, windowsBaseDir);
             log.warning("Migrated config from " + unixBaseDir + " to "
                 + windowsBaseDir);
             return true;
@@ -2468,10 +2522,15 @@ public class Controller extends PFComponent {
      * 
      * @return the file base, a directory
      */
-    public static File getTempFilesLocation() {
-        File base = new File(System.getProperty("java.io.tmpdir"));
-        if (!base.exists()) {
-            base.mkdirs();
+    public static Path getTempFilesLocation() {
+        Path base = Paths.get(System.getProperty("java.io.tmpdir"));
+        if (Files.notExists(base)) {
+            try {
+                Files.createDirectories(base);
+            } catch (IOException ioe) {
+                log.warning("Could not create temp files location '"
+                    + base.toAbsolutePath().toString() + "'");
+            }
         }
         return base;
     }
@@ -2504,7 +2563,7 @@ public class Controller extends PFComponent {
         if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
         {
             Object[] options = {Translation
-                .getTranslation("dialog.already_running.exit_button")};
+                .getTranslation("dialog.already_running.show_button")};
             int exitOption = 0;
             if (verbose) {
                 options = new Object[]{
@@ -2520,6 +2579,10 @@ public class Controller extends PFComponent {
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
                 null, options, options[0]) == exitOption)
             { // exit pressed
+                // Try to bring existing instance to the foreground.
+                RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
+                exit(1);
+            } else {
                 exit(1);
             }
         } else {
@@ -2694,26 +2757,16 @@ public class Controller extends PFComponent {
                     notices.add(notice);
                 }
             }
-            String filename = getConfigName() + ".notices";
-            File file = new File(getMiscFilesLocation(), filename);
-            ObjectOutputStream outputStream = null;
-            try {
+            Path file = getMiscFilesLocation().resolve(
+                getConfigName() + ".notices");
+            try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                Files.newOutputStream(file))) {
                 logInfo("There are " + notices.size() + " notices to persist.");
-                outputStream = new ObjectOutputStream(new BufferedOutputStream(
-                    new FileOutputStream(file)));
                 outputStream.writeUnshared(notices);
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {
                 logSevere("IOException", e);
-            } finally {
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                        logSevere("IOException", e);
-                    }
-                }
             }
         }
     }
@@ -2725,16 +2778,11 @@ public class Controller extends PFComponent {
     private void loadPersistentObjects() {
 
         if (isUIEnabled()) {
-
             // Load notices.
-            String filename = getConfigName() + ".notices";
-            File file = new File(getMiscFilesLocation(), filename);
-            if (file.exists()) {
-                logFiner("Loading notices");
-                ObjectInputStream inputStream = null;
-                try {
-                    inputStream = new ObjectInputStream(
-                        new BufferedInputStream(new FileInputStream(file)));
+            Path file = getMiscFilesLocation().resolve(getConfigName() + ".notices");
+            if (Files.exists(file)) {
+                logInfo("Loading notices");
+                try (ObjectInputStream inputStream = new ObjectInputStream(Files.newInputStream(file))) {
                     List<Notice> notices = (List<Notice>) inputStream
                         .readObject();
                     inputStream.close();
@@ -2751,14 +2799,6 @@ public class Controller extends PFComponent {
                     logSevere("ClassNotFoundException", e);
                 } catch (ClassCastException e) {
                     logSevere("ClassCastException", e);
-                } finally {
-                    if (inputStream != null) {
-                        try {
-                            inputStream.close();
-                        } catch (IOException e) {
-                            logSevere("IOException", e);
-                        }
-                    }
                 }
             } else {
                 logInfo("No notices found - probably first start of PF.");
@@ -2844,12 +2884,7 @@ public class Controller extends PFComponent {
                 } else {
                     // Resume if user is not active
                     if (isPaused()) {
-                        getController().schedule(new Runnable() {
-                            public void run() {
-                                setPaused0(false, true);
-                                log.info("User inactive. Executed resume task.");
-                            }
-                        }, 50);
+                        getController().schedule(new Resumer(), 50);
                     }
                 }
             } else {
@@ -2858,5 +2893,12 @@ public class Controller extends PFComponent {
                 log.info("Executed resume task.");
             }
         }
+    }
+    
+    private class Resumer implements Runnable {
+        public void run() {
+          setPaused0(false, true);
+          log.info("User inactive. Executed resume task.");
+      }
     }
 }

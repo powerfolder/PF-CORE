@@ -15,25 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: TransferManager.java 21079 2013-03-15 02:10:37Z sprajc $
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,7 +59,6 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -810,10 +807,12 @@ public class TransferManager extends PFComponent {
         }
         removeDownloadManager(dlManager);
 
-        // Auto cleanup of Downloads for meta folders, immediate clean up or non-experts.
-        boolean autoClean = dlManager.getFileInfo().getFolderInfo().isMetaFolder() ||
-            ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.getValueInt(getController()) == 0 ||
-            !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
+        // Auto cleanup of Downloads
+        boolean autoClean = dlManager.getFileInfo().getFolderInfo()
+            .isMetaFolder();
+        autoClean = autoClean
+            || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+                .getValueInt(getController()) == 0;
         if (autoClean) {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());
@@ -843,12 +842,12 @@ public class TransferManager extends PFComponent {
     {
         Reject
             .ifBlank(folder.getDownloadScript(), "Download script is not set");
-        File dlFile = fInfo.getDiskFile(getController().getFolderRepository());
+        Path dlFile = fInfo.getDiskFile(getController().getFolderRepository());
         String command = folder.getDownloadScript();
-        command = command.replace("$file", dlFile.getAbsolutePath());
-        command = command.replace("$path", dlFile.getParent());
+        command = command.replace("$file", dlFile.toAbsolutePath().toString());
+        command = command.replace("$path", dlFile.getParent().toString());
         command = command.replace("$folderpath", folder.getLocalBase()
-            .getAbsolutePath());
+            .toAbsolutePath().toString());
 
         StringBuilder sourcesStr = new StringBuilder();
         for (Download source : dlManager.getSources()) {
@@ -1224,7 +1223,7 @@ public class TransferManager extends PFComponent {
         }
 
         FolderRepository repo = getController().getFolderRepository();
-        File diskFile = dl.file.getDiskFile(repo);
+        Path diskFile = dl.file.getDiskFile(repo);
         boolean fileInSyncWithDisk = diskFile != null
             && dl.file.inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
@@ -1232,9 +1231,14 @@ public class TransferManager extends PFComponent {
                 return null;
             }
             if (isWarning()) {
-                logWarning("File not in sync with disk: '"
-                    + dl.file.toDetailString() + "', disk file at "
-                    + diskFile.lastModified());
+                try {
+                    logWarning("File not in sync with disk: '"
+                        + dl.file.toDetailString() + "', disk file at "
+                        + Files.getLastModifiedTime(diskFile).toMillis());
+                } catch (IOException ioe) {
+                    logSevere("Could not access modification time of file "
+                        + diskFile.toAbsolutePath().toString());
+                }
             }
 
             // This should free up an otherwise waiting for download partner
@@ -2181,6 +2185,23 @@ public class TransferManager extends PFComponent {
         }
         return false;
     }
+    
+    /**
+     * @param fInfo
+     * @param internet
+     * @return if there is an active upload for the given file.
+     */
+    public boolean isUploadActive(FileInfo fInfo, boolean internet) {
+        for (Upload upload : activeUploads) {
+            if (internet && upload.getPartner().isOnLAN()) {
+                continue;
+            }
+            if (upload.getFile().equals(fInfo)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Returns the upload for the given file to the given member
@@ -2476,18 +2497,16 @@ public class TransferManager extends PFComponent {
      * Loads all pending downloads and enqueus them for re-download
      */
     private void loadDownloads() {
-        File transferFile = new File(Controller.getMiscFilesLocation(),
+        Path transferFile = Controller.getMiscFilesLocation().resolve(
             getController().getConfigName() + ".transfers");
-        if (!transferFile.exists()) {
+        if (Files.notExists(transferFile)) {
             logFine("No downloads to restore, "
-                + transferFile.getAbsolutePath() + " does not exists");
+                + transferFile.toAbsolutePath() + " does not exists");
             return;
         }
-        try {
-            FileInputStream fIn = new FileInputStream(transferFile);
-            ObjectInputStream oIn = new ObjectInputStream(fIn);
+        try (ObjectInputStream oIn = new ObjectInputStream(new FileInputStream(
+            transferFile.toAbsolutePath().toString()))) {
             List<?> storedDownloads = (List<?>) oIn.readObject();
-            oIn.close();
             // Reverse to restore in right order
             Collections.reverse(storedDownloads);
 
@@ -2547,17 +2566,23 @@ public class TransferManager extends PFComponent {
             logFine("Loaded " + storedDownloads.size() + " downloads");
         } catch (IOException e) {
             logSevere("Unable to load pending downloads", e);
-            if (!transferFile.delete()) {
+            try {
+                Files.delete(transferFile);
+            } catch (IOException ioe) {
                 logSevere("Unable to delete transfer file!");
             }
         } catch (ClassNotFoundException e) {
             logSevere("Unable to load pending downloads", e);
-            if (!transferFile.delete()) {
+            try {
+                Files.delete(transferFile);
+            } catch (IOException ioe) {
                 logSevere("Unable to delete pending downloads file!");
             }
         } catch (ClassCastException e) {
             logSevere("Unable to load pending downloads", e);
-            if (!transferFile.delete()) {
+            try {
+                Files.delete(transferFile);
+            } catch (IOException ioe) {
                 logSevere("Unable to delete pending downloads file!");
             }
         }
@@ -2585,17 +2610,18 @@ public class TransferManager extends PFComponent {
 
             logFiner("Storing " + storedDownloads.size() + " downloads ("
                 + nPending + " pending, " + nCompleted + " completed)");
-            File transferFile = new File(Controller.getMiscFilesLocation(),
+            Path transferFile = Controller.getMiscFilesLocation().resolve(
                 getController().getConfigName() + ".transfers");
             // for testing we should support getConfigName() with subdirs
-            if (!transferFile.getParentFile().exists()
-                && !new File(transferFile.getParent()).mkdirs())
-            {
-                logSevere("Failed to mkdir misc directory!");
+            if (Files.notExists(transferFile.getParent())) {
+                try {
+                    Files.createDirectories(transferFile.getParent());
+                } catch (IOException ioe) {
+                    logSevere("Failed to mkdir misc directory!");
+                }
             }
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                transferFile));
-            ObjectOutputStream oOut = new ObjectOutputStream(fOut);
+            ObjectOutputStream oOut = new ObjectOutputStream(
+                Files.newOutputStream(transferFile));
             oOut.writeObject(storedDownloads);
             oOut.close();
         } catch (IOException e) {
@@ -2832,9 +2858,18 @@ public class TransferManager extends PFComponent {
                         if (upload.isAborted()) {
                             logWarning("Not starting aborted: " + upload);
                         } else {
-                            logFiner("Starting upload: " + upload);
-                            upload.start();
-                            uploadsStarted++;
+                            if (upload.getPartner().isOnLAN()
+                                || !isUploadActive(upload.getFile(), true))
+                            {
+                                logFiner("Starting upload: " + upload);
+                                upload.start();
+                                uploadsStarted++;
+                            } else {
+                                // PFS-843
+                                logInfo("Waiting with Internet upload of file "
+                                    + upload.getFile()
+                                    + ". Already upload to an Internet device");
+                            }
                         }
                     }
                 }
@@ -2906,75 +2941,86 @@ public class TransferManager extends PFComponent {
                     // Only one at a time.
                     return null;
                 }
-                // Get times.
-                Date startDate = new Date();
-                long downloadRate = 0;
-                long downloadSize = 1047552; // @todo, why 1023 * 1024 bytes?
-                boolean downloadOk = false;
+                // Pause all transfers
+                boolean wasPause = getController().isPaused();
+                getController().setPaused(true);
+                try {
+                    // Get times.
+                    Date startDate = new Date();
+                    long downloadRate = 0;
+                    long downloadSize = 1047552; // @todo, why 1023 * 1024
+                                                 // bytes?
+                    boolean downloadOk = false;
 
-                // downloadOk = countActiveDownloads() == 0
-                // && testAvailabilityDownload(downloadSize);
+                    // downloadOk = countActiveDownloads() == 0
+                    // && testAvailabilityDownload(downloadSize);
 
-                Date afterDownload = new Date();
-                // @todo please explain why / 4 ?
-                long uploadSize = 1047552 / 4;
-                boolean uploadOk = countActiveUploads() == 0
-                    && testAvailabilityUpload(uploadSize);
-                Date afterUpload = new Date();
+                    Date afterDownload = new Date();
+                    // @todo please explain why / 4 ?
+                    long uploadSize = 1047552 / 4;
+                    boolean uploadOk = countActiveUploads() == 0
+                        && testAvailabilityUpload(uploadSize);
+                    Date afterUpload = new Date();
 
-                // Calculate time differences.
-                long downloadTime = afterDownload.getTime()
-                    - startDate.getTime();
-                long uploadTime = afterUpload.getTime()
-                    - afterDownload.getTime();
-                // logWarning("Test availability download time " +
-                // downloadTime);
-                // logWarning("Test availability upload time " + uploadTime);
-                // Calculate rates in KiB/s.#
-                if (downloadOk) {
-                    downloadRate = downloadTime > 0 ? downloadSize * 1000
-                        / downloadTime : 0;
-                }
-                long uploadRate = uploadTime > 0 ? uploadSize * 1000
-                    / uploadTime : 0;
-                if (downloadOk) {
-                    logFine("Test availability download rate "
-                        + Format.formatBytesShort(downloadRate) + "/s");
-                }
-                if (uploadOk) {
-                    logFine("Test availability upload rate "
+                    // Calculate time differences.
+                    long downloadTime = afterDownload.getTime()
+                        - startDate.getTime();
+                    long uploadTime = afterUpload.getTime()
+                        - afterDownload.getTime();
+                    // logWarning("Test availability download time " +
+                    // downloadTime);
+                    // logWarning("Test availability upload time " +
+                    // uploadTime);
+                    // Calculate rates in KiB/s.#
+                    if (downloadOk) {
+                        downloadRate = downloadTime > 0 ? downloadSize * 1000
+                            / downloadTime : 0;
+                    }
+                    long uploadRate = uploadTime > 0 ? uploadSize * 1000
+                        / uploadTime : 0;
+                    if (downloadOk) {
+                        logFine("Test availability download rate "
+                            + Format.formatBytesShort(downloadRate) + "/s");
+                    }
+                    if (uploadOk) {
+                        logFine("Test availability upload rate "
+                            + Format.formatBytesShort(uploadRate) + "/s");
+                    }
+                    // Update bandwidth provider with 90% of new rates.
+                    // By experience: Measured rates usually lower than actual
+                    // speed.
+                    long modifiedDownloadRate = 90 * downloadRate / 100;
+                    long modifiedUploadRate = 90 * uploadRate / 100;
+
+                    logInfo("Speed test finished: Download "
+                        + Format.formatBytesShort(downloadRate) + "/s, Upload "
                         + Format.formatBytesShort(uploadRate) + "/s");
-                }
-                // Update bandwidth provider with 90% of new rates.
-                // By experience: Measured rates usually lower than actual
-                // speed.
-                long modifiedDownloadRate = 90 * downloadRate / 100;
-                long modifiedUploadRate = 90 * uploadRate / 100;
 
-                logInfo("Speed test finished: Download "
-                    + Format.formatBytesShort(downloadRate) + "/s, Upload "
-                    + Format.formatBytesShort(uploadRate) + "/s");
+                    // If the detected rate is too low the connection is
+                    // possibly
+                    // exhausted. Unlimt transfers? or keep the current rate
+                    // unchanged?
+                    if (uploadRate < 10240) {
+                        uploadRate = 0;
+                    }
+                    if (downloadRate < 102400 || downloadRate < uploadRate) {
+                        downloadRate = 0;
+                    }
 
-                // If the detected rate is too low the connection is possibly
-                // exhausted. Unlimt transfers? or keep the current rate
-                // unchanged?
-                if (uploadRate < 10240) {
-                    uploadRate = 0;
-                }
-                if (downloadRate < 102400 || downloadRate < uploadRate) {
-                    downloadRate = 0;
-                }
+                    if (downloadOk) {
+                        setDownloadCPSForWAN(modifiedDownloadRate);
+                    } else {
+                        // Set unlimited
+                        setDownloadCPSForWAN(0);
+                    }
+                    if (uploadOk) {
+                        setUploadCPSForWAN(modifiedUploadRate);
+                    }
 
-                if (downloadOk) {
-                    setDownloadCPSForWAN(modifiedDownloadRate);
-                } else {
-                    // Set unlimited
-                    setDownloadCPSForWAN(0);
+                } finally {
+                    recalculatingAutomaticRates.set(false);
+                    getController().setPaused(wasPause);
                 }
-                if (uploadOk) {
-                    setUploadCPSForWAN(modifiedUploadRate);
-                }
-                recalculatingAutomaticRates.set(false);
                 return null;
             }
         });

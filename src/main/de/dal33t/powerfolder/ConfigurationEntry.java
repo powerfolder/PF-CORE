@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: ConfigurationEntry.java 21134 2013-03-17 01:20:03Z sprajc $
  */
 package de.dal33t.powerfolder;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -229,7 +229,7 @@ public enum ConfigurationEntry {
      * HTTP tunnel relay URL.
      */
     SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
-        "http://os005.powerfolder.com/rpc"),
+        "http://my.powerfolder.com/rpc"),
 
     /**
      * #1687: How this computer should behave when the server is not connected.
@@ -246,6 +246,13 @@ public enum ConfigurationEntry {
      * If to load server nodes from server URL
      */
     SERVER_LOAD_NODES("server.load.nodes", true),
+
+    /**
+     * Specify several server URLs with a name like
+     * "Server 1=http://pf.example.org/;Server 2=https://www.example.com/pf/"
+     * to be displayed on the log in dialog in a combo box.
+     */
+    SERVER_CONNECTION_URLS("server.connection.urls"),
 
     // Server WEB settings ****************************************************
 
@@ -264,9 +271,15 @@ public enum ConfigurationEntry {
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),
 
-    MEMBERS_ENABLED("web.members.enabled", true),
+    MEMBERS_ENABLED("members.enabled", true),
 
-    SETTINGS_ENABLED("web.settings.enabled", true),
+    SETTINGS_ENABLED("settings.enabled", true),
+
+    FILES_ENABLED("files.enabled", true),
+    
+    ARCHIVE_DIRECTORY_NAME("files.archive.dir.name", "archive"),
+
+    PROBLEMS_ENABLED("problems.enabled", true),
 
     MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
 
@@ -575,7 +588,7 @@ public enum ConfigurationEntry {
                     }
                 }
             }
-            return rootDir + File.separatorChar
+            return rootDir + Paths.get("").getFileSystem().getSeparator()
                 + Constants.FOLDERS_BASE_DIR_SUBDIR_NAME;
         }
     },
@@ -585,6 +598,11 @@ public enum ConfigurationEntry {
      * if inaccessible during program start, e.g. USB- or Network-Drive
      */
     FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
+    
+    /**
+     * Lets do this flexible.
+     */
+    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
     
     /**
      * Note - as of PFC-2182, mass delete protection should only be applied
@@ -700,6 +718,8 @@ public enum ConfigurationEntry {
     CONFLICT_DETECTION("conflict.detection", true),
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
+    
+    LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
     /**
      * Whether to log verbose.
@@ -891,6 +911,11 @@ public enum ConfigurationEntry {
      * PFC-2226: Option to restrict new folder creation to the default storage path
      */
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false),
+    
+    /**
+     * Remove folder from setup if disappeared/deleted from basedir.
+     */
+    FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED("remove.folder.basedir.when_disappeared", true),
 
     /** The number of file versions to use when creating a new folder. */
     DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 5),
@@ -919,7 +944,9 @@ public enum ConfigurationEntry {
      * #2485: {@link Integer#MAX_VALUE} for never resume. 0 for adaptive resume
      * = resume when user is not working on his PC
      */
-    PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600); // One hour default.
+    PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600), // One hour default.
+
+    SHOW_TINY_WIZARDS("show.tiny.wizards", false);
 
     // Methods/Constructors ***************************************************
 

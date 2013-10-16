@@ -29,6 +29,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -48,13 +49,10 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
  * Class to model files selected from the tree.
  */
 public class FilesTableModel extends PFComponent implements TableModel,
-    SortedTableModel {
+    SortedTableModel
+{
 
-    private String[] columns = {"",
-        Translation.getTranslation("files_table_model.name"),
-        Translation.getTranslation("files_table_model.size"),
-        Translation.getTranslation("files_table_model.modified_by"),
-        Translation.getTranslation("files_table_model.date")};
+    private String[] columns;
 
     private static final int COL_FILE_TYPE = 0;
     private static final int COL_NAME = 1;
@@ -90,6 +88,23 @@ public class FilesTableModel extends PFComponent implements TableModel,
         patternChangeListener = new MyPatternChangeListener();
         significantlyChanged = new AtomicBoolean();
         modelChangedUpdater = new DelayedUpdater(getController());
+
+        int colLength = ConfigurationEntry.MEMBERS_ENABLED
+            .getValueBoolean(controller) ? 5 : 4;
+
+        columns = new String[colLength];
+
+        columns[0] = "";
+        columns[1] = Translation.getTranslation("files_table_model.name");
+        columns[2] = Translation.getTranslation("files_table_model.size");
+
+        if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(controller)) {
+            columns[3] = Translation
+                .getTranslation("files_table_model.modified_by");
+            columns[4] = Translation.getTranslation("files_table_model.date");
+        } else {
+            columns[3] = Translation.getTranslation("files_table_model.date");
+        }
     }
 
     /**
@@ -147,16 +162,16 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     /**
-     * Manually sorted?
-     * Folder changed?
-     * FileInfos different?
+     * Manually sorted? Folder changed? FileInfos different?
      */
     private void preprocessSignificantlyChanged() {
         if (previouslySorted) {
             significantlyChanged.set(true);
             return;
         }
-        if (folder == null || previousFolder == null || !folder.equals(previousFolder)) {
+        if (folder == null || previousFolder == null
+            || !folder.equals(previousFolder))
+        {
             significantlyChanged.set(true);
             return;
         }

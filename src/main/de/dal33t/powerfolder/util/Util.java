@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: Util.java 20555 2012-12-25 04:15:08Z glasgow $
  */
 package de.dal33t.powerfolder.util;
 
@@ -27,7 +27,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -35,6 +34,10 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -302,8 +305,8 @@ public class Util {
      * @param forceOverwrite
      *            true if the resource should be copied even if not required.
      */
-    public static File copyResourceTo(String resource, String altLocation,
-        File destinationFile, boolean forceOverwrite, boolean quiet)
+    public static Path copyResourceTo(String resource, String altLocation,
+        Path destinationFile, boolean forceOverwrite, boolean quiet)
     {
         Reject.ifNull(resource, "Resoucse");
         try {
@@ -326,10 +329,10 @@ public class Util {
             long length = resCon.getContentLength();
 
             // Step 2) Check if update/overwrite is required
-            if (!forceOverwrite && destinationFile.exists()) {
-                boolean upToDate = length == destinationFile.length()
+            if (!forceOverwrite && Files.exists(destinationFile)) {
+                boolean upToDate = length == Files.size(destinationFile)
                     && DateUtil.equalsFileDateCrossPlattform(lastMod,
-                        destinationFile.lastModified());
+                        Files.getLastModifiedTime(destinationFile).toMillis());
                 if (upToDate) {
                     // No update required
                     LOG.fine("Not required to update " + resURL + " to "
@@ -340,10 +343,10 @@ public class Util {
 
             // Step 3) Actually copy
             InputStream in = resCon.getInputStream();
-            destinationFile.mkdirs();
-            FileUtils.copyFromStreamToFile(in, destinationFile);
+            Files.createDirectories(destinationFile);
+            PathUtils.copyFromStreamToFile(in, destinationFile);
             // Preserver last mod for later caching.
-            destinationFile.setLastModified(resCon.getLastModified());
+            Files.setLastModifiedTime(destinationFile, FileTime.fromMillis(resCon.getLastModified()));
         } catch (IOException ioe) {
             if (quiet) {
                 LOG.fine("Unable to create target for resource: "
@@ -363,9 +366,9 @@ public class Util {
         if (util == null) {
             return false;
         }
-        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
+        Path scut = Paths.get(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + Constants.LINK_EXTENSION);
-        return scut.exists();
+        return Files.exists(scut);
     }
 
     /**
@@ -376,24 +379,24 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean createDesktopShortcut(String shortcutName,
-        File shortcutTarget)
+        Path shortcutTarget)
     {
         WinUtils util = WinUtils.getInstance();
         if (util == null) {
             return false;
         }
         LOG.finer("Creating desktop shortcut to "
-            + shortcutTarget.getAbsolutePath());
+            + shortcutTarget.toAbsolutePath());
         ShellLink link = new ShellLink(null, shortcutName,
-            shortcutTarget.getAbsolutePath(), null);
+            shortcutTarget.toAbsolutePath().toString(), null);
 
-        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
+        Path scut = Paths.get(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + Constants.LINK_EXTENSION);
         try {
-            util.createLink(link, scut.getAbsolutePath());
+            util.createLink(link, scut.toAbsolutePath().toString());
             return true;
         } catch (IOException e) {
-            LOG.warning("Couldn't create shortcut " + scut.getAbsolutePath());
+            LOG.warning("Couldn't create shortcut " + scut.toAbsolutePath());
             LOG.log(Level.FINER, "IOException", e);
         }
         return false;
@@ -411,9 +414,15 @@ public class Util {
             return false;
         }
         LOG.finer("Removing desktop shortcut: " + shortcutName);
-        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
-            false), shortcutName + Constants.LINK_EXTENSION);
-        return scut.delete();
+        try {
+            Path scut = Paths.get(
+                util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false),
+                shortcutName + Constants.LINK_EXTENSION);
+            Files.delete(scut);
+            return true;
+        } catch (Exception ioe) {
+            return false;
+        }
     }
 
     /**

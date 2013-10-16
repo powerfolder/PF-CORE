@@ -19,20 +19,26 @@
  */
 package de.dal33t.powerfolder.ui.dialog.directory;
 
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
+import java.awt.Cursor;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.io.File;
-import java.util.*;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.awt.*;
+
+import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Class to render a tree of file system directories.
@@ -65,7 +71,7 @@ class DirectoryTree extends JTree {
      *
      * @param file
      */
-    public void initializePath(File file) {
+    public void initializePath(Path file) {
         if (file == null) {
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "No file supplied.");
@@ -75,9 +81,9 @@ class DirectoryTree extends JTree {
         }
 
         // If the file is dud.
-        if (!file.exists()) {
+        if (Files.notExists(file)) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "File does not exist : " + file.getAbsolutePath());
+                log.log(Level.FINE, "File does not exist : " + file.toAbsolutePath());
             }
             doDefault();
             return;
@@ -89,8 +95,8 @@ class DirectoryTree extends JTree {
             StringBuilder sb = new StringBuilder();
 
             // Split the path on file separator.
-            StringTokenizer st = new StringTokenizer(file.getAbsolutePath(),
-                File.separator);
+            StringTokenizer st = new StringTokenizer(file.toAbsolutePath().toString(),
+                file.getFileSystem().getSeparator());
 
             // Add the root element as the first path element.
             TreeNode node = (TreeNode) getModel().getRoot();
@@ -104,28 +110,28 @@ class DirectoryTree extends JTree {
 
                 if ((OSUtil.isLinux() || OSUtil.isMacOS()) && first) {
                     // First element of a Linux box is '/'.
-                    sb.append(File.separator);
+                    sb.append(file.getFileSystem().getSeparator());
                 } else {
                     // Build file path
                     String next = st.nextToken();
-                    sb.append(next).append(File.separator);
+                    sb.append(next).append(file.getFileSystem().getSeparator());
                 }
-                File f = new File(sb.toString());
+                Path f = Paths.get(sb.toString());
 
                 // Strange, but root files appear as hidden. Security?
                 // So do not check hidden attribute at first level.
-                if (!f.exists() || !f.canRead() || !f.isDirectory()
-                    || f.isHidden() && !first)
+                if (Files.notExists(f) || !Files.isReadable(f) || !Files.isDirectory(f)
+                    || Files.isHidden(f) && !first)
                 {
                     // Abort if cannot access file at any level.
                     if (first) {
                         // Interesting. Why can we not access the root of an element?
                         if (log.isLoggable(Level.FINE)) {
                             String why = "Cannot access the base of " +
-                                    file.getAbsolutePath() + " because" +
-                                    (f.exists() ? "" : " (file does not exist)") +
-                                    (f.canRead() ? "" : " (file cannot be read)") +
-                                    (f.isDirectory() ? "" : " (file is not a directory)");
+                                    file.toAbsolutePath() + " because" +
+                                    (Files.exists(f) ? "" : " (file does not exist)") +
+                                    (Files.isReadable(f) ? "" : " (file cannot be read)") +
+                                    (Files.isDirectory(f) ? "" : " (file is not a directory)");
                             log.log(Level.FINE, why.trim());
                         }
                     }
@@ -140,7 +146,7 @@ class DirectoryTree extends JTree {
                     TreeNode node1 = node.getChildAt(i);
                     if (node1 instanceof DirectoryTreeNode) {
                         DirectoryTreeNode dtn = (DirectoryTreeNode) node1;
-                        File dtnFile = (File) dtn.getUserObject();
+                        Path dtnFile = (Path) dtn.getUserObject();
                         if (fileCompare(dtnFile, f)) {
 
                             // Set node for next loop.
@@ -173,13 +179,15 @@ class DirectoryTree extends JTree {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "Failed to navigate the tree depth "
                                 + depth + " for " +
-                                file.getAbsolutePath());
+                                file.toAbsolutePath());
                     }
                     doDefault();
                     return;
                 }
                 depth++;
             }
+        } catch (IOException e) {
+            log.warning(e.getMessage());
         } finally {
             CursorUtils.returnToOriginal(this, c);
         }
@@ -215,13 +223,13 @@ class DirectoryTree extends JTree {
      * @param file2
      * @return
      */
-    private static boolean fileCompare(File file1, File file2) {
-        String fileName1 = file1.getAbsolutePath();
-        while (fileName1.endsWith(File.separator)) {
+    private static boolean fileCompare(Path file1, Path file2) {
+        String fileName1 = file1.toAbsolutePath().toString();
+        while (fileName1.endsWith(file1.getFileSystem().getSeparator())) {
             fileName1 = fileName1.substring(0, fileName1.length() - 1);
         }
-        String fileName2 = file2.getAbsolutePath();
-        while (fileName2.endsWith(File.separator)) {
+        String fileName2 = file2.toAbsolutePath().toString();
+        while (fileName2.endsWith(file2.getFileSystem().getSeparator())) {
             fileName2 = fileName2.substring(0, fileName2.length() - 1);
         }
         return fileName1.equals(fileName2);

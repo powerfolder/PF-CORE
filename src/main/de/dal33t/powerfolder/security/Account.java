@@ -69,12 +69,13 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
  * A access to the system indentified by username & password.
  *
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 @TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
@@ -104,6 +105,11 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_LICENSE_KEY_FILES = "licenseKeyFiles";
     public static final String PROPERTYNAME_COMPUTERS = "computers";
     public static final String PROPERTYNAME_GROUPS = "groups";
+    public static final String PROPERTYNAME_DISPLAYNAME = "displayName";
+    public static final String PROPERTYNAME_FIRSTNAME = "firstname";
+    public static final String PROPERTYNAME_SURNAME = "surname";
+    public static final String PROPERTYNAME_TELEPHONE = "telephone";
+    public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
 
     @Id
     private String oid;
@@ -122,6 +128,13 @@ public class Account implements Serializable {
     private MemberInfo lastLoginFrom;
     private boolean proUser;
 
+    @Column(length = 256)
+    private String firstname;
+    @Column(length = 255)
+    private String surname;
+    @Column(length = 255)
+    private String telephone;
+
     // PFS-605
     private String custom1;
     private String custom2;
@@ -129,6 +142,10 @@ public class Account implements Serializable {
 
     @Column(length = 1024)
     private String notes;
+    
+    @Index(name = "IDX_ACC_ORG_ID")
+    @Column(nullable = true, unique = false)
+    private String organizationOID;
 
     /**
      * The list of computers associated with this account.
@@ -348,6 +365,18 @@ public class Account implements Serializable {
         return AccessMode.NO_ACCESS;
     }
 
+    public boolean isOrganizationAdmin() {
+        if (StringUtils.isBlank(organizationOID)) {
+            return false;
+        }
+
+        return hasPermission(new OrganizationAdminPermission(organizationOID));
+    }
+
+    public boolean isInSameOrganization(Account other) {
+        return Util.equals(organizationOID, other.getOrganizationOID());
+    }
+
     /**
      * @return the list of folders this account gets charged for.
      */
@@ -445,10 +474,16 @@ public class Account implements Serializable {
     }
 
     public String getDisplayName() {
-        // TODO Rework completely
-        if (authByShibboleth() && !emails.isEmpty()) {
+        if (StringUtils.isNotBlank(firstname)
+            || StringUtils.isNotBlank(surname))
+        {
+            return (firstname + " " + surname).trim();
+        } else if (authByShibboleth() && !emails.isEmpty()) {
+            return emails.get(0);
+        } else if (!emails.isEmpty() && StringUtils.isNotBlank(emails.get(0))) {
             return emails.get(0);
         }
+
         return username;
     }
 
@@ -512,10 +547,6 @@ public class Account implements Serializable {
     }
 
     public OnlineStorageSubscription getOSSubscription() {
-        if (osSubscription == null) {
-            // osSubscription = new OnlineStorageSubscription();
-            // osSubscription.setType(OnlineStorageSubscriptionType.TRIAL_5GB);
-        }
         return osSubscription;
     }
 
@@ -533,6 +564,38 @@ public class Account implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public String getOrganizationOID() {
+        return organizationOID;
+    }
+
+    public void setOrganizationOID(String organizationOID) {
+        this.organizationOID = organizationOID;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+    
+    public String getSurname() {
+        return surname;
+    }
+    
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 
     public String getCustom1() {

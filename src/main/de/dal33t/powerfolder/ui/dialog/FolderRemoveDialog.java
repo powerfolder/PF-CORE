@@ -103,26 +103,28 @@ public class FolderRemoveDialog extends BaseDialog {
             ? "folder_remove.dialog.online_text"
             : "folder_remove.dialog.text";
         if (syncFlag) {
-            folderLeaveText = Translation
-                .getTranslation(removeKey, foInfo.name)
+            folderLeaveText = Translation.getTranslation(removeKey,
+                foInfo.getLocalizedName())
                 + '\n'
                 + Translation
                     .getTranslation("folder_remove.dialog.sync_warning");
         } else {
             folderLeaveText = Translation
-                .getTranslation(removeKey, foInfo.name);
+                .getTranslation(removeKey, foInfo.getLocalizedName());
         }
         messageLabel = new JLabel(folderLeaveText);
 
         removeFromLocalBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.remove_from_local"));
         removeFromLocalBox.setSelected(true);
+        removeFromLocalBox.setEnabled(allowRemove);
         removeFromLocalBox.addActionListener(new ConvertActionListener());
 
         deleteSystemSubFolderBox = SimpleComponentFactory
             .createCheckBox(Translation
                 .getTranslation("folder_remove.dialog.delete"));
         deleteSystemSubFolderBox.setEnabled(allowRemove);
+        deleteSystemSubFolderBox.setVisible(allowRemove);
 
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.remove_from_os"));
@@ -135,7 +137,8 @@ public class FolderRemoveDialog extends BaseDialog {
         });
         removeFromServerBox.setSelected(!localFolder && onlineFolder);
         removeFromServerBox.setEnabled(allowRemove);
-
+        removeFromServerBox.setVisible(allowRemove);
+        
         // Buttons
         createRemoveButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

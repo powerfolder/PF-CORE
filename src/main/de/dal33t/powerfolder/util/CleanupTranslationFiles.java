@@ -15,21 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: CleanupTranslationFiles.java 20511 2012-12-12 23:19:38Z sprajc $
  */
 package de.dal33t.powerfolder.util;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -102,10 +105,10 @@ public class CleanupTranslationFiles {
         Collections.sort(keys);
         if (deep) {
             Collection<String> usedOriginals = new HashSet<String>();
-            findContent(searchContents, new File("src/main"), usedOriginals);
-            findContent(searchContents, new File("../PowerFolder-Pro/src/pro"),
+            findContent(searchContents, Paths.get("src/main"), usedOriginals);
+            findContent(searchContents, Paths.get("../PowerFolder-Pro/src/pro"),
                 usedOriginals);
-            findContent(searchContents, new File(
+            findContent(searchContents, Paths.get(
                 "../PowerFolder-Pro/src/server"), usedOriginals);
             System.out.println("Found " + usedOriginals.size() + "/"
                 + keys.size() + ". " + (keys.size() - usedOriginals.size())
@@ -236,22 +239,27 @@ public class CleanupTranslationFiles {
             + " missing translations.");
     }
 
-    private void findContent(Collection<String> contents, File f,
+    private void findContent(Collection<String> contents, Path f,
         Collection<String> foundContents) throws FileNotFoundException
     {
-        if (f.isDirectory()) {
-            for (File innerFile : f.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith("java")
-                        || new File(dir, name).isDirectory();
+        if (Files.isDirectory(f)) {
+            Filter<Path> filter = new Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) {
+                    return Files.isDirectory(entry)
+                        || entry.getFileName().toString().endsWith("java");
                 }
-            }))
-            {
-                findContent(contents, innerFile, foundContents);
+            };
+
+            try (DirectoryStream<Path> innerFiles = Files.newDirectoryStream(f, filter)) {
+                for (Path innerFile : innerFiles) {
+                    findContent(contents, innerFile, foundContents);
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
         } else {
-            InputStream in = new FileInputStream(f);
-            try {
+            try (InputStream in = Files.newInputStream(f);) {
                 byte[] buf = StreamUtils.readIntoByteArray(in);
                 String input = new String(buf, Convert.UTF8);
                 for (String content : contents) {
@@ -259,14 +267,9 @@ public class CleanupTranslationFiles {
                         foundContents.add(content);
                     }
                 }
-                System.out.println(f.getAbsolutePath());
+                System.out.println(f.toAbsolutePath());
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                }
             }
         }
     }
@@ -279,7 +282,7 @@ public class CleanupTranslationFiles {
             System.err.print(fileName);
             try {
                 System.err.println(": Creating new translation file");
-                new File(fileName).createNewFile();
+                Files.createFile(Paths.get(fileName));
                 return props;
             } catch (IOException e1) {
                 e1.printStackTrace();

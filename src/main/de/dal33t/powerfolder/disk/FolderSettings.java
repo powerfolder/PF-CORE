@@ -15,11 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderSettings.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
@@ -87,13 +89,13 @@ public class FolderSettings {
     /**
      * Physical location of files in the folder.
      */
-    private final File localBaseDir;
+    private final Path localBaseDir;
 
     /**
      * #2056: The directory to commit/mirror the whole folder to when in reaches
      * 100% sync.
      */
-    private final File commitDir;
+    private final Path commitDir;
 
     /**
      * The synchronization profile for the folder (manual, backup, etc)
@@ -138,7 +140,7 @@ public class FolderSettings {
      * @param createInvitationFile
      * @param versions
      */
-    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+    public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile, int versions)
     {
         this(localBaseDir, syncProfile, createInvitationFile,
@@ -157,7 +159,7 @@ public class FolderSettings {
      * @param versions
      * @param syncPatterns
      */
-    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+    public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile,
         boolean previewOnly, String downloadScript, int versions,
         boolean syncPatterns)
@@ -180,10 +182,10 @@ public class FolderSettings {
      * @param commitDir
      * @param syncWarnSeconds
      */
-    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+    public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile,
         boolean previewOnly, String downloadScript, int versions,
-        boolean syncPatterns, File commitDir, int syncWarnSeconds)
+        boolean syncPatterns, Path commitDir, int syncWarnSeconds)
     {
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
@@ -204,11 +206,11 @@ public class FolderSettings {
     // Accessors //
     // /////////////
 
-    public File getLocalBaseDir() {
+    public Path getLocalBaseDir() {
         return localBaseDir;
     }
 
-    public File getCommitDir() {
+    public Path getCommitDir() {
         return commitDir;
     }
 
@@ -334,12 +336,12 @@ public class FolderSettings {
         String folderDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_DIR);
 
-        File folderDir = translateFolderDir(folderDirStr, verify);
+        Path folderDir = translateFolderDir(folderDirStr, verify);
         if (folderDir == null) {
             return null;
         }
 
-        File commitDir = null;
+        Path commitDir = null;
         String commitDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
@@ -441,12 +443,12 @@ public class FolderSettings {
             + FOLDER_SETTINGS_ID, folderInfo.id);
         String baseDir = localBaseDirStr;
         if (StringUtils.isBlank(baseDir)) {
-            baseDir = localBaseDir.getAbsolutePath();
+            baseDir = localBaseDir.toAbsolutePath().toString();
         }
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_DIR, baseDir);
         String commitDirStr = commitDir != null
-            ? commitDir.getAbsolutePath()
+            ? commitDir.toAbsolutePath().toString()
             : "";
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_COMMIT_DIR, commitDirStr);
@@ -475,13 +477,17 @@ public class FolderSettings {
         }
     }
 
-    private static File translateFolderDir(String str, boolean verify) {
+    private static Path translateFolderDir(String str, boolean verify) {
         if (str == null) {
             return null;
         }
         if (!str.contains("$")) {
             // No placeholders found
-            return new File(str);
+            try {
+                return Paths.get(URI.create(str));
+            } catch (IllegalArgumentException iae) {
+                return Paths.get(str);
+            }
         }
         String res = str;
         try {
@@ -494,7 +500,7 @@ public class FolderSettings {
                 }
                 if (res.contains(dir.getPlaceholder())) {
                     res = res.replace(dir.getPlaceholder(), dir.getDirectory()
-                        .getAbsolutePath());
+                        .toAbsolutePath().toString());
                 }
             }
         } catch (Exception e) {
@@ -512,6 +518,10 @@ public class FolderSettings {
             }
         }
 
-        return new File(res);
+        try {
+            return Paths.get(URI.create(res));
+        } catch (IllegalArgumentException iae) {
+            return Paths.get(res);
+        }
     }
 }

@@ -15,15 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: DiskItemFilter.java 21255 2013-03-19 18:23:02Z sprajc $
  */
 package de.dal33t.powerfolder.disk;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,9 +44,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileReader;
-import de.schlichtherle.truezip.file.TFileWriter;
 
 /**
  * Class to hold a number of patterns to filter DiskItems with. The class has
@@ -110,26 +113,24 @@ public class DiskItemFilter {
      *            loading. Usually done on re-loading load from disk of the
      *            patterns.
      */
-    public void loadPatternsFrom(File file, boolean markDirtyIfChanged) {
-        if (file.exists()) {
-            BufferedReader reader = null;
-            try {
-                Set<Pattern> loadedPatterns = new HashSet<Pattern>();
-                reader = new BufferedReader(new TFileReader(new TFile(file)));
+    public void loadPatternsFrom(Path file, boolean markDirtyIfChanged) {
+        if (Files.exists(file)) {
+            try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+                Set<Pattern> tempPatterns = new HashSet<Pattern>();
                 String readPattern;
                 while ((readPattern = reader.readLine()) != null) {
                     String trimmedPattern = readPattern.trim();
                     if (trimmedPattern.length() > 0
                         && !trimmedPattern.equals(PATTERN_IGNORE_ALL))
                     {
-                        loadedPatterns.add(createPattern(trimmedPattern));
+                        tempPatterns.add(createPattern(trimmedPattern));
                     }
                 }
 
                 // Did anything change?
                 boolean allTheSame = true;
-                if (loadedPatterns.size() == patterns.size()) {
-                    for (Pattern tempPattern : loadedPatterns) {
+                if (tempPatterns.size() == patterns.size()) {
+                    for (Pattern tempPattern : tempPatterns) {
                         if (!patterns.contains(tempPattern)) {
                             allTheSame = false;
                             break;
@@ -152,7 +153,7 @@ public class DiskItemFilter {
                     listenerSupport.patternRemoved(new PatternChangedEvent(
                         this, oldPattern.getPatternText(), false));
                 }
-                for (Pattern newPattern : loadedPatterns) {
+                for (Pattern newPattern : tempPatterns) {
                     patterns.add(newPattern);
                     listenerSupport.patternAdded(new PatternChangedEvent(this,
                         newPattern.getPatternText(), true));
@@ -161,15 +162,6 @@ public class DiskItemFilter {
             } catch (IOException ioe) {
                 log.log(Level.SEVERE, "Problem loading pattern from " + file
                     + ". " + ioe);
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        log.log(Level.SEVERE, "Problem loading pattern from "
-                            + file, e);
-                    }
-                }
             }
         }
     }
@@ -179,21 +171,23 @@ public class DiskItemFilter {
      * 
      * @param file
      */
-    public void savePatternsTo(File file, boolean createBackup) {
-        if (createBackup) {
-            File backup = new TFile(file.getParentFile(), file.getName()
-                + ".backup");
-            if (file.exists()) {
-                if (backup.exists()) {
-                    backup.delete();
-                }
-                file.renameTo(backup);
-            }
-        }
-        BufferedWriter writer = null;
+    public void savePatternsTo(Path file, boolean createBackup) {
         try {
-            file.createNewFile();
-            writer = new BufferedWriter(new TFileWriter(new TFile(file)));
+            if (createBackup) {
+                Path backup = file.getParent().resolve(file.getFileName().toString()
+                    + ".backup");
+                if (Files.exists(file)) {
+                    if (Files.exists(backup)) {
+                        Files.delete(backup);
+                    }
+                    Files.move(file, backup);
+                }
+            }
+        } catch (IOException ioe) {
+            log.warning(ioe.getMessage());
+            return;
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
             for (Pattern pattern : patterns) {
                 writer.write(pattern.getPatternText());
                 writer.newLine();
@@ -203,15 +197,6 @@ public class DiskItemFilter {
             log.log(Level.SEVERE, "Problem saving pattern to " + file + ". "
                 + e);
             log.log(Level.FINER, e.toString(), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    log.log(Level.SEVERE, "Problem saving pattern to " + file,
-                        e);
-                }
-            }
         }
     }
 

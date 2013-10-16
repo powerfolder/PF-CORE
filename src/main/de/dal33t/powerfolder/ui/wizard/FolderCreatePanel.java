@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderCreatePanel.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -30,11 +30,11 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIA
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,9 +43,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.Constants;
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -55,8 +55,8 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -113,10 +113,10 @@ public class FolderCreatePanel extends SwingWorkerPanel {
         return next;
     }
 
-    private static FolderInfo createFolderInfo(File localBase) {
+    private static FolderInfo createFolderInfo(Path localBase) {
         // Create new folder info
-        String name = FileUtils.getSuggestedFolderName(localBase);
-        String folderId = '[' + IdGenerator.makeId() + ']';
+        String name = PathUtils.getSuggestedFolderName(localBase);
+        String folderId = IdGenerator.makeFolderId();
         return new FolderInfo(name, folderId);
     }
 
@@ -158,7 +158,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 .getAttribute(FOLDER_CREATE_ITEMS);
             if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
                 for (FolderCreateItem folderCreateItem : folderCreateItems) {
-                    File localBase = folderCreateItem.getLocalBase();
+                    Path localBase = folderCreateItem.getLocalBase();
                     Reject.ifNull(localBase,
                         "Local base for folder is null/not set");
                     SyncProfile syncProfile = folderCreateItem.getSyncProfile();
@@ -185,7 +185,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
 
                 // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
                 // FOLDERINFO_ATTRIBUTE...
-                File localBase = (File) getWizardContext().getAttribute(
+                Path localBase = (Path) getWizardContext().getAttribute(
                     FOLDER_LOCAL_BASE);
                 Reject.ifNull(localBase,
                     "Local base for folder is null/not set");
@@ -325,7 +325,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                             folderInfo);
                         createDefaultFolderHelpFile(folder);
                         folder.recommendScanOnNextMaintenance();
-                        FileUtils.openFile(folder.getLocalBase());
+                        PathUtils.openFile(folder.getLocalBase());
                     }
                 }
             }
@@ -335,24 +335,29 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             FolderSettings folderSettings)
         {
             FolderRepository folderRepo = getController().getFolderRepository();
-            File baseDir = folderRepo.getFoldersBasedir();
-            if (!baseDir.exists()) {
+            Path baseDir = folderRepo.getFoldersBasedir();
+            if (Files.notExists(baseDir)) {
                 log.info(String.format("Creating basedir: %s",
-                    baseDir.getAbsolutePath()));
-                baseDir.mkdirs();
+                    baseDir.toAbsolutePath()));
+                try {
+                    Files.createDirectory(baseDir);
+                }
+                catch (IOException ioe) {
+                    log.info(ioe.getMessage());
+                }
             }
 
-            File existingFolder = new File(baseDir, folderInfo.name);
-            if (existingFolder.exists()) {
+            Path existingFolder = baseDir.resolve(folderInfo.getLocalizedName());
+            if (Files.exists(existingFolder)) {
                 log.finer("Folder is an existing subdirectory in basedir: "
                     + existingFolder);
                 return;
             }
 
-            File shortcutFile = new File(baseDir, folderInfo.getName() + Constants.LINK_EXTENSION);
-            String shortcutPath = shortcutFile.getAbsolutePath();
+            Path shortcutFile = baseDir.resolve(folderInfo.getLocalizedName() + Constants.LINK_EXTENSION);
+            String shortcutPath = shortcutFile.toAbsolutePath().toString();
             String filePath = folderSettings.getLocalBaseDir()
-                .getAbsolutePath();
+                .toAbsolutePath().toString();
 
             if (WinUtils.isSupported()
                 && !UserDirectories.getUserDirectories().containsKey(
@@ -375,14 +380,14 @@ public class FolderCreatePanel extends SwingWorkerPanel {
         }
 
         private void createDefaultFolderHelpFile(Folder folder) {
-            File helpFile = new File(folder.getLocalBase(),
+            Path helpFile = folder.getLocalBase().resolve(
                 "Place files to sync here.txt");
-            if (helpFile.exists()) {
+            if (Files.exists(helpFile)) {
                 return;
             }
             Writer w = null;
             try {
-                w = new OutputStreamWriter(new FileOutputStream(helpFile));
+                w = new OutputStreamWriter(Files.newOutputStream(helpFile));
                 w.write("This is the default synchronized folder of PowerFolder.\r\n");
                 w.write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");

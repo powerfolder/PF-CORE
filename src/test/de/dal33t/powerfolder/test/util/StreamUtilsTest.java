@@ -21,12 +21,13 @@ package de.dal33t.powerfolder.test.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.StreamUtils;
@@ -48,15 +49,15 @@ public class StreamUtilsTest extends TestCase {
     }
 
     public void testFileCopy() throws IOException {
-        new File("build/test").mkdirs();
-        File inFile = TestHelper.createRandomFile(new File(
+        Files.createDirectories(Paths.get("build/test"));
+        Path inFile = TestHelper.createRandomFile(Paths.get(
             "build/test/randomfile.txt"));
-        File outFile = new File("build/test/randomfile_out.txt");
-        OutputStream out = new FileOutputStream(outFile);
+        Path outFile = Paths.get("build/test/randomfile_out.txt");
+        OutputStream out = Files.newOutputStream(outFile);
         StreamUtils.copyToStream(inFile, out);
         out.close();
-        assertTrue(outFile.exists());
-        assertEquals(inFile.length(), outFile.length());
+        assertTrue(Files.exists(outFile));
+        assertEquals(Files.size(inFile), Files.size(outFile));
     }
 
     public void testReadOk() throws IOException {

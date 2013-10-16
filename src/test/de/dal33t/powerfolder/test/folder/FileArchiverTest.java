@@ -1,7 +1,8 @@
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -16,7 +17,6 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
-import de.schlichtherle.truezip.file.TFile;
 
 public class FileArchiverTest extends TwoControllerTestCase {
     @Override
@@ -28,36 +28,41 @@ public class FileArchiverTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
     }
 
-    public void testCopyOrMoveFileArchiver() {
+    public void testCopyOrMoveFileArchiver() throws IOException {
         Folder fb = getFolderAtBart();
-        File tb = TestHelper.createRandomFile(fb.getLocalBase(), 1024);
+        Path tb = TestHelper.createRandomFile(fb.getLocalBase(), 1024);
 
         scanFolder(fb);
         TestHelper.waitMilliSeconds(3000);
 
         FileInfo fib = fb.getKnownFiles().iterator().next();
 
-        File archive = new TFile(fb.getSystemSubDir(), "archive");
-        archive.mkdirs();
-        FileArchiver fa = new FileArchiver(archive, getContollerBart().getMySelf().getInfo());
+        Path archive = fb.getSystemSubDir().resolve("archive");
+        Files.createDirectories(archive);
+        FileArchiver fa = new FileArchiver(archive, getContollerBart()
+            .getMySelf().getInfo());
         try {
             fa.archive(fib, tb, false);
         } catch (IOException e) {
             fail(e.toString());
         }
 
-        File expected = new TFile(fb.getSystemSubDir(), "archive");
-        expected = new TFile(expected, fib.getRelativeName() + "_K_"
-            + fib.getVersion());
-        assertTrue(expected.exists());
-        assertEquals(expected.lastModified(), fib.getModifiedDate().getTime());
+        Path expected = fb.getSystemSubDir().resolve("archive");
+        expected = expected.resolve(fib.getRelativeName().replace(".",
+            "_K_" + fib.getVersion() + "."));
+        assertTrue(Files.exists(expected));
+        assertEquals(Files.getLastModifiedTime(expected).toMillis(), fib
+            .getModifiedDate().getTime());
+        
+        FileInfo fia = fa.getArchivedFilesInfos(fib).get(0);
+        assertEquals(fib.getRelativeName(), fia.getRelativeName());
     }
 
     public void testBackupOnDownload() {
         final Folder fb = getFolderAtBart();
 
         Folder fl = getFolderAtLisa();
-        File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
 
         scanFolder(fl);
 
@@ -68,17 +73,17 @@ public class FileArchiverTest extends TwoControllerTestCase {
         });
 
         FileInfo fib = fb.getKnownFiles().iterator().next();
-        File eBart = new TFile(fb.getSystemSubDir(), "archive");
-        eBart = new TFile(eBart, fib.getRelativeName() + "_K_"
-            + fib.getVersion());
-        File eLisa = new TFile(fl.getSystemSubDir(), "archive");
-        eLisa = new TFile(eLisa, fib.getRelativeName() + "_K_"
-            + fib.getVersion());
+        Path eBart = fb.getSystemSubDir().resolve("archive");
+        eBart = eBart.resolve(fib.getRelativeName().replace(".",
+            "_K_" + fib.getVersion() + "."));
+        Path eLisa = fl.getSystemSubDir().resolve("archive");
+        eLisa = eLisa.resolve(fib.getRelativeName().replace(".",
+            "_K_" + fib.getVersion() + "."));
 
         modLisaFile(tl, fib);
 
-        assertTrue(eBart.exists());
-        assertFalse(eLisa.exists());
+        assertTrue(Files.exists(eBart));
+        assertFalse(Files.exists(eLisa));
     }
 
     public void testLimitedVersions() {
@@ -86,7 +91,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         fb.setArchiveVersions(3);
 
         Folder fl = getFolderAtLisa();
-        File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
 
         scanFolder(fl);
 
@@ -106,30 +111,31 @@ public class FileArchiverTest extends TwoControllerTestCase {
             modLisaFile(tl, fib);
         }
 
-        File ver[] = new TFile[4];
-        File archdir = new TFile(fb.getSystemSubDir(), "archive");
+        Path ver[] = new Path[4];
+        Path archdir = fb.getSystemSubDir().resolve("archive");
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = new TFile(archdir, fib.getRelativeName() + "_K_" + i);
+            ver[i] = archdir.resolve(fib.getRelativeName().replace(".",
+                "_K_" + i + "."));
         }
 
-        assertFalse(ver[0].exists());
-        assertTrue(ver[1].exists());
+        assertFalse(Files.exists(ver[0]));
+        assertTrue(Files.exists(ver[1]));
 
         TestHelper.waitMilliSeconds(2100);
         modLisaFile(tl, fib);
-        assertFalse(ver[1].exists());
-        assertTrue(ver[2].exists());
+        assertFalse(Files.exists(ver[1]));
+        assertTrue(Files.exists(ver[2]));
 
         fb.setArchiveVersions(5);
         modLisaFile(tl, fib);
-        assertTrue(ver[2].exists());
+        assertTrue(Files.exists(ver[2]));
 
         modLisaFile(tl, fib);
-        assertTrue(ver[2].exists());
+        assertTrue(Files.exists(ver[2]));
 
         modLisaFile(tl, fib);
-        assertFalse(ver[2].exists());
-        assertTrue(ver[3].exists());
+        assertFalse(Files.exists(ver[2]));
+        assertTrue(Files.exists(ver[3]));
     }
 
     public void testChangeVersionsPerFile() {
@@ -137,7 +143,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         fb.setArchiveVersions(3);
 
         Folder fl = getFolderAtLisa();
-        File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
 
         scanFolder(fl);
 
@@ -149,53 +155,54 @@ public class FileArchiverTest extends TwoControllerTestCase {
         FileInfo fib = fb.getKnownFiles().iterator().next();
         assertEquals(0, fb.getFileArchiver().getSize());
 
-        File ver[] = new TFile[5];
+        Path ver[] = new Path[5];
         for (int i = 0; i < ver.length; i++) {
             TestHelper.waitMilliSeconds(2100);
             modLisaFile(tl, fib);
         }
-        File archdir = new TFile(fb.getSystemSubDir(), "archive");
+        Path archdir = fb.getSystemSubDir().resolve("archive");
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = new TFile(archdir, fib.getRelativeName() + "_K_" + i);
+            ver[i] = archdir.resolve(fib.getRelativeName().replace(".",
+                "_K_" + i + "."));
         }
         assertEquals(0, fl.getFileArchiver().getSize());
-        assertFalse(ver[0].exists());
-        assertFalse(ver[1].exists());
-        assertTrue(ver[2].exists());
-        assertTrue(ver[3].exists());
-        assertTrue(ver[4].exists());
+        assertFalse(Files.exists(ver[0]));
+        assertFalse(Files.exists(ver[1]));
+        assertTrue(Files.exists(ver[2]));
+        assertTrue(Files.exists(ver[3]));
+        assertTrue(Files.exists(ver[4]));
 
         fb.setArchiveVersions(1);
         assertTrue(fb.getFileArchiver().maintain());
         assertTrue(fb.getFileArchiver().getSize() > 0);
-        assertFalse(ver[0].exists());
-        assertFalse(ver[1].exists());
-        assertFalse(ver[2].exists());
-        assertFalse(ver[3].exists());
-        assertTrue(ver[4].exists());
+        assertFalse(Files.exists(ver[0]));
+        assertFalse(Files.exists(ver[1]));
+        assertFalse(Files.exists(ver[2]));
+        assertFalse(Files.exists(ver[3]));
+        assertTrue(Files.exists(ver[4]));
 
         fb.setArchiveVersions(0);
         assertTrue(fb.getFileArchiver().maintain());
         assertEquals(0, fb.getFileArchiver().getSize());
-        assertFalse(ver[0].exists());
-        assertFalse(ver[1].exists());
-        assertFalse(ver[2].exists());
-        assertFalse(ver[3].exists());
-        assertFalse(ver[4].exists());
+        assertFalse(Files.exists(ver[0]));
+        assertFalse(Files.exists(ver[1]));
+        assertFalse(Files.exists(ver[2]));
+        assertFalse(Files.exists(ver[3]));
+        assertFalse(Files.exists(ver[4]));
     }
 
     public void testUnlimitedFileArchive() throws IOException {
-        int nVersion = 20;
+        int nVersion = 21;
         getFolderAtBart().setArchiveVersions(-1);
 
-        File f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
+        Path f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         scanFolder(getFolderAtLisa());
         FileInfo fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
         TestHelper.waitMilliSeconds(2100);
         modLisaFile(f, fInfo);
 
         FileArchiver aBart = getFolderAtBart().getFileArchiver();
-        for (int i = 0; i < nVersion; i++) {
+        for (int i = 0; i < nVersion - 1; i++) {
             TestHelper.waitMilliSeconds(2100);
             assertEquals(i + 2, modLisaFile(f, fInfo).getVersion());
             assertTrue(
@@ -204,38 +211,38 @@ public class FileArchiverTest extends TwoControllerTestCase {
                     .getArchivedFilesInfos(fInfo).size() > 0);
         }
         assertTrue(getFolderAtBart().getFileArchiver().getSize() > 0);
-        assertEquals(nVersion + 1, aBart.getArchivedFilesInfos(fInfo).size());
+        assertEquals(nVersion, aBart.getArchivedFilesInfos(fInfo).size());
 
         List<FileInfo> archived = aBart.getArchivedFilesInfos(fInfo);
-        assertEquals(nVersion + 1, archived.size());
+        assertEquals(nVersion, archived.size());
 
         // Now restore
         FileInfo versionInfo = archived.get(4);
-        File restoreTo = versionInfo.getDiskFile(getContollerBart()
+        Path restoreTo = versionInfo.getDiskFile(getContollerBart()
             .getFolderRepository());
         aBart.restore(versionInfo, restoreTo);
         getFolderAtBart().scanChangedFile(versionInfo);
 
         archived = aBart.getArchivedFilesInfos(fInfo);
-        assertEquals(nVersion + 1, archived.size());
+        assertEquals(nVersion, archived.size());
     }
 
     public void testRestoreInDeletedSubdir() throws IOException {
         getFolderAtLisa().setArchiveVersions(1);
-        File f = TestHelper.createRandomFile(new File(getFolderAtLisa()
-            .getLocalBase(), "subdir"));
+        Path f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase()
+            .resolve("subdir"));
         scanFolder(getFolderAtLisa());
         FileInfo fInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), f);
         FileInfo dInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(),
-            f.getParentFile());
+            f.getParent());
         getFolderAtLisa().removeFilesLocal(dInfo);
 
         assertTrue(getFolderAtLisa().getFileArchiver().restore(fInfo, f));
-        assertTrue(f.exists());
+        assertTrue(Files.exists(f));
     }
 
     public void testNoConflictOnRestore() throws IOException {
-        File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
+        Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
@@ -267,7 +274,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         });
 
         TestHelper.waitMilliSeconds(2500);
-        File fileAtLisa = fInfo.getDiskFile(getContollerLisa()
+        Path fileAtLisa = fInfo.getDiskFile(getContollerLisa()
             .getFolderRepository());
         LoggingManager.setConsoleLogging(Level.FINER);
         assertTrue(getFolderAtLisa().getFileArchiver().restore(
@@ -294,7 +301,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(0, getFolderAtBart().countProblems());
     }
 
-    private FileInfo modLisaFile(File file, final FileInfo fInfo) {
+    private FileInfo modLisaFile(Path file, final FileInfo fInfo) {
         TestHelper.changeFile(file);
         scanFolder(getFolderAtLisa());
 

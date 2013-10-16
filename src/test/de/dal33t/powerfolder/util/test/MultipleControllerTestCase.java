@@ -15,13 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MultipleControllerTestCase.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -43,12 +44,11 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
  * Provides basic testcase-setup with N controllers.
@@ -72,7 +72,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     @Override
     protected void setUp() throws Exception {
         System.setProperty("user.home",
-            new File("build/test/home").getCanonicalPath());
+            Paths.get("build/test/home").toAbsolutePath().toString());
         Loggable.setLogNickPrefix(true);
         super.setUp();
 
@@ -99,13 +99,13 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
         // Cleanup
         TestHelper.cleanTestDir();
-        FileUtils.recursiveDelete(new File(Controller.getMiscFilesLocation(),
+        PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve(
             "build"));
     }
 
     @Override
     protected void tearDown() throws Exception {
-        LoggingManager.setConsoleLogging(Level.OFF);
+//        LoggingManager.setConsoleLogging(Level.OFF);
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
@@ -152,8 +152,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
         conf.put("nodeid", "randomstringController" + id);
         conf.put("nick", "Controller" + id);
         conf.put("port", "" + port++);
-        File f = new File("build/test/Controller" + id + "/PowerFolder.config");
-        assertTrue(f.getParentFile().mkdirs());
+        Path f = Paths.get("build/test/Controller" + id + "/PowerFolder.config");
+        Files.createDirectories(f.getParent());
         PropertiesUtil.saveConfig(f, conf, "PF Test config");
 
         return startController(id, "build/test/Controller" + id
@@ -280,7 +280,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
      * @param profile
      *            the profile to use
      */
-    protected static Folder joinFolder(FolderInfo foInfo, File baseDir,
+    protected static Folder joinFolder(FolderInfo foInfo, Path baseDir,
         Controller controller, SyncProfile profile)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
@@ -302,8 +302,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Reject.ifTrue(mctFolder != null, "Reject already setup a testfolder!");
         mctFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
         for (Entry<String, Controller> e : controllers.entrySet()) {
-            joinFolder(mctFolder, new File(TestHelper.getTestDir(),
-                "Controller" + e.getKey() + "/testFolder"), e.getValue(),
+            joinFolder(
+                mctFolder,
+                TestHelper.getTestDir().resolve(
+                    "Controller" + e.getKey() + "/testFolder"), e.getValue(),
                 profile);
         }
     }
@@ -391,33 +393,35 @@ public abstract class MultipleControllerTestCase extends TestCase {
      * @param controller
      *            the controller to use.
      */
-    protected void assertFileMatch(File diskFile, FileInfo fInfo,
-        Controller controller)
+    protected void assertFileMatch(Path diskFile, FileInfo fInfo,
+        Controller controller) throws IOException
     {
-        boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
-        boolean sizeMatch = diskFile.length() == fInfo.getSize();
+        boolean nameMatch = diskFile.getFileName().toString().equals(fInfo.getFilenameOnly());
+        boolean sizeMatch = Files.size(diskFile) == fInfo.getSize();
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
-        boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
-        boolean lastModifiedMatch = diskFile.lastModified() == fInfo
+        boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo.isDeleted();
+        boolean lastModifiedMatch = Files.getLastModifiedTime(diskFile).toMillis() == fInfo
             .getModifiedDate().getTime();
         boolean isDir = fInfo.isDiretory() && fInfo instanceof DirectoryInfo;
-        boolean dirMatch = isDir == diskFile.isDirectory();
+        boolean dirMatch = isDir == Files.isDirectory(diskFile);
 
         // Skip last modification test when diskfile is deleted.
         boolean matches = dirMatch && nameMatch && sizeMatch
-            && (!diskFile.exists() || lastModifiedMatch) && deleteStatusMatch
+            && (Files.notExists(diskFile) || lastModifiedMatch) && deleteStatusMatch
             && fileObjectEquals;
 
-        assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
-            + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
-            + ", size: " + Format.formatBytes(diskFile.length())
-            + ", lastModified: " + new Date(diskFile.lastModified()) + " ("
-            + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
-            + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
-            + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
-            + "\ndirMatch: " + dirMatch + "\nFileObjectEquals: "
-            + fileObjectEquals, matches);
+        assertTrue(
+            "FileInfo does not match physical file. \nFileInfo:\n "
+                + fInfo.toDetailString() + "\nFile:\n "
+                + diskFile.getFileName().toString() + ", size: "
+                + Format.formatBytes(Files.size(diskFile)) + ", lastModified: "
+                + new Date(Files.getLastModifiedTime(diskFile).toMillis())
+                + " (" + Files.getLastModifiedTime(diskFile).toMillis() + ")"
+                + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: "
+                + sizeMatch + "\nlastModifiedMatch: " + lastModifiedMatch
+                + "\ndeleteStatus: " + deleteStatusMatch + "\ndirMatch: "
+                + dirMatch + "\nFileObjectEquals: " + fileObjectEquals, matches);
     }
 
     /**
@@ -431,28 +435,42 @@ public abstract class MultipleControllerTestCase extends TestCase {
      * @param controller
      *            the controller to use.
      */
-    protected void assertDirMatch(File diskFile, FileInfo fInfo,
-        Controller controller)
+    protected void assertDirMatch(Path diskFile, FileInfo fInfo,
+        Controller controller) throws IOException
     {
-        boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
+        boolean nameMatch = diskFile.getFileName().toString().equals(fInfo.getFilenameOnly());
+        long size = 0L;
+        try {
+            size = Files.size(diskFile);
+        } catch (IOException e) {
+            // ignore
+        }
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
-        boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
+        boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo.isDeleted();
+        long lastModified = 0L;
+        try {
+            lastModified = Files.getLastModifiedTime(diskFile).toMillis();
+        } catch (IOException e) {
+            // ignore
+        }
         // Skip directory match if not existing.
-        boolean dirMatch = !diskFile.exists()
-            || fInfo.isDiretory() == diskFile.isDirectory();
+        boolean dirMatch = Files.notExists(diskFile)
+            || fInfo.isDiretory() == Files.isDirectory(diskFile);
 
         boolean matches = dirMatch && nameMatch && deleteStatusMatch
             && fileObjectEquals;
 
-        assertTrue("DirectoryInfo does not match physical dir. \nFileInfo:\n "
-            + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
-            + ", size: " + Format.formatBytes(diskFile.length())
-            + ", lastModified: " + new Date(diskFile.lastModified()) + " ("
-            + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
-            + nameMatch + "\ndeleteStatus: " + deleteStatusMatch
-            + "\ndirMatch: " + dirMatch + "\nFileObjectEquals: "
-            + fileObjectEquals, matches);
+        assertTrue(
+            "DirectoryInfo does not match physical dir. \nFileInfo:\n "
+                + fInfo.toDetailString() + "\nFile:\n "
+                + diskFile.getFileName().toString() + ", size: "
+                + Format.formatBytes(size) + ", lastModified: "
+                + new Date(lastModified)
+                + " (" + lastModified + ")"
+                + "\n\nWhat matches?:\nName: " + nameMatch + "\ndeleteStatus: "
+                + deleteStatusMatch + "\ndirMatch: " + dirMatch
+                + "\nFileObjectEquals: " + fileObjectEquals, matches);
     }
 
     // Helpers ****************************************************************

@@ -572,7 +572,7 @@ public class SecurityManagerClient extends PFComponent implements
         }
     }
 
-    private class Session {
+    class Session {
         private AccountInfo info;
 
         public Session(AccountInfo info) {
@@ -586,7 +586,7 @@ public class SecurityManagerClient extends PFComponent implements
         }
     }
 
-    private class PermissionsCacheSegment {
+    final class PermissionsCacheSegment {
         Map<Permission, Boolean> permissions = new ConcurrentHashMap<Permission, Boolean>();
 
         void set(Permission permission, Boolean hasPermission) {

@@ -19,28 +19,31 @@
  */
 package de.dal33t.powerfolder.ui.action;
 
-import de.dal33t.powerfolder.Controller;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
+
+import java.awt.event.ActionEvent;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.SwingUtilities;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.wizard.FolderCreateItem;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
-import de.dal33t.powerfolder.ui.wizard.FolderCreateItem;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Action which opens folder create wizard.
@@ -68,7 +71,7 @@ public class NewFolderAction extends BaseAction {
 
                 try {
                     // Select directory
-                    List<File> files = DialogFactory.chooseDirectory(
+                    List<Path> files = DialogFactory.chooseDirectory(
                         getUIController(),
                         folderRepository.getFoldersBasedir(), true);
                     if (files == null || files.isEmpty()) {
@@ -106,7 +109,7 @@ public class NewFolderAction extends BaseAction {
 
                     List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
-                    outer : for (File file : files) {
+                    outer : for (Path file : files) {
                         // Has user already got this folder?
                         for (Folder folder : folderRepository.getFolders()) {
                             if (folder.getBaseDirectoryInfo()
@@ -123,8 +126,8 @@ public class NewFolderAction extends BaseAction {
                         }
 
                         // FolderInfo
-                        String name = FileUtils.getSuggestedFolderName(file);
-                        String folderId = '[' + IdGenerator.makeId() + ']';
+                        String name = PathUtils.getSuggestedFolderName(file);
+                        String folderId = IdGenerator.makeFolderId();
                         FolderInfo fi = new FolderInfo(name, folderId);
 
                         FolderCreateItem item = new FolderCreateItem(file);
@@ -165,12 +168,12 @@ public class NewFolderAction extends BaseAction {
      * @param files
      * @return
      */
-    private boolean isNonPowerFolderRootAllowedSelected(List<File> files) {
+    private boolean isNonPowerFolderRootAllowedSelected(List<Path> files) {
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {
-            for (File file : files) {
-                if (!file.getParentFile().equals(
+            for (Path file : files) {
+                if (!file.getParent().equals(
                     getController().getFolderRepository().getFoldersBasedir()))
                 {
                     String title = Translation
@@ -194,9 +197,9 @@ public class NewFolderAction extends BaseAction {
      * @param files
      * @return
      */
-    private boolean isPowerFolderRootSelected(List<File> files) {
-        File baseDir = getController().getFolderRepository().getFoldersBasedir();
-        for (File file : files) {
+    private boolean isPowerFolderRootSelected(List<Path> files) {
+        Path baseDir = getController().getFolderRepository().getFoldersBasedir();
+        for (Path file : files) {
             if (file.equals(baseDir)) {
                 String title = Translation.getTranslation("general.directory");
                 String message =  Translation.getTranslation("general.basedir_error.text");

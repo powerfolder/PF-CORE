@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -387,8 +389,13 @@ public class DirectoryFilter extends FilterModel {
             if (fileInfo instanceof DirectoryInfo) {
 
                 // Hidden directory?
-                if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
-                        fileInfo.getDiskFile(getController().getFolderRepository()).isHidden()) {
+                try {
+                    if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
+                            Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
+                        return;
+                    }
+                } catch (IOException ioe) {
+                    logInfo(ioe.getMessage());
                     return;
                 }
 
@@ -415,8 +422,13 @@ public class DirectoryFilter extends FilterModel {
         int searchMode = (Integer) searchModeVM.getValue();
 
         // Hidden file?
-        if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
-                fileInfo.getDiskFile(getController().getFolderRepository()).isHidden()) {
+        try {
+            if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
+                    Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
+                return;
+            }
+        } catch (IOException ioe) {
+            logInfo(ioe.getMessage());
             return;
         }
 

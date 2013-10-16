@@ -28,7 +28,8 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -40,6 +41,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -110,10 +112,17 @@ public class FilesTable extends JTable {
         column.setPreferredWidth(200);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(70);
-        column = getColumn(getColumnName(3));
-        column.setPreferredWidth(70);
-        column = getColumn(getColumnName(4));
-        column.setPreferredWidth(60);
+        if (ConfigurationEntry.MEMBERS_ENABLED
+            .getValueBoolean(((FilesTableModel) getModel()).getController()))
+        {
+            column = getColumn(getColumnName(3));
+            column.setPreferredWidth(70);
+            column = getColumn(getColumnName(4));
+            column.setPreferredWidth(60);
+        } else {
+            column = getColumn(getColumnName(3));
+            column.setPreferredWidth(60);
+        }
     }
 
     @Override
@@ -227,17 +236,17 @@ public class FilesTable extends JTable {
                         myValue = fileInfo.getFilenameOnly();
 
                         // Prepare diskfile
-                        File diskFile = fileInfo.getDiskFile(controller
+                        Path diskFile = fileInfo.getDiskFile(controller
                             .getFolderRepository());
                         if (diskFile != null) {
-                            if (!diskFile.exists()) {
+                            if (Files.notExists(diskFile)) {
                                 diskFile = null;
                             }
                         }
                         String fileNameForTooltip;
                         if (diskFile != null) {
                             fileNameForTooltip = replaceSpacesWithNBSP(diskFile
-                                .getAbsolutePath());
+                                .toAbsolutePath().toString());
                         } else {
                             fileNameForTooltip = replaceSpacesWithNBSP(fileInfo
                                 .getFilenameOnly());
@@ -349,11 +358,13 @@ public class FilesTable extends JTable {
                         setHorizontalAlignment(RIGHT);
                         break;
                     case 3 : // member nick
-                        MemberInfo member = fileInfo.getModifiedBy();
-                        myValue = member.nick;
-                        // setIcon(Icons.getSimpleIconFor(member.getNode(controller,
-                        // false)));
-                        setHorizontalAlignment(LEFT);
+                        if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(controller)) {
+                            MemberInfo member = fileInfo.getModifiedBy();
+                            myValue = member.nick;
+                            // setIcon(Icons.getSimpleIconFor(member.getNode(controller,
+                            // false)));
+                            setHorizontalAlignment(LEFT);
+                        }
                         break;
                     case 4 : // modified date
                         myValue = Format.formatDateShort(fileInfo

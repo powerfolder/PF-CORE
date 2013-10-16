@@ -15,19 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: AbstractDownloadManager.java 18206 2012-02-29 02:52:40Z tot $
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -47,8 +47,8 @@ import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
@@ -60,7 +60,6 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
 import de.dal33t.powerfolder.util.delta.MatchInfo;
 import de.dal33t.powerfolder.util.delta.MatchResultWorker;
-import de.schlichtherle.truezip.file.TFile;
 
 /**
  * Shared implementation of download managers. This class leaves details on what
@@ -125,15 +124,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private volatile boolean started;
     private volatile boolean shutdown;
 
-    private File metaFile;
+    private Path metaFile;
 
     private String fileID;
 
-    private File tempFile;
+    private Path tempFile;
 
     private final TransferManager tm;
 
-    private File metaDataBaseDir;
+    private Path metaDataBaseDir;
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic)
@@ -234,15 +233,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     /**
      * @return the tempfile for this download
      */
-    public synchronized File getTempFile() {
-        File diskFile = getFileInfo().getDiskFile(
+    public synchronized Path getTempFile() {
+        Path diskFile = getFileInfo().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null) {
             return null;
         }
         if (tempFile == null) {
             try {
-                tempFile = new TFile(getMetaDataBaseDir(), "(incomplete) "
+                tempFile = getMetaDataBaseDir().resolve("(incomplete) "
                     + getFileID());
             } catch (IOException e) {
                 logSevere("IOException", e);
@@ -313,7 +312,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             FilePartsRecord thisRemotePartRecord = remotePartRecord;
             byte[] tempFileHash = null;
             if (thisRemotePartRecord != null) {
-                tempFileHash = FileUtils.digest(getTempFile(),
+                tempFileHash = PathUtils.digest(getTempFile(),
                     MessageDigest.getInstance("MD5"), new ProgressListener() {
                         public void progressReached(double percentageReached) {
                             setTransferState(percentageReached / 100.0);
@@ -352,7 +351,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return false;
     }
 
-    protected File getFile() {
+    protected Path getFile() {
         return fileInfo.getDiskFile(getController().getFolderRepository());
     }
 
@@ -386,7 +385,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         // This has to happen here since "completed" is valid
         assert !isDone() : "File broken/aborted before init!";
-        assert getTempFile().getParentFile().exists() : "Missing PowerFolder system directory";
+        assert Files.exists(getTempFile().getParent()) : "Missing PowerFolder system directory";
 
         // Create temp-file directory structure if necessary
         // if (!getTempFile().getParentFile().exists()) {
@@ -401,7 +400,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (isFiner()) {
             logFiner("Init tempfile at " + getTempFile());
         }
-        tempRAF = new RandomAccessFile(getTempFile(), "rw");
+        tempRAF = new RandomAccessFile(getTempFile().toFile(), "rw");
     }
 
     protected boolean isNeedingFilePartsRecord() {
@@ -414,7 +413,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         InterruptedException
     {
         try {
-            File src = getFile();
+            Path src = getFile();
 
             setTransferState(TransferState.MATCHING);
             ProgressListener transferObs = new ProgressListener() {
@@ -500,19 +499,21 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 deleteTempFile();
             } catch (IOException e) {
                 logSevere("Unable to remove tempfile on MD5_ERROR: "
-                    + getTempFile() + ". " + e, e);
+                    + getTempFile().toString() + ". " + e, e);
             }
         } else {
-            if (getTempFile() != null && getTempFile().exists()
-                && getTempFile().length() == 0)
-            {
-                if (isFiner()) {
-                    logFiner("Deleting tempfile with size 0.");
+            try {
+                if (getTempFile() != null && Files.exists(getTempFile())
+                    && Files.size(getTempFile()) == 0)
+                {
+                    if (isFiner()) {
+                        logFiner("Deleting tempfile with size 0.");
+                    }
+                    Files.delete(getTempFile());
                 }
-                if (!getTempFile().delete()) {
-                    logWarning("Failed to delete temp file: "
-                        + getTempFile().getAbsolutePath());
-                }
+            } catch (IOException ioe) {
+                logWarning("Failed to delete temp file: "
+                    + getTempFile().toAbsolutePath().toString());
             }
         }
         final Download sources[] = getSources().toArray(new Download[0]);
@@ -788,9 +789,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     private void deleteMetaData() {
-        if (getMetaFile() != null && !getMetaFile().delete()) {
-            if (isSevere() && getMetaFile().exists()) {
-                logSevere("Couldn't delete meta data file!");
+        if (getMetaFile() != null) {
+            try {
+                Files.delete(getMetaFile());
+            } catch (IOException ioe) {
+                if (isSevere() && Files.exists(getMetaFile())) {
+                    logSevere("Couldn't delete meta data file!");
+                }
             }
         }
     }
@@ -816,7 +821,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * @throws IOException
      *             if the directory couldn't be created
      */
-    private File getMetaDataBaseDir() throws IOException {
+    private Path getMetaDataBaseDir() throws IOException {
         if (metaDataBaseDir != null) {
             return metaDataBaseDir;
         }
@@ -825,36 +830,40 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         boolean workAroundTrueZIP = getFileInfo().getFolder(
             getController().getFolderRepository()).isEncrypted();
         if (workAroundTrueZIP) {
-            metaDataBaseDir = new TFile(System.getProperty("tmp.dir"),
-                "transfers");
+            metaDataBaseDir = Paths.get(System.getProperty("tmp.dir"),
+                "transfers").toAbsolutePath();
         } else {
-            metaDataBaseDir = new TFile(getFileInfo().getFolder(
-                getController().getFolderRepository()).getSystemSubDir(),
-                "transfers");
+            metaDataBaseDir = getFileInfo()
+                .getFolder(getController().getFolderRepository())
+                .getSystemSubDir().resolve("transfers").toAbsolutePath();
         }
-        if (!metaDataBaseDir.exists() && !metaDataBaseDir.mkdirs()) {
-            throw new IOException(
-                "Couldn't create base directory for transfer meta data!");
+        if (Files.notExists(metaDataBaseDir)) {
+            try {
+                Files.createDirectories(metaDataBaseDir);
+            } catch (IOException ioe) {
+                throw new IOException(
+                    "Couldn't create base directory for transfer meta data!");
+            }
         }
         return metaDataBaseDir;
     }
 
     private boolean hasMetaFile() {
-        return getMetaFile() != null && getMetaFile().exists();
+        return getMetaFile() != null && Files.exists(getMetaFile());
     }
 
-    private File getMetaFile() {
+    private Path getMetaFile() {
         if (metaFile != null) {
             return metaFile;
         }
-        File diskFile = getFileInfo().getDiskFile(
+        Path diskFile = getFileInfo().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null) {
             return null;
         }
         try {
-            metaFile = new TFile(getMetaDataBaseDir(),
-                FileUtils.DOWNLOAD_META_FILE + getFileID());
+            metaFile = getMetaDataBaseDir().resolve(
+                PathUtils.DOWNLOAD_META_FILE + getFileID()).toAbsolutePath();
             return metaFile;
         } catch (IOException e) {
             logSevere("IOException", e);
@@ -876,21 +885,25 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * @throws IOException
      */
     private void deleteTempFile() throws IOException {
-        boolean exists = getTempFile() != null && getTempFile().exists();
+        boolean exists = getTempFile() != null && Files.exists(getTempFile());
         if (exists && isFine()) {
             logFine("killTempFile: " + getTempFile() + ", size: "
-                + getTempFile().length());
+                + Files.size(getTempFile()));
         }
-        if (exists && !getTempFile().delete()) {
-            if (isWarning()) {
-                logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
-                    + getFileInfo().toDetailString());
-            }
-            RandomAccessFile f = new RandomAccessFile(getTempFile(), "rw");
+        if (exists) {
             try {
-                f.setLength(0);
-            } finally {
-                f.close();
+                Files.delete(getTempFile());
+            } catch (IOException e) {
+                if (isWarning()) {
+                    logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
+                        + getFileInfo().toDetailString());
+                }
+                RandomAccessFile f = new RandomAccessFile(getTempFile().toFile(), "rw");
+                try {
+                    f.setLength(0);
+                } finally {
+                    f.close();
+                }
             }
         }
     }
@@ -899,9 +912,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // logWarning("loadMetaData()");
 
         if (getTempFile() == null
-            || !getTempFile().exists()
+            || Files.notExists(getTempFile())
             || !DateUtil.equalsFileDateCrossPlattform(fileInfo
-                .getModifiedDate().getTime(), getTempFile().lastModified()))
+                .getModifiedDate().getTime(), Files.getLastModifiedTime(getTempFile()).toMillis()))
         {
             // If something's wrong with the tempfile, kill the meta data file
             // if it exists
@@ -910,15 +923,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        File mf = getMetaFile();
-        if (mf == null || !mf.exists()) {
+        Path mf = getMetaFile();
+        if (mf == null || Files.notExists(mf)) {
             deleteTempFile();
             return;
         }
 
-        ObjectInputStream in = null;
-        try {
-            in = new ObjectInputStream(new FileInputStream(mf));
+        try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(mf))) {
             FileInfo fi = (FileInfo) in.readObject();
             if (fi.isVersionDateAndSizeIdentical(fileInfo)) {
                 List<?> content = (List<?>) in.readObject();
@@ -937,20 +948,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         } catch (Exception e) {
             remotePartRecord = null;
             filePartsState = null;
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ex) {
-                }
-            }
             deleteMetaData();
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                }
-            }
         }
 
         if (filePartsState != null) {
@@ -1168,15 +1166,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert state != InternalState.COMPLETED;
 
         // logWarning("saveMetaData()");
-        File mf = getMetaFile();
+        Path mf = getMetaFile();
         if (mf == null && !isCompleted()) {
             deleteTempFile();
             return;
         }
 
-        ObjectOutputStream out = new ObjectOutputStream(
-            new BufferedOutputStream(new FileOutputStream(mf)));
-        try {
+        try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(mf))) {
             out.writeObject(fileInfo);
             List<Object> list = new LinkedList<Object>();
             if (filePartsState != null) {
@@ -1187,8 +1183,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 list.add(remotePartRecord);
             }
             out.writeObject(list);
-        } finally {
-            out.close();
         }
     }
 
@@ -1242,11 +1236,16 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     private void updateTempFile() {
-        if (getTempFile() == null
-            || !getTempFile().setLastModified(
-                getFileInfo().getModifiedDate().getTime()))
-        {
-            logWarning("Failed to update modification date! Detail:" + this);
+        if (getTempFile() != null) {
+            try {
+                Files.setLastModifiedTime(getTempFile(), FileTime
+                    .fromMillis(getFileInfo().getModifiedDate().getTime()));
+                return;
+            } catch (IOException ioe) {
+                logSevere("Failed to update modification date! Detail:" + this);
+                // print message
+            }
+
         }
     }
 }

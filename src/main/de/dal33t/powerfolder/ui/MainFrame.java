@@ -15,18 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MainFrame.java 20917 2013-02-24 06:30:05Z glasgow $
  */
 package de.dal33t.powerfolder.ui;
-
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_CONNECTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_LOGGED_IN;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NOT_STARTED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.NO_FOLDERS;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.PAUSED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCHRONIZED;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNCING;
-import static de.dal33t.powerfolder.ui.event.SyncStatusEvent.SYNC_INCOMPLETE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -49,8 +40,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -109,8 +101,9 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -149,7 +142,8 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel upperMainTextActionLabel;
     private ActionLabel lowerMainTextActionLabel;
     private ActionLabel setupLabel;
-
+    private JLabel zyncroLabel;
+    
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
     private ActionLabel noticesActionLabel;
@@ -231,8 +225,21 @@ public class MainFrame extends PFUIComponent {
         b.add(notConnectedLoggedInLabel, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
-        builderUpper.add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
+        builderUpper
+            .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
+        } else {
+            // TODO: this is just a quick and dirty fix. Do something reasonable
+            // here.
+            if (ProUtil.isZyncro(getController())) {
+                builderUpper.add(zyncroLabel, cc.xy(3, 2));
+            } else {
+                builderUpper.add(new JLabel(" "), cc.xy(3, 2));
+            }
+        }
         // UPPER PART END
 
         // LOWER PART
@@ -266,22 +273,22 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 1));
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
             builder.add(openWebInterfaceActionLabel.getUIComponent(),
-                cc.xy(1, 2));
+                cc.xy(1, 1));
         }
-        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 3));
-        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 4));
-        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 5));
+        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 2));
+        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
+        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4));
         if (getController().isVerbose()) {
-            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 6));
+            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5));
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 7));
+            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6));
         }
+        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 7));
 
         return builder.getPanel();
     }
@@ -294,7 +301,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.getRootPane().updateUI();
 
         FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
-            "pref, fill:0:grow, pref");
+            "pref, pref, fill:0:grow");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -311,9 +318,9 @@ public class MainFrame extends PFUIComponent {
         builder.add(inlineInfoCloseButton,
             cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
 
-        builder.add(centralPanel, cc.xyw(1, 2, 4));
+        builder.add(centralPanel, cc.xyw(1, 3, 4));
 
-        builder.add(createMiniPanel(), cc.xyw(1, 3, 4));
+        builder.add(createMiniPanel(), cc.xyw(1, 2, 4));
 
         uiComponent.getContentPane().removeAll();
         uiComponent.getContentPane().add(builder.getPanel());
@@ -324,10 +331,15 @@ public class MainFrame extends PFUIComponent {
         // Pack elements and set to default size.
         uiComponent.pack();
         uiComponent.setSize(uiComponent.getWidth(),
-                UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
+            UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((screenSize.getWidth() - uiComponent.getWidth()) / 2.0);
+        int y = (int) ((screenSize.getHeight() - uiComponent.getHeight()) / 2.0);
+        uiComponent.setLocation(x, y);
 
         configureInlineInfo();
-        updateMainStatus(NOT_STARTED);
+        updateMainStatus(SyncStatusEvent.NOT_STARTED);
         updateNoticesLabel();
     }
 
@@ -439,8 +451,18 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
-        setupLabel = new ActionLabel(getController(), mySetupAction);
+        if (ProUtil.isZyncro(getController())) {
+            upperMainTextActionLabel.setNeverUnderline(true);
+            lowerMainTextActionLabel.setNeverUnderline(true);
+        }
 
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            setupLabel = new ActionLabel(getController(), mySetupAction);
+        }
+
+        zyncroLabel = new JLabel();
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
         noticesActionLabel = new ActionLabel(getController(),
@@ -448,14 +470,21 @@ public class MainFrame extends PFUIComponent {
         updateNoticesLabel();
 
         usagePB = new JProgressBar();
+        usagePB.setVisible(!ProUtil.isZyncro(getController()));
         usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     try {
-                        BrowserLauncher.openURL(client.getWebURL(
-                            Constants.MY_ACCOUNT_URI, true));
+                        if (StringUtils.isBlank(client.getUsername())) {
+                            PFWizard.openLoginWizard(getController(), client);
+                        } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+                            .getValueBoolean(getController()))
+                        {
+                            BrowserLauncher.openURL(client.getWebURL(
+                                Constants.MY_ACCOUNT_URI, true));
+                        }
                     } catch (IOException ex) {
                         logSevere(ex);
                     }
@@ -589,6 +618,9 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void handleSyncTextClick() {
+        if (ProUtil.isZyncro(getController())) {
+            return;
+        }
         if (getController().isPaused()) {
             getController().setPaused(false);
         } else if (frameMode == FrameMode.COMPACT) {
@@ -605,14 +637,19 @@ public class MainFrame extends PFUIComponent {
                 .getApplicationModel().getFolderRepositoryModel();
 
         // Set visibility of buttons and labels.
-        pauseButton.setVisible(event.equals(PAUSED));
-        setupLabel.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
-        setupButton.setVisible(event.equals(NOT_STARTED) || event.equals(NO_FOLDERS));
-        allInSyncButton.setVisible(event.equals(SYNCHRONIZED));
-        syncingButton.setVisible(event.equals(SYNCING));
-        syncingButton.spin(event.equals(SYNCING));
-        syncIncompleteButton.setVisible(event.equals(SYNC_INCOMPLETE));
-        notConnectedLoggedInLabel.setVisible(event.equals(NOT_CONNECTED) || event.equals(NOT_LOGGED_IN));
+        pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
+        }
+        setupButton.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
+        allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
+        syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
+        syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
+        syncIncompleteButton.setVisible(event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
+        notConnectedLoggedInLabel.setVisible(event.equals(SyncStatusEvent.NOT_CONNECTED) || event.equals(SyncStatusEvent.NOT_LOGGED_IN));
 
         // Default sync date.
         Date syncDate = folderRepositoryModel.getLastSyncDate();
@@ -622,45 +659,63 @@ public class MainFrame extends PFUIComponent {
             .getOverallSyncPercentage();
         String upperText = " ";
         String setupText = " ";
+        zyncroLabel.setText(" ");
 
-        if (event.equals(PAUSED)) {
+        if (event.equals(SyncStatusEvent.PAUSED)) {
             String pausedTemp = overallSyncPercentage >= 0
                 && overallSyncPercentage < 99.5d ? Format
-                .formatPercent(overallSyncPercentage) : "";
+                .formatDecimal(overallSyncPercentage) + '%' : "";
             upperText = Translation.getTranslation("main_frame.paused",
                 pausedTemp);
-        } else if (event.equals(NOT_STARTED)) {
+        } else if (event.equals(SyncStatusEvent.NOT_STARTED)) {
             upperText = Translation.getTranslation("main_frame.not_running");
             setupText = Translation.getTranslation("main_frame.activate_now");
-        } else if (event.equals(NO_FOLDERS)) {
-                upperText = Translation.getTranslation("main_frame.no_folders");
-                setupText = getApplicationModel().getActionModel()
-                        .getNewFolderAction().getName();
-        } else if (event.equals(SYNCING)) {
-                syncDate = folderRepositoryModel.getEstimatedSyncDate();
-                String syncingTemp = overallSyncPercentage >= 0 && overallSyncPercentage < 99.5d ?
-                        Format.formatDecimal(overallSyncPercentage) + '%' : "...";
-                upperText = Translation.getTranslation("main_frame.syncing", syncingTemp);
-        } else if (event.equals(SYNCHRONIZED)) {
+        } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
+            upperText = Translation.getTranslation("main_frame.no_folders");
+            setupText = getApplicationModel().getActionModel()
+                .getNewFolderAction().getName();
+            zyncroLabel
+                .setText(Translation.getTranslation("main_frame.choose_folders"));
+        } else if (event.equals(SyncStatusEvent.SYNCING)) {
+            syncDate = folderRepositoryModel.getEstimatedSyncDate();
+            String syncingTemp = overallSyncPercentage >= 0
+                && overallSyncPercentage < 99.5d ? Format
+                .formatDecimal(overallSyncPercentage) + '%' : "...";
+            upperText = Translation.getTranslation("main_frame.syncing",
+                syncingTemp);
+        } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
                 upperText = Translation.getTranslation("main_frame.in_sync");
-        } else if (event.equals(SYNC_INCOMPLETE)) {
+        } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
                 upperText = Translation.getTranslation(
                         "main_frame.sync_incomplete");
-        } else if (event.equals(NOT_CONNECTED)) {
+        } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
             upperText = Translation.getTranslation("main_frame.connecting.text");
-        } else if (event.equals(NOT_LOGGED_IN)) {
+        } else if (event.equals(SyncStatusEvent.LOGGING_IN)) {
             upperText = Translation.getTranslation("main_frame.logging_in.text");
+        } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
+            upperText = Translation.getTranslation("main_frame.log_in_failed.text");
         } else {
             logSevere("Not handling all sync states: " + event);
         }
 
         upperMainTextActionLabel.setText(upperText);
-        setupLabel.setText(setupText);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setText(setupText);
+        }
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
-        boolean notStartedOrNoFolders = event.equals(NOT_STARTED) || event.equals(NO_FOLDERS);
-        setupLabel.setVisible(notStartedOrNoFolders);
+        boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
+            || event.equals(SyncStatusEvent.NO_FOLDERS);
+        if (getController().getOSClient().getAccount()
+            .hasPermission(FolderCreatePermission.INSTANCE)
+            && setupLabel != null)
+        {
+            setupLabel.setVisible(notStartedOrNoFolders);
+        }
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
 
         // Lower text - sync date stuff.
@@ -1089,16 +1144,21 @@ public class MainFrame extends PFUIComponent {
                     }
                 }
             } else if (client.isLoggingIn()) {
-                loginActionLabel.setText(Translation
-                    .getTranslation("main_frame.logging_in.text"));
+//                loginActionLabel.setText(Translation
+//                    .getTranslation("main_frame.logging_in.text"));
+                loginActionLabel.setText("");
             } else {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
-                    .getTranslation("main_frame.log_in_failed.text"));
+                    .getTranslation("main_frame.log_in_failed.text_click"));
+                if (!PFWizard.isWizardOpen()) {
+                    PFWizard.openLoginWizard(getController(), client);
+                }
             }
         } else {
-            loginActionLabel.setText(Translation
-                .getTranslation("main_frame.connecting.text"));
+//            loginActionLabel.setText(Translation
+//                .getTranslation("main_frame.connecting.text"));
+            loginActionLabel.setText("");
         }
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
@@ -1191,14 +1251,16 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureNormalSize() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int w = isShowingInfoInline() ? Constants.DEFAULT_NORMAL_DOCKED_WIDTH : (int) uiComponent.getMinimumSize().getWidth();
-        int x = (int) ((screenSize.getWidth() - w) / 2.0);
+        int w = isShowingInfoInline()
+            ? Constants.DEFAULT_NORMAL_DOCKED_WIDTH
+            : (int) uiComponent.getMinimumSize().getWidth();
         int h = Constants.DEFAULT_NORMAL_HEIGHT;
-        int y = (int) ((screenSize.getHeight() - h) / 2.0);
-
         uiComponent.setSize(w, h);
-        uiComponent.setLocation(x, y);
+
+        // Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        // int x = (int) ((screenSize.getWidth() - w) / 2.0);
+        // int y = (int) ((screenSize.getHeight() - h) / 2.0);
+        // uiComponent.setLocation(x, y);
         checkSplitMinWidth();
     }
 
@@ -1225,21 +1287,35 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void setLinkTooltips() {
+        // SYNC-197
+        if (ProUtil.isZyncro(getController())) {
+            upperMainTextActionLabel.setToolTipText("");
+            lowerMainTextActionLabel.setToolTipText("");
+            return;
+        }
         if (getController().isPaused()) {
-            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_resume_sync.description"));
-            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_resume_sync.description"));
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_resume_sync.description"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_resume_sync.description"));
         } else if (frameMode == FrameMode.COMPACT) {
-            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_expand_interface.name"));
-            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_expand_interface.name"));
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_expand_interface.name"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_expand_interface.name"));
+        } else if (PreferencesEntry.BEGINNER_MODE
+            .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("main_frame.minimal.change_loging.tip"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("main_frame.minimal.change_loging.tip"));
         } else {
-            upperMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_collapse_interface.name"));
-            lowerMainTextActionLabel.setToolTipText(Translation.getTranslation(
-                    "action_collapse_interface.name"));
+            upperMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_collapse_interface.name"));
+            lowerMainTextActionLabel.setToolTipText(Translation
+                .getTranslation("action_collapse_interface.name"));
         }
     }
 
@@ -1285,7 +1361,7 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
-                setFrameMode(FrameMode.COMPACT);    
+                setFrameMode(FrameMode.COMPACT);
             } else {
                 setFrameMode(FrameMode.NORMAL);
             }
@@ -1310,7 +1386,7 @@ public class MainFrame extends PFUIComponent {
             // PFC-2349 : Don't freeze UI
             getController().getIOProvider().startIO(new Runnable() {
                 public void run() {
-                    FileUtils.openFile(getController().getFolderRepository()
+                    PathUtils.openFile(getController().getFolderRepository()
                         .getFoldersBasedir());
                 }
             });
@@ -1494,7 +1570,7 @@ public class MainFrame extends PFUIComponent {
         public boolean importData(TransferSupport support) {
             try {
                 Transferable t = support.getTransferable();
-                List<File> fileList = (List<File>)
+                List<Path> fileList = (List<Path>)
                         t.getTransferData(DataFlavor.javaFileListFlavor);
 
                 // One at a time!
@@ -1504,8 +1580,8 @@ public class MainFrame extends PFUIComponent {
                 }
 
                 // Directories only.
-                File file = fileList.get(0);
-                if (!file.isDirectory()) {
+                Path file = fileList.get(0);
+                if (!Files.isDirectory(file)) {
                     logInfo("Skipping importData (not directory).");
                     return false;
                 }

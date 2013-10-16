@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MultiOnlineStorageSetupPanel.java 21173 2013-03-17 05:42:23Z sprajc $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -25,7 +25,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,6 +49,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -62,7 +65,7 @@ import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
@@ -78,7 +81,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     private Map<FolderInfo, SyncProfile> folderProfileMap;
-    private Map<FolderInfo, File> folderLocalBaseMap;
+    private Map<FolderInfo, Path> folderLocalBaseMap;
     private JComboBox folderInfoCombo;
     private JTextField folderInfoField;
     private DefaultComboBoxModel folderInfoComboModel;
@@ -126,8 +129,10 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 }
             }
 
-            File localBase = folderLocalBaseMap.get(entry.getKey());
+            Path localBase = folderLocalBaseMap.get(entry.getKey());
             FolderCreateItem fci = new FolderCreateItem(localBase);
+            fci.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
+                .getValueInt(getController()));
             fci.setSyncProfile(sp);
             fci.setFolderInfo(entry.getKey());
             folderCreateItems.add(fci);
@@ -159,7 +164,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 "wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
-        builder.add(localFolderButton, cc.xy(5, 3));
+        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            builder.add(localFolderButton, cc.xy(5, 3));
+        }
 
         // manualSyncCB is disabled for Luna (6.0) - #2726.
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
@@ -187,14 +194,17 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
-
         localFolderField = new JTextField();
-        localFolderButton = new JButtonMini(
-            Icons.getIconById(Icons.DIRECTORY),
-            Translation
-                .getTranslation("wizard.multi_online_storage_setup.select_directory"));
-        MyActionListener myActionListener = new MyActionListener();
-        localFolderButton.addActionListener(myActionListener);
+        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+            localFolderButton = new JButtonMini(
+                Icons.getIconById(Icons.DIRECTORY),
+                Translation
+                    .getTranslation("wizard.multi_online_storage_setup.select_directory"));
+            MyActionListener myActionListener = new MyActionListener();
+            localFolderButton.addActionListener(myActionListener);
+        } else {
+           localFolderField.setEnabled(false);
+        }
 
         // For non-experts - just choose between auto sync and manual.
         manualSyncCB = new JCheckBox(Translation.getTranslation(
@@ -228,7 +238,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             .getUserDirectoriesFiltered(getController(), showAppData);
 
         folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
-        folderLocalBaseMap = new HashMap<FolderInfo, File>();
+        folderLocalBaseMap = new HashMap<FolderInfo, Path>();
         String folderBasedirString = getController().getFolderRepository()
             .getFoldersBasedirString();
 
@@ -238,7 +248,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         // If we have just one folder info, display as text field,
         // BUT still have the combo, as this is linked to the maps.
         if (folderInfoList.size() == 1) {
-            folderInfoField.setText(folderInfoList.get(0).getName());
+            folderInfoField.setText(folderInfoList.get(0).getLocalizedName());
             folderInfoCombo.setVisible(false);
         } else {
             folderInfoField.setVisible(false);
@@ -248,15 +258,20 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             folderProfileMap.put(folderInfo,
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
             // Suggest user dir.
-            File dirSuggestion;
-            if (userDirs.get(folderInfo.name) == null) {
-                dirSuggestion = new File(folderBasedirString,
-                    FileUtils.removeInvalidFilenameChars(folderInfo.name));
+            Path dirSuggestion;
+            if (userDirs.get(folderInfo.getLocalizedName()) == null) {
+                dirSuggestion = Paths.get(folderBasedirString,
+                    PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName()));
             } else {
-                dirSuggestion = userDirs.get(folderInfo.name).getDirectory();
+                dirSuggestion = userDirs.get(folderInfo.getLocalizedName()).getDirectory();
             }
             folderLocalBaseMap.put(folderInfo, dirSuggestion);
-            folderInfoComboModel.addElement(folderInfo.name);
+            folderInfoComboModel.addElement(folderInfo.getLocalizedName());
+        }
+
+        if (PFWizard.hideFolderJoinWizard(getController()))
+        {
+            getWizard().next();
         }
     }
 
@@ -274,14 +289,22 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         Object selectedItem = folderInfoCombo.getSelectedItem();
         FolderInfo selectedFolderInfo = null;
         for (FolderInfo folderInfo : folderProfileMap.keySet()) {
-            if (folderInfo.name.equals(selectedItem)) {
+            if (folderInfo.getLocalizedName().equals(selectedItem)) {
                 selectedFolderInfo = folderInfo;
                 break;
             }
         }
         if (selectedFolderInfo != null) {
-            localFolderField.setText(folderLocalBaseMap.get(selectedFolderInfo)
-                .getAbsolutePath());
+            localFolderField.setText(folderLocalBaseMap
+                .get(selectedFolderInfo)
+                .toAbsolutePath()
+                .toString()
+                .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
+                    Translation.getTranslation("general.group"))
+                .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
+                    Translation.getTranslation("general.department"))
+                .replace(Constants.ZYNCRO_COMPANY_TOKEN,
+                    Translation.getTranslation("general.company")));
             syncProfileSelectorPanel.setSyncProfile(
                 folderProfileMap.get(selectedFolderInfo), false);
         }
@@ -294,7 +317,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             Object selectedItem = folderInfoCombo.getSelectedItem();
             FolderInfo selectedFolderInfo = null;
             for (FolderInfo folderInfo : folderProfileMap.keySet()) {
-                if (folderInfo.name.equals(selectedItem)) {
+                if (folderInfo.getLocalizedName().equals(selectedItem)) {
                     selectedFolderInfo = folderInfo;
                     break;
                 }
@@ -392,7 +415,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                                 getController().getIOProvider().startIO(
                                     new Runnable() {
                                         public void run() {
-                                            FileUtils.openFile(new File(part));
+                                            PathUtils.openFile(Paths.get(part));
                                         }
                                     });
 
@@ -441,26 +464,26 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         Object selectedItem = folderInfoCombo.getSelectedItem();
         FolderInfo selectedFolderInfo = null;
         for (FolderInfo folderInfo : folderLocalBaseMap.keySet()) {
-            if (folderInfo.name.equals(selectedItem)) {
+            if (folderInfo.getLocalizedName().equals(selectedItem)) {
                 selectedFolderInfo = folderInfo;
                 break;
             }
         }
         if (selectedFolderInfo != null) {
-            List<File> files = DialogFactory.chooseDirectory(getController().getUIController(),
+            List<Path> files = DialogFactory.chooseDirectory(getController().getUIController(),
                     folderLocalBaseMap.get(selectedFolderInfo), false);
             if (!files.isEmpty()) {
-                File file = files.get(0);
+                Path file = files.get(0);
                 List<FolderInfo> folderInfoList = (List<FolderInfo>) getWizardContext()
                         .getAttribute(WizardContextAttributes.FOLDER_INFOS);
                 if (folderInfoList != null && folderInfoList.size() == 1) {
                     String folderName = folderInfoList.get(0).getName();
-                    if (!file.getName().equals(folderName)) {
+                    if (!file.getFileName().toString().equals(folderName)) {
                         // Help the user by appending the folder name to the path.
-                        file = new File(file, folderName);
+                        file = file.resolve(folderName);
                     }
                 }
-                localFolderField.setText(file.getAbsolutePath());
+                localFolderField.setText(file.toAbsolutePath().toString());
                 folderLocalBaseMap.put(selectedFolderInfo, file);
             }
         }

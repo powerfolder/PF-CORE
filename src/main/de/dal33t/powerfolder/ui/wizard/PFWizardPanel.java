@@ -156,9 +156,10 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @return true
      */
     public boolean hasHelp() {
-        return StringUtils
-            .isNotBlank(ConfigurationEntry.PROVIDER_QUICKSTART_URL
-                .getValue(getController()));
+        return !getWizard().isTiny()
+            && StringUtils
+                .isNotBlank(ConfigurationEntry.PROVIDER_QUICKSTART_URL
+                    .getValue(getController()));
     }
 
     /** Always open online docu */
@@ -219,7 +220,7 @@ public abstract class PFWizardPanel extends WizardPanel {
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout("13px, fill:pref:grow",
-            "pref, 15dlu, pref, 3dlu, fill:pref:grow");
+            "pref, 7dlu, pref, 3dlu, fill:pref:grow");
         PanelBuilder pageBuilder = new PanelBuilder(layout, this);
         pageBuilder.setBorder(Borders
             .createEmptyBorder("7dlu, 20dlu, 0dlu, 20dlu"));

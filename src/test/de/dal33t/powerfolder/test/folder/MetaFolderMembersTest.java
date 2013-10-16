@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
+import java.io.IOException;
+import java.nio.file.Files;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.disk.Folder;
@@ -47,20 +50,20 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
      * down. 3. Marge joins with Bart. Result: Marge should know about Bart and
      * Homer.
      */
-    public void testMembersSync() {
+    public void testMembersSync() throws IOException {
         // 1. Bart creates a folder and Homer joins.
         FolderInfo folderInfo = new FolderInfo("testFolder", "testFolder"
-            + IdGenerator.makeId());
+            + IdGenerator.makeFolderId());
 
         Controller controllerBart = getContollerBart();
-        TESTFOLDER_BASEDIR_BART.mkdirs();
+        Files.createDirectories(TESTFOLDER_BASEDIR_BART);
         FolderSettings folderSettingsBart = new FolderSettings(
             TESTFOLDER_BASEDIR_BART, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
             false, 0);
         final Folder folderBart = controllerBart.getFolderRepository()
             .createFolder(folderInfo, folderSettingsBart);
 
-        TESTFOLDER_BASEDIR_HOMER.mkdirs();
+        Files.createDirectories(TESTFOLDER_BASEDIR_HOMER);
         FolderSettings folderSettingsHomer = new FolderSettings(
             TESTFOLDER_BASEDIR_HOMER, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
             false, 0);
@@ -86,7 +89,7 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         controllerHomer.shutdown();
 
         // 3. Marge joins with Bart.
-        TESTFOLDER_BASEDIR_MARGE.mkdirs();
+        Files.createDirectories(TESTFOLDER_BASEDIR_MARGE);
         FolderSettings folderSettingsMarge = new FolderSettings(
             TESTFOLDER_BASEDIR_MARGE, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
             false, 0);

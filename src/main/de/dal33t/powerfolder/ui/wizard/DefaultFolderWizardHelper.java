@@ -19,32 +19,46 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+
+import jwf.WizardContext;
+import jwf.WizardPanel;
+
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
-import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.util.Help;
-import jwf.WizardContext;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Helper class to setup the default folder during wizard steps
@@ -60,7 +74,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
 
     private ValueModel setupDefaultModel;
     private JCheckBox setupDefaultCB;
-    private File defaultSynchronizedFolder;
+    private Path defaultSynchronizedFolder;
 
     DefaultFolderWizardHelper(Controller controller, ServerClient client) {
         super(controller);
@@ -78,11 +92,14 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
                 .getTranslation("wizard.login_online_storage.setup_default"));
         setupDefaultCB.setOpaque(false);
 
-        defaultSynchronizedFolder = new File(getController()
-            .getFolderRepository().getFoldersBasedir(), Translation
-            .getTranslation("wizard.basic_setup.default_folder_name"));
+        defaultSynchronizedFolder = getController()
+            .getFolderRepository()
+            .getFoldersBasedir()
+            .resolve(
+                Translation
+                    .getTranslation("wizard.basic_setup.default_folder_name"));
 
-        if (defaultSynchronizedFolder.exists()) {
+        if (Files.exists(defaultSynchronizedFolder)) {
             // Hmmm. User has already created this???
             setupDefaultCB.setSelected(false);
         }
@@ -130,8 +147,9 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
             FolderInfo foInfo;
             if (accountFolder == null) {
                 // Default sync folder has user name...
-                String name = defaultSynchronizedFolder.getName();
-                foInfo = new FolderInfo(name, '[' + IdGenerator.makeId() + ']')
+                String name = defaultSynchronizedFolder.getFileName()
+                    .toString();
+                foInfo = new FolderInfo(name, IdGenerator.makeFolderId())
                     .intern();
             } else {
                 // Take from account.
@@ -159,7 +177,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
             return;
         }
         // Only show if not already setup
-        panel.setVisible(!defaultSynchronizedFolder.exists()
+        panel.setVisible(Files.notExists(defaultSynchronizedFolder)
             && client.isLoggedIn());
     }
 

@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.test.message;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -36,15 +36,15 @@ public class FolderListTest extends TestCase {
 
         for (int i = 0; i < list.secretFolders.length; i++) {
             FolderInfo foInfo = new FolderInfo("Na" + IdGenerator.makeId(),
-                IdGenerator.makeId());
+                IdGenerator.makeFolderId());
             list.secretFolders[i] = foInfo;
         }
 
-        File file = new File(TestHelper.getTestDir(), "subdir/FolderList");
+        Path file = TestHelper.getTestDir().resolve("subdir/FolderList");
         assertTrue(list.store(file));
         assertEquals(list, FolderList.load(file));
 
-        file = new File(TestHelper.getTestDir(), "subdir/dsds/FolderList");
+        file = TestHelper.getTestDir().resolve("subdir/dsds/FolderList");
         assertTrue(list.store(file));
         assertEquals(list, FolderList.load(file));
     }

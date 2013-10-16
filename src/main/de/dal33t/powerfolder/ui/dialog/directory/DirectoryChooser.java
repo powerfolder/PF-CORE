@@ -26,8 +26,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -36,7 +40,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -76,7 +79,7 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class DirectoryChooser extends BaseDialog {
 
-    private List<File> selectedDirs;
+    private List<Path> selectedDirs;
     private final DirectoryTree tree;
     private final JTextField pathField;
     private final JButton newDirButton;
@@ -100,11 +103,11 @@ public class DirectoryChooser extends BaseDialog {
      * @param multiSelect
      *            whether multiple directories may be selected.
      */
-    public DirectoryChooser(Controller controller, File initialValue,
+    public DirectoryChooser(Controller controller, Path initialValue,
                      List<String> onlineFolders, boolean multiSelect) {
         super(Senior.NONE, controller, true);
         this.multiSelect = multiSelect;
-        selectedDirs = new ArrayList<File>();
+        selectedDirs = new ArrayList<Path>();
         selectedDirs.add(initialValue);
         DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode();
         model = new DefaultTreeModel(rootTreeNode);
@@ -119,7 +122,7 @@ public class DirectoryChooser extends BaseDialog {
         tree.addMouseListener(new NavTreeListener());
     }
 
-    public List<File> getSelectedDirs() {
+    public List<Path> getSelectedDirs() {
         if (selectedDirs == null) {
             return null;
         }
@@ -172,28 +175,28 @@ public class DirectoryChooser extends BaseDialog {
             && StringUtils.isNotBlank(pathField.getText()))
         {
             if (selectedDirs.size() == 1) {
-                File selectedDir = selectedDirs.get(0);
-                String selectedPath = selectedDir.getAbsolutePath();
+                Path selectedDir = selectedDirs.get(0);
+                String selectedPath = selectedDir.toAbsolutePath().toString();
                 String enteredPath = pathField.getText();
                 if (!selectedPath.equals(enteredPath)) {
-                    File file = new File(enteredPath);
+                    Path file = Paths.get(enteredPath);
                     selectedDirs.clear();
                     selectedDirs.add(file);
                 }
             } else {
                 String enteredPath = pathField.getText();
-                File file = new File(enteredPath);
+                Path file = Paths.get(enteredPath);
                 selectedDirs.clear();
                 selectedDirs.add(file);
             }
         }
 
-        for (File selectedDir : selectedDirs) {
+        for (Path selectedDir : selectedDirs) {
             // Create any virtual folders now.
-            if (!selectedDir.exists()) {
+            if (Files.notExists(selectedDir)) {
                 try {
-                    selectedDir.mkdirs();
-                } catch (SecurityException e) {
+                    Files.createDirectories(selectedDir);
+                } catch (IOException e) {
                     logSevere("Failed to create directory", e);
                 }
             }
@@ -224,18 +227,16 @@ public class DirectoryChooser extends BaseDialog {
 
         logFine("getContent()");
         // Populate root node with primary drives.
-        File[] fs = File.listRoots();
-        if (isFine()) {
-            logFine("Roots length " + fs.length);
-        }
+        Iterable<Path> fs = FileSystems.getDefault().getRootDirectories();
+
         FileSystemView fsv = FileSystemView.getFileSystemView();
-        for (File f : fs) {
+        for (Path f : fs) {
             if (isFine()) {
                 logFine("Root " + f);
             }
 
             DirectoryTreeNode treeNode = new DirectoryTreeNode(getController(),
-                    fsv.getSystemDisplayName(f), f, true, true);
+                    fsv.getSystemDisplayName(f.toFile()), f, true, true);
             ((DefaultMutableTreeNode) tree.getModel().getRoot()).add(treeNode);
         }
 
@@ -307,8 +308,8 @@ public class DirectoryChooser extends BaseDialog {
         }
         DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
             .getLastPathComponent();
-        File selected = dtn.getDir();
-        String baseFile = selected.getAbsolutePath();
+        Path selected = dtn.getDir();
+        String baseFile = selected.toAbsolutePath().toString();
 
         if (baseFile != null) {
             ValueModel subDirValueModel = new ValueHolder();
@@ -319,8 +320,8 @@ public class DirectoryChooser extends BaseDialog {
             if (o != null) {
                 String subDir = ((String) o).trim();
                 if (subDir.length() > 0) {
-                    File f = new File(baseFile, subDir);
-                    if (f.exists()) {
+                    Path f = Paths.get(baseFile, subDir);
+                    if (Files.exists(f)) {
                         DialogFactory
                             .genericDialog(
                                 getController(),
@@ -328,10 +329,16 @@ public class DirectoryChooser extends BaseDialog {
                                     .getTranslation("dialog.directorychooser.new.description"),
                                 Translation.getTranslation(
                                     "dialog.directorychooser.new.exists", f
-                                        .getAbsolutePath()),
+                                        .toAbsolutePath().toString()),
                                 GenericDialogType.WARN);
                     } else {
-                        boolean success = f.mkdir();
+                        boolean success = false;
+                        try {
+                            Files.createDirectories(f);
+                            success = true;
+                        } catch (IOException ioe) {
+                            logInfo(ioe.getMessage());
+                        }
                         if (success) {
                             TreePath selectionPath = tree.getSelectionPath();
                             Object parentComponent = selectionPath
@@ -353,8 +360,8 @@ public class DirectoryChooser extends BaseDialog {
                                         DirectoryTreeNode childNode = (DirectoryTreeNode) node;
                                         if (childNode.getUserObject() instanceof File)
                                         {
-                                            File childFile = (File) childNode
-                                                .getUserObject();
+                                            Path childFile = ((File) childNode
+                                                .getUserObject()).toPath();
                                             if (childFile.equals(f)) {
 
                                                 // Expand to child.
@@ -378,7 +385,7 @@ public class DirectoryChooser extends BaseDialog {
                                         .getTranslation("dialog.directorychooser.new.description"),
                                     Translation.getTranslation(
                                         "dialog.directorychooser.new.problem",
-                                        f.getAbsolutePath()),
+                                        f.toAbsolutePath().toString()),
                                     GenericDialogType.WARN);
                         }
                     }
@@ -402,9 +409,9 @@ public class DirectoryChooser extends BaseDialog {
                     logFine("DirectoryTreeNode scanned " + dtn.isScanned()
                         + " volume " + dtn.isVolume());
                 }
-                File f = dtn.getDir();
+                Path f = dtn.getDir();
                 if (isFine()) {
-                    logFine("DirectoryTreeNode file " + f.getAbsolutePath());
+                    logFine("DirectoryTreeNode file " + f.toAbsolutePath());
                 }
                 selectedDirs.add(f);
             }
@@ -420,11 +427,11 @@ public class DirectoryChooser extends BaseDialog {
                     logFine("DirectoryTreeNode scanned " + dtn.isScanned()
                         + " volume " + dtn.isVolume());
                 }
-                File f = dtn.getDir();
+                Path f = dtn.getDir();
                 if (isFine()) {
-                    logFine("DirectoryTreeNode file " + f.getAbsolutePath());
+                    logFine("DirectoryTreeNode file " + f.toAbsolutePath());
                 }
-                pathField.setText(f.getAbsolutePath());
+                pathField.setText(f.toAbsolutePath().toString());
                 newDirectoryAction.setEnabled(true);
                 selectedDirs.add(f);
             }

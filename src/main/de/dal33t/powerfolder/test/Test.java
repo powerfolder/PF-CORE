@@ -15,24 +15,28 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: Test.java 7142 2009-03-13 18:20:12Z tot $
 */
 package de.dal33t.powerfolder.test;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.FileTime;
 import java.util.Date;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 
 
 /**
@@ -90,8 +94,8 @@ public class Test {
     }
 
     private void testCorruptZipFile() {
-        File file = new File("test.jar");
-        log.info(file + " is a valid zip ? " + FileUtils.isValidZipFile(file));
+        Path file = Paths.get("test.jar");
+        log.info(file + " is a valid zip ? " + PathUtils.isValidZipFile(file));
     }
 
     private void testInt2Bytes() {
@@ -137,11 +141,11 @@ public class Test {
         chunk.data = new byte[Integer
             .valueOf(ConfigurationEntry.TRANSFERS_MAX_FILE_CHUNK_SIZE
                 .getDefaultValue())];
-        File file = new File("test.chunk");
+        Path file = Paths.get("test.chunk");
         log.info("Writing test chunk (" + chunk.data.length + " bytes) to "
             + file);
-        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(
-            file));
+        ObjectOutputStream out = new ObjectOutputStream(
+            Files.newOutputStream(file));
         out.writeObject(chunk);
         out.close();
     }
@@ -160,21 +164,21 @@ public class Test {
     }
 
     private boolean testFileWrite() throws IOException {
-        File testFile = new File("test.xxx");
+        Path testFile = Paths.get("test.xxx");
         log.info("Testing modified Date differ on file " + testFile);
         String test = "xx";
         int matches = 0;
         int incorrect = 0;
 
         for (int i = 0; i < 20; i++) {
-            FileOutputStream fOut = new FileOutputStream(testFile, true);
+            OutputStream fOut = Files.newOutputStream(testFile, StandardOpenOption.APPEND);
             test += test;
             fOut.write(test.getBytes());
             fOut.close();
             long currentMS = Convert.convertToGlobalPrecision(System
                 .currentTimeMillis());
-            testFile.setLastModified(currentMS);
-            long fileModified = testFile.lastModified();
+            Files.setLastModifiedTime(testFile, FileTime.fromMillis(currentMS));
+            long fileModified = Files.getLastModifiedTime(testFile).toMillis();
             long expectedMS = Convert.convertToGlobalPrecision(currentMS);
             if (fileModified == currentMS) {
                 matches++;

@@ -1,7 +1,9 @@
 package de.dal33t.powerfolder.test.transfer;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -91,17 +93,19 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             .getTransferManager().getCompletedDownloadsCollection())
         {
             assertFalse("Tempfile existing for completed download: "
-                + dlManager.getTempFile(), dlManager.getTempFile().exists());
-            assertTrue(
-                "Unable to access temp file: " + dlManager.getTempFile(),
-                dlManager.getTempFile().createNewFile());
+                + dlManager.getTempFile(), Files.exists(dlManager.getTempFile()));
+            try {
+                Files.createFile(dlManager.getTempFile());
+            } catch (IOException ioe) {
+                fail("Unable to access temp file: " + dlManager.getTempFile().toString());
+            }
         }
 
-        File[] files = getFolderAtBart().getLocalBase().listFiles();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (file.isFile()) {
-                TestHelper.changeFile(file);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getFolderAtBart().getLocalBase())) {
+            for (Path p : stream) {
+                if (Files.isRegularFile(p)) {
+                    TestHelper.changeFile(p);
+                }
             }
         }
         scanFolder(getFolderAtBart());

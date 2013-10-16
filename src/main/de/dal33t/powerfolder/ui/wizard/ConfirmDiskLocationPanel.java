@@ -15,13 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: ConfirmDiskLocationPanel.java 19840 2012-09-22 04:32:53Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -34,16 +42,15 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -53,30 +60,31 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
  */
 public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
-    private File localBase;
+    private Path localBase;
 
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox sendInviteAfterCB;
 
     private JLabel folderSizeLabel;
 
-    public ConfirmDiskLocationPanel(Controller controller, File localBase) {
+    public ConfirmDiskLocationPanel(Controller controller, Path localBase) {
         super(controller);
         this.localBase = localBase;
     }
 
     public WizardPanel next() {
         getWizardContext().setAttribute(FOLDER_LOCAL_BASE, localBase);
-        String initialFolderName = FileUtils.getSuggestedFolderName(localBase);
+        String initialFolderName = PathUtils.getSuggestedFolderName(localBase);
         getWizardContext().setAttribute(INITIAL_FOLDER_NAME, initialFolderName);
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             return new FolderSetupPanel(getController());
         } else {
             // Set FolderInfo
-            // NOTE: this is more or less a copy of FolderSetupPanel next(), for non experts.
+            // NOTE: this is more or less a copy of FolderSetupPanel next(), for
+            // non experts.
             // Changes may need to be applied to both.
             FolderInfo folderInfo = new FolderInfo(initialFolderName,
-                    '[' + IdGenerator.makeId() + ']');
+                IdGenerator.makeFolderId());
             getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
 
             // Set sync profile
@@ -125,7 +133,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         int row = 1;
 
         builder.add(locationField, cc.xy(1, row));
-        builder.add(new JLabel(localBase.getAbsolutePath()), cc.xy(3, row));
+        builder.add(new JLabel(localBase.toAbsolutePath().toString()), cc.xy(3, row));
 
         row += 2;
         builder.add(folderSizeLabel, cc.xyw(1, row, 5));

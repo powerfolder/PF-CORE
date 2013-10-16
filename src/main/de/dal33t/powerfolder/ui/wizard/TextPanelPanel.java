@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: TextPanelPanel.java 21202 2013-03-18 01:37:47Z sprajc $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import jwf.WizardPanel;
@@ -44,7 +45,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard
@@ -64,7 +65,8 @@ public class TextPanelPanel extends PFWizardPanel {
     }
 
     public TextPanelPanel(Controller controller, String title, String text,
-                          boolean autoFadeOut) {
+        boolean autoFadeOut)
+    {
         super(controller);
         this.title = title;
         this.text = text;
@@ -77,7 +79,18 @@ public class TextPanelPanel extends PFWizardPanel {
 
     @Override
     protected void afterDisplay() {
-        if (autoFadeOut) {
+        if (PFWizard.hideFolderJoinWizard(getController())) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JDialog diag = getWizardDialog();
+                    diag.setVisible(false);
+                    diag.dispose();
+                }
+            });
+        }
+        // Tiny wizards don't have a "Finish" button. So automatically close.
+        if (autoFadeOut || getWizard().isTiny()) {
             new FadeOutWorker().execute();
         }
 
@@ -87,7 +100,7 @@ public class TextPanelPanel extends PFWizardPanel {
             Object p = getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
             if (p != null && p instanceof FolderInfo) {
                 getController().getUIController().displayInviteFolderContents(
-                        (FolderInfo) p);
+                    (FolderInfo) p);
             }
         }
     }
@@ -132,7 +145,6 @@ public class TextPanelPanel extends PFWizardPanel {
         // If it is a locally synced folder,
         // show link to open the folder in explorer.
         if (!autoFadeOut) {
-
             FolderInfo folderInfo = (FolderInfo) getWizardContext()
                     .getAttribute(FOLDERINFO_ATTRIBUTE);
             if (folderInfo != null) {
@@ -237,7 +249,7 @@ public class TextPanelPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             Folder folder = folderInfo.getFolder(getController());
-            FileUtils.openFile(folder.getLocalBase());
+            PathUtils.openFile(folder.getLocalBase());
         }
     }
 

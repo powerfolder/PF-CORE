@@ -157,7 +157,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             setHorizontalAlignment(RIGHT);
         } else if (value instanceof FolderInfo) {
             FolderInfo foInfo = (FolderInfo) value;
-            setText(foInfo.name);
+            setText(foInfo.getLocalizedName());
             setHorizontalAlignment(LEFT);
         } else if (value instanceof Collection) {
             Collection<Download> sources = (Collection<Download>) value;

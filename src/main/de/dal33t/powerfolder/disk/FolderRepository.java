@@ -15,16 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FolderRepository.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -70,8 +74,8 @@ import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -87,10 +91,6 @@ import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import de.schlichtherle.truezip.file.TArchiveDetector;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
-import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -114,7 +114,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Object scanTrigger = new Object();
     private boolean triggered;
     private final AtomicInteger suspendNewFolderSearch = new AtomicInteger(0);
-    private File foldersBasedir;
+    private Path foldersBasedir;
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
@@ -141,7 +141,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * A list of folder base directories that have been removed in the past.
      */
-    private final Set<File> removedFolderDirectories = new CopyOnWriteArraySet<File>();
+    private final Set<Path> removedFolderDirectories = new CopyOnWriteArraySet<Path>();
 
     /**
      * Constructor
@@ -176,9 +176,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValue(getController());
         String[] parts = list.split("\\$");
         for (String s : parts) {
-            File f = new TFile(s);
-            if (f.exists() && f.isDirectory()) {
-                removedFolderDirectories.add(f);
+            try {
+                Path p = Paths.get(s);
+                if (Files.exists(p) && Files.isDirectory(p)) {
+                    removedFolderDirectories.add(p);
+                }
+            } catch (Exception e) {
+                logFine("Unable to check removed dir: " + s + ". " + e);
             }
         }
     }
@@ -220,12 +224,13 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void init() {
 
+        // Not necessary after switching to Path
         // #1697
         // Init required. To avoid extracting ZIP/JAR files
-        TFile.setDefaultArchiveDetector(new TArchiveDetector(
-            TArchiveDetector.NULL, "pfzip", new JarDriver(
-                IOPoolLocator.SINGLETON)));
-        TFile.setLenient(false);
+//        TFile.setDefaultArchiveDetector(new TArchiveDetector(
+//            TArchiveDetector.NULL, "pfzip", new JarDriver(
+//                IOPoolLocator.SINGLETON)));
+//        TFile.setLenient(false);
 
         initFoldersBasedir();
 
@@ -244,7 +249,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController()))
         {
             String shortcutName = getController().getFolderRepository()
-                .getFoldersBasedir().getName();
+                .getFoldersBasedir().getFileName().toString();
             if (Util.isDesktopShortcut(shortcutName)) {
                 Util.removeDesktopShortcut(shortcutName);
             }
@@ -273,7 +278,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (Util.isDesktopShortcut(oldShortcutName)) {
                 Util.removeDesktopShortcut(oldShortcutName);
                 String shortcutName = getController().getFolderRepository()
-                    .getFoldersBasedir().getName();
+                    .getFoldersBasedir().getFileName().toString();
                 Util.createDesktopShortcut(shortcutName, getController()
                     .getFolderRepository().getFoldersBasedir());
             }
@@ -301,31 +306,34 @@ public class FolderRepository extends PFComponent implements Runnable {
      * maintained when folders are removed. This is just a legacy check.
      */
     private void tidyOldLinks() {
-        File baseDir = getFoldersBasedir();
-        if (baseDir.exists()) {
-            File[] links = baseDir.listFiles(new FileFilter() {
-                public boolean accept(File pathname) {
-                    return pathname.getName()
-                        .endsWith(Constants.LINK_EXTENSION);
-                }
-            });
-            for (File link : links) {
-                // Do we have a folder for this link?
-                boolean haveFolder = false;
-                for (Folder folder : getFolders()) {
-                    if ((folder.getName() + Constants.LINK_EXTENSION)
-                        .equals(link.getName()))
-                    {
-                        haveFolder = true;
-                        break;
+        Path baseDir = getFoldersBasedir();
+
+        if (Files.exists(baseDir)) {
+            try (DirectoryStream<Path> links = Files.newDirectoryStream(
+                baseDir, "*" + Constants.LINK_EXTENSION))
+            {
+                for (Path link : links) {
+                    boolean haveFolder = false;
+
+                    for (Folder folder : getFolders()) {
+                        if ((folder.getName() + Constants.LINK_EXTENSION)
+                            .equals(link.getFileName()))
+                        {
+                            haveFolder = true;
+                            break;
+                        }
+                    }
+
+                    if (!haveFolder) {
+                        boolean deleted = Files.deleteIfExists(link);
+                        logInfo("Removed old link " + link.getFileName() + "? "
+                            + deleted);
                     }
                 }
-                if (!haveFolder) {
-                    // We have a link but no folder; remove link.
-                    boolean deleted = link.delete();
-                    log.info("Removed old link " + link.getName() + "? "
-                        + deleted);
-                }
+            }
+            catch (IOException ioe) {
+                // TODO:
+                logWarning(ioe.getMessage());
             }
         }
     }
@@ -345,35 +353,42 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Check if this a windows network drive.
         boolean winNetworkDrive = baseDir != null && baseDir.contains(":\\")
             && baseDir.charAt(1) == ':';
+
         boolean ok = false;
 
         if (OSUtil.isWindowsSystem() && winNetworkDrive || !winNetworkDrive) {
-            foldersBasedir = new TFile(baseDir).getAbsoluteFile();
-            if (!foldersBasedir.exists()) {
-                if (foldersBasedir.mkdirs()) {
+            foldersBasedir = Paths.get(baseDir);
+            if (Files.notExists(foldersBasedir)) {
+                try {
+                    Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
-                } else {
+                }
+                catch (Exception e) {
+                    // TODO: take a closer look at the different Exceptions that can be caught.
                     logWarning("Unable to create base path for folders: "
-                        + foldersBasedir);
+                        + foldersBasedir + ". " + e.getMessage());
                 }
             }
-            ok = foldersBasedir.exists() && foldersBasedir.canRead()
-                && foldersBasedir.isDirectory();
+            ok = Files.exists(foldersBasedir) && Files.isReadable(foldersBasedir)
+                && Files.isDirectory(foldersBasedir);
         }
 
         if (!OSUtil.isWindowsSystem() && winNetworkDrive) {
-            foldersBasedir = new TFile(
+            foldersBasedir = Paths.get(
                 ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
-            if (!foldersBasedir.exists()) {
-                if (foldersBasedir.mkdirs()) {
+            if (Files.notExists(foldersBasedir)) {
+                try {
+                    Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
-                } else {
+                }
+                catch (Exception e) {
+                    // TODO: take a closer look at the different Exceptions that can be caught.
                     logWarning("Unable to create base path for folders: "
-                        + foldersBasedir);
+                        + foldersBasedir + ". " + e.getMessage());
                 }
             }
-            ok = foldersBasedir.exists() && foldersBasedir.canRead()
-                && foldersBasedir.isDirectory();
+            ok = Files.exists(foldersBasedir) && Files.isReadable(foldersBasedir)
+                && Files.isDirectory(foldersBasedir);
         }
 
         // Use default as fallback
@@ -381,24 +396,27 @@ public class FolderRepository extends PFComponent implements Runnable {
             && ConfigurationEntry.FOLDER_BASEDIR_FALLBACK_TO_DEFAULT
                 .getValueBoolean(getController()))
         {
-            foldersBasedir = new TFile(
+            foldersBasedir = Paths.get(
                 ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
-            if (!foldersBasedir.exists()) {
-                if (foldersBasedir.mkdirs()) {
+            if (Files.notExists(foldersBasedir)) {
+                try {
+                    Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
-                } else {
+                }
+                catch (Exception e) {
+                    // TODO: take a closer look at the different Exceptions that can be caught.
                     logWarning("Unable to create base path for folders: "
-                        + foldersBasedir);
+                        + foldersBasedir + ". " + e.getMessage());
                 }
             }
         }
 
-        ok = foldersBasedir.exists() && foldersBasedir.canRead()
-            && foldersBasedir.isDirectory();
+        ok = Files.exists(foldersBasedir) && Files.isReadable(foldersBasedir)
+            && Files.isDirectory(foldersBasedir);
 
         if (ok) {
             logInfo("Using base path for folders: " + foldersBasedir);
-            FileUtils.maintainDesktopIni(getController(), foldersBasedir);
+            PathUtils.maintainDesktopIni(getController(), foldersBasedir);
         } else {
             logWarning("Unable to access base path for folders: "
                 + foldersBasedir);
@@ -468,7 +486,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         if (folderId
                             .contains(FolderSettings.FOLDER_ID_GENERATE))
                         {
-                            String generatedId = '[' + IdGenerator.makeId() + ']';
+                            String generatedId = IdGenerator.makeFolderId();
                             folderId = folderId.replace(
                                 FolderSettings.FOLDER_ID_GENERATE, generatedId);
                             logInfo("Spawned new folder id for config entry "
@@ -603,19 +621,20 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public String getFoldersBasedirString() {
         return getFoldersBasedir() != null ? getFoldersBasedir()
-            .getAbsolutePath() : null;
+            .toAbsolutePath().toString() : null;
     }
 
     /**
      * @return the default basedir for all folders. basedir is just suggested
      */
-    public File getFoldersBasedir() {
+    public Path getFoldersBasedir() {
         if (foldersBasedir == null) {
             initFoldersBasedir();
         }
+        
         return foldersBasedir;
     }
-
+    
     /**
      * Sets the new base path
      * 
@@ -735,13 +754,13 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param targetDir
      * @return the folder with the targetDir as local base or null if not found
      */
-    public Folder findExistingFolder(File targetDir) {
+    public Folder findExistingFolder(Path targetDir) {
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
             try {
                 if (folder.getLocalBase().equals(targetDir)
-                    || folder.getCommitOrLocalDir().getCanonicalPath()
-                        .equals(targetDir.getCanonicalPath()))
+                    || folder.getCommitOrLocalDir().toRealPath()
+                        .equals(targetDir.toRealPath()))
                 {
                     return folder;
                 }
@@ -783,8 +802,13 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
         FolderSettings folderSettings)
     {
-        if (!folderSettings.getLocalBaseDir().getName().endsWith(".pfzip")) {
-            folderSettings.getLocalBaseDir().mkdirs();
+        if (!folderSettings.getLocalBaseDir().endsWith(".pfzip")) {
+            try {
+                Files.createDirectories(folderSettings.getLocalBaseDir());
+            }
+            catch (IOException ioe) {
+                logInfo(ioe.getMessage());
+            }
         }
         Folder folder = createFolder0(folderInfo, folderSettings, true);
 
@@ -875,27 +899,33 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
             .getValueBoolean(getController()))
         {
-            boolean inBaseDir = folderSettings.getLocalBaseDir()
-                .getParentFile().equals(getFoldersBasedir());
-            if (!inBaseDir) {
-                logSevere("Not allowed to create " + folderInfo.getName()
-                    + " at " + folderSettings.getLocalBaseDirString()
-                    + ". Must be in base directory: " + getFoldersBasedir());
-                throw new IllegalStateException("Not allowed to create "
-                    + folderInfo.getName() + " at "
-                    + folderSettings.getLocalBaseDirString()
-                    + ". Must be in base directory: " + getFoldersBasedir());
+            Path localBaseDirParent = folderSettings.getLocalBaseDir().getParent();
+            if (localBaseDirParent != null) {
+                boolean inBaseDir = localBaseDirParent.equals(getFoldersBasedir());
+                if (!inBaseDir) {
+                    logSevere("Not allowed to create " + folderInfo.getName()
+                        + " at " + folderSettings.getLocalBaseDirString()
+                        + ". Must be in base directory: " + getFoldersBasedir());
+                    throw new IllegalStateException("Not allowed to create "
+                        + folderInfo.getName() + " at "
+                        + folderSettings.getLocalBaseDirString()
+                        + ". Must be in base directory: " + getFoldersBasedir());
+                }
             }
         }
 
         if (Feature.FOLDER_ATOMIC_COMMIT.isEnabled()
             && folderSettings.getCommitDir() == null)
         {
-            File newBaseDir = new TFile(folderSettings.getLocalBaseDir(),
-                Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
-            newBaseDir.mkdirs();
-            FileUtils.setAttributesOnWindows(newBaseDir, true, true);
-            File commitDir = folderSettings.getLocalBaseDir();
+            Path newBaseDir = folderSettings.getLocalBaseDir()
+                .resolve(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
+            try {
+                Files.createDirectories(newBaseDir);
+            } catch (IOException e) {
+                logInfo(e.getMessage());
+            }
+            PathUtils.setAttributesOnWindows(newBaseDir, true, true);
+            Path commitDir = folderSettings.getLocalBaseDir();
             SyncProfile syncProfile = SyncProfile.NO_SYNC;
 
             folderSettings = new FolderSettings(newBaseDir, syncProfile,
@@ -921,20 +951,31 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.addProblemListener(valveProblemListenerSupport);
 
         // Now create metaFolder and map to the same FolderInfo key.
-        FolderInfo metaFolderInfo = folderInfo.getMetaFolderInfo();
-        File systemSubdir = new TFile(folder.getLocalBase(),
-            Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        FolderSettings metaFolderSettings = new FolderSettings(new TFile(
-            systemSubdir, Constants.METAFOLDER_SUBDIR),
+        FolderInfo metaFolderInfo = new FolderInfo(
+            Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
+            Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
+        Path systemSubdir = folder.getSystemSubDir();
+        FolderSettings metaFolderSettings = new FolderSettings(systemSubdir.resolve(
+            Constants.METAFOLDER_SUBDIR),
+
             SyncProfile.META_FOLDER_SYNC, false, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
-            metaFolderSettings.getLocalBaseDir().mkdirs();
+            try {
+                Files.createDirectory(metaFolderSettings.getLocalBaseDir());
+            }
+            catch (IOException ioe) {
+                logInfo(ioe.getMessage());
+            }
         }
         Folder metaFolder = new Folder(getController(), metaFolderInfo,
             metaFolderSettings);
         if (!deviceDisconnected) {
-            metaFolder.getSystemSubDir().mkdirs();
+            try {
+                Files.createDirectory(metaFolder.getSystemSubDir());
+            } catch (IOException e) {
+                // Ignore.
+            }
         }
 
         // Set datamodel
@@ -1018,6 +1059,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean saveConfig)
     {
         Reject.ifNull(folder, "Folder is null");
+
         try {
             suspendNewFolderSearch.incrementAndGet();
 
@@ -1034,7 +1076,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder.clearAllProblemListeners();
 
             // Remove desktop ini if it exists
-            FileUtils.deleteDesktopIni(folder.getLocalBase());
+            if (OSUtil.isWindowsSystem()) {
+                PathUtils.deleteDesktopIni(folder.getLocalBase());
+            }
 
             // remove folder from config
             removeConfigEntries(folder.getConfigEntryId());
@@ -1083,32 +1127,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 try {
-                    FileUtils.recursiveDelete(folder.getSystemSubDir());
+                    PathUtils.recursiveDelete(folder.getSystemSubDir());
                 } catch (IOException e) {
                     logSevere("Failed to delete: " + folder.getSystemSubDir());
                 }
 
-                // Try to delete the invitation.
-                File invite = new TFile(folder.getLocalBase(), folder.getName()
-                    + ".invitation");
-                if (invite.exists()) {
+                if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
+                    // Remove the folder if totally empty.
                     try {
-                        invite.delete();
-                    } catch (Exception e) {
-                        logSevere(
-                            "Failed to delete invitation: "
-                                + invite.getAbsolutePath(), e);
-                    }
-                }
-
-                // Remove the folder if totally empty.
-                File[] files = folder.getLocalBase().listFiles();
-                if (files != null && files.length == 0) {
-                    try {
-                        FileUtils.recursiveDelete(folder.getLocalBase());
-                    } catch (Exception e) {
+                        Files.delete(folder.getLocalBase());
+                    } catch (DirectoryNotEmptyException dnee) {
+                        // this can happen, and is just fine
+                    } catch (IOException ioe) {
                         logSevere("Failed to delete local base: "
-                            + folder.getLocalBase().getAbsolutePath(), e);
+                            + folder.getLocalBase().toAbsolutePath() + ": "
+                            + ioe);
                     }
                 }
             }
@@ -1134,14 +1167,16 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private void removeLink(Folder folder) {
         FolderRepository repository = getController().getFolderRepository();
-        File baseDir = repository.getFoldersBasedir();
-        if (baseDir.exists()) {
-            File shortcutFile = new File(baseDir, folder.getName()
-                + Constants.LINK_EXTENSION);
-            if (shortcutFile.exists()) {
-                boolean deleted = shortcutFile.delete();
-                log.info("Removed link " + shortcutFile.getName() + "? "
+        Path baseDir = repository.getFoldersBasedir();
+        if (Files.exists(baseDir)) {
+            try {
+                Path shortcutFile = baseDir.resolve(folder.getName()
+                    + Constants.LINK_EXTENSION);
+                boolean deleted = Files.deleteIfExists(shortcutFile);
+                logFine("Removed link " + shortcutFile.getFileName() + "? "
                     + deleted);
+            } catch (Exception e) {
+                logWarning(e.getMessage());
             }
         }
     }
@@ -1149,9 +1184,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void addToRemovedFolderDirectories(Folder folder) {
         if (removedFolderDirectories.add(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            Iterator<File> iterator = removedFolderDirectories.iterator();
+            Iterator<Path> iterator = removedFolderDirectories.iterator();
             while (iterator.hasNext()) {
-                String s = iterator.next().getAbsolutePath();
+                String s = iterator.next().toAbsolutePath().toString();
                 sb.append(s);
                 if (iterator.hasNext()) {
                     sb.append('$');
@@ -1165,9 +1200,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void removeFromRemovedFolderDirectories(Folder folder) {
         if (removedFolderDirectories.remove(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            Iterator<File> iterator = removedFolderDirectories.iterator();
+            Iterator<Path> iterator = removedFolderDirectories.iterator();
             while (iterator.hasNext()) {
-                String s = iterator.next().getAbsolutePath();
+                String s = iterator.next().toAbsolutePath().toString();
                 sb.append(s);
                 if (iterator.hasNext()) {
                     sb.append('$');
@@ -1426,68 +1461,81 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
         String baseDirName = getFoldersBasedirString();
-        File baseDir = new TFile(baseDirName);
-        if (baseDir.exists() && baseDir.canRead()) {
-            // Get all directories
-            File[] directories = baseDir.listFiles(new FileFilter() {
-                public boolean accept(File file) {
-                    String filename = file.getName();
-                    if (filename.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
-                        return false;
-                    }
-                    if (filename.equals("BACKUP_REMOVE")) {
-                        return false;
-                    }
-                    if (!file.isDirectory()) {
-                        return false;
-                    }
-                    // Don't autocreate if it has been removed previously.
-                    if (removedFolderDirectories.contains(file)) {
-                        return false;
-                    }
-                    return true;
+        Path baseDir = Paths.get(baseDirName);
+        if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
+            return;
+        }
+        // Get all directories
+        Filter<Path> filter = new Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                String name = entry.getFileName().toString();
+                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                    return false;
                 }
-            });
-            for (File dir : directories) {
+                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                    .getValue(getController()))
+                    || name
+                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                            .getDefaultValue()))
+                {
+                    return false;
+                }
+                if (!Files.isDirectory(entry)) {
+                    return false;
+                }
+                if (removedFolderDirectories.contains(entry)) {
+                    return false;
+                }
+                return true;
+            }
+        };
+
+        try (DirectoryStream<Path> directories = Files.newDirectoryStream(
+            baseDir, filter)) {
+            for (Path dir : directories) {
                 boolean known = false;
                 for (Folder folder : getFolders()) {
-                    if (folder.getName().equals(dir.getName())) {
+                    if (folder.getName().equals(dir.getFileName().toString())) {
                         known = true;
                         break;
                     }
-                    File localBase = folder.getLocalBase();
+                    Path localBase = folder.getLocalBase();
                     if (localBase.equals(dir)
-                        || localBase.getAbsolutePath().startsWith(
-                            dir.getAbsolutePath()))
+                        || localBase.toAbsolutePath().startsWith(
+                            dir.toAbsolutePath()))
                     {
                         known = true;
                         break;
                     }
                 }
-                if (!known && FileUtils.hasContents(dir)) {
+                if (!known && PathUtils.hasContents(dir)) {
                     handleNewFolder(dir);
                 }
             }
+        } catch (IOException ioe) {
+            logWarning(ioe.getMessage());
         }
     }
 
     // Found a new directory in the folder base. Create a new folder.
     // Only doing this if logged in.
-    private void handleNewFolder(File file) {
+    private void handleNewFolder(Path file) {
         FolderInfo fi = null;
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
         if (client.isConnected() && client.isLoggedIn()) {
             for (FolderInfo folderInfo : client.getAccountFolders()) {
-                if (folderInfo.getName().equals(file.getName())) {
+                if (folderInfo.getLocalizedName().equals(file.getFileName().toString()))
+                {
                     fi = folderInfo;
                     break;
                 }
             }
         }
         if (fi == null) {
-            fi = new FolderInfo(file.getName(),
-                '[' + IdGenerator.makeId() + ']');
+            fi = new FolderInfo(file.getFileName().toString(),
+                IdGenerator.makeFolderId());
         }
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
@@ -1510,6 +1558,120 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         folderAutoCreateListener
             .folderAutoCreated(new FolderAutoCreateEvent(fi));
+    }
+
+    /**
+     * Scan the PowerFolder base directory for directories that should be
+     * deleted.
+     */
+    public void lookForFoldersToBeRemoved() {
+        if (suspendNewFolderSearch.get() > 0) {
+            return;
+        }
+        if (!getController().getMySelf().isServer()) {
+            if (!getController().getOSClient().isLoggedIn()) {
+                if (isFine()) {
+                    logFine("Skipping searching for folders to be removed...");
+                }
+                return;
+            }
+            if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+                .getValueBoolean(getController()))
+            {
+                if (isFine()) {
+                    logFine("Skipping searching for folders to be deleted (no strict security)...");
+                }
+                return;
+            }
+        }
+        if (isFine()) {
+            logFine("Searching for folders to be removed...");
+        }
+        // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
+        String baseDirName = getFoldersBasedirString();
+        Path baseDir = Paths.get(baseDirName);
+        if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
+            return;
+        }
+        final Set<String> ignoredFoldersLC = new HashSet<>();
+        Account a = getController().getOSClient().getAccount();
+        for (FolderInfo foInfo : a.getFolders()) {
+            ignoredFoldersLC.add(foInfo.getLocalizedName().toLowerCase().trim());
+        }
+
+        // Get all directories
+        Filter<Path> filter = new Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                String name = entry.getFileName().toString();
+                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                    return false;
+                }
+                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                    .getValue(getController()))
+                    || name
+                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                            .getDefaultValue()))
+                {
+                    return false;
+                }
+                if (ignoredFoldersLC.contains(name.toLowerCase())) {
+                    return false;
+                }
+                if (!Files.isDirectory(entry)) {
+                    return false;
+                }
+                return true;
+            }
+        };
+
+        try (DirectoryStream<Path> directories = Files.newDirectoryStream(
+            baseDir, filter)) {
+            for (Path dir : directories) {
+                boolean known = false;
+                for (Folder folder : getFolders()) {
+                    Path localBase = folder.getLocalBase();
+                    if (localBase.equals(dir)
+                        || localBase.toAbsolutePath().startsWith(
+                            dir.toAbsolutePath()))
+                    {
+                        known = true;
+                        break;
+                    }
+                }
+                if (known) {
+                    // Is know/a shared folder. don't delete
+                    continue;
+                }
+
+                String deletedBaseDir = ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                    .getValue(getController());
+                if (StringUtils.isNotBlank(deletedBaseDir)) {
+                    Path deletedTargetDir = PathUtils.createEmptyDirectory(
+                        getFoldersBasedir().resolve(deletedBaseDir), dir
+                            .getFileName().toString());
+                    PathUtils.recursiveMove(dir, deletedTargetDir);
+                } else {
+                    PathUtils.recursiveDelete(dir);
+                }
+                if (getController().isUIEnabled()) {
+                    WarningNotice notice = new WarningNotice(
+                        Translation
+                            .getTranslation("notice.folder_removed.title"),
+                        Translation.getTranslation(
+                            "notice.folder_removed.summary", dir.getFileName()
+                                .toString()), Translation.getTranslation(
+                            "notice.folder_removed.message", dir.getFileName()
+                                .toString()));
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().handleNotice(notice);
+                }
+
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            logWarning(ioe.getMessage());
+        }
     }
 
     /**
@@ -1565,21 +1727,20 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Defensive strategy: Place in PowerFolders\...
 
-        File suggestedLocalBase;
+        Path suggestedLocalBase;
         if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
             .getValueBoolean(getController()))
         {
             // Moderate strategy. Use existing folders.
-            suggestedLocalBase = new TFile(getController()
-                .getFolderRepository().getFoldersBasedir(),
-                invitation.folder.name);
-            if (suggestedLocalBase.exists()) {
+            suggestedLocalBase = getController().getFolderRepository()
+                .getFoldersBasedir().resolve(invitation.folder.name);
+            if (Files.exists(suggestedLocalBase)) {
                 logWarning("Using existing directory " + suggestedLocalBase
                     + " for " + invitation.folder);
             }
         } else {
             // Defensive strategy. Find free new empty directory.
-            suggestedLocalBase = FileUtils.createEmptyDirectory(getController()
+            suggestedLocalBase = PathUtils.createEmptyDirectory(getController()
                 .getFolderRepository().getFoldersBasedir(),
                 invitation.folder.name);
         }
@@ -1654,12 +1815,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logWarning("Removing local " + folder + ' ' + a
                     + " does not have read permission. Wiping out data.");
                 removeFolder(folder, true);
-                final File localBase = folder.getLocalBase();
+                final Path localBase = folder.getLocalBase();
                 getController().getIOProvider().startIO(new Runnable() {
                     public void run() {
                         try {
                             Thread.sleep(2000L);
-                            FileUtils.recursiveDelete(localBase);
+                            PathUtils.recursiveDelete(localBase);
                         } catch (Exception e) {
                             logWarning("Unable to delete directory: "
                                 + localBase);
@@ -1703,30 +1864,31 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
-                settings.getLocalBaseDir().mkdirs();
+                Files.createDirectory(settings.getLocalBaseDir());
                 if (foInfo != null) {
                     // Load existing.
                     createFolder0(foInfo, settings, true);
                 } else {
                     // Spawn/Create a new one.
                     foInfo = new FolderInfo(folderName,
-                        '[' + IdGenerator.makeId() + ']');
+                        IdGenerator.makeFolderId());
                     Folder folder = createFolder(foInfo, settings);
                     folder.addDefaultExcludes();
                     logWarning("Folder NOT found on account " + a.getUsername()
                         + ". Created new: " + foInfo);
                 }
-
+    
                 // Make sure it is backed up by the server.
                 CreateFolderOnServerTask task = new CreateFolderOnServerTask(
                     a.createInfo(), foInfo, null);
                 task.setArchiveVersions(settings.getVersions());
                 getController().getTaskManager().scheduleTask(task);
-
+    
                 // Remove from pending entries.
                 it.remove();
                 folderInfos.add(foInfo);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 logWarning("Unable to create folder " + folderName + ". " + e);
             }
         }
@@ -1738,15 +1900,18 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (hasJoinedFolder(folderInfo)) {
                     continue;
                 }
+
+                String folderName = folderInfo.getLocalizedName();
+
                 SyncProfile profile = SyncProfile.getDefault(getController());
-                File suggestedLocalBase = new TFile(getController()
-                    .getFolderRepository().getFoldersBasedir(), folderInfo.name);
+                Path suggestedLocalBase = getController().getFolderRepository()
+                    .getFoldersBasedir().resolve(folderName);
                 if (removedFolderDirectories.contains(suggestedLocalBase)) {
                     continue;
                 }
 
                 UserDirectory userDir = UserDirectories.getUserDirectories()
-                    .get(folderInfo.name);
+                    .get(folderName);
 
                 if (userDir != null) {
                     if (removedFolderDirectories.contains(userDir
@@ -1759,18 +1924,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .getValueBoolean(getController()))
                 {
                     // Moderate strategy. Use existing folders.
-                    suggestedLocalBase = new TFile(getController()
-                        .getFolderRepository().getFoldersBasedir(),
-                        folderInfo.name);
-                    if (suggestedLocalBase.exists()) {
+                    suggestedLocalBase = getController().getFolderRepository()
+                        .getFoldersBasedir().resolve(folderName);
+                    if (Files.exists(suggestedLocalBase)) {
                         logWarning("Using existing directory "
                             + suggestedLocalBase + " for " + folderInfo);
                     }
                 } else {
                     // Take folder name as subdir name
-                    suggestedLocalBase = new TFile(getController()
-                        .getFolderRepository().getFoldersBasedir(),
-                        folderInfo.name);
+                    suggestedLocalBase = getController().getFolderRepository()
+                        .getFoldersBasedir().resolve(folderName);
                 }
 
                 logInfo("Auto setting up folder " + folderInfo
@@ -1784,7 +1947,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .getValueInt(getController()));
 
                 // Actually create the directory
-                settings.getLocalBaseDir().mkdirs();
+                try {
+                    Files.createDirectory(settings.getLocalBaseDir());
+                }
+                catch (IOException ioe) {
+                    if (isFine()) {
+                        logFine(ioe.getMessage());
+                    }
+                }
 
                 try {
                     Folder folder = createFolder0(folderInfo, settings, true);
@@ -1860,12 +2030,12 @@ public class FolderRepository extends PFComponent implements Runnable {
      * 
      * @param file
      */
-    public boolean doesFolderAlreadyExist(File file) {
-        if (!file.isDirectory()) {
+    public boolean doesFolderAlreadyExist(Path path) {
+        if (!Files.isDirectory(path)) {
             return false;
         }
         for (Folder folder : folders.values()) {
-            if (file.equals(folder.getBaseDirectoryInfo().getDiskFile(this))) {
+            if (path.equals(folder.getBaseDirectoryInfo().getDiskFile(this))) {
                 return true;
             }
         }

@@ -53,7 +53,7 @@ public class FilesBreadcrumbPanel extends PFUIComponent {
 
     private void rebuild(FolderInfo folderInfo, String[] filePathParts) {
         breadcrumbPanel.removeAll();
-        Action rootAction = new AbstractAction(folderInfo.getName()) {
+        Action rootAction = new AbstractAction(folderInfo.getLocalizedName()) {
             public void actionPerformed(ActionEvent e) {
                 parent.selectionChanged("");
             }

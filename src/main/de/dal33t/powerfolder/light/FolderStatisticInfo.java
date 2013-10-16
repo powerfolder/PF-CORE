@@ -21,13 +21,15 @@ package de.dal33t.powerfolder.light;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +42,6 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TFileOutputStream;
 
 /**
  * Contains the statistic calculation result / infos about one folder. This
@@ -52,7 +52,7 @@ import de.schlichtherle.truezip.file.TFileOutputStream;
  */
 public class FolderStatisticInfo extends Loggable implements Serializable {
 
-    private static final int MAX_FILE_SIZE = 100 * 1024;
+    private static final int MAX_FILE_SIZE = 500 * 1024;
 
     private static final long serialVersionUID = 1L;
 
@@ -263,53 +263,43 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
      * @param out
      * @throws IOException
      */
-    public boolean save(File file) {
-        OutputStream fout = null;
-        ObjectOutputStream oout = null;
+
+    public boolean save(Path file) {
         if (isFiner()) {
             logFiner("Writing folder " + folder.getName() + " stats to " + file);
         }
-        try {
-            fout = new TFileOutputStream(file);
-            oout = new ObjectOutputStream(new BufferedOutputStream(fout));
+        try (OutputStream fout = Files.newOutputStream(file)) {
+            ObjectOutputStream oout = new ObjectOutputStream(
+                new BufferedOutputStream(fout));
             oout.writeObject(this);
             oout.close();
         } catch (Exception e) {
             logWarning("Unable to store stats for folder " + folder.getName()
                 + " to " + file + ". " + e);
-        } finally {
-            if (oout != null) {
-                try {
-                    oout.close();
-                } catch (IOException e) {
-                }
-            }
-            if (fout != null) {
-                try {
-                    fout.close();
-                } catch (IOException e) {
-                }
-            }
         }
 
         return true;
     }
 
-    public static FolderStatisticInfo load(File file) {
-        if (!file.exists()) {
+    public static FolderStatisticInfo load(Path file) {
+        if (Files.notExists(file)) {
             return null;
         }
-        if (file.length() > MAX_FILE_SIZE) {
-            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
-                "Not reading folder stats from " + file + ". File is too big: "
-                    + Format.formatBytes(file.length()));
-            return null;
-        }
-        InputStream fin = null;
-        ObjectInputStream oin = null;
         try {
-            fin = new TFileInputStream(file);
-            oin = new ObjectInputStream(new BufferedInputStream(fin));
+            if (Files.size(file) > MAX_FILE_SIZE) {
+                Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
+                    "Not reading folder stats from " + file
+                        + ". File is too big: "
+                        + Format.formatBytes(Files.size(file)));
+                return null;
+            }
+        } catch (IOException e) {
+            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+                "Unable to read folder stats size from " + file + ". " + e);
+        }
+        try (InputStream fin = Files.newInputStream(file)) {
+            ObjectInputStream oin = new ObjectInputStream(
+                new BufferedInputStream(fin));
             FolderStatisticInfo stats = (FolderStatisticInfo) oin.readObject();
             // PFS-818: Check if not corrupt;
             if (stats.isValid()) {
@@ -321,19 +311,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         } catch (OutOfMemoryError e) {
             Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
                 "Unable to read folder stats from " + file + ". " + e);
-        } finally {
-            if (oin != null) {
-                try {
-                    oin.close();
-                } catch (IOException e) {
-                }
-            }
-            if (fin != null) {
-                try {
-                    fin.close();
-                } catch (IOException e) {
-                }
-            }
+
         }
         return null;
     }
@@ -420,16 +398,6 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         return true;
     }
     
-    @Override
-    public String toString() {
-        return "FolderStatisticInfo [folder=" + folder + ", totalSize="
-            + totalSize + ", archiveSize=" + archiveSize + ", totalFilesCount="
-            + totalFilesCount + ", estimatedSyncDate=" + estimatedSyncDate
-            + ", incomingFilesCount=" + incomingFilesCount + ", filesCount="
-            + filesCount + ", filesCountInSync=" + filesCountInSync
-            + ", sizes=" + sizes + ", sizesInSync=" + sizesInSync + "]";
-    }
-
     /**
      * PFS-818
      * @return
@@ -438,5 +406,23 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         return folder != null && filesCount != null && filesCountInSync != null
             && sizes != null && sizesInSync != null
             && partialSyncStatMap != null;
+    }
+
+    
+    @Override
+    public String toString() {
+        return "FolderStatisticInfo [folder=" + folder + ", totalSize="
+            + totalSize + ", archiveSize=" + archiveSize + ", totalFilesCount="
+            + totalFilesCount + ", estimatedSyncDate=" + estimatedSyncDate
+            + ", incomingFilesCount=" + incomingFilesCount + ", analyzedFiles="
+            + analyzedFiles + ", filesCount=" + filesCount
+            + ", filesCountInSync=" + filesCountInSync + ", sizes=" + sizes
+            + ", sizesInSync=" + sizesInSync + ", partialSyncStatMap="
+            + partialSyncStatMap + "]";
+    }
+
+    public static void main(String... args) {
+        FolderStatisticInfo info = load(FileSystems.getDefault().getPath("FolderStatistic"));
+        System.out.println(info);
     }
 }

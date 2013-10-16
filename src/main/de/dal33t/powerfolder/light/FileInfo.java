@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: FileInfo.java 20707 2013-01-28 05:42:50Z glasgow $
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInput;
@@ -28,7 +27,11 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -188,14 +191,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return the new FileInfo if the file was synced or null if the file is in
      *         sync
      */
-    public FileInfo syncFromDiskIfRequired(Folder folder, File diskFile) {
+    public FileInfo syncFromDiskIfRequired(Folder folder, Path diskFile) {
         Reject.ifNull(folder, "Folder is null");
         Reject.ifFalse(folder.getInfo().equals(folderInfo), "Folder mismatch");
         if (diskFile == null) {
             throw new NullPointerException("diskFile is null");
         }
         String diskFileName = FileInfoFactory.decodeIllegalChars(diskFile
-            .getName());
+            .getFileName().toString());
         boolean nameMatch = fileName.endsWith(diskFileName);
 
         if (!nameMatch && IGNORE_CASE) {
@@ -208,7 +211,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo name '" + getFilenameOnly()
                     + "', details: " + toDetailString() + ", diskfile name '"
-                    + diskFile.getName() + "', path: " + diskFile);
+                    + diskFile.getFileName().toString() + "', path: " + diskFile);
         }
 
         // if (!diskFile.exists()) {
@@ -217,7 +220,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         if (!inSyncWithDisk(diskFile)) {
             MemberInfo mySelf = folder.getController().getMySelf().getInfo();
-            if (diskFile.exists()) {
+            if (Files.exists(diskFile)) {
                 return FileInfoFactory.modifiedFile(this, folder, diskFile,
                     mySelf);
             } else {
@@ -233,7 +236,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      *            the file on disk.
      * @return true if the fileinfo is in sync with the file on disk.
      */
-    public boolean inSyncWithDisk(File diskFile) {
+    public boolean inSyncWithDisk(Path diskFile) {
         return inSyncWithDisk0(diskFile, false);
     }
 
@@ -244,30 +247,51 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      *            ignore the reported size of the diskfile/dir.
      * @return true if the fileinfo is in sync with the file on disk.
      */
-    protected boolean inSyncWithDisk0(File diskFile,
+    protected boolean inSyncWithDisk0(Path diskFile,
         boolean ignoreSizeAndModDate)
     {
         Reject.ifNull(diskFile, "Diskfile is null");
-        boolean diskFileDeleted = !diskFile.exists();
 
+        boolean diskFileDeleted = Files.notExists(diskFile);
         boolean existanceSync = diskFileDeleted && deleted || !diskFileDeleted
             && !deleted;
-        if (ignoreSizeAndModDate) {
-            boolean dirFileSync = diskFileDeleted
-                || (isDiretory() && diskFile.isDirectory());
-            return existanceSync && dirFileSync;
-        }
+
         if (!existanceSync) {
             return false;
         }
-        boolean lastModificationSync = DateUtil.equalsFileDateCrossPlattform(
-            diskFile.lastModified(), lastModifiedDate.getTime());
-        if (!lastModificationSync) {
-            return false;
-        }
-        boolean sizeSync = size == diskFile.length();
-        if (!sizeSync) {
-            return false;
+
+        boolean diskIsDirectory;
+        long diskLastMod;
+        long diskSize;
+
+        if (!diskFileDeleted) {
+            try {
+                Map<String, Object> attrs = Files.readAttributes(diskFile, "size,lastModifiedTime,isDirectory");
+                diskSize = ((Long)attrs.get("size")).longValue();
+                diskLastMod = ((FileTime)attrs.get("lastModifiedTime")).toMillis();
+                diskIsDirectory = ((Boolean)attrs.get("isDirectory")).booleanValue();
+            } catch (Exception e) {
+                log.warning("Could not access file attributes of file "
+                    + diskFile.toAbsolutePath().toString() + "\n"
+                    + toDetailString() + "\n" + e.toString());
+                return false;
+            }
+
+            if (ignoreSizeAndModDate) {
+                boolean dirFileSync = diskFileDeleted
+                    || (isDiretory() && diskIsDirectory);
+                return existanceSync && dirFileSync;
+            }
+            boolean lastModificationSync = DateUtil.equalsFileDateCrossPlattform(
+                diskLastMod, lastModifiedDate.getTime());
+            if (!lastModificationSync) {
+                return false;
+            }
+
+            boolean sizeSync = size == diskSize;
+            if (!sizeSync) {
+                return false;
+            }
         }
         return true;
         // return existanceSync && lastModificationSync && sizeSync;
@@ -387,8 +411,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return if the diskfile exists
      */
     public boolean diskFileExists(Controller controller) {
-        File diskFile = getDiskFile(controller.getFolderRepository());
-        return diskFile != null && diskFile.exists();
+        Path diskFile = getDiskFile(controller.getFolderRepository());
+        return diskFile != null && Files.exists(diskFile);
     }
 
     /**
@@ -579,7 +603,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @param repo
      * @return the file.
      */
-    public File getDiskFile(FolderRepository repo) {
+    public Path getDiskFile(FolderRepository repo) {
         Reject.ifNull(repo, "Repo is null");
 
         Folder folder = getFolder(repo);

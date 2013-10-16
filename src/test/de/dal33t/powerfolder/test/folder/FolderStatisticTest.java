@@ -19,8 +19,11 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +37,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
@@ -62,7 +64,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     /**
      * Tests the sync percentage with one file that gets updated
      */
-    public void testOneFile() {
+    public void testOneFile() throws IOException {
         forceStatsCals();
         assertHasLastSyncDate(false, false, false, false, false);
 
@@ -71,13 +73,13 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertHasLastSyncDate(true, true, true, true, true);
 
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
-        assertAllInSync(1, testFile.length());
+        assertAllInSync(1, Files.size(testFile));
         getFolderAtBart().getStatistic().calculate0();
         getFolderAtLisa().getStatistic().calculate0();
         getFolderAtHomer().getStatistic().calculate0();
@@ -107,7 +109,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForCompletedDownloads(2, 0, 2, 2, 2);
         waitForFileListOnTestFolder();
         forceStatsCals();
-        assertAllInSync(1, testFile.length());
+        assertAllInSync(1, Files.size(testFile));
 
         disconnectAll();
         connectAll();
@@ -122,13 +124,18 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     public void testOneFileSameVersion() {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
-        File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
+        Path testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
 
-        File testFileLisa = TestHelper.createTestFile(getFolderAtLisa()
-            .getLocalBase(), testFileBart.getName(), "TEST CONTENT".getBytes());
-        testFileLisa.setLastModified(System.currentTimeMillis() + 1000 * 20);
+        Path testFileLisa = TestHelper.createTestFile(getFolderAtLisa()
+            .getLocalBase(), testFileBart.getFileName().toString(),
+            "TEST CONTENT".getBytes());
+        try {
+            Files.setLastModifiedTime(testFileLisa, FileTime.fromMillis(System.currentTimeMillis() + 1000 * 20));
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
         scanFolder(getFolderAtLisa());
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -160,23 +167,24 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     public void testInitialSync() throws IOException {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
-        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
-        File testFileAtLisa = new File(getFolderAtLisa().getLocalBase(),
-            testFile.getName());
+        Path testFileAtLisa = getFolderAtLisa().getLocalBase().resolve(
+            testFile.getFileName());
         int lisaTestFileSize = 1750;
-        FileUtils.copyFile(testFile, testFileAtLisa);
+        Files.copy(testFile, testFileAtLisa);
         TestHelper.changeFile(testFileAtLisa, lisaTestFileSize);
-        testFileAtLisa.setLastModified(testFile.lastModified() - 1000L * 60);
+        Files.setLastModifiedTime(testFileAtLisa, FileTime.fromMillis(Files
+            .getLastModifiedTime(testFile).toMillis() - 1000L * 60));
 
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
         waitForFileListOnTestFolder();
         forceStatsCals();
 
-        assertEquals(testFile.length(), getFolderAtBart().getStatistic()
+        assertEquals(Files.size(testFile), getFolderAtBart().getStatistic()
             .getTotalSize());
-        assertEquals(testFile.length(), getFolderAtLisa().getStatistic()
+        assertEquals(Files.size(testFile), getFolderAtLisa().getStatistic()
             .getTotalSize());
 
         assertEquals(0, getFolderAtBart().getStatistic()
@@ -202,19 +210,19 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         TestHelper.waitMilliSeconds(500);
         forceStatsCals();
         // 1 normal
-        assertAllInSync(1, testFile.length());
+        assertAllInSync(1, Files.size(testFile));
     }
 
-    public void testMultipleFiles() {
+    public void testMultipleFiles() throws IOException {
         assertTrue(tryToConnectSimpsons());
         int nFiles = 100;
         int totalSize = 0;
-        List<File> files = new ArrayList<File>();
+        List<Path> files = new ArrayList<Path>();
         for (int i = 0; i < nFiles; i++) {
-            File f = TestHelper.createRandomFile(getFolderAtBart()
+            Path f = TestHelper.createRandomFile(getFolderAtBart()
                 .getLocalBase(), 100);
             files.add(f);
-            totalSize += f.length();
+            totalSize += Files.size(f);
         }
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -225,7 +233,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(nFiles, totalSize);
 
         // Change folder and let sync
-        for (File file : files) {
+        for (Path file : files) {
             TestHelper.changeFile(file, 200);
         }
         scanFolder(getFolderAtBart());
@@ -256,17 +264,17 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(nFiles, totalSize);
     }
 
-    public void testIncomingFiles() {
+    public void testIncomingFiles() throws IOException {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
-        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
         waitForFileListOnTestFolder();
         forceStatsCals();
 
         assertTotalFileCount(1);
-        assertTotalSize(testFile.length());
+        assertTotalSize(Files.size(testFile));
         assertTotalSyncPercentage(20);
         assertMemberSizesActual(0, 1000, 0, 0, 0);
         assertSyncPercentages(0, 100, 0, 0, 0);
@@ -277,14 +285,14 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
         forceStatsCals();
-        assertAllInSync(1, testFile.length());
+        assertAllInSync(1, Files.size(testFile));
     }
 
-    public void testDeletedFiles() {
+    public void testDeletedFiles() throws IOException {
         assertTrue(tryToConnectSimpsons());
         // 1) Sync ONE file to all simpsons
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        File testFile1 = TestHelper.createRandomFile(getFolderAtBart()
+        Path testFile1 = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
         assertEquals(0, getFolderAtBart().getKnownFiles().iterator().next()
@@ -300,7 +308,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         // 2) Switch to manual sync and delete the file at Bart
         setSyncProfile(SyncProfile.HOST_FILES);
-        testFile1.delete();
+        Files.delete(testFile1);
         scanFolder(getFolderAtBart());
         assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
             .getVersion());
@@ -330,16 +338,16 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(2, 0, 2, 2, 2);
         waitForFileListOnTestFolder();
-        waitForDeletion(testFile1.getName());
+        waitForDeletion(testFile1.getFileName().toString());
         forceStatsCals();
         assertAllInSync(1, 500);
     }
 
-    public void testAutodownload() {
+    public void testAutodownload() throws IOException {
         assertTrue(tryToConnectSimpsons());
         // 1) Sync ONE file to all simpsons
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        File testFile1 = TestHelper.createRandomFile(getFolderAtBart()
+        Path testFile1 = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 500);
         scanFolder(getFolderAtBart());
         waitForCompletedDownloads(1, 0, 1, 1, 1);
@@ -349,7 +357,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         // 2) Set to auto-download and delete the file.
         setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
-        testFile1.delete();
+        Files.delete(testFile1);
         scanFolder(getFolderAtBart());
         waitForFileListOnTestFolder();
         forceStatsCals();
@@ -369,7 +377,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
-        waitForDeletion(testFile1.getName());
+        waitForDeletion(testFile1.getFileName().toString());
         forceStatsCals();
 
         assertEquals(4, getContollerMarge().getNodeManager()
@@ -390,15 +398,15 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     /**
      * Test the sync calculation with multiple files and mixed sync profiles
      */
-    public void testMultipleFilesComplex() {
+    public void testMultipleFilesComplex() throws IOException {
         assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
         final int nFiles = 50;
         long totalSize = 0;
         for (int i = 0; i < nFiles; i++) {
-            File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            Path testFile = TestHelper.createRandomFile(getFolderAtBart()
                 .getLocalBase());
-            totalSize += testFile.length();
+            totalSize += Files.size(testFile);
         }
 
         scanFolder(getFolderAtBart());
@@ -419,12 +427,18 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertSyncPercentages(100, 100, 0, 100, 0);
 
         // FileUtils.recursiveDelete(getFolderAtBart().getLocalBase());
-        for (File file : getFolderAtBart().getLocalBase().listFiles()) {
-            if (file.isFile()) {
-                file.delete();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getFolderAtBart().getLocalBase())) {
+            for (Path path : stream) {
+                if (Files.isRegularFile(path)) {
+                    Files.delete(path);
+                }
             }
         }
-        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+        catch (IOException ioe) {
+            throw ioe;
+        }
+
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         scanFolder(getFolderAtBart());
 
@@ -436,7 +450,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForFileListOnTestFolder();
         forceStatsCals();
 
-        assertAllInSync(1, testFile.length());
+        assertAllInSync(1, Files.size(testFile));
     }
 
     private final void forceStatsCals() {
@@ -629,36 +643,36 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     private void waitForDeletion(final String filename) {
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                File fileAtHomer = new File(getFolderAtHomer().getLocalBase(),
+                Path fileAtHomer = getFolderAtHomer().getLocalBase().resolve(
                     filename);
                 FileInfo fInfoHomer = getFolderAtHomer().getFile(
                     FileInfoFactory.lookupInstance(getFolderAtHomer(),
                         fileAtHomer));
-                File fileAtMarge = new File(getFolderAtMarge().getLocalBase(),
+                Path fileAtMarge = getFolderAtMarge().getLocalBase().resolve(
                     filename);
                 FileInfo fInfoMarge = getFolderAtMarge().getFile(
                     FileInfoFactory.lookupInstance(getFolderAtMarge(),
                         fileAtMarge));
-                File fileAtBart = new File(getFolderAtBart().getLocalBase(),
+                Path fileAtBart = getFolderAtBart().getLocalBase().resolve(
                     filename);
                 FileInfo fInfoBart = getFolderAtBart().getFile(
                     FileInfoFactory.lookupInstance(getFolderAtBart(),
                         fileAtBart));
-                File fileAtLisa = new File(getFolderAtLisa().getLocalBase(),
+                Path fileAtLisa = getFolderAtLisa().getLocalBase().resolve(
                     filename);
                 FileInfo fInfoLisa = getFolderAtLisa().getFile(
                     FileInfoFactory.lookupInstance(getFolderAtLisa(),
                         fileAtLisa));
-                File fileAtMaggier = new File(getFolderAtMaggie()
-                    .getLocalBase(), filename);
+                Path fileAtMaggier = getFolderAtMaggie()
+                    .getLocalBase().resolve(filename);
                 FileInfo fInfoMaggie = getFolderAtMaggie().getFile(
                     FileInfoFactory.lookupInstance(getFolderAtMaggie(),
                         fileAtMaggier));
-                return !fileAtHomer.exists() && fInfoHomer.isDeleted()
-                    && !fileAtMarge.exists() && fInfoMarge.isDeleted()
-                    && !fileAtBart.exists() && fInfoBart.isDeleted()
-                    && !fileAtLisa.exists() && fInfoLisa.isDeleted()
-                    && !fileAtMaggier.exists() && fInfoMaggie.isDeleted();
+                return Files.notExists(fileAtHomer) && fInfoHomer.isDeleted()
+                    && Files.notExists(fileAtMarge) && fInfoMarge.isDeleted()
+                    && Files.notExists(fileAtBart) && fInfoBart.isDeleted()
+                    && Files.notExists(fileAtLisa) && fInfoLisa.isDeleted()
+                    && Files.notExists(fileAtMaggier) && fInfoMaggie.isDeleted();
             }
         });
     }

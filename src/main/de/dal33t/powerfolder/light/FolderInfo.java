@@ -39,6 +39,7 @@ import org.hibernate.annotations.Index;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
@@ -248,5 +249,15 @@ public class FolderInfo implements Serializable, Cloneable {
         out.writeLong(extVersionUID);
         out.writeUTF(id);
         out.writeUTF(name);
+    }
+
+    public String getLocalizedName() {
+        return name
+            .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
+                Translation.getTranslation("general.group"))
+            .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
+                Translation.getTranslation("general.department"))
+            .replace(Constants.ZYNCRO_COMPANY_TOKEN.trim(),
+                Translation.getTranslation("general.company"));
     }
 }

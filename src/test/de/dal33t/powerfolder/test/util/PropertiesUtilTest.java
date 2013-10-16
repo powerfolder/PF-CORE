@@ -20,9 +20,10 @@
 package de.dal33t.powerfolder.test.util;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -38,7 +39,7 @@ public class PropertiesUtilTest extends TestCase {
     public void testWriteSpecialChars() throws IOException {
         Properties p = new Properties();
         p.put("wrapper.java.additional.2", "-XX:MaxPermSize=256m");
-        File testFile = File.createTempFile("test", ".properties");
+        Path testFile = Files.createTempFile("test", ".properties");
         PropertiesUtil.saveConfig(testFile, p, "Test header");
 
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -48,7 +49,7 @@ public class PropertiesUtilTest extends TestCase {
         assertFalse(s, s.contains("\\"));
 
         Properties loaded = new Properties();
-        FileInputStream in = new FileInputStream(testFile);
+        InputStream in = Files.newInputStream(testFile);
         loaded.load(in);
         in.close();
         assertEquals(p, loaded);

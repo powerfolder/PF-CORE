@@ -15,17 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: StreamUtils.java 12615 2010-06-16 13:02:13Z tot $
  */
 package de.dal33t.powerfolder.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 /**
@@ -51,7 +51,7 @@ public class StreamUtils {
      * @param destination
      * @throws IOException
      */
-    public static void copyToStream(File source, OutputStream destination)
+    public static void copyToStream(Path source, OutputStream destination)
         throws IOException
     {
         copyToStream(source, destination, 0, -1);
@@ -68,24 +68,18 @@ public class StreamUtils {
      *            the number of bytes to copy. -1 for all
      * @throws IOException
      */
-    public static void copyToStream(File source, OutputStream destination,
+    public static void copyToStream(Path source, OutputStream destination,
         long offset, long length) throws IOException
     {
 
         Reject.ifNull(source, "Source is null");
         Reject.ifNull(destination, "Destination is null");
-        Reject.ifFalse(source.exists(), "Source file does not exist");
-        Reject.ifFalse(source.canRead(), "Unable to read source file");
+        Reject.ifFalse(Files.exists(source), "Source file does not exist");
+        Reject.ifFalse(Files.isReadable(source), "Unable to read source file");
 
-        FileInputStream in = new FileInputStream(source);
-        in.skip(offset);
-        try {
+        try (InputStream in = Files.newInputStream(source)) {
+            in.skip(offset);
             copyToStream(in, destination, length);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-            }
         }
     }
 

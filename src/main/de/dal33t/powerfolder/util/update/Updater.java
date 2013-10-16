@@ -19,19 +19,21 @@
  */
 package de.dal33t.powerfolder.util.update;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamCallback;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -123,7 +125,7 @@ public class Updater extends Thread {
     public Process downloadAndUpdate(URL url, StreamCallback progressCallback,
         boolean silentUpdate)
     {
-        File releaseExe = download(url, progressCallback);
+        Path releaseExe = download(url, progressCallback);
         if (releaseExe == null) {
             return null;
         }
@@ -139,13 +141,13 @@ public class Updater extends Thread {
      *            the callback to monitor the download.
      * @return the downloaded file if succeeded or null if failed
      */
-    public File download(URL url, StreamCallback progressCallback) {
+    public Path download(URL url, StreamCallback progressCallback) {
         URLConnection con;
         String filename = url.getFile();
         if (StringUtils.isBlank(filename)) {
             filename = "PowerFolder_Latest_Win32_Installer.exe";
         }
-        File targetFile = new File(Controller.getTempFilesLocation(), filename);
+        Path targetFile = Controller.getTempFilesLocation().resolve(filename);
         try {
             con = url.openConnection();
             con.connect();
@@ -156,12 +158,12 @@ public class Updater extends Thread {
 
         LOG.log(Level.WARNING, "Downloading latest version from "
             + con.getURL());
-        File tempFile = new File(targetFile.getParentFile(), "(downloading) "
-            + targetFile.getName());
+        Path tempFile = targetFile.getParent().resolve("(downloading) "
+            + targetFile.getFileName().toString());
         try {
             // Copy/Download from URL
             con.connect();
-            FileUtils.copyFromStreamToFile(con.getInputStream(), tempFile,
+            PathUtils.copyFromStreamToFile(con.getInputStream(), tempFile,
                 progressCallback != null ? progressCallback : null, con
                     .getContentLength());
         } catch (IOException e) {
@@ -169,18 +171,23 @@ public class Updater extends Thread {
             return null;
         }
 
-        // Rename file and set modified/build time
-        targetFile.delete();
-        tempFile.renameTo(targetFile);
-        targetFile.setLastModified(con.getLastModified());
-
-        if (targetFile.getName().toLowerCase().endsWith("jar")) {
-            // Additional jar check
-            if (!FileUtils.isValidZipFile(targetFile)) {
-                // Invalid file downloaded
-                targetFile.delete();
-                return null;
+        try {
+            // Rename file and set modified/build time
+            Files.delete(targetFile);
+            Files.move(tempFile, targetFile);
+            Files.setLastModifiedTime(targetFile, FileTime.fromMillis(con.getLastModified()));
+    
+            if (targetFile.getFileName().toString().toLowerCase().endsWith("jar")) {
+                // Additional jar check
+                if (!PathUtils.isValidZipFile(targetFile)) {
+                    // Invalid file downloaded
+                    Files.delete(targetFile);
+                    return null;
+                }
             }
+        } catch (IOException ioe) {
+            LOG.info(ioe.getMessage());
+            return null;
         }
 
         return targetFile;
@@ -283,12 +290,12 @@ public class Updater extends Thread {
         return releaseExeURL;
     }
 
-    private Process openReleaseExe(File file, boolean updateSilently) {
+    private Process openReleaseExe(Path file, boolean updateSilently) {
         try {
             String c = "cmd.exe";
             c += " /c ";
             c += '"';
-            c += file.getAbsolutePath();
+            c += file.toAbsolutePath().toString();
             if (updateSilently) {
                 c += " /S";
             }
@@ -297,7 +304,7 @@ public class Updater extends Thread {
             return Runtime.getRuntime().exec(c);
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Unable to start update exe at "
-                + file.getAbsolutePath() + ". " + e, e);
+                + file.toAbsolutePath() + ". " + e, e);
             return null;
         }
     }

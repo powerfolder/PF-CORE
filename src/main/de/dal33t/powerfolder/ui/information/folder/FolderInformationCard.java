@@ -256,7 +256,7 @@ public class FolderInformationCard extends InformationCard {
      * @return
      */
     public String getCardTitle() {
-        return folderInfo.name;
+        return folderInfo.getLocalizedName();
     }
 
     /**

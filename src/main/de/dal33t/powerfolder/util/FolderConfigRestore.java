@@ -1,12 +1,12 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,24 +27,25 @@ public class FolderConfigRestore {
      */
     public static void main(String[] args) throws IOException {
         Properties config = new Properties();
-        File searchBaseDir = new File(args[0]);
-        for (File folderDir : searchBaseDir.listFiles()) {
-            File sysDir = new File(folderDir,
+        Path searchBaseDir = Paths.get(args[0]);
+        DirectoryStream<Path> folderDirs = Files.newDirectoryStream(searchBaseDir);
+        for (Path folderDir : folderDirs) {
+            Path sysDir = folderDir.resolve(
                 Constants.POWERFOLDER_SYSTEM_SUBDIR);
             LOG.info("Processing directory: " + folderDir);
-            if (sysDir.exists()) {
+            if (Files.exists(sysDir)) {
                 try {
                     // Folder directly under PowerFolders/
                     restoreFolderConfig(folderDir, config);
                 } catch (Exception e) {
                     LOG.warning("Problem with " + folderDir + ". " + e);
                 }
-            } else if (folderDir.isDirectory()) {
-                try {
+            } else if (Files.isDirectory(folderDir)) {
+                try (DirectoryStream<Path> folderDirs2 = Files.newDirectoryStream(folderDir)) {
                     // PowerFolders/username/foldername
                     // Try harder. Subdirs:
-                    for (File folderDir2 : folderDir.listFiles()) {
-                        if (folderDir2.isDirectory()) {
+                    for (Path folderDir2 : folderDirs2) {
+                        if (Files.isDirectory(folderDir2)) {
                             try {
                                 restoreFolderConfig(folderDir2, config);
                             } catch (Exception e) {
@@ -58,11 +59,11 @@ public class FolderConfigRestore {
                 }
             }
         }
-        PropertiesUtil.saveConfig(new File("PowerFolder_restored.config"),
+        PropertiesUtil.saveConfig(Paths.get("PowerFolder_restored.config"),
             config, "");
     }
 
-    private static void restoreFolderConfig(File baseDir, Properties config) {
+    private static void restoreFolderConfig(Path baseDir, Properties config) {
         FolderInfo foInfo;
         try {
             foInfo = readFolderInfo(baseDir);
@@ -81,17 +82,17 @@ public class FolderConfigRestore {
         LOG.info("Restored folder " + foInfo.getName() + " @ " + baseDir);
     }
 
-    private static FolderInfo readFolderInfo(File baseDir) throws IOException,
+    private static FolderInfo readFolderInfo(Path baseDir) throws IOException,
         ClassNotFoundException
     {
-        File sysDir = new File(baseDir, Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        if (!baseDir.exists()) {
+        Path sysDir = baseDir.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        if (Files.notExists(baseDir)) {
             throw new FileNotFoundException("No folder found at " + sysDir);
         }
-        File dbFile = new File(sysDir, Constants.DB_FILENAME);
+        Path dbFile = sysDir.resolve(Constants.DB_FILENAME);
         // load files and scan in
-        InputStream fIn = new BufferedInputStream(new FileInputStream(dbFile));
-        ObjectInputStream in = new ObjectInputStream(fIn);
+        ObjectInputStream in = new ObjectInputStream(
+            Files.newInputStream(dbFile));
         FileInfo[] files = (FileInfo[]) in.readObject();
         // LOG.info("Got " + files.length + " files in " + baseDir);
         if (files.length <= 0) {

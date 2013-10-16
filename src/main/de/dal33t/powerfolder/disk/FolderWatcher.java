@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -178,7 +178,11 @@ public class FolderWatcher extends PFComponent {
             remove();
             return;
         }
-        String path = folder.getLocalBase().getAbsolutePath();
+        if (!folder.getLocalBase().getFileSystem().provider().getScheme().equals("file")) {
+            remove();
+            return;
+        }
+        String path = folder.getLocalBase().toAbsolutePath().toString();
         if (path.startsWith("\\")) {
             // Don't watch on UNC paths
             remove();
@@ -296,7 +300,7 @@ public class FolderWatcher extends PFComponent {
                 // Not allowed
                 return;
             }
-            if (!FileUtils.isScannable(name, folder.getInfo())) {
+            if (!PathUtils.isScannable(name, folder)) {
                 return;
             }
             if (ignoreAll) {
@@ -310,6 +314,8 @@ public class FolderWatcher extends PFComponent {
             if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
             }
+            
+            name = PathUtils.getDiskFileName(rootPath, name);
             name = FileInfoFactory.decodeIllegalChars(name);
             if (dirtyFiles.containsKey(name)) {
                 // Skipping already dirty file

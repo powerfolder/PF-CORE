@@ -19,13 +19,14 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -182,25 +183,23 @@ public class ConfigurationLoader {
      * @return
      */
     public static boolean loadAndMergeFromInstaller(Controller controller) {
-        File initFile = null;
+        Path initFile = null;
         String windir = System.getenv("WINDIR");
         if (StringUtils.isNotBlank(windir)) {
-            File tempDir = new File(new File(windir), "TEMP");
-            initFile = new File(tempDir, INITIAL_STARTUP_CONFIG_FILENAME);
+            Path tempDir = Paths.get(windir).resolve("TEMP");
+            initFile = tempDir.resolve(INITIAL_STARTUP_CONFIG_FILENAME);
         }
-        if (initFile == null || !initFile.exists()) {
+        if (initFile == null || Files.notExists(initFile)) {
             String tempStr = System.getProperty("java.io.tmpdir");
-            initFile = new File(new File(tempStr),
+            initFile = Paths.get(tempStr).resolve(
                 INITIAL_STARTUP_CONFIG_FILENAME);
-            if (!initFile.exists()) {
+            if (Files.notExists(initFile)) {
                 return false;
             }
         }
-        FileInputStream in = null;
         String url = "";
         boolean delete = false;
-        try {
-            in = new FileInputStream(initFile);
+        try (InputStream in = Files.newInputStream(initFile)) {
             Properties props = new Properties();
             props.load(in);
 
@@ -211,7 +210,7 @@ public class ConfigurationLoader {
                     .getProperty(ConfigurationEntry.INSTALLER_FILENAME
                         .getConfigKey());
                 if (StringUtils.isNotBlank(fn)) {
-                    url = FileUtils.decodeURLFromFilename(fn);
+                    url = PathUtils.decodeURLFromFilename(fn);
                 }
             }
             if (StringUtils.isBlank(url)) {
@@ -232,19 +231,17 @@ public class ConfigurationLoader {
         } catch (Exception e) {
             LOG.warning("Unable to read configuration " + initFile + " / "
                 + url + ". " + e);
-            return false;
         } finally {
-            if (in != null) {
+            if (delete) {
                 try {
-                    in.close();
-                } catch (IOException e) {
+                    Files.delete(initFile);
+                } catch (IOException ioe) {
+                    LOG.fine("Unable to deleted file " + initFile);
                 }
-            }
-            if (delete && !initFile.delete()) {
-                LOG.fine("Unable to deleted file " + initFile);
             }
         }
 
+        return false;
     }
 
     /**

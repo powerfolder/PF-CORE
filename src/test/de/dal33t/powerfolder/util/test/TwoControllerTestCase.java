@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: TwoControllerTestCase.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -39,8 +41,8 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -63,10 +65,10 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  */
 public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
-    public static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
-        .getTestDir().getAbsoluteFile(), "ControllerBart/testFolder");
-    public static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper
-        .getTestDir().getAbsoluteFile(), "ControllerLisa/testFolder");
+    public static final Path TESTFOLDER_BASEDIR_BART = TestHelper.getTestDir()
+        .resolve("ControllerBart/testFolder.pfzip").toAbsolutePath();
+    public static final Path TESTFOLDER_BASEDIR_LISA = TestHelper.getTestDir()
+        .resolve("ControllerLisa/testFolder").toAbsolutePath();
 
     private Controller controllerBart;
     private Controller controllerLisa;
@@ -77,8 +79,8 @@ public abstract class TwoControllerTestCase extends TestCase {
     @Override
     protected void setUp() throws Exception {
         SyncProfile.META_FOLDER_SYNC = SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT;
-        System.setProperty("user.home",
-            new File("build/test/home").getCanonicalPath());
+        System.setProperty("user.home", Paths.get("build/test/home")
+            .toAbsolutePath().toString());
         Loggable.setLogNickPrefix(true);
         super.setUp();
 
@@ -107,20 +109,21 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         // Cleanup
         TestHelper.cleanTestDir();
-        FileUtils.recursiveDelete(new File(Controller.getMiscFilesLocation(),
+        PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve(
             "build"));
         cleanPreferences(Preferences.userNodeForPackage(PowerFolder.class)
             .node("build/test/ControllerBart/PowerFolder"));
         cleanPreferences(Preferences.userNodeForPackage(PowerFolder.class)
             .node("build/test/ControllerLisa/PowerFolder"));
 
+        Files.createDirectories(Paths.get("build/test/ControllerBart"));
+        Files.createDirectories(Paths.get("build/test/ControllerLisa"));
+
         // Copy fresh configs
-        FileUtils.copyFile(
-            new File("src/test-resources/ControllerBart.config"), new File(
-                "build/test/ControllerBart/PowerFolder.config"));
-        FileUtils.copyFile(
-            new File("src/test-resources/ControllerLisa.config"), new File(
-                "build/test/ControllerLisa/PowerFolder.config"));
+        Files.copy(Paths.get("src/test-resources/ControllerBart.config"),
+            Paths.get("build/test/ControllerBart/PowerFolder.config"));
+        Files.copy(Paths.get("src/test-resources/ControllerLisa.config"),
+            Paths.get("build/test/ControllerLisa/PowerFolder.config"));
 
         // Start controllers
         System.out.println("Starting controllers...");
@@ -239,8 +242,8 @@ public abstract class TwoControllerTestCase extends TestCase {
      */
     protected void deleteTestFolderContents() {
         try {
-            FileUtils.recursiveDelete(TESTFOLDER_BASEDIR_BART);
-            FileUtils.recursiveDelete(TESTFOLDER_BASEDIR_LISA);
+            PathUtils.recursiveDelete(TESTFOLDER_BASEDIR_BART);
+            PathUtils.recursiveDelete(TESTFOLDER_BASEDIR_LISA);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -429,8 +432,8 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @param lisaFolderDir
      *            the local base dir for folder at lisa
      */
-    protected void joinFolder(FolderInfo foInfo, File bartFolderDir,
-        File lisaFolderDir)
+    protected void joinFolder(FolderInfo foInfo, Path bartFolderDir,
+        Path lisaFolderDir)
     {
         joinFolder(foInfo, bartFolderDir, lisaFolderDir, SyncProfile.HOST_FILES);
     }
@@ -450,7 +453,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @param profile
      *            the profile to use
      */
-    protected void joinTestFolder(File baseDir1, File baseDir2,
+    protected void joinTestFolder(Path baseDir1, Path baseDir2,
         SyncProfile profile)
     {
         testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
@@ -472,7 +475,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @param profile
      *            the profile to use
      */
-    protected void joinFolder(FolderInfo foInfo, File baseDir1, File baseDir2,
+    protected void joinFolder(FolderInfo foInfo, Path baseDir1, Path baseDir2,
         SyncProfile profile)
     {
         final Folder folder1;
@@ -533,31 +536,50 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @param controller
      *            the controller to use.
      */
-    protected void assertFileMatch(File diskFile, FileInfo fInfo,
-        Controller controller)
+    protected void assertFileMatch(Path diskFile, FileInfo fInfo,
+        Controller controller) throws IOException
     {
-        boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
-        boolean sizeMatch = fInfo.isDeleted()
-            || diskFile.length() == fInfo.getSize();
+        boolean nameMatch = diskFile.toString().endsWith(
+            fInfo.getFilenameOnly());
+        boolean sizeMatch = false;
+        long size = 0L;
+        try {
+            size = Files.size(diskFile);
+        } catch (IOException ioe) {
+            // Ignore
+        } finally {
+            sizeMatch = fInfo.isDeleted() || size == fInfo.getSize();
+        }
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
-        boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
-        boolean lastModifiedMatch = diskFile.lastModified() == fInfo
-            .getModifiedDate().getTime();
+        boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo
+            .isDeleted();
+        boolean lastModifiedMatch = false;
+        long lastModified = 0L;
+        try {
+            lastModified = Files.getLastModifiedTime(diskFile).toMillis();
+        } catch (IOException ioe) {
+            // Ignore
+        } finally {
+            lastModifiedMatch = lastModified == fInfo.getModifiedDate()
+                .getTime();
+        }
 
         // Skip last modification test when diskfile is deleted.
-        boolean matches = !diskFile.isDirectory() && nameMatch && sizeMatch
-            && (!diskFile.exists() || lastModifiedMatch) && deleteStatusMatch
-            && fileObjectEquals;
+        boolean matches = !Files.isDirectory(diskFile) && nameMatch
+            && sizeMatch && (Files.notExists(diskFile) || lastModifiedMatch)
+            && deleteStatusMatch && fileObjectEquals;
 
-        assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
-            + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
-            + ", size: " + Format.formatBytes(diskFile.length())
-            + ", lastModified: " + new Date(diskFile.lastModified()) + " ("
-            + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
-            + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
-            + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
-            + "\nFileObjectEquals: " + fileObjectEquals, matches);
+        assertTrue(
+            "FileInfo does not match physical file. \nFileInfo:\n "
+                + fInfo.toDetailString() + "\nFile:\n "
+                + diskFile.getFileName().toString() + ", size: "
+                + Format.formatBytes(size) + ", lastModified: "
+                + new Date(lastModified) + " (" + lastModified + ")"
+                + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: "
+                + sizeMatch + "\nlastModifiedMatch: " + lastModifiedMatch
+                + "\ndeleteStatus: " + deleteStatusMatch
+                + "\nFileObjectEquals: " + fileObjectEquals, matches);
     }
 
     private void cleanPreferences(Preferences p) {

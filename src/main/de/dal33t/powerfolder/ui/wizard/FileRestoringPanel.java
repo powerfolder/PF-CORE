@@ -31,12 +31,12 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.io.File;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -52,7 +52,7 @@ public class FileRestoringPanel extends PFWizardPanel {
     private final JProgressBar bar;
     private SwingWorker<List<FileInfo>, FileInfo> worker;
     private int filesProcessedSuccessfully;
-    private File alternateLocation;
+    private Path alternateLocation;
     private String alternateName;
 
     public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
@@ -71,7 +71,7 @@ public class FileRestoringPanel extends PFWizardPanel {
      * @param alternateLocation
      * @param alternateName
      */
-    private FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, File alternateLocation,
+    private FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, Path alternateLocation,
                               String alternateName) {
         this(controller, folder, Collections.singletonList(fileInfo));
         if (alternateLocation != null && alternateName != null) {
@@ -85,7 +85,7 @@ public class FileRestoringPanel extends PFWizardPanel {
         this(controller, folder, fileInfo, null, null);
     }
 
-    public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, File alternateFile) {
+    public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, Path alternateFile) {
         this(controller, folder, fileInfo, alternateFile, null);
     }
 
@@ -176,10 +176,10 @@ public class FileRestoringPanel extends PFWizardPanel {
 
                 // Try local restore first.
                 if (!restoreServerToAlternateName) {
-                    File restoreTo;
+                    Path restoreTo;
                     if (restoreLocalToAlternateLocation) {
                         // Restore to an alternate location.
-                        restoreTo = new File(alternateLocation, fileInfo.getFilenameOnly());
+                        restoreTo = alternateLocation.resolve(fileInfo.getFilenameOnly());
                     } else {
                         // Just restore to existing location.
                         restoreTo = fileInfo.getDiskFile(getController().getFolderRepository());

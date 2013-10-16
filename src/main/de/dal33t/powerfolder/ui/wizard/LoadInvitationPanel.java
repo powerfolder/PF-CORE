@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: LoadInvitationPanel.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.ui.wizard;
 
@@ -30,7 +30,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import javax.swing.JCheckBox;
@@ -56,9 +57,9 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.FileSelectorFactory;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -131,16 +132,16 @@ public class LoadInvitationPanel extends PFWizardPanel {
             getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
                 invitation.getInvitor());
 
-            File base = invitation.getSuggestedLocalBase(getController());
+            Path base = invitation.getSuggestedLocalBase(getController());
             if (base == null) {
-                base = new File(getController().getFolderRepository()
-                    .getFoldersBasedir(),
-                    FileUtils.removeInvalidFilenameChars(invitation.folder
+                base = getController().getFolderRepository()
+                    .getFoldersBasedir().resolve(
+                    PathUtils.removeInvalidFilenameChars(invitation.folder
                         .getName()));
             }
 
             return new ChooseDiskLocationPanel(getController(), base
-                .getAbsolutePath(), new FolderCreatePanel(getController()));
+                .toAbsolutePath().toString(), new FolderCreatePanel(getController()));
         }
     }
 
@@ -152,9 +153,9 @@ public class LoadInvitationPanel extends PFWizardPanel {
     private boolean createPreviewFolder() {
 
         FolderSettings folderSettings = new FolderSettings(invitation
-            .getSuggestedLocalBase(getController()), syncProfileSelectorPanel
-            .getSyncProfile(), false, true, null, 0,
-                true);
+            .getSuggestedLocalBase(getController()),
+            syncProfileSelectorPanel.getSyncProfile(), false, true, null, 0,
+            true);
 
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);
@@ -293,7 +294,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
         if (file == null) {
             return;
         }
-        invitation = InvitationUtil.load(new File(file));
+        invitation = InvitationUtil.load(Paths.get(file));
         log.info("Loaded invitation " + invitation);
         if (invitation != null) {
             folderHintLabel.setEnabled(true);

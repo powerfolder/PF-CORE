@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: ControllerTestCase.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.UUID;
 
@@ -32,7 +34,6 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 
 /**
@@ -48,8 +49,8 @@ import de.dal33t.powerfolder.util.Format;
  */
 public abstract class ControllerTestCase extends TestCase {
     // For the optional test folder.
-    private static final File TESTFOLDER_BASEDIR = new File(
-        TestHelper.getTestDir(), "/ControllerBart/testFolder");
+    private static final Path TESTFOLDER_BASEDIR = TestHelper.getTestDir()
+        .resolve("ControllerBart/testFolder").toAbsolutePath();
 
     private Controller controller;
 
@@ -58,8 +59,8 @@ public abstract class ControllerTestCase extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("user.home",
-            new File("build/test/home").getCanonicalPath());
+        System.setProperty("user.home", Paths.get("build/test/home")
+            .toAbsolutePath().toString());
         super.setUp();
 
         Feature.setupForTests();
@@ -71,11 +72,11 @@ public abstract class ControllerTestCase extends TestCase {
         // Start controllers
         System.out.println("Starting controller...");
         controller = Controller.createController();
-        File source = new File("src/test-resources/ControllerBart.config");
-        File target = new File(Controller.getMiscFilesLocation(),
+        Path source = Paths.get("src/test-resources/ControllerBart.config");
+        Path target = Controller.getMiscFilesLocation().resolve(
             "ControllerBart.config");
-        FileUtils.copyFile(source, target);
-        assertTrue(target.exists());
+        Files.copy(source, target);
+        assertTrue(Files.exists(target));
 
         controller.startConfig("ControllerBart");
         waitForStart(controller);
@@ -148,12 +149,12 @@ public abstract class ControllerTestCase extends TestCase {
      *            the profile to use
      * @return the folder joined
      */
-    protected Folder joinFolder(FolderInfo foInfo, File baseDir,
+    protected Folder joinFolder(FolderInfo foInfo, Path baseDir,
         SyncProfile profile)
     {
-        baseDir.mkdirs();
         try {
-            baseDir = baseDir.getCanonicalFile();
+            Files.createDirectories(baseDir);
+            baseDir = baseDir.toAbsolutePath();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -198,30 +199,41 @@ public abstract class ControllerTestCase extends TestCase {
      * @param fInfo
      *            the fileinfo
      */
-    protected void assertFileMatch(File diskFile, FileInfo fInfo) {
-        boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
+    protected void assertFileMatch(Path diskFile, FileInfo fInfo) throws IOException {
+        boolean nameMatch = diskFile.getFileName().toString().equals(fInfo.getFilenameOnly());
 
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
-        boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
-        boolean lastModifiedMatch = diskFile.lastModified() == fInfo
-            .getModifiedDate().getTime();
+        boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo.isDeleted();
+        long lastModified = 0L;
+        try {
+            lastModified = Files.getLastModifiedTime(diskFile).toMillis();
+        } catch (IOException ioe) {
+            // Ignore.
+        }
+        boolean lastModifiedMatch = lastModified == fInfo.getModifiedDate().getTime();
+        long size = 0L;
+        try {
+            size = Files.size(diskFile);
+        } catch (IOException ioe) {
+            // Ignore.
+        }
         boolean sizeMatch = fInfo.isDeleted()
-            || (diskFile.length() == fInfo.getSize());
+            || (size == fInfo.getSize());
 
         // Skip last modification test when diskfile is deleted.
-        boolean matches = !diskFile.isDirectory() && nameMatch && sizeMatch
-            && (!diskFile.exists() || lastModifiedMatch) && deleteStatusMatch
+        boolean matches = !Files.isDirectory(diskFile) && nameMatch && sizeMatch
+            && (Files.notExists(diskFile) || lastModifiedMatch) && deleteStatusMatch
             && fileObjectEquals;
 
         assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
             + fInfo.toDetailString() + "\nFile:\n "
-            + (diskFile.exists() ? "" : "(del) ") + diskFile.getName()
-            + ", size: " + Format.formatBytes(diskFile.length())
-            + ", lastModified: " + new Date(diskFile.lastModified()) + " ("
-            + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
-            + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
-            + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
-            + "\nFileObjectEquals: " + fileObjectEquals, matches);
+            + (Files.exists(diskFile) ? "" : "(del) ") + diskFile.getFileName()
+            + ", size: " + Format.formatBytes(size)
+            + ", lastModified: " + new Date(lastModified) + " (" + lastModified + ")"
+            + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: " + sizeMatch
+            + "\nlastModifiedMatch: " + lastModifiedMatch + "\ndeleteStatus: "
+            + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
+            matches);
     }
 }

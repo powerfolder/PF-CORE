@@ -15,14 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: InformationTab.java 20758 2013-02-04 13:51:58Z glasgow $
  */
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.jar.Attributes;
@@ -145,8 +146,8 @@ public class InformationTab extends PFComponent implements PreferenceTab {
      */
     private void readDateTimeFromJar() {
         try {
-            File jar = new File(getController().getJARName());
-            JarFile file = new JarFile(jar);
+            Path jar = Paths.get(getController().getJARName());
+            JarFile file = new JarFile(jar.toFile());
             Manifest mf = file.getManifest();
             Attributes attr = mf.getMainAttributes();
 

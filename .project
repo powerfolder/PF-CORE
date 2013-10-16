@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
+<<<<<<< HEAD
 	<name>PowerFolder-master</name>
+=======
+	<name>PowerFolder-development</name>
+>>>>>>> refs/remotes/origin/development
 	<comment></comment>
 	<projects>
 	</projects>

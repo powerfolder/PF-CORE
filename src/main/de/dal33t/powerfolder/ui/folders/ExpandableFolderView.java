@@ -27,8 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -55,6 +55,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -95,8 +96,8 @@ import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.WebDAV;
@@ -254,8 +255,17 @@ public class ExpandableFolderView extends PFUIComponent implements
         {
             expanded.set(true);
             updateWebDAVURL();
-            upperPanel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.collapse"));
+            if (PreferencesEntry.BEGINNER_MODE
+                .getValueBoolean(getController())
+                && !PreferencesEntry.EXPERT_MODE
+                    .getValueBoolean(getController()))
+            {
+                upperPanel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.remove"));
+            } else {
+                upperPanel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.collapse"));
+            }
             updateNameLabel();
             lowerOuterPanel.setVisible(true);
         }
@@ -268,8 +278,15 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void collapse() {
         expanded.set(false);
         updateWebDAVURL();
-        upperPanel.setToolTipText(Translation
-            .getTranslation("exp_folder_view.expand"));
+        if (PreferencesEntry.BEGINNER_MODE
+            .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            upperPanel.setToolTipText(Translation.getTranslation("exp_folder_view.create"));
+        } else {
+            upperPanel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.expand"));
+        }
         updateNameLabel();
         lowerOuterPanel.setVisible(false);
     }
@@ -446,15 +463,21 @@ public class ExpandableFolderView extends PFUIComponent implements
                 lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
             }
 
-            row += 2;
+            if (PreferencesEntry.BEGINNER_MODE
+                .getValueBoolean(getController())
+                && !PreferencesEntry.EXPERT_MODE
+                    .getValueBoolean(getController()))
+            {
+                row += 2;
+                lowerBuilder.add(transferModeLabel.getUIComponent(),
+                    cc.xy(2, row));
+                lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
 
-            lowerBuilder.add(transferModeLabel.getUIComponent(), cc.xy(2, row));
-            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
+                row += 2;
 
-            row += 2;
-
-            lowerBuilder.add(localDirectoryLabel.getUIComponent(),
-                cc.xy(2, row));
+                lowerBuilder.add(localDirectoryLabel.getUIComponent(),
+                    cc.xy(2, row));
+            }
 
         }
 
@@ -548,7 +571,12 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperSyncPercentageLabel = new ActionLabel(getController(),
             new MyOpenFilesUnsyncedAction(getController()));
+        if (!ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            upperSyncPercentageLabel.setNeverUnderline(true);
+        }
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
+        openFilesInformationButton.setVisible(ConfigurationEntry.FILES_ENABLED
+            .getValueBoolean(getController()));
 
         inviteButton = new JButtonMini(inviteAction);
 
@@ -954,7 +982,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             transferMode = Translation.getTranslation(
                 "exp_folder_view.transfer_mode", folder.getSyncProfile()
                     .getName());
-            String path = folder.getCommitOrLocalDir().getAbsolutePath();
+            String path = folder.getCommitOrLocalDir().toAbsolutePath().toString();
             if (path.length() >= 35) {
                 path = path.substring(0, 15) + "..."
                     + path.substring(path.length() - 15, path.length());
@@ -1008,7 +1036,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (type == Type.Local) {
 
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
-            if (folder != null && folder.countProblems() > 0) {
+            if (folder != null
+                && folder.countProblems() > 0)
+            {
                 // Got a problem.
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
                 primaryButton.setToolTipText(Translation
@@ -1034,8 +1064,17 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
-                primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_sync_complete"));
+                if (PreferencesEntry.BEGINNER_MODE
+                    .getValueBoolean(getController())
+                    && !PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(getController()))
+                {
+                    primaryButton.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.explore"));
+                } else {
+                    primaryButton.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.folder_sync_complete"));
+                }
             }
         } else if (type == Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.TYPICAL_FOLDER));
@@ -1151,7 +1190,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         // PFC-2349 : Don't freeze UI
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
-                FileUtils.openFile(folder.getCommitOrLocalDir());
+                PathUtils.openFile(folder.getCommitOrLocalDir());
             }
         });
     }
@@ -1182,12 +1221,32 @@ public class ExpandableFolderView extends PFUIComponent implements
                 nameLabel.setToolTipText(Translation
                     .getTranslation("exp_folder_view.collapse"));
             } else {
-                nameLabel.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.expand"));
+                if (PreferencesEntry.BEGINNER_MODE
+                    .getValueBoolean(getController())
+                    && !PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(getController()))
+                {
+                    nameLabel.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.remove"));
+                } else {
+                    nameLabel.setToolTipText(Translation
+                        .getTranslation("exp_folder_view.expand"));
+                }
             }
         }
 
-        nameLabel.setText(folderInfo.name + newCountString);
+        if (folder == null
+            && PreferencesEntry.BEGINNER_MODE
+                .getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            nameLabel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.create"));
+        }
+
+        String folderName = folderInfo.getLocalizedName();
+
+        nameLabel.setText(folderName + newCountString);
         nameLabel.setFont(new Font(nameLabel.getFont().getName(), newFiles
             ? Font.BOLD
             : Font.PLAIN, nameLabel.getFont().getSize()));
@@ -1237,7 +1296,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                                 getController().getIOProvider().startIO(
                                     new Runnable() {
                                         public void run() {
-                                            FileUtils.openFile(new File(part));
+                                            PathUtils.openFile(Paths.get(part));
                                         }
                                     });
 
@@ -1570,6 +1629,15 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == Type.Local) {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
+                        if (PreferencesEntry.BEGINNER_MODE
+                            .getValueBoolean(getController())
+                            && !PreferencesEntry.EXPERT_MODE
+                                .getValueBoolean(getController()))
+                        {
+                            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
+                                folderInfo);
+                            panel.open();
+                        }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
                         PFWizard.openOnlineStorageJoinWizard(getController(),
@@ -1790,9 +1858,19 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (type == Type.Local && folder != null
                 && folder.countProblems() > 0)
             {
-                // Display the problem.
-                getController().getUIController().openProblemsInformation(
-                    folderInfo);
+                if (!ConfigurationEntry.PROBLEMS_ENABLED
+                    .getValueBoolean(getController()))
+                {
+                    ResolvableProblem prob = (ResolvableProblem) folder
+                        .getProblems().get(0);
+                    SwingUtilities
+                        .invokeLater(prob.resolution(getController()));
+                    folder.removeProblem(prob);
+                } else {
+                    // Display the problem.
+                    getController().getUIController().openProblemsInformation(
+                        folderInfo);
+                }
             } else if (type == Type.CloudOnly) {
                 // Join the folder locally.
                 PFWizard.openOnlineStorageJoinWizard(getController(),

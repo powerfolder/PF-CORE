@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: OSUtil.java 18875 2012-05-15 00:10:09Z sprajc $
  */
 package de.dal33t.powerfolder.util.os;
 
 import java.awt.SystemTray;
-import java.io.File;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -247,8 +247,8 @@ public class OSUtil {
         }
 
         String fileName = System.mapLibraryName(lib);
-        File targetFile = null;
-        File fLib;
+        Path targetFile = null;
+        Path fLib;
 
         int i = 0;
         do {
@@ -257,9 +257,9 @@ public class OSUtil {
                 libName += "-" + i;
             }
             String altFileName = System.mapLibraryName(libName);
-            targetFile = new File(Controller.getTempFilesLocation(),
+            targetFile = Controller.getTempFilesLocation().resolve(
                 altFileName);
-            targetFile.deleteOnExit();
+            targetFile.toFile().deleteOnExit();
             boolean quiet = i != 1;
             fLib = Util.copyResourceTo(fileName, dir, targetFile, false, quiet);
 
@@ -269,7 +269,7 @@ public class OSUtil {
             }
             if (fLib != null) {
                 try {
-                    if (loadLibrary(clazz, fLib.getAbsolutePath(), true, quiet))
+                    if (loadLibrary(clazz, fLib.toAbsolutePath().toString(), true, quiet))
                     {
                         return true;
                     }

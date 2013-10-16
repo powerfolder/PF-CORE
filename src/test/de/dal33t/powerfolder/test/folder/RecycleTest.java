@@ -19,10 +19,12 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
-import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 
 import de.dal33t.powerfolder.disk.FileArchiver;
@@ -41,15 +43,25 @@ public class RecycleTest extends ControllerTestCase {
         super.setUp();
 
         setupTestFolder(SyncProfile.HOST_FILES);
-        File localbase = getFolder().getLocalBase();
-        File testFile = new File(localbase, "test.txt");
-        if (testFile.exists()) {
-            assertTrue(testFile.delete());
+        Path localbase = getFolder().getLocalBase();
+        Path testFile = localbase.resolve("test.txt");
+        if (Files.exists(testFile)) {
+            try {
+                Files.delete(testFile);
+            }
+            catch (IOException ioe) {
+                fail(ioe.getMessage());
+            }
         }
 
-        assertTrue(testFile.createNewFile());
+        try {
+            Files.createFile(testFile);
+        }
+        catch (IOException ioe) {
+            fail(ioe.getMessage());
+        }
 
-        FileWriter writer = new FileWriter(testFile);
+        BufferedWriter writer = Files.newBufferedWriter(testFile, Charset.forName("UTF-8"));
         writer
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
@@ -61,13 +73,13 @@ public class RecycleTest extends ControllerTestCase {
         FileInfo fileInfo = getFolder().getKnownFiles().iterator().next();
         FileInfo origFile = fileInfo;
         Date lastModified = fileInfo.getModifiedDate();
-        File file = getFolder().getDiskFile(fileInfo);
+        Path file = getFolder().getDiskFile(fileInfo);
         assertFalse(archiver.hasArchivedFileInfo(fileInfo));
 
         TestHelper.waitMilliSeconds(2500);
         getFolder().removeFilesLocal(fileInfo);
         fileInfo = getFolder().getKnownFiles().iterator().next();
-        assertFalse(file.exists());
+        assertFalse(Files.exists(file));
         assertEquals(fileInfo.getModifiedBy(), getController().getMySelf()
             .getInfo());
         assertTrue(fileInfo.toDetailString(),
@@ -79,7 +91,7 @@ public class RecycleTest extends ControllerTestCase {
         getFolder().scanChangedFile(origFile);
         fileInfo = getFolder().getKnownFiles().iterator().next();
 
-        assertTrue(file.exists());
+        assertTrue(Files.exists(file));
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         assertTrue(
             fileInfo.toDetailString() + ": was modified " + lastModified,
@@ -88,23 +100,36 @@ public class RecycleTest extends ControllerTestCase {
         assertEquals(fileInfo.getModifiedDate(), getFolder().getKnownFiles()
             .iterator().next().getModifiedDate());
         getFolder().removeFilesLocal(fileInfo);
-        assertFalse(file.exists());
+        assertFalse(Files.exists(file));
         archiver.archive(fileInfo, file, false);
-        assertFalse(file.exists());
+        assertFalse(Files.exists(file));
     }
 
-    public void testEmptyRecycleBin() {
+    public void testEmptyRecycleBin() throws IOException {
         FileInfo testfile = getFolder().getKnownFiles().iterator().next();
-        File file = getFolder().getDiskFile(testfile);
+        Path file = getFolder().getDiskFile(testfile);
 
         getFolder().removeFilesLocal(testfile);
-        assertFalse(file.exists());
+        assertFalse(Files.exists(file));
         (archiver).setVersionsPerFile(0);
         ((FileArchiver) archiver).maintain();
-        File recycleBinDir = new File(getFolder().getSystemSubDir(), "archive");
-        assertTrue(recycleBinDir.exists());
+        Path recycleBinDir = getFolder().getSystemSubDir().resolve("archive");
+        assertTrue(Files.exists(recycleBinDir));
         // Only size file
-        assertTrue(Arrays.asList(recycleBinDir.list()).toString(),
-            recycleBinDir.list().length == 1);
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(recycleBinDir);
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        int count = 0;
+        
+        for (Path p : stream) {
+            sb.append(p.toString());
+            sb.append(", ");
+            count++;
+        }
+        
+        sb.append("]");
+        
+        assertTrue(sb.toString(), count == 1);
     }
 }

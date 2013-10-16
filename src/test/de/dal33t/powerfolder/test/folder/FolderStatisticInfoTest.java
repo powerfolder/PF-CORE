@@ -1,6 +1,8 @@
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
@@ -18,17 +20,17 @@ public class FolderStatisticInfoTest extends TestCase {
      * storage
      */
     public void testCorruptFiles() {
-        assertNull(testCorruptFile(new File(
-            "src/test-resources/FolderStatisticInfo_OOM.txt")));
-        assertNull(testCorruptFile(new File(
-            "src/test-resources/FolderStatisticInfo_NPE.txt")));
-        assertNotNull(testCorruptFile(new File(
-            "src/test-resources/FolderStatisticInfo_OK.txt")));
+        assertNull(testCorruptFile(Paths
+            .get("src/test-resources/FolderStatisticInfo_OOM.txt")));
+        assertNull(testCorruptFile(Paths
+            .get("src/test-resources/FolderStatisticInfo_NPE.txt")));
+        assertNotNull(testCorruptFile(Paths
+            .get("src/test-resources/FolderStatisticInfo_OK.txt")));
 
     }
 
-    private FolderStatisticInfo testCorruptFile(File file) {
-        if (!file.exists()) {
+    private FolderStatisticInfo testCorruptFile(Path file) {
+        if (Files.notExists(file)) {
             fail("Testfile not found " + file);
         }
         try {
@@ -38,26 +40,5 @@ public class FolderStatisticInfoTest extends TestCase {
             t.printStackTrace();
         }
         return null;
-    }
-
-    private void testLoad(File dir) {
-        File[] files = dir.listFiles();
-        int i = 0;
-        for (File file : files) {
-            i++;
-            if (files.length > 1) {
-                // System.err.println("Processing " + i + "/" + files.length);
-            }
-            if (file.isDirectory()) {
-                testLoad(file);
-            } else {
-                FolderStatisticInfo info = FolderStatisticInfo.load(file);
-                if (info == null) {
-                    System.err.println("Unable to read: " + file);
-                } else if (!info.isValid()) {
-                    System.err.println(info);
-                }
-            }
-        }
     }
 }

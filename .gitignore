@@ -1,5 +1,7 @@
 /bin
+.PowerFolder
 /build
+/dists
 /dist
 /build-local.properties
 /transfers

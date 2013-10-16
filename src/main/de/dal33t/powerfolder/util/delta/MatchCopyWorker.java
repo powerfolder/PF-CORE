@@ -15,32 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: MatchCopyWorker.java 11713 2010-03-11 14:37:48Z tot $
  */
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
-public class MatchCopyWorker implements Callable<FilePartsState> {
-    private final File srcFile;
-    private final File dstFile;
+public class MatchCopyWorker extends Loggable implements
+    Callable<FilePartsState>
+{
+    private final Path srcFile;
+    private final Path dstFile;
     private final FilePartsRecord record;
     private final List<MatchInfo> matchInfoList;
 
     private RandomAccessFile src;
+    private InputStream srcStream;
+    private long srcStreamPos;
     private RandomAccessFile dst;
     private final ProgressListener progressObserver;
 
-    public MatchCopyWorker(File srcFile, File dstFile, FilePartsRecord record,
+    public MatchCopyWorker(Path srcFile, Path dstFile, FilePartsRecord record,
         List<MatchInfo> matchInfoList, ProgressListener obs)
     {
         super();
@@ -53,12 +61,18 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
     }
 
     public FilePartsState call() throws Exception {
-        src = new RandomAccessFile(srcFile, "r");
         try {
-            dst = new RandomAccessFile(dstFile, "rw");
+            src = new RandomAccessFile(srcFile.toFile(), "r");
+        } catch (Exception e) {
+            // Fallback in case RAF is not supported
+            src = null;
+            resetSrcStream();
+        }
+        try {
+            dst = new RandomAccessFile(dstFile.toFile(), "rw");
             try {
-                FilePartsState result = new FilePartsState(record
-                    .getFileLength());
+                FilePartsState result = new FilePartsState(
+                    record.getFileLength());
                 int index = 0;
                 for (MatchInfo info : matchInfoList) {
                     if (Thread.interrupted()) {
@@ -72,14 +86,26 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
                     }
                     index++;
 
-                    src.seek(info.getMatchedPosition());
+                    if (src != null) {
+                        src.seek(info.getMatchedPosition());
+                    } else {
+                        if (srcStreamPos > info.getMatchedPosition()) {
+                            // Reset stream, we need to start from the beginning
+                            resetSrcStream();
+                        }
+                        srcStream.skip(info.getMatchedPosition());
+                        srcStreamPos += info.getMatchedPosition();
+                    }
                     long dstPos = info.getMatchedPart().getIndex()
                         * record.getPartLength();
                     dst.seek(dstPos);
-                    int rem = (int) Math.min(record.getPartLength(), record
-                        .getFileLength()
-                        - dstPos);
-                    FileUtils.ncopy(src, dst, rem);
+                    int rem = (int) Math.min(record.getPartLength(),
+                        record.getFileLength() - dstPos);
+                    if (src != null) {
+                        PathUtils.ncopy(src, dst, rem);
+                    } else {
+                        PathUtils.ncopy(srcStream, dst, rem);
+                    }
                     // The copied data is now AVAILABLE
                     result.setPartState(Range.getRangeByLength(dstPos, rem),
                         PartState.AVAILABLE);
@@ -89,7 +115,22 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
                 dst.close();
             }
         } finally {
-            src.close();
+            if (src != null) {
+                src.close();
+            } else {
+                srcStream.close();
+            }
+        }
+    }
+
+    private void resetSrcStream() throws IOException {
+        if (srcStream != null) {
+            srcStream.close();
+        }
+        srcStream = Files.newInputStream(srcFile);
+        srcStreamPos = 0;
+        if (isFine()) {
+            logFine("Initialized InputStream instead of RAF for " + srcFile);
         }
     }
 }
