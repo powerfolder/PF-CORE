@@ -205,10 +205,10 @@ public class FolderWatcher extends PFComponent {
 
     // Logger methods *********************************************************
 
-    @Override
-    public String getLoggerName() {
-        return super.getLoggerName() + " '" + folder.getName() + '\'';
-    }
+//    @Override
+//    public String getLoggerName() {
+//        return super.getLoggerName() + " '" + folder.getName() + '\'';
+//    }
 
     private class DirtyFilesScanner implements Runnable {
 

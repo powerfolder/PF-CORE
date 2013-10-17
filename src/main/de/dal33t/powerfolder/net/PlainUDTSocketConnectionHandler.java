@@ -97,15 +97,15 @@ public class PlainUDTSocketConnectionHandler extends
 
     // Logger methods *********************************************************
 
-    public String getLoggerName() {
-        String remoteInfo;
-        if (getSocket() != null) {
-            InetSocketAddress addr = getSocket().getRemoteAddress();
-            remoteInfo = addr.getAddress().getHostAddress().replace('.', '_')
-                + "^" + addr.getPort();
-        } else {
-            remoteInfo = "<unknown>";
-        }
-        return getClass().getName() + " " + remoteInfo;
-    }
+//    public String getLoggerName() {
+//        String remoteInfo;
+//        if (getSocket() != null) {
+//            InetSocketAddress addr = getSocket().getRemoteAddress();
+//            remoteInfo = addr.getAddress().getHostAddress().replace('.', '_')
+//                + "^" + addr.getPort();
+//        } else {
+//            remoteInfo = "<unknown>";
+//        }
+//        return getClass().getName() + " " + remoteInfo;
+//    }
 }

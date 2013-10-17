@@ -637,10 +637,10 @@ public class FolderStatistic extends PFComponent {
         return downloadCounter;
     }
 
-    @Override
-    public String getLoggerName() {
-        return super.getLoggerName() + " '" + folder.getName() + '\'';
-    }
+//    @Override
+//    public String getLoggerName() {
+//        return super.getLoggerName() + " '" + folder.getName() + '\'';
+//    }
 
     /**
      * Put a partial sync stat in the holding map.

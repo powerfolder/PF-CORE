@@ -100,16 +100,16 @@ public class PlainSocketConnectionHandler extends
 
     // Logger methods *********************************************************
 
-    public String getLoggerName() {
-        String remoteInfo;
-        if (getSocket() != null) {
-            InetSocketAddress addr = (InetSocketAddress) getSocket()
-                .getRemoteSocketAddress();
-            remoteInfo = addr.getAddress().getHostAddress().replace('.', '_')
-                + "^" + addr.getPort();
-        } else {
-            remoteInfo = "<unknown>";
-        }
-        return super.getLoggerName() + " " + remoteInfo;
-    }
+//    public String getLoggerName() {
+//        String remoteInfo;
+//        if (getSocket() != null) {
+//            InetSocketAddress addr = (InetSocketAddress) getSocket()
+//                .getRemoteSocketAddress();
+//            remoteInfo = addr.getAddress().getHostAddress().replace('.', '_')
+//                + "^" + addr.getPort();
+//        } else {
+//            remoteInfo = "<unknown>";
+//        }
+//        return super.getLoggerName() + " " + remoteInfo;
+//    }
 }

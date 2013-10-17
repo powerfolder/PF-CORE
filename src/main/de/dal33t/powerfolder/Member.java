@@ -2665,11 +2665,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     // Logger methods *********************************************************
 
-    @Override
-    public String getLoggerName() {
-        return super.getLoggerName() + " '" + getNick() + '\''
-            + (isSupernode() ? " (s)" : "");
-    }
+//    @Override
+//    public String getLoggerName() {
+//        return super.getLoggerName() + " '" + getNick() + '\''
+//            + (isSupernode() ? " (s)" : "");
+//    }
 
     /*
      * General
