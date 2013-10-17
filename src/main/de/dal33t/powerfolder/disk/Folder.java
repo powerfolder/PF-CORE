@@ -4749,10 +4749,10 @@ public class Folder extends PFComponent {
 
     // Logger methods *********************************************************
 
-    @Override
-    public String getLoggerName() {
-        return super.getLoggerName() + " '" + getName() + '\'';
-    }
+    // @Override
+    // public String getLoggerName() {
+    // return super.getLoggerName() + " '" + getName() + '\'';
+    // }
 
     // *************** Event support
     public void addMembershipListener(FolderMembershipListener listener) {
