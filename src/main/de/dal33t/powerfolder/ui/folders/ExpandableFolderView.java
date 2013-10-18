@@ -528,6 +528,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         openFilesInformationAction = new MyOpenFilesInformationAction(
             getController());
         inviteAction = new MyInviteAction(getController());
+        inviteAction.allowWith(FolderPermission.admin(folderInfo));
+
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
         openSettingsInformationAction.setEnabled(!getController()
