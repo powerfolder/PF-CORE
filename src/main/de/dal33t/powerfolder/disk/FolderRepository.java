@@ -1440,14 +1440,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + a.getUsername()
                         + " does not have storage, not checking for new folders.");
                 }
-                WarningNotice notice = new WarningNotice(
-                    Translation.getTranslation("warning_notice.title"),
-                    Translation
-                        .getTranslation("warning_notice.no_folder_create_summary"),
-                    Translation
-                        .getTranslation("warning_notice.no_folder_create_message"));
-                getController().getUIController().getApplicationModel()
-                    .getNoticesModel().handleNotice(notice);
+                if (getController().isUIEnabled()) {
+                    WarningNotice notice = new WarningNotice(
+                        Translation.getTranslation("warning_notice.title"),
+                        Translation
+                            .getTranslation("warning_notice.no_folder_create_summary"),
+                        Translation
+                            .getTranslation("warning_notice.no_folder_create_message"));
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().handleNotice(notice);
+                }
                 return;
             }
         }
