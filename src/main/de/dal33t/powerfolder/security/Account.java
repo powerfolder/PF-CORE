@@ -91,6 +91,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
     public static final String PROPERTYNAME_LDAPDN = "ldapDN";
+    public static final String PROPERTYNAME_SHIBBOLETH_PERSISTENT_ID = "shibbolethPersistentID";
     public static final String PROPERTYNAME_LANGUAGE = "language";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
@@ -121,6 +122,9 @@ public class Account implements Serializable {
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
+    @Index(name = "IDX_SHIB_PID")
+    @Column(length = 2048)
+    private String shibbolethPersistentID;
     private Date registerDate;
     private Date lastLoginDate;
     @ManyToOne
@@ -534,8 +538,15 @@ public class Account implements Serializable {
     }
 
     public void setLdapDN(String ldapDN) {
-        System.err.println("Setting LDAP DN to: " + ldapDN);
         this.ldapDN = ldapDN;
+    }
+    
+    public String getShibbolethPersistentID() {
+        return shibbolethPersistentID;
+    }
+
+    public void setShibbolethPersistentID(String shibbolethPersistentID) {
+        this.shibbolethPersistentID = shibbolethPersistentID;
     }
 
     public Date getRegisterDate() {
@@ -623,8 +634,10 @@ public class Account implements Serializable {
     }
 
     public boolean authByShibboleth() {
-        // Fine a better way:
-        return username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
+        // Remove last past after release of 9 SP1:
+        // username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
+        return StringUtils.isNotBlank(shibbolethPersistentID)
+            || username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
     }
 
     public boolean authByLDAP() {
