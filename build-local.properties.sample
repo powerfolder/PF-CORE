@@ -30,6 +30,7 @@ SignAlias=<sign alias>
 JRE_VERSION=1.6
 JRE_URL32=http://download.powerfolder.com/java/jre-windows-i586.exe
 JRE_URL64=http://download.powerfolder.com/java/jre-windows-x64.exe
+JRE_DIR=C:\\jre
 
 InstallerFilesLocation=<location of powerfolder checkout>
 # e.g. InstallerFilesLocation=E:\\Java\\eclipse_workspace\\PowerFolder-Installer-SVN\\trunk
