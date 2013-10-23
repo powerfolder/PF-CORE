@@ -2081,6 +2081,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Rationale: We might have not received file list from a server
                 // PFC-2368
                 for (Member member : folder.getConnectedMembers()) {
+                    if (!member.isCompletelyConnected()) {
+                        // Skin if not fully connected
+                        continue;
+                    }
                     if (!member.hasCompleteFileListFor(folder.getInfo())) {
                         // Might still be transferring those filelists.
                         continue;

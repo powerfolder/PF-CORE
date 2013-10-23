@@ -1557,7 +1557,7 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             if (diskFile != null && Files.exists(diskFile)) {
                 if (!deleteFile(fInfo, diskFile)) {
-                    logWarning("Unable to remove local file. Was not able to move old file to file archive "
+                    logWarning("Unable to delete local file. "
                         + diskFile.toAbsolutePath()
                         + ". "
                         + fInfo.toDetailString());
@@ -2188,6 +2188,12 @@ public class Folder extends PFComponent {
                             archiver.setVersionsPerFile(version);
                         }
                         // SYNC-98 End
+                    }
+                } else {
+                    if (!currentInfo.isMetaFolder()) {
+                        addProblem(new FolderReadOnlyProblem(archiver
+                            .getArchiveDir().resolve(
+                                fileInfo.getRelativeName())));
                     }
                 }
                 dao.delete(null, fileInfo);
@@ -3080,10 +3086,23 @@ public class Folder extends PFComponent {
 
                 } else if (localFile.isFile()) {
                     if (!deleteFile(localFile, localCopy)) {
-                        logWarning("Unable to deleted. was not able to move old file to recycle bin "
-                            + localCopy.toAbsolutePath()
-                            + ". "
+                        logWarning("Unable to delete local file "
+                            + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
+                        if (PathUtils.isZyncroPath(localCopy)) {
+                            // Revert delete, increase version number.
+                            final FileInfo revertedFileInfo = FileInfoFactory
+                                .modifiedFile(remoteFile, this, localCopy,
+                                    remoteFile.getModifiedBy());
+                            store(getMySelf(), revertedFileInfo);
+                            broadcastMessages(new MessageProducer() {
+                                @Override
+                                public Message[] getMessages(boolean useExt) {
+                                    return new Message[]{FolderFilesChanged
+                                        .create(revertedFileInfo, useExt)};
+                                }
+                            });
+                        }
                         return;
                     }
                 } else {
