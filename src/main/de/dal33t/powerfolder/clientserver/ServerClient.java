@@ -1789,18 +1789,27 @@ public class ServerClient extends PFComponent {
     private class AutoLoginTask extends TimerTask {
         @Override
         public void run() {
-            if (!isConnected()) {
-                return;
-            }
-            if (isLoggedIn()) {
-                return;
-            }
-            if (isLoggingIn()) {
-                return;
-            }
-            if (username != null && StringUtils.isNotBlank(passwordObf)) {
-                login(username, passwordObf);
-            }
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    if (!isConnected()) {
+                        return;
+                    }
+                    if (isLoggingIn()) {
+                        return;
+                    }
+                    // PFC-2368: Verify login by server too.
+                    if (isLoggedIn() && securityService.isLoggedIn()) {
+                        return;
+                    }
+                    if (username != null && StringUtils.isNotBlank(passwordObf))
+                    {
+                        logInfo("Auto-Login: Loginng in");
+                        login(username, passwordObf);
+                    }
+                }
+            };
+            getController().getIOProvider().startIO(r);
         }
     }
 
