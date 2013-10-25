@@ -108,7 +108,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         // Let the copy
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() == 1;
