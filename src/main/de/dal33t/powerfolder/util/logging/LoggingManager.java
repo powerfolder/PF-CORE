@@ -440,7 +440,7 @@ public class LoggingManager {
         }
     }
 
-    public static void closeFileLogging() {
+    public synchronized static void closeFileLogging() {
         if (fileLoggingLevel != null && fileHandler != null) {
 
             // Close off the old one first.
