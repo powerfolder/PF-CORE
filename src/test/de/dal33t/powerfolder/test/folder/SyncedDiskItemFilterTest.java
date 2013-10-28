@@ -13,6 +13,8 @@ public class SyncedDiskItemFilterTest extends TwoControllerTestCase {
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtBart().addDefaultExcludes();
+        getFolderAtLisa().addDefaultExcludes();
         assertEquals(DefaultExcludes.values().length, getFolderAtBart()
             .getDiskItemFilter().getPatterns().size());
         assertEquals(DefaultExcludes.values().length, getFolderAtLisa()
