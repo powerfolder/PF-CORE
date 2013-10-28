@@ -1093,11 +1093,11 @@ public class NodeManager extends PFComponent {
             if (!client.isLoggedIn() && !client.isPrimaryServer(handler)) {
                 handler.shutdown();
                 logWarning("Not connected to server ("
-                    + client.getServer().getNick() + ") yet. Disconnecting "
-                    + handler.getMyIdentity().getMemberInfo());
+                    + client.getServer().getNick() + ") yet. Disconnecting: "
+                    + handler.getIdentity());
                 throw new ConnectionException("Not connected to server ("
-                    + client.getServer().getNick() + ") yet. Disconnecting "
-                    + handler.getMyIdentity().getMemberInfo()).with(handler);
+                    + client.getServer().getNick() + ") yet. Disconnecting: "
+                    + handler.getIdentity()).with(handler);
             }
         }
 
