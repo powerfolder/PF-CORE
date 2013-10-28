@@ -312,8 +312,8 @@ public abstract class TwoControllerTestCase extends TestCase {
             client.login("lisa", "password".toCharArray());
         }
 
-        // Bart should be supernode
-        assertTrue(controllerBart.getMySelf().isSupernode());
+        // Bart should NOT be supernode. Not necessary on LAN
+        // assertTrue(controllerBart.getMySelf().isSupernode());
     }
 
     /**
