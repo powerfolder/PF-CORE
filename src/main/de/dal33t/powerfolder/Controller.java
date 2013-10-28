@@ -675,8 +675,9 @@ public class Controller extends PFComponent {
         if (Feature.OS_CLIENT.isEnabled()) {
             osClient.start();
         } else {
-            logWarning("Not starting server (reconnection), "
-                + "feature disable");
+            logWarning("Not starting client connection to server ("
+                + osClient.getServerString()
+                + "). Auto-reconnection disabled.");
         }
 
         // Setup our background working tasks
