@@ -1032,7 +1032,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (isInfo()) {
-            logInfo("Connected ("
+            logInfo(getNick() + " connected ("
                 + getController().getNodeManager().countConnectedNodes()
                 + " total)");
         }
