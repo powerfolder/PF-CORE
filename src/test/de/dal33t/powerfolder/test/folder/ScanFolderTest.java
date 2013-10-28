@@ -71,9 +71,10 @@ public class ScanFolderTest extends ControllerTestCase {
 
         try {
             fInfo = FileInfoFactory.lookupInstance(getFolder().getInfo(),
-                "../Afile.txt");
-            fail("Fileinfo relative name contained ..: " + fInfo);
+                "/../Afile.txt");
+            fail("Fileinfo relative name contained /../: " + fInfo);
         } catch (Exception e) {
+            e.printStackTrace();
             // OK
         }
     }
