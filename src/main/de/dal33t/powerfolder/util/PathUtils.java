@@ -770,7 +770,7 @@ public class PathUtils {
         return fileParentPath.startsWith(directoryPath);
     }
 
-    private static final long MS_07_JUL_2013 = 1372888800000L;
+    private static final long MS_31_OCT_2013 = 1383177600000L;
 
     /**
      * Set / remove desktop ini in managed folders.
@@ -801,7 +801,7 @@ public class PathUtils {
         // Migration to 8 SP1: Correct older folder icon setup
         try {
             if (iniExists
-                && Files.getLastModifiedTime(desktopIniFile).toMillis() < MS_07_JUL_2013)
+                && Files.getLastModifiedTime(desktopIniFile).toMillis() < MS_31_OCT_2013)
             {
                 // PFC-1500 / PFC-2373: Migration
                 try {
