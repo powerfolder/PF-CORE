@@ -114,7 +114,12 @@ public enum Feature {
     /**
      * Multitenancy
      */
-    ORGANIZATIONS(true);
+    ORGANIZATIONS(true),
+    
+    /**
+     * PFS-981: Preserve NTFS file owner while updating file from remote
+     */
+    NTFS_PRESERVE_FILE_OWNER(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

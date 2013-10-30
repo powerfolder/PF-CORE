@@ -739,10 +739,45 @@ public class Folder extends PFComponent {
      *         false if any problem happend.
      */
     public boolean scanDownloadFile(FileInfo fInfo, Path tempFile) {
+        UserPrincipal fileOwner = null;
         try {
             watcher.addIgnoreFile(fInfo);
+
+            // PFS-981: Start
+            if (Feature.NTFS_PRESERVE_FILE_OWNER.isEnabled()
+                && !PathUtils.isZyncroPath(localBase))
+            {
+                Path diskFile = fInfo.getDiskFile(getController()
+                    .getFolderRepository());
+                if (diskFile != null) {
+                    try {
+                        fileOwner = Files.getOwner(diskFile);
+                    } catch (IOException e) {
+                        logFine("Unable to retrieve owner from file: "
+                            + diskFile, e);
+                    }
+                }
+            }
+            // PFS-981: End
+
             return scanDownloadFile0(fInfo, tempFile);
         } finally {
+
+            // PFS-981: Start
+            if (fileOwner != null) {
+                Path diskFile = fInfo.getDiskFile(getController()
+                    .getFolderRepository());
+                if (diskFile != null) {
+                    try {
+                        Files.setOwner(diskFile, fileOwner);
+                    } catch (IOException e) {
+                        logFine("Unable to set owner of file: " + diskFile
+                            + " to " + fileOwner, e);
+                    }
+                }
+            }
+            // PFS-981: End
+
             watcher.removeIgnoreFile(fInfo);
         }
     }
@@ -3062,6 +3097,7 @@ public class Folder extends PFComponent {
                             + localFile.toDetailString());
                         if (PathUtils.isZyncroPath(localCopy)) {
                             
+                            // SPECIAL HANDLING FOR ZYNCRO
                             
                             // Revert delete, increase version number.
                             final FileInfo revertedFileInfo = FileInfoFactory
