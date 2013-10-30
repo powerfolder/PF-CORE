@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -812,7 +813,8 @@ public class TransferManager extends PFComponent {
             .isMetaFolder();
         autoClean = autoClean
             || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController()) == 0;
+                .getValueInt(getController()) == 0
+            || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
         if (autoClean) {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());

@@ -64,20 +64,23 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
     }
     
     /**
-     * Novice user and download cleanup is never. 
-     * Downloads will be cleaned up even though the cleanup is 'never' - because novice users cannot clean up downloads.
+     * Novice user and download cleanup is never. Downloads will be cleaned up
+     * even though the cleanup is 'never' - because novice users cannot clean up
+     * downloads.
      * 
      * @throws IOException
      */
-    public void testNoviceNoCleanupOfDownloads() throws IOException {
-        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerLisa(), 4); // Never
-        PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), false); // Novice
+    public void testBeginnerModeAutoCleanupOfDownloads() throws IOException {
+        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getContollerLisa(), 4);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), false);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerLisa(), true);
         transferFile();
 
         // Lisa's download should have been cleaned up.
-        int downloadsSize = getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size();
+        int downloadsSize = getContollerLisa().getTransferManager()
+            .getCompletedDownloadsCollection().size();
         assertEquals("Novice No Cleanup", 0, downloadsSize);
     }
-
 
 }
