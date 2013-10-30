@@ -461,6 +461,8 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
 		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="3g">
+			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
+			<sysproperty key="file.encoding" value="UTF-8"/>
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<pathelement location="${junit.lib}" />
