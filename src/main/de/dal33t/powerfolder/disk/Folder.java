@@ -813,21 +813,21 @@ public class Folder extends PFComponent {
                                 .getLocalFileInfo(getController()
                                     .getFolderRepository());
                             if (oldLocalFileInfo != null) {
+                                arch.archive(oldLocalFileInfo, targetFile,
+                                    false);
+
                                 if (!currentInfo.isMetaFolder()
                                     && ConfigurationEntry.CONFLICT_DETECTION
                                         .getValueBoolean(getController()))
                                 {
                                     try {
                                         doSimpleConflictDetection(fInfo,
-                                            targetFile, oldLocalFileInfo);
+                                            oldLocalFileInfo);
                                     } catch (Exception e) {
                                         logSevere("Problem withe conflict detection. "
                                             + e);
                                     }
                                 }
-
-                                arch.archive(oldLocalFileInfo, targetFile,
-                                    false);
                             }
                         } catch (IOException e) {
                             // Same behavior as below, on failure drop out
@@ -939,7 +939,7 @@ public class Folder extends PFComponent {
         return true;
     }
 
-    private FileInfo doSimpleConflictDetection(FileInfo fInfo, Path targetFile,
+    private FileInfo doSimpleConflictDetection(FileInfo fInfo,
         FileInfo oldLocalFileInfo)
     {
         boolean conflict = oldLocalFileInfo.getVersion() == fInfo.getVersion()
@@ -953,35 +953,6 @@ public class Folder extends PFComponent {
                 + ". old: " + oldLocalFileInfo.toDetailString());
             // Really basic raw conflict detection.
             addProblem(new FileConflictProblem(fInfo));
-
-            // String fn = fInfo.getFilenameOnly();
-            // String extraInfo = "_";
-            // extraInfo += oldLocalFileInfo.getModifiedBy().getNick();
-            // extraInfo += "_";
-            // extraInfo += oldLocalFileInfo.getVersion();
-            // if (fn.contains(".")) {
-            // int i = fn.lastIndexOf('.');
-            // fn = fn.substring(0, i) + extraInfo
-            // + fn.substring(i, fn.length());
-            // } else {
-            // fn += extraInfo;
-            // }
-            // File oldCopy = new File(targetFile.getParentFile(),
-            // FileUtils.removeInvalidFilenameChars(fn));
-            // FileInfo oldCopyFInfo = FileInfoFactory.lookupInstance(this,
-            // oldCopy);
-            // watcher.addIgnoreFile(oldCopyFInfo);
-            // try {
-            // FileUtils.copyFile(targetFile, oldCopy);
-            // logInfo("Saved copy of conflicting file to " + oldCopy);
-            // return scanChangedFile(oldCopyFInfo);
-            // } catch (Exception e) {
-            // logWarning("Unable to save old copy on conflict file to "
-            // + oldCopy + ": " + e);
-            // } finally {
-            // watcher.removeIgnoreFile(oldCopyFInfo);
-            //
-            // }
         }
         return null;
     }
@@ -3090,6 +3061,8 @@ public class Folder extends PFComponent {
                             + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
                         if (PathUtils.isZyncroPath(localCopy)) {
+                            
+                            
                             // Revert delete, increase version number.
                             final FileInfo revertedFileInfo = FileInfoFactory
                                 .modifiedFile(remoteFile, this, localCopy,
