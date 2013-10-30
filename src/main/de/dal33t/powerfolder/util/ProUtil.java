@@ -48,10 +48,8 @@ public class ProUtil {
      * @return
      */
     public static final boolean isZyncro(Controller controller) {
-        return controller.getDistribution().getBinaryName().toLowerCase()
-            .contains("zyncro")
-            || controller.getDistribution().getName().toLowerCase()
-                .contains("zyncro");
+        return controller.getDistribution().getBinaryName().contains("yncro")
+            || controller.getDistribution().getName().contains("yncro");
     }
 
     public static final boolean isServerConfig(Controller controller) {
