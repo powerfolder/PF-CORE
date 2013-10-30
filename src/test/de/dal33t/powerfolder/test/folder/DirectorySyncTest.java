@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -75,8 +76,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         Path dirBart = getFolderAtBart().getLocalBase().resolve("testDir");
         try {
             Files.createDirectory(dirBart);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
         TestHelper.waitMilliSeconds(3000);
@@ -84,8 +84,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             dirBart.getFileName());
         try {
             Files.createDirectory(dirLisa);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
 
@@ -117,8 +116,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         Path dirBart = getFolderAtBart().getLocalBase().resolve("testDir");
         try {
             Files.createDirectory(dirBart);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
         final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(
@@ -135,8 +133,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertEquals(0, dirInfoBart.getVersion());
         try {
             Files.delete(dirBart);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
         scanFolder(getFolderAtBart());
@@ -165,8 +162,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             scanFolder(getFolderAtBart());
             Files.createDirectories(dirBart);
             scanFolder(getFolderAtBart());
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
 
@@ -207,21 +203,20 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertFilesAndDirs(getFolderAtHomer(), createdDirs, createdFiles.size());
         assertFilesAndDirs(getFolderAtMarge(), createdDirs, createdFiles.size());
         assertFilesAndDirs(getFolderAtLisa(), createdDirs, createdFiles.size());
-        assertFilesAndDirs(getFolderAtMaggie(), createdDirs, createdFiles
-            .size());
+        assertFilesAndDirs(getFolderAtMaggie(), createdDirs,
+            createdFiles.size());
 
         // Now delete
         try (DirectoryStream<Path> stream = Files
-            .newDirectoryStream(getFolderAtHomer().getLocalBase()))
-        {
+            .newDirectoryStream(getFolderAtHomer().getLocalBase())) {
             for (Path path : stream) {
                 if (Files.isDirectory(path)
-                    && !getFolderAtHomer().isSystemSubDir(path)) {
+                    && !getFolderAtHomer().isSystemSubDir(path))
+                {
                     PathUtils.recursiveDelete(path);
                 }
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
         // Leave 1 file to omitt disconnect detection under Linux
@@ -231,8 +226,9 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         Collection<DirectoryInfo> dirs = getFolderAtHomer()
             .getKnownDirectories();
         for (DirectoryInfo directoryInfo : dirs) {
-            assertTrue("Dir not detected as deleted: "
-                + directoryInfo.toDetailString(), directoryInfo.isDeleted());
+            assertTrue(
+                "Dir not detected as deleted: "
+                    + directoryInfo.toDetailString(), directoryInfo.isDeleted());
             assertEquals(1, directoryInfo.getVersion());
         }
 
@@ -242,8 +238,9 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             0);
         dirs = getFolderAtBart().getKnownDirectories();
         for (DirectoryInfo directoryInfo : dirs) {
-            assertTrue("Dir not detected as deleted: "
-                + directoryInfo.toDetailString(), directoryInfo.isDeleted());
+            assertTrue(
+                "Dir not detected as deleted: "
+                    + directoryInfo.toDetailString(), directoryInfo.isDeleted());
             Path diskFile = directoryInfo.getDiskFile(getContollerBart()
                 .getFolderRepository());
             assertFalse(diskFile + " info " + directoryInfo.toDetailString(),
@@ -259,17 +256,17 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertFilesAndDirs(getFolderAtLisa(), createdDirs, createdFiles.size(),
             0);
         waitForEmptyFolder(getFolderAtMaggie());
-        assertFilesAndDirs(getFolderAtMaggie(), createdDirs, createdFiles
-            .size(), 0);
+        assertFilesAndDirs(getFolderAtMaggie(), createdDirs,
+            createdFiles.size(), 0);
     }
 
     private void waitForEmptyFolder(final Folder folder) {
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public String message() {
                 StringBuilder sb = new StringBuilder();
                 sb.append("[");
-                try (DirectoryStream<Path> stream = Files
-                    .newDirectoryStream(folder.getLocalBase())) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(
+                    folder.getLocalBase(), new ExcludeSystemSubdirFilter())) {
                     for (Path p : stream) {
                         sb.append(p.toAbsolutePath().toString());
                     }
@@ -283,7 +280,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             }
 
             public boolean reached() {
-                return PathUtils.isEmptyDir(folder.getLocalBase());
+                return PathUtils.isEmptyDir(folder.getLocalBase(),
+                    new ExcludeSystemSubdirFilter());
             }
         });
     }
@@ -291,6 +289,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     public void testSyncDeepStrucutre() {
         int maxDepth = 9;
         int dirsPerDir = 2;
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         int createdDirs = createSubDirs(getFolderAtBart().getLocalBase(),
             dirsPerDir, 1, maxDepth, null);
 
@@ -335,22 +334,25 @@ public class DirectorySyncTest extends FiveControllerTestCase {
 
     private static int countSubDirs(Path baseDir) {
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(baseDir, new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                    return Files.isDirectory(entry)
-                        && !entry.getFileName().startsWith(".Power");
-            }
-        })) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(baseDir,
+            new Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) throws IOException {
+                    boolean accept = Files.isDirectory(entry)
+                        && !entry.getFileName().startsWith(
+                            Constants.POWERFOLDER_SYSTEM_SUBDIR);
+                    return accept;
+                }
+            })) {
             int i = 0;
             for (Path p : stream) {
                 i++;
+
                 i += countSubDirs(p);
             }
 
             return i;
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             return 0;
         }
     }
@@ -360,8 +362,9 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     {
         int created = 0;
         for (int i = 0; i < nsubdirs; i++) {
-            Path dir = PathUtils.createEmptyDirectory(baseDir, PathUtils
-                .removeInvalidFilenameChars(depth + "-"
+            Path dir = PathUtils.createEmptyDirectory(
+                baseDir,
+                PathUtils.removeInvalidFilenameChars(depth + "-"
                     + IdGenerator.makeId().substring(1, 5)));
 
             if (visitor != null) {
@@ -376,6 +379,14 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         return created;
     }
 
+    private final class ExcludeSystemSubdirFilter implements Filter<Path> {
+        @Override
+        public boolean accept(Path path) throws IOException {
+            return !path.toString().contains(
+                Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        }
+    }
+
     private interface DirVisitor {
         void created(Path dir);
     }
@@ -387,8 +398,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         Path dirBart = getFolderAtBart().getLocalBase().resolve("testDir");
         try {
             Files.createDirectory(dirBart);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
         scanFolder(getFolderAtBart());
@@ -397,8 +407,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             .iterator().next();
         assertDirMatch(dirBart, infoBart, getContollerBart());
         // Check remote syncs
-        final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(dirBart
-            .getFileName());
+        final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(
+            dirBart.getFileName());
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
                 return "Dir at lisa not existing: " + dirLisa;
@@ -418,8 +428,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         TestHelper.createRandomFile(dirLisa);
         try {
             Files.delete(dirBart);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
 
@@ -428,8 +437,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         FileInfo dirInfoAtBart = getFolderAtBart().getKnownDirectories()
             .iterator().next();
         assertTrue(dirInfoAtBart.toDetailString(), dirInfoAtBart.isDeleted());
-        assertEquals(dirInfoAtBart.toDetailString(), 1, dirInfoAtBart
-            .getVersion());
+        assertEquals(dirInfoAtBart.toDetailString(), 1,
+            dirInfoAtBart.getVersion());
         assertDirMatch(dirBart, dirInfoAtBart, getContollerBart());
 
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
@@ -448,8 +457,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             .iterator().next();
         // SHOULD STILL be version 0 = could not sync version 1 (=deleted) from
         // bart.
-        assertEquals(dirInfoAtLisa.toDetailString(), 0, dirInfoAtLisa
-            .getVersion());
+        assertEquals(dirInfoAtLisa.toDetailString(), 0,
+            dirInfoAtLisa.getVersion());
         assertFalse(dirInfoAtLisa.toDetailString(), dirInfoAtLisa.isDeleted());
         assertDirMatch(dirLisa, dirInfoAtLisa, getContollerLisa());
     }
@@ -458,8 +467,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         Path dirBart = getFolderAtBart().getLocalBase().resolve("testDir");
         try {
             Files.createDirectory(dirBart);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
         scanFolder(getFolderAtBart());
@@ -469,8 +477,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertDirMatch(dirBart, infoBart, getContollerBart());
 
         // Check remote syncs
-        final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(dirBart
-            .getFileName());
+        final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(
+            dirBart.getFileName());
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
                 return "Dir at lisa not existing: " + dirLisa;
@@ -490,16 +498,16 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         // Now delete at Lisa
         try {
             Files.delete(dirLisa);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
         scanFolder(getFolderAtLisa());
         assertEquals(getFolderAtLisa().getKnownFiles().toString(), 1,
             getFolderAtLisa().getKnownItemCount());
         infoLisa = getFolderAtLisa().getKnownDirectories().iterator().next();
-        assertTrue("Dir should have been detected as deleted: "
-            + infoLisa.toDetailString(), infoLisa.isDeleted());
+        assertTrue(
+            "Dir should have been detected as deleted: "
+                + infoLisa.toDetailString(), infoLisa.isDeleted());
         assertEquals(infoLisa.toDetailString(), 1, infoLisa.getVersion());
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
 
