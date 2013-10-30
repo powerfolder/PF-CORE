@@ -20,8 +20,11 @@
 package de.dal33t.powerfolder.message;
 
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import com.sun.istack.internal.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -30,8 +33,8 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -59,7 +62,7 @@ public class Invitation extends FolderRelatedMessage {
 
     private MemberInfo invitor;
     // For backward compatibilty to pre 3.1.2 versions.
-    private Path suggestedLocalBase;
+    private File suggestedLocalBase;
     private String invitationText;
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
@@ -121,7 +124,13 @@ public class Invitation extends FolderRelatedMessage {
         Path suggestedLocalBase)
     {
         Reject.ifNull(suggestedLocalBase, "File is null");
-        this.suggestedLocalBase = suggestedLocalBase;
+        try {
+            this.suggestedLocalBase = suggestedLocalBase.toFile();
+        } catch (Exception e) {
+            Logger.getLogger(Invitation.class).fine(
+                "Unable to set suggested path: " + suggestedLocalBase + ". "
+                    + e);
+        }
         String folderBase = controller.getFolderRepository()
             .getFoldersBasedirString();
         String appsDir = getAppsDir();
