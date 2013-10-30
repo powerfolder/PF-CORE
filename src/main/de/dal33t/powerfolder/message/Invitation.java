@@ -23,8 +23,7 @@ package de.dal33t.powerfolder.message;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import com.sun.istack.internal.logging.Logger;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -127,7 +126,7 @@ public class Invitation extends FolderRelatedMessage {
         try {
             this.suggestedLocalBase = suggestedLocalBase.toFile();
         } catch (Exception e) {
-            Logger.getLogger(Invitation.class).fine(
+            Logger.getLogger(Invitation.class.getName()).fine(
                 "Unable to set suggested path: " + suggestedLocalBase + ". "
                     + e);
         }
