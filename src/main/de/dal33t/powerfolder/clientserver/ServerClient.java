@@ -882,6 +882,7 @@ public class ServerClient extends PFComponent {
                     }
 
                     // Fire login success
+                    loggingIn.set(false);
                     fireLogin(accountDetails);
                     getController().schedule(new Runnable() {
                         public void run() {
