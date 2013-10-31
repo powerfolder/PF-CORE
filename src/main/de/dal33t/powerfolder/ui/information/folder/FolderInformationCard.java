@@ -69,7 +69,12 @@ public class FolderInformationCard extends InformationCard {
      */
     public FolderInformationCard(Controller controller) {
         super(controller);
-        filesTab = new FilesTab(getController());
+
+        if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+            filesTab = new FilesTab(getController());
+        } else {
+            filesTab = null;
+        }
 
         if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController()))
         {
@@ -133,7 +138,7 @@ public class FolderInformationCard extends InformationCard {
 
         String fn = fileInfo.getFilenameOnly();
         String subDir = fileInfo.getRelativeName().replace(fn, "");
-        if (StringUtils.isNotBlank(subDir)) {
+        if (StringUtils.isNotBlank(subDir) && filesTab != null) {
             filesTab.selectionChanged(subDir);
         }
     }
@@ -146,7 +151,9 @@ public class FolderInformationCard extends InformationCard {
     public void setFolderInfo(FolderInfo folderInfo) {
         detachProblemListener();
         setFolderInfo0(folderInfo);
-        filesTab.setFolderInfo(folderInfo);
+        if (filesTab != null) {
+            filesTab.setFolderInfo(folderInfo);
+        }
         atachProblemListener();
         updateProblems();
     }
@@ -159,7 +166,9 @@ public class FolderInformationCard extends InformationCard {
     public void setFolderInfoLatest(FolderInfo folderInfo) {
         detachProblemListener();
         setFolderInfo0(folderInfo);
-        filesTab.setFolderInfoLatest(folderInfo);
+        if (filesTab != null) {
+            filesTab.setFolderInfoLatest(folderInfo);
+        }
         atachProblemListener();
         updateProblems();
     }
@@ -167,7 +176,9 @@ public class FolderInformationCard extends InformationCard {
     public void setFolderInfoDeleted(FolderInfo folderInfo) {
         detachProblemListener();
         setFolderInfo0(folderInfo);
-        filesTab.setFolderInfoDeleted(folderInfo);
+        if (filesTab != null) {
+            filesTab.setFolderInfoDeleted(folderInfo);
+        }
         atachProblemListener();
         updateProblems();
     }
@@ -175,13 +186,14 @@ public class FolderInformationCard extends InformationCard {
     public void setFolderInfoUnsynced(FolderInfo folderInfo) {
         detachProblemListener();
         setFolderInfo0(folderInfo);
-        filesTab.setFolderInfoUnsynced(folderInfo);
+        if (filesTab != null) {
+            filesTab.setFolderInfoUnsynced(folderInfo);
+        }
         atachProblemListener();
         updateProblems();
     }
 
     private void detachProblemListener() {
-
         if (folderInfo != null) {
             Folder folder = getController().getFolderRepository().getFolder(
                 folderInfo);
@@ -279,42 +291,33 @@ public class FolderInformationCard extends InformationCard {
      * Build the ui component tab pane.
      */
     private void buildUIComponent() {
-        tabbedPane.addTab(
-            Translation.getTranslation("folder_information_card.files.title"),
-            filesTab.getUIComponent());
-        tabbedPane.setToolTipTextAt(getFilesTabIndex(),
-            Translation.getTranslation("folder_information_card.files.tips"));
+        if (filesTab != null) {
+            tabbedPane.addTab(Translation
+                .getTranslation("folder_information_card.files.title"),
+                filesTab.getUIComponent());
+            tabbedPane.setToolTipTextAt(getFilesTabIndex(), Translation
+                .getTranslation("folder_information_card.files.tips"));
+        }
 
-        // No computers stuff if backup mode.
-        if (getController().isBackupOnly()) {
-            // Create component anyways to stop UI exceptions if mode changes.
-            if (membersTab != null) {
-                membersTab.getUIComponent();
-            }
-            if (settingsTab != null) {
-                settingsTab.getUIComponent();
-            }
-        } else {
-            if (membersTab != null) {
-                tabbedPane.addTab(Translation
-                    .getTranslation("folder_information_card.members.title"),
-                    membersTab.getUIComponent());
-                tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
-                    .getTranslation("folder_information_card.members.tips"));
-            }
+        if (membersTab != null) {
+            tabbedPane.addTab(Translation
+                .getTranslation("folder_information_card.members.title"),
+                membersTab.getUIComponent());
+            tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
+                .getTranslation("folder_information_card.members.tips"));
+        }
 
-            if (settingsTab != null) {
-                JScrollPane scrollPane = new JScrollPane(
-                    settingsTab.getUIComponent(),
-                    ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-                UIUtil.removeBorder(scrollPane);
-                tabbedPane.addTab(Translation
-                    .getTranslation("folder_information_card.settings.title"),
-                    scrollPane);
-                tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
-                    .getTranslation("folder_information_card.settings.tips"));
-            }
+        if (settingsTab != null) {
+            JScrollPane scrollPane = new JScrollPane(
+                settingsTab.getUIComponent(),
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            UIUtil.removeBorder(scrollPane);
+            tabbedPane.addTab(Translation
+                .getTranslation("folder_information_card.settings.title"),
+                scrollPane);
+            tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
+                .getTranslation("folder_information_card.settings.tips"));
         }
     }
 
@@ -405,6 +408,10 @@ public class FolderInformationCard extends InformationCard {
      */
     private int getProblemsTabIndex() {
         int maxIndex = 3;
+        if (!ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController()))
+        {
+            maxIndex -= 1;
+        }
         if (!ConfigurationEntry.MEMBERS_ENABLED
             .getValueBoolean(getController()))
         {
@@ -415,7 +422,7 @@ public class FolderInformationCard extends InformationCard {
         {
             maxIndex -= 1;
         }
-        return getController().isBackupOnly() ? 1 : maxIndex;
+        return maxIndex;
     }
 
     private class MyProblemListener implements ProblemListener {

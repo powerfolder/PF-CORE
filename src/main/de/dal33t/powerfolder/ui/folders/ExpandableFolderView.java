@@ -1865,9 +1865,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     ResolvableProblem prob = (ResolvableProblem) folder
                         .getProblems().get(0);
+                    DialogFactory.genericDialog(getController(),
+                        prob.getDescription(), prob.getDescription(),
+                        GenericDialogType.WARN);
                     SwingUtilities
                         .invokeLater(prob.resolution(getController()));
-                    // TODO Handle message
                     folder.removeProblem(prob);
                 } else {
                     // Display the problem.

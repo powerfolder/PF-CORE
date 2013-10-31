@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.disk.problem;
 import java.nio.file.Path;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -22,8 +23,7 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
 
     @Override
     public String getWikiLinkKey() {
-        // TODO Auto-generated method stub
-        return null;
+        return WikiLinks.SECURITY_PERMISSION;
     }
 
     @Override
@@ -38,8 +38,6 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
 
     @Override
     public String getResolutionDescription() {
-        // TODO Auto-generated method stub
         return null;
     }
-
 }

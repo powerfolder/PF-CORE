@@ -2149,15 +2149,28 @@ public class Folder extends PFComponent {
             // Is excluded from sync. Don't delete. Might be meta-data.
             return false;
         }
-        if (diskItemFilter.isExcluded(fileInfo)) {
-            // Is excluded from sync. Don't delete. Might be meta-data.
-            return false;
-        }
         getFolderWatcher().addIgnoreFile(fileInfo);
         try {
             if (newestVersion == null) {
+                boolean remoteFilesFound = false;
+                for (Member member: getConnectedMembers()) {
+                    if (!hasWritePermission(member)) {
+                        continue;
+                    }
+                    // Member with write permission
+                    if (member.hasCompleteFileListFor(currentInfo)) {
+                        remoteFilesFound = true;
+                        break;
+                    }
+                }
+                if (!remoteFilesFound) {
+                    // No actual remote file list received yet from member with
+                    // write permission
+                    return false;
+                }
                 logWarning("Reverting local change: "
-                    + fileInfo.toDetailString() + ". File not in repository.");
+                    + fileInfo.toDetailString()
+                    + ". File not found on remote side.");
             } else {
                 logWarning("Reverting local change: "
                     + fileInfo.toDetailString() + ". Found newer version: "
@@ -2165,6 +2178,10 @@ public class Folder extends PFComponent {
             }
             Path file = fileInfo.getDiskFile(getController()
                 .getFolderRepository());
+            if (file == null) {
+                // Local file not found.
+                return false;
+            }
             synchronized (scanLock) {
                 if (Files.exists(file)) {
                     int version = archiver.getVersionsPerFile();
