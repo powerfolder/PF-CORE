@@ -52,7 +52,7 @@ public abstract class PFWizardPanel extends WizardPanel {
     private JLabel titleLabel;
 
     /**
-     * Initalization
+     * Initialization
      * 
      * @param controller
      *            the controller

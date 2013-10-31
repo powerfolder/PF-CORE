@@ -43,6 +43,17 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class Wizard extends JPanel implements ActionListener {
 
+    // Wizard sizes
+    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(375,
+        333);
+    public static final Dimension WIZARD_TINY_MAC_WINDOW_SIZE = new Dimension(400,
+        355);
+
+    public static final Dimension WIZARD_BIG_WINDOW_SIZE = new Dimension(
+        650, 480);
+    public static final Dimension WIZARD_BIG_MAC_WINDOW_SIZE = new Dimension(750,
+        540);
+
     public static final String BACK_I18N = "BACK_I18N";
     public static final String NEXT_I18N = "NEXT_I18N";
     public static final String FINISH_I18N = "FINISH_I18N";
@@ -53,12 +64,6 @@ public class Wizard extends JPanel implements ActionListener {
     public static final String FINISH_I18N_DESCRIPTION = "FINISH_I18N_DESCRIPTION";
     public static final String CANCEL_I18N_DESCRIPTION = "CANCEL_I18N_DESCRIPTION";
     public static final String HELP_I18N_DESCRIPTION = "HELP_I18N_DESCRIPTION";
-    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(
-        375, 333);
-    public static final Dimension WIZARD_DEFAULT_WINDOW_SIZE = new Dimension(
-        650, 480);
-    public static final Dimension WIZARD_MAC_WINDOW_SIZE = new Dimension(750,
-        540);
 
     private final JButton backButton = new JButton("< Back");
     private final JButton nextButton = new JButton("Next >");
@@ -130,14 +135,21 @@ public class Wizard extends JPanel implements ActionListener {
         add(buttons, BorderLayout.SOUTH);
 
         if (tiny) {
-            setMinimumSize(WIZARD_TINY_WINDOW_SIZE);
-            setPreferredSize(WIZARD_TINY_WINDOW_SIZE);
-        } else if (OSUtil.isMacOS()) {
-            setMinimumSize(WIZARD_MAC_WINDOW_SIZE);
-            setPreferredSize(WIZARD_MAC_WINDOW_SIZE);
+            if (OSUtil.isMacOS()) {
+                setMinimumSize(WIZARD_TINY_MAC_WINDOW_SIZE);
+                setPreferredSize(WIZARD_TINY_MAC_WINDOW_SIZE);
+            } else {
+                setMinimumSize(WIZARD_TINY_WINDOW_SIZE);
+                setPreferredSize(WIZARD_TINY_WINDOW_SIZE);
+            }
         } else {
-            setMinimumSize(WIZARD_DEFAULT_WINDOW_SIZE);
-            setPreferredSize(WIZARD_DEFAULT_WINDOW_SIZE);
+            if (OSUtil.isMacOS()) {
+                setMinimumSize(WIZARD_BIG_MAC_WINDOW_SIZE);
+                setPreferredSize(WIZARD_BIG_MAC_WINDOW_SIZE);
+            } else {
+                setMinimumSize(WIZARD_BIG_WINDOW_SIZE);
+                setPreferredSize(WIZARD_BIG_WINDOW_SIZE);
+            }
         }
     }
 
