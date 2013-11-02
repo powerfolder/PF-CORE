@@ -1219,8 +1219,7 @@ public class MainFrame extends PFUIComponent {
                 uiComponent.setExtendedState(Frame.NORMAL);
                 // Need to hide the child windows when minimizing.
                 if (!init) {
-                    closeInlineInfoPanel();
-                    getUIController().hideChildPanels();
+                    hideInlineInfoPanel();
                 }
                 uiComponent.setSize(uiComponent.getMinimumSize());
                 uiComponent.setResizable(false);
@@ -1248,6 +1247,11 @@ public class MainFrame extends PFUIComponent {
         }
 
         setLinkTooltips();
+    }
+
+    public void hideInlineInfoPanel() {
+        closeInlineInfoPanel();
+        getUIController().hideChildPanels();
     }
 
     private void configureNormalSize() {
