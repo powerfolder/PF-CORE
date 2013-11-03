@@ -955,24 +955,28 @@ public class FolderRepository extends PFComponent implements Runnable {
             Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
             Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
         Path systemSubdir = folder.getSystemSubDir();
-        FolderSettings metaFolderSettings = new FolderSettings(systemSubdir.resolve(
-            Constants.METAFOLDER_SUBDIR),
-
+        FolderSettings metaFolderSettings = new FolderSettings(
+            systemSubdir.resolve(Constants.METAFOLDER_SUBDIR),
             SyncProfile.META_FOLDER_SYNC, false, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
             try {
-                Files.createDirectory(metaFolderSettings.getLocalBaseDir());
-            }
-            catch (IOException ioe) {
-                logInfo(ioe.getMessage());
+                if (Files.notExists(metaFolderSettings.getLocalBaseDir())) {
+                    Files.createDirectory(metaFolderSettings.getLocalBaseDir());
+                }
+            } catch (IOException ioe) {
+                logInfo("Unable to create metafolder directory: "
+                    + metaFolderSettings.getLocalBaseDir() + "."
+                    + ioe.toString());
             }
         }
         Folder metaFolder = new Folder(getController(), metaFolderInfo,
             metaFolderSettings);
         if (!deviceDisconnected) {
             try {
-                Files.createDirectory(metaFolder.getSystemSubDir());
+                if (Files.notExists(metaFolder.getSystemSubDir())) {
+                    Files.createDirectory(metaFolder.getSystemSubDir());
+                }
             } catch (IOException e) {
                 // Ignore.
             }
