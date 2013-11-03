@@ -2168,13 +2168,17 @@ public class Folder extends PFComponent {
                     // write permission
                     return false;
                 }
-                logWarning("Reverting local change: "
-                    + fileInfo.toDetailString()
-                    + ". File not found on remote side.");
+                if (isWarning() && !currentInfo.isMetaFolder()) {
+                    logWarning("Reverting local change: "
+                        + fileInfo.toDetailString()
+                        + ". File not found on remote side.");
+                }
             } else {
-                logWarning("Reverting local change: "
-                    + fileInfo.toDetailString() + ". Found newer version: "
-                    + newestVersion.toDetailString());
+                if (isWarning() && !currentInfo.isMetaFolder()) {
+                    logWarning("Reverting local change: "
+                        + fileInfo.toDetailString() + ". Found newer version: "
+                        + newestVersion.toDetailString());
+                }
             }
             Path file = fileInfo.getDiskFile(getController()
                 .getFolderRepository());
