@@ -859,7 +859,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
                         folder.getInfo());
                 }
                 if (member.isConnected() || member.isMySelf()) {
-                    logWarning("Refreshed "
+                    logInfo("Refreshed "
                         + folder.getName()
                         + ". Filelist received? "
                         + (member.hasCompleteFileListFor(folder.getInfo()) || member

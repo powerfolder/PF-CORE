@@ -89,24 +89,24 @@ public class NotificationForm extends JPanel {
             formLayout = new FormLayout(
                 //     content
                 "3dlu, 150dlu:grow, 3dlu",
-                    "3dlu, pref, 6dlu, pref, 3dlu");
-                    //     head        msg
+                    "3dlu, pref, 15dlu, pref, 3dlu");
+                    //     head         msg
             internalWidth = 1;
         } else if (acceptOptionLabel != null && cancelOptionLabel != null) {
             // Two buttons
             formLayout = new FormLayout(
                 //            button             button
-                "3dlu, 10dlu, 60dlu:grow, 10dlu, 60dlu:grow, 10dlu, 3dlu",
-                    "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
-                    //     head        msg         hr          cb          btn
+                "3dlu, 10dlu, 80dlu:grow, 10dlu, 80dlu:grow, 10dlu, 3dlu",
+                    "3dlu, pref, 15dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                    //     head         msg          hr          cb          btn
             internalWidth = 5;
         } else {
             // One button
             formLayout = new FormLayout(
                 //            button
-                "3dlu, 45dlu, 60dlu:grow, 45dlu, 3dlu",
-                    "3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
-                    //     head        msg         hr          cb          btn
+                "3dlu, 45dlu, 80dlu:grow, 45dlu, 3dlu",
+                    "3dlu, pref, 15dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                    //     head         msg          hr          cb          btn
             internalWidth = 3;
         }
         panel.setLayout(formLayout);
