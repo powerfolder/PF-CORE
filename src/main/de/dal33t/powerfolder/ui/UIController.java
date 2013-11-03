@@ -1491,15 +1491,16 @@ public class UIController extends PFComponent {
                 Notice notice = new SimpleNotificationNotice(
                     Translation.getTranslation("notice.invitation.title"),
                     Translation.getTranslation("notice.invitation.summary",
-                        invitation.getBestUsername(), invitation.folder.name));
+                        invitation.getBestUsername(),
+                        invitation.folder.getLocalizedName()));
                 applicationModel.getNoticesModel().handleNotice(notice);
             } else {
                 // Let user decide what to do with the invitation.
                 Notice notice = new InvitationNotice(
                     Translation.getTranslation("notice.invitation.title"),
                     Translation.getTranslation("notice.invitation.summary",
-                        invitation.getBestUsername(), invitation.folder.name),
-                    invitation);
+                        invitation.getBestUsername(),
+                        invitation.folder.getLocalizedName()), invitation);
                 applicationModel.getNoticesModel().handleNotice(notice);
             }
         }
