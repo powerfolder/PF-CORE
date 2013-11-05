@@ -94,7 +94,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
         // W8 4 filelist
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(2000);
         getFolderAtBart().maintainFolderDB(0);
         getFolderAtLisa().maintainFolderDB(0);
 
