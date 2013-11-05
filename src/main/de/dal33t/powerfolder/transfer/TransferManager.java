@@ -2595,37 +2595,35 @@ public class TransferManager extends PFComponent {
      */
     public void storeDownloads() {
         // Store pending downloads
-        try {
-            // Collect all download infos
-            List<Download> storedDownloads = new LinkedList<Download>(
-                pendingDownloads);
-            int nPending = countActiveDownloads();
-            int nCompleted = completedDownloads.size();
-            for (DownloadManager man : dlManagers.values()) {
-                storedDownloads.add(new Download(this, man.getFileInfo(), man
-                    .isRequestedAutomatic()));
+        // Collect all download infos
+        List<Download> storedDownloads = new LinkedList<Download>(
+            pendingDownloads);
+        int nPending = countActiveDownloads();
+        int nCompleted = completedDownloads.size();
+        for (DownloadManager man : dlManagers.values()) {
+            storedDownloads.add(new Download(this, man.getFileInfo(), man
+                .isRequestedAutomatic()));
+        }
+        
+        for (DownloadManager man : completedDownloads.values()) {
+            storedDownloads.addAll(man.getSources());
+        }
+        
+        logFiner("Storing " + storedDownloads.size() + " downloads ("
+            + nPending + " pending, " + nCompleted + " completed)");
+        Path transferFile = Controller.getMiscFilesLocation().resolve(
+            getController().getConfigName() + ".transfers");
+        // for testing we should support getConfigName() with subdirs
+        if (Files.notExists(transferFile.getParent())) {
+            try {
+                Files.createDirectories(transferFile.getParent());
+            } catch (IOException ioe) {
+                logSevere("Failed to mkdir misc directory!");
             }
-
-            for (DownloadManager man : completedDownloads.values()) {
-                storedDownloads.addAll(man.getSources());
-            }
-
-            logFiner("Storing " + storedDownloads.size() + " downloads ("
-                + nPending + " pending, " + nCompleted + " completed)");
-            Path transferFile = Controller.getMiscFilesLocation().resolve(
-                getController().getConfigName() + ".transfers");
-            // for testing we should support getConfigName() with subdirs
-            if (Files.notExists(transferFile.getParent())) {
-                try {
-                    Files.createDirectories(transferFile.getParent());
-                } catch (IOException ioe) {
-                    logSevere("Failed to mkdir misc directory!");
-                }
-            }
-            ObjectOutputStream oOut = new ObjectOutputStream(
-                Files.newOutputStream(transferFile));
+        }
+        try (ObjectOutputStream oOut = new ObjectOutputStream(
+            Files.newOutputStream(transferFile))) {
             oOut.writeObject(storedDownloads);
-            oOut.close();
         } catch (IOException e) {
             logSevere("Unable to store pending downloads", e);
         }
