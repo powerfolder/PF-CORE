@@ -1092,7 +1092,7 @@ public class NodeManager extends PFComponent {
             // Only actually connect to other clients if logged into server.
             if (!client.isLoggedIn() && !client.isPrimaryServer(handler)) {
                 handler.shutdown();
-                logWarning("Not logged in at server ("
+                logFine("Not logged in at server ("
                     + client.getServer().getNick() + ") yet. Disconnecting: "
                     + handler.getIdentity());
                 throw new ConnectionException("Not logged in at server ("
