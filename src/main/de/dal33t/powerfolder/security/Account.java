@@ -168,6 +168,12 @@ public class Account implements Serializable {
     @JoinColumn(name = "serverInfo_id")
     private ServerInfo server;
 
+    /**
+     * PFS-992: If this account is static and won't be switch automatically by
+     * ClusterManager.
+     */
+    private boolean serverStatic;
+
     @Deprecated
     @Transient
     private Collection<String> licenseKeyFiles;
@@ -694,6 +700,14 @@ public class Account implements Serializable {
 
     public void setServer(ServerInfo server) {
         this.server = server;
+    }
+    
+    public boolean isServerStatic() {
+        return serverStatic;
+    }
+
+    public void setServerServer(boolean serverStatic) {
+        this.serverStatic = serverStatic;
     }
 
     public FolderInfo getDefaultSynchronizedFolder() {
