@@ -385,6 +385,25 @@ public class PathUtils {
         }
     }
 
+    public static void rawCopy(InputStream from, OutputStream to) throws IOException {
+        Reject.ifNull(from, "Source is null");
+        Reject.ifNull(to, "Target is null");
+        
+        try (InputStream is = from; OutputStream os = to) {
+            int BUFFER_SIZE = 8192;
+            byte[] BUFFER = new byte[BUFFER_SIZE];
+
+            int ret = is.read(BUFFER);
+
+            while (ret != -1) {
+                os.write(BUFFER, 0, ret);
+                ret = is.read(BUFFER);
+            }
+        } catch (IOException ioe) {
+            throw ioe;
+        }
+    }
+
     /**
      * A recursive delete of a directory.
      * 
