@@ -254,6 +254,10 @@ public enum ConfigurationEntry {
      */
     SERVER_CONNECTION_URLS("server.connection.urls"),
 
+    SERVER_LOAD_IDP_LIST("server.idp.url_list"),
+
+    SERVER_IDP_LAST_CONNECTED("server.idp.last_connected"),
+
     // Server WEB settings ****************************************************
 
     /**

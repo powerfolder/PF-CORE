@@ -23,9 +23,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -34,8 +40,12 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 import jwf.WizardPanel;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.AbstractConverter;
@@ -70,6 +80,10 @@ public class LoginPanel extends PFWizardPanel {
 
     private JComboBox<String> serverURLBox;
     private JLabel serverURLLabel;
+    private JComboBox<String> idPSelectBox;
+    private List<String> idPList;
+    private boolean listLoaded;
+    private JLabel idPLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
@@ -118,7 +132,9 @@ public class LoginPanel extends PFWizardPanel {
 
     public boolean hasNext() {
         return client.isConnected()
-            && !StringUtils.isEmpty(usernameField.getText());
+            && !StringUtils.isEmpty(usernameField.getText())
+            && (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+                .getValue(getController())) ? listLoaded : true);
     }
 
     public WizardPanel next() {
@@ -154,6 +170,14 @@ public class LoginPanel extends PFWizardPanel {
         {
             builder.add(serverURLLabel, cc.xy(1, row));
             builder.add(serverURLBox, cc.xy(3, row));
+            row += 2;
+        }
+
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+            .getValue(getController())))
+        {
+            builder.add(idPLabel, cc.xy(1, row));
+            builder.add(idPSelectBox, cc.xy(3, row));
             row += 2;
         }
 
@@ -230,7 +254,7 @@ public class LoginPanel extends PFWizardPanel {
         {
             serverURLLabel = new JLabel(
                 Translation.getTranslation("general.server"));
-            
+
             String webURL = client.getWebURL();
             int selection = 0;
 
@@ -258,6 +282,71 @@ public class LoginPanel extends PFWizardPanel {
             serverURLBox.setSelectedIndex(selection);
             serverURLBox.setEditable(false);
             serverURLBox.addActionListener(new ServerSelectAction());
+        }
+
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+            .getValue(getController())))
+        {
+            idPLabel = new JLabel(Translation.getTranslation("general.idp"));
+            idPList = new ArrayList<>();
+            idPSelectBox = new JComboBox<>(new String[]{Translation.getTranslation("general.loading")});
+            idPSelectBox.setEnabled(false);
+
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>()
+            {
+                @Override
+                protected Void doInBackground() throws Exception
+                {
+                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(getController());
+
+                    URL url = new URL(
+                        ConfigurationEntry.SERVER_LOAD_IDP_LIST
+                            .getValue(getController()));
+                    HttpsURLConnection con = (HttpsURLConnection) url
+                        .openConnection();
+
+                    BufferedReader is = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()));
+                    String line = is.readLine();
+                    StringBuilder body = new StringBuilder();
+
+                    while (line != null) {
+                        body.append(line);
+                        line = is.readLine();
+                    }
+
+                    JSONArray resp = new JSONArray(body.toString());
+
+                    idPSelectBox.removeAllItems();
+                    idPSelectBox.addItem("Keine - Externer Benutzer");
+                    idPList.add("");
+
+                    for (int i = 0; i < resp.length(); i++) {
+                        JSONObject obj = resp.getJSONObject(i);
+
+                        String entity = obj.getString("entityID");
+                        String name = obj.getJSONArray("DisplayNames")
+                            .getJSONObject(0).getString("value");
+
+                        idPSelectBox.addItem(name);
+                        idPList.add(entity);
+
+                        if (entity.equals(lastIdP)) {
+                            idPSelectBox.setSelectedIndex(i);
+                        }
+                    }
+
+                    idPSelectBox.addActionListener(new IdPSelectionAction());
+                    idPSelectBox.setEnabled(true);
+                    listLoaded = true;
+
+                    updateButtons();
+
+                    return null;
+                }
+            };
+
+            worker.execute();
         }
 
         usernameLabel = new JLabel(LoginUtil.getUsernameLabel(getController()));
@@ -447,12 +536,26 @@ public class LoginPanel extends PFWizardPanel {
             }
 
             final String server = serversList.substring(begin, end);
-            getController().getIOProvider().startIO(new Runnable() {                
+            getController().getIOProvider().startIO(new Runnable() {
                 @Override
                 public void run() {
                     client.loadConfigURL(server);
                 }
             });
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private class IdPSelectionAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JComboBox<String> source = (JComboBox<String>) e.getSource();
+
+            int index = source.getSelectedIndex();
+            String entity = idPList.get(index);
+
+            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(getController(), entity);
+            getController().saveConfig();
         }
     }
 
