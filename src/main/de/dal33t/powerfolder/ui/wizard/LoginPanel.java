@@ -25,6 +25,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +70,7 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
@@ -463,14 +465,32 @@ public class LoginPanel extends PFWizardPanel {
                         Translation
                             .getTranslation("wizard.webservice.connect_failed"));
                 }
-                char[] pw = passwordField.getPassword();
-                boolean loginOk = client.login(usernameField.getText(), pw)
-                    .isValid();
-                LoginUtil.clear(pw);
-                if (!loginOk) {
-                    throw new SecurityException(
-                        Translation
-                            .getTranslation("online_storage.account_data"));
+                if (StringUtils
+                    .isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+                        .getValue(getController()))
+                    && StringUtils
+                        .isNotBlank(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
+                            .getValue(getController())))
+                {
+                    // TODO:
+                    ECPAuthenticator auth = new ECPAuthenticator(
+                        usernameField.getText(), new String(passwordField.getPassword()),
+                        new URI(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
+                            .getValue(getController())),
+                        new URI(ConfigurationEntry.SERVER_WEB_URL
+                            .getValue(getController()) + "/shibboleth"));
+                    auth.authenticate();
+
+                } else {
+                    char[] pw = passwordField.getPassword();
+                    boolean loginOk = client.login(usernameField.getText(), pw)
+                        .isValid();
+                    LoginUtil.clear(pw);
+                    if (!loginOk) {
+                        throw new SecurityException(
+                            Translation
+                                .getTranslation("online_storage.account_data"));
+                    }
                 }
             } catch (SecurityException e) {
                 LOG.log(Level.SEVERE, "Problem logging in: " + e.getMessage());
