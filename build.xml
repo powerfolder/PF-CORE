@@ -164,6 +164,7 @@ For creation of the installer:
             <include name="httpclient-4.2.1.jar" />
             <include name="httpcore-4.2.1.jar" />
             <include name="commons-logging-1.1.1.jar" />
+			<include name="json-20090306.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
