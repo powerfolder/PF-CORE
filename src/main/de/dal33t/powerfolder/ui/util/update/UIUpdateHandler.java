@@ -68,7 +68,10 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
 
             updateDialogOpen = true;
             try {
-                if (ConfigurationEntry.UPDATE_FORCE.getValueBoolean(getController())) {
+                if (OSUtil.isWindowsSystem()
+                    && ConfigurationEntry.UPDATE_FORCE
+                        .getValueBoolean(getController()))
+                {
                     UIUtil.invokeAndWaitInEDT(new Runnable() {
                         @Override
                         public void run() {
