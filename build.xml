@@ -123,6 +123,7 @@ For creation of the installer:
 		<property name="applet.dir" location="src/applet" />
 		<property name="test.src.dir" location="src/test" />
 		<property name="skins.src.dir" location="src/skins" />
+		<property name="shib.src.dir" location="src/shib" />
 
 		<!-- External Libraries -->
 		<fileset id="libs" dir="lib" casesensitive="yes">
@@ -158,6 +159,11 @@ For creation of the installer:
 			<include name="truezip-file-7.6.6.jar" />
 			<include name="truezip-kernel-7.6.6.jar" />
 			<include name="truezip-swing-7.6.6.jar" />
+
+			<!-- Shibboleth/ECP -->
+            <include name="httpclient-4.2.1.jar" />
+            <include name="httpcore-4.2.1.jar" />
+            <include name="commons-logging-1.1.1.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
@@ -201,6 +207,7 @@ For creation of the installer:
 			<src path="${jwf.src.dir}" />
 			<src path="${jnotify.src.dir}" />
 			<src path="${skins.src.dir}" />
+			<src path="${shib.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
@@ -396,9 +403,13 @@ For creation of the installer:
             </fileset>
             <fileset file="${powerfolder.project.dir}/lib-build/Uninstall.command" />
         </copy>
-
-        <symlink link="/Volumes/${dist.name}/Applications" resource="/Volumes/Applications" />
-
+<!--
+        <exec dir="/bin" executable="ln" osfamily="mac">
+            <arg value="-s" />
+            <arg value="/Applications" />
+            <arg value="/Volumes/${dist.name}/Applications" />
+        </exec>
+-->
         <exec dir="/bin" executable="chmod" osfamily="mac">
             <arg value="u+x" />
             <arg value="/Volumes/${dist.name}/${dist.name}.app/Contents/MacOS/JavaAppLauncher" />
