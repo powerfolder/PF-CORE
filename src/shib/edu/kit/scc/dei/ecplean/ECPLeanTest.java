@@ -2,13 +2,15 @@ package edu.kit.scc.dei.ecplean;
 
 import java.net.URI;
 
+import de.dal33t.powerfolder.util.StringUtils;
+
 public class ECPLeanTest {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String idp = "";
         String sp = "";
         String un = "";
-        String pw = ""; 
+        String pw = "";
 
         if (args.length < 4) {
             System.err.println("Please specify command line options");
@@ -37,9 +39,38 @@ public class ECPLeanTest {
         System.out.println();
         System.out.println();
 
-        ECPAuthenticator auth = new ECPAuthenticator(un, pw, new URI(idp),
-            new URI(sp));
-        String email = auth.authenticate();
+        String email;
+        String error;
+        try {
+            ECPAuthenticator auth = new ECPAuthenticator(un, pw, new URI(idp),
+                new URI(sp));
+            email = auth.authenticate();
+            error = null;
+        } catch (ECPUnauthorizedException e) {
+            email = null;
+            error = "Username or password wrong";
+        } catch (Exception e) {
+            e.printStackTrace();
+            email = null;
+            error = e.toString();
+        }
+
+        System.out.println();
         System.out.println("Email: " + email);
+        System.out.println();
+        
+        if (StringUtils.isNotBlank(email)) {
+            System.out.println("--------------------");
+            System.out.println();
+            System.out.println("RESULT: OK");
+            System.out.println();
+            System.out.println("--------------------");
+        } else {
+            System.err.println("--------------------");
+            System.err.println();
+            System.err.println("RESULT: FAIL (" + error + ")");
+            System.err.println();
+            System.err.println("--------------------");
+        }
     }
 }

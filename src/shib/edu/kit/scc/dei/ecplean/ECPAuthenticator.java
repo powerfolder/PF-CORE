@@ -1,18 +1,15 @@
 package edu.kit.scc.dei.ecplean;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -43,14 +40,18 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
     }
 
     public String authenticate() throws ECPAuthenticationException {
-        logger.info("Starting authentication");
+        if (isInfo()) {
+            LOG.info("Starting authentication. Contacting SP "
+                + authInfo.getSpUrl());
+        }
 
-        logger.info("Contacting SP " + authInfo.getSpUrl());
         authInfo.setAuthState(ECPAuthState.INITIAL_PAOS_SP);
         setChanged();
         notifyObservers(authInfo);
 
-        logger.info("Sending initial SP Request");
+        if (isFine()) {
+            LOG.fine("Sending initial SP Request");
+        }
 
         HttpGet httpGet = new HttpGet(authInfo.getSpUrl().toString());
         httpGet.setHeader("Accept", "text/html; application/vnd.paos+xml");
@@ -63,28 +64,16 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         try {
             httpResponse = client.execute(httpGet);
             responseBody = EntityUtils.toString(httpResponse.getEntity());
-        } catch (ClientProtocolException e) {
-            logger.debug("Initial SP Request failed");
-            throw new ECPAuthenticationException(e);
-        } catch (ParseException e) {
-            logger.debug("Initial SP Request failed");
-            throw new ECPAuthenticationException(e);
-        } catch (IOException e) {
-            logger.debug("Initial SP Request failed");
+        } catch (IOException | ParseException e) {
+            LOG.warning("Initial SP Request failed. " + e);
             throw new ECPAuthenticationException(e);
         }
 
         Document initResponse;
         try {
             initResponse = buildDocumentFromString(responseBody);
-        } catch (IOException e) {
-            logger.debug("Parsing SP Request failed");
-            throw new ECPAuthenticationException(e);
-        } catch (ParserConfigurationException e) {
-            logger.debug("Parsing SP Request failed");
-            throw new ECPAuthenticationException(e);
-        } catch (SAXException e) {
-            logger.debug("Parsing SP Request failed");
+        } catch (IOException | SAXException | ParserConfigurationException e) {
+            LOG.warning("Parsing SP Request failed. " + e);
             throw new ECPAuthenticationException(e);
         }
 
@@ -93,21 +82,26 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
             relayState = (String) queryDocument(initResponse,
                 "//ecp:RelayState", XPathConstants.STRING);
         } catch (XPathException e) {
-            logger.debug("Could not find relay state in PAOS answer from SP");
+            LOG.warning("Could not find relay state in PAOS answer from SP. "
+                + e);
             throw new ECPAuthenticationException(e);
         }
-        logger.info("Got relayState: " + relayState);
+        if (isFine()) {
+            LOG.fine("Got relayState: " + relayState);
+        }
         String responseConsumerUrl;
         try {
             responseConsumerUrl = (String) queryDocument(initResponse,
                 "/S:Envelope/S:Header/paos:Request/@responseConsumerURL",
                 XPathConstants.STRING);
         } catch (XPathException e) {
-            logger
-                .debug("Could not find response consumer url in PAOS answer from SP");
+            LOG.warning("Could not find response consumer url in PAOS answer from SP. "
+                + e);
             throw new ECPAuthenticationException(e);
         }
-        logger.info("Got responseConsumerUrl: " + responseConsumerUrl);
+        if (isFine()) {
+            LOG.fine("Got responseConsumerUrl: " + responseConsumerUrl);
+        }
 
         Node firstChild = initResponse.getDocumentElement().getFirstChild();
         initResponse.getDocumentElement().removeChild(firstChild);
@@ -121,69 +115,59 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
                 "/S:Envelope/S:Header/ecp:Response/@AssertionConsumerServiceURL",
                 XPathConstants.STRING);
         } catch (XPathException e) {
-            logger
-                .debug("Could not find assertion consumer url in answer from IdP");
+            LOG.warning("Could not find assertion consumer url in answer from IdP. "
+                + e);
             throw new ECPAuthenticationException(e);
         }
-        logger.info("Got assertionConsumerUrl: " + assertionConsumerUrl);
+        if (isFine()) {
+            LOG.fine("Got assertionConsumerUrl: " + assertionConsumerUrl);
+        }
 
         if (!assertionConsumerUrl.equals(responseConsumerUrl)) {
-            try {
-                System.out.println(documentToString(idpResponse));
-            } catch (TransformerConfigurationException e) {
-                e.printStackTrace();
-            } catch (TransformerException e) {
-                e.printStackTrace();
-            }
             throw new ECPAuthenticationException(
                 "Assertion- and ResponseConsumerURL don't match. responseConsumeUrl="
                     + responseConsumerUrl + ", assertionConsumerUrl="
                     + assertionConsumerUrl);
         }
+        //
+        // try {
+        // System.out.println(documentToString(idpResponse));
+        // } catch (TransformerConfigurationException e) {
+        // e.printStackTrace();
+        // } catch (TransformerException e) {
+        // e.printStackTrace();
+        // }
 
-        try {
-            System.out.println(documentToString(idpResponse));
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
         idpResponse.getDocumentElement().getFirstChild().getFirstChild()
             .setTextContent(relayState);
 
-        logger.info("Sending Assertion to SP");
+        if (isFine()) {
+            LOG.fine("Sending Assertion to SP");
+        }
         HttpPost httpPost = new HttpPost(assertionConsumerUrl);
         httpPost.setHeader("Content-Type", "application/vnd.paos+xml");
         try {
             httpPost.setEntity(new StringEntity(documentToString(idpResponse)));
             httpResponse = client.execute(httpPost);
             responseBody = EntityUtils.toString(httpResponse.getEntity());
-        } catch (UnsupportedEncodingException e) {
-            logger.debug("Could not post assertion back to SP");
-            throw new ECPAuthenticationException(e);
-        } catch (TransformerConfigurationException e) {
-            logger.debug("Could not post assertion back to SP");
-            throw new ECPAuthenticationException(e);
-        } catch (ClientProtocolException e) {
-            logger.debug("Could not post assertion back to SP");
-            throw new ECPAuthenticationException(e);
-        } catch (ParseException e) {
-            logger.debug("Could not post assertion back to SP");
-            throw new ECPAuthenticationException(e);
-        } catch (TransformerException e) {
-            logger.debug("Could not post assertion back to SP");
-            throw new ECPAuthenticationException(e);
-        } catch (IOException e) {
-            logger.debug("Could not post assertion back to SP");
+        } catch (IOException | TransformerException | ParseException e) {
+            LOG.warning("Could not post assertion back to SP. " + e);
             throw new ECPAuthenticationException(e);
         }
 
-        logger.info("Requesting original URL");
+        if (isInfo()) {
+            LOG.info("Requesting original URL: " + authInfo.getSpUrl());
+        }
         httpGet = new HttpGet(authInfo.getSpUrl().toString());
         try {
             httpResponse = client.execute(httpGet);
             responseBody = EntityUtils.toString(httpResponse.getEntity());
-            logger.info(responseBody);
+
+            if (isFine()) {
+                LOG.fine("Got the following response from SP URL: "
+                    + authInfo.getSpUrl() + ":\n" + responseBody);
+
+            }
 
             JSONObject jsonObj = new JSONObject(responseBody);
             String sessionID = jsonObj.getString("sessionID");
@@ -191,27 +175,20 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
             String eppn = jsonObj.getString("eppn");
             String email = jsonObj.getString("email");
 
-            logger.info("Shibboleth-Session-ID: " + sessionID);
-            logger.info("Shibboleth-Persistent-ID: " + persistentID);
-            logger.info("Shibboleth-EPPN: " + eppn);
-            logger.info("Shibboleth-Email: " + email);
+            if (isInfo()) {
+                LOG.info("Shibboleth-Session-ID: " + sessionID);
+                LOG.info("Shibboleth-Persistent-ID: " + persistentID);
+                LOG.info("Shibboleth-EPPN: " + eppn);
+                LOG.info("Shibboleth-Email: " + email);
+            }
 
             // TODO: Return PowerFolder security TOKEN.
 
             return email;
-        } catch (ClientProtocolException e) {
-            logger.debug("Could not request original URL");
+        } catch (IOException | ParseException | JSONException e) {
+            LOG.warning("Could not request original URL: "
+                + authInfo.getSpUrl() + " . " + e);
             throw new ECPAuthenticationException(e);
-        } catch (ParseException e) {
-            logger.debug("Could not request original URL");
-            throw new ECPAuthenticationException(e);
-        } catch (IOException e) {
-            logger.debug("Could not request original URL");
-            throw new ECPAuthenticationException(e);
-        } catch (JSONException e) {
-            throw new ECPAuthenticationException(
-                "Unable to parse SP json response. " + e);
         }
-
     }
 }
