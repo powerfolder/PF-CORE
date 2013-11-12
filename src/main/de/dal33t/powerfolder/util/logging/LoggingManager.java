@@ -118,7 +118,8 @@ public class LoggingManager {
                 return true;
             }
             return loggerName.startsWith("de.dal33t")
-                || loggerName.startsWith("net.sf.webdav");
+                || loggerName.startsWith("net.sf.webdav")
+                || loggerName.startsWith("edu.kit");
         }
     };
 
