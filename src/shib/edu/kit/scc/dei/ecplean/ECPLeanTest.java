@@ -5,15 +5,11 @@ import java.net.URI;
 public class ECPLeanTest {
 
     public static void main(String[] args) throws Exception {
-        String idp = "https://idptest.scc.kit.edu/idp/profile/SAML2/SOAP/ECP";
-        String sp = "https://bwlsdf.scc.kit.edu/auth/powerfolder";
-        String un = "shib-pf0001@kit.edu";
-        String pw = ""; // fowerpolder55146
+        String idp = "";
+        String sp = "";
+        String un = "";
+        String pw = ""; 
 
-        // Zum Testen habe ich wie besprochen von den Kollegen in Freiburg einen
-        // IdP-Testaccount bekommen:
-        // User: "idmtest1" Pass:"ni2vDBbG"
-        sp = "https://tis-sp-01.tis.scc.kit.edu/powerfolder/";
         if (args.length < 4) {
             System.err.println("Please specify command line options");
             return;
@@ -42,9 +38,7 @@ public class ECPLeanTest {
         System.out.println();
 
         ECPAuthenticator auth = new ECPAuthenticator(un, pw, new URI(idp),
-        // https://bwidm-idp.uni-konstanz.de/idp/profile/SAML2/SOAP/ECP
             new URI(sp));
-        // https://tis-sp-01.tis.scc.kit.edu/powerfolder/
         String email = auth.authenticate();
         System.out.println("Email: " + email);
     }
