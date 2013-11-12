@@ -227,8 +227,10 @@ public class MainFrame extends PFUIComponent {
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper
             .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
+        if ((!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            || getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE)) && setupLabel != null)
         {
             builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         } else {
@@ -411,8 +413,12 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setBackground(Color.white);
 
         BaseAction mySetupAction = new MySetupAction(getController());
-        mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
-        
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()))
+        {
+            mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
+        }
+
         MyOpenFoldersBaseAction myOpenFoldersBaseAction =
                 new MyOpenFoldersBaseAction(getController());
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
@@ -456,8 +462,10 @@ public class MainFrame extends PFUIComponent {
             lowerMainTextActionLabel.setNeverUnderline(true);
         }
 
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
+        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            || getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE))
         {
             setupLabel = new ActionLabel(getController(), mySetupAction);
         }
@@ -635,16 +643,19 @@ public class MainFrame extends PFUIComponent {
 
         FolderRepositoryModel folderRepositoryModel = getUIController()
                 .getApplicationModel().getFolderRepositoryModel();
+        boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
+            || event.equals(SyncStatusEvent.NO_FOLDERS);
+        boolean showSetupLabel = (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()) || getController().getOSClient()
+            .getAccount().hasPermission(FolderCreatePermission.INSTANCE))
+            && setupLabel != null;
 
         // Set visibility of buttons and labels.
         pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE)
-            && setupLabel != null)
-        {
-            setupLabel.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
+        if (showSetupLabel) {
+            setupLabel.setVisible(notStartedOrNoFolders);
         }
-        setupButton.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
+        setupButton.setVisible(notStartedOrNoFolders);
         allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
         syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
         syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
@@ -699,21 +710,13 @@ public class MainFrame extends PFUIComponent {
         }
 
         upperMainTextActionLabel.setText(upperText);
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE)
-            && setupLabel != null)
-        {
+        if (showSetupLabel) {
             setupLabel.setText(setupText);
         }
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
-        boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
-            || event.equals(SyncStatusEvent.NO_FOLDERS);
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE)
-            && setupLabel != null)
-        {
+        if (showSetupLabel) {
             setupLabel.setVisible(notStartedOrNoFolders);
         }
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
