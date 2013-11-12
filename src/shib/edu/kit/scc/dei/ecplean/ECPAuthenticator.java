@@ -18,6 +18,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -182,23 +184,20 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
             httpResponse = client.execute(httpGet);
             responseBody = EntityUtils.toString(httpResponse.getEntity());
             logger.info(responseBody);
-            int i = responseBody.indexOf("urn:oid:0.9.2342.19200300.100.1.3");
-            if (i < 0) {
-                return null;
-            }
-            int x = responseBody.indexOf(':', i + 10);
-            if (x < 0) {
-                return null;
-            }
-            int e = responseBody.indexOf('\n', x);
-            if (e < 0) {
-                e = responseBody.indexOf("urn:", x);
-                if (e < 0) {
-                    e = responseBody.length();
-                }
-            }
-            String email = responseBody.substring(x + 1, e).trim()
-                .toLowerCase();
+
+            JSONObject jsonObj = new JSONObject(responseBody);
+            String sessionID = jsonObj.getString("sessionID");
+            String persistentID = jsonObj.getString("persistentID");
+            String eppn = jsonObj.getString("eppn");
+            String email = jsonObj.getString("email");
+
+            logger.info("Shibboleth-Session-ID: " + sessionID);
+            logger.info("Shibboleth-Persistent-ID: " + persistentID);
+            logger.info("Shibboleth-EPPN: " + eppn);
+            logger.info("Shibboleth-Email: " + email);
+
+            // TODO: Return PowerFolder security TOKEN.
+
             return email;
         } catch (ClientProtocolException e) {
             logger.debug("Could not request original URL");
@@ -209,6 +208,9 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         } catch (IOException e) {
             logger.debug("Could not request original URL");
             throw new ECPAuthenticationException(e);
+        } catch (JSONException e) {
+            throw new ECPAuthenticationException(
+                "Unable to parse SP json response. " + e);
         }
 
     }
