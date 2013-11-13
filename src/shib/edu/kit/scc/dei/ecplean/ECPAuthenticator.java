@@ -166,7 +166,6 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
             if (isFine()) {
                 LOG.fine("Got the following response from SP URL: "
                     + authInfo.getSpUrl() + ":\n" + responseBody);
-
             }
 
             JSONObject jsonObj = new JSONObject(responseBody);

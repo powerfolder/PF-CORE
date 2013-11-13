@@ -56,6 +56,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -70,6 +71,7 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 
 @SuppressWarnings("serial")
@@ -473,12 +475,16 @@ public class LoginPanel extends PFWizardPanel {
                             .getValue(getController())))
                 {
                     // TODO:
+                    String spURL = client.getWebURL(
+                        Constants.LOGIN_SHIBBOLETH_CLIENT_URI
+                            + '/'
+                            + Util.endcodeForURL(getController().getMySelf()
+                                .getId()), false);
                     ECPAuthenticator auth = new ECPAuthenticator(
-                        usernameField.getText(), new String(passwordField.getPassword()),
-                        new URI(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
-                            .getValue(getController())),
-                        new URI(ConfigurationEntry.SERVER_WEB_URL
-                            .getValue(getController()) + "/shibboleth"));
+                        usernameField.getText(), new String(
+                            passwordField.getPassword()), new URI(
+                            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
+                                .getValue(getController())), new URI(spURL));
                     auth.authenticate();
 
                 } else {
