@@ -31,13 +31,15 @@ public class AccountFilterModel extends Model {
     public static final String PROPERTY_PAYING_OS_ONLY = "payingOSOnly";
     public static final String PROPERTY_ACTIVE_TRIAL = "activeTrial";
     public static final String PROPERTY_USERNAME = "username";
-
+    
     private boolean disabledOnly;
     private boolean proUsersOnly;
     private boolean activeTrial;
     private String username;
     private String organizationOID = Organization.FILTER_MATCH_ALL;
-
+    private String sortingProperty;
+    private String sortingOrder;
+    
     private int maxResults;
 
     // Getter and Setter ******************************************************
@@ -100,6 +102,22 @@ public class AccountFilterModel extends Model {
     
     public boolean isAnyOrganization() {
         return Organization.FILTER_MATCH_ALL.equals(organizationOID);
+    }
+    
+    public String getSortingProperty() {
+        return sortingProperty;
+    }
+    
+    public void setSortingProperty(String sortingProperty) {
+        this.sortingProperty = sortingProperty;
+    }
+    
+    public String getSortingOrder() {
+        return sortingOrder;
+    }
+    
+    public void setSortingOrder(String sortingOrder) {
+        this.sortingOrder = sortingOrder;
     }
 
     // Logic ******************************************************************
