@@ -64,6 +64,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
+import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -84,10 +85,10 @@ public class LoginPanel extends PFWizardPanel {
 
     private JComboBox<String> serverURLBox;
     private JLabel serverURLLabel;
+    private JLabel idPLabel;
     private JComboBox<String> idPSelectBox;
     private List<String> idPList;
     private boolean listLoaded;
-    private JLabel idPLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
@@ -154,7 +155,9 @@ public class LoginPanel extends PFWizardPanel {
         String layoutRows;
 
         if (StringUtils.isBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
-            .getValue(getController())))
+            .getValue(getController()))
+            || StringUtils.isBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+                .getValue(getController())))
         {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
         } else {
@@ -336,11 +339,12 @@ public class LoginPanel extends PFWizardPanel {
                         idPList.add(entity);
 
                         if (entity.equals(lastIdP)) {
-                            idPSelectBox.setSelectedIndex(i);
+                            idPSelectBox.setSelectedIndex(i + 1);
                         }
                     }
 
-                    idPSelectBox.addActionListener(new IdPSelectionAction());
+                    idPSelectBox.addActionListener(new IdPSelectionAction(
+                        getController(), idPList));
                     idPSelectBox.setEnabled(true);
                     listLoaded = true;
 
@@ -483,7 +487,7 @@ public class LoginPanel extends PFWizardPanel {
                     ECPAuthenticator auth = new ECPAuthenticator(
                         usernameField.getText(), new String(
                             passwordField.getPassword()), new URI(
-                            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
+                            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
                                 .getValue(getController())), new URI(spURL));
                     auth.authenticate();
 
@@ -568,20 +572,6 @@ public class LoginPanel extends PFWizardPanel {
                     client.loadConfigURL(server);
                 }
             });
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private class IdPSelectionAction implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JComboBox<String> source = (JComboBox<String>) e.getSource();
-
-            int index = source.getSelectedIndex();
-            String entity = idPList.get(index);
-
-            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(getController(), entity);
-            getController().saveConfig();
         }
     }
 

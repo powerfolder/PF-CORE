@@ -161,6 +161,9 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         httpGet = new HttpGet(authInfo.getSpUrl().toString());
         try {
             httpResponse = client.execute(httpGet);
+            if (httpResponse.getStatusLine().getStatusCode() != 200) {
+                throw new ECPUnauthorizedException(httpResponse.getStatusLine().getStatusCode() + " - " + httpResponse.getStatusLine().getReasonPhrase());
+            }
             responseBody = EntityUtils.toString(httpResponse.getEntity());
 
             if (isFine()) {

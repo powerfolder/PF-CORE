@@ -48,7 +48,7 @@ public class ECPLeanTest {
             error = null;
         } catch (ECPUnauthorizedException e) {
             email = null;
-            error = "Username or password wrong";
+            error = "Username or password wrong -- " + e.getMessage();
         } catch (Exception e) {
             e.printStackTrace();
             email = null;

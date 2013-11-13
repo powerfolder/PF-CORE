@@ -254,9 +254,20 @@ public enum ConfigurationEntry {
      */
     SERVER_CONNECTION_URLS("server.connection.urls"),
 
+    /**
+     * Specify a URL to get a list of Shibboleth Identity Provider.
+     */
     SERVER_LOAD_IDP_LIST("server.idp.url_list"),
 
+    /**
+     * The last Identity Provider URL that was selected.
+     */
     SERVER_IDP_LAST_CONNECTED("server.idp.last_connected"),
+
+    /**
+     * The corresponding ECP binding for the last connected Identity Provider.
+     */
+    SERVER_IDP_LAST_CONNECTED_ECP("server.idp.last_connected.ecp"),
 
     // Server WEB settings ****************************************************
 
