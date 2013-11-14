@@ -21,6 +21,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import de.dal33t.powerfolder.util.StringUtils;
+
 public class ECPAuthenticator extends ECPAuthenticatorBase {
 
     public ECPAuthenticator(DefaultHttpClient client, String username,
@@ -39,7 +41,12 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         this(new DefaultHttpClient(), username, password, idpEcpEndpoint, spUrl);
     }
 
-    public String authenticate() throws ECPAuthenticationException {
+    /**
+     * @return an array containing: username and temporary security token to
+     *         authenticate a client.
+     * @throws ECPAuthenticationException
+     */
+    public String[] authenticate() throws ECPAuthenticationException {
         if (isInfo()) {
             LOG.info("Starting authentication. Contacting SP "
                 + authInfo.getSpUrl());
@@ -179,21 +186,32 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
             }
 
             JSONObject jsonObj = new JSONObject(responseBody);
-            String sessionID = jsonObj.getString("sessionID");
-            String persistentID = jsonObj.getString("persistentID");
-            String eppn = jsonObj.getString("eppn");
-            String email = jsonObj.getString("email");
+            if (!jsonObj.has("shibboleth")) {
+                throw new ECPAuthenticationException(
+                    "Shibboleth login data not found in JSON response");
+            }
+            JSONObject shibObj = jsonObj.getJSONObject("shibboleth");
+            String sessionID = shibObj.getString("sessionID");
+            String persistentID = shibObj.getString("persistentID");
+            String eppn = shibObj.getString("eppn");
+            String email = shibObj.getString("email");
+            String username = shibObj.getString("username");
+            String token = shibObj.getString("token");
 
             if (isInfo()) {
                 LOG.info("Shibboleth-Session-ID: " + sessionID);
                 LOG.info("Shibboleth-Persistent-ID: " + persistentID);
                 LOG.info("Shibboleth-EPPN: " + eppn);
                 LOG.info("Shibboleth-Email: " + email);
+                LOG.info("Shibboleth-Token: " + token);
             }
 
-            // TODO: Return PowerFolder security TOKEN.
+            if (StringUtils.isBlank(sessionID)) {
+                throw new ECPUnauthorizedException(
+                    "Invalid Shibboleth session ID");
+            }
 
-            return email;
+            return new String[]{username, token};
         } catch (IOException | ParseException | JSONException e) {
             LOG.warning("Could not request original URL: "
                 + authInfo.getSpUrl() + " . " + e);

@@ -489,8 +489,17 @@ public class LoginPanel extends PFWizardPanel {
                             passwordField.getPassword()), new URI(
                             ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
                                 .getValue(getController())), new URI(spURL));
-                    auth.authenticate();
+                    String[] result = auth.authenticate();
+                    String username = result[0];
+                    String token = result[1];
 
+                    boolean loginOk = client.login(username,
+                        Util.toCharArray(token)).isValid();
+                    if (!loginOk) {
+                        throw new SecurityException(
+                            Translation
+                                .getTranslation("online_storage.account_data"));
+                    }
                 } else {
                     char[] pw = passwordField.getPassword();
                     boolean loginOk = client.login(usernameField.getText(), pw)

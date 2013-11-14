@@ -39,27 +39,33 @@ public class ECPLeanTest {
         System.out.println();
         System.out.println();
 
-        String email;
+        String username;
+        String token;
         String error;
         try {
             ECPAuthenticator auth = new ECPAuthenticator(un, pw, new URI(idp),
                 new URI(sp));
-            email = auth.authenticate();
+            String[] result = auth.authenticate();
+            username = result[0];
+            token = result[1];
             error = null;
         } catch (ECPUnauthorizedException e) {
-            email = null;
+            username = null;
+            token = null;
             error = "Username or password wrong -- " + e.getMessage();
         } catch (Exception e) {
             e.printStackTrace();
-            email = null;
+            username = null;
+            token = null;
             error = e.toString();
         }
 
         System.out.println();
-        System.out.println("Email: " + email);
+        System.out.println("Username: " + username);
+        System.out.println("Token: " + token);
         System.out.println();
-        
-        if (StringUtils.isNotBlank(email)) {
+
+        if (StringUtils.isNotBlank(username)) {
             System.out.println("--------------------");
             System.out.println();
             System.out.println("RESULT: OK");
