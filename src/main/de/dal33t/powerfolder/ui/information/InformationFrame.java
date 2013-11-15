@@ -104,6 +104,10 @@ public class InformationFrame extends PFUIComponent {
         displayCard(folderInformationCard);
         showingFolder = true;
         currentFolderInfo = folderInfo;
+        
+        if (isFine()) {
+            logFine("displayedFolderFiles: " + folderInfo);
+        }
     }
 
     public void displayFolderFilesDeleted(FolderInfo folderInfo) {
