@@ -46,6 +46,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.util.TextLinesPanelBuilder;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -224,10 +225,16 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     private String readLicense() {
-    Object licKey = getController().getUIController().getApplicationModel().getLicenseModel()
-        .getLicenseKeyModel().getValue();
-    return licKey != null ? Translation.getTranslation(
-            "preferences.information.power_folder_license", licKey.toString()) : "";
+        Account a = getController().getOSClient().getAccount();
+        if (a.getAutoRenewDevices() > 0 && a.getAutoRenewTill() != null) {
+            Object licKey = getController().getUIController()
+                .getApplicationModel().getLicenseModel().getLicenseKeyModel()
+                .getValue();
+            return licKey != null ? Translation.getTranslation(
+                "preferences.information.power_folder_license",
+                licKey.toString()) : "";
+        }
+        return "";
     }
 
     private JPanel createPowerFolderBox() {
