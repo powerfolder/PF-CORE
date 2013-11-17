@@ -488,7 +488,9 @@ public class Account implements Serializable {
             || StringUtils.isNotBlank(surname))
         {
             return (firstname + " " + surname).trim();
-        } else if (authByShibboleth() && !emails.isEmpty()) {
+        } else if (StringUtils.isNotBlank(username) && authByShibboleth()
+            && !emails.isEmpty())
+        {
             return emails.get(0);
         } else if (!emails.isEmpty() && StringUtils.isNotBlank(emails.get(0))) {
             return emails.get(0);
@@ -640,7 +642,7 @@ public class Account implements Serializable {
     }
 
     public boolean authByShibboleth() {
-        // Remove last past after release of 9 SP1:
+        // Remove last part after release of 9 SP1:
         // username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
         return StringUtils.isNotBlank(shibbolethPersistentID)
             || username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);

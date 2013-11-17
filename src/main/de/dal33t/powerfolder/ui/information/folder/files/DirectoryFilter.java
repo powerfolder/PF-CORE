@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -378,7 +379,6 @@ public class DirectoryFilter extends FilterModel {
         FilteredDirectoryModel filteredDirectoryModel,
         String[] keywords, DirectoryFilterResult result)
     {
-
         boolean target = currentDirectoryInfo.getRelativeName().equals(
             directoryInfo.getRelativeName());
         FileInfoCriteria criteria = new FileInfoCriteria();
@@ -389,14 +389,20 @@ public class DirectoryFilter extends FilterModel {
             if (fileInfo instanceof DirectoryInfo) {
 
                 // Hidden directory?
-                try {
-                    if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
-                            Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
-                        return;
+                if (!fileInfo.isDeleted()) {
+                    try {
+                        Path diskDir = fileInfo.getDiskFile(getController()
+                            .getFolderRepository());
+                        if (!PreferencesEntry.SHOW_HIDDEN_FILES
+                            .getValueBoolean(getController())
+                            && Files.isHidden(diskDir))
+                        {
+                            return;
+                        }
+                    } catch (IOException ioe) {
+                        logInfo(ioe);
+                        continue;
                     }
-                } catch (IOException ioe) {
-                    logInfo(ioe.getMessage());
-                    return;
                 }
 
                 DirectoryInfo di = (DirectoryInfo) fileInfo;
@@ -420,16 +426,18 @@ public class DirectoryFilter extends FilterModel {
         result.getOriginalCount().incrementAndGet();
 
         int searchMode = (Integer) searchModeVM.getValue();
-
+        boolean isDeleted = fileInfo.isDeleted();
+        
         // Hidden file?
-        try {
-            if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
-                    Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
-                return;
+        if (!isDeleted) {
+            try {
+                if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
+                        Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
+                    return;
+                }
+            } catch (IOException ioe) {
+                logInfo(ioe.toString());
             }
-        } catch (IOException ioe) {
-            logInfo(ioe.getMessage());
-            return;
         }
 
         // Text filter
@@ -439,7 +447,7 @@ public class DirectoryFilter extends FilterModel {
             showFile = matches(fileInfo, keywords, searchMode);
         }
 
-        boolean isDeleted = fileInfo.isDeleted();
+        
         FileInfo newestVersion = null;
         if (fileInfo.getFolder(getController().getFolderRepository()) != null) {
             newestVersion = fileInfo.getNewestNotDeletedVersion(getController()
