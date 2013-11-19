@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -74,6 +76,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
+import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 
 /**
  * Client to a server.
@@ -787,6 +791,42 @@ public class ServerClient extends PFComponent {
         saveLastKnowLogin();
         setAnonAccount();
         fireLogin(accountDetails);
+    }
+
+    /**
+     * Log in as user 'theUsername' with password 'thePassword' to be authenticated by
+     * 'ecpSoapEndpoint'.
+     * 
+     * @param theUsername
+     * @param thePassword
+     * @param ecpSoapEndpoint
+     * @return the identity with this username or <code>InvalidAccount</code> if
+     *         login failed. NEVER returns <code>null</code>
+     * @throws URISyntaxException 
+     * @throws ECPAuthenticationException 
+     */
+    public Account loginShibboleth(String theUsername, char[] thePassword,
+        URI ecpSoapEndpoint) throws URISyntaxException, ECPAuthenticationException
+    {
+        String spURL = getWebURL(Constants.LOGIN_SHIBBOLETH_CLIENT_URI + '/'
+            + Util.endcodeForURL(getController().getMySelf().getId()), false);
+
+        URI spURI = new URI(spURL);
+        ECPAuthenticator auth = new ECPAuthenticator(theUsername, new String(
+            thePassword), ecpSoapEndpoint, spURI);
+
+        String[] result = auth.authenticate();
+        String username = result[0];
+        String token = result[1];
+
+        Account acc = login(username, Util.toCharArray(token));
+
+        ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(getController(),
+            theUsername);
+        ConfigurationEntry.SERVER_CONNECT_PASSWORD.removeValue(getController());
+        getController().saveConfig();
+
+        return acc;
     }
 
     /**

@@ -54,7 +54,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -70,8 +69,6 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
@@ -474,6 +471,10 @@ public class LoginPanel extends PFWizardPanel {
                         Translation
                             .getTranslation("wizard.webservice.connect_failed"));
                 }
+                
+                char[] pw = passwordField.getPassword();
+                boolean loginOk = false;
+                
                 if (StringUtils
                     .isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
                         .getValue(getController()))
@@ -481,44 +482,21 @@ public class LoginPanel extends PFWizardPanel {
                         .isNotBlank(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
                             .getValue(getController())))
                 {
-                    // TODO:
-                    String spURL = client.getWebURL(
-                        Constants.LOGIN_SHIBBOLETH_CLIENT_URI
-                            + '/'
-                            + Util.endcodeForURL(getController().getMySelf()
-                                .getId()), false);
-                    ECPAuthenticator auth = new ECPAuthenticator(
-                        usernameField.getText(), new String(
-                            passwordField.getPassword()), new URI(
-                            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                                .getValue(getController())), new URI(spURL));
-                    String[] result = auth.authenticate();
-                    String username = result[0];
-                    String token = result[1];
-
-                    boolean loginOk = client.login(username,
-                        Util.toCharArray(token)).isValid();
-                    if (!loginOk) {
-                        throw new SecurityException(
-                            Translation
-                                .getTranslation("online_storage.account_data"));
-                    }
-
-                    ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
-                        getController(), usernameField.getText());
-                    ConfigurationEntry.SERVER_CONNECT_PASSWORD.removeValue(
-                        getController());
-                    getController().saveConfig();
+                    URI ecpSoapEndpoint = new URI(
+                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                            .getValue(getController()));
+                    loginOk = client.loginShibboleth(usernameField.getText(),
+                        pw, ecpSoapEndpoint).isValid();
                 } else {
-                    char[] pw = passwordField.getPassword();
-                    boolean loginOk = client.login(usernameField.getText(), pw)
+                    loginOk = client.login(usernameField.getText(), pw)
                         .isValid();
-                    LoginUtil.clear(pw);
-                    if (!loginOk) {
-                        throw new SecurityException(
-                            Translation
-                                .getTranslation("online_storage.account_data"));
-                    }
+                }
+
+                LoginUtil.clear(pw);
+                if (!loginOk) {
+                    throw new SecurityException(
+                        Translation
+                        .getTranslation("online_storage.account_data"));
                 }
             } catch (SecurityException e) {
                 LOG.log(Level.SEVERE, "Problem logging in: " + e.getMessage());
