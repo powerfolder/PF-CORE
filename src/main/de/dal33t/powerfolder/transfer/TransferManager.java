@@ -2567,7 +2567,8 @@ public class TransferManager extends PFComponent {
 
             logFine("Loaded " + storedDownloads.size() + " downloads");
         } catch (IOException e) {
-            logSevere("Unable to load pending downloads", e);
+            // PFC-2416
+            logWarning("Unable to load pending downloads", e);
             try {
                 Files.delete(transferFile);
             } catch (IOException ioe) {

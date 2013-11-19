@@ -168,7 +168,8 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {
-                logSevere("IOException", e);
+                // PFC-2416
+                logWarning("IOException", e);
             }
         }
     }
