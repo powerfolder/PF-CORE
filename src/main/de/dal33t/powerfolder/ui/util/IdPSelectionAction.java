@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JComboBox;
+import javax.swing.SwingWorker;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -28,42 +29,60 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        JComboBox<String> source = (JComboBox<String>) e.getSource();
+    public void actionPerformed(final ActionEvent e) {
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                JComboBox<String> source = (JComboBox<String>) e.getSource();
 
-        int index = source.getSelectedIndex();
-        String entity = idPList.get(index);
+                int index = source.getSelectedIndex();
+                String entity = idPList.get(index);
 
-        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(getController(),
-            entity);
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(
+                    getController(), entity);
 
-        HttpGet getECPBinding = new HttpGet(entity);
-        DefaultHttpClient client = new DefaultHttpClient();
-        HttpResponse httpResponse;
-        try {
-            httpResponse = client.execute(getECPBinding);
-            String responseBody = EntityUtils
-                .toString(httpResponse.getEntity());
+                HttpGet getECPBinding = new HttpGet(entity);
+                DefaultHttpClient client = new DefaultHttpClient();
+                HttpResponse httpResponse;
+                try {
+                    httpResponse = client.execute(getECPBinding);
+                    String responseBody = EntityUtils.toString(httpResponse
+                        .getEntity());
 
-            int singleSOSBegin = responseBody.indexOf("SingleSignOnService");
-            int soapBegin = responseBody.indexOf(
-                "urn:oasis:names:tc:SAML:2.0:bindings:SOAP", singleSOSBegin);
-            int locationBegin = responseBody.indexOf("Location", soapBegin);
-            int locationURLBegin = responseBody.indexOf("\"", locationBegin);
-            int locationURLEnd = responseBody.indexOf("\"",
-                locationURLBegin + 1);
+                    // Find the section with SingleSignOnService Bindings
+                    int singleSOSBegin = responseBody
+                        .indexOf("SingleSignOnService");
+                    // Find the one, that contains the ECP/SOAP Binding
+                    // information
+                    int soapBegin = responseBody.indexOf(
+                        "urn:oasis:names:tc:SAML:2.0:bindings:SOAP",
+                        singleSOSBegin);
+                    // Get the position of the Location attibute
+                    int locationBegin = responseBody.indexOf("Location",
+                        soapBegin);
+                    // Get start and end index of the URL
+                    int locationURLBegin = responseBody.indexOf("\"",
+                        locationBegin);
+                    int locationURLEnd = responseBody.indexOf("\"",
+                        locationURLBegin + 1);
 
-            String locationURL = responseBody.substring(locationURLBegin + 1,
-                locationURLEnd);
+                    String locationURL = responseBody.substring(
+                        locationURLBegin + 1, locationURLEnd);
 
-            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(
-                getController(), locationURL);
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(
+                        getController(), locationURL);
 
-        } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+                } catch (IOException e1) {
+                    logSevere("Could not receive List of Identity Provider. "
+                        + e1);
+                }
 
-        getController().saveConfig();
+                getController().saveConfig();
+
+                return null;
+            }
+        };
+
+        worker.execute();
     }
 }

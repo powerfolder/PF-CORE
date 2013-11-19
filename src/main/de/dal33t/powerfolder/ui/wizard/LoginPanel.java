@@ -49,8 +49,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.AbstractConverter;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -87,7 +85,6 @@ public class LoginPanel extends PFWizardPanel {
     private JLabel serverURLLabel;
     private JLabel idPLabel;
     private JComboBox<String> idPSelectBox;
-    private List<String> idPList;
     private boolean listLoaded;
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -295,7 +292,6 @@ public class LoginPanel extends PFWizardPanel {
             .getValue(getController())))
         {
             idPLabel = new JLabel(Translation.getTranslation("general.idp"));
-            idPList = new ArrayList<>();
             idPSelectBox = new JComboBox<>(new String[]{Translation.getTranslation("general.loading")});
             idPSelectBox.setEnabled(false);
 
@@ -323,6 +319,7 @@ public class LoginPanel extends PFWizardPanel {
                     }
 
                     JSONArray resp = new JSONArray(body.toString());
+                    List<String> idPList = new ArrayList<>();
 
                     idPSelectBox.removeAllItems();
                     idPSelectBox.addItem("Keine - Externer Benutzer");
@@ -366,7 +363,13 @@ public class LoginPanel extends PFWizardPanel {
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
 
-        if (client.isConnected()) {
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+            .getValue(getController())))
+        {
+            usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME
+                .getValue(getController()));
+            passwordField.setText("");
+        } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
             passwordField.setText(client.getPasswordClearText());
         }
@@ -500,6 +503,12 @@ public class LoginPanel extends PFWizardPanel {
                             Translation
                                 .getTranslation("online_storage.account_data"));
                     }
+
+                    ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
+                        getController(), usernameField.getText());
+                    ConfigurationEntry.SERVER_CONNECT_PASSWORD.removeValue(
+                        getController());
+                    getController().saveConfig();
                 } else {
                     char[] pw = passwordField.getPassword();
                     boolean loginOk = client.login(usernameField.getText(), pw)
@@ -581,21 +590,6 @@ public class LoginPanel extends PFWizardPanel {
                     client.loadConfigURL(server);
                 }
             });
-        }
-    }
-
-    private static class BooleanNotConverter extends AbstractConverter {
-        private BooleanNotConverter(ValueModel subject) {
-            super(subject);
-        }
-
-        @Override
-        public Object convertFromSubject(Object b) {
-            return !(Boolean) b;
-        }
-
-        public void setValue(Object b) {
-            subject.setValue(!(Boolean) b);
         }
     }
 }
