@@ -132,7 +132,7 @@ public class LoginPanel extends PFWizardPanel {
     public boolean hasNext() {
         return client.isConnected()
             && !StringUtils.isEmpty(usernameField.getText())
-            && (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+            && (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                 .getValue(getController())) ? listLoaded : true);
     }
 
@@ -150,7 +150,7 @@ public class LoginPanel extends PFWizardPanel {
 
         if (StringUtils.isBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
             .getValue(getController()))
-            || StringUtils.isBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+            || StringUtils.isBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                 .getValue(getController())))
         {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
@@ -174,7 +174,7 @@ public class LoginPanel extends PFWizardPanel {
             row += 2;
         }
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
             .getValue(getController())))
         {
             builder.add(idPLabel, cc.xy(1, row));
@@ -285,7 +285,7 @@ public class LoginPanel extends PFWizardPanel {
             serverURLBox.addActionListener(new ServerSelectAction());
         }
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
             .getValue(getController())))
         {
             idPLabel = new JLabel(Translation.getTranslation("general.idp"));
@@ -300,7 +300,7 @@ public class LoginPanel extends PFWizardPanel {
                     String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(getController());
 
                     URL url = new URL(
-                        ConfigurationEntry.SERVER_LOAD_IDP_LIST
+                        ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                             .getValue(getController()));
                     HttpsURLConnection con = (HttpsURLConnection) url
                         .openConnection();
@@ -360,7 +360,7 @@ public class LoginPanel extends PFWizardPanel {
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
             .getValue(getController())))
         {
             usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME
@@ -476,7 +476,7 @@ public class LoginPanel extends PFWizardPanel {
                 boolean loginOk = false;
                 
                 if (StringUtils
-                    .isNotBlank(ConfigurationEntry.SERVER_LOAD_IDP_LIST
+                    .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                         .getValue(getController()))
                     && StringUtils
                         .isNotBlank(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
