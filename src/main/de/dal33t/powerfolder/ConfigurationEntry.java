@@ -275,7 +275,7 @@ public enum ConfigurationEntry {
      * #2448: Option to disable Web access
      */
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
-    
+
     /**
      * If the client is allowed to pass the current password to the web browser.
      */
@@ -286,14 +286,26 @@ public enum ConfigurationEntry {
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),
 
+    /**
+     * Enable/Disable the Members Tab
+     */
     MEMBERS_ENABLED("members.enabled", true),
 
+    /**
+     * Enable/Disable the Settings Tab
+     */
     SETTINGS_ENABLED("settings.enabled", true),
 
+    /**
+     * Enable/Disable the Files Tab
+     */
     FILES_ENABLED("files.enabled", true),
     
     ARCHIVE_DIRECTORY_NAME("files.archive.dir.name", "archive"),
 
+    /**
+     * Enable/Disable the Problems Tab
+     */
     PROBLEMS_ENABLED("problems.enabled", true),
 
     MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
