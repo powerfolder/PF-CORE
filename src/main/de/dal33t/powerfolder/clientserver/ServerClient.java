@@ -103,6 +103,10 @@ public class ServerClient extends PFComponent {
     // Tries to re-login with these if re-connection happens
     private String username;
     private String passwordObf;
+    
+    private String shibUsername;
+    private String shibToken;
+    
     private Member server;
     private MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
@@ -768,6 +772,18 @@ public class ServerClient extends PFComponent {
 
         if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
+        } else if (shibUsername != null) {
+            logInfo("Logging into server " + getServerString() + ". Username: "
+                + un);
+            try {
+                return loginShibboleth(
+                    un,
+                    pw,
+                    new URI(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                        .getValue(getController())), shibUsername, shibToken);
+            } catch (Exception e) {
+                logWarning("Unable to login via Shibboleth. " + e);
+            }
         } else {
             logInfo("Logging into server " + getServerString() + ". Username: "
                 + un);
@@ -797,9 +813,11 @@ public class ServerClient extends PFComponent {
      * Log in as user 'theUsername' with password 'thePassword' to be
      * authenticated by 'ecpSoapEndpoint'.
      * 
-     * @param theUsername
-     * @param thePassword
+     * @param theUsername the login username
+     * @param thePassword the login password
      * @param ecpSoapEndpoint
+     * @param shibUsername the temporary Shibboleth login username
+     * @param shibToken the temporary Shibboleth login token
      * @return the identity with this username or <code>InvalidAccount</code> if
      *         login failed. NEVER returns <code>null</code>
      * @throws SecurityException
@@ -808,8 +826,12 @@ public class ServerClient extends PFComponent {
     public Account loginShibboleth(String theUsername, char[] thePassword,
         URI ecpSoapEndpoint, String shibUsername, String shibToken)
     {
-        // TODO: Check if token is still valid, if set.
-        if (StringUtils.isBlank(shibUsername) || StringUtils.isBlank(shibToken))
+        boolean tokenIsValid = shibToken != null
+            && shibToken.contains(":")
+            && System.currentTimeMillis() > Long.valueOf(shibToken.substring(
+                shibToken.indexOf(':'), shibToken.length()));
+        if (StringUtils.isBlank(shibUsername) || StringUtils.isBlank(shibToken)
+            || !tokenIsValid)
         {
             String spURL = getWebURL(Constants.LOGIN_SHIBBOLETH_CLIENT_URI
                 + '/' + getController().getMySelf().getId(), false);
@@ -837,6 +859,9 @@ public class ServerClient extends PFComponent {
 
         Account acc = login(shibUsername,
             LoginUtil.obfuscate(Util.toCharArray(shibToken)), false);
+        
+        this.shibUsername = shibUsername;
+        this.shibToken = shibToken;
         
         saveLastKnowLogin(theUsername, LoginUtil.obfuscate(thePassword));
 
