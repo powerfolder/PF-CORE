@@ -346,6 +346,7 @@ For creation of the installer:
 
         <exec dir="/usr/bin" executable="codesign" osfamily="mac">
             <arg value="-f" />
+            <arg value="--deep" />
             <arg value="-s" />
             <arg value="${AppSignAlias}" />
             <arg value="${dist.dir}/${dist.name}.app" />
