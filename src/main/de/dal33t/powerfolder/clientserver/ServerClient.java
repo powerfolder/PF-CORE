@@ -409,7 +409,7 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(username) || StringUtils.isBlank(passwordObf)) {
             loginWithLastKnown();
         } else {
-            login(username, passwordObf);
+            login(username, passwordObf, true);
         }
         if (!isConnected()) {
             server.markForImmediateConnect();
@@ -788,43 +788,51 @@ public class ServerClient extends PFComponent {
         } catch (Exception e) {
             logWarning("Unable to logout. " + e);
         }
-        saveLastKnowLogin();
+        saveLastKnowLogin(null, null);
         setAnonAccount();
         fireLogin(accountDetails);
     }
 
     /**
-     * Log in as user 'theUsername' with password 'thePassword' to be authenticated by
-     * 'ecpSoapEndpoint'.
+     * Log in as user 'theUsername' with password 'thePassword' to be
+     * authenticated by 'ecpSoapEndpoint'.
      * 
      * @param theUsername
      * @param thePassword
      * @param ecpSoapEndpoint
      * @return the identity with this username or <code>InvalidAccount</code> if
      *         login failed. NEVER returns <code>null</code>
-     * @throws URISyntaxException 
-     * @throws ECPAuthenticationException 
+     * @throws SecurityException
+     *             if the login failed
      */
     public Account loginShibboleth(String theUsername, char[] thePassword,
-        URI ecpSoapEndpoint) throws URISyntaxException, ECPAuthenticationException
+        URI ecpSoapEndpoint)
     {
         String spURL = getWebURL(Constants.LOGIN_SHIBBOLETH_CLIENT_URI + '/'
-            + Util.endcodeForURL(getController().getMySelf().getId()), false);
-
-        URI spURI = new URI(spURL);
+            + getController().getMySelf().getId(), false);
+        URI spURI;
+        try {
+            spURI = new URI(spURL);
+        } catch (URISyntaxException e) {
+            // Should not happen
+            throw new RuntimeException(
+                "Unable to resolve service provider URL: " + spURL + ". " + e);
+        }
         ECPAuthenticator auth = new ECPAuthenticator(theUsername, new String(
             thePassword), ecpSoapEndpoint, spURI);
 
-        String[] result = auth.authenticate();
+        String[] result;
+        try {
+            result = auth.authenticate();
+        } catch (ECPAuthenticationException e) {
+            throw new SecurityException(e);
+        }
         String username = result[0];
         String token = result[1];
 
-        Account acc = login(username, Util.toCharArray(token));
-
-        ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(getController(),
-            theUsername);
-        ConfigurationEntry.SERVER_CONNECT_PASSWORD.removeValue(getController());
-        getController().saveConfig();
+        Account acc = login(username,
+            LoginUtil.obfuscate(Util.toCharArray(token)), false);
+        saveLastKnowLogin(theUsername, LoginUtil.obfuscate(thePassword));
 
         return acc;
     }
@@ -841,7 +849,7 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     public Account login(String theUsername, char[] thePassword) {
-        return login(theUsername, LoginUtil.obfuscate(thePassword));
+        return login(theUsername, LoginUtil.obfuscate(thePassword), true);
     }
 
     /**
@@ -853,17 +861,23 @@ public class ServerClient extends PFComponent {
      * @param theUsername
      * @param thePasswordObj
      *            the obfuscated password
+     * @param saveLastLogin
+     *            if the last login should be remembered.
      * @return the identity with this username or <code>InvalidAccount</code> if
      *         login failed. NEVER returns <code>null</code>
      */
-    private Account login(String theUsername, String thePasswordObj) {
+    private Account login(String theUsername, String thePasswordObj,
+        boolean saveLastLogin)
+    {
         logFine("Login with: " + theUsername);
         synchronized (loginLock) {
             loggingIn.set(true);
             try {
                 username = theUsername;
                 passwordObf = thePasswordObj;
-                saveLastKnowLogin();
+                if (saveLastLogin) {
+                    saveLastKnowLogin(username, passwordObf);
+                }
                 if (!server.isConnected() || StringUtils.isBlank(passwordObf)) {
                     // if (!server.isConnected()) {
                     // findAlternativeServer();
@@ -1500,7 +1514,7 @@ public class ServerClient extends PFComponent {
         accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
     }
 
-    private void saveLastKnowLogin() {
+    private void saveLastKnowLogin(String username, String passwordObf) {
         if (StringUtils.isNotBlank(username)) {
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
                 getController(), username);
@@ -1575,7 +1589,7 @@ public class ServerClient extends PFComponent {
                 logFine("Connect success to " + server.getNick());
             }
         }
-        login(username, passwordObf);
+        login(username, passwordObf, true);
     }
 
     private void fireLogin(AccountDetails details) {
@@ -1684,7 +1698,7 @@ public class ServerClient extends PFComponent {
 
         if (username != null && StringUtils.isNotBlank(passwordObf)) {
             try {
-                login(username, passwordObf);
+                login(username, passwordObf, true);
                 scheduleConnectHostingServers();
             } catch (Exception ex) {
                 logWarning("Unable to login. " + ex);
@@ -1846,7 +1860,7 @@ public class ServerClient extends PFComponent {
                     if (username != null && StringUtils.isNotBlank(passwordObf))
                     {
                         logInfo("Auto-Login: Loginng in");
-                        login(username, passwordObf);
+                        login(username, passwordObf, true);
                     }
                 }
             };
@@ -1892,7 +1906,7 @@ public class ServerClient extends PFComponent {
                 logWarning("Auto-login for " + username
                     + " required. Caused by " + t);
                 try {
-                    login(username, passwordObf);
+                    login(username, passwordObf, true);
                 } catch (Exception e) {
                     logWarning("Unable to login with " + username + " at "
                         + getServerString() + ". " + e);
