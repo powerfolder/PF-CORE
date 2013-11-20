@@ -1629,15 +1629,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 } else {
                     expand();
                     if (type == Type.Local) {
-                        getController().getUIController().openFilesInformation(
-                            folderInfo);
-                        if (PreferencesEntry.BEGINNER_MODE
-                            .getValueBoolean(getController())
-                            && !PreferencesEntry.EXPERT_MODE
-                                .getValueBoolean(getController()))
-                        {
-                            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
-                                folderInfo);
+                        boolean openedTab = getController().getUIController()
+                            .openFilesInformation(folderInfo);
+                        if (!openedTab) {
+                            FolderRemoveDialog panel = new FolderRemoveDialog(
+                                getController(), folderInfo);
                             panel.open();
                         }
                     }

@@ -277,6 +277,26 @@ public class UIController extends PFComponent {
             // RepaintManager
             // .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
+        
+        // PFC-2423
+        if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            // Configure view for beginner mode:
+            ConfigurationEntry.FILES_ENABLED.setValue(getController(), false);
+            ConfigurationEntry.SETTINGS_ENABLED
+                .setValue(getController(), false);
+            ConfigurationEntry.MEMBERS_ENABLED.setValue(getController(), false);
+            // ConfigurationEntry.PROBLEMS_ENABLED.setValue(getController(),
+            // false);
+        } else {
+            // Show it in Expert and Advanced mode
+            ConfigurationEntry.FILES_ENABLED.setValue(getController(), true);
+            ConfigurationEntry.SETTINGS_ENABLED.setValue(getController(), true);
+            ConfigurationEntry.MEMBERS_ENABLED.setValue(getController(), true);
+            // ConfigurationEntry.PROBLEMS_ENABLED.setValue(getController(),
+            // false);
+        }
 
         // The central application model
         applicationModel = new ApplicationModel(getController());
@@ -842,12 +862,15 @@ public class UIController extends PFComponent {
      * 
      * @param folderInfo
      *            info of the folder to display files information for.
+     * @return if the files information was actually opened
      */
-    public void openFilesInformation(FolderInfo folderInfo) {
+    public boolean openFilesInformation(FolderInfo folderInfo) {
         if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
             informationFrame.displayFolderFiles(folderInfo);
             displayInformationWindow();
+            return true;
         }
+        return false;
     }
 
     /**
