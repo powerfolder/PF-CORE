@@ -257,7 +257,7 @@ public enum ConfigurationEntry {
     /**
      * Specify a URL to get a list of Shibboleth Identity Provider.
      */
-    SERVER_LOAD_IDP_LIST("server.idp.url_list"),
+    SERVER_IDP_DISCO_FEED_URL("server.idp.disco_feed.url"),
 
     /**
      * The last Identity Provider URL that was selected.
