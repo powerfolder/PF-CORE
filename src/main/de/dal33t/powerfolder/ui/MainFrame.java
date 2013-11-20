@@ -1493,7 +1493,13 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard.openLoginWizard(getController(), client);
+            if (getController().getNodeManager().isStarted()) {
+                PFWizard.openLoginWizard(getController(), client);
+            } else {
+                // Activate if not running
+                getApplicationModel().getLicenseModel().getActivationAction()
+                    .actionPerformed(e);
+            }
         }
     }
 
