@@ -772,18 +772,6 @@ public class ServerClient extends PFComponent {
 
         if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
-        } else if (shibUsername != null) {
-            logInfo("Logging into server " + getServerString() + ". Username: "
-                + un);
-            try {
-                return loginShibboleth(
-                    un,
-                    pw,
-                    new URI(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                        .getValue(getController())), shibUsername, shibToken);
-            } catch (Exception e) {
-                logWarning("Unable to login via Shibboleth. " + e);
-            }
         } else {
             logInfo("Logging into server " + getServerString() + ". Username: "
                 + un);
@@ -807,65 +795,6 @@ public class ServerClient extends PFComponent {
         saveLastKnowLogin(null, null);
         setAnonAccount();
         fireLogin(accountDetails);
-    }
-
-    /**
-     * Log in as user 'theUsername' with password 'thePassword' to be
-     * authenticated by 'ecpSoapEndpoint'.
-     * 
-     * @param theUsername the login username
-     * @param thePassword the login password
-     * @param ecpSoapEndpoint
-     * @param shibUsername the temporary Shibboleth login username
-     * @param shibToken the temporary Shibboleth login token
-     * @return the identity with this username or <code>InvalidAccount</code> if
-     *         login failed. NEVER returns <code>null</code>
-     * @throws SecurityException
-     *             if the login failed
-     */
-    public Account loginShibboleth(String theUsername, char[] thePassword,
-        URI ecpSoapEndpoint, String shibUsername, String shibToken)
-    {
-        boolean tokenIsValid = shibToken != null
-            && shibToken.contains(":")
-            && System.currentTimeMillis() > Long.valueOf(shibToken.substring(
-                shibToken.indexOf(':'), shibToken.length()));
-        if (StringUtils.isBlank(shibUsername) || StringUtils.isBlank(shibToken)
-            || !tokenIsValid)
-        {
-            String spURL = getWebURL(Constants.LOGIN_SHIBBOLETH_CLIENT_URI
-                + '/' + getController().getMySelf().getId(), false);
-            URI spURI;
-            try {
-                spURI = new URI(spURL);
-            } catch (URISyntaxException e) {
-                // Should not happen
-                throw new RuntimeException(
-                    "Unable to resolve service provider URL: " + spURL + ". "
-                        + e);
-            }
-            ECPAuthenticator auth = new ECPAuthenticator(theUsername,
-                new String(thePassword), ecpSoapEndpoint, spURI);
-
-            String[] result;
-            try {
-                result = auth.authenticate();
-            } catch (ECPAuthenticationException e) {
-                throw new SecurityException(e);
-            }
-            shibUsername = result[0];
-            shibToken = result[1];
-        }
-
-        Account acc = login(shibUsername,
-            LoginUtil.obfuscate(Util.toCharArray(shibToken)), false);
-        
-        this.shibUsername = shibUsername;
-        this.shibToken = shibToken;
-        
-        saveLastKnowLogin(theUsername, LoginUtil.obfuscate(thePassword));
-
-        return acc;
     }
 
     /**
@@ -920,7 +849,13 @@ public class ServerClient extends PFComponent {
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
-                    loginOk = securityService.login(username, pw);
+                    prepareShibbolethLogin(username, pw);
+                    if (shibUsername != null && shibToken != null) {
+                        loginOk = securityService.login(shibUsername,
+                            Util.toCharArray(shibToken));
+                    } else {
+                        loginOk = securityService.login(username, pw);
+                    }
                 } catch (RemoteCallException e) {
                     if (e.getCause() instanceof NoSuchMethodException) {
                         // Old server version (Pre 1.5.0 or older)
@@ -987,6 +922,66 @@ public class ServerClient extends PFComponent {
                 return accountDetails.getAccount();
             } finally {
                 loggingIn.set(false);
+            }
+        }
+    }
+
+    private boolean isShibbolethLogin() {
+        return ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+            .hasValue(getController());
+    }
+
+    private void prepareShibbolethLogin(String username, char[] thePassword) {
+        if (!isShibbolethLogin()) {
+            shibUsername = null;
+            shibToken = null;
+            return;
+        }
+        boolean tokenIsValid = shibToken != null
+            && shibToken.contains(":")
+            && System.currentTimeMillis() > Long.valueOf(shibToken.substring(
+                shibToken.indexOf(':'), shibToken.length()));
+        if (StringUtils.isBlank(shibUsername) || StringUtils.isBlank(shibToken)
+            || !tokenIsValid)
+        {
+            String spURL = getWebURL(Constants.LOGIN_SHIBBOLETH_CLIENT_URI
+                + '/' + getController().getMySelf().getId(), false);
+            URI spURI;
+            try {
+                spURI = new URI(spURL);
+            } catch (URISyntaxException e) {
+                shibUsername = null;
+                shibToken = null;
+                // Should not happen
+                throw new RuntimeException(
+                    "Unable to resolve service provider URL: " + spURL + ". "
+                        + e);
+            }
+            URI idpURI;
+            try {
+                idpURI = new URI(
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                        .getValue(getController()));
+            } catch (Exception e) {
+                shibUsername = null;
+                shibToken = null;
+                // Should not happen
+                throw new RuntimeException(
+                    "Unable to resolve identity provider URL: "
+                        + ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                            .getValue(getController()) + ". " + e);
+            }
+            ECPAuthenticator auth = new ECPAuthenticator(username, new String(
+                thePassword), idpURI, spURI);
+            String[] result;
+            try {
+                result = auth.authenticate();
+                shibUsername = result[0];
+                shibToken = result[1];
+            } catch (ECPAuthenticationException e) {
+                shibUsername = null;
+                shibToken = null;
+                throw new SecurityException(e);
             }
         }
     }
