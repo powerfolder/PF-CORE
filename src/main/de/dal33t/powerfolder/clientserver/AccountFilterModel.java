@@ -31,11 +31,13 @@ public class AccountFilterModel extends Model {
     public static final String PROPERTY_PAYING_OS_ONLY = "payingOSOnly";
     public static final String PROPERTY_ACTIVE_TRIAL = "activeTrial";
     public static final String PROPERTY_USERNAME = "username";
+    public static final String PROPERTY_QUERYNAME = "queryname";
     
     private boolean disabledOnly;
     private boolean proUsersOnly;
     private boolean activeTrial;
     private String username;
+    private String queryname;
     private String organizationOID = Organization.FILTER_MATCH_ALL;
     private String sortingProperty;
     private String sortingOrder;
@@ -92,6 +94,18 @@ public class AccountFilterModel extends Model {
         firePropertyChange(PROPERTY_USERNAME, oldValue, this.username);
     }
 
+    public String getQueryname() {
+        return queryname;
+    }
+
+    public void setQueryname(String queryname) {
+        Object oldValue = getQueryname();
+        this.queryname = queryname != null
+            ? queryname.toLowerCase().trim()
+            : null;
+        firePropertyChange(PROPERTY_QUERYNAME, oldValue, this.queryname);
+    }
+
     public String getOrganizationOID() {
         return organizationOID;
     }
@@ -99,7 +113,7 @@ public class AccountFilterModel extends Model {
     public void setOrganizationOID(String organizationOID) {
         this.organizationOID = organizationOID;
     }
-    
+
     public boolean isAnyOrganization() {
         return Organization.FILTER_MATCH_ALL.equals(organizationOID);
     }
