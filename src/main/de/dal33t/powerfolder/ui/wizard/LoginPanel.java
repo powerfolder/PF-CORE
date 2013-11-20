@@ -60,6 +60,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
+import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
@@ -81,7 +82,7 @@ public class LoginPanel extends PFWizardPanel {
     private JComboBox<String> serverURLBox;
     private JLabel serverURLLabel;
     private JLabel idPLabel;
-    private JComboBox<String> idPSelectBox;
+    private StyledComboBox<String> idPSelectBox;
     private boolean listLoaded;
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -289,7 +290,7 @@ public class LoginPanel extends PFWizardPanel {
             .getValue(getController())))
         {
             idPLabel = new JLabel(Translation.getTranslation("general.idp"));
-            idPSelectBox = new JComboBox<>(new String[]{Translation.getTranslation("general.loading")});
+            idPSelectBox = new StyledComboBox<>(new String[]{Translation.getTranslation("general.loading")});
             idPSelectBox.setEnabled(false);
 
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>()
