@@ -25,7 +25,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -472,32 +471,15 @@ public class LoginPanel extends PFWizardPanel {
                         Translation
                             .getTranslation("wizard.webservice.connect_failed"));
                 }
-                
+
                 char[] pw = passwordField.getPassword();
                 boolean loginOk = false;
-                
-                if (StringUtils
-                    .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                        .getValue(getController()))
-                    && StringUtils
-                        .isNotBlank(ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
-                            .getValue(getController())))
-                {
-                    URI ecpSoapEndpoint = new URI(
-                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                            .getValue(getController()));
-                    loginOk = client.loginShibboleth(usernameField.getText(),
-                        pw, ecpSoapEndpoint, null, null).isValid();
-                } else {
-                    loginOk = client.login(usernameField.getText(), pw)
-                        .isValid();
-                }
-
+                loginOk = client.login(usernameField.getText(), pw).isValid();
                 LoginUtil.clear(pw);
                 if (!loginOk) {
                     throw new SecurityException(
                         Translation
-                        .getTranslation("online_storage.account_data"));
+                            .getTranslation("online_storage.account_data"));
                 }
             } catch (SecurityException e) {
                 LOG.log(Level.SEVERE, "Problem logging in: " + e.getMessage());
