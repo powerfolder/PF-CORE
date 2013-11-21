@@ -132,8 +132,11 @@ public class LoginPanel extends PFWizardPanel {
     public boolean hasNext() {
         return client.isConnected()
             && !StringUtils.isEmpty(usernameField.getText())
-            && (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                .getValue(getController())) ? listLoaded : true);
+            && (passwordField.getPassword() != null && passwordField
+                .getPassword().length > 0)
+            && (StringUtils
+                .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                    .getValue(getController())) ? listLoaded : true);
     }
 
     public WizardPanel next() {
@@ -158,7 +161,7 @@ public class LoginPanel extends PFWizardPanel {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
         }
 
-        FormLayout layout = new FormLayout("50dlu, 3dlu, 80dlu, 40dlu, pref",
+        FormLayout layout = new FormLayout("50dlu, 3dlu, 110dlu, 40dlu, pref",
             layoutRows);
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -359,6 +362,7 @@ public class LoginPanel extends PFWizardPanel {
             Translation.getTranslation("general.password") + ':');
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
+        passwordField.addKeyListener(new MyKeyListener());
 
         if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
             .getValue(getController())))
