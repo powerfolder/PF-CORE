@@ -940,7 +940,7 @@ public class ServerClient extends PFComponent {
         boolean tokenIsValid = shibToken != null
             && shibToken.contains(":")
             && System.currentTimeMillis() > Long.valueOf(shibToken.substring(
-                shibToken.indexOf(':'), shibToken.length()));
+                shibToken.indexOf(':') + 1, shibToken.length()));
         if (StringUtils.isBlank(shibUsername) || StringUtils.isBlank(shibToken)
             || !tokenIsValid)
         {
