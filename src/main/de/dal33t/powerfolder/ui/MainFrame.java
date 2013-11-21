@@ -1179,6 +1179,8 @@ public class MainFrame extends PFUIComponent {
     private void setFrameMode(FrameMode frameMode, boolean init) {
         expandCollapseAction.setShowExpand(frameMode == FrameMode.COMPACT);
         this.frameMode = frameMode;
+        // PFC-2417:
+        centralPanel.setVisible(true);
         switch (frameMode) {
             case MAXIMIZED :
                 // http://www.javasoft.de/synthetica/faq/#general-7
@@ -1243,6 +1245,11 @@ public class MainFrame extends PFUIComponent {
                         uiComponent.setSize(uiComponent.getMinimumSize());
                     }
                 });
+                
+                // PFC-2417: To hide on startup
+                if (init) {
+                    centralPanel.setVisible(false);
+                }
                 break;
             case MINIMIZED:
                 uiComponent.setExtendedState(Frame.ICONIFIED);
