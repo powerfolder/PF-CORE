@@ -65,6 +65,7 @@ import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -298,9 +299,9 @@ public class LoginPanel extends PFWizardPanel {
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>()
             {
                 @Override
-                protected Void doInBackground() throws Exception
-                {
-                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(getController());
+                protected Void doInBackground() throws Exception {
+                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
+                        .getValue(getController());
 
                     URL url = new URL(
                         ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
@@ -309,7 +310,8 @@ public class LoginPanel extends PFWizardPanel {
                         .openConnection();
 
                     BufferedReader is = new BufferedReader(
-                        new InputStreamReader(con.getInputStream()));
+                        new InputStreamReader(con.getInputStream(),
+                            Convert.UTF8.toString()));
                     String line = is.readLine();
                     StringBuilder body = new StringBuilder();
 
