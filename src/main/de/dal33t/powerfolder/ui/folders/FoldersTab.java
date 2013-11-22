@@ -81,22 +81,16 @@ public class FoldersTab extends PFUIComponent {
         noFoldersFoundLabel = new JLabel(
             Translation.getTranslation("folders_tab.no_folders_found"));
         foldersList = new FoldersList(getController(), this);
-        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
-            || getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE))
-        {
-            folderWizardActionLabel = new ActionLabel(getController(),
-                getApplicationModel().getActionModel().getFolderWizardAction());
-            folderWizardActionLabel.setText(Translation
-                .getTranslation("folders_tab.folder_wizard"));
-            newFolderActionLabel = new ActionLabel(getController(),
-                getApplicationModel().getActionModel().getNewFolderAction());
-            newFolderActionLabel.setText(Translation
-                .getTranslation("folders_tab.new_folder"));
-        }
+        folderWizardActionLabel = new ActionLabel(getController(),
+            getApplicationModel().getActionModel().getFolderWizardAction());
+        folderWizardActionLabel.setText(Translation
+            .getTranslation("folders_tab.folder_wizard"));
+        newFolderActionLabel = new ActionLabel(getController(),
+            getApplicationModel().getActionModel().getNewFolderAction());
+        newFolderActionLabel.setText(Translation
+            .getTranslation("folders_tab.new_folder"));
         client = getApplicationModel().getServerClientModel().getClient();
-//        client.addListener(new MyServerClientListener());
+        //        client.addListener(new MyServerClientListener());
 
         controller.getThreadPool().scheduleAtFixedRate(new Runnable() {
             @Override
@@ -133,15 +127,9 @@ public class FoldersTab extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
-            || getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
-        {
-            JPanel toolbar = createToolBar();
-            builder.add(toolbar, cc.xy(1, 2));
-            builder.addSeparator(null, cc.xy(1, 4));
-        }
+        JPanel toolbar = createToolBar();
+        builder.add(toolbar, cc.xy(1, 2));
+        builder.addSeparator(null, cc.xy(1, 4));
         scrollPane = new JScrollPane(foldersList.getUIComponent());
         scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         foldersList.setScroller(scrollPane);
@@ -180,16 +168,10 @@ public class FoldersTab extends PFUIComponent {
         builderInner.add(notLoggedInLabel, cc.xy(1, 1));
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
-        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
-            || getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE))
-        {
-            builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
-            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-                builderInner.add(folderWizardActionLabel.getUIComponent(),
-                    cc.xy(5, 1));
-            }
+        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builderInner.add(folderWizardActionLabel.getUIComponent(),
+                cc.xy(5, 1));
         }
         JPanel emptyPanelInner = builderInner.getPanel();
         builderOuter.add(emptyPanelInner, cc.xy(1, 1));
