@@ -514,10 +514,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     }
                     break;
             }
-
-            getController().saveConfig();
         }
         // End: PFC-2385
+
+        getController().saveConfig();
     }
 
     // ////////////////

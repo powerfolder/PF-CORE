@@ -938,8 +938,32 @@ public enum ConfigurationEntry {
     
     /**
      * PFC-2226: Option to restrict new folder creation to the default storage path
+     * PFC-2424: If "Beginner mode" is switched on, set to "true"
      */
-    FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false),
+    FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false) {
+        @Override
+        public Boolean getValueBoolean(Controller controller) {
+            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
+                && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
+            {
+                return Boolean.TRUE;
+            }
+
+            String value = getValue(controller);
+            if (value == null) {
+                value = getDefaultValue();
+            }
+            try {
+                return value.trim().equalsIgnoreCase("true");
+            } catch (NumberFormatException e) {
+                LOG.log(
+                    Level.WARNING,
+                    "Unable to parse configuration entry 'create.folder.basedir.only' into a boolean. Value: "
+                        + value, e);
+                return "true".equalsIgnoreCase(getDefaultValue());
+            }
+        }
+    },
     
     /**
      * Remove folder from setup if disappeared/deleted from basedir.
