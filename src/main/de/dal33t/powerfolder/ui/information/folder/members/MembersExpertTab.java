@@ -19,18 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -38,8 +32,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -76,7 +68,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
     private Member selectedMember;
     //private JPopupMenu fileMenu;
     private JProgressBar refreshBar;
-    private JComboBox defaultPermissionBox;
 
     /**
      * Constructor
@@ -118,9 +109,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         refreshBar.setIndeterminate(true);
         refreshBar.setVisible(false);
 
-        defaultPermissionBox = createdEditComboBox(model
-            .getDefaultPermissionsListModel());
-
         membersTable = new MembersExpertTable(model);
         membersTable.getSelectionModel().setSelectionMode(
             ListSelectionModel.SINGLE_SELECTION);
@@ -135,28 +123,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         UIUtil.setZeroHeight(scrollPane);
 
         enableOnSelection();
-
-        model.getRefreshingModel().addValueChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    boolean refreshing = (Boolean) evt.getNewValue();
-                    boolean permissionsRetrieved = model
-                        .isPermissionsRetrieved();
-                    // Cancel edit of current cell
-                    membersTable.cancelCellEditing();
-                    refreshBar.setVisible(refreshing);
-                    refreshButton.setVisible(!refreshing);
-                    boolean enabled = !refreshing && permissionsRetrieved;
-                    FolderInfo folderInfo = model.getFolderInfo();
-                    if (folderInfo != null) {
-                        boolean admin = getController().getOSClient().getAccount()
-                            .hasAdminPermission(folderInfo);
-                        enabled = enabled && admin;
-                    }
-                    defaultPermissionBox.setEnabled(enabled);
-
-                }
-            });
     }
 
     /**
@@ -164,7 +130,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
-            "3dlu, pref, 3dlu, pref , 3dlu, fill:0:grow, 3dlu, pref");
+            "3dlu, pref, 3dlu, pref , 3dlu, fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(createToolBar(), cc.xy(2, 2));
@@ -203,15 +169,12 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
         JPanel buttonBarPanel = bar.getPanel();
 
         layout = new FormLayout(
-            "pref, 0:grow, pref, 3dlu, pref, 3dlu, max(60dlu;pref)", "pref");
+            "pref, 0:grow, pref", "pref");
         builder = new PanelBuilder(layout);
         cc = new CellConstraints();
         builder.add(buttonBarPanel, cc.xy(1, 1));
         builder.add(Help.createWikiLinkButton(getController(),
             WikiLinks.SECURITY_PERMISSION), cc.xy(3, 1));
-        builder.addLabel(Translation
-            .getTranslation("folder_member.default_permission"), cc.xy(5, 1));
-        builder.add(defaultPermissionBox, cc.xy(7, 1));
 
         return builder.getPanel();
     }
@@ -234,27 +197,6 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
             selectedMember = null;
             reconnectAction.setEnabled(false);
         }
-    }
-
-    private static JComboBox createdEditComboBox(
-            SelectionInList<FolderPermission> folderPermissions) {
-        return BasicComponentFactory.createComboBox(folderPermissions,
-            new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList list,
-                    Object value, int index, boolean isSelected,
-                    boolean cellHasFocus) {
-                    Component comp = super.getListCellRendererComponent(list,
-                        value, index, isSelected, cellHasFocus);
-                    if (value instanceof FolderPermission) {
-                        setText(((FolderPermission) value).getName());
-                    } else {
-                        setText(Translation.getTranslation(
-                                "permissions.folder.no_access"));
-                    }
-                    return comp;
-                }
-            });
     }
 
     // /////////////////
