@@ -293,8 +293,7 @@ public class PreferencesDialog extends BaseDialog {
         int result = DialogFactory.genericDialog(getController(), Translation
             .getTranslation("preferences.dialog.restart.title"), Translation
             .getTranslation("preferences.dialog.restart.text"), new String[]{
-            Translation.getTranslation("preferences.dialog.restart.restart"),
-            Translation.getTranslation("general.cancel")}, 0,
+            Translation.getTranslation("preferences.dialog.restart.restart")}, 0,
             GenericDialogType.INFO); // Default is restart
 
         if (result == 0) { // Restart
