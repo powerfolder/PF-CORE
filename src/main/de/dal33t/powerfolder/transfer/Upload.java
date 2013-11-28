@@ -361,11 +361,11 @@ public class Upload extends Transfer {
                 new ReplyFilePartsRecord(fi, fpr));
             state.setState(TransferState.UPLOADING);
         } catch (FileNotFoundException e) {
-            logSevere("FileNotFoundException", e);
+            logWarning("FileNotFoundException", e);
             getTransferManager().uploadBroken(Upload.this,
                 TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.getMessage());
         } catch (IOException e) {
-            logSevere("IOException", e);
+            logWarning("IOException", e);
             getTransferManager().uploadBroken(Upload.this,
                 TransferProblem.IO_EXCEPTION, e.getMessage());
         }
