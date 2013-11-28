@@ -328,7 +328,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             {
                 return true;
             }
-            logWarning("Checksum test FAILED on " + fileInfo.toDetailString()
+            logFine("Checksum test FAILED on " + fileInfo.toDetailString()
                 + ". MD5 found: " + Base64.encodeBytes(tempFileHash)
                 + " expected: "
                 + Base64.encodeBytes(thisRemotePartRecord.getFileDigest()));
