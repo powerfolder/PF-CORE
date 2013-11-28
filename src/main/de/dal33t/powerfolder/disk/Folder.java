@@ -260,6 +260,8 @@ public class Folder extends PFComponent {
 
     private boolean encrypted;
 
+    private boolean schemaZyncro;
+
     /**
      * Encryption key when a client with valid credentials is connected.
      */
@@ -358,6 +360,8 @@ public class Folder extends PFComponent {
             }
         }
 
+        schemaZyncro = PathUtils.isZyncroPath(localBase);
+
         // Support for meta folder.
         if (fInfo.isMetaFolder()
             && folderSettings.getLocalBaseDir().toAbsolutePath().toString()
@@ -403,7 +407,7 @@ public class Folder extends PFComponent {
             }
         };
 
-        if (!PathUtils.isZyncroPath(localBase)
+        if (!schemaZyncro
             && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
         {
             // Empty folder... no scan required for database
@@ -745,7 +749,7 @@ public class Folder extends PFComponent {
 
             // PFS-981: Start
             if (Feature.NTFS_PRESERVE_FILE_OWNER.isEnabled()
-                && !PathUtils.isZyncroPath(localBase))
+                && !schemaZyncro)
             {
                 Path diskFile = fInfo.getDiskFile(getController()
                     .getFolderRepository());
@@ -837,7 +841,7 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-            if (!PathUtils.isZyncroPath(targetFile)) {
+            if (!schemaZyncro) {
                 if (Files.exists(targetFile)) {
                     // if file was a "newer file" the file already exists here
                     // Using local var because of possible race condition!!
@@ -911,8 +915,12 @@ public class Folder extends PFComponent {
                 }
             }
 
+            boolean copyAfterTransfer = schemaZyncro
+                || ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
+                    .getValueBoolean(getController());
+
             try {
-                if (PathUtils.isZyncroPath(targetFile))
+                if (copyAfterTransfer)
                 {
                     throw new IOException();
                 }
@@ -920,16 +928,16 @@ public class Folder extends PFComponent {
                 Files.move(tempFile, targetFile);
             }
             catch (IOException ioe) {
-                if (!PathUtils.isZyncroPath(localBase))
+                if (!copyAfterTransfer)
                 {
-                    logWarning("Was not able to rename tempfile, copiing "
+                    logWarning("Was not able to rename tempfile, copying "
                         + tempFile.toAbsolutePath() + " to "
                         + targetFile.toAbsolutePath() + ". "
                         + fInfo.toDetailString());
                 }
 
                 try {
-                    if (PathUtils.isZyncroPath(targetFile)) {
+                    if (schemaZyncro) {
                         PathUtils.rawCopy(tempFile, targetFile);
                     } else {
                         Files.copy(tempFile, targetFile);
@@ -3033,7 +3041,7 @@ public class Folder extends PFComponent {
 
                     UserPrincipal owner = null;
 
-                    if (PathUtils.isZyncroPath(localCopy)) {
+                    if (schemaZyncro) {
                         try {
                             String username = remoteFile.getModifiedBy()
                                 .getNode(getController(), true)
@@ -3116,7 +3124,7 @@ public class Folder extends PFComponent {
                         logWarning("Unable to delete local file "
                             + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
-                        if (PathUtils.isZyncroPath(localCopy)) {
+                        if (schemaZyncro) {
                             
                             // SPECIAL HANDLING FOR ZYNCRO
                             
@@ -3912,7 +3920,7 @@ public class Folder extends PFComponent {
     }
 
     private Path getSystemSubDir0() {
-        if (PathUtils.isZyncroPath(localBase)) {
+        if (schemaZyncro) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
                 .resolve(PathUtils.removeInvalidFilenameChars(getId()))
                 .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
@@ -3958,7 +3966,7 @@ public class Folder extends PFComponent {
 
         // #1249
         if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
-            if (!PathUtils.isZyncroPath(localBase))
+            if (!schemaZyncro)
             {
                 boolean inaccessible = Files.notExists(localBase)
                     || PathUtils.getNumberOfSiblings(localBase) == 0;

@@ -632,7 +632,7 @@ public enum ConfigurationEntry {
      * Lets do this flexible.
      */
     FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
-    
+
     /**
      * Note - as of PFC-2182, mass delete protection should only be applied
      * if the user has expert mode.
@@ -845,6 +845,11 @@ public enum ConfigurationEntry {
      * #2405: The delay for syncing after folderWatcher detects a change.
      */
     FOLDER_WATCHER_DELAY("folder.watcher.delay.seconds", 1),
+
+    /**
+     * Enable to copy and delete a newly transfered file instead of moveing.
+     */
+    FOLDER_COPY_AFTER_TRANSFER("folder.copy_after_transfer.enabled", false),
 
     /**
      * The number of seconds between db maintenance (1 hour).
