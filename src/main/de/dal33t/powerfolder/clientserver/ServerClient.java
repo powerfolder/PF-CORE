@@ -937,10 +937,18 @@ public class ServerClient extends PFComponent {
             shibToken = null;
             return;
         }
-        boolean tokenIsValid = shibToken != null
-            && shibToken.contains(":")
-            && System.currentTimeMillis() > Long.valueOf(shibToken.substring(
-                shibToken.indexOf(':') + 1, shibToken.length()));
+        boolean tokenIsValid = false;
+        try {
+            tokenIsValid = shibToken != null
+                && shibToken.contains(":")
+                && System.currentTimeMillis() <= Long.valueOf(shibToken
+                    .substring(shibToken.indexOf(':') + 1, shibToken.length()));
+        } catch (Exception e) {
+            logFine("Unusable Shibboleth Token: " + shibToken + " valid ? "
+                + tokenIsValid);
+            shibUsername = null;
+            shibToken = null;
+        }
         if (StringUtils.isBlank(shibUsername) || StringUtils.isBlank(shibToken)
             || !tokenIsValid)
         {
@@ -1755,7 +1763,7 @@ public class ServerClient extends PFComponent {
                 logInfo("Discovered a new server of " + countServers()
                     + " in cluster: " + e.getNode().getNick() + " @ "
                     + e.getNode().getReconnectAddress());
-            } else {
+            } else if (getMySelf().isServer()) {
                 logInfo("Not longer member of cluster: "
                     + e.getNode().getNick() + " @ "
                     + e.getNode().getReconnectAddress());
