@@ -2867,7 +2867,7 @@ public class TransferManager extends PFComponent {
                                 uploadsStarted++;
                             } else {
                                 // PFS-843
-                                logInfo("Waiting with Internet upload of file "
+                                logFine("Waiting with Internet upload of file "
                                     + upload.getFile()
                                     + ". Already upload to an Internet device");
                             }
