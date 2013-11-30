@@ -1278,7 +1278,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getNodeManager().connectStateChanged(this);
 
             if (isInfo()) {
-                logInfo("Disconnected ("
+                logInfo(getNick() + " disconnected ("
                     + getController().getNodeManager().countConnectedNodes()
                     + " still connected)");
             }
