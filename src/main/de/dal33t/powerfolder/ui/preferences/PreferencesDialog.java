@@ -124,11 +124,6 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane = new JTabbedPane(SwingConstants.TOP,
             JTabbedPane.WRAP_TAB_LAYOUT);
 
-        // Information tab
-        informationTab = new InformationTab(getController());
-        preferenceTabs.add(informationTab);
-        tabbedPane.addTab(informationTab.getTabName(),
-            informationTab.getUIPanel());
 
         // General tab
         generalSettingsTab = new GeneralSettingsTab(getController());
@@ -148,6 +143,12 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(warningsNotificationsSettingsTab.getTabName(),
             warningsNotificationsSettingsTab.getUIPanel());
 
+        // Information tab
+        informationTab = new InformationTab(getController());
+        preferenceTabs.add(informationTab);
+        tabbedPane.addTab(informationTab.getTabName(),
+            informationTab.getUIPanel());
+        
         Boolean expertMode = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
         if (expertMode) {
