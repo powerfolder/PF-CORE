@@ -271,9 +271,6 @@ public class LoginUtil {
         } else if (isUsernameAny(controller)) {
             return Translation.getTranslation("general.username") + '/'
                 + Translation.getTranslation("general.email");
-        } else if (isUsernameShibboleth(controller)) {
-            // FIXME: Make nicer
-            return "Login-ID";
         } else {
             if (isBoolConfValue(controller)) {
                 return Translation.getTranslation("general.username");
@@ -292,11 +289,6 @@ public class LoginUtil {
         if (isUsernameAny(controller)) {
             return true;
         }
-        // PFS-569
-        if (isUsernameShibboleth(controller)) {
-            return username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR)
-                || username.contains("@");
-        }
         if (ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
             .getValueBoolean(controller))
         {
@@ -312,7 +304,8 @@ public class LoginUtil {
             return false;
         }
         return v.toLowerCase().contains("shibboleth")
-            || v.toLowerCase().contains("bwidm");
+            || v.toLowerCase().contains("bwidm")
+            || v.toLowerCase().contains("nutzerkennung");
     }
 
     private static boolean isUsernameEmailOnly(Controller controller) {
