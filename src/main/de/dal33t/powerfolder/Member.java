@@ -1408,6 +1408,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 final FolderList fList = (FolderList) message;
                 // #2569
                 if (isWarning()
+                    && !isServer()
                     && fList.secretFolders != null
                     && fList.secretFolders.length > 100
                     && getController().getFolderRepository().getFoldersCount() < 100)
