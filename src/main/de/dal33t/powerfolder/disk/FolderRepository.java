@@ -1870,7 +1870,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
-                Files.createDirectory(settings.getLocalBaseDir());
+                Files.createDirectories(settings.getLocalBaseDir());
                 if (foInfo != null) {
                     // Load existing.
                     createFolder0(foInfo, settings, true);
