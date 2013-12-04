@@ -1870,7 +1870,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
-                Files.createDirectories(settings.getLocalBaseDir());
+                try {
+                    Files.createDirectories(settings.getLocalBaseDir());
+                } catch (IOException ioe) {
+                    if (isFine()) {
+                        logFine(ioe.getMessage());
+                    }
+                }
+               
                 if (foInfo != null) {
                     // Load existing.
                     createFolder0(foInfo, settings, true);
@@ -1895,7 +1902,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folderInfos.add(foInfo);
             }
             catch (Exception e) {
-                logWarning("Unable to create folder " + folderName + ". " + e);
+                logWarning("Unable to create folder " + folderName + " at " + settings.getLocalBaseDir() + ". " + e);
             }
         }
 
@@ -1968,7 +1975,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folderInfos.add(folderInfo);
                 } catch (Exception e) {
                     logWarning("Unable to create folder "
-                        + folderInfo.getName() + ". " + e);
+                        + folderInfo.getName() + " at "
+                        + settings.getLocalBaseDir() + ". " + e);
                 }
             }
         }
