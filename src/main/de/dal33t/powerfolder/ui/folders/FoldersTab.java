@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -279,7 +280,9 @@ public class FoldersTab extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(newFolderLink.getUIComponent(), cc.xy(2, 1));
+        if (!ProUtil.isZyncro(getController())) {
+            builder.add(newFolderLink.getUIComponent(), cc.xy(2, 1));            
+        }
         if (expertMode) {
             builder.add(folderWizardLink.getUIComponent(), cc.xy(4, 1));
         }
