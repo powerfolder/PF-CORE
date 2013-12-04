@@ -1232,20 +1232,26 @@ public class TransferManager extends PFComponent {
             if (diskFile == null) {
                 return null;
             }
-            if (isWarning()) {
-                try {
-                    logWarning("File not in sync with disk: '"
-                        + dl.file.toDetailString() + "', disk file at "
-                        + Files.getLastModifiedTime(diskFile).toMillis());
-                } catch (IOException ioe) {
-                    logSevere("Could not access modification time of file "
-                        + diskFile.toAbsolutePath().toString());
-                }
-            }
 
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
                 folder.scanChangedFile(dl.file);
+            } else {
+                if (isWarning()) {
+                    if (Files.exists(diskFile)) {
+                        try {
+                            logWarning("File not in sync with disk: '"
+                                + dl.file.toDetailString() + "', disk file at "
+                                + Files.getLastModifiedTime(diskFile).toMillis());
+                        } catch (IOException ioe) {
+                            logFine("Could not access modification time of file "
+                                + diskFile.toAbsolutePath().toString());
+                        }
+                    } else {
+                        logWarning("File was requested, but not found: "
+                            + dl.file.toDetailString());
+                    }
+                }
             }
             // folder.recommendScanOnNextMaintenance();
             return null;
