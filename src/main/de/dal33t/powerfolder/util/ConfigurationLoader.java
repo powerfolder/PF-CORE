@@ -333,6 +333,7 @@ public class ConfigurationLoader {
     {
         return loadPreConfiguration(server, null, null);
     }
+    
     /**
      * Loads a pre-configuration from a server. Automatically adds HTTP:// and
      * url suffix.
@@ -341,10 +342,12 @@ public class ConfigurationLoader {
      * @return the loaded config.
      * @throws IOException
      */
-    public static Properties loadPreConfiguration(String server, String un, char[] pw)
-        throws IOException
+    public static Properties loadPreConfiguration(String server, String un,
+        char[] pw) throws IOException
     {
-        String finalURL = Util.removeLastSlashFromURI(server);
+        Reject.ifBlank(server, "Server URL is blank");
+        String finalURL = Util.removeLastSlashFromURI(server.replace(
+            "download_client", ""));
         if (!finalURL.startsWith("http")) {
             finalURL = "http://" + finalURL;
         }
