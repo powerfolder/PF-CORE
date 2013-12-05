@@ -488,7 +488,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                             // browser.
                             String altURL = client.getFolderService()
                                 .getFileLink(fInfo);
-                            Util.setClipboardContents(altURL);
+                            Util.setClipboardContents(altURL.replace(
+                                Constants.GET_LINK_URI, Constants.DL_LINK_URI));
                         }
                     });
                 }
