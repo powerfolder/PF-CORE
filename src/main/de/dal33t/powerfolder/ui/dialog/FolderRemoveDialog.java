@@ -103,13 +103,22 @@ public class FolderRemoveDialog extends BaseDialog {
         boolean syncFlag = folder != null && folder.isTransferring();
         String folderLeaveText;
         String removeKey;
+        String folderNote;
+        String folderLeaveMessage, folderLeaveMessageAdmin;
+        if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController())){
+            folderLeaveMessage = "folder_remove.dialog.strict.online_text";
+            folderLeaveMessageAdmin = "folder_remove.dialog.strict.online_text.admin";
+        }else{
+            folderLeaveMessage = "folder_remove.dialog.online_text";
+            folderLeaveMessageAdmin = "folder_remove.dialog.online_text.admin";
+        }
         if(admin) {
             removeKey = onlineFolder && !localFolder
-                ? "folder_remove.dialog.online_text.admin"
+                ? folderLeaveMessageAdmin
                 : "folder_remove.dialog.text"; 
         }else {
             removeKey = onlineFolder && !localFolder
-                ? "folder_remove.dialog.online_text"
+                ? folderLeaveMessage
                 : "folder_remove.dialog.text";
         }
         if (syncFlag) {
@@ -232,9 +241,15 @@ public class FolderRemoveDialog extends BaseDialog {
                     "pref, 3dlu, pref, 3dlu, pref");
             }
         } else {
-            // Just online. Don't need the online cb; obvious.
-            layout = new FormLayout("pref:grow, 3dlu, pref:grow",
-                "pref");
+         // Just online. Don't need the online cb; obvious.
+            if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController())){
+                layout = new FormLayout("pref:grow, 3dlu, pref:grow",
+                    "pref, 3dlu, pref");
+            }else {
+                layout = new FormLayout("pref:grow, 3dlu, pref:grow",
+                    "pref");
+            }
+            
         }
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -244,8 +259,19 @@ public class FolderRemoveDialog extends BaseDialog {
         int row = 1;
 
         builder.add(messageLabel, cc.xyw(1, row, 3));
-
         row += 2;
+        
+        if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController())){
+            String noteLabel;
+            if(admin){
+                noteLabel = Translation.getTranslation("folder_remove_online.strict.note.admin");
+            }else {
+                noteLabel = Translation.getTranslation("folder_remove_online.strict.note");
+            }
+            builder.add(new JLabel(noteLabel), cc.xyw(1, row, 3));
+            row += 2;
+        }
+
 
         if (localFolder) {
             builder.add(removeFromLocalBox, cc.xyw(1, row, 3));
