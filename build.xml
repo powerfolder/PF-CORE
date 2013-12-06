@@ -39,6 +39,10 @@ For creation of the installer:
 		<os family="windows" />
 	</condition>
 	
+    <condition property="isLinux">
+        <os family="unix" />
+    </condition>
+
 	<target name="debug">
 		<property name="Debug" location="on" />
 	</target>

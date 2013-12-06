@@ -199,6 +199,12 @@ public enum ConfigurationEntry {
     DIST_FOLDERS_BASE_NAME("dist.folderbasename",
         Constants.FOLDERS_BASE_DIR_SUBDIR_NAME),
 
+    DIST_EMAIL("dist.email", ""),
+
+    DIST_COMPANY("dist.company", ""),
+
+    DIST_URL("dist.url", ""),
+
     // Server settings ********************************************************
 
     /**
