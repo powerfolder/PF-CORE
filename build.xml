@@ -40,7 +40,13 @@ For creation of the installer:
 	</condition>
 	
     <condition property="isLinux">
-        <os family="unix" />
+        <and>
+            <os family="unix" />
+
+            <not>
+                <os family="mac" />
+            </not>
+        </and>
     </condition>
 
 	<target name="debug">
