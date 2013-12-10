@@ -326,7 +326,7 @@ public class PathUtils {
             Files.newOutputStream(to))) {
             byte[] buffer = new byte[BYTE_CHUNK_SIZE];
             int read;
-            int position = 0;
+            long position = 0;
 
             do {
                 read = in.read(buffer);

@@ -147,6 +147,9 @@ public class Updater extends Thread {
         if (StringUtils.isBlank(filename)) {
             filename = "PowerFolder_Latest_Win32_Installer.exe";
         }
+        if (filename.contains("/")) {
+            filename = filename.substring(filename.lastIndexOf('/') + 1);
+        }
         Path targetFile = Controller.getTempFilesLocation().resolve(filename);
         try {
             con = url.openConnection();
@@ -156,7 +159,7 @@ public class Updater extends Thread {
             return null;
         }
 
-        LOG.log(Level.WARNING, "Downloading latest version from "
+        LOG.log(Level.INFO, "Downloading latest version from "
             + con.getURL());
         Path tempFile = targetFile.getParent().resolve("(downloading) "
             + targetFile.getFileName().toString());
@@ -173,7 +176,7 @@ public class Updater extends Thread {
 
         try {
             // Rename file and set modified/build time
-            Files.delete(targetFile);
+            Files.deleteIfExists(targetFile);                
             Files.move(tempFile, targetFile);
             Files.setLastModifiedTime(targetFile, FileTime.fromMillis(con.getLastModified()));
     
@@ -186,7 +189,7 @@ public class Updater extends Thread {
                 }
             }
         } catch (IOException ioe) {
-            LOG.info(ioe.getMessage());
+            LOG.warning("Unable to download auto update: " + ioe);
             return null;
         }
 

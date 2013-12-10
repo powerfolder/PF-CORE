@@ -36,5 +36,5 @@ public interface StreamCallback {
      *            the total available bytes. might not be filled
      * @return if the stream read should be broken
      */
-    public boolean streamPositionReached(int position, int totalAvailable);
+    public boolean streamPositionReached(long position, long totalAvailable);
 }
