@@ -642,58 +642,9 @@ public enum ConfigurationEntry {
      * Note - as of PFC-2182, mass delete protection should only be applied
      * if the user has expert mode.
      */
-    MASS_DELETE_PROTECTION("mass.delete.protection", false) {
+    MASS_DELETE_PROTECTION("mass.delete.protection", false),
 
-        @Override
-        public String getValue(Controller controller) {
-            String value = super.getValue(controller);
-            if (value == null) {
-                // Old entry
-                value = PreferencesEntry.MASS_DELETE_PROTECTION
-                    .getValueString(controller);
-            }
-            return value;
-        }
-
-        @Override
-        public void removeValue(Controller controller) {
-            super.removeValue(controller);
-            PreferencesEntry.MASS_DELETE_PROTECTION.removeValue(controller);
-        }
-
-        @Override
-        public void setValue(Controller controller, String value) {
-            super.setValue(controller, value);
-            PreferencesEntry.MASS_DELETE_PROTECTION.removeValue(controller);
-        }
-
-    },
-
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95) {
-
-        @Override
-        public String getValue(Controller controller) {
-            String value = super.getValue(controller);
-            if (value == null) {
-                // Old entry
-                value = PreferencesEntry.MASS_DELETE_THRESHOLD
-                    .getValueString(controller);
-            }
-            return value;
-        }
-
-        @Override
-        public void removeValue(Controller controller) {
-            super.removeValue(controller);
-            PreferencesEntry.MASS_DELETE_THRESHOLD.removeValue(controller);
-        }
-
-        @Override
-        public void setValue(Controller controller, String value) {
-            super.setValue(controller, value);
-            PreferencesEntry.MASS_DELETE_THRESHOLD.removeValue(controller);
-        }
-    },
+    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95),
 
     /**
      * Contains a comma-separated list of all plugins to load.

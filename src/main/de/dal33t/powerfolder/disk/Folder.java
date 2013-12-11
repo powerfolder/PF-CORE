@@ -576,8 +576,6 @@ public class Folder extends PFComponent {
         if (!ignoreLocalMassDeletions
             && getKnownItemCount() > 0
             && !scanResult.getDeletedFiles().isEmpty()
-            && scanResult.getTotalFilesCount() == 0
-            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
             && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
@@ -1286,9 +1284,16 @@ public class Folder extends PFComponent {
     void scanChangedFiles(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo collection is null");
         boolean checkRevert = isRevertLocalChanges();
+        boolean sendMassDeletionMessage = false;
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = (FileInfo) it.next();
+
+            if (ProUtil.isZyncro(getController()) && fileInfo.isDeleted()) {
+                sendMassDeletionMessage = true;
+                it.remove();
+                continue;
+            }
             FileInfo localFileInfo = scanChangedFile0(fileInfo);
             if (localFileInfo == null) {
                 // No change
@@ -1318,6 +1323,10 @@ public class Folder extends PFComponent {
                         diskItemFilter, useExt);
                 }
             });
+        }
+        if (sendMassDeletionMessage) {
+            getController().localMassDeletionDetected(
+                new LocalMassDeletionEvent(this));
         }
     }
 
@@ -3532,6 +3541,11 @@ public class Folder extends PFComponent {
     }
 
     private void checkForMassDeletion(Member from, FileInfo[] fileInfos) {
+        if (ProUtil.isZyncro(getController())) {
+            // SYNC-234
+            return;
+        }
+
         int delsCount = 0;
         for (FileInfo remoteFile : fileInfos) {
             if (!remoteFile.isDeleted()) {

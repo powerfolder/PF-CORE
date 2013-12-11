@@ -74,12 +74,6 @@ public enum PreferencesEntry {
         }
     },
 
-    @Deprecated
-    MASS_DELETE_PROTECTION("mass.delete.protection", true),
-
-    @Deprecated
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 75),
-
     /**
      * the pref that holds a boolean value a warning is displayed if no direct connectivity is given.
      */
