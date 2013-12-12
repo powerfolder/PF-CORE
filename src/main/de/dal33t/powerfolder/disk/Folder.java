@@ -579,7 +579,7 @@ public class Folder extends PFComponent {
             && getKnownItemCount() > 0
             && !scanResult.getDeletedFiles().isEmpty()
             && ConfigurationEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()))
+                .getValueBoolean(getController()) && !isRevertLocalChanges())
         {
 
             // Advise controller of the carnage.
@@ -1291,28 +1291,27 @@ public class Folder extends PFComponent {
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = (FileInfo) it.next();
 
-            if (ProUtil.isZyncro(getController()) && fileInfo.isDeleted()) {
-                sendMassDeletionMessage = true;
-                it.remove();
-                continue;
-            }
             FileInfo localFileInfo = scanChangedFile0(fileInfo);
             if (localFileInfo == null) {
                 // No change
                 it.remove();
+            } else if (checkRevert && checkRevertLocalChanges(localFileInfo)) {
+                // No change, reverted
+                it.remove();
+            } else if (localFileInfo.isDeleted()
+                && ConfigurationEntry.MASS_DELETE_PROTECTION
+                    .getValueBoolean(getController()))
+            {
+                sendMassDeletionMessage = true;
+                it.remove();
             } else {
-                if (checkRevert && checkRevertLocalChanges(localFileInfo)) {
-                    // No change
-                    it.remove();
-                } else {
-                    // Allowed to change files
-                    FileInfo existinfFInfo = findSameFile(localFileInfo);
-                    if (existinfFInfo != null) {
-                        localFileInfo = existinfFInfo;
-                    }
-                    fileInfos.set(i, localFileInfo);
-                    i++;
+                // Allowed to change files
+                FileInfo existinfFInfo = findSameFile(localFileInfo);
+                if (existinfFInfo != null) {
+                    localFileInfo = existinfFInfo;
                 }
+                fileInfos.set(i, localFileInfo);
+                i++;
             }
         }
         if (!fileInfos.isEmpty()) {
