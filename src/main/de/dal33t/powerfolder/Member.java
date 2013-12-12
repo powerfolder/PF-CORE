@@ -76,6 +76,7 @@ import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.RequestPart;
+import de.dal33t.powerfolder.message.RevertedFile;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
@@ -91,6 +92,7 @@ import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.ui.notices.RevertedFileNotice;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Filter;
@@ -99,6 +101,7 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -1799,6 +1802,23 @@ public class Member extends PFComponent implements Comparable<Member> {
                     }
                 }
                 expectedTime = 50;
+            } else if (message instanceof RevertedFile) {
+                RevertedFile msg = (RevertedFile) message;
+                FileInfo fileInfo = msg.file;
+                RevertedFileNotice rfn = new RevertedFileNotice(
+                    Translation.getTranslation("reverted_file_notice.title"),
+                    Translation.getTranslation("reverted_file_notice.message",
+                        fileInfo.getFolderInfo().getLocalizedName(),
+                        fileInfo.getRelativeName()), fileInfo);
+
+                if (getController().isUIOpen()) {
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().handleNotice(rfn);
+                } else {
+                    logWarning(Translation.getTranslation("reverted_file_notice.message",
+                        fileInfo.getFolderInfo().getLocalizedName(),
+                        fileInfo.getRelativeName()));
+                }
 
             } else if (message instanceof RequestPart) {
                 final RequestPart pr = (RequestPart) message;
@@ -1931,7 +1951,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else {
                 if (isFiner()) {
                     logFiner("Message not known to message handling code, "
-                        + "maybe handled in listener: " + message);                    
+                        + "maybe handled in listener: " + message);
                 }
             }
 

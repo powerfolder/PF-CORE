@@ -96,8 +96,10 @@ import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageProducer;
+import de.dal33t.powerfolder.message.RevertedFile;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -3149,6 +3151,16 @@ public class Folder extends PFComponent {
                                         .create(revertedFileInfo, useExt)};
                                 }
                             });
+
+                            // Get recipient/target
+                            String nodeID = remoteFile.getModifiedBy()
+                                .getNode(getController(), false).getId();
+                            // Build the message
+                            RevertedFile rf = new RevertedFile(getInfo(), revertedFileInfo);
+                            // Plan a task
+                            SendMessageTask smt = new SendMessageTask(rf, nodeID);
+                            // schedule the task
+                            getController().getTaskManager().scheduleTask(smt);
                         }
                         return;
                     }
@@ -4142,7 +4154,7 @@ public class Folder extends PFComponent {
                     try {
                         Files.delete(file);
                     } catch (IOException ioe) {
-                        logSevere("Unable to delete file " + file);
+                        logSevere("Unable to delete file " + file + ". " + ioe);
                         return false;
                     }
                 }
