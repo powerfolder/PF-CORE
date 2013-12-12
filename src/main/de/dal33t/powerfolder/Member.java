@@ -22,6 +22,7 @@ package de.dal33t.powerfolder;
 import java.io.Externalizable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -37,6 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -92,7 +94,6 @@ import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.ui.notices.RevertedFileNotice;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Filter;
@@ -101,7 +102,6 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -1804,20 +1804,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
             } else if (message instanceof RevertedFile) {
                 RevertedFile msg = (RevertedFile) message;
-                FileInfo fileInfo = msg.file;
-                RevertedFileNotice rfn = new RevertedFileNotice(
-                    Translation.getTranslation("reverted_file_notice.title"),
-                    Translation.getTranslation("reverted_file_notice.message",
-                        fileInfo.getFolderInfo().getLocalizedName(),
-                        fileInfo.getRelativeName()), fileInfo);
-
-                if (getController().isUIOpen()) {
-                    getController().getUIController().getApplicationModel()
-                        .getNoticesModel().handleNotice(rfn);
-                } else {
-                    logWarning(Translation.getTranslation("reverted_file_notice.message",
-                        fileInfo.getFolderInfo().getLocalizedName(),
-                        fileInfo.getRelativeName()));
+                if (targetFolder != null) {
+                    Path path = msg.file.getDiskFile(getController().getFolderRepository());
+                    FolderReadOnlyProblem problem = new FolderReadOnlyProblem(path, true);                    
+                    targetFolder.addProblem(problem);
                 }
 
             } else if (message instanceof RequestPart) {
