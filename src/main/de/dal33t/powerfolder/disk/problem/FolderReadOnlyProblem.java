@@ -10,15 +10,29 @@ import de.dal33t.powerfolder.util.Translation;
 
 public class FolderReadOnlyProblem extends ResolvableProblem {
     private Path path;
+    private boolean revertedOnly;
 
     public FolderReadOnlyProblem(Path path) {
+        this(path, false);
+    }
+
+    public FolderReadOnlyProblem(Path path, boolean revertedOnly) {
         Reject.ifNull(path, "Path");
         this.path = path;
+        this.revertedOnly = revertedOnly;
     }
 
     @Override
     public String getDescription() {
-        return Translation.getTranslation("folder_problem.read_only_folder");
+        if (revertedOnly) {
+            return Translation.getTranslation(
+                "folder_problem.read_only_folder_reverted", path.getFileName()
+                    .toString());
+        } else {
+            return Translation.getTranslation(
+                "folder_problem.read_only_folder", path.getFileName()
+                    .toString());
+        }
     }
 
     @Override
