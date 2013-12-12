@@ -932,7 +932,10 @@ public class ServerClient extends PFComponent {
     }
 
     private void prepareShibbolethLogin(String username, char[] thePassword) {
-        if (!isShibbolethLogin()) {
+        String idpURLString = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+            .getValue(getController());
+        
+        if (!isShibbolethLogin() || StringUtils.isBlank(idpURLString)) {
             shibUsername = null;
             shibToken = null;
             return;
@@ -965,11 +968,9 @@ public class ServerClient extends PFComponent {
                     "Unable to resolve service provider URL: " + spURL + ". "
                         + e);
             }
-            URI idpURI;
+            URI idpURI = null;
             try {
-                idpURI = new URI(
-                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                        .getValue(getController()));
+                idpURI = new URI(idpURLString);
             } catch (Exception e) {
                 shibUsername = null;
                 shibToken = null;
