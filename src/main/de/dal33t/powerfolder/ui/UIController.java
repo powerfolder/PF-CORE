@@ -1468,8 +1468,6 @@ public class UIController extends PFComponent {
     private class MyMassDeletionHandler implements MassDeletionHandler {
         public void localMassDeletion(LocalMassDeletionEvent event) {
             LocalDeleteNotice notice = new LocalDeleteNotice(
-                Translation.getTranslation("warning_notice.title"),
-                Translation.getTranslation("warning_notice.mass_deletion"),
                 event.getFolderInfo());
             applicationModel.getNoticesModel().handleNotice(notice);
         }
@@ -1494,8 +1492,8 @@ public class UIController extends PFComponent {
 
             WarningNotice notice = new WarningNotice(
                 Translation.getTranslation("warning_notice.title"),
-                Translation.getTranslation("warning_notice.mass_deletion"),
-                message);
+                Translation.getTranslation("warning_notice.mass_deletion",
+                    event.getFolderInfo().getLocalizedName()), message);
             applicationModel.getNoticesModel().handleNotice(notice);
         }
     }
