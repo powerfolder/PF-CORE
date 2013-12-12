@@ -1282,9 +1282,12 @@ public class UIController extends PFComponent {
         if (fileInfo.getFolderInfo().isMetaFolder()) {
             return;
         }
-        if (fileInfo.getFolder(getController().getFolderRepository())
-            .getDiskItemFilter().isExcluded(fileInfo))
-        {
+        Folder folder = fileInfo.getFolder(getController()
+            .getFolderRepository());
+        if (folder == null) {
+            return;
+        }
+        if (folder.getDiskItemFilter().isExcluded(fileInfo)) {
             return;
         }
         synchronized (recentlyChangedFiles) {
