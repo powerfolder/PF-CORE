@@ -3156,9 +3156,10 @@ public class Folder extends PFComponent {
                             String nodeID = remoteFile.getModifiedBy()
                                 .getNode(getController(), false).getId();
                             // Build the message
-                            RevertedFile rf = new RevertedFile(getInfo(), revertedFileInfo);
+                            RevertedFile rf = new RevertedFile(revertedFileInfo);
                             // Plan a task
-                            SendMessageTask smt = new SendMessageTask(rf, nodeID);
+                            SendMessageTask smt = new SendMessageTask(rf,
+                                nodeID);
                             // schedule the task
                             getController().getTaskManager().scheduleTask(smt);
                         }

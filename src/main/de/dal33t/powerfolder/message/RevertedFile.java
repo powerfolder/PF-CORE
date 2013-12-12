@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.message;
 
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * Notify a client, that a deleted file could not be deleted on the server and
@@ -33,8 +32,8 @@ public class RevertedFile extends FolderRelatedMessage {
     private static final long serialVersionUID = 100L;
     public FileInfo file;
 
-    public RevertedFile(FolderInfo foInfo, FileInfo fInfo) {
-        this.folder = foInfo;
+    public RevertedFile(FileInfo fInfo) {
+        this.folder = fInfo.getFolderInfo();
         this.file = fInfo;
     }
 }
