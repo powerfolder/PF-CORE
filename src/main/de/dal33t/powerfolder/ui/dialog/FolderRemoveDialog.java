@@ -261,7 +261,7 @@ public class FolderRemoveDialog extends BaseDialog {
         builder.add(messageLabel, cc.xyw(1, row, 3));
         row += 2;
         
-        if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController())){
+        if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController()) && !localFolder){
             String noteLabel;
             if(admin){
                 noteLabel = Translation.getTranslation("folder_remove_online.strict.note.admin");
