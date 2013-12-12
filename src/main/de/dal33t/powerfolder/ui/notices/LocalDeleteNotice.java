@@ -20,10 +20,10 @@
 package de.dal33t.powerfolder.ui.notices;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -35,40 +35,54 @@ public class LocalDeleteNotice extends NoticeBase {
     private static final long serialVersionUID = 100L;
     private FolderInfo folderInfo;
 
-    public LocalDeleteNotice(String title, String summary, FolderInfo folderInfo) {
-        super(title, summary);
+    public LocalDeleteNotice(FolderInfo folderInfo) {
+        super(Translation.getTranslation("warning_notice.title"), Translation
+            .getTranslation("warning_notice.mass_deletion",
+                folderInfo.getLocalizedName()));
         this.folderInfo = folderInfo;
     }
 
     public Runnable getPayload(final Controller controller) {
         return new Runnable() {
             public void run() {
-                int response = DialogFactory.genericDialog(
-                        controller, Translation.getTranslation(
-                                "local_delete_notice.title"),
+                int response = DialogFactory
+                    .genericDialog(
+                        controller,
+                        Translation.getTranslation("local_delete_notice.title"),
                         Translation.getTranslation(
-                                "local_delete_notice.message", folderInfo.name),
+                            "local_delete_notice.message", folderInfo.name),
                         new String[]{
-                                Translation.getTranslation(
-                                        "local_delete_notice.broadcast_deletions"),
-                                Translation.getTranslation(
-                                        "local_delete_notice.remove_folder_locally"),
-                                Translation.getTranslation("general.close")},
+                            Translation
+                                .getTranslation("local_delete_notice.broadcast_deletions"),
+                            Translation
+                                .getTranslation("local_delete_notice.discard_deletions")},
                         0, GenericDialogType.WARN);
                 if (response == 0) {
                     // Broadcast deletions
-                    FolderRepository folderRepository = controller
-                            .getFolderRepository();
-                    Folder folder = folderRepository.getFolder(folderInfo);
-                    folder.scanLocalFiles(true);
-                } else if (response == 1) {
-                    // Remove folder locally
-                    FolderRepository folderRepository = controller
-                        .getFolderRepository();
-                    Folder folder = folderRepository.getFolder(folderInfo);
+                    Folder folder = folderInfo.getFolder(controller);
                     if (folder != null) {
-                        folderRepository.removeFolder(folder, false);
+                        folder.scanLocalFiles(true);
                     }
+                    controller.getUIController().getApplicationModel()
+                        .getNoticesModel().clearNotice(LocalDeleteNotice.this);
+                } else if (response == 1) {
+                    // Discard changes. Remove all old FileInfos with
+                    // deleted-flag.
+                    Folder folder = folderInfo.getFolder(controller);
+                    if (folder != null) {
+                        // Discard all locally deleted files
+                        for (FileInfo fInfo : folder.getKnownFiles()) {
+                            // Discard all changes which are not in sync with dis.
+                            if (!fInfo.inSyncWithDisk(fInfo.getDiskFile(controller.getFolderRepository()))) {
+                                folder.getDAO().delete(null, fInfo);
+                            }
+                        }
+                        // And re-download them
+                        controller.getFolderRepository().getFileRequestor()
+                            .triggerFileRequesting(folderInfo);
+                    }
+                    controller.getUIController().getApplicationModel()
+                        .getNoticesModel().clearNotice(LocalDeleteNotice.this);
                 }
             }
         };
@@ -87,6 +101,30 @@ public class LocalDeleteNotice extends NoticeBase {
     }
 
     public boolean isPersistable() {
+        return true;
+    }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result
+            + ((folderInfo == null) ? 0 : folderInfo.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (getClass() != obj.getClass())
+            return false;
+        LocalDeleteNotice other = (LocalDeleteNotice) obj;
+        if (folderInfo == null) {
+            if (other.folderInfo != null)
+                return false;
+        } else if (!folderInfo.equals(other.folderInfo))
+            return false;
         return true;
     }
 }
