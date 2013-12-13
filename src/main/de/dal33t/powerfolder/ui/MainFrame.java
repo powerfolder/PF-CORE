@@ -65,6 +65,7 @@ import javax.swing.plaf.RootPaneUI;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -682,7 +683,11 @@ public class MainFrame extends PFUIComponent {
             upperText = Translation.getTranslation("main_frame.not_running");
             setupText = Translation.getTranslation("main_frame.activate_now");
         } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
-            upperText = Translation.getTranslation("main_frame.no_folders");
+            if(getController().getOSClient().getAccount().getFolders().isEmpty()){
+                upperText = Translation.getTranslation("folders_tab.no_folders_found");
+            }else {
+                upperText = Translation.getTranslation("main_frame.no_folders");
+            }
             setupText = getApplicationModel().getActionModel()
                 .getNewFolderAction().getName();
             zyncroLabel
