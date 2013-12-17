@@ -236,7 +236,7 @@ public class ConfigurationLoader {
                 try {
                     Files.delete(initFile);
                 } catch (IOException ioe) {
-                    LOG.fine("Unable to deleted file " + initFile);
+                    LOG.fine("Unable to deleted file " + initFile + ". " + ioe);
                 }
             }
         }

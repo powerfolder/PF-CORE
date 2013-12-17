@@ -418,7 +418,7 @@ public class Util {
             Path scut = Paths.get(
                 util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false),
                 shortcutName + Constants.LINK_EXTENSION);
-            Files.delete(scut);
+            Files.deleteIfExists(scut);
             return true;
         } catch (Exception ioe) {
             return false;

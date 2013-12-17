@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -333,7 +334,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             catch (IOException ioe) {
                 // TODO:
-                logWarning(ioe.getMessage());
+                logWarning(ioe.getMessage() + ". " + ioe);
             }
         }
     }
@@ -363,6 +364,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
                 }
+                catch (FileAlreadyExistsException faee) {
+                    // ignore
+                }
                 catch (Exception e) {
                     // TODO: take a closer look at the different Exceptions that can be caught.
                     logWarning("Unable to create base path for folders: "
@@ -380,6 +384,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
+                }
+                catch (FileAlreadyExistsException faee) {
+                    // ignore
                 }
                 catch (Exception e) {
                     // TODO: take a closer look at the different Exceptions that can be caught.
@@ -402,6 +409,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
+                }
+                catch (FileAlreadyExistsException faee) {
+                    // ignore
                 }
                 catch (Exception e) {
                     // TODO: take a closer look at the different Exceptions that can be caught.
@@ -1961,7 +1971,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 // Actually create the directory
                 try {
-                    Files.createDirectory(settings.getLocalBaseDir());
+                    Files.createDirectories(settings.getLocalBaseDir());
                 }
                 catch (IOException ioe) {
                     if (isFine()) {

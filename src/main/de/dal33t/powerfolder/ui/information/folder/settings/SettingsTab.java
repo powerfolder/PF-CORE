@@ -806,7 +806,7 @@ public class SettingsTab extends PFUIComponent {
                     Files.createDirectories(newDirectory);
                 } catch (IOException ioe) {
                     throw new IOException("Failed to create directory: "
-                        + newDirectory);
+                        + newDirectory + ". " + ioe);
                 }
             }
 

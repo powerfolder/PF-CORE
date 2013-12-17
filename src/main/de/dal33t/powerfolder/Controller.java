@@ -2479,7 +2479,7 @@ public class Controller extends PFComponent {
             try {
                 Files.createDirectories(base);
             } catch (IOException ioe) {
-                log.severe("Failed to create " + base.toAbsolutePath().toString());
+                log.severe("Failed to create " + base.toAbsolutePath().toString() + ". " + ioe);
             }
         }
         return base;
@@ -2503,7 +2503,7 @@ public class Controller extends PFComponent {
             try {
                 Files.createDirectories(windowsBaseDir);
             } catch (IOException ioe) {
-                log.severe("Failed to create " + windowsBaseDir.toAbsolutePath().toString());
+                log.severe("Failed to create " + windowsBaseDir.toAbsolutePath().toString() + ". " + ioe);
             }
         }
         try {
@@ -2530,7 +2530,7 @@ public class Controller extends PFComponent {
                 Files.createDirectories(base);
             } catch (IOException ioe) {
                 log.warning("Could not create temp files location '"
-                    + base.toAbsolutePath().toString() + "'");
+                    + base.toAbsolutePath().toString() + "'. " + ioe);
             }
         }
         return base;

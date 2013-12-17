@@ -2625,7 +2625,7 @@ public class TransferManager extends PFComponent {
             try {
                 Files.createDirectories(transferFile.getParent());
             } catch (IOException ioe) {
-                logSevere("Failed to mkdir misc directory!");
+                logSevere("Failed to create misc directory! " + ioe);
             }
         }
         try (ObjectOutputStream oOut = new ObjectOutputStream(

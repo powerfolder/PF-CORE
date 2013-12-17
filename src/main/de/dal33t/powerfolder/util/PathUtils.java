@@ -299,13 +299,11 @@ public class PathUtils {
             throw new NullPointerException("To file is null");
         }
 
-        if (Files.exists(to)) {
-            try {
-                Files.delete(to);
-            } catch (IOException ioe) {
-                throw new IOException("Unable to delete old file "
-                    + to.toAbsolutePath().toString(), ioe);
-            }
+        try {
+            Files.deleteIfExists(to);
+        } catch (IOException ioe) {
+            throw new IOException("Unable to delete old file "
+                + to.toAbsolutePath().toString(), ioe);
         }
         if (to.getParent() != null && Files.notExists(to.getParent())) {
             Files.createDirectories(to.getParent());
@@ -658,7 +656,7 @@ public class PathUtils {
                             } catch (IOException ioe) {
                                 throw new IOException(
                                     "Unable to delete file in target directory: "
-                                        + entry.toAbsolutePath());
+                                        + entry.toAbsolutePath() + ". " + ioe);
                             }
                         } else if (Files.isDirectory(entry)) {
                             recursiveDelete(entry);
@@ -892,7 +890,7 @@ public class PathUtils {
                 Files.delete(desktopIniFile);
                 setAttributesOnWindows(directory, null, false);
             } catch (IOException ioe) {
-
+                log.info(ioe.getMessage());
             }
         }
     }

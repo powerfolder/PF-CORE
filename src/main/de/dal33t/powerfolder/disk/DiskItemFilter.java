@@ -177,9 +177,7 @@ public class DiskItemFilter {
                 Path backup = file.getParent().resolve(file.getFileName().toString()
                     + ".backup");
                 if (Files.exists(file)) {
-                    if (Files.exists(backup)) {
-                        Files.delete(backup);
-                    }
+                    Files.deleteIfExists(backup);
                     Files.move(file, backup);
                 }
             }

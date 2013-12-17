@@ -325,7 +325,7 @@ public class Folder extends PFComponent {
         if (encrypted) {
             localBase = folderSettings.getLocalBaseDir();
             try {
-                Files.createDirectory(localBase);
+                Files.createDirectories(localBase);
             }
             catch (IOException ioe) {
                 // Ignore.
@@ -798,7 +798,7 @@ public class Folder extends PFComponent {
 
         if (Files.notExists(targetFile.getParent())) {
             try {
-                Files.createDirectory(targetFile.getParent());
+                Files.createDirectories(targetFile.getParent());
             }
             catch (IOException ioe) {
                 // Ignore.
@@ -815,7 +815,7 @@ public class Folder extends PFComponent {
                     && !dirContent.hasNext())
                 {
                     Files.delete(targetFile.getParent());
-                    Files.createDirectory(targetFile.getParent());
+                    Files.createDirectories(targetFile.getParent());
                     ok = true;
                 }
             } catch (IOException ioe) {
@@ -875,16 +875,14 @@ public class Folder extends PFComponent {
                             return false;
                         }
                     }
-                    if (Files.exists(targetFile)) {
-                        try {
-                            Files.delete(targetFile);
-                        } catch (IOException ioe) {
-                            logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                                + targetFile.toAbsolutePath()
-                                + ". "
-                                + fInfo.toDetailString());
-                            return false;
-                        }
+                    try {
+                        Files.deleteIfExists(targetFile);
+                    } catch (IOException ioe) {
+                        logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                            + targetFile.toAbsolutePath()
+                            + ". "
+                            + fInfo.toDetailString());
+                        return false;
                     }
                 }
             } else {
@@ -963,13 +961,11 @@ public class Folder extends PFComponent {
                     return false;
                 }
 
-                if (Files.exists(tempFile)) {
-                    try {
-                        Files.delete(tempFile);
-                    }
-                    catch (IOException e) {
-                        logSevere("Unable to remove temp file: " + tempFile);
-                    }
+                try {
+                    Files.deleteIfExists(tempFile);
+                }
+                catch (IOException e) {
+                    logSevere("Unable to remove temp file: " + tempFile);
                 }
             }
 
@@ -1487,11 +1483,11 @@ public class Folder extends PFComponent {
             synchronized (scanLock) {
                 if (dirInfo.isDeleted()) {
                     try {
-                        Files.delete(dir);
+                        Files.deleteIfExists(dir);
                     }
                     catch (IOException ioe) {
                         logSevere("Unable to deleted directory: " + dir + ". "
-                            + dirInfo.toDetailString());
+                            + dirInfo.toDetailString() + ". " + ioe);
                         return;
                     }
                 } else {
@@ -1507,7 +1503,7 @@ public class Folder extends PFComponent {
                 }
             }
         } catch (IOException ioe) {
-            
+            logInfo("Could not delete " + dir + ". " + ioe);
         } finally {
             watcher.removeIgnoreFile(dirInfo);
         }
@@ -1897,8 +1893,9 @@ public class Folder extends PFComponent {
         // Not longer needed:
         Path dbFileBackup = getSystemSubDir().resolve(  Constants.DB_BACKUP_FILENAME);
         try {
-            Files.deleteIfExists(dbFileBackup);            
+            Files.deleteIfExists(dbFileBackup);
         } catch (Exception e) {
+            logFine("Unable to delete file " + dbFileBackup + ". " + e);
         }
         
         try {
@@ -4150,13 +4147,11 @@ public class Folder extends PFComponent {
                             + ". " + e, e);
                     }
                 }
-                if (Files.exists(file)) {
-                    try {
-                        Files.delete(file);
-                    } catch (IOException ioe) {
-                        logSevere("Unable to delete file " + file + ". " + ioe);
-                        return false;
-                    }
+                try {
+                    Files.deleteIfExists(file);
+                } catch (IOException ioe) {
+                    logSevere("Unable to delete file " + file + ". " + ioe);
+                    return false;
                 }
             }
             return true;

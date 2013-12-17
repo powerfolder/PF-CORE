@@ -176,7 +176,7 @@ public class Updater extends Thread {
 
         try {
             // Rename file and set modified/build time
-            Files.deleteIfExists(targetFile);                
+            Files.deleteIfExists(targetFile);
             Files.move(tempFile, targetFile);
             Files.setLastModifiedTime(targetFile, FileTime.fromMillis(con.getLastModified()));
     

@@ -175,7 +175,12 @@ public class WinUtils extends Loggable {
                 baseDir.toAbsolutePath().toString(), null);
             createLink(link, shortCut.toAbsolutePath().toString());
         } else {
-            Files.delete(shortCut);
+            try {
+                Files.deleteIfExists(shortCut);
+            } catch (IOException ioe) {
+                LOG.warning("Unable to delete shortcut " + shortCut.toString()
+                    + ". " + ioe);
+            }
         }
     }
     
@@ -192,7 +197,8 @@ public class WinUtils extends Loggable {
         try {
             Files.delete(shortCut);
         } catch (IOException ioe) {
-            LOG.warning(ioe.getMessage());
+            LOG.warning("Unable to delete shortcut " + shortcutName + ". "
+                + ioe);
         }
     }
 
