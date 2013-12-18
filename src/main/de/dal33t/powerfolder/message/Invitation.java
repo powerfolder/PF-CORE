@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -75,6 +76,10 @@ public class Invitation extends FolderRelatedMessage {
     // Since 6.0:
     private String username;
 
+    // Since 9.1
+    private String oid;
+    private String inviteeUsername;
+
     /**
      * Constructor
      *
@@ -84,6 +89,11 @@ public class Invitation extends FolderRelatedMessage {
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
         this.invitor = invitor;
+        oid = IdGenerator.makeId();
+    }
+
+    public String getOID() {
+        return oid;
     }
 
     public long getSize() {
@@ -226,6 +236,14 @@ public class Invitation extends FolderRelatedMessage {
         this.username = username;
     }
 
+    public void setInvitee(String username) {
+        this.inviteeUsername = username;
+    }
+
+    public String getInvitee() {
+        return inviteeUsername;
+    }
+
     public MemberInfo getInvitor() {
         return invitor;
     }
@@ -281,6 +299,7 @@ public class Invitation extends FolderRelatedMessage {
     public int hashCode() {
         int prime = 31;
         int result = 1;
+        result = prime * result + (oid == null ? 0 : oid.hashCode());
         result = prime * result
             + (invitationText == null ? 0 : invitationText.hashCode());
         result = prime * result + (invitor == null ? 0 : invitor.hashCode());
@@ -288,6 +307,8 @@ public class Invitation extends FolderRelatedMessage {
             + (permission == null ? 0 : permission.hashCode());
         result = prime * result + relative;
         result = prime * result + (username == null ? 0 : username.hashCode());
+        result = prime * result
+            + (inviteeUsername == null ? 0 : inviteeUsername.hashCode());
         result = prime
             * result
             + (suggestedLocalBase == null ? 0 : suggestedLocalBase.hashCode());
@@ -315,6 +336,13 @@ public class Invitation extends FolderRelatedMessage {
             return false;
         }
         Invitation other = (Invitation) obj;
+        if (oid == null) {
+            if (other.oid != null) {
+                return false;
+            }
+        }else if (!oid.equals(other.oid)) {
+            return false;
+        }
         if (invitationText == null) {
             if (other.invitationText != null) {
                 return false;
@@ -334,6 +362,13 @@ public class Invitation extends FolderRelatedMessage {
                 return false;
             }
         } else if (!username.equals(other.username)) {
+            return false;
+        }
+        if (inviteeUsername == null) {
+            if (other.inviteeUsername != null) {
+                return false;
+            }
+        } else if (!inviteeUsername.equals(other.inviteeUsername)) {
             return false;
         }
         if (permission == null) {
