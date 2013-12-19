@@ -371,7 +371,7 @@ public enum ConfigurationEntry {
      */
     UPDATE_SILENT_ALLOWED("update.silent.allowed", true),
 
-    UPDATE_FORCE("update.force", true),
+    UPDATE_FORCE("update.force", false),
 
     // Server connection ******************************************************
 
