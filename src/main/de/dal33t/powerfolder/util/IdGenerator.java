@@ -61,24 +61,6 @@ public class IdGenerator {
         // Version 2 of folder IDs
         return "2" + makeId();
     }
-    
-    /**
-     * Generates a randomly unique, base58 encoded id for a UUID. The UUID is
-     * 128 bits (16 bytes) strong. String does NOT contain any special
-     * characters NOR url incompatible chars.
-     * 
-     * @see UUID
-     * @return the base58 encoded uuid
-     */
-    public static String makeFolderId(String organizationOID) {
-        // Version 2 of folder IDs
-        if (StringUtils.isNotBlank(organizationOID)) {
-            return "3" + organizationOID + "-" + makeId();
-        } else {
-            return "2" + makeId();
-        }
-    }
-
 
     /**
      * @return a random UUID as byte array (16 bytes strong)
