@@ -1215,22 +1215,34 @@ public class ServerClient extends PFComponent {
         }
         final Member targetServerNode = targetServer.getNode().getNode(
             getController(), true);
-        boolean delayedAndChecked = currentlyHammeringServers()
+        boolean checked = currentlyHammeringServers()
             || !targetServerNode.isConnected();
-        if (!delayedAndChecked) {
+        if (!checked) {
             logInfo("Switching from " + server.getNick() + " to "
                 + targetServerNode.getNick());
             changeToServer(targetServer);
         } else {
-            logInfo("Switching from " + server.getNick() + " to "
-                + targetServerNode.getNick() + " in " + HAMMER_DELAY / 1000
-                + "s");
-            try {
-                Thread.sleep(HAMMER_DELAY);
-            } catch (InterruptedException e) {
-                logFiner(e);
-                return;
+            if (currentlyHammeringServers()) {
+                logInfo("Switching from " + server.getNick() + " to "
+                    + targetServerNode.getNick() + " in " + HAMMER_DELAY / 1000
+                    + "s");
+            } else {
+                logInfo("Switching from " + server.getNick() + " to "
+                    + targetServerNode.getNick() + " after connect");
             }
+
+            Waiter w = new Waiter(HAMMER_DELAY);
+            while (!w.isTimeout()) {
+                w.waitABit();
+                if (!currentlyHammeringServers()
+                    && targetServerNode.isConnected())
+                {
+                    break;
+                }
+            }
+        }
+        
+        if (checked) {
             getController().getIOProvider().startIO(new Runnable() {
                 public void run() {
                     if (!targetServerNode.isConnected()) {
@@ -1250,7 +1262,6 @@ public class ServerClient extends PFComponent {
                 }
             });
         }
-
     }
 
     private void updateFriendsList(Account a) {
