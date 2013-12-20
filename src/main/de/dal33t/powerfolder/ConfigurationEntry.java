@@ -205,6 +205,13 @@ public enum ConfigurationEntry {
 
     DIST_URL("dist.url", ""),
 
+    /**
+     * PFS-1117: Optional name of class to use as distribution. Forces and overrides
+     * loading via ServiceLoader /
+     * de.dal33t.powerfolder.distribution.Distribution
+     */
+    DIST_CLASSNAME("dist.classname"),
+
     // Server settings ********************************************************
 
     /**

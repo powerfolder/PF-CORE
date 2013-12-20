@@ -2612,17 +2612,27 @@ public class Controller extends PFComponent {
 
     private void initDistribution() {
         try {
-            ServiceLoader<Distribution> brandingLoader = ServiceLoader
-                .load(Distribution.class);
-            for (Distribution br : brandingLoader) {
-                if (distribution != null) {
-                    logWarning("Found multiple distribution classes: "
-                        + br.getName() + ", already using "
-                        + distribution.getName());
-                    break;
-                }
-                distribution = br;
+            if (ConfigurationEntry.DIST_CLASSNAME.hasValue(getController())) {
+                Class<?> distClass = Class
+                    .forName(ConfigurationEntry.DIST_CLASSNAME
+                        .getValue(getController()));
+                distribution = (Distribution) distClass.newInstance();
             }
+
+            if (distribution == null) {
+                ServiceLoader<Distribution> brandingLoader = ServiceLoader
+                    .load(Distribution.class);
+                for (Distribution br : brandingLoader) {
+                    if (distribution != null) {
+                        logWarning("Found multiple distribution classes: "
+                            + br.getName() + ", already using "
+                            + distribution.getName());
+                        break;
+                    }
+                    distribution = br;
+                }
+            }
+            
             if (distribution == null) {
                 if (ProUtil.isRunningProVersion()) {
                     distribution = new PowerFolderPro();
@@ -2633,7 +2643,7 @@ public class Controller extends PFComponent {
                     + distribution.getName());
             }
             distribution.init(this);
-            logFine("Running distribution: " + distribution.getName());
+            logInfo("Running distribution: " + distribution.getName());
         } catch (Exception e) {
             logSevere("Failed to initialize distribution "
                 + (distribution == null ? "null" : distribution.getName()), e);
