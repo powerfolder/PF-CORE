@@ -562,8 +562,7 @@ public class ServerClient extends PFComponent {
         }
         String folderURI = getFolderURL(foInfo);
         folderURI = folderURI.replace(getWebURL(), "");
-        String loginURL = getController().getOSClient()
-            .getLoginURLWithCredentials();
+        String loginURL = getLoginURLWithCredentials();
         if (loginURL.contains("?")) {
             loginURL += "&";
         } else {
