@@ -1792,7 +1792,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitForCondition(40, new ConditionWithMessage() {
+        TestHelper.waitForCondition(70, new ConditionWithMessage() {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
