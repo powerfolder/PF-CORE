@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -75,6 +76,8 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     // The optional test folder
     private FolderInfo testFolder;
+    
+    private Account lisasAccount;
 
     @Override
     protected void setUp() throws Exception {
@@ -307,8 +310,13 @@ public abstract class TwoControllerTestCase extends TestCase {
                 .getNode(controllerLisa, true);
             ServerClient client = getContollerLisa().getOSClient();
             client.setServer(bartAtLisa, true);
-            client.getAccountService().register("lisa", "password", false,
-                null, null, false);
+            if (lisasAccount == null) {
+                lisasAccount = client.getAccountService().register("lisa",
+                    "password", false, null, null, false);
+                if (lisasAccount == null || !lisasAccount.isValid()) {
+                    fail("Unable to register lisa's user account at bart");
+                }
+            }
             client.login("lisa", "password".toCharArray());
         }
 
