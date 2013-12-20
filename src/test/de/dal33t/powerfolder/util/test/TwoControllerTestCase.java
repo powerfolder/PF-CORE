@@ -271,12 +271,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @return true if the lisa and bart are connected.
      */
     protected boolean tryToConnectBartAndLisa() {
-        // Wait for connection between both controllers
-        try {
-            return connect(controllerLisa, controllerBart);
-        } catch (ConnectionException e) {
-            return false;
-        }
+        return connect(controllerLisa, controllerBart);
     }
 
     /**
@@ -290,14 +285,8 @@ public abstract class TwoControllerTestCase extends TestCase {
      * Connects both controllers and optionally logs in lisa at bart.
      */
     protected void connectBartAndLisa(boolean loginLisa) {
-        // Wait for connection between both controllers
-        try {
-            if (!connect(controllerLisa, controllerBart)) {
-                fail("Unable to connect Bart and Lisa");
-            }
-        } catch (ConnectionException e) {
-            e.printStackTrace();
-            fail(e.toString());
+        if (!connect(controllerLisa, controllerBart)) {
+            fail("Unable to connect Bart and Lisa");
         }
 
         assertTrue("Bart is not detected as local @ lisa", controllerLisa
@@ -383,7 +372,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @throws ConnectionException
      */
     private static boolean connect(final Controller cont1,
-        final Controller cont2) throws ConnectionException
+        final Controller cont2)
     {
         Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
@@ -393,14 +382,20 @@ public abstract class TwoControllerTestCase extends TestCase {
         System.out.println("Con to: "
             + cont2.getConnectionListener().getAddress());
 
+        Exception e = null;
         try {
             cont1.connect(cont2.getConnectionListener().getAddress());
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            e = ex;
             // Try harder.
-            cont1.connect(cont2.getConnectionListener().getAddress());
+            try {
+                cont1.connect(cont2.getConnectionListener().getAddress());                
+            } catch (Exception e2) {
+                e = e2;
+            }
         }
         try {
-            TestHelper.waitForCondition(20, new Condition() {
+            TestHelper.waitForCondition(10, new Condition() {
                 public boolean reached() {
                     Member member2atCon1 = cont1.getNodeManager().getNode(
                         cont2.getMySelf().getId());
@@ -417,8 +412,8 @@ public abstract class TwoControllerTestCase extends TestCase {
                     return connected && nodeManagersOK;
                 }
             });
-        } catch (RuntimeException e) {
-            System.out.println("Unable to connect Controllers");
+        } catch (RuntimeException re) {
+            System.out.println("Unable to connect Controllers: " + e);
             return false;
         }
         System.out.println("Both Controller connected");
