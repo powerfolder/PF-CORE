@@ -371,11 +371,11 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @throws InterruptedException
      * @throws ConnectionException
      */
-    private static boolean connect(final Controller cont1,
+    public static boolean connect(final Controller cont1,
         final Controller cont2)
     {
-        Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
-        Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
+        Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet: " + cont1);
+        Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet: " + cont2);
 
         // Connect
         System.out.println("Connecting controllers...");
@@ -413,7 +413,7 @@ public abstract class TwoControllerTestCase extends TestCase {
                 }
             });
         } catch (RuntimeException re) {
-            System.out.println("Unable to connect Controllers: " + e);
+            System.err.println("Unable to connect Controllers: " + e);
             return false;
         }
         System.out.println("Both Controller connected");

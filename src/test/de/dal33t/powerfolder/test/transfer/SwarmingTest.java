@@ -311,7 +311,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             .getFileName().toString());
         scanFolder(getFolderOf("1"));
 
-        assertTrue(tryToConnect(getContoller("1"), getContoller("5")));
+        assertTrue(connectOrFail(getContoller("1"), getContoller("5")));
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
@@ -338,7 +338,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             .getFileName().toString());
         scanFolder(getFolderOf("5"));
 
-        assertTrue(tryToConnect(getContoller("4"), getContoller("5")));
+        assertTrue(connectOrFail(getContoller("4"), getContoller("5")));
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {

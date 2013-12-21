@@ -58,8 +58,8 @@ public class UDTConnectionTest extends FiveControllerTestCase {
             return;
         }
 
-        connect(getContollerBart(), getContollerLisa());
-        connect(getContollerBart(), getContollerMarge());
+        connectOrFail(getContollerBart(), getContollerLisa());
+        connectOrFail(getContollerBart(), getContollerMarge());
         getContollerLisa().getMySelf().getInfo().setConnectAddress(
             new InetSocketAddress("192.168.0.4", 10000));
         getContollerBart().getMySelf().getInfo().setConnectAddress(
