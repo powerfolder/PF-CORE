@@ -196,6 +196,14 @@ public class MemberInfo implements Serializable {
      */
     public boolean isOnSameNetwork(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
+        if (controller.getNodeManager().getNetworkId()
+            .equals(Constants.NETWORK_ID_ANY))
+        {
+            return true;
+        }
+        if (networkId.equals(Constants.NETWORK_ID_ANY)) {
+            return true;
+        }
         return controller.getNodeManager().getNetworkId().equals(networkId);
     }
 

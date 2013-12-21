@@ -119,6 +119,11 @@ public class Constants {
             new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
     // Network architecture constants ******************************************
+            
+    /**
+     * PFC-2455: Network ID to set to connect to clients with any network ID
+     */
+    public static final String NETWORK_ID_ANY = "ANY";
 
     /**
      * The maximum number of files on a FileList. If list ist greater, it is
