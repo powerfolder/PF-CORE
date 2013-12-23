@@ -350,9 +350,7 @@ public class Folder extends PFComponent {
                 .resolve(folderSettings.getLocalBaseDir());
             logWarning("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
-            if (Files.exists(folderSettings.getLocalBaseDir())
-                && Files.notExists(localBase))
-            {
+            if (Files.notExists(localBase)) {
                 try {
                     Files.createDirectories(localBase);
                 }
@@ -399,7 +397,7 @@ public class Folder extends PFComponent {
         } catch (FolderException e) {
             logWarning("Unable to open " + toString() + " at '"
                 + localBase.toAbsolutePath()
-                + "'. Local base directory is inaccessable.");
+                + "'. Local base directory is inaccessable. " + e);
             deviceDisconnected = true;
         }
 
