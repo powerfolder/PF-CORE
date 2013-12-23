@@ -75,7 +75,7 @@ public class Organization implements Serializable {
         this(IdGenerator.makeId());
     }
 
-    Organization(String oid) {
+    public Organization(String oid) {
         Reject.ifBlank(oid, "OID");
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
