@@ -349,7 +349,12 @@ public enum ConfigurationEntry {
      * #2248 Automatically assign client to server by IP address
      */
     CONFIG_ASSIGN_IP_LIST("config.assign.iplist"),
-    
+
+    /**
+     * PFS-1107 associate a config to an ldap group
+     */
+    CONFIG_LDAP_GROUP("config.ldap.group"),
+
     /**
      * PFC-2184 Specify server URL as installer command line parameter
      */
