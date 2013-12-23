@@ -88,7 +88,7 @@ public class PathUtils {
         return path.getFileSystem().provider().getScheme()
             .equals(Constants.ZYNCRO_SCHEME);
     }
-    
+
     /**
      * Searches and takes care that this directory is new and not yet existing.
      * If dir already exists with the same raw name it appends (1), (2), and so
@@ -124,11 +124,11 @@ public class PathUtils {
         try {
             Files.createDirectories(candidate);
         } catch (UnsupportedOperationException uoe) {
-            log.info(uoe.getMessage());
+            log.info("Could not create directory (unsupported). " + uoe);
         } catch (FileAlreadyExistsException faee) {
-            log.info(faee.getMessage());
+            log.fine("File already exists. " + faee);
         } catch (IOException ioe) {
-            log.info(ioe.getMessage());
+            log.info("Could not create driectory. " + ioe);
         }
 
         return candidate;
@@ -163,7 +163,8 @@ public class PathUtils {
                 i++;
             }
         } catch (IOException ioe) {
-            log.warning(ioe.getMessage());
+            log.warning("Could not count number of siblings. " + ioe);
+            return 0;
         }
         return i;
     }
@@ -196,7 +197,7 @@ public class PathUtils {
 
             return !it.hasNext();
         } catch (IOException ioe) {
-            log.warning(ioe.getMessage());
+            log.warning("Error checking for empty directory. " + ioe);
         }
 
         return false;
@@ -219,8 +220,8 @@ public class PathUtils {
     }
 
     /**
-     * PFC-2374 & SYNC-180
-     * Workaround for JNotify on Mac to get the "real" file name.
+     * PFC-2374 & SYNC-180 Workaround for JNotify on Mac to get the "real" file
+     * name.
      * 
      * @param rootPath
      * @param name
@@ -383,10 +384,12 @@ public class PathUtils {
         }
     }
 
-    public static void rawCopy(InputStream from, OutputStream to) throws IOException {
+    public static void rawCopy(InputStream from, OutputStream to)
+        throws IOException
+    {
         Reject.ifNull(from, "Source is null");
         Reject.ifNull(to, "Target is null");
-        
+
         try (InputStream is = from; OutputStream os = to) {
             int BUFFER_SIZE = 8192;
             byte[] BUFFER = new byte[BUFFER_SIZE];
@@ -725,7 +728,8 @@ public class PathUtils {
      */
     public static boolean isSubdirectory(Path parent, Path targetChild) {
         String parentPathString = parent.toAbsolutePath().toString();
-        String childPathString  = targetChild.getParent().toAbsolutePath().toString();
+        String childPathString = targetChild.getParent().toAbsolutePath()
+            .toString();
 
         if (parentPathString == null || childPathString == null) {
             return false;
@@ -829,7 +833,7 @@ public class PathUtils {
                 }
             }
         } catch (IOException ioe) {
-            log.info(ioe.getMessage());
+            log.info("Could not access last modification date. " + ioe);
             return;
         }
         if (!iniExists && usePfIcon) {
@@ -873,8 +877,7 @@ public class PathUtils {
                 // work.
                 // makeSystemOnWindows(desktopIniFile);
             } catch (IOException e) {
-                log.log(Level.WARNING, "Problem writing Desktop.ini file(s). "
-                    + e);
+                log.warning("Problem writing Desktop.ini file(s). " + e);
             } finally {
                 if (pw != null) {
                     try {
@@ -890,7 +893,7 @@ public class PathUtils {
                 Files.delete(desktopIniFile);
                 setAttributesOnWindows(directory, null, false);
             } catch (IOException ioe) {
-                log.info(ioe.getMessage());
+                log.info("Could not delete ini file. " + ioe);
             }
         }
     }
@@ -925,7 +928,7 @@ public class PathUtils {
                 Files.delete(desktopIniFile);
                 setAttributesOnWindows(directory, null, false);
             } catch (IOException ioe) {
-                log.info(ioe.getMessage());
+                log.info("Could not delete ini file. " + ioe);
             }
         }
     }
@@ -1089,7 +1092,7 @@ public class PathUtils {
             w -= read;
         }
     }
-    
+
     /**
      * Copies a given amount of data from one RandomAccessFile to another.
      * 
@@ -1267,7 +1270,7 @@ public class PathUtils {
         if (firstSystemDir < 0) {
             return true;
         }
-       
+
         if (folder.getInfo().isMetaFolder()) {
             // MetaFolders are in the POWERFOLDER_SYSTEM_SUBDIR of the parent,
             // like
@@ -1321,7 +1324,7 @@ public class PathUtils {
 
             return it.hasNext();
         } catch (IOException ioe) {
-            log.info(ioe.getMessage());
+            log.info("Could not check for content. " + ioe);
         }
 
         return false;
