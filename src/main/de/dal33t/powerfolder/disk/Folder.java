@@ -3024,9 +3024,15 @@ public class Folder extends PFComponent {
             return;
         }
 
-        if (isFine()) {
-            logFine("File was deleted by " + remoteFile.getModifiedBy()
-                + ", deleting local: " + localFile.toDetailString() + " at "
+        if (isInfo()) {
+            // PFC-2434
+            AccountInfo by = null;
+            if (remoteFile.getModifiedBy() != null) {
+                by = remoteFile.getModifiedBy().getNode(getController(), true)
+                    .getAccountInfo();
+            }
+            logInfo("File " + localFile + " was deleted by "
+                + by.getDisplayName() + ", deleting local at "
                 + localCopy.toAbsolutePath());
         }
 
