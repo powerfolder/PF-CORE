@@ -1390,7 +1390,7 @@ public class ServerClient extends PFComponent {
             if (ConfigurationEntry.SERVER_LOAD_NODES
                 .getValueBoolean(getController()))
             {
-                getController().getNodeManager().loadServerNodes();
+                getController().getNodeManager().loadServerNodes(this);
             }
             
             if (!isConnected() || !isLoggedIn()) {
@@ -1704,7 +1704,11 @@ public class ServerClient extends PFComponent {
     }
 
     public String toString() {
-        return "ServerClient to " + (server != null ? server : "n/a");
+        return "ServerClient "
+            + (username != null ? username : "?")
+            + "@"
+            + (server != null ? server.getNick() + "("
+                + server.getReconnectAddress() + ")" : "n/a");
     }
 
     // Inner classes **********************************************************

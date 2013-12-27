@@ -1433,9 +1433,8 @@ public class NodeManager extends PFComponent {
      * 
      * @return the number of total servers know now.
      */
-    public void loadServerNodes() {
-        String serverNodesURL = getController().getOSClient().getWebURL(
-            SERVER_NODES_URI, false);
+    public void loadServerNodes(ServerClient client) {
+        String serverNodesURL = client.getWebURL(SERVER_NODES_URI, false);
         if (StringUtils.isNotBlank(serverNodesURL)) {
             try {
                 loadNodesFrom(new URL(serverNodesURL));
@@ -1585,7 +1584,7 @@ public class NodeManager extends PFComponent {
         {
             getController().getIOProvider().startIO(new Runnable() {
                 public void run() {
-                    loadServerNodes();
+                    loadServerNodes(getController().getOSClient());
                 }
             });
         }
