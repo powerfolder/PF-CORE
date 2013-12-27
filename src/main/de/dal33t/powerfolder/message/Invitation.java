@@ -222,7 +222,7 @@ public class Invitation extends FolderRelatedMessage {
     }
 
     // Return the user name if not blank, else the invitor nick. 
-    public String getBestUsername() {
+    public String getInvitorUsername() {
         if (StringUtils.isBlank(username)) {
             if (invitor == null) {
                 return "";
@@ -232,15 +232,15 @@ public class Invitation extends FolderRelatedMessage {
         return username;
     }
 
-    public void setUsername(String username) {
+    public void setInvitorUsername(String username) {
         this.username = username;
     }
 
-    public void setInvitee(String username) {
+    public void setInviteeUsername(String username) {
         this.inviteeUsername = username;
     }
 
-    public String getInvitee() {
+    public String getInviteeUsername() {
         return inviteeUsername;
     }
 

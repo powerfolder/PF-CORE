@@ -1515,7 +1515,7 @@ public class UIController extends PFComponent {
                 Notice notice = new SimpleNotificationNotice(
                     Translation.getTranslation("notice.invitation.title"),
                     Translation.getTranslation("notice.invitation.summary",
-                        invitation.getBestUsername(),
+                        invitation.getInvitorUsername(),
                         invitation.folder.getLocalizedName()));
                 applicationModel.getNoticesModel().handleNotice(notice);
             } else {
@@ -1523,7 +1523,7 @@ public class UIController extends PFComponent {
                 Notice notice = new InvitationNotice(
                     Translation.getTranslation("notice.invitation.title"),
                     Translation.getTranslation("notice.invitation.summary",
-                        invitation.getBestUsername(),
+                        invitation.getInvitorUsername(),
                         invitation.folder.getLocalizedName()), invitation);
                 applicationModel.getNoticesModel().handleNotice(notice);
             }

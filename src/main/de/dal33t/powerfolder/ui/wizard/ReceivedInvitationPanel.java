@@ -175,7 +175,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         // Invite info
 
         builder.addLabel(Translation.getTranslation(
-            "wizard.folder_invitation.intro", invitation.getBestUsername(),
+            "wizard.folder_invitation.intro", invitation.getInvitorUsername(),
             invitation.folder.name), cc.xyw(1, 1, 4));
 
         // Message
@@ -276,7 +276,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             folderNameLabel.setText(invitation.folder.name);
 
             invitorHintLabel.setEnabled(true);
-            invitorLabel.setText(invitation.getBestUsername());
+            invitorLabel.setText(invitation.getInvitorUsername());
 
             invitationMessageHintLabel.setEnabled(true);
             invitationMessageLabel

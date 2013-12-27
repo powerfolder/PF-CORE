@@ -4629,7 +4629,7 @@ public class Folder extends PFComponent {
         inv.setSuggestedLocalBase(getController(), localBase);
         String username = getController().getOSClient().getUsername();
         if (StringUtils.isNotBlank(username)) {
-            inv.setUsername(username);
+            inv.setInvitorUsername(username);
         }
         return inv;
     }
