@@ -1005,7 +1005,9 @@ public class ServerClient extends PFComponent {
         if (getController().isShuttingDown() || !getController().isStarted()) {
             return;
         }
-        logFine("findAlternativeServer: " + getServersInCluster());
+        if (isFine()) {
+            logFine("findAlternativeServer: " + getServersInCluster());            
+        }
         for (Member server : getServersInCluster()) {
             if (!server.isConnected()) {
                 server.markForImmediateConnect();
