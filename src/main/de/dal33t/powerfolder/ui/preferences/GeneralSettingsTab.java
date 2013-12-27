@@ -553,14 +553,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
     }
 
-
     private class UpdateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (getController().getUpdateSettings() != null) {
                 ManuallyInvokedUpdateHandler handler = new ManuallyInvokedUpdateHandler(
                     getController());
-                Updater updater = new Updater(getController(), getController()
-                    .getUpdateSettings(), handler);
+                Updater updater = new Updater(getController(), handler);
                 updater.start();
             }
             PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);

@@ -51,6 +51,10 @@ public class Updater extends Thread {
     protected UpdateSetting settings;
     private UpdaterHandler handler;
 
+    public Updater(Controller controller, UpdaterHandler handler) {
+        this(controller, controller.getUpdateSettings(), handler);
+    }
+
     public Updater(Controller controller, UpdateSetting settings,
         UpdaterHandler handler)
     {
@@ -83,10 +87,7 @@ public class Updater extends Thread {
             @Override
             public void run() {
                 // Check for an update
-                if (controller.getUpdateSettings() != null) {
-                    new Updater(controller, controller.getUpdateSettings(),
-                        updateHandler).start();
-                }
+                new Updater(controller, updateHandler).start();
             }
         };
         // Check for shortly after start.
