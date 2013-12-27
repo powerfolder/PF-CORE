@@ -286,7 +286,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         }
 
         // Wait to sync the deletions
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitMilliSeconds(3000);
 
         // Test the correct deletions state at bart
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
