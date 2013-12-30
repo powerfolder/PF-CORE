@@ -94,7 +94,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
         // W8 4 filelist
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(2000);
         getFolderAtBart().maintainFolderDB(0);
         getFolderAtLisa().maintainFolderDB(0);
 
@@ -108,7 +108,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         // Let the copy
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(70, new Condition() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() == 1;
@@ -168,7 +168,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         // Abort of upload should have been sent to lisa = NO download.
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(70, new Condition() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countNumberOfDownloads(getFolderAtLisa()) == 0;
@@ -286,7 +286,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             fInfoArchivedAtBart.getModifiedDate());
 
         // The old copy should have been distributed.
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(70, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtBart().getKnownItemCount() == 1
                     && getFolderAtLisa().getKnownItemCount() == 1;
@@ -334,7 +334,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         connectBartAndLisa();
         // The old copy should have been distributed.
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(70, new ConditionWithMessage() {
 
             public boolean reached() {
                 // Hack: #2557
@@ -381,7 +381,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 5000000);
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(70, new Condition() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFiles().size() > 0;
             }
@@ -393,7 +393,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             TestHelper.waitMilliSeconds(400);
             scanFolder(getFolderAtBart());
         }
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(70, new Condition() {
             public boolean reached() {
                 Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
                     .next()

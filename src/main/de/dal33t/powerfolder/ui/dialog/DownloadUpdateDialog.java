@@ -198,8 +198,8 @@ public class DownloadUpdateDialog extends PFUIComponent {
     }
 
     private final class MyStreamCallback implements StreamCallback {
-        public boolean streamPositionReached(final int position,
-            final int totalAvailable)
+        public boolean streamPositionReached(final long position,
+            final long totalAvailable)
         {
             Runnable runner = new Runnable() {
                 public void run() {
@@ -207,7 +207,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
                     // displayIfNessesary();
 
                     // Set completion percentage
-                    int completePercentage = position * 100 / totalAvailable;
+                    int completePercentage = (int) (position * 100 / totalAvailable);
                     setCompletionPercentage(completePercentage);
 
                     // Close

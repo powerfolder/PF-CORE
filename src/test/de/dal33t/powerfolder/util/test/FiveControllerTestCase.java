@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.Reject;
  * After <code>#setUp()</code> is invoked it is ensured, that all controllers
  * are running. There are several utility methods to bring the test into a usual
  * state. To connect two controllers just call
- * <code>{@link #tryToConnect(Controller, Controller)}</code> in
+ * <code>{@link #connect(Controller, Controller)}</code> in
  * <code>{@link #setUp()}</code>. After that all controllers are connected,
  * Lisa, Marge and Maggie run in normal node, Bart and Homer act as supernode.
  * <p>
@@ -121,16 +121,16 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
      * @return true if succeeded
      */
     protected boolean tryToConnectSimpsons() {
-        return tryToConnect(getContollerHomer(), getContollerBart())
-            && tryToConnect(getContollerHomer(), getContollerMarge())
-            && tryToConnect(getContollerHomer(), getContollerLisa())
-            && tryToConnect(getContollerHomer(), getContollerMaggie())
-            && tryToConnect(getContollerBart(), getContollerMarge())
-            && tryToConnect(getContollerBart(), getContollerLisa())
-            && tryToConnect(getContollerBart(), getContollerMaggie())
-            && tryToConnect(getContollerMarge(), getContollerLisa())
-            && tryToConnect(getContollerMarge(), getContollerMaggie())
-            && tryToConnect(getContollerLisa(), getContollerMaggie());
+        return connect(getContollerHomer(), getContollerBart())
+            && connect(getContollerHomer(), getContollerMarge())
+            && connect(getContollerMarge(), getContollerLisa())
+            && connect(getContollerHomer(), getContollerLisa())
+            && connect(getContollerHomer(), getContollerMaggie())
+            && connect(getContollerBart(), getContollerMarge())
+            && connect(getContollerBart(), getContollerLisa())
+            && connect(getContollerBart(), getContollerMaggie())
+            && connect(getContollerMarge(), getContollerMaggie())
+            && connect(getContollerLisa(), getContollerMaggie());
     }
 
     protected Controller getContollerBart() {
@@ -286,18 +286,23 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
                 return "Completed downloads. Homer: "
                     + getContollerHomer().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + h
                     + ", Bart: "
                     + getContollerBart().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + b
                     + ", Marge: "
                     + getContollerMarge().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + mar
                     + ", Lisa: "
                     + getContollerLisa().getTransferManager()
                         .getCompletedDownloadsCollection().size()
+                    + "/" + l
                     + ", Maggie: "
                     + getContollerMaggie().getTransferManager()
-                        .getCompletedDownloadsCollection().size();
+                        .getCompletedDownloadsCollection().size()
+                    + "/" + mag;
             }
         });
     }

@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
@@ -140,6 +141,8 @@ public class ApplicationModel extends PFUIComponent {
             // Let other nodes scan now!
             folder.broadcastScanCommand();
 
+            folder.broadcastMessages(new FileListRequest(folder.getInfo()));
+
             // Recommend scan on this. User request, so recommend with true.
             folder.recommendScanOnNextMaintenance(true);
 
@@ -178,6 +181,31 @@ public class ApplicationModel extends PFUIComponent {
         long forSeconds = (System.currentTimeMillis() - lastMouseAction
             .getTime()) / 1000;
         return forSeconds <= 10;
+    }
+    
+    private void checkCloudSpace() {
+        if (!PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(getController()))
+        {
+            return;
+        }
+        ServerClient client = getServerClientModel().getClient();
+        if (client != null && client.isLoggedIn()) {
+            if (!client.getAccount().getOSSubscription().isDisabled()) {
+                long storageSize = client.getAccount().getOSSubscription()
+                    .getStorageSize();
+                long used = client.getAccountDetails().getSpaceUsed();
+                if (used >= storageSize * 9 / 10) {
+                    // More than 90% used. Notify.
+                    WarningNotice notice = new WarningNotice(
+                        Translation.getTranslation("warning_notice.title"),
+                        Translation
+                            .getTranslation("warning_notice.cloud_full_summary"),
+                        Translation
+                            .getTranslation("warning_notice.cloud_full_message"));
+                    noticesModel.handleNotice(notice);
+                }
+            }
+        }
     }
 
     // Exposing ***************************************************************
@@ -218,6 +246,8 @@ public class ApplicationModel extends PFUIComponent {
 
         public void login(ServerClientEvent event) {
             handleSyncStatusChange();
+            checkCloudSpace();
+            
             if (event.getAccountDetails().getAccount()
                 .hasPermission(AdminPermission.INSTANCE))
             {
@@ -233,6 +263,7 @@ public class ApplicationModel extends PFUIComponent {
 
         public void accountUpdated(ServerClientEvent event) {
             handleSyncStatusChange();
+            checkCloudSpace();
         }
 
         public void serverConnected(ServerClientEvent event) {

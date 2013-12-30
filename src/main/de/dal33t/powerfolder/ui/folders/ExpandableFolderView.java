@@ -114,6 +114,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private Folder folder;
     private Type type;
     private boolean online;
+    private boolean admin;
     private final AtomicBoolean focus = new AtomicBoolean();
 
     private final AtomicBoolean showing100Sync = new AtomicBoolean();
@@ -167,7 +168,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyClearCompletedDownloadsAction clearCompletedDownloadsAction;
     private MyOpenExplorerAction openExplorerAction;
     private FolderRemoveAction removeFolderLocalAction;
-    private FolderRemoveAction removeFolderOnlineAction;
+    private FolderOnlineRemoveAction removeFolderOnlineAction;
     private BackupOnlineStorageAction backupOnlineStorageAction;
     private StopOnlineStorageAction stopOnlineStorageAction;
     private WebdavAction webdavAction;
@@ -179,6 +180,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private DelayedUpdater folderDetailsUpdater;
 
     private String webDAVURL;
+    private String removeLabel;
 
     /**
      * Constructor
@@ -192,6 +194,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         this.folderInfo = folderInfo;
         listenerSupport = ListenerSupportFactory
             .createListenerSupport(ExpansionListener.class);
+        admin = getController().getOSClient().getAccount()
+            .hasAdminPermission(folderInfo);
         initComponent();
         buildUI();
     }
@@ -528,6 +532,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         openFilesInformationAction = new MyOpenFilesInformationAction(
             getController());
         inviteAction = new MyInviteAction(getController());
+        inviteAction.allowWith(FolderPermission.admin(folderInfo));
+
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
         openSettingsInformationAction.setEnabled(!getController()
@@ -546,8 +552,13 @@ public class ExpandableFolderView extends PFUIComponent implements
         // given.
         removeFolderLocalAction = new FolderRemoveAction(getController());
 
+        if(admin) {
+            removeLabel = "action_remove_online_folder_admin";
+        } else {
+            removeLabel = "action_remove_online_folder";
+        };
         // Don't allow to choose action at all if online folder only.
-        removeFolderOnlineAction = new FolderRemoveAction(getController());
+        removeFolderOnlineAction = new FolderOnlineRemoveAction(getController());
         removeFolderOnlineAction.allowWith(FolderRemovePermission.INSTANCE);
 
         backupOnlineStorageAction = new BackupOnlineStorageAction(
@@ -885,7 +896,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                     } else {
                         syncPercentText = Translation.getTranslation(
                             "exp_folder_view.synchronized",
-                            Format.formatDecimal(sync));
+                            Format.formatPercent(sync));
+                        // Workaround: Prevent double %%
+                        syncPercentText = syncPercentText.replace("%%", "%");
                     }
                 }
 
@@ -902,7 +915,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
                 if (sync >= 0 && sync < 100) {
                     upperSyncPercentageLabel
-                        .setText(Format.formatDecimal(sync) + '%');
+                        .setText(Format.formatPercent(sync));
                 } else {
                     upperSyncPercentageLabel.setText("");
                 }
@@ -1625,15 +1638,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 } else {
                     expand();
                     if (type == Type.Local) {
-                        getController().getUIController().openFilesInformation(
-                            folderInfo);
-                        if (PreferencesEntry.BEGINNER_MODE
-                            .getValueBoolean(getController())
-                            && !PreferencesEntry.EXPERT_MODE
-                                .getValueBoolean(getController()))
-                        {
-                            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
-                                folderInfo);
+                        boolean openedTab = getController().getUIController()
+                            .openFilesInformation(folderInfo);
+                        if (!openedTab) {
+                            FolderRemoveDialog panel = new FolderRemoveDialog(
+                                getController(), folderInfo);
                             panel.open();
                         }
                     }
@@ -1742,6 +1751,19 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         private FolderRemoveAction(Controller controller) {
             super("action_remove_folder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
+                folderInfo);
+            panel.open();
+        }
+    }
+    
+    private class FolderOnlineRemoveAction extends BaseAction {
+        
+        private FolderOnlineRemoveAction(Controller controller) {
+            super(removeLabel, controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1861,6 +1883,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     ResolvableProblem prob = (ResolvableProblem) folder
                         .getProblems().get(0);
+                    DialogFactory.genericDialog(getController(),
+                        prob.getDescription(), prob.getDescription(),
+                        GenericDialogType.WARN);
                     SwingUtilities
                         .invokeLater(prob.resolution(getController()));
                     folder.removeProblem(prob);

@@ -22,6 +22,7 @@ package de.dal33t.powerfolder;
 import java.io.Externalizable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -37,6 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -50,6 +52,7 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FileHistoryReply;
 import de.dal33t.powerfolder.message.FileHistoryRequest;
 import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.FileRequestCommand;
 import de.dal33t.powerfolder.message.FolderDBMaintCommando;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
@@ -75,10 +78,10 @@ import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.RequestPart;
+import de.dal33t.powerfolder.message.RevertedFile;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.message.SingleFileAccept;
 import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.message.TransferStatus;
@@ -497,17 +500,24 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if this member is on LAN.
      */
     public boolean isOnLAN() {
-        if (peer != null) {
-            return peer.isOnLAN();
-        }
-        if (info.getConnectAddress() == null) {
+        try {
+            if (peer != null) {
+                return peer.isOnLAN();
+            }
+            if (info.getConnectAddress() == null) {
+                return false;
+            }
+            InetAddress adr = info.getConnectAddress().getAddress();
+            if (adr == null) {
+                return false;
+            }
+            return getController().getNodeManager().isOnLANorConfiguredOnLAN(
+                adr);
+        } catch (RuntimeException e) {
+            logWarning("Unable to check if client is on LAN: " + this + ". "
+                + e);
             return false;
         }
-        InetAddress adr = info.getConnectAddress().getAddress();
-        if (adr == null) {
-            return false;
-        }
-        return getController().getNodeManager().isOnLANorConfiguredOnLAN(adr);
     }
 
     /**
@@ -1025,7 +1035,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (isInfo()) {
-            logInfo("Connected ("
+            logInfo(getNick() + " connected ("
                 + getController().getNodeManager().countConnectedNodes()
                 + " total)");
         }
@@ -1271,7 +1281,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getNodeManager().connectStateChanged(this);
 
             if (isInfo()) {
-                logInfo("Disconnected ("
+                logInfo(getNick() + " disconnected ("
                     + getController().getNodeManager().countConnectedNodes()
                     + " still connected)");
             }
@@ -1359,7 +1369,6 @@ public class Member extends PFComponent implements Comparable<Member> {
         int expectedTime = -1;
         long start = System.currentTimeMillis();
         try {
-            
             if (getController().getOSClient().isPrimaryServer(this)) {
                 ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(true);
             }
@@ -1402,6 +1411,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 final FolderList fList = (FolderList) message;
                 // #2569
                 if (isWarning()
+                    && !isServer()
                     && fList.secretFolders != null
                     && fList.secretFolders.length > 100
                     && getController().getFolderRepository().getFoldersCount() < 100)
@@ -1632,6 +1642,37 @@ public class Member extends PFComponent implements Comparable<Member> {
                     setNick(settingsChange.newInfo.nick);
                 }
                 expectedTime = 50;
+            } else if (message instanceof FileListRequest) {
+                // Re-Send file list to client.
+
+                if (targetFolder != null) {
+                    Runnable filelistSender = new Runnable() {
+                        public void run() {
+                            if (targetFolder.hasReadPermission(Member.this)) {
+                                // FIX for #924
+                                targetFolder.waitForScan();
+                                // Send filelist of joined folders
+                                logInfo("Resending file list of "
+                                    + targetFolder.getName() + " to "
+                                    + getNick());
+                                Message[] filelistMsgs = FileList.create(
+                                    targetFolder, targetFolder
+                                        .supportExternalizable(Member.this));
+                                for (Message filelistMsg : filelistMsgs) {
+                                    try {
+                                        sendMessage(filelistMsg);
+                                    } catch (ConnectionException e) {
+                                        logWarning("Unable to send new filelist of "
+                                            + targetFolder.getName()
+                                            + " to "
+                                            + getNick());
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    getController().getIOProvider().startIO(filelistSender);
+                }
 
             } else if (message instanceof FileList) {
                 final FileList remoteFileList = (FileList) message;
@@ -1761,6 +1802,13 @@ public class Member extends PFComponent implements Comparable<Member> {
                     }
                 }
                 expectedTime = 50;
+            } else if (message instanceof RevertedFile) {
+                RevertedFile msg = (RevertedFile) message;
+                if (targetFolder != null) {
+                    Path path = msg.file.getDiskFile(getController().getFolderRepository());
+                    FolderReadOnlyProblem problem = new FolderReadOnlyProblem(path, true);                    
+                    targetFolder.addProblem(problem);
+                }
 
             } else if (message instanceof RequestPart) {
                 final RequestPart pr = (RequestPart) message;
@@ -1851,10 +1899,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 getController().getFolderRepository().getFileRequestor()
                     .receivedFileHistory((FileHistoryReply) message);
 
-            } else if (message instanceof SingleFileAccept) {
-                // getController().getTransferManager().processSingleFileAcceptance(
-                // (SingleFileAccept) message, fromPeer.getMember().getInfo());
-                expectedTime = 50;
             } else if (message instanceof AccountStateChanged) {
                 AccountStateChanged asc = (AccountStateChanged) message;
                 if (isFine()) {
@@ -1897,7 +1941,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else {
                 if (isFiner()) {
                     logFiner("Message not known to message handling code, "
-                        + "maybe handled in listener: " + message);                    
+                        + "maybe handled in listener: " + message);
                 }
             }
 
@@ -2141,11 +2185,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                                         }
                                     } else {
-                                        logSevere("Unable to join meta folder of "
+                                        logFine("Unable to join meta folder of "
                                             + folder);
                                     }
                                 } else {
-                                    logSevere("Unable to join meta folder. Not found "
+                                    logFine("Unable to join meta folder. Not found "
                                         + folder);
                                 }
                             }
@@ -2632,11 +2676,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     // Logger methods *********************************************************
 
-    @Override
-    public String getLoggerName() {
-        return super.getLoggerName() + " '" + getNick() + '\''
-            + (isSupernode() ? " (s)" : "");
-    }
+//    @Override
+//    public String getLoggerName() {
+//        return super.getLoggerName() + " '" + getNick() + '\''
+//            + (isSupernode() ? " (s)" : "");
+//    }
 
     /*
      * General

@@ -19,31 +19,36 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.ui.util.Help;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderInfo;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
-import java.util.List;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.StringUtils;
 
 public class ProblemsTab extends PFUIComponent {
 
@@ -147,6 +152,13 @@ public class ProblemsTab extends PFUIComponent {
     public void updateProblems(List<Problem> problemList) {
         problemsTableModel.updateProblems(problemList);
         enableOnSelection();
+
+        if (getUIController().isShowingFolder()
+            && !ConfigurationEntry.FILES_ENABLED
+                .getValueBoolean(getController()) && problemList.isEmpty())
+        {
+            getUIController().getMainFrame().hideInlineInfoPanel();;
+        }
     }
 
     /**

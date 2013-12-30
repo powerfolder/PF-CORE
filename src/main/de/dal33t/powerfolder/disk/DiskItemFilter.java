@@ -62,6 +62,11 @@ public class DiskItemFilter {
      * Patterns file name.
      */
     public static final String PATTERNS_FILENAME = "ignore.patterns";
+    
+    /**
+     * Never allow this.
+     */
+    private static final String PATTERN_IGNORE_ALL = "*";
 
     /**
      * The patterns that will be used to match DiskItems with.
@@ -115,7 +120,9 @@ public class DiskItemFilter {
                 String readPattern;
                 while ((readPattern = reader.readLine()) != null) {
                     String trimmedPattern = readPattern.trim();
-                    if (trimmedPattern.length() > 0) {
+                    if (trimmedPattern.length() > 0
+                        && !trimmedPattern.equals(PATTERN_IGNORE_ALL))
+                    {
                         tempPatterns.add(createPattern(trimmedPattern));
                     }
                 }
@@ -170,9 +177,7 @@ public class DiskItemFilter {
                 Path backup = file.getParent().resolve(file.getFileName().toString()
                     + ".backup");
                 if (Files.exists(file)) {
-                    if (Files.exists(backup)) {
-                        Files.delete(backup);
-                    }
+                    Files.deleteIfExists(backup);
                     Files.move(file, backup);
                 }
             }
@@ -219,6 +224,10 @@ public class DiskItemFilter {
     private void addPattern0(Pattern pattern) {
         if (patterns.contains(pattern)) {
             // Already contained
+            return;
+        }
+        if (pattern.getPatternText().equals(PATTERN_IGNORE_ALL)) {
+            // Don't add
             return;
         }
         try {

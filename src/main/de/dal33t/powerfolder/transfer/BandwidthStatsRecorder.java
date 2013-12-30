@@ -78,11 +78,11 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
                 coalescedStats.putAll(stats);
                 logFine("Loaded " + stats.size() + " stats.");
             } catch (IOException e) {
-                logSevere("IOException", e);
+                logWarning("IOException", e);
             } catch (ClassNotFoundException e) {
-                logSevere("ClassNotFoundException", e);
+                logWarning("ClassNotFoundException", e);
             } catch (ClassCastException e) {
-                logSevere("ClassCastException", e);
+                logWarning("ClassCastException", e);
             }
         } else {
             logFine("No stats found - probably first start of PF.");
@@ -168,7 +168,8 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {
-                logSevere("IOException", e);
+                // PFC-2416
+                logWarning("IOException", e);
             }
         }
     }

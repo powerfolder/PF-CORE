@@ -111,8 +111,8 @@ public class RecycleTest extends ControllerTestCase {
 
         getFolder().removeFilesLocal(testfile);
         assertFalse(Files.exists(file));
-        (archiver).setVersionsPerFile(0);
-        ((FileArchiver) archiver).maintain();
+        archiver.setVersionsPerFile(0);
+        archiver.maintain();
         Path recycleBinDir = getFolder().getSystemSubDir().resolve("archive");
         assertTrue(Files.exists(recycleBinDir));
         // Only size file
@@ -130,6 +130,7 @@ public class RecycleTest extends ControllerTestCase {
         
         sb.append("]");
         
-        assertTrue(sb.toString(), count == 1);
+        // No file in there. "Size" meta info file shouldn't be in there aswell.
+        assertTrue(sb.toString(), count == 0);
     }
 }

@@ -276,11 +276,8 @@ public class FolderSettings {
     public static Set<String> loadEntryIds(Properties properties) {
         // Find all folder names.
         Set<String> entryIds = new TreeSet<String>();
-        for (@SuppressWarnings("unchecked")
-        Enumeration<String> en = (Enumeration<String>) properties
-            .propertyNames(); en.hasMoreElements();)
-        {
-            String propName = en.nextElement();
+        for (Object key : properties.keySet()) {
+            String propName = (String) key;
             // Look for a f.<entryId>.XXXX
             if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
                 int firstDot = propName.indexOf('.');
@@ -303,12 +300,8 @@ public class FolderSettings {
      * 'f.TEST-Contacts' to remove config entries beginning with these.
      */
     public static void removeEntries(Properties p, String entryId) {
-        for (@SuppressWarnings("unchecked")
-        Enumeration<String> en = (Enumeration<String>) p.propertyNames(); en
-            .hasMoreElements();)
-        {
-            String propName = en.nextElement();
-
+        for (Object val : p.keySet()) {
+            String propName = (String) val;
             // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
             // from also deleting things like 'f.TEST.XXXXX'.
             if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4 + entryId + '.'))
@@ -321,11 +314,15 @@ public class FolderSettings {
     public static FolderSettings load(Controller c, String entryId) {
         int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
             .getValueInt(c);
-        return load(c.getConfig(), entryId, defaultVersions, true);
+        String defSyncProfile = ConfigurationEntry.DEFAULT_TRANSFER_MODE
+            .getValue(c);
+        return load(c.getConfig(), entryId, defaultVersions, defSyncProfile,
+            true);
     }
 
     public static FolderSettings load(Properties properties, String entryId,
-        int fallbackDefaultVersions, boolean verify)
+        int fallbackDefaultVersions, String fallbackDefaultProfile,
+        boolean verify)
     {
         Reject.ifNull(properties, "Config");
         Reject.ifBlank(entryId, "Entry Id");
@@ -366,6 +363,10 @@ public class FolderSettings {
         {
             // Migration for #2074 (new backup source uses JNotify).
             syncProfile = SyncProfile.BACKUP_SOURCE;
+        } else if (StringUtils.isBlank(syncProfConfig)) {
+            // Take default:
+            syncProfile = SyncProfile
+                .getSyncProfileByFieldList(fallbackDefaultProfile);
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);

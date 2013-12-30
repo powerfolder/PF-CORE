@@ -150,14 +150,20 @@ public class DebugInformationCard extends InformationCard {
 
         openDebugDir.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                PathUtils.openFile(LoggingManager.getDebugDir());
-                try {
-                    BrowserLauncher
-                        .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
-                            .getValue(getController()));
-                } catch (IOException ex) {
-                    logSevere("Problems opening browser ", ex);
-                }
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        PathUtils.openFile(LoggingManager.getDebugDir());
+                        try {
+                            BrowserLauncher
+                                .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
+                                    .getValue(getController()));
+                        } catch (IOException ex) {
+                            logSevere("Problems opening browser ", ex);
+                        }
+                    }
+                };
+                getController().getIOProvider().startIO(r);
             }
         });
 

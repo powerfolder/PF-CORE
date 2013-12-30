@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -75,6 +76,8 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     // The optional test folder
     private FolderInfo testFolder;
+    
+    private Account lisasAccount;
 
     @Override
     protected void setUp() throws Exception {
@@ -268,12 +271,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @return true if the lisa and bart are connected.
      */
     protected boolean tryToConnectBartAndLisa() {
-        // Wait for connection between both controllers
-        try {
-            return connect(controllerLisa, controllerBart);
-        } catch (ConnectionException e) {
-            return false;
-        }
+        return connect(controllerLisa, controllerBart);
     }
 
     /**
@@ -287,14 +285,8 @@ public abstract class TwoControllerTestCase extends TestCase {
      * Connects both controllers and optionally logs in lisa at bart.
      */
     protected void connectBartAndLisa(boolean loginLisa) {
-        // Wait for connection between both controllers
-        try {
-            if (!connect(controllerLisa, controllerBart)) {
-                fail("Unable to connect Bart and Lisa");
-            }
-        } catch (ConnectionException e) {
-            e.printStackTrace();
-            fail(e.toString());
+        if (!connect(controllerLisa, controllerBart)) {
+            fail("Unable to connect Bart and Lisa");
         }
 
         assertTrue("Bart is not detected as local @ lisa", controllerLisa
@@ -307,13 +299,18 @@ public abstract class TwoControllerTestCase extends TestCase {
                 .getNode(controllerLisa, true);
             ServerClient client = getContollerLisa().getOSClient();
             client.setServer(bartAtLisa, true);
-            client.getAccountService().register("lisa", "password", false,
-                null, null, false);
+            if (lisasAccount == null) {
+                lisasAccount = client.getAccountService().register("lisa",
+                    "password", false, null, null, false);
+                if (lisasAccount == null || !lisasAccount.isValid()) {
+                    fail("Unable to register lisa's user account at bart");
+                }
+            }
             client.login("lisa", "password".toCharArray());
         }
 
-        // Bart should be supernode
-        assertTrue(controllerBart.getMySelf().isSupernode());
+        // Bart should NOT be supernode. Not necessary on LAN
+        // assertTrue(controllerBart.getMySelf().isSupernode());
     }
 
     /**
@@ -374,25 +371,31 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @throws InterruptedException
      * @throws ConnectionException
      */
-    private static boolean connect(final Controller cont1,
-        final Controller cont2) throws ConnectionException
+    public static boolean connect(final Controller cont1,
+        final Controller cont2)
     {
-        Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
-        Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
+        Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet: " + cont1);
+        Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet: " + cont2);
 
         // Connect
         System.out.println("Connecting controllers...");
         System.out.println("Con to: "
             + cont2.getConnectionListener().getAddress());
 
+        Exception e = null;
         try {
             cont1.connect(cont2.getConnectionListener().getAddress());
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            e = ex;
             // Try harder.
-            cont1.connect(cont2.getConnectionListener().getAddress());
+            try {
+                cont1.connect(cont2.getConnectionListener().getAddress());                
+            } catch (Exception e2) {
+                e = e2;
+            }
         }
         try {
-            TestHelper.waitForCondition(20, new Condition() {
+            TestHelper.waitForCondition(10, new Condition() {
                 public boolean reached() {
                     Member member2atCon1 = cont1.getNodeManager().getNode(
                         cont2.getMySelf().getId());
@@ -409,8 +412,8 @@ public abstract class TwoControllerTestCase extends TestCase {
                     return connected && nodeManagersOK;
                 }
             });
-        } catch (RuntimeException e) {
-            System.out.println("Unable to connect Controllers");
+        } catch (RuntimeException re) {
+            System.err.println("Unable to connect Controllers: " + e);
             return false;
         }
         System.out.println("Both Controller connected");

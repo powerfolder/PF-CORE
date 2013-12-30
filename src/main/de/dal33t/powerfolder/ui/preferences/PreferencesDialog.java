@@ -124,11 +124,6 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane = new JTabbedPane(SwingConstants.TOP,
             JTabbedPane.WRAP_TAB_LAYOUT);
 
-        // Information tab
-        informationTab = new InformationTab(getController());
-        preferenceTabs.add(informationTab);
-        tabbedPane.addTab(informationTab.getTabName(),
-            informationTab.getUIPanel());
 
         // General tab
         generalSettingsTab = new GeneralSettingsTab(getController());
@@ -148,6 +143,12 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(warningsNotificationsSettingsTab.getTabName(),
             warningsNotificationsSettingsTab.getUIPanel());
 
+        // Information tab
+        informationTab = new InformationTab(getController());
+        preferenceTabs.add(informationTab);
+        tabbedPane.addTab(informationTab.getTabName(),
+            informationTab.getUIPanel());
+        
         Boolean expertMode = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
         if (expertMode) {
@@ -293,8 +294,7 @@ public class PreferencesDialog extends BaseDialog {
         int result = DialogFactory.genericDialog(getController(), Translation
             .getTranslation("preferences.dialog.restart.title"), Translation
             .getTranslation("preferences.dialog.restart.text"), new String[]{
-            Translation.getTranslation("preferences.dialog.restart.restart"),
-            Translation.getTranslation("general.cancel")}, 0,
+            Translation.getTranslation("preferences.dialog.restart.restart")}, 0,
             GenericDialogType.INFO); // Default is restart
 
         if (result == 0) { // Restart

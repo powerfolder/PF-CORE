@@ -68,15 +68,36 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
 
             updateDialogOpen = true;
             try {
-                UIUtil.invokeAndWaitInEDT(new Runnable() {
-                    public void run() {
-                        option = JOptionPane.showInputDialog(getParentFrame(),
-                                text, Translation
-                                .getTranslation("dialog.update_check.title"),
-                                JOptionPane.OK_CANCEL_OPTION, null, options
-                                .toArray(), options.get(0));
-                    }
-                });
+                if (OSUtil.isWindowsSystem()
+                    && ConfigurationEntry.UPDATE_FORCE
+                        .getValueBoolean(getController()))
+                {
+                    UIUtil.invokeAndWaitInEDT(new Runnable() {
+                        @Override
+                        public void run() {
+                            Object[] options = {"OK"};
+                            JOptionPane.showOptionDialog(
+                                getParentFrame(),
+                                text,
+                                Translation
+                                    .getTranslation("dialog.update_check.title"),
+                                JOptionPane.PLAIN_MESSAGE,
+                                JOptionPane.QUESTION_MESSAGE, null, options,
+                                options[0]);
+                        }
+                    });
+                    option = downloadAndUpdate;
+                } else {
+                    UIUtil.invokeAndWaitInEDT(new Runnable() {
+                        public void run() {
+                            option = JOptionPane.showInputDialog(getParentFrame(),
+                                    text, Translation
+                                    .getTranslation("dialog.update_check.title"),
+                                    JOptionPane.OK_CANCEL_OPTION, null, options
+                                    .toArray(), options.get(0));
+                        }
+                    });
+                }
             } catch (InterruptedException ex) {
                 logFiner(ex);
                 return;

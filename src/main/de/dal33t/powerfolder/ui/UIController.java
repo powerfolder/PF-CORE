@@ -277,6 +277,26 @@ public class UIController extends PFComponent {
             // RepaintManager
             // .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
+        
+        // PFC-2423
+        if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
+            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        {
+            // Configure view for beginner mode:
+            ConfigurationEntry.FILES_ENABLED.setValue(getController(), false);
+            ConfigurationEntry.SETTINGS_ENABLED
+                .setValue(getController(), false);
+            ConfigurationEntry.MEMBERS_ENABLED.setValue(getController(), false);
+            // ConfigurationEntry.PROBLEMS_ENABLED.setValue(getController(),
+            // false);
+        } else {
+            // Show it in Expert and Advanced mode
+            ConfigurationEntry.FILES_ENABLED.setValue(getController(), true);
+            ConfigurationEntry.SETTINGS_ENABLED.setValue(getController(), true);
+            ConfigurationEntry.MEMBERS_ENABLED.setValue(getController(), true);
+            // ConfigurationEntry.PROBLEMS_ENABLED.setValue(getController(),
+            // false);
+        }
 
         // The central application model
         applicationModel = new ApplicationModel(getController());
@@ -299,6 +319,11 @@ public class UIController extends PFComponent {
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
         transferManagerModel.initialize();
+
+        if (OSUtil.isLinux()) {
+            // PFC-2331
+            TrayIconManager.whitelistSystray(getController());
+        }
 
         if (OSUtil.isSystraySupported()) {
             initializeSystray();
@@ -837,12 +862,15 @@ public class UIController extends PFComponent {
      * 
      * @param folderInfo
      *            info of the folder to display files information for.
+     * @return if the files information was actually opened
      */
-    public void openFilesInformation(FolderInfo folderInfo) {
+    public boolean openFilesInformation(FolderInfo folderInfo) {
         if (ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
             informationFrame.displayFolderFiles(folderInfo);
             displayInformationWindow();
+            return true;
         }
+        return false;
     }
 
     /**
@@ -1254,9 +1282,12 @@ public class UIController extends PFComponent {
         if (fileInfo.getFolderInfo().isMetaFolder()) {
             return;
         }
-        if (fileInfo.getFolder(getController().getFolderRepository())
-            .getDiskItemFilter().isExcluded(fileInfo))
-        {
+        Folder folder = fileInfo.getFolder(getController()
+            .getFolderRepository());
+        if (folder == null) {
+            return;
+        }
+        if (folder.getDiskItemFilter().isExcluded(fileInfo)) {
             return;
         }
         synchronized (recentlyChangedFiles) {
@@ -1437,8 +1468,6 @@ public class UIController extends PFComponent {
     private class MyMassDeletionHandler implements MassDeletionHandler {
         public void localMassDeletion(LocalMassDeletionEvent event) {
             LocalDeleteNotice notice = new LocalDeleteNotice(
-                Translation.getTranslation("warning_notice.title"),
-                Translation.getTranslation("warning_notice.mass_deletion"),
                 event.getFolderInfo());
             applicationModel.getNoticesModel().handleNotice(notice);
         }
@@ -1463,8 +1492,8 @@ public class UIController extends PFComponent {
 
             WarningNotice notice = new WarningNotice(
                 Translation.getTranslation("warning_notice.title"),
-                Translation.getTranslation("warning_notice.mass_deletion"),
-                message);
+                Translation.getTranslation("warning_notice.mass_deletion",
+                    event.getFolderInfo().getLocalizedName()), message);
             applicationModel.getNoticesModel().handleNotice(notice);
         }
     }
@@ -1486,15 +1515,16 @@ public class UIController extends PFComponent {
                 Notice notice = new SimpleNotificationNotice(
                     Translation.getTranslation("notice.invitation.title"),
                     Translation.getTranslation("notice.invitation.summary",
-                        invitation.getBestUsername(), invitation.folder.name));
+                        invitation.getInvitorUsername(),
+                        invitation.folder.getLocalizedName()));
                 applicationModel.getNoticesModel().handleNotice(notice);
             } else {
                 // Let user decide what to do with the invitation.
                 Notice notice = new InvitationNotice(
                     Translation.getTranslation("notice.invitation.title"),
                     Translation.getTranslation("notice.invitation.summary",
-                        invitation.getBestUsername(), invitation.folder.name),
-                    invitation);
+                        invitation.getInvitorUsername(),
+                        invitation.folder.getLocalizedName()), invitation);
                 applicationModel.getNoticesModel().handleNotice(notice);
             }
         }

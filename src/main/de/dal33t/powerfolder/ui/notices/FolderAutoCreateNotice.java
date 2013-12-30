@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class FolderAutoCreateNotice extends NoticeBase {
 
+    private static final long serialVersionUID = 100L;
     private final FolderInfo folderInfo;
 
     public FolderAutoCreateNotice(FolderInfo folderInfo) {

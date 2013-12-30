@@ -39,6 +39,16 @@ For creation of the installer:
 		<os family="windows" />
 	</condition>
 	
+    <condition property="isLinux">
+        <and>
+            <os family="unix" />
+
+            <not>
+                <os family="mac" />
+            </not>
+        </and>
+    </condition>
+
 	<target name="debug">
 		<property name="Debug" location="on" />
 	</target>
@@ -123,11 +133,13 @@ For creation of the installer:
 		<property name="applet.dir" location="src/applet" />
 		<property name="test.src.dir" location="src/test" />
 		<property name="skins.src.dir" location="src/skins" />
+		<property name="shib.src.dir" location="src/shib" />
 
 		<!-- External Libraries -->
 		<fileset id="libs" dir="lib" casesensitive="yes">
 			<include name="commons-io-1.3.1.jar" />
 			<include name="commons-cli-1.0.jar" />
+			<include name="commons-codec-1.6.jar" />
 
 			<include name="jdic.jar" />
 
@@ -158,6 +170,13 @@ For creation of the installer:
 			<include name="truezip-file-7.6.6.jar" />
 			<include name="truezip-kernel-7.6.6.jar" />
 			<include name="truezip-swing-7.6.6.jar" />
+
+			<!-- Shibboleth/ECP -->
+            <include name="httpclient-4.2.1.jar" />
+			<include name="httpclient-cache-4.2.1.jar" />
+            <include name="httpcore-4.2.1.jar" />
+            <include name="commons-logging-1.1.1.jar" />
+			<include name="json-20090306.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
@@ -201,6 +220,7 @@ For creation of the installer:
 			<src path="${jwf.src.dir}" />
 			<src path="${jnotify.src.dir}" />
 			<src path="${skins.src.dir}" />
+			<src path="${shib.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
@@ -337,6 +357,7 @@ For creation of the installer:
 
         <exec dir="/usr/bin" executable="codesign" osfamily="mac">
             <arg value="-f" />
+            <arg value="--deep" />
             <arg value="-s" />
             <arg value="${AppSignAlias}" />
             <arg value="${dist.dir}/${dist.name}.app" />
@@ -396,9 +417,13 @@ For creation of the installer:
             </fileset>
             <fileset file="${powerfolder.project.dir}/lib-build/Uninstall.command" />
         </copy>
-
-        <symlink link="/Volumes/${dist.name}/Applications" resource="/Volumes/Applications" />
-
+<!--
+        <exec dir="/bin" executable="ln" osfamily="mac">
+            <arg value="-s" />
+            <arg value="/Applications" />
+            <arg value="/Volumes/${dist.name}/Applications" />
+        </exec>
+-->
         <exec dir="/bin" executable="chmod" osfamily="mac">
             <arg value="u+x" />
             <arg value="/Volumes/${dist.name}/${dist.name}.app/Contents/MacOS/JavaAppLauncher" />
@@ -461,6 +486,8 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
 		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="3g">
+			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
+			<sysproperty key="file.encoding" value="UTF-8"/>
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<pathelement location="${junit.lib}" />

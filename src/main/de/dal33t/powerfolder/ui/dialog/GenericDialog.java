@@ -19,22 +19,34 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
+import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.DEFAULT;
+import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.ERROR;
+import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.INFO;
+import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.QUESTION;
+import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.WARN;
+
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.DEFAULT;
-import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.ERROR;
-import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.INFO;
-import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.QUESTION;
-import static de.dal33t.powerfolder.ui.dialog.GenericDialogType.WARN;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
 
 /**
  * Replacement class for JOptionPane.

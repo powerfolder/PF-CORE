@@ -118,7 +118,8 @@ public class LoggingManager {
                 return true;
             }
             return loggerName.startsWith("de.dal33t")
-                || loggerName.startsWith("net.sf.webdav");
+                || loggerName.startsWith("net.sf.webdav")
+                || loggerName.startsWith("edu.kit");
         }
     };
 
@@ -440,12 +441,14 @@ public class LoggingManager {
         }
     }
 
-    public static void closeFileLogging() {
+    public synchronized static void closeFileLogging() {
         if (fileLoggingLevel != null && fileHandler != null) {
 
             // Close off the old one first.
             fileHandler.flush();
             fileHandler.close();
+            
+            fileHandler = null;
         }
     }
 

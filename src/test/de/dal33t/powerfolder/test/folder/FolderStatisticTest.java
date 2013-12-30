@@ -28,14 +28,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
@@ -52,6 +55,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerHomer(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerMarge(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerMaggie(), true);
+        PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);
     }
 
@@ -59,8 +67,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFile() throws IOException {
+        LoggingManager.setConsoleLogging(Level.FINE);
         forceStatsCals();
-        assertHasLastSyncDate(false, false, false, false, false);
+        assertHasLastSyncDate(true, true, true, true, true);
 
         assertTrue(tryToConnectSimpsons());
         forceStatsCals();

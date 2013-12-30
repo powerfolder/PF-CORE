@@ -301,7 +301,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             folderNameLabel.setText(invitation.folder.name);
 
             invitorHintLabel.setEnabled(true);
-            invitorLabel.setText(invitation.getBestUsername());
+            invitorLabel.setText(invitation.getInvitorUsername());
 
             invitationMessageHintLabel.setEnabled(true);
             invitationMessageLabel

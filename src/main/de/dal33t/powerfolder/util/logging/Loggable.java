@@ -58,7 +58,7 @@ public abstract class Loggable {
     /**
      * @return the name of the logger. by default uses the classname
      */
-    protected String getLoggerName() {
+    protected final String getLoggerName() {
         return getClass().getName();
     }
 

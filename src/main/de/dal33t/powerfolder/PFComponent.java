@@ -67,7 +67,7 @@ public abstract class PFComponent extends Loggable {
      * 
      * @return myself
      */
-    public Member getMySelf() {
+    protected Member getMySelf() {
         return controller.getMySelf();
     }
 

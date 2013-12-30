@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.information;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -104,6 +105,10 @@ public class InformationFrame extends PFUIComponent {
         displayCard(folderInformationCard);
         showingFolder = true;
         currentFolderInfo = folderInfo;
+        
+        if (isFine()) {
+            logFine("displayedFolderFiles: " + folderInfo);
+        }
     }
 
     public void displayFolderFilesDeleted(FolderInfo folderInfo) {
@@ -314,7 +319,11 @@ public class InformationFrame extends PFUIComponent {
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
-            if (getController().isUIOpen() && showingFolder) {
+            if (getController().isUIOpen()
+                && showingFolder
+                && ConfigurationEntry.FILES_ENABLED
+                    .getValueBoolean(getController()))
+            {
                 displayFolderFiles(e.getFolderInfo());
             }
         }

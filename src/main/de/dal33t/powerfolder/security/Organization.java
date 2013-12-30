@@ -65,7 +65,7 @@ public class Organization implements Serializable {
     private String notes;
 
     private int maxUsers;
-    
+
     @Embedded
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
@@ -75,7 +75,7 @@ public class Organization implements Serializable {
         this(IdGenerator.makeId());
     }
 
-    Organization(String oid) {
+    public Organization(String oid) {
         Reject.ifBlank(oid, "OID");
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
@@ -113,7 +113,11 @@ public class Organization implements Serializable {
         return osSubscription;
     }
 
-    public void setOSSubscription(OnlineStorageSubscription osSubscription) {
-        this.osSubscription = osSubscription;
+    @Override
+    public String toString() {
+        return "Organization [oid=" + oid + ", name=" + name + ", maxUsers="
+            + maxUsers + ", osSubscription=" + osSubscription + ", notes="
+            + notes + "]";
     }
+
 }

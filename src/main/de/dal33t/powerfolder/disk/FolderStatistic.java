@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -206,9 +208,23 @@ public class FolderStatistic extends PFComponent {
         calculating = null;
 
         if (!folder.isDeviceDisconnected()) {
+            Path tempFile = folder.getSystemSubDir().resolve(
+                Folder.FOLDER_STATISTIC + ".writing");
             Path file = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC);
-            current.save(file);
+            if (current.save(tempFile)) {
+                try {
+                    Files.deleteIfExists(file);
+                    Files.move(tempFile, file);
+                } catch (IOException e) {
+                    try {
+                        Files.copy(tempFile, file);
+                        Files.delete(tempFile);
+                    } catch (IOException e2) {
+                    }
+                }
+                // Ignore exceptions. Folder Statistics are not crucial for operations.
+            }
         }
 
         // Recalculate the last modified date of the folder.
@@ -467,8 +483,7 @@ public class FolderStatistic extends PFComponent {
      * @return number of local files
      */
     public int getLocalFilesCount() {
-        Integer integer = current.getFilesCount().get(
-            getMySelf().getInfo());
+        Integer integer = current.getFilesCount().get(getMySelf().getInfo());
         return integer != null ? integer : 0;
     }
 
@@ -567,7 +582,7 @@ public class FolderStatistic extends PFComponent {
                 return UNKNOWN_SYNC_STATUS;
             }
             // SYNC-143
-            
+
             // Average of all folder member sync percentages.
             return getAverageSyncPercentage();
         }
@@ -622,10 +637,10 @@ public class FolderStatistic extends PFComponent {
         return downloadCounter;
     }
 
-    @Override
-    public String getLoggerName() {
-        return super.getLoggerName() + " '" + folder.getName() + '\'';
-    }
+//    @Override
+//    public String getLoggerName() {
+//        return super.getLoggerName() + " '" + folder.getName() + '\'';
+//    }
 
     /**
      * Put a partial sync stat in the holding map.

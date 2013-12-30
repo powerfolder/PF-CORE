@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -38,6 +37,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -151,20 +151,31 @@ public class TextPanelPanel extends PFWizardPanel {
                 Folder folder = getController().getFolderRepository()
                         .getFolder(folderInfo);
                 if (folder != null) {
-                    builder.appendRow("3dlu");
+                    builder.appendRow("10dlu");
                     y++;
                     builder.appendRow("pref");
                     y++;
-                    Action action = new OpenFolderAction(getController(), folderInfo);
-                    builder.add(new ActionLabel(getController(), action)
-                            .getUIComponent(), cc.xy(1, y));
-                    builder.appendRow("3dlu");
-                    y++;
-                    builder.appendRow("pref");
-                    y++;
-                    action = new SendInviteAction(getController(), folderInfo);
-                    builder.add(new ActionLabel(getController(), action)
-                            .getUIComponent(), cc.xy(1, y));
+                    ActionLabel openFolderActionLabel = new ActionLabel(
+                        getController(), new OpenFolderAction(getController(),
+                            folderInfo));
+                    openFolderActionLabel.convertToBigLabel();
+                    builder.add(openFolderActionLabel.getUIComponent(),
+                        cc.xy(1, y));
+
+                    if (ConfigurationEntry.SERVER_INVITE_ENABLED
+                        .getValueBoolean(getController()))
+                    {
+                        builder.appendRow("7dlu");
+                        y++;
+                        builder.appendRow("pref");
+                        y++;
+                        ActionLabel sendInviteLabel = new ActionLabel(
+                            getController(), new SendInviteAction(
+                                getController(), folderInfo));
+                        sendInviteLabel.convertToBigLabel();
+                        builder.add(sendInviteLabel.getUIComponent(),
+                            cc.xy(1, y));
+                    }
                 }
             }
         }

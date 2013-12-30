@@ -145,10 +145,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
 
-    private static final int MAJOR_VERSION = 8;
-    private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 38;
-
+    private static final int MAJOR_VERSION = 9;
+    private static final int MINOR_VERSION = 1;
+    private static final int REVISION_VERSION = 46;
+    
     /**
      * Program version.
      */
@@ -675,8 +675,9 @@ public class Controller extends PFComponent {
         if (Feature.OS_CLIENT.isEnabled()) {
             osClient.start();
         } else {
-            logWarning("Not starting server (reconnection), "
-                + "feature disable");
+            logWarning("Not starting client connection to server ("
+                + osClient.getServerString()
+                + "). Auto-reconnection disabled.");
         }
 
         // Setup our background working tasks
@@ -841,10 +842,10 @@ public class Controller extends PFComponent {
             }
 
             if (LoggingManager.isLogToFile()) {
-                logInfo("Running in VERBOSE mode, logging to file '"
+                logFine("Logging to file '"
                     + LoggingManager.getLoggingFileName() + '\'');
             } else {
-                logInfo("Running in VERBOSE mode, no logging to file");
+                logInfo("No logging to file");
             }
         }
 
@@ -1424,23 +1425,24 @@ public class Controller extends PFComponent {
             return;
         }
         logFine("Saving config (" + getConfigName() + ".config)");
-        Path file = getConfigLocationBase();
-        
-        if (file == null) {
+
+        Path file;
+        Path tempFile;
+        Path backupFile;
+        if (getConfigLocationBase() == null) {
             file = Paths.get(getConfigName() + ".config").toAbsolutePath();
-        }
-        else {
-            file = file.resolve(getConfigName() + ".config");
+            tempFile = Paths.get(getConfigName() + ".writing.config")
+                .toAbsolutePath();
+            backupFile = Paths.get(getConfigName() + ".config.backup")
+                .toAbsolutePath();
+        } else {
+            file = getConfigLocationBase().resolve(getConfigName() + ".config");
+            tempFile = getConfigLocationBase().resolve(
+                getConfigName() + ".writing.config").toAbsolutePath();
+            backupFile = getConfigLocationBase().resolve(
+                getConfigName() + ".config.backup");
         }
 
-        Path backupFile = getConfigLocationBase();
-        
-        if (backupFile == null) {
-            backupFile = Paths.get(getConfigName() + ".config.backup").toAbsolutePath();
-        }
-        else {
-            backupFile = backupFile.resolve(getConfigName() + ".config.backup");
-        }
         try {
             // Backup is done in #backupConfigAssets
             Files.deleteIfExists(backupFile);
@@ -1452,24 +1454,26 @@ public class Controller extends PFComponent {
                 distName = distribution.getName();
             }
             // Store config in misc base
-            PropertiesUtil.saveConfig(file, config, distName
+            PropertiesUtil.saveConfig(tempFile, config, distName
                 + " config file (v" + PROGRAM_VERSION + ')');
+            
+
+            Files.deleteIfExists(file);
+            try {
+                Files.move(tempFile, file);
+            } catch (IOException e) {
+                Files.copy(tempFile, file);
+                Files.delete(tempFile);
+            }
+
         } catch (IOException e) {
             // FATAL
             logSevere("Unable to save config. " + e, e);
             exit(1);
         } catch (Exception e) {
             // major problem , setting code is wrong
-            System.out.println("major problem , setting code is wrong");
             e.printStackTrace();
             logSevere("major problem , setting code is wrong", e);
-            // restore old settings file because it was probably flushed with
-            // this error
-            try {
-                PathUtils.copyFile(backupFile, file);
-            } catch (Exception e2) {
-
-            }
         }
     }
 
@@ -2475,7 +2479,7 @@ public class Controller extends PFComponent {
             try {
                 Files.createDirectories(base);
             } catch (IOException ioe) {
-                log.severe("Failed to create " + base.toAbsolutePath().toString());
+                log.severe("Failed to create " + base.toAbsolutePath().toString() + ". " + ioe);
             }
         }
         return base;
@@ -2499,7 +2503,7 @@ public class Controller extends PFComponent {
             try {
                 Files.createDirectories(windowsBaseDir);
             } catch (IOException ioe) {
-                log.severe("Failed to create " + windowsBaseDir.toAbsolutePath().toString());
+                log.severe("Failed to create " + windowsBaseDir.toAbsolutePath().toString() + ". " + ioe);
             }
         }
         try {
@@ -2526,7 +2530,7 @@ public class Controller extends PFComponent {
                 Files.createDirectories(base);
             } catch (IOException ioe) {
                 log.warning("Could not create temp files location '"
-                    + base.toAbsolutePath().toString() + "'");
+                    + base.toAbsolutePath().toString() + "'. " + ioe);
             }
         }
         return base;
@@ -2608,17 +2612,27 @@ public class Controller extends PFComponent {
 
     private void initDistribution() {
         try {
-            ServiceLoader<Distribution> brandingLoader = ServiceLoader
-                .load(Distribution.class);
-            for (Distribution br : brandingLoader) {
-                if (distribution != null) {
-                    logWarning("Found multiple distribution classes: "
-                        + br.getName() + ", already using "
-                        + distribution.getName());
-                    break;
-                }
-                distribution = br;
+            if (ConfigurationEntry.DIST_CLASSNAME.hasValue(getController())) {
+                Class<?> distClass = Class
+                    .forName(ConfigurationEntry.DIST_CLASSNAME
+                        .getValue(getController()));
+                distribution = (Distribution) distClass.newInstance();
             }
+
+            if (distribution == null) {
+                ServiceLoader<Distribution> brandingLoader = ServiceLoader
+                    .load(Distribution.class);
+                for (Distribution br : brandingLoader) {
+                    if (distribution != null) {
+                        logWarning("Found multiple distribution classes: "
+                            + br.getName() + ", already using "
+                            + distribution.getName());
+                        break;
+                    }
+                    distribution = br;
+                }
+            }
+            
             if (distribution == null) {
                 if (ProUtil.isRunningProVersion()) {
                     distribution = new PowerFolderPro();
@@ -2629,7 +2643,7 @@ public class Controller extends PFComponent {
                     + distribution.getName());
             }
             distribution.init(this);
-            logFine("Running distribution: " + distribution.getName());
+            logInfo("Running distribution: " + distribution.getName());
         } catch (Exception e) {
             logSevere("Failed to initialize distribution "
                 + (distribution == null ? "null" : distribution.getName()), e);
@@ -2775,7 +2789,6 @@ public class Controller extends PFComponent {
     private void loadPersistentObjects() {
 
         if (isUIEnabled()) {
-
             // Load notices.
             Path file = getMiscFilesLocation().resolve(getConfigName() + ".notices");
             if (Files.exists(file)) {
@@ -2788,7 +2801,7 @@ public class Controller extends PFComponent {
                         uiController.getApplicationModel().getNoticesModel()
                             .handleSystemNotice(notice, true);
                     }
-                    logInfo("Loaded " + notices.size() + " notices.");
+                    logFine("Loaded " + notices.size() + " notices.");
                 } catch (FileNotFoundException e) {
                     logSevere("FileNotFoundException", e);
                 } catch (IOException e) {
@@ -2882,12 +2895,7 @@ public class Controller extends PFComponent {
                 } else {
                     // Resume if user is not active
                     if (isPaused()) {
-                        getController().schedule(new Runnable() {
-                            public void run() {
-                                setPaused0(false, true);
-                                log.info("User inactive. Executed resume task.");
-                            }
-                        }, 50);
+                        getController().schedule(new Resumer(), 50);
                     }
                 }
             } else {
@@ -2896,5 +2904,12 @@ public class Controller extends PFComponent {
                 log.info("Executed resume task.");
             }
         }
+    }
+    
+    private class Resumer implements Runnable {
+        public void run() {
+          setPaused0(false, true);
+          log.info("User inactive. Executed resume task.");
+      }
     }
 }

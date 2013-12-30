@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.security;
 
 /**
  * Exception thrown when something when wrong with the security. e.g. the
- * current user has not sufficent permission to perfom a action.
+ * current user has not sufficient permission to perform an action.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $

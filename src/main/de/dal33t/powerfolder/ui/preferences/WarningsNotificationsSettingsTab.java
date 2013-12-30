@@ -19,30 +19,37 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.util.Dictionary;
+import java.util.Hashtable;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.ui.model.ApplicationModel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.Dictionary;
-import java.util.Hashtable;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.util.Translation;
 
 public class WarningsNotificationsSettingsTab extends PFComponent implements PreferenceTab {
 
     /** Show system notifications */
     private JCheckBox showSystemNotificationBox;
-
-    private JCheckBox showHiddenFilesCB;
 
     /** Notification translucency */
     private JSlider notificationTranslucentSlider;
@@ -98,10 +105,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
 
     private void initComponents() {
         applicationModel = getController().getUIController().getApplicationModel();
-
-        showHiddenFilesCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("preferences.warnings_notifications.show_hidden_files"));
-        showHiddenFilesCB.setSelected(PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()));
 
         // Show system notifications when minimized
         showSystemNotificationBox = new JCheckBox(
@@ -207,7 +210,7 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -216,9 +219,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
             int row = 1;
 
             builder.add(showPauseOptionsCB, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(showHiddenFilesCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(warnIfCloudSpaceFullCB, cc.xyw(3, row, 2));
@@ -301,8 +301,6 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
         boolean warnOnClose = warnOnCloseIfNotInSyncCB.isSelected();
         boolean filenameCheck = warnOnPossibleFilenameProblemsCB.isSelected();
         boolean fullCloudSpace = warnIfCloudSpaceFullCB.isSelected();
-
-        PreferencesEntry.SHOW_HIDDEN_FILES.setValue(getController(), showHiddenFilesCB.isSelected());
 
         if (showSystemNotificationBox != null) {
             applicationModel.getSystemNotificationsValueModel().setValue(

@@ -188,82 +188,27 @@ public abstract class MultipleControllerTestCase extends TestCase {
     }
 
     /**
-     * Connects and waits for connection of both controllers
+     * Connects and waits for connection of both controllers. Fails test if
+     * unable to connect both controllers.
      */
-    protected static void connect(final Controller cont1, final Controller cont2)
+    protected static boolean connectOrFail(final Controller cont1,
+        final Controller cont2)
     {
-        if (!tryToConnect(cont1, cont2)) {
-            throw new RuntimeException("Unable to connect controller " + cont1
-                + " to " + cont2);
+        if (!TwoControllerTestCase.connect(cont1, cont2)) {
+            fail("Unable to connect controller " + cont1 + " to " + cont2);
+            return false;
         }
+        return true;
     }
 
     /**
      * Connects and waits for connection of both controllers
-     * 
-     * @param cont1
-     * @param cont2
-     * @throws InterruptedException
-     * @throws ConnectionException
      */
-    protected static boolean tryToConnect(final Controller cont1,
-        final Controller cont2)
+    protected static boolean connect(final Controller cont1, final Controller cont2)
     {
-        Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
-        Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
-
-        if (cont1.getNodeManager().getConnectedNodes()
-            .contains(cont2.getMySelf()))
-        {
-            System.out
-                .println("NOT connecting, Controllers already connected: "
-                    + cont1 + " to " + cont2);
-            return true;
-        }
-
-        // Connect
-        System.out.println("Connecting controllers...");
-        System.out.println("Con to: "
-            + cont2.getConnectionListener().getAddress());
-
-        try {
-            cont1.connect(cont2.getConnectionListener().getAddress());
-        } catch (ConnectionException e) {
-            e.printStackTrace();
-            System.err.println("Unable to connect controller: " + cont1
-                + " to " + cont2);
+        if (!TwoControllerTestCase.connect(cont1, cont2)) {
             return false;
         }
-        try {
-            TestHelper.waitForCondition(20, new ConditionWithMessage() {
-                public boolean reached() {
-                    Member member2atCon1 = cont1.getNodeManager().getNode(
-                        cont2.getMySelf().getId());
-                    Member member1atCon2 = cont2.getNodeManager().getNode(
-                        cont1.getMySelf().getId());
-                    boolean connected = member2atCon1 != null
-                        && member1atCon2 != null
-                        && member2atCon1.isCompletelyConnected()
-                        && member1atCon2.isCompletelyConnected();
-                    boolean nodeManagersOK = cont1.getNodeManager()
-                        .getConnectedNodes().contains(member2atCon1)
-                        && cont2.getNodeManager().getConnectedNodes()
-                            .contains(member1atCon2);
-                    return connected && nodeManagersOK;
-                }
-
-                public String message() {
-                    return "Unable to connect controllers: " + cont1 + " and "
-                        + cont2;
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Unable to connect controller: " + cont1
-                + " to " + cont2);
-            return false;
-        }
-        System.out.println("Controllers connected");
         return true;
     }
 
@@ -339,7 +284,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
             new Controller[controllers.values().size()]);
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
-                tryToConnect(entries[i], entries[j]);
+                if (!connect(entries[i], entries[j])) {
+                    fail("Unable to connect controllers: " + entries[i]
+                        + " with " + entries[j]);
+                }
             }
         }
     }

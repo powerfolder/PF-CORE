@@ -25,6 +25,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -87,6 +89,47 @@ public class FolderInfo implements Serializable, Cloneable {
     public boolean isMetaFolder() {
         // #1548: Convert this into boolean flag?
         return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
+    }
+
+    /**
+     * @return the {@link FolderInfo} of the PARENT folder if this is a meta
+     *         folder.
+     */
+    public FolderInfo getParentFolderInfo() {
+        if (!isMetaFolder()) {
+            Logger.getLogger(FolderInfo.class.getName()).log(
+                Level.WARNING,
+                "Not required to retrieve parent folder info on non-meta folder: "
+                    + this, new RuntimeException("from here"));
+            return this;
+        }
+        try {
+            int i = id.indexOf(Constants.METAFOLDER_ID_PREFIX);
+            String folderId = id.substring(i
+                + Constants.METAFOLDER_ID_PREFIX.length());
+            i = name.indexOf(Constants.METAFOLDER_ID_PREFIX);
+            String folderName = name.substring(i
+                + Constants.METAFOLDER_ID_PREFIX.length());
+            return new FolderInfo(folderName, folderId).intern();
+        } catch (Exception e) {
+            Logger.getLogger(FolderInfo.class.getName()).log(Level.WARNING,
+                "Unable to get parent folder info for meta-folder: " + this, e);
+            return this;
+        }
+    }
+
+    /**
+     * @return the meta-folder info for this folder
+     */
+    public FolderInfo getMetaFolderInfo() {
+        if (isMetaFolder()) {
+            Logger.getLogger(FolderInfo.class.getName()).log(Level.WARNING,
+                "Tried to retrieve meta-folder for meta-folder: " + this,
+                new RuntimeException("from here"));
+            return this;
+        }
+        return new FolderInfo(Constants.METAFOLDER_ID_PREFIX + name,
+            Constants.METAFOLDER_ID_PREFIX + id);
     }
 
     public String getId() {

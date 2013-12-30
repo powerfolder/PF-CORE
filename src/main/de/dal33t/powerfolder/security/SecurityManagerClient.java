@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -352,13 +351,23 @@ public class SecurityManagerClient extends PFComponent implements
         return aInfo;
     }
 
+    private final Map<String, Member> refreshing = Util.createConcurrentHashMap();
+    
     public void nodeAccountStateChanged(final Member node,
         boolean refreshFolderMemberships)
     {
+        if (!getController().isStarted()) {
+            return;
+        }
+        String key = node.getId() + refreshFolderMemberships;
+        if (refreshing.containsKey(key)) {
+            // Currently refreshing
+            return;
+        }
         Runnable refresher = new Refresher(node, refreshFolderMemberships);
         if (getController().isStarted()) {
-            getController().getThreadPool().schedule(refresher, 0,
-                TimeUnit.SECONDS);
+            refreshing.put(key, node);
+            getController().getIOProvider().startIO(refresher);
         }
     }
 
@@ -495,37 +504,43 @@ public class SecurityManagerClient extends PFComponent implements
         }
 
         public void run() {
-            // The server connected!
-            boolean server = false;
-            if (client.isPrimaryServer(node) && node.isConnected()) {
-                prefetchAccountInfos();
-                server = true;
-            }
-
-            // Myself changed!
-            if (node.isMySelf() && client.isConnected()) {
-                try {
-                    client.refreshAccountDetails();
-                } catch (Exception e) {
-                    logWarning("Unable to refresh account details. " + e);
-                    logFiner(e);
+            try {
+                // The server connected!
+                boolean server = false;
+                if (client.isPrimaryServer(node) && node.isConnected()) {
+                    prefetchAccountInfos();
+                    server = true;
                 }
-            }
 
-            // Refresh MemberInfo->AccountInfo cache
-            clearNodeCache(node);
-            refresh(node);
-
-            // This is required because of probably changed access
-            // permissions to any folder.
-            if (syncFolderMemberships) {
-                if (node.isMySelf() || server) {
-                    getController().getFolderRepository()
-                        .triggerSynchronizeAllFolderMemberships();
-                } else if (node.isCompletelyConnected()) {
-                    node.synchronizeFolderMemberships();
+                // Myself changed!
+                if (node.isMySelf() && client.isConnected()) {
+                    try {
+                        client.refreshAccountDetails();
+                    } catch (Exception e) {
+                        logWarning("Unable to refresh account details. " + e);
+                        logFiner(e);
+                    }
                 }
+
+                // Refresh MemberInfo->AccountInfo cache
+                clearNodeCache(node);
+                refresh(node);
+
+                // This is required because of probably changed access
+                // permissions to any folder.
+                if (syncFolderMemberships) {
+                    if (node.isMySelf() || server) {
+                        getController().getFolderRepository()
+                            .triggerSynchronizeAllFolderMemberships();
+                    } else if (node.isCompletelyConnected()) {
+                        node.synchronizeFolderMemberships();
+                    }
+                }
+            } finally {
+                // Not longer refreshing this node.
+                refreshing.remove(node.getId() + syncFolderMemberships);
             }
+
         }
     }
 
@@ -557,7 +572,7 @@ public class SecurityManagerClient extends PFComponent implements
         }
     }
 
-    private class Session {
+    class Session {
         private AccountInfo info;
 
         public Session(AccountInfo info) {
@@ -571,7 +586,7 @@ public class SecurityManagerClient extends PFComponent implements
         }
     }
 
-    private class PermissionsCacheSegment {
+    final class PermissionsCacheSegment {
         Map<Permission, Boolean> permissions = new ConcurrentHashMap<Permission, Boolean>();
 
         void set(Permission permission, Boolean hasPermission) {

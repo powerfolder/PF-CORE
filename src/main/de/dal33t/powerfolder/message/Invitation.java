@@ -20,18 +20,21 @@
 package de.dal33t.powerfolder.message;
 
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -59,7 +62,7 @@ public class Invitation extends FolderRelatedMessage {
 
     private MemberInfo invitor;
     // For backward compatibilty to pre 3.1.2 versions.
-    private Path suggestedLocalBase;
+    private File suggestedLocalBase;
     private String invitationText;
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
@@ -73,6 +76,10 @@ public class Invitation extends FolderRelatedMessage {
     // Since 6.0:
     private String username;
 
+    // Since 9.1
+    private String oid;
+    private String inviteeUsername;
+
     /**
      * Constructor
      *
@@ -82,6 +89,11 @@ public class Invitation extends FolderRelatedMessage {
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
         this.invitor = invitor;
+        oid = IdGenerator.makeId();
+    }
+
+    public String getOID() {
+        return oid;
     }
 
     public long getSize() {
@@ -121,7 +133,13 @@ public class Invitation extends FolderRelatedMessage {
         Path suggestedLocalBase)
     {
         Reject.ifNull(suggestedLocalBase, "File is null");
-        this.suggestedLocalBase = suggestedLocalBase;
+        try {
+            this.suggestedLocalBase = suggestedLocalBase.toFile();
+        } catch (Exception e) {
+            Logger.getLogger(Invitation.class.getName()).fine(
+                "Unable to set suggested path: " + suggestedLocalBase + ". "
+                    + e);
+        }
         String folderBase = controller.getFolderRepository()
             .getFoldersBasedirString();
         String appsDir = getAppsDir();
@@ -204,7 +222,7 @@ public class Invitation extends FolderRelatedMessage {
     }
 
     // Return the user name if not blank, else the invitor nick. 
-    public String getBestUsername() {
+    public String getInvitorUsername() {
         if (StringUtils.isBlank(username)) {
             if (invitor == null) {
                 return "";
@@ -214,8 +232,16 @@ public class Invitation extends FolderRelatedMessage {
         return username;
     }
 
-    public void setUsername(String username) {
+    public void setInvitorUsername(String username) {
         this.username = username;
+    }
+
+    public void setInviteeUsername(String username) {
+        this.inviteeUsername = username;
+    }
+
+    public String getInviteeUsername() {
+        return inviteeUsername;
     }
 
     public MemberInfo getInvitor() {
@@ -273,6 +299,7 @@ public class Invitation extends FolderRelatedMessage {
     public int hashCode() {
         int prime = 31;
         int result = 1;
+        result = prime * result + (oid == null ? 0 : oid.hashCode());
         result = prime * result
             + (invitationText == null ? 0 : invitationText.hashCode());
         result = prime * result + (invitor == null ? 0 : invitor.hashCode());
@@ -280,6 +307,8 @@ public class Invitation extends FolderRelatedMessage {
             + (permission == null ? 0 : permission.hashCode());
         result = prime * result + relative;
         result = prime * result + (username == null ? 0 : username.hashCode());
+        result = prime * result
+            + (inviteeUsername == null ? 0 : inviteeUsername.hashCode());
         result = prime
             * result
             + (suggestedLocalBase == null ? 0 : suggestedLocalBase.hashCode());
@@ -307,6 +336,13 @@ public class Invitation extends FolderRelatedMessage {
             return false;
         }
         Invitation other = (Invitation) obj;
+        if (oid == null) {
+            if (other.oid != null) {
+                return false;
+            }
+        }else if (!oid.equals(other.oid)) {
+            return false;
+        }
         if (invitationText == null) {
             if (other.invitationText != null) {
                 return false;
@@ -326,6 +362,13 @@ public class Invitation extends FolderRelatedMessage {
                 return false;
             }
         } else if (!username.equals(other.username)) {
+            return false;
+        }
+        if (inviteeUsername == null) {
+            if (other.inviteeUsername != null) {
+                return false;
+            }
+        } else if (!inviteeUsername.equals(other.inviteeUsername)) {
             return false;
         }
         if (permission == null) {

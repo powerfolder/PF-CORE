@@ -63,6 +63,23 @@ public interface AccountService {
         ServerInfo serverInfo, String referredBy, boolean recommendWelcomeEmail);
 
     /**
+     * @param username
+     *            The username of the user to register.
+     * @param password
+     *            The password. If null a random password will be generated and
+     *            sent by email.
+     * @param newsLetter
+     *            If the user wants to subscribe to the newsletter.
+     * @param referredBy
+     *            The account oid of the referring user.
+     * @return The account, if registration was successful.
+     * @throws RegisterFailedException
+     *             If registration failed.
+     */
+    Account register(String username, String password, boolean newsLetter,
+        String referredBy) throws RegisterFailedException;
+
+    /**
      * Logs in from a remote location.
      * 
      * @param username

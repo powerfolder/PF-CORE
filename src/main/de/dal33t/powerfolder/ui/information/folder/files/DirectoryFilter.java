@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -267,8 +269,16 @@ public class DirectoryFilter extends FilterModel {
         FilteredDirectory filteredDirectory;
 
         synchronized (refilter) {
+            Date ignoreDeletedBeforeDate = null;
+            if (fileFilterMode == FILE_FILTER_MODE_UNSYNCHRONIZED) {
+                ignoreDeletedBeforeDate = new Date(
+                    System.currentTimeMillis()
+                        - ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
+                            .getValueInt(getController()));
+            }
             filteredDirectoryModel = new FilteredDirectoryModel(
-                folder.getName(), currentDirectoryInfo.getRelativeName());
+                folder.getName(), currentDirectoryInfo.getRelativeName(),
+                ignoreDeletedBeforeDate);
             filteredDirectory = filteredDirectoryModel.getFilteredDirectory();
         }
 
@@ -369,7 +379,6 @@ public class DirectoryFilter extends FilterModel {
         FilteredDirectoryModel filteredDirectoryModel,
         String[] keywords, DirectoryFilterResult result)
     {
-
         boolean target = currentDirectoryInfo.getRelativeName().equals(
             directoryInfo.getRelativeName());
         FileInfoCriteria criteria = new FileInfoCriteria();
@@ -380,14 +389,20 @@ public class DirectoryFilter extends FilterModel {
             if (fileInfo instanceof DirectoryInfo) {
 
                 // Hidden directory?
-                try {
-                    if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
-                            Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
-                        return;
+                if (!fileInfo.isDeleted()) {
+                    try {
+                        Path diskDir = fileInfo.getDiskFile(getController()
+                            .getFolderRepository());
+                        if (!PreferencesEntry.SHOW_HIDDEN_FILES
+                            .getValueBoolean(getController())
+                            && Files.isHidden(diskDir))
+                        {
+                            return;
+                        }
+                    } catch (IOException ioe) {
+                        logInfo(ioe);
+                        continue;
                     }
-                } catch (IOException ioe) {
-                    logInfo(ioe.getMessage());
-                    return;
                 }
 
                 DirectoryInfo di = (DirectoryInfo) fileInfo;
@@ -396,7 +411,7 @@ public class DirectoryFilter extends FilterModel {
                     if (fileFilterMode != FILE_FILTER_MODE_DELETED_PREVIOUS
                         ^ di.isDeleted())
                     {
-                        filteredDirectoryModel.getFileInfos().add(di);
+                        filteredDirectoryModel.addFileInfo(di);
                     }
                 }
             } else {
@@ -411,16 +426,18 @@ public class DirectoryFilter extends FilterModel {
         result.getOriginalCount().incrementAndGet();
 
         int searchMode = (Integer) searchModeVM.getValue();
-
+        boolean isDeleted = fileInfo.isDeleted();
+        
         // Hidden file?
-        try {
-            if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
-                    Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
-                return;
+        if (!isDeleted) {
+            try {
+                if (!PreferencesEntry.SHOW_HIDDEN_FILES.getValueBoolean(getController()) &&
+                        Files.isHidden(fileInfo.getDiskFile(getController().getFolderRepository()))) {
+                    return;
+                }
+            } catch (IOException ioe) {
+                logInfo(ioe.toString());
             }
-        } catch (IOException ioe) {
-            logInfo(ioe.getMessage());
-            return;
         }
 
         // Text filter
@@ -430,7 +447,7 @@ public class DirectoryFilter extends FilterModel {
             showFile = matches(fileInfo, keywords, searchMode);
         }
 
-        boolean isDeleted = fileInfo.isDeleted();
+        
         FileInfo newestVersion = null;
         if (fileInfo.getFolder(getController().getFolderRepository()) != null) {
             newestVersion = fileInfo.getNewestNotDeletedVersion(getController()
@@ -473,8 +490,9 @@ public class DirectoryFilter extends FilterModel {
 
         if (showFile) {
             if (addFiles) {
-                result.getFilteredCount().incrementAndGet();
-                filteredDirectoryModel.getFileInfos().add(fileInfo);
+                if (filteredDirectoryModel.addFileInfo(fileInfo)) {
+                    result.getFilteredCount().incrementAndGet();                    
+                }
             }
         }
 

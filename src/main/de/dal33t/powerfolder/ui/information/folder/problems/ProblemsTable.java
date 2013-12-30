@@ -67,11 +67,11 @@ public class ProblemsTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(550);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(100);
         column = getColumn(getColumnName(2));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(100);
     }
 
     private class ProblemTableCellRenderer extends DefaultTableCellRenderer {

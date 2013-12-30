@@ -518,7 +518,7 @@ public class TestHelper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         try (OutputStream fOut = Files.newOutputStream(file)) {
             fOut.write(contents);
         } catch (IOException e) {

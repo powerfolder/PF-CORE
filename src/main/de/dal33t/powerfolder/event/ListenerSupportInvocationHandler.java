@@ -114,7 +114,8 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
                 n = weakListenersNonEDT.size();
             }
             if (LOG.isLoggable(Level.WARNING) && n > WARN_IF_MORE_LISTENERS
-                && n % 610 == 0)
+                && n % 610 == 0
+                && !listenerInterface.equals(NodeManagerListener.class))
             {
                 LOG.log(Level.WARNING, n + " weak listeners of "
                     + listenerInterface.getName() + " registered");

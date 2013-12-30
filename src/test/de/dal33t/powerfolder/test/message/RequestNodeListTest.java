@@ -147,6 +147,9 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             }
         });
 
+        // Let supernode state sync/broadcast
+        TestHelper.waitMilliSeconds(3000);
+        
         // Should have all online supernodes
         assertEquals(N_CON_SUPERNODES, getContollerLisa().getNodeManager()
             .countSupernodes());

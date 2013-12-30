@@ -23,7 +23,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
-import javax.swing.*;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -53,6 +57,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkCB;
     private JCheckBox autoExpandCB;
+    private JCheckBox showHiddenFilesCB;
     private JLabel skinLabel;
     private JComboBox<String> skinCombo;
 
@@ -105,6 +110,12 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                 Translation.getTranslation("preferences.advanced.auto_expand"));
         autoExpandCB.setVisible(false);
         autoExpandCB.setSelected(PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController()));
+
+        showHiddenFilesCB = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.warnings_notifications.show_hidden_files"));
+        showHiddenFilesCB.setSelected(PreferencesEntry.SHOW_HIDDEN_FILES
+            .getValueBoolean(getController()));
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
@@ -163,7 +174,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -180,6 +191,9 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
                 row += 2;
                 builder.add(useOnlineStorageCB, cc.xy(3, row));
             }
+
+            row += 2;
+            builder.add(showHiddenFilesCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(verboseCB, cc.xy(3, row));
@@ -222,6 +236,9 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
         PreferencesEntry.AUTO_EXPAND.setValue(getController(),
             autoExpandCB.isSelected());
+
+        PreferencesEntry.SHOW_HIDDEN_FILES.setValue(getController(),
+            showHiddenFilesCB.isSelected());
 
         ConfigurationEntry.USER_INTERFACE_LOCKED.setValue(getController(),
             String.valueOf(lockUICB.isSelected()));

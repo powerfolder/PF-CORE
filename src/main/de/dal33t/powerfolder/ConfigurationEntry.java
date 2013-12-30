@@ -174,8 +174,7 @@ public enum ConfigurationEntry {
      * <p>
      * Recommended use: {@link ProUtil#getBuyNowURL(Controller)}
      */
-    PROVIDER_BUY_URL("provider.url.buy",
-        "http://www.powerfolder.com/buynow.html"),
+    PROVIDER_BUY_URL("provider.url.buy"),
 
     /**
      * URL where the contact form resides
@@ -199,6 +198,19 @@ public enum ConfigurationEntry {
 
     DIST_FOLDERS_BASE_NAME("dist.folderbasename",
         Constants.FOLDERS_BASE_DIR_SUBDIR_NAME),
+
+    DIST_EMAIL("dist.email", ""),
+
+    DIST_COMPANY("dist.company", ""),
+
+    DIST_URL("dist.url", ""),
+
+    /**
+     * PFS-1117: Optional name of class to use as distribution. Forces and overrides
+     * loading via ServiceLoader /
+     * de.dal33t.powerfolder.distribution.Distribution
+     */
+    DIST_CLASSNAME("dist.classname"),
 
     // Server settings ********************************************************
 
@@ -254,13 +266,28 @@ public enum ConfigurationEntry {
      */
     SERVER_CONNECTION_URLS("server.connection.urls"),
 
+    /**
+     * Specify a URL to get a list of Shibboleth Identity Provider.
+     */
+    SERVER_IDP_DISCO_FEED_URL("server.idp.disco_feed.url"),
+
+    /**
+     * The last Identity Provider URL that was selected.
+     */
+    SERVER_IDP_LAST_CONNECTED("server.idp.last_connected"),
+
+    /**
+     * The corresponding ECP binding for the last connected Identity Provider.
+     */
+    SERVER_IDP_LAST_CONNECTED_ECP("server.idp.last_connected.ecp"),
+
     // Server WEB settings ****************************************************
 
     /**
      * #2448: Option to disable Web access
      */
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
-    
+
     /**
      * If the client is allowed to pass the current password to the web browser.
      */
@@ -271,14 +298,26 @@ public enum ConfigurationEntry {
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),
 
+    /**
+     * Enable/Disable the Members Tab
+     */
     MEMBERS_ENABLED("members.enabled", true),
 
+    /**
+     * Enable/Disable the Settings Tab
+     */
     SETTINGS_ENABLED("settings.enabled", true),
 
+    /**
+     * Enable/Disable the Files Tab
+     */
     FILES_ENABLED("files.enabled", true),
     
     ARCHIVE_DIRECTORY_NAME("files.archive.dir.name", "archive"),
 
+    /**
+     * Enable/Disable the Problems Tab
+     */
     PROBLEMS_ENABLED("problems.enabled", true),
 
     MY_ACCOUNT_ENABLED("web.my_account.enabled", true),
@@ -310,7 +349,12 @@ public enum ConfigurationEntry {
      * #2248 Automatically assign client to server by IP address
      */
     CONFIG_ASSIGN_IP_LIST("config.assign.iplist"),
-    
+
+    /**
+     * PFS-1107 associate a config to an ldap group
+     */
+    CONFIG_LDAP_GROUP("config.ldap.group"),
+
     /**
      * PFC-2184 Specify server URL as installer command line parameter
      */
@@ -333,11 +377,13 @@ public enum ConfigurationEntry {
      * exe
      */
     UPDATE_WINDOWS_EXE_URL("update.windows_exe.url"),
-    
+
     /**
      * PFC-2167: Installer launches PowerFolder under the account used for elevation.
      */
     UPDATE_SILENT_ALLOWED("update.silent.allowed", true),
+
+    UPDATE_FORCE("update.force", false),
 
     // Server connection ******************************************************
 
@@ -603,63 +649,14 @@ public enum ConfigurationEntry {
      * Lets do this flexible.
      */
     FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
-    
+
     /**
      * Note - as of PFC-2182, mass delete protection should only be applied
      * if the user has expert mode.
      */
-    MASS_DELETE_PROTECTION("mass.delete.protection", false) {
+    MASS_DELETE_PROTECTION("mass.delete.protection", false),
 
-        @Override
-        public String getValue(Controller controller) {
-            String value = super.getValue(controller);
-            if (value == null) {
-                // Old entry
-                value = PreferencesEntry.MASS_DELETE_PROTECTION
-                    .getValueString(controller);
-            }
-            return value;
-        }
-
-        @Override
-        public void removeValue(Controller controller) {
-            super.removeValue(controller);
-            PreferencesEntry.MASS_DELETE_PROTECTION.removeValue(controller);
-        }
-
-        @Override
-        public void setValue(Controller controller, String value) {
-            super.setValue(controller, value);
-            PreferencesEntry.MASS_DELETE_PROTECTION.removeValue(controller);
-        }
-
-    },
-
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95) {
-
-        @Override
-        public String getValue(Controller controller) {
-            String value = super.getValue(controller);
-            if (value == null) {
-                // Old entry
-                value = PreferencesEntry.MASS_DELETE_THRESHOLD
-                    .getValueString(controller);
-            }
-            return value;
-        }
-
-        @Override
-        public void removeValue(Controller controller) {
-            super.removeValue(controller);
-            PreferencesEntry.MASS_DELETE_THRESHOLD.removeValue(controller);
-        }
-
-        @Override
-        public void setValue(Controller controller, String value) {
-            super.setValue(controller, value);
-            PreferencesEntry.MASS_DELETE_THRESHOLD.removeValue(controller);
-        }
-    },
+    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95),
 
     /**
      * Contains a comma-separated list of all plugins to load.
@@ -818,13 +815,18 @@ public enum ConfigurationEntry {
     FOLDER_WATCHER_DELAY("folder.watcher.delay.seconds", 1),
 
     /**
+     * Enable to copy and delete a newly transfered file instead of moveing.
+     */
+    FOLDER_COPY_AFTER_TRANSFER("folder.copy_after_transfer.enabled", false),
+
+    /**
      * The number of seconds between db maintenance (1 hour).
      */
     DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 3600),
 
     /**
      * The age of a deleted file until it gets removed by the folder db
-     * maintenance. In Seconds! Default: 1 month
+     * maintenance. In Seconds! Default: 3 month
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30
         * 3),
@@ -909,8 +911,32 @@ public enum ConfigurationEntry {
     
     /**
      * PFC-2226: Option to restrict new folder creation to the default storage path
+     * PFC-2424: If "Beginner mode" is switched on, set to "true"
      */
-    FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false),
+    FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false) {
+        @Override
+        public Boolean getValueBoolean(Controller controller) {
+            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
+                && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
+            {
+                return Boolean.TRUE;
+            }
+
+            String value = getValue(controller);
+            if (value == null) {
+                value = getDefaultValue();
+            }
+            try {
+                return value.trim().equalsIgnoreCase("true");
+            } catch (NumberFormatException e) {
+                LOG.log(
+                    Level.WARNING,
+                    "Unable to parse configuration entry 'create.folder.basedir.only' into a boolean. Value: "
+                        + value, e);
+                return "true".equalsIgnoreCase(getDefaultValue());
+            }
+        }
+    },
     
     /**
      * Remove folder from setup if disappeared/deleted from basedir.

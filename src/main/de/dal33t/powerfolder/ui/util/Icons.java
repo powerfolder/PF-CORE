@@ -233,6 +233,7 @@ public class Icons {
     public static final String LOGO400UI = "power_folder_logo_400_ui.icon";
     public static final String SMALL_LOGO = "powerfolder_32.icon";
     public static final String SPLASH = "splash.icon";
+    public static final String POWERED_BY = "poweredby.icon";
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";

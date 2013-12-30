@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
@@ -77,8 +78,8 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
  * Class to model a folder's members. provides columns for image, name, sync
  * status, folder size, local size.
  */
-public class MembersExpertTableModel extends PFUIComponent implements TableModel,
-    SortedTableModel
+public class MembersExpertTableModel extends PFUIComponent implements
+    TableModel, SortedTableModel
 {
 
     static final int COL_TYPE = 0;
@@ -854,7 +855,19 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
             refreshFor = folder;
             for (Member member : folder.getMembersAsCollection()) {
                 if (!member.isServer()) {
-                    getAllFolderPermission(member.getAccountInfo(), folder.getInfo());
+                    getAllFolderPermission(member.getAccountInfo(),
+                        folder.getInfo());
+                }
+                if (member.isConnected() || member.isMySelf()) {
+                    logInfo("Refreshed "
+                        + folder.getName()
+                        + ". Filelist received? "
+                        + (member.hasCompleteFileListFor(folder.getInfo()) || member
+                            .isMySelf()) + ". Files/Dirs: "
+                        + folder.getDAO().count(member.getId(), true, false)
+                        + ". Sync: "
+                        + folder.getStatistic().getSyncPercentage(member)
+                        + " for " + member);
                 }
             }
 
@@ -902,7 +915,16 @@ public class MembersExpertTableModel extends PFUIComponent implements TableModel
                 permissionsRetrieved = true;
                 rebuild(res, defaultPermission);
             } catch (Exception e) {
-                logWarning(e.toString(), e);
+                if (e.getCause() instanceof SecurityException) {
+                    logWarning("Security Exception: "
+                        + e.getCause().getMessage());
+                }
+                if (e.getCause() instanceof RemoteCallException) {
+                    logWarning("Remote Call Exception: "
+                        + e.getCause().getMessage());
+                } else {
+                    logWarning(e.toString(), e);
+                }
                 permissionsRetrieved = false;
                 rebuild(new HashMap<Serializable, FolderPermission>(), null);
             } finally {

@@ -96,7 +96,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public class NodeManager extends PFComponent {
 
     public static final String SERVER_NODES_URI = "/client_deployment/server.nodes";
-    
+
     private static final Logger log = Logger.getLogger(NodeManager.class
         .getName());
 
@@ -1084,6 +1084,23 @@ public class NodeManager extends PFComponent {
                 + ". Expected/Ours: " + getNetworkId()).with(handler);
         }
 
+        if (!mySelf.isServer()
+            && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                .getValueBoolean(getController()))
+        {
+            ServerClient client = getController().getOSClient();
+            // Only actually connect to other clients if logged into server.
+            if (!client.isLoggedIn() && !client.isPrimaryServer(handler)) {
+                handler.shutdown();
+                logFine("Not logged in at server ("
+                    + client.getServer().getNick() + ") yet. Disconnecting: "
+                    + handler.getIdentity());
+                throw new ConnectionException("Not logged in at server ("
+                    + client.getServer().getNick() + ") yet. Disconnecting: "
+                    + handler.getIdentity()).with(handler);
+            }
+        }
+
         Member member;
         // Accept node ?
         boolean acceptHandler;
@@ -1206,9 +1223,11 @@ public class NodeManager extends PFComponent {
         knownNodes.put(node.getId(), node);
 
         if (!node.isOnSameNetwork()) {
-            logInfo("Corrected node with diffrent network id. Our netID: "
-                + getNetworkId() + ", node netID: " + node.getInfo().networkId
-                + ". " + node);
+            if (isFine()) {
+                logFine("Changed network ID of node " + node.getNick()
+                    + " from " + node.getInfo().networkId + " to "
+                    + getNetworkId());
+            }
             node.getInfo().networkId = getNetworkId();
         }
 
@@ -1414,9 +1433,8 @@ public class NodeManager extends PFComponent {
      * 
      * @return the number of total servers know now.
      */
-    public void loadServerNodes() {
-        String serverNodesURL = getController().getOSClient().getWebURL(
-            SERVER_NODES_URI, false);
+    public void loadServerNodes(ServerClient client) {
+        String serverNodesURL = client.getWebURL(SERVER_NODES_URI, false);
         if (StringUtils.isNotBlank(serverNodesURL)) {
             try {
                 loadNodesFrom(new URL(serverNodesURL));
@@ -1427,7 +1445,8 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Loads members from url and adds them
+     * Loads members from url and adds them. Also removes unsets all servers,
+     * except primary server.
      * 
      * @param url
      */
@@ -1435,8 +1454,11 @@ public class NodeManager extends PFComponent {
         try {
             NodeList nodeList = new NodeList();
             nodeList.load(url);
-            logInfo("Loaded " + nodeList.getServersSet().size()
-                + " servers from " + url + " : " + nodeList.getServersSet());
+
+            logFine("I know " + nodeList.getServersSet().size()
+                + " servers from cluster @ " + url + " : "
+                + nodeList.getServersSet());
+
             return processNodeList(nodeList);
         } catch (IOException e) {
             logWarning("Unable to load servers from url '" + url + "'. "
@@ -1525,6 +1547,16 @@ public class NodeManager extends PFComponent {
                 node.setServer(false);
             }
         }
+        // Cleanup old servers:
+        for (Member node : knownNodes.values()) {
+            ServerClient client = getController().getOSClient();
+            if (client != null && client.isPrimaryServer(node)) {
+                continue;
+            }
+            if (!nodeList.getServersSet().contains(node.getInfo())) {
+                node.setServer(false);
+            }
+        }
         for (MemberInfo server : nodeList.getServersSet()) {
             Member node = server.getNode(getController(), true);
             node.updateInfo(server);
@@ -1552,16 +1584,7 @@ public class NodeManager extends PFComponent {
         {
             getController().getIOProvider().startIO(new Runnable() {
                 public void run() {
-                    String serverNodesURL = getController().getOSClient()
-                        .getWebURL(SERVER_NODES_URI, false);
-                    if (StringUtils.isBlank(serverNodesURL)) {
-                        return;
-                    }
-                    try {
-                        loadNodesFrom(new URL(serverNodesURL));
-                    } catch (MalformedURLException e) {
-                        logWarning(e.toString());
-                    }
+                    loadServerNodes(getController().getOSClient());
                 }
             });
         }

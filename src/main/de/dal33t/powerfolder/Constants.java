@@ -119,6 +119,11 @@ public class Constants {
             new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
     // Network architecture constants ******************************************
+            
+    /**
+     * PFC-2455: Network ID to set to connect to clients with any network ID
+     */
+    public static final String NETWORK_ID_ANY = "ANY";
 
     /**
      * The maximum number of files on a FileList. If list ist greater, it is
@@ -215,7 +220,7 @@ public class Constants {
     /**
      * The timeout for a service request in seconds
      */
-    public static final long REQUEST_RESPONSE_TIMEOUT = 30;
+    public static final long REQUEST_RESPONSE_TIMEOUT = 60;
 
     // Basic networking options ***********************************************
 
@@ -361,6 +366,10 @@ public class Constants {
     public static final String LOGIN_URI = "/login";
     public static final String REGISTER_URI = "/register";
     public static final String GET_LINK_URI = "/getlink";
+    public static final String DL_LINK_URI = "/dl";
+    public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
+    public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI
+        + "/client";
 
     public static final String LOGIN_PARAM_USERNAME = "Username";
     public static final String LOGIN_PARAM_PASSWORD = "Password";

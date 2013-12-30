@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.information.folder.files;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
@@ -34,12 +36,16 @@ public class FilteredDirectoryModel {
 
     private final String rootFolderName;
     private String directoryRelativeName;
+    private final Date ignoreDeletedBeforeDate;
     private final List<FileInfo> fileInfos = new ArrayList<FileInfo>();
     private final FilteredDirectory filteredDirectory;
 
-    public FilteredDirectoryModel(String rootFolderName, String directoryRelativeName) {
+    public FilteredDirectoryModel(String rootFolderName,
+        String directoryRelativeName, Date ignoreDeletedBeforeDate)
+    {
         this.rootFolderName = rootFolderName;
         this.directoryRelativeName = directoryRelativeName;
+        this.ignoreDeletedBeforeDate = ignoreDeletedBeforeDate;
         filteredDirectory = new FilteredDirectory(rootFolderName, "");
     }
 
@@ -55,8 +61,23 @@ public class FilteredDirectoryModel {
         return directoryRelativeName;
     }
 
+    /**
+     * @return an unmodifiable list of the fileinfos. use
+     *         {@link #addFileInfo(FileInfo)} to add files.
+     */
     public List<FileInfo> getFileInfos() {
-        return fileInfos;
+        return Collections.unmodifiableList(fileInfos);
+    }
+
+    public boolean addFileInfo(FileInfo fInfo) {
+        if (ignoreDeletedBeforeDate != null && fInfo.isDeleted()
+            && fInfo.getModifiedDate().before(ignoreDeletedBeforeDate))
+        {
+            // Ignore
+            return false;
+        }
+        fileInfos.add(fInfo);
+        return true;
     }
 
     public FilteredDirectory getFilteredDirectory() {

@@ -237,7 +237,14 @@ public class Format extends PFComponent {
      * @return
      */
     public static String formatPercent(double n) {
-        return PERCENT_NUMBER_FORMAT.get().format(n / 100.0);
+        if (n > 100.0d) {
+            return "100%";
+        }
+        String p = PERCENT_NUMBER_FORMAT.get().format(n / 100.0);
+        if (n != 100.0d && p.equals("100%")) {
+            p = "99%";
+        }
+        return p;
     }
 
     /**

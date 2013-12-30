@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -306,8 +307,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     public void invalidate() {
-        tableModel
-            .setFilteredDirectoryModel(new FilteredDirectoryModel("", ""));
+        tableModel.setFilteredDirectoryModel(new FilteredDirectoryModel("", "",
+            null));
         emptyLabel.setText(Translation
             .getTranslation("files_table_panel.finding_files"));
         emptyResetLink.setVisible(false);

@@ -974,8 +974,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         // OK pass through
                     } else if (obj instanceof Message) {
 
-                        if (member != null) {
-                            member.handleMessage((Message) obj,
+                        Member thisMember = member;
+                        if (thisMember != null) {
+                            thisMember.handleMessage((Message) obj,
                                 AbstractSocketConnectionHandler.this);
                         } else if (!isConnected()) {
                             // Simply break. Already disconnected

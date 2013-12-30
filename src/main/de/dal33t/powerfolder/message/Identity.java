@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * Message which contains information about me.
  * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
 public class Identity extends Message {
@@ -115,6 +115,8 @@ public class Identity extends Message {
      */
     private boolean pendingMessages = false;
 
+    private String configurationURL;
+
     public Identity() {
         // Serialisation constructor
     }
@@ -143,6 +145,8 @@ public class Identity extends Message {
             || (handler.isOnLAN() && useZIPonLAN);
         // #2569
         this.requestFullFolderlist = controller.getMySelf().isServer();
+
+        this.configurationURL = controller.getConfig().getProperty("config.url");
     }
 
     /**
@@ -245,6 +249,10 @@ public class Identity extends Message {
      */
     public int getProtocolVersion() {
         return protocolVersion;
+    }
+
+    public String getConfigURL() {
+        return configurationURL;
     }
 
     @Override

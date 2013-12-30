@@ -91,6 +91,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
     public static final String PROPERTYNAME_LDAPDN = "ldapDN";
+    public static final String PROPERTYNAME_SHIBBOLETH_PERSISTENT_ID = "shibbolethPersistentID";
     public static final String PROPERTYNAME_LANGUAGE = "language";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
@@ -121,6 +122,9 @@ public class Account implements Serializable {
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
+    @Index(name = "IDX_SHIB_PID")
+    @Column(length = 2048)
+    private String shibbolethPersistentID;
     private Date registerDate;
     private Date lastLoginDate;
     @ManyToOne
@@ -163,6 +167,12 @@ public class Account implements Serializable {
     @ManyToOne
     @JoinColumn(name = "serverInfo_id")
     private ServerInfo server;
+
+    /**
+     * PFS-992: If this account is static and won't be switch automatically by
+     * ClusterManager.
+     */
+    private boolean serverStatic;
 
     @Deprecated
     @Transient
@@ -478,7 +488,9 @@ public class Account implements Serializable {
             || StringUtils.isNotBlank(surname))
         {
             return (firstname + " " + surname).trim();
-        } else if (authByShibboleth() && !emails.isEmpty()) {
+        } else if (StringUtils.isNotBlank(username) && authByShibboleth()
+            && !emails.isEmpty())
+        {
             return emails.get(0);
         } else if (!emails.isEmpty() && StringUtils.isNotBlank(emails.get(0))) {
             return emails.get(0);
@@ -534,8 +546,15 @@ public class Account implements Serializable {
     }
 
     public void setLdapDN(String ldapDN) {
-        System.err.println("Setting LDAP DN to: " + ldapDN);
         this.ldapDN = ldapDN;
+    }
+    
+    public String getShibbolethPersistentID() {
+        return shibbolethPersistentID;
+    }
+
+    public void setShibbolethPersistentID(String shibbolethPersistentID) {
+        this.shibbolethPersistentID = shibbolethPersistentID;
     }
 
     public Date getRegisterDate() {
@@ -552,6 +571,10 @@ public class Account implements Serializable {
 
     public void setOSSubscription(OnlineStorageSubscription osSubscription) {
         this.osSubscription = osSubscription;
+    }
+    
+    public boolean hasOwnStorage() {
+        return osSubscription.getStorageSize() != 0;
     }
 
     public String getNotes() {
@@ -619,8 +642,10 @@ public class Account implements Serializable {
     }
 
     public boolean authByShibboleth() {
-        // Fine a better way:
-        return username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
+        // Remove last part after release of 9 SP1:
+        // username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
+        return StringUtils.isNotBlank(shibbolethPersistentID)
+            || username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
     }
 
     public boolean authByLDAP() {
@@ -677,6 +702,14 @@ public class Account implements Serializable {
 
     public void setServer(ServerInfo server) {
         this.server = server;
+    }
+    
+    public boolean isServerStatic() {
+        return serverStatic;
+    }
+
+    public void setServerServer(boolean serverStatic) {
+        this.serverStatic = serverStatic;
     }
 
     public FolderInfo getDefaultSynchronizedFolder() {

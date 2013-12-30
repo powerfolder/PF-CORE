@@ -347,7 +347,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 {
                     if (ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
                         .getValueBoolean(getController())
-                        || getController().getOSClient().isConnected())
+                        || getController().getOSClient().isLoggedIn())
                     {
                         // found another new node!!!
                         node = getController().connect(address);

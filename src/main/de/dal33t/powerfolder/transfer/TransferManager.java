@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -769,10 +770,8 @@ public class TransferManager extends PFComponent {
             // TODO PREVENT further uploads of this file unless it's "there"
             // Search for active uploads of the file and break them
             boolean abortedUL;
-            int tries = 0;
             do {
                 abortedUL = abortUploadsOf(fInfo);
-                tries++;
                 if (abortedUL) {
                     try {
                         Thread.sleep(50);
@@ -814,7 +813,8 @@ public class TransferManager extends PFComponent {
             .isMetaFolder();
         autoClean = autoClean
             || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController()) == 0;
+                .getValueInt(getController()) == 0
+            || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
         if (autoClean) {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());
@@ -1232,20 +1232,26 @@ public class TransferManager extends PFComponent {
             if (diskFile == null) {
                 return null;
             }
-            if (isWarning()) {
-                try {
-                    logWarning("File not in sync with disk: '"
-                        + dl.file.toDetailString() + "', disk file at "
-                        + Files.getLastModifiedTime(diskFile).toMillis());
-                } catch (IOException ioe) {
-                    logSevere("Could not access modification time of file "
-                        + diskFile.toAbsolutePath().toString());
-                }
-            }
 
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
                 folder.scanChangedFile(dl.file);
+            } else {
+                if (isWarning()) {
+                    if (Files.exists(diskFile)) {
+                        try {
+                            logWarning("File not in sync with disk: '"
+                                + dl.file.toDetailString() + "', disk file at "
+                                + Files.getLastModifiedTime(diskFile).toMillis());
+                        } catch (IOException ioe) {
+                            logFine("Could not access modification time of file "
+                                + diskFile.toAbsolutePath().toString());
+                        }
+                    } else {
+                        logWarning("File was requested, but not found: "
+                            + dl.file.toDetailString());
+                    }
+                }
             }
             // folder.recommendScanOnNextMaintenance();
             return null;
@@ -2567,7 +2573,8 @@ public class TransferManager extends PFComponent {
 
             logFine("Loaded " + storedDownloads.size() + " downloads");
         } catch (IOException e) {
-            logSevere("Unable to load pending downloads", e);
+            // PFC-2416
+            logWarning("Unable to load pending downloads", e);
             try {
                 Files.delete(transferFile);
             } catch (IOException ioe) {
@@ -2595,37 +2602,35 @@ public class TransferManager extends PFComponent {
      */
     public void storeDownloads() {
         // Store pending downloads
-        try {
-            // Collect all download infos
-            List<Download> storedDownloads = new LinkedList<Download>(
-                pendingDownloads);
-            int nPending = countActiveDownloads();
-            int nCompleted = completedDownloads.size();
-            for (DownloadManager man : dlManagers.values()) {
-                storedDownloads.add(new Download(this, man.getFileInfo(), man
-                    .isRequestedAutomatic()));
+        // Collect all download infos
+        List<Download> storedDownloads = new LinkedList<Download>(
+            pendingDownloads);
+        int nPending = countActiveDownloads();
+        int nCompleted = completedDownloads.size();
+        for (DownloadManager man : dlManagers.values()) {
+            storedDownloads.add(new Download(this, man.getFileInfo(), man
+                .isRequestedAutomatic()));
+        }
+        
+        for (DownloadManager man : completedDownloads.values()) {
+            storedDownloads.addAll(man.getSources());
+        }
+        
+        logFiner("Storing " + storedDownloads.size() + " downloads ("
+            + nPending + " pending, " + nCompleted + " completed)");
+        Path transferFile = Controller.getMiscFilesLocation().resolve(
+            getController().getConfigName() + ".transfers");
+        // for testing we should support getConfigName() with subdirs
+        if (Files.notExists(transferFile.getParent())) {
+            try {
+                Files.createDirectories(transferFile.getParent());
+            } catch (IOException ioe) {
+                logSevere("Failed to create misc directory! " + ioe);
             }
-
-            for (DownloadManager man : completedDownloads.values()) {
-                storedDownloads.addAll(man.getSources());
-            }
-
-            logFiner("Storing " + storedDownloads.size() + " downloads ("
-                + nPending + " pending, " + nCompleted + " completed)");
-            Path transferFile = Controller.getMiscFilesLocation().resolve(
-                getController().getConfigName() + ".transfers");
-            // for testing we should support getConfigName() with subdirs
-            if (Files.notExists(transferFile.getParent())) {
-                try {
-                    Files.createDirectories(transferFile.getParent());
-                } catch (IOException ioe) {
-                    logSevere("Failed to mkdir misc directory!");
-                }
-            }
-            ObjectOutputStream oOut = new ObjectOutputStream(
-                Files.newOutputStream(transferFile));
+        }
+        try (ObjectOutputStream oOut = new ObjectOutputStream(
+            Files.newOutputStream(transferFile))) {
             oOut.writeObject(storedDownloads);
-            oOut.close();
         } catch (IOException e) {
             logSevere("Unable to store pending downloads", e);
         }
@@ -2868,7 +2873,7 @@ public class TransferManager extends PFComponent {
                                 uploadsStarted++;
                             } else {
                                 // PFS-843
-                                logInfo("Waiting with Internet upload of file "
+                                logFine("Waiting with Internet upload of file "
                                     + upload.getFile()
                                     + ". Already upload to an Internet device");
                             }

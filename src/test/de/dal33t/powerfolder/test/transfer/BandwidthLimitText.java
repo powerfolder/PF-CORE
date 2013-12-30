@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.transfer.BandwidthStatsListener;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
 
-public class BandwidthLimitTest extends TestCase {
+public class BandwidthLimitText extends TestCase {
     BandwidthProvider provider = new BandwidthProvider();
 
     public void testUnlimited() {

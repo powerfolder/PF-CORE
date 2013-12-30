@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,6 +66,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
@@ -332,7 +334,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             catch (IOException ioe) {
                 // TODO:
-                logWarning(ioe.getMessage());
+                logWarning(ioe.getMessage() + ". " + ioe);
             }
         }
     }
@@ -362,6 +364,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
                 }
+                catch (FileAlreadyExistsException faee) {
+                    // ignore
+                }
                 catch (Exception e) {
                     // TODO: take a closer look at the different Exceptions that can be caught.
                     logWarning("Unable to create base path for folders: "
@@ -379,6 +384,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
+                }
+                catch (FileAlreadyExistsException faee) {
+                    // ignore
                 }
                 catch (Exception e) {
                     // TODO: take a closer look at the different Exceptions that can be caught.
@@ -401,6 +409,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     Files.createDirectories(foldersBasedir);
                     logInfo("Created base path for folders: " + foldersBasedir);
+                }
+                catch (FileAlreadyExistsException faee) {
+                    // ignore
                 }
                 catch (Exception e) {
                     // TODO: take a closer look at the different Exceptions that can be caught.
@@ -432,8 +443,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Find all folder entries.
         Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
-        // Load on all processor
-        int loaders = Math.min(Runtime.getRuntime().availableProcessors(), 8);
+        // Load on many processors
+        int loaders = Math.min(Runtime.getRuntime().availableProcessors() - 2,
+            8);
+        if (loaders <= 0) {
+            loaders = 1;
+        }
         final Semaphore loadPermit = new Semaphore(loaders);
         final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder MD5s.
@@ -874,11 +889,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folderSettings.getLocalBaseDir()))
                 {
                     logSevere("Tried to create duplicate folder "
-                        + folder.getName() + " at "
-                        + folder.getCommitOrLocalDir());
+                        + folder.getName() + ". at "
+                        + folder.getCommitOrLocalDir()
+                        + ". Existing folder ID: " + folder.getId()
+                        + ". Requested folder ID: " + folderInfo.getId());
                     throw new IllegalStateException(
                         "Tried to create duplicate folder " + folder.getName()
-                            + " at " + folder.getCommitOrLocalDir());
+                            + ". at " + folder.getCommitOrLocalDir()
+                            + ". Existing folder ID: " + folder.getId()
+                            + ". Requested folder ID: " + folderInfo.getId());
                 }
             }
         }
@@ -946,23 +965,28 @@ public class FolderRepository extends PFComponent implements Runnable {
             Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
             Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
         Path systemSubdir = folder.getSystemSubDir();
-        FolderSettings metaFolderSettings = new FolderSettings(systemSubdir.resolve(
-            Constants.METAFOLDER_SUBDIR),
+        FolderSettings metaFolderSettings = new FolderSettings(
+            systemSubdir.resolve(Constants.METAFOLDER_SUBDIR),
             SyncProfile.META_FOLDER_SYNC, false, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
             try {
-                Files.createDirectory(metaFolderSettings.getLocalBaseDir());
-            }
-            catch (IOException ioe) {
-                logInfo(ioe.getMessage());
+                if (Files.notExists(metaFolderSettings.getLocalBaseDir())) {
+                    Files.createDirectory(metaFolderSettings.getLocalBaseDir());
+                }
+            } catch (IOException ioe) {
+                logInfo("Unable to create metafolder directory: "
+                    + metaFolderSettings.getLocalBaseDir() + "."
+                    + ioe.toString());
             }
         }
         Folder metaFolder = new Folder(getController(), metaFolderInfo,
             metaFolderSettings);
         if (!deviceDisconnected) {
             try {
-                Files.createDirectory(metaFolder.getSystemSubDir());
+                if (Files.notExists(metaFolder.getSystemSubDir())) {
+                    Files.createDirectory(metaFolder.getSystemSubDir());
+                }
             } catch (IOException e) {
                 // Ignore.
             }
@@ -1035,6 +1059,19 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param deleteSystemSubDir
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
+        removeFolder(folder, deleteSystemSubDir, true);
+    }
+
+    /**
+     * Removes a folder from active folders, will be added as non-local folder
+     * 
+     * @param folder
+     * @param deleteSystemSubDir
+     * @param saveConfig
+     */
+    public void removeFolder(Folder folder, boolean deleteSystemSubDir,
+        boolean saveConfig)
+    {
         Reject.ifNull(folder, "Folder is null");
 
         try {
@@ -1061,7 +1098,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             removeConfigEntries(folder.getConfigEntryId());
 
             // Save config
-            getController().saveConfig();
+            if (saveConfig) {                
+                getController().saveConfig();
+            }
 
             // Shutdown meta folder as well
             Folder metaFolder = getMetaFolderForParent(folder.getInfo());
@@ -1097,7 +1136,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Sleep a couple of seconds for things to settle,
                 // before removing dirs, to avoid conflicts.
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                 }
 
@@ -1408,6 +1447,25 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 return;
             }
+            Account a = getController().getOSClient().getAccount();
+            if (!a.hasOwnStorage()) {
+                if (isFine()) {
+                    logFine("Account "
+                        + a.getUsername()
+                        + " does not have storage, not checking for new folders.");
+                }
+                if (getController().isUIEnabled()) {
+                    WarningNotice notice = new WarningNotice(
+                        Translation.getTranslation("warning_notice.title"),
+                        Translation
+                            .getTranslation("warning_notice.no_folder_create_summary"),
+                        Translation
+                            .getTranslation("warning_notice.no_folder_create_message"));
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().handleNotice(notice);
+                }
+                return;
+            }
         }
         if (getController().isPaused()) {
             logFine("Skipping searching for new folders (paused)...");
@@ -1671,10 +1729,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!metaFolderInfo.isMetaFolder()) {
             return null;
         }
-        int i = metaFolderInfo.getId().indexOf(Constants.METAFOLDER_ID_PREFIX);
-        String folderId = metaFolderInfo.getId().substring(
-            i + Constants.METAFOLDER_ID_PREFIX.length());
-        return getFolder(folderId);
+        return getFolder(metaFolderInfo.getParentFolderInfo());
     }
 
     /**
@@ -1825,7 +1880,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
-                Files.createDirectory(settings.getLocalBaseDir());
+                try {
+                    Files.createDirectories(settings.getLocalBaseDir());
+                } catch (IOException ioe) {
+                    if (isFine()) {
+                        logFine(ioe.getMessage());
+                    }
+                }
+               
                 if (foInfo != null) {
                     // Load existing.
                     createFolder0(foInfo, settings, true);
@@ -1850,7 +1912,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folderInfos.add(foInfo);
             }
             catch (Exception e) {
-                logWarning("Unable to create folder " + folderName + ". " + e);
+                logWarning("Unable to create folder " + folderName + " at " + settings.getLocalBaseDir() + ". " + e);
             }
         }
 
@@ -1909,7 +1971,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 // Actually create the directory
                 try {
-                    Files.createDirectory(settings.getLocalBaseDir());
+                    Files.createDirectories(settings.getLocalBaseDir());
                 }
                 catch (IOException ioe) {
                     if (isFine()) {
@@ -1923,7 +1985,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folderInfos.add(folderInfo);
                 } catch (Exception e) {
                     logWarning("Unable to create folder "
-                        + folderInfo.getName() + ". " + e);
+                        + folderInfo.getName() + " at "
+                        + settings.getLocalBaseDir() + ". " + e);
                 }
             }
         }
@@ -2023,6 +2086,43 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
                 folder.checkSync();
+
+                if (folder.getStatistic().getHarmonizedSyncPercentage() == 100.0d)
+                {
+                    continue;
+                }
+                if (folder.getConnectedMembersCount() == 0) {
+                    continue;
+                }
+                if (folder.getKnownItemCount() == 0) {
+                    continue;
+                }
+                if (!folder.hasReadPermission(getController().getMySelf())) {
+                    continue;
+                }
+                // Rationale: We might have not received file list from a server
+                // PFC-2368
+                for (Member member : folder.getConnectedMembers()) {
+                    if (!member.isCompletelyConnected()) {
+                        // Skin if not fully connected
+                        continue;
+                    }
+                    if (!member.hasCompleteFileListFor(folder.getInfo())) {
+                        // Might still be transferring those filelists.
+                        continue;
+                    }
+                    int nMemberItems = folder.getDAO().count(member.getId(),
+                        true, false);
+                    if (nMemberItems > 0) {
+                        continue;
+                    }
+                    // OK: Handle it. There is a connected member on an unsyced
+                    // folder, which has send ZERO files.
+                    logInfo("Re-requesting file list for " + folder.getName()
+                        + " from " + member.getNick());
+                    member.sendMessageAsynchron(new FileListRequest(folder
+                        .getInfo()));
+                }
             }
         }
     }

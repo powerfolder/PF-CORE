@@ -23,9 +23,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -34,12 +40,14 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 import jwf.WizardPanel;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.AbstractConverter;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -51,10 +59,13 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
+import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
+import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -70,6 +81,9 @@ public class LoginPanel extends PFWizardPanel {
 
     private JComboBox<String> serverURLBox;
     private JLabel serverURLLabel;
+    private JLabel idPLabel;
+    private StyledComboBox<String> idPSelectBox;
+    private boolean listLoaded;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
@@ -118,7 +132,12 @@ public class LoginPanel extends PFWizardPanel {
 
     public boolean hasNext() {
         return client.isConnected()
-            && !StringUtils.isEmpty(usernameField.getText());
+            && !StringUtils.isEmpty(usernameField.getText())
+            && (passwordField.getPassword() != null && passwordField
+                .getPassword().length > 0)
+            && (StringUtils
+                .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                    .getValue(getController())) ? listLoaded : true);
     }
 
     public WizardPanel next() {
@@ -134,14 +153,16 @@ public class LoginPanel extends PFWizardPanel {
         String layoutRows;
 
         if (StringUtils.isBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
-            .getValue(getController())))
+            .getValue(getController()))
+            || StringUtils.isBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                .getValue(getController())))
         {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
         } else {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
         }
 
-        FormLayout layout = new FormLayout("50dlu, 3dlu, 80dlu, 40dlu, pref",
+        FormLayout layout = new FormLayout("50dlu, 3dlu, 110dlu, 40dlu, pref",
             layoutRows);
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -154,6 +175,14 @@ public class LoginPanel extends PFWizardPanel {
         {
             builder.add(serverURLLabel, cc.xy(1, row));
             builder.add(serverURLBox, cc.xy(3, row));
+            row += 2;
+        }
+
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+            .getValue(getController())))
+        {
+            builder.add(idPLabel, cc.xy(1, row));
+            builder.add(idPSelectBox, cc.xy(3, row));
             row += 2;
         }
 
@@ -230,7 +259,7 @@ public class LoginPanel extends PFWizardPanel {
         {
             serverURLLabel = new JLabel(
                 Translation.getTranslation("general.server"));
-            
+
             String webURL = client.getWebURL();
             int selection = 0;
 
@@ -260,6 +289,73 @@ public class LoginPanel extends PFWizardPanel {
             serverURLBox.addActionListener(new ServerSelectAction());
         }
 
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+            .getValue(getController())))
+        {
+            idPLabel = new JLabel(Translation.getTranslation("general.idp"));
+            idPSelectBox = new StyledComboBox<>(new String[]{Translation.getTranslation("general.loading")});
+            idPSelectBox.setEnabled(false);
+
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>()
+            {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
+                        .getValue(getController());
+
+                    URL url = new URL(
+                        ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                            .getValue(getController()));
+                    HttpsURLConnection con = (HttpsURLConnection) url
+                        .openConnection();
+
+                    BufferedReader is = new BufferedReader(
+                        new InputStreamReader(con.getInputStream(),
+                            Convert.UTF8.toString()));
+                    String line = is.readLine();
+                    StringBuilder body = new StringBuilder();
+
+                    while (line != null) {
+                        body.append(line);
+                        line = is.readLine();
+                    }
+
+                    JSONArray resp = new JSONArray(body.toString());
+                    List<String> idPList = new ArrayList<>();
+
+                    idPSelectBox.removeAllItems();
+                    idPSelectBox.addItem("Keine - Externer Benutzer");
+                    idPList.add("");
+
+                    for (int i = 0; i < resp.length(); i++) {
+                        JSONObject obj = resp.getJSONObject(i);
+
+                        String entity = obj.getString("entityID");
+                        String name = obj.getJSONArray("DisplayNames")
+                            .getJSONObject(0).getString("value");
+
+                        idPSelectBox.addItem(name);
+                        idPList.add(entity);
+
+                        if (entity.equals(lastIdP)) {
+                            idPSelectBox.setSelectedIndex(i + 1);
+                        }
+                    }
+
+                    idPSelectBox.addActionListener(new IdPSelectionAction(
+                        getController(), idPList));
+                    idPSelectBox.setEnabled(true);
+                    listLoaded = true;
+
+                    updateButtons();
+
+                    return null;
+                }
+            };
+
+            worker.execute();
+        }
+
         usernameLabel = new JLabel(LoginUtil.getUsernameLabel(getController()));
         usernameField = new JTextField();
         usernameField.addKeyListener(new MyKeyListener());
@@ -268,8 +364,15 @@ public class LoginPanel extends PFWizardPanel {
             Translation.getTranslation("general.password") + ':');
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
+        passwordField.addKeyListener(new MyKeyListener());
 
-        if (client.isConnected()) {
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+            .getValue(getController())))
+        {
+            usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME
+                .getValue(getController()));
+            passwordField.setText("");
+        } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
             passwordField.setText(client.getPasswordClearText());
         }
@@ -374,9 +477,10 @@ public class LoginPanel extends PFWizardPanel {
                         Translation
                             .getTranslation("wizard.webservice.connect_failed"));
                 }
+
                 char[] pw = passwordField.getPassword();
-                boolean loginOk = client.login(usernameField.getText(), pw)
-                    .isValid();
+                boolean loginOk = false;
+                loginOk = client.login(usernameField.getText(), pw).isValid();
                 LoginUtil.clear(pw);
                 if (!loginOk) {
                     throw new SecurityException(
@@ -447,27 +551,12 @@ public class LoginPanel extends PFWizardPanel {
             }
 
             final String server = serversList.substring(begin, end);
-            getController().getIOProvider().startIO(new Runnable() {                
+            getController().getIOProvider().startIO(new Runnable() {
                 @Override
                 public void run() {
                     client.loadConfigURL(server);
                 }
             });
-        }
-    }
-
-    private static class BooleanNotConverter extends AbstractConverter {
-        private BooleanNotConverter(ValueModel subject) {
-            super(subject);
-        }
-
-        @Override
-        public Object convertFromSubject(Object b) {
-            return !(Boolean) b;
-        }
-
-        public void setValue(Object b) {
-            subject.setValue(!(Boolean) b);
         }
     }
 }

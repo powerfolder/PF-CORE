@@ -33,12 +33,12 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -51,6 +51,8 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author sprajc
  */
 public class FolderStatisticInfo extends Loggable implements Serializable {
+
+    private static final int MAX_FILE_SIZE = 500 * 1024;
 
     private static final long serialVersionUID = 1L;
 
@@ -86,7 +88,8 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     private final Map<MemberInfo, Long> sizesInSync = new HashMap<MemberInfo, Long>();
 
     /** Map of bytes received for a file for a member. */
-    private Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = new ConcurrentHashMap<MemberInfo, Map<FileInfo, Long>>();
+    private Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = Util
+        .createConcurrentHashMap();
 
     public FolderStatisticInfo(FolderInfo folder) {
         super();
@@ -260,6 +263,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
      * @param out
      * @throws IOException
      */
+
     public boolean save(Path file) {
         if (isFiner()) {
             logFiner("Writing folder " + folder.getName() + " stats to " + file);
@@ -281,16 +285,129 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         if (Files.notExists(file)) {
             return null;
         }
-        try (InputStream fin = Files.newInputStream(file)){
+        try {
+            if (Files.size(file) > MAX_FILE_SIZE) {
+                Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
+                    "Not reading folder stats from " + file
+                        + ". File is too big: "
+                        + Format.formatBytes(Files.size(file)));
+                return null;
+            }
+        } catch (IOException e) {
+            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+                "Unable to read folder stats size from " + file + ". " + e);
+        }
+        try (InputStream fin = Files.newInputStream(file)) {
             ObjectInputStream oin = new ObjectInputStream(
                 new BufferedInputStream(fin));
-            return (FolderStatisticInfo) oin.readObject();
+            FolderStatisticInfo stats = (FolderStatisticInfo) oin.readObject();
+            // PFS-818: Check if not corrupt;
+            if (stats.isValid()) {
+                return stats;
+            }
         } catch (Exception e) {
-            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
+            Logger.getLogger(FolderStatisticInfo.class.getName()).fine(
                 "Unable to read folder stats from " + file + ". " + e);
+        } catch (OutOfMemoryError e) {
+            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+                "Unable to read folder stats from " + file + ". " + e);
+
         }
         return null;
     }
+
+    // Serialization *********************************************
+
+    private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        if (this.partialSyncStatMap == null) {
+            this.partialSyncStatMap = Util.createConcurrentHashMap();
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (archiveSize ^ (archiveSize >>> 32));
+        result = prime * result
+            + ((estimatedSyncDate == null) ? 0 : estimatedSyncDate.hashCode());
+        result = prime * result
+            + ((filesCount == null) ? 0 : filesCount.hashCode());
+        result = prime * result
+            + ((filesCountInSync == null) ? 0 : filesCountInSync.hashCode());
+        result = prime * result + ((folder == null) ? 0 : folder.hashCode());
+        result = prime * result + incomingFilesCount;
+        result = prime * result + ((sizes == null) ? 0 : sizes.hashCode());
+        result = prime * result
+            + ((sizesInSync == null) ? 0 : sizesInSync.hashCode());
+        result = prime * result + totalFilesCount;
+        result = prime * result + (int) (totalSize ^ (totalSize >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FolderStatisticInfo other = (FolderStatisticInfo) obj;
+        if (archiveSize != other.archiveSize)
+            return false;
+        if (estimatedSyncDate == null) {
+            if (other.estimatedSyncDate != null)
+                return false;
+        } else if (!estimatedSyncDate.equals(other.estimatedSyncDate))
+            return false;
+        if (filesCount == null) {
+            if (other.filesCount != null)
+                return false;
+        } else if (!filesCount.equals(other.filesCount))
+            return false;
+        if (filesCountInSync == null) {
+            if (other.filesCountInSync != null)
+                return false;
+        } else if (!filesCountInSync.equals(other.filesCountInSync))
+            return false;
+        if (folder == null) {
+            if (other.folder != null)
+                return false;
+        } else if (!folder.equals(other.folder))
+            return false;
+        if (incomingFilesCount != other.incomingFilesCount)
+            return false;
+        if (sizes == null) {
+            if (other.sizes != null)
+                return false;
+        } else if (!sizes.equals(other.sizes))
+            return false;
+        if (sizesInSync == null) {
+            if (other.sizesInSync != null)
+                return false;
+        } else if (!sizesInSync.equals(other.sizesInSync))
+            return false;
+        if (totalFilesCount != other.totalFilesCount)
+            return false;
+        if (totalSize != other.totalSize)
+            return false;
+        return true;
+    }
+    
+    /**
+     * PFS-818
+     * @return
+     */
+    public boolean isValid() {
+        return folder != null && filesCount != null && filesCountInSync != null
+            && sizes != null && sizesInSync != null
+            && partialSyncStatMap != null;
+    }
+
     
     @Override
     public String toString() {

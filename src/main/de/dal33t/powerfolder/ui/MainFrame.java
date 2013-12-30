@@ -65,6 +65,7 @@ import javax.swing.plaf.RootPaneUI;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -90,7 +91,6 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
@@ -228,8 +228,10 @@ public class MainFrame extends PFUIComponent {
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper
             .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
+        if ((!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            || getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE)) && setupLabel != null)
         {
             builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         } else {
@@ -412,8 +414,12 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setBackground(Color.white);
 
         BaseAction mySetupAction = new MySetupAction(getController());
-        mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
-        
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()))
+        {
+            mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
+        }
+
         MyOpenFoldersBaseAction myOpenFoldersBaseAction =
                 new MyOpenFoldersBaseAction(getController());
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
@@ -457,8 +463,10 @@ public class MainFrame extends PFUIComponent {
             lowerMainTextActionLabel.setNeverUnderline(true);
         }
 
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE))
+        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            || getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE))
         {
             setupLabel = new ActionLabel(getController(), mySetupAction);
         }
@@ -636,16 +644,19 @@ public class MainFrame extends PFUIComponent {
 
         FolderRepositoryModel folderRepositoryModel = getUIController()
                 .getApplicationModel().getFolderRepositoryModel();
+        boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
+            || event.equals(SyncStatusEvent.NO_FOLDERS);
+        boolean showSetupLabel = (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()) || getController().getOSClient()
+            .getAccount().hasPermission(FolderCreatePermission.INSTANCE))
+            && setupLabel != null;
 
         // Set visibility of buttons and labels.
         pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE)
-            && setupLabel != null)
-        {
-            setupLabel.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
+        if (showSetupLabel) {
+            setupLabel.setVisible(notStartedOrNoFolders);
         }
-        setupButton.setVisible(event.equals(SyncStatusEvent.NOT_STARTED) || event.equals(SyncStatusEvent.NO_FOLDERS));
+        setupButton.setVisible(notStartedOrNoFolders);
         allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
         syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
         syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
@@ -656,8 +667,8 @@ public class MainFrame extends PFUIComponent {
         Date syncDate = folderRepositoryModel.getLastSyncDate();
 
         // Upper text / setup text stuff.
-        double overallSyncPercentage =
-                folderRepositoryModel.getOverallSyncPercentage();
+        double overallSyncPercentage = folderRepositoryModel
+            .getOverallSyncPercentage();
         String upperText = " ";
         String setupText = " ";
         zyncroLabel.setText(" ");
@@ -672,7 +683,11 @@ public class MainFrame extends PFUIComponent {
             upperText = Translation.getTranslation("main_frame.not_running");
             setupText = Translation.getTranslation("main_frame.activate_now");
         } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
-            upperText = Translation.getTranslation("main_frame.no_folders");
+            if(getController().getOSClient().getAccount().getFolders().isEmpty()){
+                upperText = Translation.getTranslation("folders_tab.no_folders_found");
+            }else {
+                upperText = Translation.getTranslation("main_frame.no_folders");
+            }
             setupText = getApplicationModel().getActionModel()
                 .getNewFolderAction().getName();
             zyncroLabel
@@ -700,21 +715,13 @@ public class MainFrame extends PFUIComponent {
         }
 
         upperMainTextActionLabel.setText(upperText);
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE)
-            && setupLabel != null)
-        {
+        if (showSetupLabel) {
             setupLabel.setText(setupText);
         }
 
         // The lowerMainTextActionLabel and setupLabel share the same slot,
         // so visibility is mutually exclusive.
-        boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
-            || event.equals(SyncStatusEvent.NO_FOLDERS);
-        if (getController().getOSClient().getAccount()
-            .hasPermission(FolderCreatePermission.INSTANCE)
-            && setupLabel != null)
-        {
+        if (showSetupLabel) {
             setupLabel.setVisible(notStartedOrNoFolders);
         }
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
@@ -1104,30 +1111,6 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private void checkCloudSpace() {
-        if (PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(getController())) {
-            if (client != null && client.isLoggedIn()) {
-                if (!client.getAccount().getOSSubscription().isDisabled()) {
-                    long storageSize = client.getAccount().getOSSubscription()
-                            .getStorageSize();
-                    long used = client.getAccountDetails().getSpaceUsed();
-                    if (used >= storageSize * 9 / 10) {
-                        // More than 90% used. Notify.
-                        WarningNotice notice = new WarningNotice(
-                                Translation.getTranslation(
-                                        "warning_notice.title"),
-                                Translation.getTranslation(
-                                        "warning_notice.cloud_full_summary"),
-                                Translation.getTranslation(
-                                        "warning_notice.cloud_full_message"));
-                        getUIController().getApplicationModel()
-                                .getNoticesModel().handleNotice(notice);
-                    }
-                }
-            }
-        }
-    }
-
     private void updateOnlineStorageDetails() {
         osStatusUpdater.schedule(new Runnable() {
             public void run() {
@@ -1201,6 +1184,8 @@ public class MainFrame extends PFUIComponent {
     private void setFrameMode(FrameMode frameMode, boolean init) {
         expandCollapseAction.setShowExpand(frameMode == FrameMode.COMPACT);
         this.frameMode = frameMode;
+        // PFC-2417:
+        centralPanel.setVisible(true);
         switch (frameMode) {
             case MAXIMIZED :
                 // http://www.javasoft.de/synthetica/faq/#general-7
@@ -1244,8 +1229,7 @@ public class MainFrame extends PFUIComponent {
                 uiComponent.setExtendedState(Frame.NORMAL);
                 // Need to hide the child windows when minimizing.
                 if (!init) {
-                    closeInlineInfoPanel();
-                    getUIController().hideChildPanels();
+                    hideInlineInfoPanel();
                 }
                 uiComponent.setSize(uiComponent.getMinimumSize());
                 uiComponent.setResizable(false);
@@ -1266,6 +1250,11 @@ public class MainFrame extends PFUIComponent {
                         uiComponent.setSize(uiComponent.getMinimumSize());
                     }
                 });
+                
+                // PFC-2417: To hide on startup
+                if (init) {
+                    centralPanel.setVisible(false);
+                }
                 break;
             case MINIMIZED:
                 uiComponent.setExtendedState(Frame.ICONIFIED);
@@ -1273,6 +1262,11 @@ public class MainFrame extends PFUIComponent {
         }
 
         setLinkTooltips();
+    }
+
+    public void hideInlineInfoPanel() {
+        closeInlineInfoPanel();
+        getUIController().hideChildPanels();
     }
 
     private void configureNormalSize() {
@@ -1484,13 +1478,11 @@ public class MainFrame extends PFUIComponent {
 
         public void accountUpdated(ServerClientEvent event) {
             updateOnlineStorageDetails();
-            checkCloudSpace();
         }
 
         public void login(ServerClientEvent event) {
             showOSFolderList();
             updateOnlineStorageDetails();
-            checkCloudSpace();
         }
 
         public void serverConnected(ServerClientEvent event) {
@@ -1513,7 +1505,13 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard.openLoginWizard(getController(), client);
+            if (getController().getNodeManager().isStarted()) {
+                PFWizard.openLoginWizard(getController(), client);
+            } else {
+                // Activate if not running
+                getApplicationModel().getLicenseModel().getActivationAction()
+                    .actionPerformed(e);
+            }
         }
     }
 

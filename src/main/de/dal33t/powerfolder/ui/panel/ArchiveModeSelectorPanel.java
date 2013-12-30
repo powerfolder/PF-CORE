@@ -193,7 +193,13 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, pref:grow",
+        String layoutColumn;
+        if (purgeListener != null) {
+            layoutColumn = "pref, 3dlu, pref, pref:grow";
+        } else {
+            layoutColumn = "pref:grow";
+        }
+        FormLayout layout = new FormLayout(layoutColumn,
             "pref");
         panel = new JPanel(layout);
 

@@ -340,7 +340,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 log.info(String.format("Creating basedir: %s",
                     baseDir.toAbsolutePath()));
                 try {
-                    Files.createDirectory(baseDir);
+                    Files.createDirectories(baseDir);
                 }
                 catch (IOException ioe) {
                     log.info(ioe.getMessage());

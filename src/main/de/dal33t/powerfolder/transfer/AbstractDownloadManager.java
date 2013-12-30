@@ -328,7 +328,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             {
                 return true;
             }
-            logWarning("Checksum test FAILED on " + fileInfo.toDetailString()
+            logFine("Checksum test FAILED on " + fileInfo.toDetailString()
                 + ". MD5 found: " + Base64.encodeBytes(tempFileHash)
                 + " expected: "
                 + Base64.encodeBytes(thisRemotePartRecord.getFileDigest()));
@@ -791,7 +791,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private void deleteMetaData() {
         if (getMetaFile() != null) {
             try {
-                Files.delete(getMetaFile());
+                Files.deleteIfExists(getMetaFile());
             } catch (IOException ioe) {
                 if (isSevere() && Files.exists(getMetaFile())) {
                     logSevere("Couldn't delete meta data file!");
@@ -890,20 +890,18 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             logFine("killTempFile: " + getTempFile() + ", size: "
                 + Files.size(getTempFile()));
         }
-        if (exists) {
+        try {
+            Files.deleteIfExists(getTempFile());
+        } catch (IOException e) {
+            if (isWarning()) {
+                logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
+                    + getFileInfo().toDetailString());
+            }
+            RandomAccessFile f = new RandomAccessFile(getTempFile().toFile(), "rw");
             try {
-                Files.delete(getTempFile());
-            } catch (IOException e) {
-                if (isWarning()) {
-                    logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
-                        + getFileInfo().toDetailString());
-                }
-                RandomAccessFile f = new RandomAccessFile(getTempFile().toFile(), "rw");
-                try {
-                    f.setLength(0);
-                } finally {
-                    f.close();
-                }
+                f.setLength(0);
+            } finally {
+                f.close();
             }
         }
     }
@@ -1238,13 +1236,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private void updateTempFile() {
         if (getTempFile() != null) {
             try {
-                Files.setLastModifiedTime(getTempFile(),
-                    FileTime.fromMillis(getFileInfo().getModifiedDate().getTime()));
+                Files.setLastModifiedTime(getTempFile(), FileTime
+                    .fromMillis(getFileInfo().getModifiedDate().getTime()));
                 return;
             } catch (IOException ioe) {
-                // print message 
+                logSevere("Failed to update modification date! Detail:" + this);
+                // print message
             }
+
         }
-        logSevere("Failed to update modification date! Detail:" + this);
     }
 }

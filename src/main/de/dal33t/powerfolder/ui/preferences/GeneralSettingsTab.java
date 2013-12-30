@@ -198,16 +198,35 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "right:pref, 3dlu, 163dlu, pref:grow",
+                "pref, 10dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 0dlu, pref, 0dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
 
             CellConstraints cc = new CellConstraints();
-            int row = 1;
-
+            int row = 3;
+            
+            // Start: PFC-2385
+            if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
+                row += 2;
+                builder.add(
+                    new JLabel(Translation
+                        .getTranslation("preferences.general.mode.title")), cc.xy(
+                        1, row));
+                builder.add(modeChooser, cc.xy(3, row));
+            }
+            // End: PFC-2385
+            
+            row += 2;
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.general.account_label")), cc
+                    .xy(1, row));
+            builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
+            
+            row += 2;
             builder.add(
                 new JLabel(Translation
                     .getTranslation("preferences.general.nickname")), cc.xy(1,
@@ -218,9 +237,20 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation.getTranslation("preferences.general.language")), cc.xy(1, row));
             builder.add(languageChooser, cc.xy(3, row));
 
-            row += 2;
-            builder.add(createUpdateCheckPanel(), cc.xyw(3, row, 2));
-
+            if (PreferencesEntry.VIEW_ACHIVE.getValueBoolean(getController())) {
+                row += 2;
+                builder
+                    .add(
+                        new JLabel(
+                            Translation
+                                .getTranslation("preferences.general.default_archive_mode_text")),
+                        cc.xy(1, row, CellConstraints.RIGHT, CellConstraints.TOP));
+                builder.add(
+                    threePanel(archiveModeSelectorPanel.getUIComponent(),
+                        archiveCleanupCombo, new JButton(cleanupAction)), cc
+                        .xyw(3, row, 2));
+            }
+            
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
 
@@ -228,6 +258,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
                     row += 2;
+                    builder.add(new JLabel(Translation
+                        .getTranslation("preferences.general.start_behavior")), cc.xy(1, row));
                     builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
                 }
 
@@ -239,6 +271,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
                     row += 2;
+                    builder.add(new JLabel(Translation
+                        .getTranslation("preferences.general.start_behavior")), cc.xy(1, row));
                     builder.add(startWithMacOSLabel.getUIComponent(), cc.xyw(3, row, 2));
                 }
             }
@@ -249,38 +283,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .getTranslation("preferences.general.exit_behavior")), cc
                     .xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
-
+            
             row += 2;
-            builder.add(
-                new JLabel(Translation
-                    .getTranslation("preferences.general.account_label")), cc
-                    .xy(1, row));
-            builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
-
-            if (PreferencesEntry.VIEW_ACHIVE.getValueBoolean(getController())) {
-                row += 2;
-                builder
-                    .add(
-                        new JLabel(
-                            Translation
-                                .getTranslation("preferences.general.default_archive_mode_text")),
-                        cc.xy(1, row));
-                builder.add(
-                    threePanel(archiveModeSelectorPanel.getUIComponent(),
-                        archiveCleanupCombo, new JButton(cleanupAction)), cc
-                        .xyw(3, row, 2));
-            }
-
-            // Start: PFC-2385
-            if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
-                row += 2;
-                builder.add(
-                    new JLabel(Translation
-                        .getTranslation("preferences.general.mode.title")), cc.xy(
-                        1, row));
-                builder.add(modeChooser, cc.xy(3, row));
-            }
-            // End: PFC-2385
+            builder.add(new JLabel(Translation.getTranslation("preferences.general.check_for_updates_text")), cc.xy(1, row));
+            builder.add(updateCheck, cc.xy(3, row));
+            
+            row +=2;
+            builder.add(createUpdateCheckPanel(), cc.xyw(3, row, 2));
 
             panel = builder.getPanel();
         }
@@ -288,11 +297,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     private JPanel createUpdateCheckPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("80dlu, 3dlu, pref", "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(updateCheck, cc.xy(1, 1));
-        builder.add(createCheckForUpdatesButton(), cc.xy(3, 1));
+        //builder.add(updateCheck, cc.xy(3, 1));
+        builder.add(new JLabel(Translation.getTranslation("preferences.information.power_folder_text",
+            Controller.PROGRAM_VERSION)), cc.xy(1,1));
+        builder.add(createCheckForUpdatesButton(), cc.xy(1, 3));
         return builder.getPanel();
     }
 
@@ -311,7 +322,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     private JPanel createChangeAccountLogoutPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("80dlu, 3dlu, 80dlu", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(createChangeAccountButton(), cc.xy(1, 1));
@@ -397,12 +408,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private static Component threePanel(Component component1,
         Component component2, Component component3) {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("80dlu, 3dlu, 80dlu", "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(component1, cc.xy(1, 1));
         builder.add(component2, cc.xy(3, 1));
-        builder.add(component3, cc.xy(5, 1));
+        builder.add(component3, cc.xy(1, 3));
         return builder.getPanel();
     }
 
@@ -514,10 +525,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     }
                     break;
             }
-
-            getController().saveConfig();
         }
         // End: PFC-2385
+
+        getController().saveConfig();
     }
 
     // ////////////////
@@ -542,14 +553,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
     }
 
-
     private class UpdateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (getController().getUpdateSettings() != null) {
                 ManuallyInvokedUpdateHandler handler = new ManuallyInvokedUpdateHandler(
                     getController());
-                Updater updater = new Updater(getController(), getController()
-                    .getUpdateSettings(), handler);
+                Updater updater = new Updater(getController(), handler);
                 updater.start();
             }
             PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);

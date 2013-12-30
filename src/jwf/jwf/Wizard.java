@@ -13,8 +13,10 @@ import java.util.Stack;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -43,6 +45,17 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class Wizard extends JPanel implements ActionListener {
 
+    // Wizard sizes
+    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(400,
+        355);
+    public static final Dimension WIZARD_TINY_MAC_WINDOW_SIZE = new Dimension(400,
+        355);
+
+    public static final Dimension WIZARD_BIG_WINDOW_SIZE = new Dimension(
+        650, 480);
+    public static final Dimension WIZARD_BIG_MAC_WINDOW_SIZE = new Dimension(750,
+        540);
+
     public static final String BACK_I18N = "BACK_I18N";
     public static final String NEXT_I18N = "NEXT_I18N";
     public static final String FINISH_I18N = "FINISH_I18N";
@@ -53,18 +66,13 @@ public class Wizard extends JPanel implements ActionListener {
     public static final String FINISH_I18N_DESCRIPTION = "FINISH_I18N_DESCRIPTION";
     public static final String CANCEL_I18N_DESCRIPTION = "CANCEL_I18N_DESCRIPTION";
     public static final String HELP_I18N_DESCRIPTION = "HELP_I18N_DESCRIPTION";
-    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(
-        375, 333);
-    public static final Dimension WIZARD_DEFAULT_WINDOW_SIZE = new Dimension(
-        650, 480);
-    public static final Dimension WIZARD_MAC_WINDOW_SIZE = new Dimension(750,
-        540);
 
     private final JButton backButton = new JButton("< Back");
     private final JButton nextButton = new JButton("Next >");
     private final JButton finishButton = new JButton("Finish");
     private final JButton cancelButton = new JButton("Cancel");
     private final JButton helpButton = new JButton("Help");
+    private final JLabel poweredByLabel;
 
     private final Set<WizardListener> listeners = new HashSet<WizardListener>();
 
@@ -74,6 +82,13 @@ public class Wizard extends JPanel implements ActionListener {
 
     /** Creates a new wizard. */
     public Wizard(boolean tiny) {
+        Icon poweredByIcon = Icons.getIconById(Icons.POWERED_BY);
+        if (poweredByIcon != null) {
+            poweredByLabel = new JLabel(poweredByIcon);
+            poweredByLabel.setVisible(false);
+        } else {
+            poweredByLabel = null;
+        }
         init(tiny);
     }
     
@@ -109,7 +124,7 @@ public class Wizard extends JPanel implements ActionListener {
             barBuilder.addRelatedGap();
             barBuilder.addGridded(finishButton);
         }
-
+        
         JComponent navButtons = barBuilder.getPanel();
         navButtons.setOpaque(false);
         JComponent helpButtons = ButtonBarFactory.buildCenteredBar(helpButton);
@@ -123,6 +138,11 @@ public class Wizard extends JPanel implements ActionListener {
         buttons.setLayout(new BorderLayout());
         // buttons.add(new JSeparator(), BorderLayout.NORTH);
         buttons.add(helpButtons, BorderLayout.WEST);
+        if (poweredByLabel != null) {
+            buttons.add(poweredByLabel,  BorderLayout.WEST);
+            int h = Math.max(buttons.getPreferredSize().height, poweredByLabel.getPreferredSize().height);
+            buttons.setPreferredSize(new Dimension(buttons.getPreferredSize().width, h));
+        }
         buttons.add(navButtons, BorderLayout.EAST);
 
         // buttons
@@ -130,14 +150,21 @@ public class Wizard extends JPanel implements ActionListener {
         add(buttons, BorderLayout.SOUTH);
 
         if (tiny) {
-            setMinimumSize(WIZARD_TINY_WINDOW_SIZE);
-            setPreferredSize(WIZARD_TINY_WINDOW_SIZE);
-        } else if (OSUtil.isMacOS()) {
-            setMinimumSize(WIZARD_MAC_WINDOW_SIZE);
-            setPreferredSize(WIZARD_MAC_WINDOW_SIZE);
+            if (OSUtil.isMacOS()) {
+                setMinimumSize(WIZARD_TINY_MAC_WINDOW_SIZE);
+                setPreferredSize(WIZARD_TINY_MAC_WINDOW_SIZE);
+            } else {
+                setMinimumSize(WIZARD_TINY_WINDOW_SIZE);
+                setPreferredSize(WIZARD_TINY_WINDOW_SIZE);
+            }
         } else {
-            setMinimumSize(WIZARD_DEFAULT_WINDOW_SIZE);
-            setPreferredSize(WIZARD_DEFAULT_WINDOW_SIZE);
+            if (OSUtil.isMacOS()) {
+                setMinimumSize(WIZARD_BIG_MAC_WINDOW_SIZE);
+                setPreferredSize(WIZARD_BIG_MAC_WINDOW_SIZE);
+            } else {
+                setMinimumSize(WIZARD_BIG_WINDOW_SIZE);
+                setPreferredSize(WIZARD_BIG_WINDOW_SIZE);
+            }
         }
     }
 
@@ -273,10 +300,15 @@ public class Wizard extends JPanel implements ActionListener {
     void updateButtons() {
         enableButton(cancelButton, current.canCancel());
         enableButton(helpButton, current.hasHelp());
-        enableButton(backButton, !previous.isEmpty()
-            && previous.peek().canGoBackTo());
+        boolean backEnabled = !previous.isEmpty()
+            && previous.peek().canGoBackTo();
+        enableButton(backButton, backEnabled);
         enableButton(finishButton, current.canFinish());
 
+        if (poweredByLabel != null) {
+            poweredByLabel.setVisible(!backEnabled && !current.hasHelp() && !current.hasNext());            
+        }
+        
         // If next has focus and is about to go disabled, loose focus.
         if (nextButton.hasFocus() && !current.hasNext()) {
             helpButton.requestFocus();

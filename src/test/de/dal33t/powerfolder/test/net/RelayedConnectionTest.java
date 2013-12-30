@@ -52,8 +52,8 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
     }
 
     public void testRelayedConnection() throws ConnectionException {
-        connect(getContollerBart(), getContollerLisa());
-        connect(getContollerBart(), getContollerMarge());
+        connectOrFail(getContollerBart(), getContollerLisa());
+        connectOrFail(getContollerBart(), getContollerMarge());
 
         // Use bart as relay
         getContollerMarge().getIOProvider().getRelayedConnectionManager()
