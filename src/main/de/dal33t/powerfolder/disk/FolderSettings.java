@@ -23,6 +23,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -276,19 +277,21 @@ public class FolderSettings {
     public static Set<String> loadEntryIds(Properties properties) {
         // Find all folder names.
         Set<String> entryIds = new TreeSet<String>();
-        for (Object key : properties.keySet()) {
-            String propName = (String) key;
-            // Look for a f.<entryId>.XXXX
-            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
-                int firstDot = propName.indexOf('.');
-                int secondDot = propName.indexOf('.', firstDot + 1);
+        synchronized (properties) {
+            for (Object key : properties.keySet()) {
+                String propName = (String) key;
+                // Look for a f.<entryId>.XXXX
+                if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
+                    int firstDot = propName.indexOf('.');
+                    int secondDot = propName.indexOf('.', firstDot + 1);
 
-                if (firstDot > 0 && secondDot > 0
-                    && secondDot < propName.length())
-                {
-                    String entryId = propName
-                        .substring(firstDot + 1, secondDot);
-                    entryIds.add(entryId);
+                    if (firstDot > 0 && secondDot > 0
+                        && secondDot < propName.length())
+                    {
+                        String entryId = propName.substring(firstDot + 1,
+                            secondDot);
+                        entryIds.add(entryId);
+                    }
                 }
             }
         }
@@ -300,14 +303,21 @@ public class FolderSettings {
      * 'f.TEST-Contacts' to remove config entries beginning with these.
      */
     public static void removeEntries(Properties p, String entryId) {
-        for (Object val : p.keySet()) {
-            String propName = (String) val;
-            // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
-            // from also deleting things like 'f.TEST.XXXXX'.
-            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4 + entryId + '.'))
-            {
-                p.remove(propName);
+        HashSet<String> removeProps = new HashSet<>();
+        synchronized (p) {
+            for (Object val : p.keySet()) {
+                String propName = (String) val;
+                // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
+                // from also deleting things like 'f.TEST.XXXXX'.
+                if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                    + '.'))
+                {
+                    removeProps.add(propName);
+                }
             }
+        }
+        for (String propName : removeProps) {
+            p.remove(propName);
         }
     }
 
