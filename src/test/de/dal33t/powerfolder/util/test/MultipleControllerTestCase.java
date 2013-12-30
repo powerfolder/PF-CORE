@@ -194,7 +194,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected static boolean connectOrFail(final Controller cont1,
         final Controller cont2)
     {
-        if (TwoControllerTestCase.connect(cont1, cont2)) {
+        if (!TwoControllerTestCase.connect(cont1, cont2)) {
             fail("Unable to connect controller " + cont1 + " to " + cont2);
             return false;
         }
