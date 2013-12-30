@@ -1,3 +1,22 @@
+/*
+ * Copyright 2004 - 2013 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import java.io.IOException;
@@ -13,6 +32,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import de.dal33t.powerfolder.disk.FolderSettings;
+
+/**
+ * PFC-2444
+ * @author Sprajc
+ */
 public class SplitConfig extends Properties {
     private static final long serialVersionUID = 1L;
 
@@ -74,7 +99,7 @@ public class SplitConfig extends Properties {
 
     @Override
     public synchronized Object put(Object key, Object value) {
-        if (String.valueOf(key).startsWith("f.")) {
+        if (String.valueOf(key).startsWith(FolderSettings.FOLDER_SETTINGS_PREFIX_V4)) {
             return folders.put(key, value);
         } else {
             return regular.put(key, value);
