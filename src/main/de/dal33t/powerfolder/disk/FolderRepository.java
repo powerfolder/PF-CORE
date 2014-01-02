@@ -30,6 +30,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -426,6 +427,18 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (ok) {
             logInfo("Using base path for folders: " + foldersBasedir);
+            if (OSUtil.isMacOS()) {
+                try {
+                    Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>(3);
+                    perms.add(PosixFilePermission.OWNER_EXECUTE);
+                    perms.add(PosixFilePermission.OWNER_READ);
+                    perms.add(PosixFilePermission.OWNER_WRITE);
+                    Files.setPosixFilePermissions(foldersBasedir, perms);
+                } catch (IOException e) {
+                    logInfo("Could not set permissions to base path for folders: "
+                        + foldersBasedir + ". " + e);
+                }
+            }
             PathUtils.maintainDesktopIni(getController(), foldersBasedir);
         } else {
             logWarning("Unable to access base path for folders: "
