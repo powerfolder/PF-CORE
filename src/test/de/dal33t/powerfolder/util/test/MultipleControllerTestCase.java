@@ -43,7 +43,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.PropertiesUtil;
