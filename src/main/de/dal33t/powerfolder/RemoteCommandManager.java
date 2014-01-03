@@ -30,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -56,6 +57,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -220,6 +222,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             socket.close();
 
             return true;
+        } catch (ConnectException e) {
+            log.log(Level.WARNING,
+                "Unable to connect to running instance to send remote command: "
+                    + e.getMessage());
         } catch (IOException e) {
             log.log(Level.SEVERE, "Unable to send remote command", e);
         }
