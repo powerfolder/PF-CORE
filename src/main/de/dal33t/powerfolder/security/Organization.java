@@ -48,6 +48,7 @@ import de.dal33t.powerfolder.util.Reject;
 public class Organization implements Serializable {
     private static final long serialVersionUID = 100L;
 
+    public static final int UNLIMITED_USERS = 999999999;
     public static final String FILTER_MATCH_ALL = "/ALL/";
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_NAME = "name";
@@ -107,6 +108,10 @@ public class Organization implements Serializable {
 
     public void setMaxUsers(int maxUsers) {
         this.maxUsers = maxUsers;
+    }
+
+    public boolean hasMaxUsers() {
+        return this.maxUsers > 0 && this.maxUsers != UNLIMITED_USERS;
     }
 
     public OnlineStorageSubscription getOSSubscription() {
