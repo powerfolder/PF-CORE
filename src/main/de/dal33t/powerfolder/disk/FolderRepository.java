@@ -1566,6 +1566,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .getTranslation("notice.file_in_base_path.summary"));
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
+                    break;
                 }
             } catch (IOException ioe) {
                 logWarning(ioe);
