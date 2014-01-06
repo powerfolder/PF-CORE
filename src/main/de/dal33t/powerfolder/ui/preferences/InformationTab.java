@@ -241,7 +241,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         String config = getController().getConfig().getProperty("config.url");
         if (config != null) {
             int lastSlash = config.lastIndexOf("/");
-            int lastDot = config.lastIndexOf(".");
+            int lastDot = config.lastIndexOf(".config");
 
             if (lastDot > 0) {
                 config = config.substring(lastSlash + 1, lastDot);
