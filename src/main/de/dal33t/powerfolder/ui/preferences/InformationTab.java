@@ -238,6 +238,18 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     private JPanel createPowerFolderBox() {
+        String config = getController().getConfig().getProperty("config.url");
+        if (config != null) {
+            int lastSlash = config.lastIndexOf("/");
+            int lastDot = config.lastIndexOf(".");
+
+            if (lastDot > 0) {
+                config = config.substring(lastSlash + 1, lastDot);
+            } else {
+                config = "Default";
+            }
+        }
+
         return createTextBox(
                 Translation.getTranslation("general.application.name"),
                 Translation.getTranslation("preferences.information.power_folder_text",
@@ -251,7 +263,9 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                         + '\n'
                         + Translation.getTranslation(
                         "preferences.information.power_folder_distribution",
-                        getController().getDistribution().getName()) + '\n' +
+                        getController().getDistribution().getName()) + '\n'
+                        + Translation.getTranslation("preferences.information.config_name", config)
+                        + '\n' +
                         readLicense(),
                 createActivateButton()
                 );
