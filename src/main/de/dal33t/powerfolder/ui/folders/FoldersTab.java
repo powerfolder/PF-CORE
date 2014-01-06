@@ -280,7 +280,7 @@ public class FoldersTab extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        if (PreferencesEntry.SHOW_CREATE_FOLDER
+        if (ConfigurationEntry.SHOW_CREATE_FOLDER
             .getValueBoolean(getController()))
         {
             builder.add(newFolderLink.getUIComponent(), cc.xy(2, 1));
