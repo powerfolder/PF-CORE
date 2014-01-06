@@ -56,6 +56,8 @@ public enum PreferencesEntry {
     EXPERT_MODE("ExpertMode", false),
 
     BEGINNER_MODE("BeginnerMode", false),
+    
+    SHOW_CREATE_FOLDER("ShowCreateFolderButton", true),
 
     VIEW_ACHIVE("view.archive", true),
 
