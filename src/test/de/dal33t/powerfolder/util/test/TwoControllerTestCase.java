@@ -30,6 +30,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -285,6 +286,12 @@ public abstract class TwoControllerTestCase extends TestCase {
      * Connects both controllers and optionally logs in lisa at bart.
      */
     protected void connectBartAndLisa(boolean loginLisa) {
+        boolean sync = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+            .getValueBoolean(getContollerLisa());
+        if (loginLisa) {
+            ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
+                getContollerLisa(), true);
+        }
         if (!connect(controllerLisa, controllerBart)) {
             fail("Unable to connect Bart and Lisa");
         }
@@ -299,6 +306,7 @@ public abstract class TwoControllerTestCase extends TestCase {
                 .getNode(controllerLisa, true);
             ServerClient client = getContollerLisa().getOSClient();
             client.setServer(bartAtLisa, true);
+
             if (lisasAccount == null) {
                 lisasAccount = client.getAccountService().register("lisa",
                     "password", false, null, null, false);
@@ -307,6 +315,11 @@ public abstract class TwoControllerTestCase extends TestCase {
                 }
             }
             client.login("lisa", "password".toCharArray());
+        }
+
+        if (loginLisa) {
+            ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
+                getContollerLisa(), sync);
         }
 
         // Bart should NOT be supernode. Not necessary on LAN
