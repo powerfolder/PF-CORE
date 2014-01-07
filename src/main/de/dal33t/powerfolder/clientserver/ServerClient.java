@@ -690,7 +690,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL("/avatars/" + aInfo.getUsername() + ".png", false);
+        return getWebURL("/avatars/user/" + aInfo.getOID(), false);
     }
 
     /**
