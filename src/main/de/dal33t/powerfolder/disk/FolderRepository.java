@@ -1939,7 +1939,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         IdGenerator.makeFolderId());
                     Folder folder = createFolder(foInfo, settings);
                     folder.addDefaultExcludes();
-                    logWarning("Folder NOT found on account " + a.getUsername()
+                    logInfo("Folder not found on account " + a.getUsername()
                         + ". Created new: " + foInfo);
                 }
 

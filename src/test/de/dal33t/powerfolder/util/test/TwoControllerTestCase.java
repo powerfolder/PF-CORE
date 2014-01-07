@@ -78,7 +78,7 @@ public abstract class TwoControllerTestCase extends TestCase {
     // The optional test folder
     private FolderInfo testFolder;
     
-    private Account lisasAccount;
+    protected Account lisasAccount;
 
     @Override
     protected void setUp() throws Exception {
@@ -305,7 +305,9 @@ public abstract class TwoControllerTestCase extends TestCase {
             Member bartAtLisa = controllerBart.getMySelf().getInfo()
                 .getNode(controllerLisa, true);
             ServerClient client = getContollerLisa().getOSClient();
-            client.setServer(bartAtLisa, true);
+            if (!client.getServer().equals(bartAtLisa)) {
+                client.setServer(bartAtLisa, true);
+            }
 
             if (lisasAccount == null) {
                 lisasAccount = client.getAccountService().register("lisa",
@@ -314,7 +316,9 @@ public abstract class TwoControllerTestCase extends TestCase {
                     fail("Unable to register lisa's user account at bart");
                 }
             }
-            client.login("lisa", "password".toCharArray());
+            if (!client.getAccount().equals(lisasAccount)) {
+                client.login("lisa", "password".toCharArray());
+            }
         }
 
         if (loginLisa) {

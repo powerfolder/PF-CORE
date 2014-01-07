@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.disk;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -258,15 +257,16 @@ public class FolderSettings {
         return configEntryId;
     }
 
-    /**
-     * @param properties
-     * @param entryId
-     * @return
-     */
     public static String loadFolderName(Properties properties, String entryId) {
         Reject.ifBlank(entryId, "EntryId");
         return properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_NAME);
+    }
+
+    public static String loadFolderID(Properties properties, String entryId) {
+        Reject.ifBlank(entryId, "EntryId");
+        return properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+            + FOLDER_SETTINGS_ID);
     }
 
     /**
