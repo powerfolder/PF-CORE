@@ -160,16 +160,21 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
         synchronized (coalescedStats) {
             String filename = getController().getConfigName() + ".stats";
             Path file = Controller.getMiscFilesLocation().resolve(filename);
+            boolean interrupted = Thread.interrupted();
             try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new BufferedOutputStream(Files.newOutputStream(file))))
-            {
-                logInfo("There are " + coalescedStats.size() + " stats to persist.");
+                new BufferedOutputStream(Files.newOutputStream(file)))) {
+                logInfo("There are " + coalescedStats.size()
+                    + " stats to persist.");
                 outputStream.writeUnshared(coalescedStats);
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {
                 // PFC-2416
                 logWarning("IOException", e);
+            } finally {
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }

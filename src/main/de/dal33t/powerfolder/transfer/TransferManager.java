@@ -2628,11 +2628,16 @@ public class TransferManager extends PFComponent {
                 logSevere("Failed to create misc directory! " + ioe);
             }
         }
+        boolean interrupted = Thread.interrupted();
         try (ObjectOutputStream oOut = new ObjectOutputStream(
             Files.newOutputStream(transferFile))) {
             oOut.writeObject(storedDownloads);
         } catch (IOException e) {
             logSevere("Unable to store pending downloads", e);
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
