@@ -23,11 +23,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -65,7 +65,6 @@ import javax.swing.plaf.RootPaneUI;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -336,9 +335,14 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setSize(uiComponent.getWidth(),
             UIConstants.MAIN_FRAME_DEFAULT_HEIGHT);
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (int) ((screenSize.getWidth() - uiComponent.getWidth()) / 2.0);
-        int y = (int) ((screenSize.getHeight() - uiComponent.getHeight()) / 2.0);
+        GraphicsEnvironment ge = GraphicsEnvironment
+            .getLocalGraphicsEnvironment();
+        GraphicsDevice[] devices = ge.getScreenDevices();
+
+        int x = (int) ((devices[0].getDisplayMode().getWidth() - uiComponent
+            .getWidth()) / 2.0);
+        int y = (int) ((devices[0].getDisplayMode().getHeight() - uiComponent
+            .getHeight()) / 2.0);
         uiComponent.setLocation(x, y);
 
         configureInlineInfo();
