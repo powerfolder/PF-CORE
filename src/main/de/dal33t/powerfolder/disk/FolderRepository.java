@@ -1932,7 +1932,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 if (foInfo != null) {
                     // Load existing.
-                    createFolder0(foInfo, settings, true);
+                    Folder folder = createFolder0(foInfo, settings, true);
+                    folder.addDefaultExcludes();
                 } else {
                     // Spawn/Create a new one.
                     foInfo = new FolderInfo(folderName,

@@ -501,7 +501,9 @@ public class FolderSettings {
                 if (StringUtils.isBlank(dir.getPlaceholder())) {
                     continue;
                 }
-                if (res.contains(dir.getPlaceholder())) {
+                if (res.contains(dir.getPlaceholder())
+                    && !res.contains(dir.getPlaceholder() + "."))
+                {
                     res = res.replace(dir.getPlaceholder(), dir.getDirectory()
                         .toAbsolutePath().toString());
                 }
