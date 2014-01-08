@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.StringUtils;
 
 @SuppressWarnings("unchecked")
 public class IdPSelectionAction extends PFComponent implements ActionListener {
@@ -43,6 +44,11 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
 
                 ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(
                     getController(), entity);
+
+                if (StringUtils.isBlank(entity)) {
+                    logFine("No entityID selected -- external user");
+                    return null;
+                }
 
                 String idpLookupURL = ConfigurationEntry.SERVER_WEB_URL
                     .getValue(getController())
