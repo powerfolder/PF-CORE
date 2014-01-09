@@ -177,7 +177,7 @@ public class MainFrame extends PFUIComponent {
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
 
-        mainStatusUpdater = new DelayedUpdater(getController());
+        mainStatusUpdater = new DelayedUpdater(getController(), DelayedUpdater.DEFAULT_DELAY * 2);
         osStatusUpdater = new DelayedUpdater(getController());
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
