@@ -1951,8 +1951,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 if (foInfo == null) {
                     // Spawn/Create a new one.
-                    foInfo = new FolderInfo(folderName,
-                        IdGenerator.makeFolderId());
+                    foInfo = new FolderInfo(folderName, "PB-" + a.getOID()
+                        + "-" + folderName);
                     logInfo("Folder not found on account " + a.getUsername()
                         + ". Created new: " + foInfo);
                 }
