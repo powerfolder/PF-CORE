@@ -1858,6 +1858,16 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController()))
             {
+                if (!created.isEmpty()) {
+                    // Let things (Account update) settle down / See above.
+                    // Usecase: Client Backup / Personal folders.
+                    try {
+                        Thread.sleep(5000L);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 if (ProUtil.isServerConfig(getController())) {
                     logSevere("Found server config running with client installation. "
                         + "Won't delete local folders.");
@@ -1976,7 +1986,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                     + settings.getLocalBaseDir() + ". " + e);
             }
         }
-
 
         if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
             .getValueBoolean(getController()))
