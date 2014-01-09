@@ -1952,8 +1952,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .setArchiveMode(foInfo, settings.getVersions());
                     }
                 } catch (Exception e) {
-                    logFine("Scheduling setup of folder: " + folderName + ". "
-                        + e);
+                    logFine("Scheduling setup of folder: " + folderName);
                     CreateFolderOnServerTask task = new CreateFolderOnServerTask(
                         a.createInfo(), foInfo, null);
                     task.setArchiveVersions(folderInfos.get(foInfo)

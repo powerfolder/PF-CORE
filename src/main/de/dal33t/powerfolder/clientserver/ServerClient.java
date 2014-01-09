@@ -848,7 +848,9 @@ public class ServerClient extends PFComponent {
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
-                    prepareShibbolethLogin(username, pw);
+                    if (isShibbolethLogin()) {
+                        prepareShibbolethLogin(username, pw);
+                    }
                     if (shibUsername != null && shibToken != null) {
                         loginOk = securityService.login(shibUsername,
                             Util.toCharArray(shibToken));
@@ -934,16 +936,12 @@ public class ServerClient extends PFComponent {
         String idpURLString = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
             .getValue(getController());
 
-        if (!isShibbolethLogin() || StringUtils.isBlank(idpURLString)) {
+        if (StringUtils.isBlank(idpURLString)) {
             shibUsername = null;
             shibToken = null;
-
-            if (StringUtils.isBlank(idpURLString)) {
-                throw new SecurityException("Your organization is unreachable");
-            }
-
-            return;
+            throw new SecurityException("Your organization is unreachable");
         }
+        
         boolean tokenIsValid = false;
         try {
             tokenIsValid = shibToken != null
