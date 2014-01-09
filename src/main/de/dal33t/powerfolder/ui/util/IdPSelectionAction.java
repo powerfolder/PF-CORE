@@ -46,7 +46,12 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
                     getController(), entity);
 
                 if (StringUtils.isBlank(entity)) {
-                    logFine("No entityID selected -- external user");
+                    logFine("No entityID selected");
+                    return null;
+                } else if ("ext".equals(entity)) {
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(
+                        getController(), entity);
+                    logFine("External user: don't ask the server for the ECP URL.");
                     return null;
                 }
 

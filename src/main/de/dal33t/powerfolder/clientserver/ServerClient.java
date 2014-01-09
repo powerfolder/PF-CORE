@@ -940,8 +940,10 @@ public class ServerClient extends PFComponent {
             shibUsername = null;
             shibToken = null;
             throw new SecurityException("Your organization is unreachable");
+        } else if ("ext".equals(idpURLString)) {
+            return;
         }
-        
+
         boolean tokenIsValid = false;
         try {
             tokenIsValid = shibToken != null

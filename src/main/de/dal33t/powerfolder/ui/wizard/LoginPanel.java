@@ -325,7 +325,7 @@ public class LoginPanel extends PFWizardPanel {
 
                     idPSelectBox.removeAllItems();
                     idPSelectBox.addItem("Keine - Externer Benutzer");
-                    idPList.add("");
+                    idPList.add("ext");
 
                     for (int i = 0; i < resp.length(); i++) {
                         JSONObject obj = resp.getJSONObject(i);
