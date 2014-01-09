@@ -1842,6 +1842,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!a.isValid()) {
             return;
         }
+        if (accountSyncLock.isLocked()) {
+            // Skip if currently setting up folders.
+            // Especially not to remove recently created local folders.
+            // Usecase: Client Backup / Personal folders.
+            return;
+        }
         accountSyncLock.lock();
         try {
             logInfo("Syncing folder setup with account permissions("
