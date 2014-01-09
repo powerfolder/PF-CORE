@@ -35,7 +35,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1894,7 +1893,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!a.isValid()) {
             return Collections.emptyList();
         }
-        Map<FolderInfo, FolderSettings> folderInfos = new HashMap<>();
+        Collection<FolderInfo> folderInfos = new ArrayList<FolderInfo>();
         for (Iterator<String> it = onLoginFolderEntryIds.iterator(); it
             .hasNext();)
         {
@@ -1931,44 +1930,34 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
 
-                if (foInfo == null) {
+                if (foInfo != null) {
+                    // Load existing.
+                    Folder folder = createFolder0(foInfo, settings, true);
+                    folder.addDefaultExcludes();
+                } else {
                     // Spawn/Create a new one.
                     foInfo = new FolderInfo(folderName,
                         IdGenerator.makeFolderId());
+                    Folder folder = createFolder(foInfo, settings);
+                    folder.addDefaultExcludes();
                     logInfo("Folder not found on account " + a.getUsername()
                         + ". Created new: " + foInfo);
                 }
 
-                Folder folder = createFolder0(foInfo, settings, true);
-                folder.addDefaultExcludes();
-
                 // Make sure it is backed up by the server.
-                try {
-                    // Do it synchronous. Otherwise we might get race conditions.
-                    getController().getOSClient().getFolderService()
-                        .createFolder(foInfo, null);
-                    if (settings != null) {
-                        getController().getOSClient().getFolderService()
-                            .setArchiveMode(foInfo, settings.getVersions());
-                    }
-                } catch (Exception e) {
-                    logFine("Scheduling setup of folder: " + folderName);
-                    CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                        a.createInfo(), foInfo, null);
-                    task.setArchiveVersions(folderInfos.get(foInfo)
-                        .getVersions());
-                    getController().getTaskManager().scheduleTask(task);
-                }
-                
+                CreateFolderOnServerTask task = new CreateFolderOnServerTask(
+                    a.createInfo(), foInfo, null);
+                task.setArchiveVersions(settings.getVersions());
+                getController().getTaskManager().scheduleTask(task);
+
                 // Remove from pending entries.
                 it.remove();
-                folderInfos.put(foInfo, settings);
+                folderInfos.add(foInfo);
             } catch (Exception e) {
                 logWarning("Unable to create folder " + folderName + " at "
                     + settings.getLocalBaseDir() + ". " + e);
             }
         }
-
 
         if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
             .getValueBoolean(getController()))
@@ -2035,7 +2024,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     Folder folder = createFolder0(folderInfo, settings, true);
                     folder.addDefaultExcludes();
-                    folderInfos.put(folderInfo, settings);
+                    folderInfos.add(folderInfo);
                 } catch (Exception e) {
                     logWarning("Unable to create folder "
                         + folderInfo.getName() + " at "
@@ -2044,7 +2033,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        return folderInfos.keySet();
+        return folderInfos;
     }
 
     // Event support **********************************************************
