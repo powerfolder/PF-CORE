@@ -1846,6 +1846,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Skip if currently setting up folders.
             // Especially not to remove recently created local folders.
             // Usecase: Client Backup / Personal folders.
+            logFine("Skip syncing folder setup with account permissions("
+                + a.getFolders().size() + "): " + a.getUsername());
             return;
         }
         accountSyncLock.lock();
