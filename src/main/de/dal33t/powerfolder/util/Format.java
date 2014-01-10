@@ -61,7 +61,7 @@ public class Format extends PFComponent {
 
         if (number >= 1024) {
             number /= 1024;
-            suffix = "KBytes";
+            suffix = "kBytes";
         }
         if (number >= 1024) {
             number /= 1024;
@@ -87,7 +87,7 @@ public class Format extends PFComponent {
         double number = bytes;
 
         number /= 1024;
-        String suffix = "KB";
+        String suffix = "kB";
         if (number >= 1024) {
             number /= 1024;
             suffix = "MB";
