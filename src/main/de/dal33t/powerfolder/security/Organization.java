@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -32,8 +33,10 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Index;
 
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
@@ -117,6 +120,26 @@ public class Organization implements Serializable {
     public OnlineStorageSubscription getOSSubscription() {
         return osSubscription;
     }
+    
+    /**
+     * Adds a line of info with the current date to the notes of that account.
+     * 
+     * @param infoText
+     */
+    public void addNotesWithDate(String infoText) {
+        if (StringUtils.isBlank(infoText)) {
+            return;
+        }
+        String infoLine = Format.formatDateCanonical(new Date());
+        infoLine += ": ";
+        infoLine += infoText;
+        if (StringUtils.isBlank(notes)) {
+            setNotes(infoLine);
+        } else {
+            setNotes(notes + "\n" + infoLine);
+        }
+    }
+
 
     @Override
     public String toString() {
