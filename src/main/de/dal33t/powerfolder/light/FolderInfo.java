@@ -87,7 +87,7 @@ public class FolderInfo implements Serializable, Cloneable {
     }
     
     /**
-     * Account relative Folder. Name must be unique.
+     * PFS-1129: Account relative backup folder. Name must be unique.
      * 
      * @param name
      * @param aInfo
