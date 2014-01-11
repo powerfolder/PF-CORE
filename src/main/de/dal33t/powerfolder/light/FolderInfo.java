@@ -85,6 +85,16 @@ public class FolderInfo implements Serializable, Cloneable {
         this.id = id;
         hash = hashCode0();
     }
+    
+    /**
+     * Account relative Folder. Name must be unique.
+     * 
+     * @param name
+     * @param aInfo
+     */
+    public FolderInfo(String name, AccountInfo aInfo) {
+        this(name, "PB-" + aInfo.getOID() + "-" + name);
+    }
 
     public boolean isMetaFolder() {
         // #1548: Convert this into boolean flag?
