@@ -490,18 +490,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                             return;
                         }
 
-                        boolean spawned = false;
-                        if (folderId
-                            .contains(FolderSettings.FOLDER_ID_GENERATE))
-                        {
-                            String generatedId = IdGenerator.makeFolderId();
-                            folderId = folderId.replace(
-                                FolderSettings.FOLDER_ID_GENERATE, generatedId);
-                            logInfo("Spawned new folder id for config entry "
-                                + folderEntryId + ": " + folderId);
-                            spawned = true;
-                        }
-
                         FolderInfo foInfo = new FolderInfo(folderName, folderId)
                             .intern();
                         FolderSettings folderSettings = FolderSettings.load(
@@ -521,13 +509,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                         {
                             createFolder0(foInfo, folderSettings, false);
                         }
-
-                        if (spawned) {
-                            removeConfigEntries(folderEntryId);
-                            folderSettings.set(foInfo, config);
-                            getController().saveConfig();
-                        }
-
                     } catch (Exception e) {
                         logSevere("Problem loading/creating folder #"
                             + folderEntryId + ". " + e, e);

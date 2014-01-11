@@ -1642,9 +1642,6 @@ public class NodeManager extends PFComponent {
             latestSupernodesInfos.add(getMySelf().getInfo());
             latestSupernodes.add(getMySelf());
         }
-        if (getController().isVerbose()) {
-            Debug.writeNodeListCSV(latestSupernodes, "SupernodesOnline.csv");
-        }
     }
 
     /**
