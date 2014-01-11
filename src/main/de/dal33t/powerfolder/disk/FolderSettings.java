@@ -60,7 +60,6 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns";
     public static final String FOLDER_SETTINGS_SYNC_WARN_SECONDS = ".sync-warn-seconds";
 
-    public static final String FOLDER_ID_GENERATE = "$generate";
     public static final String FOLDER_ID_FROM_ACCOUNT = "$fromAccount";
 
     /**
