@@ -419,11 +419,15 @@ public class Folder extends PFComponent {
         diskItemFilter = new DiskItemFilter();
         // PFS-457: Start
         if (StringUtils.isNotBlank(folderSettings.getExcludes())) {
-            String separator = folderSettings.getExcludes().contains(",") ? "," : ";";
+            String separator = folderSettings.getExcludes().contains(",")
+                ? ","
+                : ";";
             String[] excludes = folderSettings.getExcludes().split(separator);
             for (String pattern : excludes) {
                 if (StringUtils.isNotBlank(pattern)) {
-                    addPattern(pattern);                    
+                    // Don't use Folder#addPattern(String). We don't want to
+                    // persist yet.
+                    diskItemFilter.addPattern(pattern);
                 }
             }
         }

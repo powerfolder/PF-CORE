@@ -116,11 +116,11 @@ public class FolderSettings {
     private final String downloadScript;
 
     private final boolean syncPatterns;
-    
+
     /**
-     * PFS-457
+     * PFS-457: Sync pattern / File exclude which should be added
      */
-    private final String excludes;
+    private String excludes;
 
     /**
      * #2265: Extend monitoring. negative value = disabled, 0 = use default,
@@ -149,7 +149,6 @@ public class FolderSettings {
         this(localBaseDir, syncProfile, downloadScript, versions, syncPatterns,
             null, 0);
     }
-
 
     public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
         String downloadScript, int versions, boolean syncPatterns,
@@ -212,7 +211,7 @@ public class FolderSettings {
     public boolean isSyncPatterns() {
         return syncPatterns;
     }
-    
+
     public String getExcludes() {
         return excludes;
     }
@@ -231,14 +230,12 @@ public class FolderSettings {
 
     public static String loadFolderName(Properties properties, String entryId) {
         Reject.ifBlank(entryId, "EntryId");
-        return properties.getProperty(PREFIX_V4 + entryId
-            + NAME);
+        return properties.getProperty(PREFIX_V4 + entryId + NAME);
     }
 
     public static String loadFolderID(Properties properties, String entryId) {
         Reject.ifBlank(entryId, "EntryId");
-        return properties.getProperty(PREFIX_V4 + entryId
-            + ID);
+        return properties.getProperty(PREFIX_V4 + entryId + ID);
     }
 
     /**
@@ -281,9 +278,7 @@ public class FolderSettings {
                 String propName = (String) val;
                 // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
                 // from also deleting things like 'f.TEST.XXXXX'.
-                if (propName.startsWith(PREFIX_V4 + entryId
-                    + '.'))
-                {
+                if (propName.startsWith(PREFIX_V4 + entryId + '.')) {
                     removeProps.add(propName);
                 }
             }
@@ -308,8 +303,7 @@ public class FolderSettings {
     {
         Reject.ifNull(properties, "Config");
         Reject.ifBlank(entryId, "Entry Id");
-        String folderDirStr = properties.getProperty(PREFIX_V4
-            + entryId + DIR);
+        String folderDirStr = properties.getProperty(PREFIX_V4 + entryId + DIR);
 
         Path folderDir = translateFolderDir(folderDirStr, verify);
         if (folderDir == null) {
@@ -317,15 +311,14 @@ public class FolderSettings {
         }
 
         Path commitDir = null;
-        String commitDirStr = properties.getProperty(PREFIX_V4
-            + entryId + COMMIT_DIR);
+        String commitDirStr = properties.getProperty(PREFIX_V4 + entryId
+            + COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
             commitDir = translateFolderDir(commitDirStr, verify);
         }
 
-        String syncProfConfig = properties
-            .getProperty(PREFIX_V4 + entryId
-                + SYNC_PROFILE);
+        String syncProfConfig = properties.getProperty(PREFIX_V4 + entryId
+            + SYNC_PROFILE);
 
         SyncProfile syncProfile;
         if (PRE_777_BACKUP_TARGET_FIELD_LIST.equals(syncProfConfig)) {
@@ -354,8 +347,7 @@ public class FolderSettings {
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
 
-        String ver = properties.getProperty(PREFIX_V4 + entryId
-            + VERSIONS);
+        String ver = properties.getProperty(PREFIX_V4 + entryId + VERSIONS);
         int versions;
         if (ver != null && ver.length() > 0) {
             versions = Integer.valueOf(ver);
@@ -366,19 +358,19 @@ public class FolderSettings {
                 + ". Using default: " + versions);
         }
 
-        String dlScript = properties.getProperty(PREFIX_V4
-            + entryId + DOWNLOAD_SCRIPT);
+        String dlScript = properties.getProperty(PREFIX_V4 + entryId
+            + DOWNLOAD_SCRIPT);
 
-        String syncPatternsSetting = properties
-            .getProperty(PREFIX_V4 + entryId
-                + SYNC_PATTERNS);
+        String syncPatternsSetting = properties.getProperty(PREFIX_V4 + entryId
+            + SYNC_PATTERNS);
         // Default syncPatterns to true.
         boolean syncPatterns = syncPatternsSetting == null
             || "true".equalsIgnoreCase(syncPatternsSetting);
+        String excludes = properties
+            .getProperty(PREFIX_V4 + entryId + EXCLUDES);
 
-        String syncWarnSecSetting = properties
-            .getProperty(PREFIX_V4 + entryId
-                + SYNC_WARN_SECONDS);
+        String syncWarnSecSetting = properties.getProperty(PREFIX_V4 + entryId
+            + SYNC_WARN_SECONDS);
         int syncWarnSeconds = 0;
         if (StringUtils.isNotBlank(syncWarnSecSetting)) {
             try {
@@ -393,6 +385,7 @@ public class FolderSettings {
             dlScript, versions, syncPatterns, commitDir, syncWarnSeconds);
         settings.configEntryId = entryId;
         settings.localBaseDirStr = folderDirStr;
+        settings.excludes = excludes;
         return settings;
     }
 
@@ -405,50 +398,38 @@ public class FolderSettings {
                 .getBytes())));
         }
 
-        config.setProperty(PREFIX_V4 + entryId
-            + NAME, folderInfo.name);
-        config.setProperty(PREFIX_V4 + entryId
-            + ID, folderInfo.id);
+        config.setProperty(PREFIX_V4 + entryId + NAME, folderInfo.name);
+        config.setProperty(PREFIX_V4 + entryId + ID, folderInfo.id);
         String baseDir = localBaseDirStr;
         if (StringUtils.isBlank(baseDir)) {
             baseDir = localBaseDir.toAbsolutePath().toString();
         }
-        config.setProperty(PREFIX_V4 + entryId
-            + DIR, baseDir);
-        String commitDirStr = commitDir != null
-            ? commitDir.toAbsolutePath().toString()
-            : "";
-        config.setProperty(PREFIX_V4 + entryId
-            + COMMIT_DIR, commitDirStr);
+        config.setProperty(PREFIX_V4 + entryId + DIR, baseDir);
+        String commitDirStr = commitDir != null ? commitDir.toAbsolutePath()
+            .toString() : "";
+        config.setProperty(PREFIX_V4 + entryId + COMMIT_DIR, commitDirStr);
         // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(PREFIX_V4 + entryId
-            + SYNC_PROFILE, syncProfile.getFieldList());
-        config.setProperty(PREFIX_V4 + entryId
-            + VERSIONS, String.valueOf(versions));
+        config.setProperty(PREFIX_V4 + entryId + SYNC_PROFILE,
+            syncProfile.getFieldList());
+        config.setProperty(PREFIX_V4 + entryId + VERSIONS,
+            String.valueOf(versions));
         String dlScript = getDownloadScript() != null
             ? getDownloadScript()
             : "";
-        config.setProperty(PREFIX_V4 + entryId
-            + DOWNLOAD_SCRIPT, dlScript);
-
-        config.setProperty(PREFIX_V4 + entryId
-            + SYNC_PATTERNS, String.valueOf(syncPatterns));
-
+        config.setProperty(PREFIX_V4 + entryId + DOWNLOAD_SCRIPT, dlScript);
+        config.setProperty(PREFIX_V4 + entryId + SYNC_PATTERNS,
+            String.valueOf(syncPatterns));
         if (StringUtils.isNotBlank(excludes)) {
-            config.setProperty(PREFIX_V4 + entryId
-                + EXCLUDES, excludes);
+            config.setProperty(PREFIX_V4 + entryId + EXCLUDES, excludes);
         } else {
-            config.remove(PREFIX_V4 + entryId
-                + EXCLUDES);
+            config.remove(PREFIX_V4 + entryId + EXCLUDES);
         }
 
         if (syncWarnSeconds > 0) {
-            config.setProperty(PREFIX_V4 + entryId
-                + SYNC_WARN_SECONDS,
+            config.setProperty(PREFIX_V4 + entryId + SYNC_WARN_SECONDS,
                 String.valueOf(syncWarnSeconds));
         } else {
-            config.remove(PREFIX_V4 + entryId
-                + SYNC_WARN_SECONDS);
+            config.remove(PREFIX_V4 + entryId + SYNC_WARN_SECONDS);
         }
     }
 
