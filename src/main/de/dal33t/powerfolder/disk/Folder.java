@@ -417,6 +417,17 @@ public class Folder extends PFComponent {
         transferPriorities = new TransferPriorities();
 
         diskItemFilter = new DiskItemFilter();
+        // PFS-457: Start
+        if (StringUtils.isNotBlank(folderSettings.getExcludes())) {
+            String separator = folderSettings.getExcludes().contains(",") ? "," : ";";
+            String[] excludes = folderSettings.getExcludes().split(separator);
+            for (String pattern : excludes) {
+                if (StringUtils.isNotBlank(pattern)) {
+                    addPattern(pattern);                    
+                }
+            }
+        }
+        // PFS-457: End
 
         // Initialize the DAO
         initFileInfoDAO();
