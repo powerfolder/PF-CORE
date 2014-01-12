@@ -110,10 +110,9 @@ public class PreviewToJoinDialog extends BaseDialog {
                 // Dispose before parent is closed.
                 close();
 
-                FolderSettings newFolderSettings = new FolderSettings(Paths.get(
-                    (String) locationModel.getValue()),
-                    syncProfileSelectorPanel.getSyncProfile(), false,
-                    false,
+                FolderSettings newFolderSettings = new FolderSettings(Paths
+                    .get((String) locationModel.getValue()),
+                    syncProfileSelectorPanel.getSyncProfile(),
                     existingFoldersSettings.getDownloadScript(),
                     existingFoldersSettings.getVersions(),
                     existingFoldersSettings.isSyncPatterns());

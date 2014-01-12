@@ -177,8 +177,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                             folderCreateItem.getLinkToOnlineFolder());
                     }
                     FolderSettings folderSettings = new FolderSettings(
-                        localBase, syncProfile, false,
-                        previewFolder, null, archiveHistory, true);
+                        localBase, syncProfile, null, archiveHistory, true);
                     configurations.put(folderInfo, folderSettings);
                 }
             } else {
@@ -204,8 +203,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 }
 
                 FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, false,
-                    previewFolder, null,
+                    syncProfile, null,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()), true);
                 configurations.put(folderInfo, folderSettings);

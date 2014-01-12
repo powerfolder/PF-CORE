@@ -503,14 +503,14 @@ public abstract class TwoControllerTestCase extends TestCase {
         final Folder folder2;
         final Folder meta2;
         FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile,
-            false, 5);
+            5);
         folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
             folderSettings1);
         meta1 = getContollerBart().getFolderRepository()
             .getMetaFolderForParent(folder1.getInfo());
 
         FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
-            false, 5);
+            5);
         folder2 = getContollerLisa().getFolderRepository().createFolder(foInfo,
             folderSettings2);
         if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {

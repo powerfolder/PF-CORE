@@ -158,8 +158,7 @@ public abstract class ControllerTestCase extends TestCase {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, 5);
+        FolderSettings folderSettings = new FolderSettings(baseDir, profile, 5);
         return getController().getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

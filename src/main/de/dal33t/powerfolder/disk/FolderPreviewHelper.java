@@ -52,8 +52,8 @@ public class FolderPreviewHelper {
     public static FolderSettings createPreviewFolderSettings(String folderName)
     {
         Path localBase = makePreviewBaseDir(folderName);
-        return new FolderSettings(localBase, SyncProfile.NO_SYNC, false,
-            true, null, 0, false);
+        return new FolderSettings(localBase, SyncProfile.NO_SYNC, null, 0,
+            false);
     }
 
     // Creates a preview folder directory for a folderName.
@@ -95,8 +95,6 @@ public class FolderPreviewHelper {
         FolderSettings savedFolderSettings = new FolderSettings(
             initialFolderSettings.getLocalBaseDir(),
             initialFolderSettings.getSyncProfile(),
-            false,
-            true,
             initialFolderSettings.getDownloadScript(),
             initialFolderSettings.getVersions(),
             initialFolderSettings.isSyncPatterns());

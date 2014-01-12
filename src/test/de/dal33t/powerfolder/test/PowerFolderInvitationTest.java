@@ -56,7 +56,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                             .removeInvalidFilenameChars(invitation.folder.name));
                 try {
                     FolderSettings folderSettings = new FolderSettings(dir,
-                        SyncProfile.HOST_FILES, false, 0);
+                        SyncProfile.HOST_FILES, 0);
                     getContollerBart().getFolderRepository().createFolder(
                         invitation.folder, folderSettings);
                 } catch (Exception e) {
@@ -71,7 +71,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             IdGenerator.makeFolderId());
 
         FolderSettings folderSettings = new FolderSettings(
-            TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, false, 0);
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, 0);
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
             testFolder, folderSettings);
 

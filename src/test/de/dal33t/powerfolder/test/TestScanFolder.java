@@ -48,10 +48,10 @@ public class TestScanFolder extends ControllerTestCase {
     private Folder folder;
 
     private void doTest() throws Exception {
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeFolderId());
+        FolderInfo testFolder = new FolderInfo("testFolder",
+            IdGenerator.makeFolderId());
         FolderSettings folderSettings = new FolderSettings(Paths.get(location),
-            SyncProfile.HOST_FILES, false,0);
+            SyncProfile.HOST_FILES, 0);
         folder = getController().getFolderRepository().createFolder(testFolder,
             folderSettings);
 

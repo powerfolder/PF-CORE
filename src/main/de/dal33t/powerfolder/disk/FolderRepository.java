@@ -918,8 +918,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             Path commitDir = folderSettings.getLocalBaseDir();
             SyncProfile syncProfile = SyncProfile.NO_SYNC;
 
-            folderSettings = new FolderSettings(newBaseDir, syncProfile, false,
-                folderSettings.isPreviewOnly(),
+            folderSettings = new FolderSettings(newBaseDir, syncProfile,
                 folderSettings.getDownloadScript(),
                 folderSettings.getVersions(), folderSettings.isSyncPatterns(),
                 commitDir, folderSettings.getSyncWarnSeconds());
@@ -946,7 +945,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         Path systemSubdir = folder.getSystemSubDir();
         FolderSettings metaFolderSettings = new FolderSettings(
             systemSubdir.resolve(Constants.METAFOLDER_SUBDIR),
-            SyncProfile.META_FOLDER_SYNC, false, 0);
+            SyncProfile.META_FOLDER_SYNC, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
             try {
@@ -1577,7 +1576,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 IdGenerator.makeFolderId());
         }
         FolderSettings fs = new FolderSettings(file,
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION,
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(controller));
         Folder folder = createFolder(fi, fs);
         folder.addDefaultExcludes();
@@ -1803,7 +1802,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo("AutoAccepting " + invitation + " from " + memberInfo + '.');
 
         FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
-            invitation.getSuggestedSyncProfile(), false,
+            invitation.getSuggestedSyncProfile(),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
         createFolder(invitation.folder, folderSettings);
@@ -2016,7 +2015,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 // Correct local path if in UserDirectories.
                 FolderSettings settings = new FolderSettings(
-                    suggestedLocalBase, profile, false,
+                    suggestedLocalBase, profile,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()));
 

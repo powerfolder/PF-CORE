@@ -127,21 +127,21 @@ public class FolderJoinTest extends TwoControllerTestCase {
             } else {
                 testFolder = createRandomFolder("r-" + (i + 1));
             }
-            Path folderDirBart = TESTFOLDER_BASEDIR_BART.resolve(
-                testFolder.name);
-            Path folderDirLisa = TESTFOLDER_BASEDIR_LISA.resolve(
-                testFolder.name);
+            Path folderDirBart = TESTFOLDER_BASEDIR_BART
+                .resolve(testFolder.name);
+            Path folderDirLisa = TESTFOLDER_BASEDIR_LISA
+                .resolve(testFolder.name);
             System.err.println("Joining folder: " + testFolder);
             // joinFolder(testFolder, folderDirBart, folderDirLisa);
 
             FolderSettings folderSettings1 = new FolderSettings(folderDirBart,
-                SyncProfile.HOST_FILES, false, 0);
+                SyncProfile.HOST_FILES, 0);
             folder1 = getContollerBart().getFolderRepository().createFolder(
                 testFolder, folderSettings1);
             folder1.addDefaultExcludes();
 
             FolderSettings folderSettings2 = new FolderSettings(folderDirLisa,
-                SyncProfile.HOST_FILES, false, 0);
+                SyncProfile.HOST_FILES, 0);
             folder2 = getContollerLisa().getFolderRepository().createFolder(
                 testFolder, folderSettings2);
             folder2.addDefaultExcludes();
@@ -210,7 +210,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
 
         FolderSettings folderSettingsBart = new FolderSettings(
-            TESTFOLDER_BASEDIR_BART, SyncProfile.HOST_FILES, false, 0);
+            TESTFOLDER_BASEDIR_BART, SyncProfile.HOST_FILES, 0);
         final Folder folderBart = getContollerBart().getFolderRepository()
             .createFolder(testFolder, folderSettingsBart);
 
@@ -222,8 +222,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         // Now let lisa join with auto-download
         FolderSettings folderSettingsLisa = new FolderSettings(
-            TESTFOLDER_BASEDIR_LISA, SyncProfile.AUTOMATIC_DOWNLOAD,
-            false, 0);
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.AUTOMATIC_DOWNLOAD, 0);
         final Folder folderLisa = getContollerLisa().getFolderRepository()
             .createFolder(testFolder, folderSettingsLisa);
 
@@ -252,7 +251,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             IdGenerator.makeFolderId());
         // Prepare folder on "host" Bart.
         FolderSettings folderSettingsBart = new FolderSettings(
-            TESTFOLDER_BASEDIR_BART, SyncProfile.HOST_FILES, false, 0);
+            TESTFOLDER_BASEDIR_BART, SyncProfile.HOST_FILES, 0);
         Folder folderBart = getContollerBart().getFolderRepository()
             .createFolder(testFolder, folderSettingsBart);
 
@@ -266,8 +265,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         // Now let lisa join with auto-download
         FolderSettings folderSettingsLisa = new FolderSettings(
-            TESTFOLDER_BASEDIR_LISA, SyncProfile.AUTOMATIC_DOWNLOAD,
-            false, 0);
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.AUTOMATIC_DOWNLOAD, 0);
         final Folder folderLisa = getContollerLisa().getFolderRepository()
             .createFolder(testFolder, folderSettingsLisa);
 

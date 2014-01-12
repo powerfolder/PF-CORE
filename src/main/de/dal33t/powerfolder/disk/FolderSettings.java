@@ -50,7 +50,6 @@ public class FolderSettings {
         .getName());
     public static final String FOLDER_SETTINGS_PREFIX_V4 = "f.";
     public static final String FOLDER_SETTINGS_ID = ".id";
-    public static final String FOLDER_SETTINGS_PREVIEW = ".preview";
     public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
     public static final String FOLDER_SETTINGS_DIR = ".dir";
     public static final String FOLDER_SETTINGS_COMMIT_DIR = ".commit-dir";
@@ -58,6 +57,7 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_NAME = ".name";
     public static final String FOLDER_SETTINGS_VERSIONS = ".versions";
     public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns";
+    public static final String FOLDER_SETTINGS_EXCLUDES = ".excludes";
     public static final String FOLDER_SETTINGS_SYNC_WARN_SECONDS = ".sync-warn-seconds";
 
     /**
@@ -110,17 +110,17 @@ public class FolderSettings {
     private final int versions;
 
     /**
-     * Whether this sould only be a preview of the folder.
-     */
-    private final boolean previewOnly;
-
-    /**
      * #1538: Script that gets executed after a download has been completed
      * successfully.
      */
     private final String downloadScript;
 
     private final boolean syncPatterns;
+    
+    /**
+     * PFS-457
+     */
+    private final String excludes;
 
     /**
      * #2265: Extend monitoring. negative value = disabled, 0 = use default,
@@ -136,69 +136,35 @@ public class FolderSettings {
     /**
      * Constructor. Creates a new FolderSettings object. NON preview, NO
      * download script.
-     * 
-     * @param localBaseDir
-     * @param syncProfile
-     * @param createInvitationFile
-     * @param versions
      */
     public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, int versions)
+        int versions)
     {
-        this(localBaseDir, syncProfile, createInvitationFile,
-            false, null, versions, true);
+        this(localBaseDir, syncProfile, null, versions, true);
     }
 
-    /**
-     * Constructor. Creates a new FolderSettings object.
-     * 
-     * @param localBaseDir
-     * @param syncProfile
-     * @param createInvitationFile
-     * @param archiveMode
-     * @param previewOnly
-     * @param downloadScript
-     * @param versions
-     * @param syncPatterns
-     */
     public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile,
-        boolean previewOnly, String downloadScript, int versions,
-        boolean syncPatterns)
+        String downloadScript, int versions, boolean syncPatterns)
     {
-        this(localBaseDir, syncProfile, createInvitationFile,
-            previewOnly, downloadScript, versions, syncPatterns, null, 0);
+        this(localBaseDir, syncProfile, downloadScript, versions, syncPatterns,
+            null, 0);
     }
 
-    /**
-     * Constructor. Creates a new FolderSettings object.
-     * 
-     * @param localBaseDir
-     * @param syncProfile
-     * @param createInvitationFile
-     * @param archiveMode
-     * @param previewOnly
-     * @param downloadScript
-     * @param versions
-     * @param syncPatterns
-     * @param commitDir
-     * @param syncWarnSeconds
-     */
+
     public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile,
-        boolean previewOnly, String downloadScript, int versions,
-        boolean syncPatterns, Path commitDir, int syncWarnSeconds)
+        String downloadScript, int versions, boolean syncPatterns,
+        Path commitDir, int syncWarnSeconds)
     {
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
         this.localBaseDir = localBaseDir;
         this.commitDir = commitDir;
         this.syncProfile = syncProfile;
-        this.previewOnly = previewOnly;
         this.downloadScript = downloadScript;
         this.versions = versions;
         this.syncPatterns = syncPatterns;
         this.syncWarnSeconds = syncWarnSeconds;
+        this.excludes = null;
         // Generate a unique entry id for config file.
         this.configEntryId = new String(Util.encodeHex(Util.md5(IdGenerator
             .makeIdBytes())));
@@ -236,7 +202,7 @@ public class FolderSettings {
     }
 
     public boolean isPreviewOnly() {
-        return previewOnly;
+        return false;
     }
 
     public String getDownloadScript() {
@@ -245,6 +211,10 @@ public class FolderSettings {
 
     public boolean isSyncPatterns() {
         return syncPatterns;
+    }
+    
+    public String getExcludes() {
+        return excludes;
     }
 
     public int getSyncWarnSeconds() {
@@ -396,12 +366,6 @@ public class FolderSettings {
                 + ". Using default: " + versions);
         }
 
-        String previewSetting = properties
-            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_PREVIEW);
-        boolean preview = previewSetting != null
-            && "true".equalsIgnoreCase(previewSetting);
-
         String dlScript = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
@@ -426,8 +390,7 @@ public class FolderSettings {
         }
 
         FolderSettings settings = new FolderSettings(folderDir, syncProfile,
-            false, preview, dlScript, versions, syncPatterns,
-            commitDir, syncWarnSeconds);
+            dlScript, versions, syncPatterns, commitDir, syncWarnSeconds);
         settings.configEntryId = entryId;
         settings.localBaseDirStr = folderDirStr;
         return settings;
@@ -462,8 +425,6 @@ public class FolderSettings {
             + FOLDER_SETTINGS_SYNC_PROFILE, syncProfile.getFieldList());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_VERSIONS, String.valueOf(versions));
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_PREVIEW, String.valueOf(isPreviewOnly()));
         String dlScript = getDownloadScript() != null
             ? getDownloadScript()
             : "";
@@ -472,6 +433,15 @@ public class FolderSettings {
 
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_SYNC_PATTERNS, String.valueOf(syncPatterns));
+
+        if (StringUtils.isNotBlank(excludes)) {
+            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_EXCLUDES, excludes);
+        } else {
+            config.remove(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_EXCLUDES);
+        }
+
         if (syncWarnSeconds > 0) {
             config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
                 + FOLDER_SETTINGS_SYNC_WARN_SECONDS,

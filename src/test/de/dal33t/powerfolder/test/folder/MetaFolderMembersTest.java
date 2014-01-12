@@ -58,15 +58,13 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         Controller controllerBart = getContollerBart();
         Files.createDirectories(TESTFOLDER_BASEDIR_BART);
         FolderSettings folderSettingsBart = new FolderSettings(
-            TESTFOLDER_BASEDIR_BART, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
-            false, 0);
+            TESTFOLDER_BASEDIR_BART, SyncProfile.AUTOMATIC_SYNCHRONIZATION, 0);
         final Folder folderBart = controllerBart.getFolderRepository()
             .createFolder(folderInfo, folderSettingsBart);
 
         Files.createDirectories(TESTFOLDER_BASEDIR_HOMER);
         FolderSettings folderSettingsHomer = new FolderSettings(
-            TESTFOLDER_BASEDIR_HOMER, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
-            false, 0);
+            TESTFOLDER_BASEDIR_HOMER, SyncProfile.AUTOMATIC_SYNCHRONIZATION, 0);
         Controller controllerHomer = getContollerHomer();
         final Folder folderHomer = controllerHomer.getFolderRepository()
             .createFolder(folderInfo, folderSettingsHomer);
@@ -91,8 +89,7 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         // 3. Marge joins with Bart.
         Files.createDirectories(TESTFOLDER_BASEDIR_MARGE);
         FolderSettings folderSettingsMarge = new FolderSettings(
-            TESTFOLDER_BASEDIR_MARGE, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
-            false, 0);
+            TESTFOLDER_BASEDIR_MARGE, SyncProfile.AUTOMATIC_SYNCHRONIZATION, 0);
         Controller controllerMarge = getContollerMarge();
         final Folder folderMarge = controllerMarge.getFolderRepository()
             .createFolder(folderInfo, folderSettingsMarge);

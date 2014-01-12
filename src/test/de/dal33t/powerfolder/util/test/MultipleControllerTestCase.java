@@ -227,8 +227,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected static Folder joinFolder(FolderInfo foInfo, Path baseDir,
         Controller controller, SyncProfile profile)
     {
-        FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, 5);
+        FolderSettings folderSettings = new FolderSettings(baseDir, profile, 5);
         return controller.getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

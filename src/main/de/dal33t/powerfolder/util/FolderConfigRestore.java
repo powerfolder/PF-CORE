@@ -77,7 +77,7 @@ public class FolderConfigRestore {
             return;
         }
         FolderSettings foSettings = new FolderSettings(baseDir,
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION, false, 0);
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION, 0);
         foSettings.set(foInfo, config);
         LOG.info("Restored folder " + foInfo.getName() + " @ " + baseDir);
     }

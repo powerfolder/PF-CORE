@@ -710,8 +710,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 syncProfile = SyncProfile.getDefault(getController());
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile,
-                false, dlScript,
+                dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                     .getValueInt(getController()), true);
             repository.createFolder(foInfo, settings);
