@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
+import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -538,8 +538,8 @@ public class Folder extends PFComponent {
             return;
         }
         archiver.setVersionsPerFile(versions);
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_VERSIONS;
+        String syncProfKey = PREFIX_V4 + configEntryId
+            + FolderSettings.VERSIONS;
         getController().getConfig().put(syncProfKey, String.valueOf(versions));
         getController().saveConfig();
         fireArchiveSettingsChanged();
@@ -2323,8 +2323,8 @@ public class Folder extends PFComponent {
             return;
         }
         this.downloadScript = downloadScript;
-        String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
+        String confKey = PREFIX_V4 + configEntryId
+            + FolderSettings.DOWNLOAD_SCRIPT;
         String confVal = downloadScript != null ? downloadScript : "";
         getController().getConfig().put(confKey, confVal);
         logInfo("Download script set to '" + confVal + '\'');
@@ -2357,8 +2357,8 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         if (!currentInfo.isMetaFolder()) {
-            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-                + FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+            String syncProfKey = PREFIX_V4 + configEntryId
+                + FolderSettings.SYNC_PROFILE;
             getController().getConfig().put(syncProfKey,
                 syncProfile.getFieldList());
             getController().saveConfig();
@@ -3912,8 +3912,8 @@ public class Folder extends PFComponent {
      */
     public void setCommitDir(Path commitDir) {
         this.commitDir = commitDir;
-        String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
+        String confKey = PREFIX_V4 + configEntryId
+            + FolderSettings.COMMIT_DIR;
         String confVal = commitDir != null ? commitDir.toAbsolutePath()
             .toString() : "";
         getController().getConfig().put(confKey, confVal);
@@ -5061,8 +5061,8 @@ public class Folder extends PFComponent {
 
     public void setSyncPatterns(boolean syncPatterns) {
         this.syncPatterns = syncPatterns;
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
+        String syncProfKey = PREFIX_V4 + configEntryId
+            + FolderSettings.SYNC_PATTERNS;
         getController().getConfig().put(syncProfKey,
             String.valueOf(syncPatterns));
         getController().saveConfig();
@@ -5085,13 +5085,13 @@ public class Folder extends PFComponent {
         this.syncWarnSeconds = syncWarnSeconds;
         if (syncWarnSeconds != 0) {
             getController().getConfig().setProperty(
-                FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-                    + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS,
+                PREFIX_V4 + configEntryId
+                    + FolderSettings.SYNC_WARN_SECONDS,
                 String.valueOf(syncWarnSeconds));
         } else {
             getController().getConfig().remove(
-                FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-                    + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS);
+                PREFIX_V4 + configEntryId
+                    + FolderSettings.SYNC_WARN_SECONDS);
         }
         getController().saveConfig();
         checkSync();

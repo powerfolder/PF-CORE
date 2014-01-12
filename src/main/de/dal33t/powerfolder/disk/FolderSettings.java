@@ -48,17 +48,17 @@ public class FolderSettings {
 
     public static final Logger LOG = Logger.getLogger(FolderSettings.class
         .getName());
-    public static final String FOLDER_SETTINGS_PREFIX_V4 = "f.";
-    public static final String FOLDER_SETTINGS_ID = ".id";
-    public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
-    public static final String FOLDER_SETTINGS_DIR = ".dir";
-    public static final String FOLDER_SETTINGS_COMMIT_DIR = ".commit-dir";
-    public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
-    public static final String FOLDER_SETTINGS_NAME = ".name";
-    public static final String FOLDER_SETTINGS_VERSIONS = ".versions";
-    public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns";
-    public static final String FOLDER_SETTINGS_EXCLUDES = ".excludes";
-    public static final String FOLDER_SETTINGS_SYNC_WARN_SECONDS = ".sync-warn-seconds";
+    public static final String PREFIX_V4 = "f.";
+    public static final String ID = ".id";
+    public static final String SYNC_PROFILE = ".syncprofile";
+    public static final String DIR = ".dir";
+    public static final String COMMIT_DIR = ".commit-dir";
+    public static final String DOWNLOAD_SCRIPT = ".dlscript";
+    public static final String NAME = ".name";
+    public static final String VERSIONS = ".versions";
+    public static final String SYNC_PATTERNS = ".sync-patterns";
+    public static final String EXCLUDES = ".excludes";
+    public static final String SYNC_WARN_SECONDS = ".sync-warn-seconds";
 
     /**
      * For backup usecase: Folder ID should be generated relative to Account.
@@ -231,14 +231,14 @@ public class FolderSettings {
 
     public static String loadFolderName(Properties properties, String entryId) {
         Reject.ifBlank(entryId, "EntryId");
-        return properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_NAME);
+        return properties.getProperty(PREFIX_V4 + entryId
+            + NAME);
     }
 
     public static String loadFolderID(Properties properties, String entryId) {
         Reject.ifBlank(entryId, "EntryId");
-        return properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_ID);
+        return properties.getProperty(PREFIX_V4 + entryId
+            + ID);
     }
 
     /**
@@ -253,7 +253,7 @@ public class FolderSettings {
             for (Object key : properties.keySet()) {
                 String propName = (String) key;
                 // Look for a f.<entryId>.XXXX
-                if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
+                if (propName.startsWith(PREFIX_V4)) {
                     int firstDot = propName.indexOf('.');
                     int secondDot = propName.indexOf('.', firstDot + 1);
 
@@ -281,7 +281,7 @@ public class FolderSettings {
                 String propName = (String) val;
                 // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
                 // from also deleting things like 'f.TEST.XXXXX'.
-                if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                if (propName.startsWith(PREFIX_V4 + entryId
                     + '.'))
                 {
                     removeProps.add(propName);
@@ -308,8 +308,8 @@ public class FolderSettings {
     {
         Reject.ifNull(properties, "Config");
         Reject.ifBlank(entryId, "Entry Id");
-        String folderDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + entryId + FOLDER_SETTINGS_DIR);
+        String folderDirStr = properties.getProperty(PREFIX_V4
+            + entryId + DIR);
 
         Path folderDir = translateFolderDir(folderDirStr, verify);
         if (folderDir == null) {
@@ -317,15 +317,15 @@ public class FolderSettings {
         }
 
         Path commitDir = null;
-        String commitDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + entryId + FOLDER_SETTINGS_COMMIT_DIR);
+        String commitDirStr = properties.getProperty(PREFIX_V4
+            + entryId + COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
             commitDir = translateFolderDir(commitDirStr, verify);
         }
 
         String syncProfConfig = properties
-            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_SYNC_PROFILE);
+            .getProperty(PREFIX_V4 + entryId
+                + SYNC_PROFILE);
 
         SyncProfile syncProfile;
         if (PRE_777_BACKUP_TARGET_FIELD_LIST.equals(syncProfConfig)) {
@@ -354,8 +354,8 @@ public class FolderSettings {
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
 
-        String ver = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_VERSIONS);
+        String ver = properties.getProperty(PREFIX_V4 + entryId
+            + VERSIONS);
         int versions;
         if (ver != null && ver.length() > 0) {
             versions = Integer.valueOf(ver);
@@ -366,19 +366,19 @@ public class FolderSettings {
                 + ". Using default: " + versions);
         }
 
-        String dlScript = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + entryId + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
+        String dlScript = properties.getProperty(PREFIX_V4
+            + entryId + DOWNLOAD_SCRIPT);
 
         String syncPatternsSetting = properties
-            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_SYNC_PATTERNS);
+            .getProperty(PREFIX_V4 + entryId
+                + SYNC_PATTERNS);
         // Default syncPatterns to true.
         boolean syncPatterns = syncPatternsSetting == null
             || "true".equalsIgnoreCase(syncPatternsSetting);
 
         String syncWarnSecSetting = properties
-            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_SYNC_WARN_SECONDS);
+            .getProperty(PREFIX_V4 + entryId
+                + SYNC_WARN_SECONDS);
         int syncWarnSeconds = 0;
         if (StringUtils.isNotBlank(syncWarnSecSetting)) {
             try {
@@ -405,50 +405,50 @@ public class FolderSettings {
                 .getBytes())));
         }
 
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_NAME, folderInfo.name);
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_ID, folderInfo.id);
+        config.setProperty(PREFIX_V4 + entryId
+            + NAME, folderInfo.name);
+        config.setProperty(PREFIX_V4 + entryId
+            + ID, folderInfo.id);
         String baseDir = localBaseDirStr;
         if (StringUtils.isBlank(baseDir)) {
             baseDir = localBaseDir.toAbsolutePath().toString();
         }
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_DIR, baseDir);
+        config.setProperty(PREFIX_V4 + entryId
+            + DIR, baseDir);
         String commitDirStr = commitDir != null
             ? commitDir.toAbsolutePath().toString()
             : "";
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_COMMIT_DIR, commitDirStr);
+        config.setProperty(PREFIX_V4 + entryId
+            + COMMIT_DIR, commitDirStr);
         // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_SYNC_PROFILE, syncProfile.getFieldList());
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_VERSIONS, String.valueOf(versions));
+        config.setProperty(PREFIX_V4 + entryId
+            + SYNC_PROFILE, syncProfile.getFieldList());
+        config.setProperty(PREFIX_V4 + entryId
+            + VERSIONS, String.valueOf(versions));
         String dlScript = getDownloadScript() != null
             ? getDownloadScript()
             : "";
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
+        config.setProperty(PREFIX_V4 + entryId
+            + DOWNLOAD_SCRIPT, dlScript);
 
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_SYNC_PATTERNS, String.valueOf(syncPatterns));
+        config.setProperty(PREFIX_V4 + entryId
+            + SYNC_PATTERNS, String.valueOf(syncPatterns));
 
         if (StringUtils.isNotBlank(excludes)) {
-            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_EXCLUDES, excludes);
+            config.setProperty(PREFIX_V4 + entryId
+                + EXCLUDES, excludes);
         } else {
-            config.remove(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_EXCLUDES);
+            config.remove(PREFIX_V4 + entryId
+                + EXCLUDES);
         }
 
         if (syncWarnSeconds > 0) {
-            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_SYNC_WARN_SECONDS,
+            config.setProperty(PREFIX_V4 + entryId
+                + SYNC_WARN_SECONDS,
                 String.valueOf(syncWarnSeconds));
         } else {
-            config.remove(FOLDER_SETTINGS_PREFIX_V4 + entryId
-                + FOLDER_SETTINGS_SYNC_WARN_SECONDS);
+            config.remove(PREFIX_V4 + entryId
+                + SYNC_WARN_SECONDS);
         }
     }
 

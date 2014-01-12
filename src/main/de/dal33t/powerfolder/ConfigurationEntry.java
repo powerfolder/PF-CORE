@@ -991,9 +991,9 @@ public enum ConfigurationEntry {
     ConfigurationEntry(String aConfigKey, String theDefaultValue) {
         Reject.ifBlank(aConfigKey, "Config key is blank");
         Reject.ifTrue(
-            aConfigKey.startsWith(FolderSettings.FOLDER_SETTINGS_PREFIX_V4),
+            aConfigKey.startsWith(FolderSettings.PREFIX_V4),
             "Config entries must not start with '"
-                + FolderSettings.FOLDER_SETTINGS_PREFIX_V4 + '\'');
+                + FolderSettings.PREFIX_V4 + '\'');
         configKey = aConfigKey;
         if (theDefaultValue != null) {
             defaultValue = theDefaultValue;

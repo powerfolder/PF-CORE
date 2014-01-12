@@ -19,8 +19,8 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
+import static de.dal33t.powerfolder.disk.FolderSettings.ID;
+import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
@@ -461,8 +461,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 public void run() {
                     try {
                         String folderId = config
-                            .getProperty(FOLDER_SETTINGS_PREFIX_V4
-                                + folderEntryId + FOLDER_SETTINGS_ID);
+                            .getProperty(PREFIX_V4
+                                + folderEntryId + ID);
                         if (StringUtils.isBlank(folderId)) {
                             logWarning("Folder id blank. Removed illegal folder config entry: "
                                 + folderEntryId);
@@ -1903,8 +1903,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getConfig(), folderEntryId);
             if (settings == null) {
                 String folderDirStr = getController().getConfig().getProperty(
-                    FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
-                        + FolderSettings.FOLDER_SETTINGS_DIR);
+                    PREFIX_V4 + folderEntryId
+                        + FolderSettings.DIR);
                 logWarning("Not setting up folder " + folderName + " / "
                     + folderEntryId + " local base dir not found: "
                     + folderDirStr);

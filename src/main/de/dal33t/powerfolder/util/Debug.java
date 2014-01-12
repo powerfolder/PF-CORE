@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
+import static de.dal33t.powerfolder.disk.FolderSettings.ID;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -403,7 +403,7 @@ public class Debug {
                 String key = (String) sortedConfigKey;
                 String value = config.getProperty(key);
                 // Erase folder ids, keep it secret!
-                if (key.indexOf(FOLDER_SETTINGS_ID) >= 5) {
+                if (key.indexOf(ID) >= 5) {
                     value = "XXX-erased-XXX";
                 }
                 // Erase all passwords
