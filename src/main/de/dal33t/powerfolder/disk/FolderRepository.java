@@ -1515,6 +1515,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             filter = new Filter<Path>() {
                 @Override
                 public boolean accept(Path entry) {
+                    if (Files.isDirectory(entry)) {
+                        return false;
+                    }
                     if (PathUtils.isDesktopIni(entry)) {
                         return false;
                     }
@@ -1528,10 +1531,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             + "' is hidden. " + e);
                         return false;
                     }
-                    if (Files.isRegularFile(entry)) {
-                        return true;
-                    }
-                    return false;
+                    return true;
                 }
             };
 
@@ -1542,12 +1542,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                         Translation
                             .getTranslation("notice.file_in_base_path.title"),
                         Translation
-                            .getTranslation("notice.file_in_base_path.summary"),
+                            .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()),
                         Translation
-                            .getTranslation("notice.file_in_base_path.summary"));
+                            .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()));
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
-                    break;
                 }
             } catch (IOException ioe) {
                 logWarning(ioe);
