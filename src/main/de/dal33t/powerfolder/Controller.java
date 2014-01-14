@@ -120,7 +120,6 @@ import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.SplitConfig;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -147,8 +146,8 @@ public class Controller extends PFComponent {
         .getName());
 
     private static final int MAJOR_VERSION = 9;
-    private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 56;
+    private static final int MINOR_VERSION = 1;
+    private static final int REVISION_VERSION = 57;
     
     /**
      * Program version.
@@ -168,10 +167,9 @@ public class Controller extends PFComponent {
      * The actual config file.
      */
     private Path configFile;
-    private Path configFolderFile;
 
     /** The config properties */
-    private SplitConfig config;
+    private Properties config;
 
     /**
      * The preferences
@@ -888,13 +886,14 @@ public class Controller extends PFComponent {
         }
 
         configFilename = null;
-        config = new SplitConfig();
+        config = new Properties();
         configFilename = filename;
         configFile = getConfigLocationBase();
-        
+
         if (configFile == null) {
             configFile = Paths.get(filename).toAbsolutePath();
-        } else {
+        }
+        else {
             configFile = configFile.resolve(filename);
         }
 
@@ -928,43 +927,6 @@ public class Controller extends PFComponent {
             } catch (Exception e) {
                 // Ignore.
             }
-        }
-        
-        String folderfilename = filename.replace(".config", "-Folder.config");
-        configFolderFile = getConfigLocationBase();
-        if (configFolderFile == null) {
-            configFolderFile = Paths.get(folderfilename).toAbsolutePath();
-        } else {
-            configFolderFile = configFolderFile.resolve(folderfilename);
-        }
-
-        if (Files.exists(configFolderFile)) {
-            try {
-                logInfo("Loading folder configfile "
-                    + configFolderFile.toString());
-                bis = new BufferedInputStream(
-                    Files.newInputStream(configFolderFile));
-                config.load(bis);
-            } catch (FileNotFoundException e) {
-                logWarning("Unable to start config, file '" + folderfilename
-                    + "' not found, using defaults");
-            } catch (IOException e) {
-                logSevere("Unable to start config from file '" + folderfilename
-                    + '\'');
-                configFolderFile = null;
-                return false;
-            } finally {
-                try {
-                    if (bis != null) {
-                        bis.close();
-                    }
-                } catch (Exception e) {
-                    // Ignore.
-                }
-            }
-        } else {
-            logFine("Folder config file does not exist. "
-                + configFolderFile.toString());
         }
         return true;
     }
@@ -1262,16 +1224,6 @@ public class Controller extends PFComponent {
         } catch (IOException e) {
             logWarning("Unable to backup file " + configFile + ". " + e);
         }
-        if (Files.exists(configFolderFile)) {
-            Path configFolderBackup = backupDir.resolve(configFolderFile
-                .getFileName());
-            try {
-                PathUtils.copyFile(configFolderFile, configFolderBackup);
-            } catch (IOException e) {
-                logWarning("Unable to backup file " + configFolderFile + ". "
-                    + e);
-            }
-        }
         Path myKeyFile = getMiscFilesLocation().resolve(getConfigName()
             + ".mykey");
         Path mykeyBackup = backupDir.resolve(myKeyFile.getFileName());
@@ -1476,17 +1428,11 @@ public class Controller extends PFComponent {
 
         Path file;
         Path tempFile;
-        Path folderFile;
-        Path tempFolderFile;
         Path backupFile;
         if (getConfigLocationBase() == null) {
             file = Paths.get(getConfigName() + ".config").toAbsolutePath();
             tempFile = Paths.get(getConfigName() + ".writing.config")
                 .toAbsolutePath();
-            folderFile = Paths.get(getConfigName() + "-Folder.config")
-                .toAbsolutePath();
-            tempFolderFile = Paths.get(
-                getConfigName() + "-Folder.writing.config").toAbsolutePath();
             backupFile = Paths.get(getConfigName() + ".config.backup")
                 .toAbsolutePath();
         } else {
@@ -1495,10 +1441,6 @@ public class Controller extends PFComponent {
                 getConfigName() + ".writing.config").toAbsolutePath();
             backupFile = getConfigLocationBase().resolve(
                 getConfigName() + ".config.backup");
-            folderFile = getConfigLocationBase().resolve(
-                getConfigName() + "-Folder.config");
-            tempFolderFile = getConfigLocationBase().resolve(
-                getConfigName() + "-Folder.writing.config").toAbsolutePath();
         }
 
         try {
@@ -1511,44 +1453,19 @@ public class Controller extends PFComponent {
             {
                 distName = distribution.getName();
             }
+            // Store config in misc base
+            PropertiesUtil.saveConfig(tempFile, config, distName
+                + " config file (v" + PROGRAM_VERSION + ')');
+            
 
-            Properties prev = new Properties();
-            if (Files.exists(file)) {
-                try (BufferedInputStream in = new BufferedInputStream(
-                    Files.newInputStream(file))) {
-                    prev.load(in);
-                }
+            Files.deleteIfExists(file);
+            try {
+                Files.move(tempFile, file);
+            } catch (IOException e) {
+                Files.copy(tempFile, file);
+                Files.delete(tempFile);
             }
 
-            if (!prev.equals(config.getRegular())) {
-                // Store config in misc base
-                PropertiesUtil.saveConfig(tempFile, config.getRegular(),
-                    distName + " config file (v" + PROGRAM_VERSION + ')');
-                Files.deleteIfExists(file);
-                try {
-                    Files.move(tempFile, file);
-                } catch (IOException e) {
-                    Files.copy(tempFile, file);
-                    Files.delete(tempFile);
-                }
-            } else {
-                if (isFine()) {
-                    logFine("Not storing config to " + file + ". Base config remains unchanged");                    
-                }
-            }
-
-            if (!config.getFolders().isEmpty()) {
-                PropertiesUtil.saveConfig(tempFolderFile, config.getFolders(),
-                    distName + " folders config file (v" + PROGRAM_VERSION
-                        + ')');
-                Files.deleteIfExists(folderFile);
-                try {
-                    Files.move(tempFolderFile, folderFile);
-                } catch (IOException e) {
-                    Files.copy(tempFolderFile, folderFile);
-                    Files.delete(tempFolderFile);
-                }
-            }
         } catch (IOException e) {
             // FATAL
             logSevere("Unable to save config. " + e, e);
@@ -2034,7 +1951,7 @@ public class Controller extends PFComponent {
     }
     
     public Path getConfigFolderFile() {
-        return configFolderFile;
+        return null;
     }
 
     /**
