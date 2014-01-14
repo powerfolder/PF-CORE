@@ -58,6 +58,7 @@ public class StreamUtilsTest extends TestCase {
         out.close();
         assertTrue(Files.exists(outFile));
         assertEquals(Files.size(inFile), Files.size(outFile));
+        Files.delete(inFile);
     }
 
     public void testReadOk() throws IOException {
