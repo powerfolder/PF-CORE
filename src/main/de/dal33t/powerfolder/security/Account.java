@@ -487,7 +487,17 @@ public class Account implements Serializable {
         if (StringUtils.isNotBlank(firstname)
             || StringUtils.isNotBlank(surname))
         {
-            return (firstname + " " + surname).trim();
+            String fn = (firstname == null ? "" : firstname).trim();
+            String sn = (surname == null ? "" : surname).trim();
+
+            if (StringUtils.isBlank(fn)) {
+                return sn;
+            }
+            if (StringUtils.isBlank(sn)) {
+                return fn;
+            }
+
+            return (fn + " " + sn).trim();
         } else if (StringUtils.isNotBlank(username) && authByShibboleth()
             && !emails.isEmpty())
         {
