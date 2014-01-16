@@ -83,8 +83,8 @@ public class SecurityManagerClient extends PFComponent implements
         this.client.addListener(new MyServerClientListener());
     }
 
-    public Account authenticate(String username, char[] password) {
-        Account a = client.login(username, password);
+    public Account authenticate(String username, Object password) {
+        Account a = client.login(username, (char[])password);
         if (!a.isValid()) {
             return null;
         }

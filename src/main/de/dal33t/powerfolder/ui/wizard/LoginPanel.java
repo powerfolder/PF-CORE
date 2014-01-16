@@ -478,8 +478,8 @@ public class LoginPanel extends PFWizardPanel {
                             .getTranslation("wizard.webservice.connect_failed"));
                 }
 
-                char[] pw = passwordField.getPassword();
                 boolean loginOk = false;
+                char[] pw = passwordField.getPassword();
                 loginOk = client.login(usernameField.getText(), pw).isValid();
                 LoginUtil.clear(pw);
                 if (!loginOk) {

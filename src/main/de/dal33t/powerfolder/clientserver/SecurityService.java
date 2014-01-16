@@ -67,6 +67,22 @@ public interface SecurityService {
     boolean login(String username, char[] password);
 
     /**
+     * Logs in from a remote location.
+     * 
+     * @param username
+     * @param credentials
+     *            the credentials
+     * @return if login succeeded
+     */
+    boolean login(String username, Object credentials);
+
+    /**
+     * 
+     * @return
+     */
+    AccountDetails loginAndGetAccountDetails(String username, Object credentials);
+
+    /**
      * @return true if a user is logged in currently = has open session.
      */
     boolean isLoggedIn();

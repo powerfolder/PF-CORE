@@ -39,12 +39,12 @@ public interface SecurityManager {
      * 
      * @param username
      *            the username of the login
-     * @param password
+     * @param credentials
      *            the password of the login
      * @return the account if acces is possible, null if user could not be
      *         logged in.
      */
-    Account authenticate(String username, char[] password);
+    Account authenticate(String username, Object credentials);
 
     /**
      * Authenticates the user.

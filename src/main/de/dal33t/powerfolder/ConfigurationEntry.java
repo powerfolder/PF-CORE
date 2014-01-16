@@ -453,6 +453,19 @@ public enum ConfigurationEntry {
      */
     SERVER_CONNECT_FROM_LAN_TO_INTERNET("server.connect.lan2internet", true),
 
+    // Kerberos settings ******************************************************
+
+    /**
+     * PFC-2446
+     */
+    KERBEROS_SSO_ENABLED("kerberos.sso.enabled", false),
+
+    KERBEROS_SSO_REALM("kerberos.sso.realm", "WORKGROUP"),
+
+    KERBEROS_SSO_KDC("kerberos.sso.kdc"),
+
+    KERBEROS_SSO_SERVICE_NAME("kerberos.sso.service_name", "service/powerfolder"), // + @realm
+
     // General settings *******************************************************
 
     /**
@@ -973,8 +986,8 @@ public enum ConfigurationEntry {
     PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600), // One hour default.
 
     SHOW_TINY_WIZARDS("show.tiny.wizards", false),
-    
-    SHOW_CREATE_FOLDER("show.create.folder", true),;
+
+    SHOW_CREATE_FOLDER("show.create.folder", true);
 
     // Methods/Constructors ***************************************************
 

@@ -20,12 +20,16 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.PrivilegedExceptionAction;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +40,15 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
+
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -69,6 +82,7 @@ import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -847,15 +861,30 @@ public class ServerClient extends PFComponent {
                 }
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
+                byte[] serviceTicket = null;
                 try {
                     if (isShibbolethLogin()) {
                         prepareShibbolethLogin(username, pw);
+                    }
+                    if (ConfigurationEntry.KERBEROS_SSO_ENABLED
+                        .getValueBoolean(getController()))
+                    {
+                        if (StringUtils.isNotBlank(thePasswordObj)) {
+                        }
+                        serviceTicket = prepareKerberosLogin();
                     }
                     if (shibUsername != null && shibToken != null) {
                         loginOk = securityService.login(shibUsername,
                             Util.toCharArray(shibToken));
                     } else {
-                        loginOk = securityService.login(username, pw);
+                        Object credentials = pw;
+                        if (StringUtils.isBlank(passwordObf)
+                            && ConfigurationEntry.KERBEROS_SSO_ENABLED
+                                .getValueBoolean(getController()))
+                        {
+                            credentials = serviceTicket;
+                        }
+                        loginOk = securityService.login(username, credentials);
                     }
                 } catch (RemoteCallException e) {
                     if (e.getCause() instanceof NoSuchMethodException) {
@@ -921,6 +950,43 @@ public class ServerClient extends PFComponent {
                 setAnonAccount();
                 fireLogin(accountDetails, false);
                 return accountDetails.getAccount();
+            } finally {
+                loggingIn.set(false);
+            }
+        }
+    }
+
+    private byte[] prepareKerberosLogin() {
+        synchronized (loginLock) {
+            try {
+                Path outputFile = Controller.getTempFilesLocation().resolve("login.conf");
+
+                if (Files.notExists(outputFile)) {
+                    InputStream configFile = Thread.currentThread()
+                        .getContextClassLoader()
+                        .getResourceAsStream("kerberos/login.conf");
+                    PathUtils.copyFromStreamToFile(configFile, outputFile);
+                }
+
+                System.setProperty("java.security.auth.login.config",
+                    outputFile.toAbsolutePath().toString());
+
+                System.setProperty("java.security.krb5.realm",
+                    ConfigurationEntry.KERBEROS_SSO_REALM
+                        .getValue(getController()));
+                System.setProperty("java.security.krb5.kdc",
+                    ConfigurationEntry.KERBEROS_SSO_KDC
+                        .getValue(getController()));
+
+                LoginContext lc = new LoginContext("SignedOnUserLoginContext");
+                lc.login();
+                Subject clientSubject = lc.getSubject();
+
+                username = clientSubject.getPrincipals().iterator().next().getName();
+                return Subject.doAs(clientSubject, new ServiceTicketGenerator());
+            } catch (Exception e) {
+                logWarning("Unable to login: " + e);
+                return null;
             } finally {
                 loggingIn.set(false);
             }
@@ -1969,6 +2035,35 @@ public class ServerClient extends PFComponent {
                         + getServerString() + ". " + e);
                 }
             }
+        }
+    }
+    
+    private class ServiceTicketGenerator implements
+        PrivilegedExceptionAction<byte[]>
+    {
+        public byte[] run() throws Exception {
+            Oid kerberos5Oid = new Oid("1.2.840.113554.1.2.2");
+            GSSManager gssManager = GSSManager.getInstance();
+            GSSName clientName = gssManager.createName(username,
+                GSSName.NT_USER_NAME);
+            GSSName serviceName = gssManager.createName(
+                ConfigurationEntry.KERBEROS_SSO_SERVICE_NAME
+                    .getValue(getController())
+                    + "@"
+                    + ConfigurationEntry.KERBEROS_SSO_REALM
+                        .getValue(getController()), null);
+
+            GSSCredential clientCredentials = gssManager.createCredential(
+                clientName, 8 * 60 * 60, kerberos5Oid,
+                GSSCredential.INITIATE_ONLY);
+
+            GSSContext gssContext = gssManager.createContext(serviceName,
+                kerberos5Oid, clientCredentials, GSSContext.DEFAULT_LIFETIME);
+
+            byte[] serviceTicket = gssContext.initSecContext(new byte[0], 0, 0);
+            gssContext.dispose();
+
+            return serviceTicket;
         }
     }
 }
