@@ -457,13 +457,24 @@ public enum ConfigurationEntry {
 
     /**
      * PFC-2446
+     * 
+     * Enable Single Sign-on via Kerberos
      */
     KERBEROS_SSO_ENABLED("kerberos.sso.enabled", false),
 
+    /**
+     * The Realm aka Domain
+     */
     KERBEROS_SSO_REALM("kerberos.sso.realm", "WORKGROUP"),
 
+    /**
+     * The Key Distribution Center
+     */
     KERBEROS_SSO_KDC("kerberos.sso.kdc"),
 
+    /**
+     * Kerberos service name, as registered at the Domain Controller
+     */
     KERBEROS_SSO_SERVICE_NAME("kerberos.sso.service_name", "service/powerfolder"), // + @realm
 
     // General settings *******************************************************
