@@ -50,6 +50,8 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 
+import com.sun.security.auth.callback.TextCallbackHandler;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -839,7 +841,7 @@ public class ServerClient extends PFComponent {
      * @return the identity with this username or <code>InvalidAccount</code> if
      *         login failed. NEVER returns <code>null</code>
      */
-    private Account login(String theUsername, String thePasswordObj,
+    public Account login(String theUsername, String thePasswordObj,
         boolean saveLastLogin)
     {
         logFine("Login with: " + theUsername);
@@ -851,7 +853,10 @@ public class ServerClient extends PFComponent {
                 if (saveLastLogin) {
                     saveLastKnowLogin(username, passwordObf);
                 }
-                if (!server.isConnected() || StringUtils.isBlank(passwordObf)) {
+                if (!server.isConnected()
+                    || (StringUtils.isBlank(passwordObf) && !ConfigurationEntry.KERBEROS_SSO_ENABLED
+                        .getValueBoolean(getController())))
+                {
                     // if (!server.isConnected()) {
                     // findAlternativeServer();
                     // }
@@ -957,39 +962,41 @@ public class ServerClient extends PFComponent {
     }
 
     private byte[] prepareKerberosLogin() {
-        synchronized (loginLock) {
-            try {
-                Path outputFile = Controller.getTempFilesLocation().resolve("login.conf");
+        try {
+            Path outputFile = Controller.getTempFilesLocation().resolve(
+                "login.conf");
 
-                if (Files.notExists(outputFile)) {
-                    InputStream configFile = Thread.currentThread()
-                        .getContextClassLoader()
-                        .getResourceAsStream("kerberos/login.conf");
-                    PathUtils.copyFromStreamToFile(configFile, outputFile);
-                }
+            if (Files.notExists(outputFile)) {
+                InputStream configFile = Thread.currentThread()
+                    .getContextClassLoader()
+                    .getResourceAsStream("kerberos/login.conf");
+                PathUtils.copyFromStreamToFile(configFile, outputFile);
+            }
 
-                System.setProperty("java.security.auth.login.config",
-                    outputFile.toAbsolutePath().toString());
+            System.setProperty("java.security.auth.login.config", outputFile
+                .toAbsolutePath().toString());
 
-                System.setProperty("java.security.krb5.realm",
+            System
+                .setProperty("java.security.krb5.realm",
                     ConfigurationEntry.KERBEROS_SSO_REALM
                         .getValue(getController()));
-                System.setProperty("java.security.krb5.kdc",
-                    ConfigurationEntry.KERBEROS_SSO_KDC
-                        .getValue(getController()));
+            String kdc = ConfigurationEntry.KERBEROS_SSO_KDC
+                .getValue(getController());
+            System.setProperty("java.security.krb5.kdc", kdc);
 
-                LoginContext lc = new LoginContext("SignedOnUserLoginContext");
-                lc.login();
-                Subject clientSubject = lc.getSubject();
+            LoginContext lc = new LoginContext("SignedOnUserLoginContext",
+                new TextCallbackHandler());
+            lc.login();
+            Subject clientSubject = lc.getSubject();
 
-                username = clientSubject.getPrincipals().iterator().next().getName();
-                return Subject.doAs(clientSubject, new ServiceTicketGenerator());
-            } catch (Exception e) {
-                logWarning("Unable to login: " + e);
-                return null;
-            } finally {
-                loggingIn.set(false);
-            }
+            username = clientSubject.getPrincipals().iterator().next()
+                .getName();
+            return Subject.doAs(clientSubject, new ServiceTicketGenerator());
+        } catch (Exception e) {
+            logWarning("Unable to login: " + e);
+            return null;
+        } finally {
+            loggingIn.set(false);
         }
     }
 
@@ -2042,6 +2049,7 @@ public class ServerClient extends PFComponent {
         PrivilegedExceptionAction<byte[]>
     {
         public byte[] run() throws Exception {
+            try {
             Oid kerberos5Oid = new Oid("1.2.840.113554.1.2.2");
             GSSManager gssManager = GSSManager.getInstance();
             GSSName clientName = gssManager.createName(username,
@@ -2062,8 +2070,12 @@ public class ServerClient extends PFComponent {
 
             byte[] serviceTicket = gssContext.initSecContext(new byte[0], 0, 0);
             gssContext.dispose();
-
             return serviceTicket;
+            } catch (Exception e) {
+                logWarning(e);
+                return null;
+            }
+
         }
     }
 }
