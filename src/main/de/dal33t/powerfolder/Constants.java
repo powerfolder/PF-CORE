@@ -365,6 +365,7 @@ public class Constants {
     public static final String UI_LOCK_UNLOCK_URI = "/unlock";
     public static final String LOGIN_URI = "/login";
     public static final String REGISTER_URI = "/register";
+    public static final String ACTIVATE_URI = "/activate";
     public static final String GET_LINK_URI = "/getlink";
     public static final String DL_LINK_URI = "/dl";
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";

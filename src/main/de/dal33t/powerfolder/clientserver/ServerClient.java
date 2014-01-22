@@ -693,7 +693,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL("/activate", false);
+        return getWebURL(Constants.ACTIVATE_URI, false);
     }
 
     /**
