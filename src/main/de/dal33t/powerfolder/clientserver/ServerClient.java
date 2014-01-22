@@ -784,6 +784,13 @@ public class ServerClient extends PFComponent {
         {
             un = systemUserName;
         }
+        
+        if (StringUtils.isBlank(un)
+            && (pw == null || pw.length == 0)
+            && ConfigurationEntry.KERBEROS_SSO_ENABLED
+                .getValueBoolean(getController())) {
+            un = systemUserName;
+        }
 
         if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
@@ -854,7 +861,8 @@ public class ServerClient extends PFComponent {
                     saveLastKnowLogin(username, passwordObf);
                 }
                 if (!server.isConnected()
-                    || (StringUtils.isBlank(passwordObf) && !ConfigurationEntry.KERBEROS_SSO_ENABLED
+                    || (StringUtils.isNotBlank(passwordObf)
+                        && !ConfigurationEntry.KERBEROS_SSO_ENABLED
                         .getValueBoolean(getController())))
                 {
                     // if (!server.isConnected()) {
@@ -874,9 +882,9 @@ public class ServerClient extends PFComponent {
                     if (ConfigurationEntry.KERBEROS_SSO_ENABLED
                         .getValueBoolean(getController()))
                     {
-                        if (StringUtils.isNotBlank(thePasswordObj)) {
+                        if (StringUtils.isBlank(passwordObf)) {
+                            serviceTicket = prepareKerberosLogin();
                         }
-                        serviceTicket = prepareKerberosLogin();
                     }
                     if (shibUsername != null && shibToken != null) {
                         loginOk = securityService.login(shibUsername,
@@ -1209,6 +1217,16 @@ public class ServerClient extends PFComponent {
      */
     public boolean isPasswordEmpty() {
         return StringUtils.isBlank(passwordObf);
+    }
+
+    /**
+     * 
+     * @return true if the password is empty and Single Sign-on via Kerberos is disabled.
+     */
+    public boolean isPasswordRequired() {
+        return StringUtils.isBlank(passwordObf)
+            && !ConfigurationEntry.KERBEROS_SSO_ENABLED
+                .getValueBoolean(getController());
     }
 
     /**
@@ -1987,7 +2005,10 @@ public class ServerClient extends PFComponent {
                     if (isLoggedIn() && securityService.isLoggedIn()) {
                         return;
                     }
-                    if (username != null && StringUtils.isNotBlank(passwordObf))
+                    if (username != null
+                        && (StringUtils.isNotBlank(passwordObf) || (StringUtils
+                            .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
+                            .getValueBoolean(getController()))))
                     {
                         logInfo("Auto-Login: Loginng in");
                         login(username, passwordObf, true);

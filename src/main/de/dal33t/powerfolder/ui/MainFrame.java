@@ -1130,7 +1130,10 @@ public class MainFrame extends PFUIComponent {
         if (StringUtils.isBlank(client.getUsername())) {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.account_not_set.text"));
-        } else if (client.isPasswordEmpty()) {
+        } else if (client.isPasswordEmpty()
+            && !ConfigurationEntry.KERBEROS_SSO_ENABLED
+                .getValueBoolean(getController()))
+        {
             loginActionLabel.setText(Translation
                 .getTranslation("main_frame.password_required.text"));
         } else if (client.isConnected()) {
@@ -1163,7 +1166,7 @@ public class MainFrame extends PFUIComponent {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
                     .getTranslation("main_frame.log_in_failed.text_click"));
-                if (!PFWizard.isWizardOpen()) {
+                if (!PFWizard.isWizardOpen() && client.isPasswordRequired()) {
                     PFWizard.openLoginWizard(getController(), client);
                 }
             }

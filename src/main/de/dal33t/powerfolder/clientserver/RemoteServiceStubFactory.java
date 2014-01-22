@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallRequest;
 import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallResponse;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.Util;
 
 public class RemoteServiceStubFactory {
@@ -115,13 +116,13 @@ public class RemoteServiceStubFactory {
                 LOG.log(Level.WARNING, "Call to remote service method ("
                     + method + ") executed in EDT thread. Args: "
                     + (args != null ? Arrays.asList(args) : "n/a"),
-                    new RuntimeException("here"));
+                    new StackDump());
             }
             if (ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()) {
                 LOG.log(Level.WARNING, "Call to remote service method ("
                     + method + ") executed Server/Member.handleMessage. Args: "
                     + (args != null ? Arrays.asList(args) : "n/a"),
-                    new RuntimeException("here"));
+                    new StackDump());
             }
             Identity id = remoteSide.getIdentity();
             RequestExecutor executor = new RequestExecutor(controller,

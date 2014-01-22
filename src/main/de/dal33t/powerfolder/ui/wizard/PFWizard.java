@@ -253,10 +253,6 @@ public class PFWizard extends PFUIComponent {
     public static void openLoginWizard(Controller controller,
         ServerClient client)
     {
-        if (ConfigurationEntry.KERBEROS_SSO_ENABLED.getValueBoolean(controller)) {
-            client.login("", new char[]{});
-            return;
-        }
         boolean tiny = ConfigurationEntry.SHOW_TINY_WIZARDS
             .getValueBoolean(controller);
         PFWizard wizard = new PFWizard(controller,
