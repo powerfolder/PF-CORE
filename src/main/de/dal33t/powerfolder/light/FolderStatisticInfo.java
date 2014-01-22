@@ -294,8 +294,9 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
                 return null;
             }
         } catch (IOException e) {
-            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
                 "Unable to read folder stats size from " + file + ". " + e);
+            return null;
         }
         try (InputStream fin = Files.newInputStream(file)) {
             ObjectInputStream oin = new ObjectInputStream(
@@ -309,7 +310,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             Logger.getLogger(FolderStatisticInfo.class.getName()).fine(
                 "Unable to read folder stats from " + file + ". " + e);
         } catch (OutOfMemoryError e) {
-            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
                 "Unable to read folder stats from " + file + ". " + e);
 
         }
