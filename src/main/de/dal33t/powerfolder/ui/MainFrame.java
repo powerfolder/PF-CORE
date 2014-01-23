@@ -660,12 +660,15 @@ public class MainFrame extends PFUIComponent {
         if (showSetupLabel) {
             setupLabel.setVisible(notStartedOrNoFolders);
         }
-        setupButton.setVisible(notStartedOrNoFolders);
+        setupButton.setVisible(notStartedOrNoFolders || !client.isLoginExecuted());
         allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
         syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
         syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
         syncIncompleteButton.setVisible(event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
-        notConnectedLoggedInLabel.setVisible(event.equals(SyncStatusEvent.NOT_CONNECTED) || event.equals(SyncStatusEvent.NOT_LOGGED_IN));
+        notConnectedLoggedInLabel.setVisible((event
+            .equals(SyncStatusEvent.NOT_CONNECTED) || event
+            .equals(SyncStatusEvent.NOT_LOGGED_IN))
+            && client.isLoginExecuted());
 
         // Default sync date.
         Date syncDate = folderRepositoryModel.getLastSyncDate();
@@ -710,7 +713,7 @@ public class MainFrame extends PFUIComponent {
                         "main_frame.sync_incomplete");
         } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
             upperText = Translation.getTranslation("main_frame.connecting.text");
-        } else if (event.equals(SyncStatusEvent.LOGGING_IN)) {
+        } else if (event.equals(SyncStatusEvent.LOGGING_IN) || !client.isLoginExecuted()) {
             upperText = Translation.getTranslation("main_frame.logging_in.text");
         } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
             upperText = Translation.getTranslation("main_frame.log_in_failed.text");
@@ -1158,7 +1161,7 @@ public class MainFrame extends PFUIComponent {
                         loginActionLabel.setText(s);
                     }
                 }
-            } else if (client.isLoggingIn()) {
+            } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
 //                loginActionLabel.setText(Translation
 //                    .getTranslation("main_frame.logging_in.text"));
                 loginActionLabel.setText("");

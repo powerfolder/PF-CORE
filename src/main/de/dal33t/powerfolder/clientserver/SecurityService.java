@@ -74,13 +74,13 @@ public interface SecurityService {
      *            the credentials
      * @return if login succeeded
      */
-    boolean login(String username, Object credentials);
+    boolean login(String username, Serializable credentials);
 
     /**
      * 
      * @return
      */
-    AccountDetails loginAndGetAccountDetails(String username, Object credentials);
+    AccountDetails loginAndGetAccountDetails(String username, Serializable credentials);
 
     /**
      * @return true if a user is logged in currently = has open session.

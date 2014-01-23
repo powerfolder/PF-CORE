@@ -126,6 +126,7 @@ public class ServerClient extends PFComponent {
     private Member server;
     private MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
+    private final AtomicBoolean loginExecuted = new AtomicBoolean(false);
 
     /**
      * ONLY FOR TESTS: If this client should connect to the server where it is
@@ -860,10 +861,12 @@ public class ServerClient extends PFComponent {
                 if (saveLastLogin) {
                     saveLastKnowLogin(username, passwordObf);
                 }
-                if (!server.isConnected()
-                    || (StringUtils.isNotBlank(passwordObf)
-                        && !ConfigurationEntry.KERBEROS_SSO_ENABLED
-                        .getValueBoolean(getController())))
+                boolean disconnected = !server.isConnected();
+                boolean pwEmpty = StringUtils.isNotBlank(passwordObf);
+                boolean noKerberosLogin = !isKerberosLogin();
+                if (disconnected
+                   && pwEmpty
+                    && noKerberosLogin)
                 {
                     // if (!server.isConnected()) {
                     // findAlternativeServer();
@@ -874,31 +877,22 @@ public class ServerClient extends PFComponent {
                 }
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
-                byte[] serviceTicket = null;
                 try {
                     if (isShibbolethLogin()) {
                         prepareShibbolethLogin(username, pw);
-                    }
-                    if (ConfigurationEntry.KERBEROS_SSO_ENABLED
-                        .getValueBoolean(getController()))
-                    {
-                        if (StringUtils.isBlank(passwordObf)) {
-                            serviceTicket = prepareKerberosLogin();
+                        if (shibUsername != null && shibToken != null) {
+                            loginOk = securityService.login(shibUsername,
+                                Util.toCharArray(shibToken));
                         }
-                    }
-                    if (shibUsername != null && shibToken != null) {
-                        loginOk = securityService.login(shibUsername,
-                            Util.toCharArray(shibToken));
+                    } else if (isKerberosLogin()) {
+                        byte[] serviceTicket = prepareKerberosLogin();
+                        loginOk = securityService
+                            .login(username, serviceTicket);
                     } else {
-                        Object credentials = pw;
-                        if (StringUtils.isBlank(passwordObf)
-                            && ConfigurationEntry.KERBEROS_SSO_ENABLED
-                                .getValueBoolean(getController()))
-                        {
-                            credentials = serviceTicket;
-                        }
-                        loginOk = securityService.login(username, credentials);
+                        loginOk = securityService.login(username, pw);
                     }
+                    
+                    loginExecuted.set(true);
                 } catch (RemoteCallException e) {
                     if (e.getCause() instanceof NoSuchMethodException) {
                         // Old server version (Pre 1.5.0 or older)
@@ -969,6 +963,12 @@ public class ServerClient extends PFComponent {
         }
     }
 
+    private boolean isKerberosLogin() {
+        return ConfigurationEntry.KERBEROS_SSO_ENABLED
+            .getValueBoolean(getController())
+            && StringUtils.isBlank(passwordObf);
+    }
+    
     private byte[] prepareKerberosLogin() {
         try {
             Path outputFile = Controller.getTempFilesLocation().resolve(
@@ -1205,6 +1205,13 @@ public class ServerClient extends PFComponent {
         return getAccount() != null && getAccount().isValid();
     }
 
+    /**
+     * @return true if once a login call to the server was successfully executed.
+     */
+    public boolean isLoginExecuted() {
+        return loginExecuted.get();
+    }
+    
     /**
      * @return the username that is set for login.
      */
@@ -2010,7 +2017,7 @@ public class ServerClient extends PFComponent {
                             .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
                             .getValueBoolean(getController()))))
                     {
-                        logInfo("Auto-Login: Loginng in");
+                        logInfo("Auto-Login: Logging in");
                         login(username, passwordObf, true);
                     }
                 }
