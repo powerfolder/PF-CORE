@@ -475,7 +475,7 @@ public enum ConfigurationEntry {
     /**
      * Kerberos service name, as registered at the Domain Controller
      */
-    KERBEROS_SSO_SERVICE_NAME("kerberos.sso.service_name", "service/powerfolder"), // + @realm
+    KERBEROS_SSO_SERVICE_NAME("kerberos.sso.service_name", "powerfolder/hostname"), // + @realm
 
     // General settings *******************************************************
 
