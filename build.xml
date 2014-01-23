@@ -73,7 +73,7 @@ For creation of the installer:
 	</target>
 	
 	<target name="detect-version" depends="loadproperties" unless="MajorVersion">
-		<script language="javascript" manager="bsf" classpath="lib/ant-apache-bsf-1.9.2.jar:lib-build/bsf.jar:lib-build/js.jar:lib-build/commons-logging-1.1.1.jar"><![CDATA[
+		<script language="javascript" manager="bsf" classpath="lib-build/ant-apache-bsf-1.9.2.jar:lib-build/bsf.jar:lib-build/js.jar:lib-build/commons-logging-1.1.1.jar"><![CDATA[
 			var prjDir = project.getProperty("powerfolder.project.dir");
 			if (!prjDir)  {
 				prjDir = '../PF-CORE';
