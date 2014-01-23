@@ -90,6 +90,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
+    public static final String PROPERTYNAME_OTP = "otp";
     public static final String PROPERTYNAME_LDAPDN = "ldapDN";
     public static final String PROPERTYNAME_SHIBBOLETH_PERSISTENT_ID = "shibbolethPersistentID";
     public static final String PROPERTYNAME_LANGUAGE = "language";
@@ -118,6 +119,9 @@ public class Account implements Serializable {
     @Column(nullable = false, unique = true)
     private String username;
     private String password;
+    // PFS-862: One time token password
+    @Index(name = "IDX_AOTP")
+    private String otp;
     private String language;
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
@@ -530,9 +534,20 @@ public class Account implements Serializable {
         return LoginUtil.matches(pwCandidate, password);
     }
 
+    //  PFS-862: OTP Handling
+
+    public boolean isOTPValid() {
+        return LoginUtil.isOTPValid(otp);
+    }
+
+    public String generateAndSetOTP() {
+        this.otp = LoginUtil.generateOTP();
+        return this.otp;
+    }
+
     /**
      * setLanguage Set account language
-     *
+     * 
      * @return Selected language
      */
 

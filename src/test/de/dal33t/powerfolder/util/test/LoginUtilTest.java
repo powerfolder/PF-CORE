@@ -30,7 +30,7 @@ public class LoginUtilTest extends TestCase {
         obf = LoginUtil.obfuscate(password.toCharArray());
         assertEquals(password.length(), LoginUtil.deobfuscate(obf).length);
         assertEquals(password, new String(LoginUtil.deobfuscate(obf)));
-        
+
         password = "EsJs3XngawbCkMurIibtzQD23+OVPFjh2+uB4A8LaEA=";
         obf = LoginUtil.obfuscate(password.toCharArray());
         assertEquals(password.length(), LoginUtil.deobfuscate(obf).length);
@@ -45,5 +45,27 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.matches(null, hasedSalted));
         // Legacy support.
         assertTrue(LoginUtil.matches("XXX".toCharArray(), "XXX"));
+    }
+
+    public void testOTP() {
+        // Valid
+        for (int i = 0; i < 10000; i++) {
+            String otp = LoginUtil.generateOTP(1000L);
+            // 11BrLcYZedRqKqHhdy2sWhT2WCrNrxDEdSvDGgYDzCsFs58BRxYWG
+            assertTrue(otp.length() >= 53);
+            assertTrue(LoginUtil.isOTPValid(otp));
+        }
+
+        // Expired
+        String otp = LoginUtil.generateOTP(500L);
+        assertTrue(LoginUtil.isOTPValid(otp));
+        TestHelper.waitMilliSeconds(600);
+        assertFalse(LoginUtil.isOTPValid(otp));
+
+        // Illegal stuff
+        assertFalse(LoginUtil.isOTPValid(null));
+        assertFalse(LoginUtil.isOTPValid("HACK"));
+        assertFalse(LoginUtil
+            .isOTPValid("30957s0cuxpcfeärl43#r3ä2ö43täö4eäföedäfgsdägösdägösäfdglsd08g7sa0g7w098470387"));
     }
 }

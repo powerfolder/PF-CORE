@@ -46,6 +46,10 @@ public class LoginUtil {
     private static final int OBF_BYTE = 0xAA;
     public static final String MD5_HASH_DIGEST = "MD5";
     public static final String SHA256_HASH_DIGEST = "SHA-256";
+    /**
+     * PFS-862: OTP validity
+     */
+    public static final long OTP_DEFAULT_VALIDITY_PERIOD = 1000L * 60;
 
     /**
      * Obfuscates a password into String. This does NOT mean the password is
@@ -233,6 +237,59 @@ public class LoginUtil {
         }
     }
 
+    public static String generateOTP() {
+        return generateOTP(OTP_DEFAULT_VALIDITY_PERIOD);
+    }
+
+    public static String generateOTP(long validMS) {
+        long validTill = System.currentTimeMillis() + validMS;
+        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.putLong(validTill);
+        byte[] vArr = buffer.array();
+
+        byte[] b1 = IdGenerator.makeIdBytes();
+        byte[] b2 = IdGenerator.makeIdBytes();
+
+        byte[] otpArr = new byte[vArr.length + b1.length + b2.length];
+
+        System.arraycopy(vArr, 0, otpArr, 0, vArr.length);
+        System.arraycopy(b1, 0, otpArr, vArr.length, b1.length);
+        System.arraycopy(b2, 0, otpArr, vArr.length + b1.length, b2.length);
+
+        String otp = Base58.encode(otpArr);
+        return otp;
+    }
+
+    public static boolean isOTPValid(String otp) {
+        if (StringUtils.isBlank(otp)) {
+            return false;
+        }
+        byte[] otpArr;
+        try {
+            otpArr = Base58.decode(otp);
+        } catch (Exception e) {
+            // Illegal OTP
+            return false;
+        }
+        if (otpArr.length < 8) {
+            return false;
+        }
+
+        long validTill;
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(8);
+            buffer.put(otpArr, 0, 8);
+            buffer.flip();// need flip
+            validTill = buffer.getLong();
+        } catch (Exception e) {
+            return false;
+        }
+
+        // System.out.println("OTP: " + otp + " Valid till: "
+        // + new Date(validTill));
+        return System.currentTimeMillis() <= validTill;
+    }
+
     /**
      * PFS-569: Hack alert!
      * 
@@ -338,7 +395,7 @@ public class LoginUtil {
     /**
      * Calculates the SHA digest and returns the value as a 16 element
      * {@code byte[]}.
-     *
+     * 
      * @param data
      *            Data to digest
      * @return digest
@@ -349,13 +406,12 @@ public class LoginUtil {
 
     /**
      * Returns a MessageDigest for the given {@code algorithm}.
-     *
+     * 
      * @param algorithm
      *            The MessageDigest algorithm name.
      * @return An MD5 digest instance.
      * @throws RuntimeException
-     *             when a {@link NoSuchAlgorithmException} is
-     *             caught,
+     *             when a {@link NoSuchAlgorithmException} is caught,
      */
     private static MessageDigest getDigest(String algorithm) {
         try {
@@ -370,8 +426,7 @@ public class LoginUtil {
      * 
      * @return An MD5 digest instance.
      * @throws RuntimeException
-     *             when a {@link NoSuchAlgorithmException} is
-     *             caught,
+     *             when a {@link NoSuchAlgorithmException} is caught,
      */
     private static MessageDigest getPreferredDigest() {
         return getDigest(SHA256_HASH_DIGEST);
