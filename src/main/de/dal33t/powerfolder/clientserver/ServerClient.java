@@ -862,7 +862,7 @@ public class ServerClient extends PFComponent {
                     saveLastKnowLogin(username, passwordObf);
                 }
                 boolean disconnected = !server.isConnected();
-                boolean pwEmpty = StringUtils.isNotBlank(passwordObf);
+                boolean pwEmpty = StringUtils.isBlank(passwordObf);
                 boolean noKerberosLogin = !isKerberosLogin();
                 if (disconnected
                    && pwEmpty
