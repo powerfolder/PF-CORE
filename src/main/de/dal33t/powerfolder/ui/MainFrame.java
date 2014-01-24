@@ -100,6 +100,7 @@ import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -489,17 +490,18 @@ public class MainFrame extends PFUIComponent {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
-                    try {
-                        if (StringUtils.isBlank(client.getUsername())) {
-                            PFWizard.openLoginWizard(getController(), client);
-                        } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
-                            .getValueBoolean(getController()))
+                    if (StringUtils.isBlank(client.getUsername())) {
+                        PFWizard.openLoginWizard(getController(), client);
+                    } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+                        .getValueBoolean(getController()))
+                    {
+                        BrowserLauncher.open(getController(), new URLProducer()
                         {
-                            BrowserLauncher.openURL(client.getWebURL(
-                                Constants.MY_ACCOUNT_URI, true));
-                        }
-                    } catch (IOException ex) {
-                        logSevere(ex);
+                            public String url() {
+                                return client.getWebURL(
+                                    Constants.MY_ACCOUNT_URI, true);
+                            }
+                        });
                     }
                 }
             }
@@ -1369,14 +1371,9 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             // PFC-2349 : Don't freeze UI
-            getController().getIOProvider().startIO(new Runnable() {
-                public void run() {
-                    try {
-                        BrowserLauncher.openURL(client
-                            .getLoginURLWithCredentials());
-                    } catch (IOException e1) {
-                        logWarning("Unable to open web portal", e1);
-                    }
+            BrowserLauncher.open(getController(), new URLProducer() {
+                public String url() {
+                    return client.getLoginURLWithCredentials();
                 }
             });
         }
