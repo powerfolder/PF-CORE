@@ -165,12 +165,16 @@ public class LoginUtil {
             url += Constants.LOGIN_PARAM_USERNAME;
             url += "=";
             url += Util.endcodeForURL(username);
-            if (StringUtils.isNotBlank(passwordObf)) {
-                url += "&";
-                url += Constants.LOGIN_PARAM_PASSWORD_OBF;
-                url += "=";
-                url += Util.endcodeForURL(passwordObf);
+        }
+        if (StringUtils.isNotBlank(passwordObf)) {
+            if (url.contains("?")) {
+                url += "&";                
+            } else {
+                url += "?";
             }
+            url += Constants.LOGIN_PARAM_PASSWORD_OBF;
+            url += "=";
+            url += Util.endcodeForURL(passwordObf);
         }
         return url;
     }
