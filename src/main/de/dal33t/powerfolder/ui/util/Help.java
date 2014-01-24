@@ -19,18 +19,16 @@
  */
 package de.dal33t.powerfolder.ui.util;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkJButton;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * A general class to open help topics.
@@ -59,12 +57,8 @@ public class Help {
             return;
         }
         LOG.fine("Opening quickstart guides");
-        try {
-            BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_QUICKSTART_URL
-                .getValue(controller));
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to open quickstart guides", e);
-        }
+        BrowserLauncher.openURL(controller,
+            ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
     }
 
     /**
@@ -75,11 +69,8 @@ public class Help {
      */
     public static void openWikiArticle(Controller controller, String article) {
         LOG.fine("Opening wiki article '" + article + '\'');
-        try {
-            BrowserLauncher.openURL(getWikiArticleURL(controller, article));
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to open quickstart guides", e);
-        }
+        BrowserLauncher.openURL(controller,
+            getWikiArticleURL(controller, article));
     }
 
     /**
