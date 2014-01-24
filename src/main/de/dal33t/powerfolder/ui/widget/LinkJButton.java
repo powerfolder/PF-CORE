@@ -19,14 +19,15 @@
 */
 package de.dal33t.powerfolder.ui.widget;
 
-import de.dal33t.powerfolder.util.BrowserLauncher;
-
-import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.Icon;
+
+import de.dal33t.powerfolder.util.BrowserLauncher;
 
 /**
  * A JButton that links to a URL.
