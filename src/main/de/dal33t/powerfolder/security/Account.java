@@ -536,6 +536,10 @@ public class Account implements Serializable {
 
     //  PFS-862: OTP Handling
 
+    public String getOTP() {
+        return otp;
+    }
+    
     public boolean isOTPValid() {
         return LoginUtil.isOTPValid(otp);
     }
