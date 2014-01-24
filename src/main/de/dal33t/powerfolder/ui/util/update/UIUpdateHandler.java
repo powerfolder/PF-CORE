@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.ui.util.update;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +9,15 @@ import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.update.UpdaterEvent;
 import de.dal33t.powerfolder.util.update.UpdaterHandler;
 
@@ -138,13 +137,9 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                 }
             }
         } else if (option == gotoHomepage) {
-            try {
-                // Open explorer
-                BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
-                    .getValue(getController()));
-            } catch (IOException e) {
-                logFiner(e);
-            }
+            // Open explorer
+            BrowserLauncher.openURL(getController(),
+                ConfigurationEntry.PROVIDER_URL.getValue(getController()));
         } else if (option == nothingNeverAsk) {
             // Never ask again
             PreferencesEntry.CHECK_UPDATE.setValue(getController(), false);
