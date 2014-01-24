@@ -57,7 +57,6 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -69,6 +68,7 @@ import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -500,12 +500,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     });
                 }
 
-                final String linkURL = client.getFileLinkURL(fInfo);
-                try {
-                    BrowserLauncher.openURL(linkURL);
-                } catch (IOException e) {
-                    logWarning("Unable to open in browser: " + linkURL);
-                }
+                BrowserLauncher.open(getController(), new URLProducer() {
+                    public String url() {
+                        return client.getFileLinkURL(fInfo);
+                    }
+                });
 
                 return;
             }
