@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -199,11 +198,7 @@ public class ProblemsTab extends PFUIComponent {
             String wikiArticleURL = Help.getWikiArticleURL(getController(),
                 problem.getWikiLinkKey());
             if (StringUtils.isNotBlank(wikiArticleURL)) {
-                try {
-                    BrowserLauncher.openURL(wikiArticleURL);
-                } catch (IOException e1) {
-                    logSevere("IOException", e1);
-                }
+                BrowserLauncher.openURL(getController(), wikiArticleURL);
             }
         }
     }
