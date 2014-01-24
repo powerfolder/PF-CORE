@@ -544,6 +544,10 @@ public class Account implements Serializable {
         this.otp = LoginUtil.generateOTP();
         return this.otp;
     }
+    
+    public void invalidateOTP() {
+        this.otp = null;
+    }
 
     /**
      * setLanguage Set account language
