@@ -549,6 +549,27 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
+
+        // PFS-862: Start
+        if (isLoggedIn()) {
+            try {
+                String otp = getSecurityService().requestOTP();
+                if (isFine()) {
+                    logFine("Retrieved OTP for "
+                        + accountDetails.getAccount().getUsername() + ": "
+                        + otp);
+                }
+                if (LoginUtil.isOTPValid(otp)) {
+                    return LoginUtil.decorateURL(
+                        getWebURL(Constants.LOGIN_URI, false), null, otp);
+                }
+            } catch (Exception e) {
+                // Not supported. Maybe old server version. Ignore
+                logFine("Unable to generate OTP. " + e);
+            }
+        }
+        // PFS-862: End
+
         if (!ConfigurationEntry.WEB_PASSWORD_ALLOWED
             .getValueBoolean(getController()))
         {
