@@ -236,20 +236,16 @@ public class UIUnLockDialog extends PFUIComponent {
             }
         });
 
-        JButton helpButton = new JButton(Translation
-            .getTranslation("uilock.dialog.help"));
+        JButton helpButton = new JButton(
+            Translation.getTranslation("uilock.dialog.help"));
         helpButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    BrowserLauncher.openURL(Help.getWikiArticleURL(
-                        getController(), WikiLinks.UI_LOCK));
-                } catch (IOException ex) {
-                    logWarning(ex);
-                }
+                BrowserLauncher.openURL(getController(),
+                    Help.getWikiArticleURL(getController(), WikiLinks.UI_LOCK));
             }
         });
-        JButton exitButton = new JButton(Translation
-            .getTranslation("uilock.dialog.exit"));
+        JButton exitButton = new JButton(
+            Translation.getTranslation("uilock.dialog.exit"));
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 exit();
