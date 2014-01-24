@@ -119,6 +119,7 @@ import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.util.update.UIUpdateHandler;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -467,12 +468,12 @@ public class UIController extends PFComponent {
                         }
                     });
                 } else if (COMMAND_WEB.equals(e.getActionCommand())) {
-                    try {
-                        BrowserLauncher.openURL(getController().getOSClient()
-                            .getLoginURLWithCredentials());
-                    } catch (IOException e1) {
-                        logWarning("Unable to goto web portal", e1);
-                    }
+                    BrowserLauncher.open(getController(), new URLProducer() {
+                        public String url() {
+                            return getController().getOSClient()
+                                .getLoginURLWithCredentials();
+                        }
+                    });
                 } else if (COMMAND_BROWSE.equals(e.getActionCommand())) {
                     PathUtils.openFile(getController().getFolderRepository()
                         .getFoldersBasedir());
