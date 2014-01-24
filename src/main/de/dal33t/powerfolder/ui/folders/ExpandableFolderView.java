@@ -27,7 +27,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
@@ -95,6 +94,7 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -1932,15 +1932,14 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            ServerClient client = getController().getOSClient();
+            final ServerClient client = getController().getOSClient();
             if (client.supportsWebLogin()) {
-                try {
-                    String folderURL = client
-                        .getFolderURLWithCredentials(folderInfo);
-                    BrowserLauncher.openURL(folderURL);
-                } catch (IOException e1) {
-                    logSevere(e1);
-                }
+                BrowserLauncher.open(getController(), new URLProducer() {
+                    public String url() {
+                        return client.getFolderURLWithCredentials(folder
+                            .getInfo());
+                    }
+                });
             }
         }
     }
