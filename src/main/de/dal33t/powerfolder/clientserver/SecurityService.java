@@ -92,6 +92,13 @@ public interface SecurityService {
      */
     void logout();
 
+    /**
+     * PFS-862
+     * 
+     * @return the valid OTP. Usable once within the next minute only.
+     */
+    String requestOTP();
+
     // Nodes information retrieval ********************************************
 
     /**
