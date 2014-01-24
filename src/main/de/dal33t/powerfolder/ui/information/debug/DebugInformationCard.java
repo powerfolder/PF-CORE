@@ -24,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
 import java.util.logging.Level;
 
 import javax.swing.JButton;
@@ -154,13 +153,9 @@ public class DebugInformationCard extends InformationCard {
                     @Override
                     public void run() {
                         PathUtils.openFile(LoggingManager.getDebugDir());
-                        try {
-                            BrowserLauncher
-                                .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
-                                    .getValue(getController()));
-                        } catch (IOException ex) {
-                            logSevere("Problems opening browser ", ex);
-                        }
+                        BrowserLauncher.openURL(getController(),
+                            ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
+                                .getValue(getController()));
                     }
                 };
                 getController().getIOProvider().startIO(r);
