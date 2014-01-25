@@ -1521,6 +1521,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                     if (PathUtils.isDesktopIni(entry)) {
                         return false;
                     }
+                    if (entry.getFileName().toString().toLowerCase()
+                        .endsWith(".lnk"))
+                    {
+                        return false;
+                    }
                     try {
                         if (Files.isHidden(entry)) {
                             return false;
