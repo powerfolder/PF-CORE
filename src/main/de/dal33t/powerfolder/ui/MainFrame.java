@@ -1158,13 +1158,13 @@ public class MainFrame extends PFUIComponent {
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
-                    String s = client.getUsername();
+                    String s = ad.getAccount().getDisplayName();
                     if (!StringUtils.isEmpty(s)) {
                         loginActionLabel.setText(s);
                     }
                 }
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
-//                loginActionLabel.setText(Translation
+                // loginActionLabel.setText(Translation
 //                    .getTranslation("main_frame.logging_in.text"));
                 loginActionLabel.setText("");
             } else {
