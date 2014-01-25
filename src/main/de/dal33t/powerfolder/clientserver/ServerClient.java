@@ -886,9 +886,6 @@ public class ServerClient extends PFComponent {
                 boolean pwEmpty = StringUtils.isBlank(passwordObf);
                 boolean noKerberosLogin = !isKerberosLogin();
                 if (disconnected || (pwEmpty && noKerberosLogin)) {
-                    // if (!server.isConnected()) {
-                    // findAlternativeServer();
-                    // }
                     setAnonAccount();
                     fireLogin(accountDetails);
                     return accountDetails.getAccount();
