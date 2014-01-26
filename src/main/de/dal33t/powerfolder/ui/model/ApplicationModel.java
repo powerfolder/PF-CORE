@@ -194,7 +194,7 @@ public class ApplicationModel extends PFUIComponent {
                 long storageSize = client.getAccount().getOSSubscription()
                     .getStorageSize();
                 long used = client.getAccountDetails().getSpaceUsed();
-                if (used >= storageSize * 9 / 10) {
+                if ((storageSize + used) > 0 && used >= storageSize * 9 / 10) {
                     // More than 90% used. Notify.
                     WarningNotice notice = new WarningNotice(
                         Translation.getTranslation("warning_notice.title"),
