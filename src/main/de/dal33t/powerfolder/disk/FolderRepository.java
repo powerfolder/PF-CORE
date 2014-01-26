@@ -2160,8 +2160,17 @@ public class FolderRepository extends PFComponent implements Runnable {
                         // Skin if not fully connected
                         continue;
                     }
-                    if (!member.hasCompleteFileListFor(folder.getInfo())) {
-                        // Might still be transferring those filelists.
+                    Date lastConnectTime = member.getLastConnectTime();
+                    if (lastConnectTime == null) {
+                        continue;
+                    }
+                    long connectAgo = System.currentTimeMillis()
+                        - lastConnectTime.getTime();
+                    if (!member.hasCompleteFileListFor(folder.getInfo())
+                        && connectAgo < 1000L * 60)
+                    {
+                        // Might still be transferring those filelists within
+                        // the first minute.
                         continue;
                     }
                     int nMemberItems = folder.getDAO().count(member.getId(),
