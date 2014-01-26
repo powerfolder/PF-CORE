@@ -2488,12 +2488,15 @@ public class Controller extends PFComponent {
      */
     private Path getConfigLocationBase() {
         // First check if we have a config file in local path
-        Path aConfigFile = Paths.get(getConfigName() + ".config").toAbsolutePath();
+        Path aConfigFile = Paths.get(getConfigName() + ".config")
+            .toAbsolutePath();
 
         // Load configuration in misc file if config file if in
         if (OSUtil.isWebStart() || Files.notExists(aConfigFile)) {
-            logFine("Config location base: "
-                + getMiscFilesLocation().toString());
+            if (isFiner()) {
+                logFiner("Config location base: "
+                    + getMiscFilesLocation().toString());
+            }
             return getMiscFilesLocation();
         }
 
