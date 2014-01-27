@@ -417,6 +417,16 @@ public class Folder extends PFComponent {
         transferPriorities = new TransferPriorities();
 
         diskItemFilter = new DiskItemFilter();
+
+        // Initialize the DAO
+        initFileInfoDAO();
+        checkIfDeviceDisconnected();
+
+        members = new ConcurrentHashMap<Member, Member>();
+
+        // Load folder database, ignore patterns and other metadata stuff.
+        loadMetadata();
+        
         // PFS-457: Start
         if (StringUtils.isNotBlank(folderSettings.getExcludes())) {
             String separator = folderSettings.getExcludes().contains(",")
@@ -432,15 +442,6 @@ public class Folder extends PFComponent {
             }
         }
         // PFS-457: End
-
-        // Initialize the DAO
-        initFileInfoDAO();
-        checkIfDeviceDisconnected();
-
-        members = new ConcurrentHashMap<Member, Member>();
-
-        // Load folder database, ignore patterns and other metadata stuff.
-        loadMetadata();
 
         // put myself in membership
         // join0(controller.getMySelf());
