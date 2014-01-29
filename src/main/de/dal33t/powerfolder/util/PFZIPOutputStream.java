@@ -52,6 +52,18 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
         writeHeader();
     }
 
+    @Override
+    public void close() throws IOException {
+        super.close();
+        try {
+            // Workaround for: PFS-1172: http://bugs.java.com/view_bug.do?bug_id=4797189
+            if (def != null) {
+                def.end();                
+            }
+        } catch (Exception e) {
+        }
+    }
+
     /**
      * Creates a new output stream with a default buffer size.
      * 
