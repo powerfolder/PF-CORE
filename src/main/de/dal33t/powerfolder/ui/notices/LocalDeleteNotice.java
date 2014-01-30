@@ -50,7 +50,8 @@ public class LocalDeleteNotice extends NoticeBase {
                         controller,
                         Translation.getTranslation("local_delete_notice.title"),
                         Translation.getTranslation(
-                            "local_delete_notice.message", folderInfo.name),
+                            "local_delete_notice.message",
+                            folderInfo.getLocalizedName()),
                         new String[]{
                             Translation
                                 .getTranslation("local_delete_notice.broadcast_deletions"),
