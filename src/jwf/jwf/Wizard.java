@@ -46,9 +46,9 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class Wizard extends JPanel implements ActionListener {
 
     // Wizard sizes
-    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(400,
+    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(430,
         355);
-    public static final Dimension WIZARD_TINY_MAC_WINDOW_SIZE = new Dimension(400,
+    public static final Dimension WIZARD_TINY_MAC_WINDOW_SIZE = new Dimension(430,
         355);
 
     public static final Dimension WIZARD_BIG_WINDOW_SIZE = new Dimension(
