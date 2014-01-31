@@ -111,6 +111,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_FIRSTNAME = "firstname";
     public static final String PROPERTYNAME_SURNAME = "surname";
     public static final String PROPERTYNAME_TELEPHONE = "telephone";
+    public static final String PROPERTYNAME_EMAILS = "emails";
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
 
     @Id
