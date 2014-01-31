@@ -48,7 +48,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class FolderWatcher extends PFComponent {
 
-    private static final boolean UNREGISTER_WATCHERS = true;
     private static Boolean LIB_LOADED;
 
     private Folder folder;
@@ -142,13 +141,6 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         if (watchID >= 0) {
-            if (!UNREGISTER_WATCHERS) {
-                logWarning("NOT unregistering filesystem watcher from "
-                    + folder
-                    + " to prevent crash. Ignoring further filesystem events");
-                watchID = -1;
-                return;
-            }
             try {
                 JNotify.removeWatch(watchID);
             } catch (JNotifyException e) {
@@ -190,11 +182,16 @@ public class FolderWatcher extends PFComponent {
         }
         delay = 1000L * ConfigurationEntry.FOLDER_WATCHER_DELAY
             .getValueInt(getController());
+        if (watchID >= 0) {
+            // Do not re-register again.
+            return;
+        }
         boolean watchSubtree = true;
         try {
             watchID = JNotify.addWatch(path, JNotify.FILE_ANY, watchSubtree,
                 listener);
-            logFine("Initialized filesystem watch on " + path + " / " + folder);
+            logWarning("Initialized filesystem watch(" + watchID + ") on "
+                + path + " / " + folder);
         } catch (JNotifyException e) {
             logSevere("Unable to initialize filesystem watch for " + folder
                 + ". " + e);
@@ -223,8 +220,12 @@ public class FolderWatcher extends PFComponent {
             if (ignoreAll) {
                 return;
             }
+            if (!folder.isStarted()) {
+                return;
+            }
             FileInfo dirtyFile = null;
             try {
+                
                 List<FileInfo> fileInfos = new LinkedList<FileInfo>();
                 if (folder.checkIfDeviceDisconnected()) {
                     logFine("Device disconnected while scanning " + folder
