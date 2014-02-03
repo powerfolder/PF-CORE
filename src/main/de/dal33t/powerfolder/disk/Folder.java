@@ -855,7 +855,7 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-            if (!schemaZyncro) {
+            updateFileOwnerIfNecessary(targetFile, fInfo);
                 if (Files.exists(targetFile)) {
                     // if file was a "newer file" the file already exists here
                     // Using local var because of possible race condition!!
@@ -899,33 +899,6 @@ public class Folder extends PFComponent {
                         return false;
                     }
                 }
-            } else {
-                try {
-                    AccountInfo aInfo = fInfo.getModifiedBy()
-                        .getNode(getController(), true).getAccountInfo();
-
-                    if (aInfo != null) {
-                        String username = aInfo.getUsername();
-                        FileSystem fs = targetFile.getFileSystem();
-                        UserPrincipalLookupService upls = fs
-                            .getUserPrincipalLookupService();
-                        UserPrincipal up = upls.lookupPrincipalByName(username);
-
-                        if (up != null) {
-                            Files.setOwner(targetFile, up);
-                        } else {
-                            logInfo("Could not find user '" + username
-                                + "' to set as owner");
-                        }
-                    } else {
-                        logWarning("Could not find an account for file '"
-                            + fInfo.toString() + "'");
-                    }
-                } catch (Exception e) {
-                    logWarning("Could not set owner to " + targetFile.toString()
-                        + ": " + e);
-                }
-            }
 
             boolean copyAfterTransfer = schemaZyncro
                 || ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
@@ -1010,6 +983,43 @@ public class Folder extends PFComponent {
         return null;
     }
 
+    /**
+     * Set a new owner, if necessary (e. g. on Zyncro system).
+     * 
+     * @param targetFile
+     * @param fInfo
+     */
+    private void updateFileOwnerIfNecessary(Path targetFile, FileInfo fInfo) {
+        if (!schemaZyncro) {
+            return;
+        }
+        try {
+            AccountInfo aInfo = fInfo.getModifiedBy()
+                .getNode(getController(), true).getAccountInfo();
+
+            if (aInfo != null) {
+                String username = aInfo.getUsername();
+                FileSystem fs = targetFile.getFileSystem();
+                UserPrincipalLookupService upls = fs
+                    .getUserPrincipalLookupService();
+                UserPrincipal up = upls.lookupPrincipalByName(username);
+
+                if (up != null) {
+                    Files.setOwner(targetFile, up);
+                } else {
+                    logInfo("Could not find user '" + username
+                        + "' to set as owner");
+                }
+            } else {
+                logWarning("Could not find an account for file '"
+                    + fInfo.toString() + "'");
+            }
+        } catch (Exception e) {
+            logWarning("Could not set owner to " + targetFile.toString()
+                + ": " + e);
+        }
+    }
+    
     /**
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread safe. In most cases you want to use
@@ -1495,6 +1505,7 @@ public class Folder extends PFComponent {
         watcher.addIgnoreFile(dirInfo);
         try {
             synchronized (scanLock) {
+                updateFileOwnerIfNecessary(dir, dirInfo);
                 if (dirInfo.isDeleted()) {
                     try {
                         Files.deleteIfExists(dir);
