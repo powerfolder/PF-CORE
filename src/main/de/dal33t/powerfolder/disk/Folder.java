@@ -856,49 +856,49 @@ public class Folder extends PFComponent {
             }
 
             updateFileOwnerIfNecessary(targetFile, fInfo);
-                if (Files.exists(targetFile)) {
-                    // if file was a "newer file" the file already exists here
-                    // Using local var because of possible race condition!!
-                    FileArchiver arch = archiver;
-                    if (arch != null) {
-                        try {
-                            FileInfo oldLocalFileInfo = fInfo
-                                .getLocalFileInfo(getController()
-                                    .getFolderRepository());
-                            if (oldLocalFileInfo != null) {
-                                arch.archive(oldLocalFileInfo, targetFile,
-                                    false);
+            
+            if (Files.exists(targetFile)) {
+                // if file was a "newer file" the file already exists here
+                // Using local var because of possible race condition!!
+                FileArchiver arch = archiver;
+                if (arch != null) {
+                    try {
+                        FileInfo oldLocalFileInfo = fInfo
+                            .getLocalFileInfo(getController()
+                                .getFolderRepository());
+                        if (oldLocalFileInfo != null) {
+                            arch.archive(oldLocalFileInfo, targetFile, false);
 
-                                if (!currentInfo.isMetaFolder()
-                                    && ConfigurationEntry.CONFLICT_DETECTION
-                                        .getValueBoolean(getController()))
-                                {
-                                    try {
-                                        doSimpleConflictDetection(fInfo,
-                                            oldLocalFileInfo);
-                                    } catch (Exception e) {
-                                        logSevere("Problem withe conflict detection. "
-                                            + e);
-                                    }
+                            if (!currentInfo.isMetaFolder()
+                                && ConfigurationEntry.CONFLICT_DETECTION
+                                    .getValueBoolean(getController()))
+                            {
+                                try {
+                                    doSimpleConflictDetection(fInfo,
+                                        oldLocalFileInfo);
+                                } catch (Exception e) {
+                                    logSevere("Problem withe conflict detection. "
+                                        + e);
                                 }
                             }
-                        } catch (IOException e) {
-                            // Same behavior as below, on failure drop out
-                            // TODO Maybe raise folder-problem....
-                            logWarning("Unable to archive old file!", e);
-                            return false;
                         }
-                    }
-                    try {
-                        Files.deleteIfExists(targetFile);
-                    } catch (IOException ioe) {
-                        logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                            + targetFile.toAbsolutePath()
-                            + ". "
-                            + fInfo.toDetailString());
+                    } catch (IOException e) {
+                        // Same behavior as below, on failure drop out
+                        // TODO Maybe raise folder-problem....
+                        logWarning("Unable to archive old file!", e);
                         return false;
                     }
                 }
+                try {
+                    Files.deleteIfExists(targetFile);
+                } catch (IOException ioe) {
+                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                        + targetFile.toAbsolutePath()
+                        + ". "
+                        + fInfo.toDetailString());
+                    return false;
+                }
+            }
 
             boolean copyAfterTransfer = schemaZyncro
                 || ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
