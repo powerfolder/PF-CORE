@@ -180,12 +180,12 @@ public class FolderWatcher extends PFComponent {
             remove();
             return;
         }
-        delay = 1000L * ConfigurationEntry.FOLDER_WATCHER_DELAY
-            .getValueInt(getController());
         if (watchID >= 0) {
             // Do not re-register again.
             return;
         }
+        delay = 1000L * ConfigurationEntry.FOLDER_WATCHER_DELAY
+            .getValueInt(getController());
         boolean watchSubtree = true;
         try {
             watchID = JNotify.addWatch(path, JNotify.FILE_ANY, watchSubtree,
