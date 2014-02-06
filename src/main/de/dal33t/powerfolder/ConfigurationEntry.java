@@ -769,6 +769,11 @@ public enum ConfigurationEntry {
     LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName()),
 
     /**
+     * Should the active threads be logged?
+     */
+    LOG_ACTIVE_THREADS("log.active_threads", true),
+
+    /**
      * Whether to request debug reports
      * 
      * @see RequestNodeInformation
