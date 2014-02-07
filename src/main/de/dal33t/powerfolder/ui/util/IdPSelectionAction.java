@@ -71,6 +71,8 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
 
                     ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(
                         getController(), ecpURL);
+
+                    logFine("ECP SOAP Endpoint URL set to " + ecpURL);
                 } catch (IOException e1) {
                     logSevere("Could not receive List of Identity Provider. "
                         + e1);

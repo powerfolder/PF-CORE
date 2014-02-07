@@ -894,10 +894,14 @@ public class ServerClient extends PFComponent {
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
                     if (isShibbolethLogin()) {
-                        prepareShibbolethLogin(username, pw);
-                        if (shibUsername != null && shibToken != null) {
+                        boolean externalUser = prepareShibbolethLogin(username, pw);
+                        if (externalUser) {
+                            loginOk = securityService.login(username, pw);
+                        } else if (shibUsername != null && shibToken != null) {
                             loginOk = securityService.login(shibUsername,
                                 Util.toCharArray(shibToken));
+                        } else {
+                            logWarning("Neither Shibboleth nor external login possible!");
                         }
                     } else if (isKerberosLogin()) {
                         byte[] serviceTicket = prepareKerberosLogin();
@@ -1028,7 +1032,15 @@ public class ServerClient extends PFComponent {
             .hasValue(getController());
     }
 
-    private void prepareShibbolethLogin(String username, char[] thePassword) {
+    /**
+     * Prepare login information for shibboleth environment.
+     * 
+     * @param username
+     * @param thePassword
+     * @return True if the user should login as external user, false if
+     *         shibboleth is used.
+     */
+    private boolean prepareShibbolethLogin(String username, char[] thePassword) {
         String idpURLString = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
             .getValue(getController());
 
@@ -1037,7 +1049,7 @@ public class ServerClient extends PFComponent {
             shibToken = null;
             throw new SecurityException("Your organization is unreachable");
         } else if ("ext".equals(idpURLString)) {
-            return;
+            return true;
         }
 
         boolean tokenIsValid = false;
@@ -1094,6 +1106,8 @@ public class ServerClient extends PFComponent {
                 throw new SecurityException(e);
             }
         }
+        
+        return false;
     }
 
     private void findAlternativeServer() {
