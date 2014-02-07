@@ -1318,6 +1318,174 @@ public class FileTransferTest extends TwoControllerTestCase {
             TestHelper.compareFiles(fileBart, fileLisa));
     }
 
+    public void testDeltaSyncMD5Error() throws IOException {
+        getContollerBart().getTransferManager().setUploadCPSForLAN(400000);
+        getContollerBart().getTransferManager().setUploadCPSForWAN(400000);
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
+
+        Path fServer = Paths.get("src/test-resources/Deltafile_Server.pdf");
+        Path fPatricia = Paths.get("src/test-resources/Deltafile_Patricia.pdf");
+        Path fAna = Paths.get("src/test-resources/Deltafile_Ana.pdf");
+
+        disconnectBartAndLisa();
+        Path tServer = getFolderAtBart().getLocalBase()
+            .resolve("Deltafile.pdf");
+        PathUtils.copyFile(fServer, tServer);
+        TestHelper.scanFolder(getFolderAtBart());
+        Files.delete(tServer);
+        TestHelper.scanFolder(getFolderAtBart());
+        PathUtils.copyFile(fServer, tServer);
+        TestHelper.scanFolder(getFolderAtBart());
+
+        FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
+        assertEquals(2, fBart.getVersion());
+
+        connectBartAndLisa(false);
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtLisa().getKnownItemCount() == 1;
+            }
+
+            @Override
+            public String message() {
+                return "Lisa did not transfer: "
+                    + getFolderAtLisa().getKnownFiles();
+            }
+        });
+        FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
+        assertEquals(2, fLisa.getVersion());
+
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fAna,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 3 && fBart.getVersion() == 3;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed";
+            }
+        });
+        
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fPatricia,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 4 && fBart.getVersion() == 4;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed";
+            }
+        });
+        
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fServer,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 5 && fBart.getVersion() == 5;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed";
+            }
+        });
+        
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fPatricia,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 6 && fBart.getVersion() == 6;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed";
+            }
+        });
+        
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fAna,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 7 && fBart.getVersion() == 7;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed";
+            }
+        });
+        
+        LoggingManager.setConsoleLogging(Level.FINER);
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fServer,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 8 && fBart.getVersion() == 8;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed";
+            }
+        });
+    }
+
     /**
      * Tests the copy and download resume of a big file.
      * <p>
