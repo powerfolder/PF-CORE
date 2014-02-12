@@ -70,7 +70,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JButtonMini addButton;
     private JButtonMini searchButton;
     private JButtonMini removeButton;
-    private AutoTextField viaPowerFolderText;
+    private JTextField viaPowerFolderText;
     private JList inviteesList;
     private JScrollPane inviteesListScrollPane;
     private DefaultListModel inviteesListModel;
@@ -192,7 +192,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "140dlu, pref:grow",
+            "pref, pref:grow",
             "pref, 10dlu, pref, 3dlu, pref, max(10dlu;pref), 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -263,7 +263,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         removeButton = new JButtonMini(new MyRemoveAction(getController()));
         searchButton = new JButtonMini(new MySearchAction(getController()));
 
-        viaPowerFolderText = new AutoTextField();
+        viaPowerFolderText = new JTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
 
         inviteesListModel = new DefaultListModel();
@@ -274,7 +274,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             new MyListSelectionListener());
 
         List<String> candidateAddresses = getCandidatesAddresses();
-        viaPowerFolderText.setDataList(candidateAddresses);
+//        viaPowerFolderText.setDataList(candidateAddresses);
 
         permissionsComboModel = new DefaultComboBoxModel();
         permissionsCombo = new JComboBox(permissionsComboModel);
@@ -347,7 +347,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             inviteesListModel.addElement(text);
             inviteesListScrollPane.setVisible(true);
             removeButtonPanel.setVisible(true);
-            viaPowerFolderText.clear();
+//            viaPowerFolderText.clear();
             updateButtons();
             enableAddButton();
             enableRemoveButton();
