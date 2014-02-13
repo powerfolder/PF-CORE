@@ -887,6 +887,34 @@ public class Account implements Serializable {
 
     // Convenience/Applogic ***************************************************
 
+    public void mergeAccounts(Account account) {
+        Reject.ifNull(account, "Account is null");
+
+        if (Util.isValidEmail(account.getUsername())) {
+            this.addEmail(account.getUsername());
+        }
+
+        this.emails.addAll(account.emails);
+
+        if (account.getOSSubscription().getStorageSizeGB() > this.osSubscription.getStorageSizeGB()) {
+            this.osSubscription = account.osSubscription;
+        }
+
+        this.licenseKeyFileList.addAll(account.licenseKeyFileList);
+
+        if (StringUtils.isBlank(this.organizationOID)) {
+            this.organizationOID = account.organizationOID;
+        }
+
+        this.grant(account.permissions.toArray(new Permission[0]));
+
+        for (Group newGroup : account.groups) {
+            if (!this.groups.contains(newGroup)) {
+                this.groups.add(newGroup);
+            }
+        }
+    }
+
     /**
      * Enables the selected account:
      * <p>
