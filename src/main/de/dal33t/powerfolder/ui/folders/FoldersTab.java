@@ -42,7 +42,6 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -169,12 +168,10 @@ public class FoldersTab extends PFUIComponent {
         builderInner.add(notLoggedInLabel, cc.xy(1, 1));
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
-        if (!ProUtil.isZyncro(getController())) {
-            builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
-            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-                builderInner.add(folderWizardActionLabel.getUIComponent(),
-                    cc.xy(5, 1));
-            }
+        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            builderInner.add(folderWizardActionLabel.getUIComponent(),
+                cc.xy(5, 1));
         }
         JPanel emptyPanelInner = builderInner.getPanel();
         builderOuter.add(emptyPanelInner, cc.xy(1, 1));
