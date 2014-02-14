@@ -169,10 +169,12 @@ public class FoldersTab extends PFUIComponent {
         builderInner.add(notLoggedInLabel, cc.xy(1, 1));
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
-        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builderInner.add(folderWizardActionLabel.getUIComponent(),
-                cc.xy(5, 1));
+        if (!ProUtil.isZyncro(getController())) {
+            builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
+            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+                builderInner.add(folderWizardActionLabel.getUIComponent(),
+                    cc.xy(5, 1));
+            }
         }
         JPanel emptyPanelInner = builderInner.getPanel();
         builderOuter.add(emptyPanelInner, cc.xy(1, 1));
