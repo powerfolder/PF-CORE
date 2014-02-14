@@ -50,12 +50,12 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
-import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
@@ -71,6 +71,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JButtonMini searchButton;
     private JButtonMini removeButton;
     private JTextField viaPowerFolderText;
+    private JLabel invalidEmail;
     private JList inviteesList;
     private JScrollPane inviteesListScrollPane;
     private DefaultListModel inviteesListModel;
@@ -89,6 +90,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * @return true if send otherwise false
      */
     private boolean sendInvitation() {
+        invalidEmail.setVisible(false);
         if (invitation == null) {
             return false;
         }
@@ -114,7 +116,16 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         // Send invite from text or list.
         if (viaPowerFolderText.getText().length() > 0) {
-            sendInvite(candidates, viaPowerFolderText.getText());
+            String text = viaPowerFolderText.getText();
+            if(text.contains("<") && text.contains(">")) {                
+                text = text.substring(text.indexOf("<") + 1, text.indexOf(">"));
+            }
+            if(Util.isValidEmail(text)) {
+                sendInvite(candidates, text);
+            } else {
+                invalidEmail.setVisible(true);
+                return false;
+            }            
             theResult = true;
         }
         for (Object o : inviteesListModel.toArray()) {
@@ -170,6 +181,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
+        
         Runnable inviteTask = new Runnable() {
             public void run() {
                 if (!sendInvitation()) {
@@ -192,7 +204,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "pref, pref:grow",
+            "pref, 10dlu, pref:grow",
             "pref, 10dlu, pref, 3dlu, pref, max(10dlu;pref), 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -213,6 +225,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder2.addLabel(LoginUtil.getInviteUsernameLabel(getController()), cc.xy(1, 1));
         builder2.add(viaPowerFolderText, cc.xy(3, 1));
         builder2.add(addButton, cc.xy(5, 1));
+        builder.add(invalidEmail, cc.xy(3, 3));
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder2.add(searchButton, cc.xy(6, 1));
         }
@@ -220,6 +233,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         panel2.setOpaque(false);
         builder.add(panel2, cc.xy(1, row));
         row += 2;
+        
 
         inviteesListScrollPane = new JScrollPane(inviteesList);
         inviteesListScrollPane.setPreferredSize(new Dimension(
@@ -265,6 +279,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         viaPowerFolderText = new JTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
+        
+        invalidEmail = new JLabel("<html><font color='red'>"+Translation.getTranslation("wizard.send_invitations.invalid_email")+"</font></html>");
+        invalidEmail.setVisible(false);
 
         inviteesListModel = new DefaultListModel();
         inviteesList = new JList(inviteesListModel);
@@ -274,7 +291,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
             new MyListSelectionListener());
 
         List<String> candidateAddresses = getCandidatesAddresses();
-//        viaPowerFolderText.setDataList(candidateAddresses);
 
         permissionsComboModel = new DefaultComboBoxModel();
         permissionsCombo = new JComboBox(permissionsComboModel);
@@ -342,15 +358,23 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     private void processInvitee() {
+        invalidEmail.setVisible(false);
         String text = viaPowerFolderText.getText();
         if (text.length() > 0) {
-            inviteesListModel.addElement(text);
-            inviteesListScrollPane.setVisible(true);
-            removeButtonPanel.setVisible(true);
-//            viaPowerFolderText.clear();
-            updateButtons();
-            enableAddButton();
-            enableRemoveButton();
+            if(text.contains("<") && text.contains(">")) {                
+                text = text.substring(text.indexOf("<") + 1, text.indexOf(">"));
+            }
+            if (Util.isValidEmail(text)) {
+                inviteesListModel.addElement(text);
+                inviteesListScrollPane.setVisible(true);
+                removeButtonPanel.setVisible(true);
+                viaPowerFolderText.setText("");
+                updateButtons();
+                enableAddButton();
+                enableRemoveButton();
+            } else {
+                invalidEmail.setVisible(true);
+            }
         }
     }
 
