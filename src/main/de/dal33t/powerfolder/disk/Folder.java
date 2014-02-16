@@ -2575,8 +2575,8 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
-            logInfo("Member " + member.getNick() + " joined (connected? "
-                + member.isConnected() + ")");
+            logInfo(getName() + ": Member " + member.getNick()
+                + " joined (connected? " + member.isConnected() + ")");
         }
         if (!init) {
             if (!wasMember && member.isCompletelyConnected()) {
@@ -2648,11 +2648,19 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (join0(memberInfo)) {
+                // PFS-1144: May not actually member anymore in cluster setup.
+                // ->Check.
                 logInfo("Discovered new Member " + memberInfo);
+                if (memberCanidate.isCompletelyConnected()
+                    && memberCanidate.isServer())
+                {
+                    logInfo("Re-Syncing memberships with " + memberCanidate);
+                    memberCanidate.synchronizeFolderMemberships();
+                }
             }
         }
         // Update members map with my members.
-        for (Member member : members.keySet()) {
+        for (Member member : members.keySet()) {    
             membersMap.put(member.getId(), member.getInfo());
         }
         // See if there has been a change to the members map.
