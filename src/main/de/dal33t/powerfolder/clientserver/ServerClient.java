@@ -2046,7 +2046,7 @@ public class ServerClient extends PFComponent {
                             .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
                             .getValueBoolean(getController()))))
                     {
-                        logInfo("Auto-Login: Logging in");
+                        logInfo("Auto-Login: Logging in " + username);
                         login(username, passwordObf, true);
                     }
                 }
