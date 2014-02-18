@@ -3319,7 +3319,7 @@ public class Folder extends PFComponent {
         }
 
         Path syncPatternsFile = metaFolder.getDiskFile(fileInfo);
-        logInfo("Reading syncPatterns " + syncPatternsFile);
+        logFine("Reading syncPatterns " + syncPatternsFile);
         diskItemFilter.loadPatternsFrom(syncPatternsFile, true);
         // Trigger resync
         getController().getTransferManager().checkActiveTranfersForExcludes();
