@@ -2647,20 +2647,18 @@ public class Folder extends PFComponent {
             if (!memberInfo.isOnSameNetwork(getController())) {
                 continue;
             }
-            if (join0(memberInfo)) {
+            if (memberCanidate.isConnected()) {
                 // PFS-1144: May not actually member anymore in cluster setup.
-                // ->Check.
-                logInfo("Discovered new Member " + memberInfo);
-                if (memberCanidate.isCompletelyConnected()
-                    && memberCanidate.isServer())
-                {
-                    logInfo("Re-Syncing memberships with " + memberCanidate);
-                    memberCanidate.synchronizeFolderMemberships();
-                }
+                // NEVER Ever join any member into a folder which is actually
+                // connected already.
+                continue;
+            }
+            if (join0(memberInfo)) {
+                logInfo("Discovered new " + memberInfo);
             }
         }
         // Update members map with my members.
-        for (Member member : members.keySet()) {    
+        for (Member member : members.keySet()) {
             membersMap.put(member.getId(), member.getInfo());
         }
         // See if there has been a change to the members map.
