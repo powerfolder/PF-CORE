@@ -849,6 +849,12 @@ public class Controller extends PFComponent {
             } else {
                 logInfo("No logging to file");
             }
+
+            str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
+            Level syslogLevel = LoggingManager.levelForName(str);
+            LoggingManager.setSyslogLogging(syslogLevel != null
+                ? consoleLevel
+                : Level.WARNING, this);
         }
 
         if (commandLine != null && commandLine.hasOption('l')) {

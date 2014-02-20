@@ -769,6 +769,15 @@ public enum ConfigurationEntry {
     LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName()),
 
     /**
+     * PFS-1017: Logging to syslog
+     */
+    LOG_SYSLOG_LEVEL("log.syslog.level",  Level.INFO.getName()),
+
+    LOG_SYSLOG_HOST("log.syslog.host", "localhost"),
+
+    LOG_SYSLOG_PORT("log.syslog.port", 514),
+
+    /**
      * Should the active threads be logged?
      */
     LOG_ACTIVE_THREADS("log.active_threads", true),
