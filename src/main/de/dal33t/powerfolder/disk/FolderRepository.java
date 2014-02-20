@@ -2153,6 +2153,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (!folder.hasReadPermission(getController().getMySelf())) {
                     continue;
                 }
+
+                // PFS-1144: Fallback: Re-schedule calculations
+                folder.getStatistic().scheduleCalculate();
+
                 // Rationale: We might have not received file list from a server
                 // PFC-2368
                 for (Member member : folder.getConnectedMembers()) {
