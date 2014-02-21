@@ -1867,7 +1867,7 @@ public class Folder extends PFComponent {
      */
     public void shutdown() {
         if (isFine()) {
-            logFine("Shutting down folder " + this);
+            logFine("Shutting down " + this);
         }
         shutdown = true;
         watcher.remove();
@@ -4072,8 +4072,12 @@ public class Folder extends PFComponent {
                 // Schedule for removal
                 getController().schedule(new Runnable() {
                     public void run() {
-                        getController().getFolderRepository().removeFolder(
-                            Folder.this, false);
+                        if (getController().getFolderRepository()
+                            .hasJoinedFolder(currentInfo))
+                        {
+                            getController().getFolderRepository().removeFolder(
+                                Folder.this, false);
+                        }
                     }
                 }, 5000L);
             } else {
