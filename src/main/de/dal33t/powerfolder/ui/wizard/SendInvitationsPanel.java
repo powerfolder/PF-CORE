@@ -219,31 +219,36 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
+        FormDebugPanel fdpGreen = new FormDebugPanel();
+        fdpGreen.setGridColor(Color.GREEN);
+        FormDebugPanel fdpBlue = new FormDebugPanel();
+        fdpBlue.setGridColor(Color.BLUE);
+
         FormLayout layout = new FormLayout(
-            "pref, pref, pref, 10dlu, pref:grow",
-            "pref, 10dlu, pref, 3dlu, pref, max(10dlu;pref), 10dlu, pref");
+            "pref, max(100dlu;pref), 3dlu, pref, pref, 10dlu, pref:grow",
+            "pref, 10dlu, pref, 3dlu, pref, max(10dlu;pref), min(10dlu;pref), pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
-        FormLayout layout1 = new FormLayout("pref, 3dlu, pref:grow", "pref");
+        FormLayout layout1 = new FormLayout("pref:grow, pref, 3dlu", "pref");
         PanelBuilder builder1 = new PanelBuilder(layout1);
-        builder1.addLabel(Translation.getTranslation("send_invitations.folder_label"), cc.xy(1, 1));
+        builder1.addLabel(Translation.getTranslation("send_invitations.folder_label"), cc.xy(2, 1));
         int row = 1;
-        builder1.addLabel(folderInfo.getName(), cc.xy(3, row));
+        builder.addLabel(folderInfo.getName(), cc.xy(2, row));
         JPanel panel1 = builder1.getPanel();
         panel1.setOpaque(false);
         builder.add(panel1, cc.xy(1, row));
         row += 2;
 
-        FormLayout layout2 = new FormLayout("pref, 3dlu, 80dlu", "pref");
+        FormLayout layout2 = new FormLayout("pref:grow, pref, 3dlu", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
-        builder2.addLabel(LoginUtil.getInviteUsernameLabel(getController()), cc.xy(1, 1));
-        builder2.add(viaPowerFolderText, cc.xy(3, 1));
-        builder.add(addButton, cc.xy(2, 3));
-        builder.add(invalidEmail, cc.xy(5, 3));
+        builder2.addLabel(LoginUtil.getInviteUsernameLabel(getController()), cc.xy(2, 1));
+        builder.add(viaPowerFolderText, cc.xy(2, row));
+        builder.add(addButton, cc.xy(4, row));
+        builder.add(invalidEmail, cc.xy(7, row));
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(searchButton, cc.xy(3, 3));
+            builder.add(searchButton, cc.xy(5, row));
         }
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
@@ -255,23 +260,23 @@ public class SendInvitationsPanel extends PFWizardPanel {
         inviteesListScrollPane.setPreferredSize(new Dimension(
             getPreferredSize().width, Sizes.dialogUnitYAsPixel(40,
                 inviteesListScrollPane)));
-        builder.add(inviteesListScrollPane, cc.xy(1, row));
+        builder.add(inviteesListScrollPane, cc.xy(2, row));
         inviteesListScrollPane.setVisible(false);
         row += 1;
 
-        FormLayout layout3 = new FormLayout("pref, pref:grow", "pref");
+        FormLayout layout3 = new FormLayout("pref, pref, pref", "pref");
         PanelBuilder builder3 = new PanelBuilder(layout3);
         builder3.add(removeButton, cc.xy(1, 1));
         removeButtonPanel = builder3.getPanel();
         removeButtonPanel.setOpaque(false);
-        builder.add(removeButtonPanel, cc.xy(1, row));
+        builder.add(removeButtonPanel, cc.xy(2, row));
         removeButtonPanel.setVisible(false);
         row += 2;
 
-        FormLayout layout4 = new FormLayout("pref, 3dlu, pref", "pref");
+        FormLayout layout4 = new FormLayout("pref:grow, pref, 3dlu", "pref");
         PanelBuilder builder4 = new PanelBuilder(layout4);
         builder4.add(new JLabel(Translation.getTranslation("send_invitations.permissions_label")), cc.xy(1, 1));
-        builder4.add(permissionsCombo, cc.xy(3, 1));
+        builder.add(permissionsCombo, cc.xy(2, row));
         builder.add(builder4.getPanel(), cc.xy(1, row));
 
         return builder.getPanel();
