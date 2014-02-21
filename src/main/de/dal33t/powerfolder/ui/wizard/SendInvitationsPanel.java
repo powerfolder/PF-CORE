@@ -21,21 +21,37 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
@@ -117,10 +133,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
         // Send invite from text or list.
         if (viaPowerFolderText.getText().length() > 0) {
             String text = viaPowerFolderText.getText();
-            if(text.contains("<") && text.contains(">")) {                
-                text = text.substring(text.indexOf("<") + 1, text.indexOf(">"));
+            if(text.contains("<") && text.contains(">")) {
+                text = text.substring(text.indexOf("<") + 1, text.indexOf(">")).trim();
             }
-            if(Util.isValidEmail(text)) {
+            if(LoginUtil.isValidUsername(getController(), text)) {
                 sendInvite(candidates, text);
             } else {
                 invalidEmail.setVisible(true);
@@ -203,15 +219,20 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
+        FormDebugPanel fdpGreen = new FormDebugPanel();
+        fdpGreen.setGridColor(Color.GREEN);
+        FormDebugPanel fdpBlue = new FormDebugPanel();
+        fdpBlue.setGridColor(Color.BLUE);
+
         FormLayout layout = new FormLayout(
             "pref, 10dlu, pref:grow",
             "pref, 10dlu, pref, 3dlu, pref, max(10dlu;pref), 10dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout);
+        PanelBuilder builder = new PanelBuilder(layout, new FormDebugPanel());
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         FormLayout layout1 = new FormLayout("pref, 3dlu, pref:grow", "pref");
-        PanelBuilder builder1 = new PanelBuilder(layout1);
+        PanelBuilder builder1 = new PanelBuilder(layout1, fdpGreen);
         builder1.addLabel(Translation.getTranslation("send_invitations.folder_label"), cc.xy(1, 1));
         int row = 1;
         builder1.addLabel(folderInfo.getName(), cc.xy(3, row));
@@ -220,8 +241,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(panel1, cc.xy(1, row));
         row += 2;
 
-        FormLayout layout2 = new FormLayout("pref, 3dlu, pref:grow, 3dlu, pref, pref", "pref");
-        PanelBuilder builder2 = new PanelBuilder(layout2);
+        FormLayout layout2 = new FormLayout("pref, 3dlu, 80dlu, 3dlu, pref, pref", "pref");
+        PanelBuilder builder2 = new PanelBuilder(layout2, fdpBlue);
         builder2.addLabel(LoginUtil.getInviteUsernameLabel(getController()), cc.xy(1, 1));
         builder2.add(viaPowerFolderText, cc.xy(3, 1));
         builder2.add(addButton, cc.xy(5, 1));
@@ -280,7 +301,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         viaPowerFolderText = new JTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
         
-        invalidEmail = new JLabel("<html><font color='red'>"+Translation.getTranslation("wizard.send_invitations.invalid_email")+"</font></html>");
+        invalidEmail = new JLabel("<html><font color='red'>"+Translation.getTranslation("wizard.send_invitations.invalid_email", LoginUtil.getUsernameText(getController()))+"</font></html>");
         invalidEmail.setVisible(false);
 
         inviteesListModel = new DefaultListModel();
@@ -361,10 +382,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invalidEmail.setVisible(false);
         String text = viaPowerFolderText.getText();
         if (text.length() > 0) {
-            if(text.contains("<") && text.contains(">")) {                
-                text = text.substring(text.indexOf("<") + 1, text.indexOf(">"));
+            if(text.contains("<") && text.contains(">")) {
+                text = text.substring(text.indexOf("<") + 1, text.indexOf(">")).trim();
             }
-            if (Util.isValidEmail(text)) {
+            if (LoginUtil.isValidUsername(getController(), text)) {
                 inviteesListModel.addElement(text);
                 inviteesListScrollPane.setVisible(true);
                 removeButtonPanel.setVisible(true);
