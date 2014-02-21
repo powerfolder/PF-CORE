@@ -225,7 +225,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         fdpBlue.setGridColor(Color.BLUE);
 
         FormLayout layout = new FormLayout(
-            "pref, max(100dlu;pref), 3dlu, pref, pref, 10dlu, pref:grow",
+            "pref, 80dlu, 3dlu, pref, pref, 10dlu, pref:grow",
             "pref, 10dlu, pref, 3dlu, pref, max(10dlu;pref), min(10dlu;pref), pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
