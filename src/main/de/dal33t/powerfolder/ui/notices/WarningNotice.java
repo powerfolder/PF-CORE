@@ -45,6 +45,10 @@ public class WarningNotice extends NoticeBase {
         };
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     public boolean isNotification() {
         return true;
     }

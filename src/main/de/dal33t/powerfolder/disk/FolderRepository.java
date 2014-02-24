@@ -75,6 +75,8 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -1549,7 +1551,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                         Translation
                             .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()),
                         Translation
-                            .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()));
+                            .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString())) {
+                        @Override
+                        public Runnable getPayload(final Controller controller) {
+                            return new Runnable() {
+                                public void run() {
+                                    PathUtils.openFile(controller.getFolderRepository().getFoldersBasedir());
+                                    DialogFactory.genericDialog(controller, getTitle(), getMessage(),
+                                        GenericDialogType.WARN);
+                                }
+                            };
+                        }
+                    };
+
+                    
+
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
                 }
