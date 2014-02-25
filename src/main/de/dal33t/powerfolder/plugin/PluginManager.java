@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 
@@ -126,11 +125,11 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        if (ProUtil.isSwitchData(getController())) {
-            int lastDot = pluginsStr.lastIndexOf('.');
-            pluginsStr = pluginsStr.substring(lastDot + 1);
-        }
-        
+        // Only take the name of the Class
+        int lastDot = pluginsStr.lastIndexOf('.');
+        pluginsStr = pluginsStr.substring(lastDot + 1);
+        // --
+
         logFine("Initalizing (" + typeInfo + ") plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
@@ -253,10 +252,8 @@ public class PluginManager extends PFComponent {
     public void setEnabled(Plugin thePlugin, boolean enabled) {
         Plugin plugin = findPlugin(thePlugin);
         String pluginName = plugin.getClass().getName();
-        if (ProUtil.isSwitchData(getController())) {
-            int lastDot = pluginName.lastIndexOf('.');
-            pluginName = pluginName.substring(lastDot + 1);
-        }
+        int lastDot = pluginName.lastIndexOf('.');
+        pluginName = pluginName.substring(lastDot + 1);
         logFine("enable: " + enabled + ' ' + pluginName);
         if (enabled) {
             disabledPlugins.remove(plugin);
@@ -293,13 +290,11 @@ public class PluginManager extends PFComponent {
         String seperator = "";
         String pluginName = "";
         for (Plugin plug : plugins) {
-            if (ProUtil.isSwitchData(getController())) {
-                pluginName = plug.getClass().getName();
-                int lastDot = pluginName.lastIndexOf('.');
-                pluginName = pluginName.substring(lastDot + 1);
-            } else {
-                pluginName =  plug.getClass().getName();
-            }
+            // Only take the name of the Class
+            pluginName = plug.getClass().getName();
+            int lastDot = pluginName.lastIndexOf('.');
+            pluginName = pluginName.substring(lastDot + 1);
+            // --
             enabledPluginsPropertyValue += seperator + pluginName;
             seperator = ",";
         }
@@ -309,15 +304,12 @@ public class PluginManager extends PFComponent {
         String disabledPluginsPropertyValue = "";
         seperator = "";
         for (Plugin plug : disabledPlugins) {
-            if (ProUtil.isSwitchData(getController())) {
-                pluginName = plug.getClass().getName();
-                int lastDot = pluginName.lastIndexOf('.');
-                pluginName = pluginName.substring(lastDot + 1);
-            } else {
-                pluginName = plug.getClass().getName();
-            }
-            disabledPluginsPropertyValue += seperator
-                + pluginName;
+            // Only take the name of the Class
+            pluginName = plug.getClass().getName();
+            int lastDot = pluginName.lastIndexOf('.');
+            pluginName = pluginName.substring(lastDot + 1);
+            // --
+            disabledPluginsPropertyValue += seperator + pluginName;
             seperator = ",";
         }
         ConfigurationEntry.PLUGINS_DISABLED.setValue(getController(),

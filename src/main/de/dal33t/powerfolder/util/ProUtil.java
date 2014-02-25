@@ -52,8 +52,8 @@ public class ProUtil {
     }
 
     public static final boolean isSwitchData(Controller controller) {
-        return controller.getDistribution().getBinaryName().toLowerCase().trim().contains("switch")
-            || controller.getDistribution().getName().toLowerCase().trim().contains("switch");
+        return controller.getDistribution().getBinaryName().toLowerCase().trim().contains("switchdata")
+            || controller.getDistribution().getName().toLowerCase().trim().contains("switchdata");
     }
     
     public static final boolean isServerConfig(Controller controller) {
