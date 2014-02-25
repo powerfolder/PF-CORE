@@ -352,9 +352,9 @@ public class Constants {
     /**
      * The classname of the ProLoader
      */
-    public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
+    public static final String PRO_LOADER_PLUGIN_CLASS = "CD";
 
-    public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
+    public static final String ENCRYPTION_PLUGIN_CLASS = "BC";
 
     public static final String SESSIONS_SUB_DIR = "database/sessions";
     
