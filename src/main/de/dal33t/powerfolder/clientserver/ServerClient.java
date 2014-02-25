@@ -240,8 +240,10 @@ public class ServerClient extends PFComponent {
         if (theNode.getReconnectAddress() == null) {
             logSevere("Got server without reconnect address: " + theNode);
         }
-        logInfo("Using server: " + theNode.getNick() + ", ID: "
-            + theNodeId + " @ " + theNode.getReconnectAddress());
+        if (!ProUtil.isSwitchData(controller)) {
+            logInfo("Using server: " + theNode.getNick() + ", ID: "
+                + theNodeId + " @ " + theNode.getReconnectAddress());
+        }
         init(theNode, allowServerChange);
     }
 
@@ -817,8 +819,11 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
         } else {
-            logInfo("Logging into server " + getServerString() + ". Username: "
-                + un);
+            if (!ProUtil.isSwitchData(getController()))
+            {
+                logInfo("Logging into server " + getServerString()
+                    + ". Username: " + un);
+            }
             return login(un, pw);
         }
         // Failed!

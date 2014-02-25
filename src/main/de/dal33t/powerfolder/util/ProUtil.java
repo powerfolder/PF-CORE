@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
@@ -52,6 +51,11 @@ public class ProUtil {
             || controller.getDistribution().getName().contains("yncro");
     }
 
+    public static final boolean isSwitchData(Controller controller) {
+        return controller.getDistribution().getBinaryName().toLowerCase().trim().contains("switch")
+            || controller.getDistribution().getName().toLowerCase().trim().contains("switch");
+    }
+    
     public static final boolean isServerConfig(Controller controller) {
         return controller.getConfig().get("plugin.server.maintenancefolderid") != null;
     }
