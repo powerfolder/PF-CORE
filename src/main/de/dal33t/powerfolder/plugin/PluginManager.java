@@ -125,10 +125,11 @@ public class PluginManager extends PFComponent {
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        // Only take the name of the Class
-        int lastDot = pluginsStr.lastIndexOf('.');
-        pluginsStr = pluginsStr.substring(lastDot + 1);
-        // --
+
+        boolean containsPrefix = pluginsStr.contains(PLUGIN_PACKAGE_PREFIX);
+        if (containsPrefix) {
+            pluginsStr = pluginsStr.replaceAll(PLUGIN_PACKAGE_PREFIX, "");
+        }
 
         logFine("Initalizing (" + typeInfo + ") plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
@@ -145,6 +146,10 @@ public class PluginManager extends PFComponent {
                 plugins.add(plugin);
                 plugin.init();
             }
+        }
+
+        if (containsPrefix) {
+            saveConfig();
         }
     }
 
