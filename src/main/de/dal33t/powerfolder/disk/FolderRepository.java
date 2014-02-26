@@ -2148,6 +2148,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private class CheckSyncTask implements Runnable {
         public void run() {
+            boolean syncMemberShips = false;
             for (Folder folder : getController().getFolderRepository()
                 .getFolders())
             {
@@ -2159,6 +2160,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (folder.getStatistic().getHarmonizedSyncPercentage() == 100.0d)
                 {
                     continue;
+                }
+                if (!getController().getOSClient().joinedByCloud(folder)) {
+                    syncMemberShips = true;
                 }
                 if (folder.getConnectedMembersCount() == 0) {
                     continue;
@@ -2205,6 +2209,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     member.sendMessageAsynchron(new FileListRequest(folder
                         .getInfo()));
                 }
+            }
+            if (syncMemberShips) {
+                getController().getOSClient().getServer()
+                    .synchronizeFolderMemberships();
             }
         }
     }
