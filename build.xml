@@ -134,7 +134,6 @@ For creation of the installer:
 		<property name="test.src.dir" location="src/test" />
 		<property name="skins.src.dir" location="src/skins" />
 		<property name="shib.src.dir" location="src/shib" />
-		<property name="jni.src.dir" location="src/native" />
 
 		<!-- External Libraries -->
 		<fileset id="libs" dir="lib" casesensitive="yes">
@@ -222,7 +221,6 @@ For creation of the installer:
 			<src path="${jnotify.src.dir}" />
 			<src path="${skins.src.dir}" />
 			<src path="${shib.src.dir}" />
-			<src path="${jni.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
