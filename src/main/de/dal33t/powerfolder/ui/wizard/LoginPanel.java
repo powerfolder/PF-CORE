@@ -371,9 +371,12 @@ public class LoginPanel extends PFWizardPanel {
         {
             usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME
                 .getValue(getController()));
-            passwordField.setText(LoginUtil
+            passwordField.setText(new String(LoginUtil
                 .deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                    .getValue(getController())).toString());
+                    .getValue(getController()) == null
+                    ? ""
+                    : ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                        .getValue(getController()))));
        } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
             passwordField.setText(client.getPasswordClearText());
