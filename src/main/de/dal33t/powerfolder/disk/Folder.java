@@ -857,7 +857,7 @@ public class Folder extends PFComponent {
 
             updateFileOwnerIfNecessary(targetFile, fInfo);
             
-            if (Files.exists(targetFile)) {
+            if (Files.exists(targetFile) && !schemaZyncro) {
                 // if file was a "newer file" the file already exists here
                 // Using local var because of possible race condition!!
                 FileArchiver arch = archiver;
