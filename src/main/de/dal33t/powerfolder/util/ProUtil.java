@@ -120,7 +120,7 @@ public class ProUtil {
             return true;
         }
         try {
-            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX + Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c.getMethod("isTrial", Controller.class);
             return (Boolean) m.invoke(null, controller);
         } catch (Exception e) {
@@ -135,7 +135,7 @@ public class ProUtil {
      */
     public static final boolean isAllowedToRun(Controller controller) {
         try {
-            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX + Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c.getMethod("isAllowedToRun", Controller.class);
             return (Boolean) m.invoke(null, controller);
         } catch (Exception e) {
@@ -151,7 +151,8 @@ public class ProUtil {
             return null;
         }
         try {
-            Class<?> c = Class.forName(Constants.ENCRYPTION_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX
+                + Constants.ENCRYPTION_PLUGIN_CLASS);
             Method m = c.getMethod("getPublicKey", Controller.class,
                 MemberInfo.class);
             return (PublicKey) m.invoke(null, controller, node);
@@ -173,7 +174,8 @@ public class ProUtil {
         MemberInfo node, PublicKey key)
     {
         try {
-            Class<?> c = Class.forName(Constants.ENCRYPTION_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX
+                + Constants.ENCRYPTION_PLUGIN_CLASS);
             Method m = c.getMethod("addNodeToKeyStore", Controller.class,
                 MemberInfo.class, PublicKey.class);
             return (Boolean) m.invoke(null, controller, node, key);
@@ -188,7 +190,8 @@ public class ProUtil {
      */
     public static final String rtrvePwssd(Controller controller, String input) {
         try {
-            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX
+                + Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c
                 .getMethod("rtrvePwssd", Controller.class, String.class);
             return (String) m.invoke(null, controller, input);
