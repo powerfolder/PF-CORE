@@ -349,9 +349,8 @@ public class Constants {
 
     // Pro related ************************************************************
 
-    /**
-     * The classname of the ProLoader
-     */
+    public static final String PACKAGE_PREFIX = "de.dal33t.powerfolder.";
+    
     public static final String PRO_LOADER_PLUGIN_CLASS = "CD";
 
     public static final String ENCRYPTION_PLUGIN_CLASS = "BC";
