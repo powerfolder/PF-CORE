@@ -104,14 +104,6 @@ public class ProUtil {
     }
 
     /**
-     * @return true if the server version is running.
-     */
-    public static final boolean isRunningServerVersion() {
-        return Util.class.getClassLoader().getResourceAsStream(
-            "de/dal33t/powerfolder/ConfigurationServerEntry.class") != null;
-    }
-
-    /**
      * @param controller
      * @return true if running a trial or non-registered version.
      */
@@ -122,21 +114,6 @@ public class ProUtil {
         try {
             Class<?> c = Class.forName(Constants.PACKAGE_PREFIX + Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c.getMethod("isTrial", Controller.class);
-            return (Boolean) m.invoke(null, controller);
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Exception. " + e, e);
-        }
-        return true;
-    }
-
-    /**
-     * @param controller
-     * @return true if running a trial or non-registered version.
-     */
-    public static final boolean isAllowedToRun(Controller controller) {
-        try {
-            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX + Constants.PRO_LOADER_PLUGIN_CLASS);
-            Method m = c.getMethod("isAllowedToRun", Controller.class);
             return (Boolean) m.invoke(null, controller);
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Exception. " + e, e);
