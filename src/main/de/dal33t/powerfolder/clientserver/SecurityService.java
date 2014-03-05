@@ -213,4 +213,12 @@ public interface SecurityService {
      *          the invitation.
      */
     void acceptInvitation(Invitation invitation);
+
+    /**
+     * Decline an invitation to a folder.
+     * 
+     * @param invitation
+     *            the invitation.
+     */
+    void declineInvitation(Invitation invitation);
 }
