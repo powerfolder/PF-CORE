@@ -45,7 +45,7 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
         return new Runnable() {
             @Override
             public void run() {
-                PathUtils.openFile(path.getParent());
+                PathUtils.openFileIfExists(path.getParent());
             }
         };
     }
