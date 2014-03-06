@@ -881,6 +881,8 @@ public class ServerClient extends PFComponent {
         logFine("Login with: " + theUsername);
         synchronized (loginLock) {
             loggingIn.set(true);
+            String prevUsername = username;
+            String prevPasswordObf = passwordObf;
             try {
                 username = theUsername;
                 passwordObf = thePasswordObj;
@@ -899,7 +901,9 @@ public class ServerClient extends PFComponent {
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
                     if (isShibbolethLogin()) {
-                        boolean externalUser = prepareShibbolethLogin(username, pw);
+                        boolean externalUser = prepareShibbolethLogin(username,
+                            pw, !prevUsername.equals(username)
+                                || !prevPasswordObf.equals(passwordObf));
                         if (externalUser) {
                             loginOk = securityService.login(username, pw);
                         } else if (shibUsername != null && shibToken != null) {
@@ -978,6 +982,11 @@ public class ServerClient extends PFComponent {
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
+                if (isShibbolethLogin()) {
+                    username = prevUsername;
+                    passwordObf = prevPasswordObf;
+                    saveLastKnowLogin(prevUsername, prevPasswordObf);
+                }
                 setAnonAccount();
                 fireLogin(accountDetails, false);
                 return accountDetails.getAccount();
@@ -1042,10 +1051,11 @@ public class ServerClient extends PFComponent {
      * 
      * @param username
      * @param thePassword
+     * @param userChanged
      * @return True if the user should login as external user, false if
      *         shibboleth is used.
      */
-    private boolean prepareShibbolethLogin(String username, char[] thePassword) {
+    private boolean prepareShibbolethLogin(String username, char[] thePassword, boolean userChanged) {
         String idpURLString = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
             .getValue(getController());
 
@@ -1053,6 +1063,9 @@ public class ServerClient extends PFComponent {
             shibUsername = null;
             shibToken = null;
             throw new SecurityException("Your organization is unreachable");
+        } else if (userChanged) {
+            shibUsername = null;
+            shibToken = null;
         } else if ("ext".equals(idpURLString)) {
             return true;
         }
