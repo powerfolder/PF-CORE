@@ -176,7 +176,7 @@ public class MacUtils extends Loggable {
             | NoSuchMethodException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException e)
         {
-            logWarning("Could not " + e);
+            logWarning("Could not add the AppReOpenedListener: " + e);
             e.printStackTrace();
         }
     }
