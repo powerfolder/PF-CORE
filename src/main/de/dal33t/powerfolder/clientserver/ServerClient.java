@@ -901,9 +901,13 @@ public class ServerClient extends PFComponent {
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
                     if (isShibbolethLogin()) {
-                        boolean externalUser = prepareShibbolethLogin(username,
-                            pw, !prevUsername.equals(username)
-                                || !prevPasswordObf.equals(passwordObf));
+                        boolean externalUser = prepareShibbolethLogin(
+                            username,
+                            pw,
+                            (prevUsername != null && !prevUsername
+                                .equals(username))
+                                || (prevPasswordObf != null && !prevPasswordObf
+                                    .equals(passwordObf)));
                         if (externalUser) {
                             loginOk = securityService.login(username, pw);
                         } else if (shibUsername != null && shibToken != null) {
