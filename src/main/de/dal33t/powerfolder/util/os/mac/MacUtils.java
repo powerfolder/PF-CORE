@@ -22,8 +22,10 @@ package de.dal33t.powerfolder.util.os.mac;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,7 +45,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class MacUtils extends Loggable {
 
     private static MacUtils instance;
-//    private static boolean error = false;
     private MacUtils() {
     }
 
@@ -134,6 +135,49 @@ public class MacUtils extends Loggable {
             de.dal33t.powerfolder.jni.osx.Util.addFavorite(baseDir.toAbsolutePath().toString());
         } else {
             de.dal33t.powerfolder.jni.osx.Util.removeFavorite(baseDir.toAbsolutePath().toString());
+        }
+    }
+
+    public void setAppReOpenedListener(final Controller controller) {
+        try {
+            // Load the class com.apple.eawt.Application
+            Class<?> appClass = Class.forName("com.apple.eawt.Application");
+
+            // Get the actual application instance
+            Method getApplication = appClass
+                .getDeclaredMethod("getApplication");
+            Object application = getApplication.invoke(null, new Object[0]);
+
+            // 
+            Class<?> appEventListener = Class
+                .forName("com.apple.eawt.AppEventListener");
+            Method addAppEventListener = Class.forName(
+                application.getClass().getCanonicalName()).getMethod(
+                "addAppEventListener", appEventListener);
+
+            Class<?> appReOpenedListener = Class
+                .forName("com.apple.eawt.AppReOpenedListener");
+
+            InvocationHandler openFrame = new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args)
+                    throws Throwable
+                {
+                    controller.getUIController().getMainFrame().toFront();
+                    return null;
+                }
+            };
+
+            Object listener = Proxy.newProxyInstance(
+                appReOpenedListener.getClassLoader(),
+                new Class<?>[]{appReOpenedListener}, openFrame);
+            addAppEventListener.invoke(application, listener);
+        } catch (ClassNotFoundException | SecurityException
+            | NoSuchMethodException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e)
+        {
+            logWarning("Could not " + e);
+            e.printStackTrace();
         }
     }
 
