@@ -274,7 +274,7 @@ public class FileRequestor extends PFComponent {
                 FileInfo newestVersion = fInfo.getNewestVersion(getController()
                     .getFolderRepository());
                 if (newestVersion == null) {
-                    logWarning("Unable to download. Newest version not found: "
+                    logFine("Unable to download. Newest version not found: "
                         + fInfo.toDetailString());
                     continue;
                 }
