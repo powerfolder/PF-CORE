@@ -623,13 +623,25 @@ public class Folder extends PFComponent {
         }
 
         hasOwnDatabase = true;
-        if (isFine()) {
-            logFine("Scanned " + scanResult.getTotalFilesCount() + " total, "
-                + scanResult.getChangedFiles().size() + " changed, "
-                + scanResult.getNewFiles().size() + " new, "
-                + scanResult.getRestoredFiles().size() + " restored, "
-                + scanResult.getDeletedFiles().size() + " removed, "
-                + scanResult.getProblemFiles().size() + " problems");
+        
+        if (isInfo() || isFine()) {
+            if (scanResult.isChangeDetected()) {
+                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
+                    + scanResult.getChangedFiles().size() + " changed, "
+                    + scanResult.getNewFiles().size() + " new, "
+                    + scanResult.getRestoredFiles().size() + " restored, "
+                    + scanResult.getDeletedFiles().size() + " removed, "
+                    + scanResult.getProblemFiles().size() + " problems";
+                logInfo(msg);
+            } else {
+                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
+                    + scanResult.getChangedFiles().size() + " changed, "
+                    + scanResult.getNewFiles().size() + " new, "
+                    + scanResult.getRestoredFiles().size() + " restored, "
+                    + scanResult.getDeletedFiles().size() + " removed, "
+                    + scanResult.getProblemFiles().size() + " problems";
+                logFine(msg);
+            }
         }
 
         // Fire scan result
