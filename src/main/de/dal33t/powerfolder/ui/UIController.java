@@ -32,7 +32,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -76,6 +75,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.problem.LocalDeletionProblem;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
 import de.dal33t.powerfolder.event.FolderAutoCreateListener;
@@ -122,6 +122,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -1470,6 +1471,12 @@ public class UIController extends PFComponent {
         public void localMassDeletion(LocalMassDeletionEvent event) {
             LocalDeleteNotice notice = new LocalDeleteNotice(
                 event.getFolderInfo());
+            if (ProUtil.isZyncro(getController())) {
+                LocalDeletionProblem ldp = new LocalDeletionProblem(
+                    event.getFolderInfo(), notice);
+                event.getFolder().addProblem(ldp);
+                notice.setProblem(ldp);
+            }
             applicationModel.getNoticesModel().handleNotice(notice);
         }
 

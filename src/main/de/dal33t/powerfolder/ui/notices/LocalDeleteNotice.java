@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.notices;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.problem.LocalDeletionProblem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -32,8 +33,9 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class LocalDeleteNotice extends NoticeBase {
 
-    private static final long serialVersionUID = 100L;
+    private static final long serialVersionUID = 101L;
     private FolderInfo folderInfo;
+    private LocalDeletionProblem problem;
 
     public LocalDeleteNotice(FolderInfo folderInfo) {
         super(Translation.getTranslation("warning_notice.title"), Translation
@@ -63,6 +65,9 @@ public class LocalDeleteNotice extends NoticeBase {
                     Folder folder = folderInfo.getFolder(controller);
                     if (folder != null) {
                         folder.scanLocalFiles(true);
+                        if (problem != null) {
+                            folder.removeProblem(problem);
+                        }
                     }
                     controller.getUIController().getApplicationModel()
                         .getNoticesModel().clearNotice(LocalDeleteNotice.this);
@@ -81,6 +86,9 @@ public class LocalDeleteNotice extends NoticeBase {
                         // And re-download them
                         controller.getFolderRepository().getFileRequestor()
                             .triggerFileRequesting(folderInfo);
+                        if (problem != null) {
+                            folder.removeProblem(problem);
+                        }
                     }
                     controller.getUIController().getApplicationModel()
                         .getNoticesModel().clearNotice(LocalDeleteNotice.this);
@@ -89,6 +97,10 @@ public class LocalDeleteNotice extends NoticeBase {
         };
     }
 
+    public void setProblem(LocalDeletionProblem ldp) {
+        problem = ldp;
+    }
+    
     public boolean isNotification() {
         return true;
     }
