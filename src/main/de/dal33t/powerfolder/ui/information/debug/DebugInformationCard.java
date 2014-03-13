@@ -140,7 +140,7 @@ public class DebugInformationCard extends InformationCard {
         logToFileCheckBox.addItemListener(itemListener);
         scrollLockCheckBox.addItemListener(itemListener);
 
-        openDebugDir = new JButton("Send Logs");
+        openDebugDir = new JButton("Open Logs");
         openDebugDir.setEnabled(true);
         openDebugDir.setToolTipText("Send log files to Support Team");
 
