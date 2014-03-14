@@ -3089,8 +3089,8 @@ public class Folder extends PFComponent {
         if (Files.exists(localCopy)) {
             synchronized (scanLock) {
                 if (localFile.isDiretory()) {
-                    if (isFine()) {
-                        logFine("Deleting directory from remote: "
+                    if (isInfo()) {
+                        logInfo("Deleting directory from remote: "
                             + localFile.toDetailString());
                     }
                     watcher.addIgnoreFile(localFile);
@@ -4185,8 +4185,8 @@ public class Folder extends PFComponent {
     private boolean deleteFile(FileInfo newFileInfo, Path file) {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         FileInfo fileInfo = getFile(newFileInfo);
-        if (isFine()) {
-            logFine("Deleting file " + fileInfo.toDetailString()
+        if (isInfo()) {
+            logInfo("Deleting file " + fileInfo.toDetailString() + (archiver.getVersionsPerFile() > 0)
                 + " moving to archive");
         }
         try {
