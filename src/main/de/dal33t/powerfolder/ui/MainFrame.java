@@ -539,7 +539,6 @@ public class MainFrame extends PFUIComponent {
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
-        logoLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         MyMouseWindowDragListener logoMouseListener = new MyMouseWindowDragListener();
         logoLabel.addMouseListener(logoMouseListener);
         logoLabel.addMouseMotionListener(logoMouseListener);
