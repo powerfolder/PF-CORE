@@ -391,7 +391,7 @@ public enum ConfigurationEntry {
     /**
      * #1715 If it should be possible to register at the server.
      */
-    SERVER_REGISTER_ENABLED("server.register.enabled", true),
+    SERVER_REGISTER_ENABLED("server.register.enabled", false),
     
     /**
      * PFS-485 If it should be possible to send invite others.
