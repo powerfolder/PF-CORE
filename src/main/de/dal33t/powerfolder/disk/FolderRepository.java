@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
 import de.dal33t.powerfolder.event.FolderAutoCreateListener;
@@ -746,6 +747,12 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the folder with the targetDir as local base or null if not found
      */
     public Folder findExistingFolder(Path targetDir) {
+        if (!targetDir.isAbsolute()) {
+            targetDir = foldersBasedir
+                .resolve(targetDir);
+            logWarning("Original path: " + targetDir
+                + ". Choosen relative path: " + targetDir);
+        }
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
             try {
@@ -1874,6 +1881,20 @@ public class FolderRepository extends PFComponent implements Runnable {
                     return;
                 }
                 removeLocalFolders(a, created);
+            } else {
+                // PFC-2486
+                for (Folder folder : getFolders()) {
+                    if (!a.hasReadPermissions(folder.getInfo())) {
+                        AccessDeniedProblem problem = new AccessDeniedProblem(
+                            folder.getInfo());
+                        folder.removeProblem(problem);
+                        folder.addProblem(problem);
+                    } else if (folder.countProblems() > 0) {
+                        AccessDeniedProblem problem = new AccessDeniedProblem(
+                            folder.getInfo());
+                        folder.removeProblem(problem);
+                    }
+                }
             }
         } finally {
             accountSyncLock.unlock();
