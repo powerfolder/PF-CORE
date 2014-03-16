@@ -517,8 +517,8 @@ public class Folder extends PFComponent {
         boolean removed = problems.remove(problem);
         if (removed) {
             problemListenerSupport.problemRemoved(problem);
-        } else {
-            logWarning("Failed to remove problem");
+        } else if (isFine()) {
+            logFine("Problem was not removed: " + problem);
         }
     }
 
