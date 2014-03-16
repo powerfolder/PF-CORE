@@ -268,6 +268,8 @@ public class FolderInfo implements Serializable, Cloneable {
             .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
                 Translation.getTranslation("general.department"))
             .replace(Constants.ZYNCRO_COMPANY_TOKEN.trim(),
-                Translation.getTranslation("general.company"));
+                Translation.getTranslation("general.company"))
+            .replace(Constants.FOLDER_PERSONAL_FILES.trim(),
+                Translation.getTranslation("general.personal_files"));
     }
 }
