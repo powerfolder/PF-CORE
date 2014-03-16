@@ -68,7 +68,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
     public static final Path TESTFOLDER_BASEDIR_BART = TestHelper.getTestDir()
-        .resolve("ControllerBart/testFolder.pfzip").toAbsolutePath();
+        .resolve("ControllerBart/testFolder").toAbsolutePath();
     public static final Path TESTFOLDER_BASEDIR_LISA = TestHelper.getTestDir()
         .resolve("ControllerLisa/testFolder").toAbsolutePath();
 
