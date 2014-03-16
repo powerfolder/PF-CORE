@@ -574,15 +574,13 @@ public class FolderStatistic extends PFComponent {
             .getSyncProfile()))
         {
             // SYNC-143
-            if (ProUtil.isZyncro(getController())
-                && folder.getMembersCount() == 1)
-            {
+            if (folder.getMembersCount() == 1) {
                 return UNKNOWN_SYNC_STATUS;
             }
             // SYNC-143
 
             // Average of all folder member sync percentages.
-            return getAverageSyncPercentage();
+            return getLocalSyncPercentage();
         }
 
         // Otherwise, just return the local sync percentage.
