@@ -75,6 +75,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
@@ -86,6 +87,7 @@ import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -1315,15 +1317,28 @@ public class ExpandableFolderView extends PFUIComponent implements
                             }
                         }
                     } else if (result.startsWith("N")) {
-                        DialogFactory
+                        String[] ops;
+                        if (Help.hasWiki(getController())) {
+                            ops = new String[]{
+                                Translation.getTranslation("general.ok"),
+                                Translation.getTranslation("general.help")};
+                        } else {
+                            ops = new String[]{Translation
+                                .getTranslation("general.ok")};
+                        }
+                        int op = DialogFactory
                             .genericDialog(
                                 getController(),
                                 Translation
                                     .getTranslation("exp_folder_view.webdav_failure_title"),
                                 Translation.getTranslation(
                                     "exp_folder_view.webdav_failure_text",
-                                    result.substring(1)),
+                                    result.substring(1)), ops, 0,
                                 GenericDialogType.ERROR);
+                        if (op == 1) {
+                            Help.openWikiArticle(getController(),
+                                WikiLinks.WEBDAV);
+                        }
                     }
                 }
             }

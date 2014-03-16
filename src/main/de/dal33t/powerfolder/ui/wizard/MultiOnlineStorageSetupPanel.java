@@ -57,10 +57,12 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -424,15 +426,28 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                             }
                         }
                     } else if (result.startsWith("N")) {
-                        DialogFactory
+                        String[] ops;
+                        if (Help.hasWiki(getController())) {
+                            ops = new String[]{
+                                Translation.getTranslation("general.ok"),
+                                Translation.getTranslation("general.help")};
+                        } else {
+                            ops = new String[]{Translation
+                                .getTranslation("general.ok")};
+                        }
+                        int op = DialogFactory
                             .genericDialog(
                                 getController(),
                                 Translation
                                     .getTranslation("exp_folder_view.webdav_failure_title"),
                                 Translation.getTranslation(
                                     "exp_folder_view.webdav_failure_text",
-                                    result.substring(1)),
+                                    result.substring(1)), ops, 0,
                                 GenericDialogType.ERROR);
+                        if (op == 1) {
+                            Help.openWikiArticle(getController(),
+                                WikiLinks.WEBDAV);
+                        }
                     }
                 }
             }
