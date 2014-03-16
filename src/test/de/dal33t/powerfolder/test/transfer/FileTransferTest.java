@@ -1375,7 +1375,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed";
+                return "Updated failed 3";
             }
         });
         
@@ -1396,7 +1396,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed";
+                return "Updated failed 4";
             }
         });
         
@@ -1417,7 +1417,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed";
+                return "Updated failed 5";
             }
         });
         
@@ -1438,7 +1438,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed";
+                return "Updated failed 6";
             }
         });
         
@@ -1459,7 +1459,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed";
+                return "Updated failed 7";
             }
         });
         
@@ -1481,7 +1481,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed";
+                return "Updated failed 8";
             }
         });
     }
