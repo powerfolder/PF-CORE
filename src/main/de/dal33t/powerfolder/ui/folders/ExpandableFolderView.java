@@ -1248,13 +1248,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
 
-        if (folder == null
-            && PreferencesEntry.BEGINNER_MODE
-                .getValueBoolean(getController())
-            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
-        {
+        if (folder == null) {
             nameLabel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.create"));
+                .getTranslation("exp_folder_view.folder_online_text"));
         }
 
         String folderName = folderInfo.getLocalizedName();
