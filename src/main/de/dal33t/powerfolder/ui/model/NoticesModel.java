@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
@@ -80,6 +81,8 @@ public class NoticesModel extends PFUIComponent {
     public ValueModel getUnreadNoticesCountVM() {
         return unreadNoticesCountVM;
     }
+    
+    
 
     private void addNotice(Notice notice) {
         if (notices.contains(notice)) {
@@ -103,6 +106,20 @@ public class NoticesModel extends PFUIComponent {
             }
         }
         return null;
+    }
+    
+    public NoticeSeverity getHighestUnreadSeverity() {
+        NoticeSeverity unreadSeverity = null;
+        for (Notice notice : notices) {
+            if (!notice.isRead()){
+                if(notice.getNoticeSeverity()==NoticeSeverity.WARINING) {
+                    return NoticeSeverity.WARINING;
+                } else if(notice.getNoticeSeverity()==NoticeSeverity.INFORMATION) {
+                    unreadSeverity = NoticeSeverity.INFORMATION;
+                }
+            }
+        }
+        return unreadSeverity;
     }
     /**
      * This handles a notice object. If it is a notification, show in a
@@ -271,4 +288,6 @@ public class NoticesModel extends PFUIComponent {
         }
         unreadNoticesCountVM.setValue(count);
     }
+    
+    
 }
