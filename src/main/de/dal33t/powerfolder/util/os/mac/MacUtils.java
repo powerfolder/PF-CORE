@@ -146,18 +146,8 @@ public class MacUtils extends Loggable {
             // Get the actual application instance
             Method getApplication = appClass
                 .getDeclaredMethod("getApplication");
-            Object application = getApplication.invoke(null, new Object[0]);
 
-            // 
-            Class<?> appEventListener = Class
-                .forName("com.apple.eawt.AppEventListener");
-            Method addAppEventListener = Class.forName(
-                application.getClass().getCanonicalName()).getMethod(
-                "addAppEventListener", appEventListener);
-
-            Class<?> appReOpenedListener = Class
-                .forName("com.apple.eawt.AppReOpenedListener");
-
+            // The functionallity that should be executed
             InvocationHandler openFrame = new InvocationHandler() {
                 @Override
                 public Object invoke(Object proxy, Method method, Object[] args)
@@ -168,9 +158,24 @@ public class MacUtils extends Loggable {
                 }
             };
 
+            // Get the addAppEventListener method of com.apple.eawt.Application
+            Method addAppEventListener = appClass.getMethod(
+                "addAppEventListener", Class
+                    .forName("com.apple.eawt.AppEventListener"));
+
+            // Get the Interface of AppReOpenedListener
+            Class<?> appReOpenedListener = Class
+                .forName("com.apple.eawt.AppReOpenedListener");
+
+            // Get the acutal Application instance
+            Object application = getApplication.invoke(null, new Object[0]);
+
+            // Associate the InvocationHandler with the AppReOpenedListener Interface
             Object listener = Proxy.newProxyInstance(
                 appReOpenedListener.getClassLoader(),
                 new Class<?>[]{appReOpenedListener}, openFrame);
+
+            // Add the InvocationHandler as AppReOpenedListener
             addAppEventListener.invoke(application, listener);
         } catch (ClassNotFoundException | SecurityException
             | NoSuchMethodException | IllegalAccessException
