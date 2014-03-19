@@ -365,7 +365,7 @@ public class MainFrame extends PFUIComponent {
         if (unreadCount == 0) {
             noticesActionLabel.setVisible(false);
             //FIXME
-            //This is a hack to fire a handleSyncStatus Event --> refactor            
+            //This is a hack to fire a handleSyncStatus Event           
             getController().setPaused(getController().isPaused());
         } else if (unreadCount == 1) {
             noticesActionLabel.setVisible(true);
@@ -473,15 +473,27 @@ public class MainFrame extends PFUIComponent {
         });
 
         lowerMainTextActionLabel = new ActionLabel(getController(),
-                new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                    handleSyncTextClick();
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    if (!PreferencesEntry.BEGINNER_MODE
+                        .getValueBoolean(getController()))
+                    {
+                        handleSyncTextClick();
+                    }
                 }
             });
 
         if (ProUtil.isZyncro(getController())) {
             upperMainTextActionLabel.setNeverUnderline(true);
             lowerMainTextActionLabel.setNeverUnderline(true);
+            lowerMainTextActionLabel.setToolTipText("");
+        }
+        
+        if (PreferencesEntry.BEGINNER_MODE
+            .getValueBoolean(getController()))
+        {
+            lowerMainTextActionLabel.setNeverUnderline(true);
+            lowerMainTextActionLabel.setEnabled(false);
         }
 
         if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
