@@ -399,8 +399,8 @@ public class FileArchiver {
     }
 
     /**
-     * Parse the file name for the last '_' and extract the following version
-     * number. Like 'file.txt_K_45' returns 45.
+     * Parse the file name for the last "_K_" and extract the following version
+     * number. Like 'file_K_45.txt' returns 45.
      * 
      * @param file
      *            file to parse name.
@@ -408,7 +408,7 @@ public class FileArchiver {
      */
     private static int getVersionNumber(Path file) {
         String fileName = file.getFileName().toString();
-        String lastPart = fileName.substring(fileName.lastIndexOf('_') + 1);
+        String lastPart = fileName.substring(fileName.lastIndexOf("_K_") + 3);
         if (lastPart.contains(".")) {
             // Strip the extension.
             lastPart = lastPart.substring(0, lastPart.lastIndexOf("."));
