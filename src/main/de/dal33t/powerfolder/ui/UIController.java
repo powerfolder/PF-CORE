@@ -334,7 +334,7 @@ public class UIController extends PFComponent {
                 JFrame.EXIT_ON_CLOSE);
         }
 
-        if (getController().isStartMinimized()) {
+        if (getController().isStartMinimized() || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
             logInfo("Starting minimized");
         }
 
@@ -343,9 +343,9 @@ public class UIController extends PFComponent {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
                     mainFrame.getUIComponent().setVisible(
-                        !OSUtil.isSystraySupported()
-                            || !getController().isStartMinimized());
-                    if (!getController().isStartMinimized()) {
+                        (!OSUtil.isSystraySupported()
+                            || !getController().isStartMinimized()) && !PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController()));
+                    if (!getController().isStartMinimized() && !PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
                         mainFrame.toFront();
                     }
                 }

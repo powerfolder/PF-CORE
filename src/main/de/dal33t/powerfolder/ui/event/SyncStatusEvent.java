@@ -32,7 +32,9 @@ public enum SyncStatusEvent {
     NO_FOLDERS("No Folders"),
     SYNCING("Syncing"),
     SYNC_INCOMPLETE("Sync Incomplete"),
-    SYNCHRONIZED("Synchronized");
+    SYNCHRONIZED("Synchronized"),
+    WARNING("Warning Notification"),
+    INFORMATION("Information Notification");
 
     private final String description;
 

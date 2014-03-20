@@ -236,6 +236,14 @@ public class TrayIconManager extends PFComponent {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .getTranslation("systray.tooltip.not_logged_in"));
+        } else if(event.equals(SyncStatusEvent.WARNING)) {
+            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.warning_notice"));            
+        } else if(event.equals(SyncStatusEvent.INFORMATION)) {
+            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
+            tooltip.append(Translation
+                .getTranslation("systray.tooltip.info_notice"));            
         } else {
             logSevere("Not handling all sync states: " + event);
             image = Icons.getImageById(Icons.QUESTION);

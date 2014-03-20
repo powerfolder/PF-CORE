@@ -139,6 +139,8 @@ public class MainFrame extends PFUIComponent {
     private JButtonMini pauseButton;
     private JButtonMini syncIncompleteButton;
     private JLabel notConnectedLoggedInLabel;
+    private JButtonMini noticeWarningButton;
+    private JButtonMini noticeInfoButton;
 
     private ActionLabel upperMainTextActionLabel;
     private ActionLabel lowerMainTextActionLabel;
@@ -224,6 +226,8 @@ public class MainFrame extends PFUIComponent {
         b.add(pauseButton, cc.xy(1, 1));
         b.add(syncIncompleteButton, cc.xy(1, 1));
         b.add(notConnectedLoggedInLabel, cc.xy(1, 1));
+        b.add(noticeWarningButton, cc.xy(1, 1));
+        b.add(noticeInfoButton, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper
@@ -360,6 +364,9 @@ public class MainFrame extends PFUIComponent {
                 .getUnreadNoticesCountVM().getValue();
         if (unreadCount == 0) {
             noticesActionLabel.setVisible(false);
+            //FIXME
+            //This is a hack to fire a handleSyncStatus Event           
+            getController().setPaused(getController().isPaused());
         } else if (unreadCount == 1) {
             noticesActionLabel.setVisible(true);
             noticesActionLabel.setText(Translation.getTranslation(
@@ -448,6 +455,15 @@ public class MainFrame extends PFUIComponent {
         setupButton.setText(null);
 
         notConnectedLoggedInLabel = new JLabel(Icons.getIconById(Icons.WARNING));
+        
+        MyShowNoticesAction myShowNoticesAction = new MyShowNoticesAction(getController());
+        noticeWarningButton = new JButtonMini(myShowNoticesAction);
+        noticeWarningButton.setIcon(Icons.getIconById(Icons.WARNING));
+        noticeWarningButton.setText(null);
+        
+        noticeInfoButton = new JButtonMini(myShowNoticesAction);
+        noticeInfoButton.setIcon(Icons.getIconById(Icons.INFORMATION));
+        noticeInfoButton.setText(null);
 
         upperMainTextActionLabel = new ActionLabel(getController(),
                 new AbstractAction() {
@@ -457,15 +473,27 @@ public class MainFrame extends PFUIComponent {
         });
 
         lowerMainTextActionLabel = new ActionLabel(getController(),
-                new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                    handleSyncTextClick();
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    if (!PreferencesEntry.BEGINNER_MODE
+                        .getValueBoolean(getController()))
+                    {
+                        handleSyncTextClick();
+                    }
                 }
             });
 
         if (ProUtil.isZyncro(getController())) {
             upperMainTextActionLabel.setNeverUnderline(true);
             lowerMainTextActionLabel.setNeverUnderline(true);
+            lowerMainTextActionLabel.setToolTipText("");
+        }
+        
+        if (PreferencesEntry.BEGINNER_MODE
+            .getValueBoolean(getController()))
+        {
+            lowerMainTextActionLabel.setNeverUnderline(true);
+            lowerMainTextActionLabel.setEnabled(false);
         }
 
         if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
@@ -556,9 +584,9 @@ public class MainFrame extends PFUIComponent {
         });
 
         plusButton = new JButton3Icons(
-            Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
-            Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
-            Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
+            Icons.getIconById(Icons.WINDOW_MAXIMIZE_NORMAL),
+            Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
+            Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
         plusButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doPlusOperation();
@@ -637,8 +665,11 @@ public class MainFrame extends PFUIComponent {
         }
         if (getController().isPaused()) {
             getController().setPaused(false);
-        } else if (frameMode == FrameMode.COMPACT) {
+        } else if (frameMode == FrameMode.COMPACT && (!noticeWarningButton.isVisible()  && !noticeInfoButton.isVisible())) {
             setFrameMode(FrameMode.NORMAL);
+        } else if(frameMode == FrameMode.COMPACT && ((noticeWarningButton.isVisible()) || noticeInfoButton.isVisible())) {
+            setFrameMode(FrameMode.NORMAL);
+            getController().getUIController().openNoticesCard();
         } else {
             setFrameMode(FrameMode.COMPACT);
         }
@@ -666,6 +697,8 @@ public class MainFrame extends PFUIComponent {
         syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
         syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
         syncIncompleteButton.setVisible(event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
+        noticeWarningButton.setVisible(event.equals(SyncStatusEvent.WARNING));
+        noticeInfoButton.setVisible(event.equals(SyncStatusEvent.INFORMATION));
         notConnectedLoggedInLabel.setVisible((event
             .equals(SyncStatusEvent.NOT_CONNECTED) || event
             .equals(SyncStatusEvent.NOT_LOGGED_IN))
@@ -718,6 +751,10 @@ public class MainFrame extends PFUIComponent {
             upperText = Translation.getTranslation("main_frame.logging_in.text");
         } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
             upperText = Translation.getTranslation("main_frame.log_in_failed.text");
+        } else if (event.equals(SyncStatusEvent.WARNING)){
+            upperText = Translation.getTranslation("main_frame.warning_notice.text");
+        } else if (event.equals(SyncStatusEvent.INFORMATION)){
+            upperText = Translation.getTranslation("main_frame.info_notice.text");
         } else {
             logSevere("Not handling all sync states: " + event);
         }
@@ -1005,24 +1042,24 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void doMinusOperation() {
-        if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
-            // To COMPACT mode.
-            setFrameMode(FrameMode.COMPACT);
-        } else {
+//        if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
+//            // To COMPACT mode.
+//            setFrameMode(FrameMode.COMPACT);
+//        } else {
             setFrameMode(FrameMode.MINIMIZED);
-        }
+//        }
     }
 
     private void doPlusOperation() {
         if (frameMode == FrameMode.MAXIMIZED) {
             // To NORMAL mode.
-            setFrameMode(FrameMode.NORMAL);
-        } else if (frameMode == FrameMode.NORMAL) {
-            // To MAXIMIZED mode.
-            setFrameMode(FrameMode.MAXIMIZED);
+            setFrameMode(FrameMode.COMPACT);
+//        } else if (frameMode == FrameMode.NORMAL) {
+//            // To MAXIMIZED mode.
+//            setFrameMode(FrameMode.MAXIMIZED);
         } else {
             // To NORMAL mode.
-            setFrameMode(FrameMode.NORMAL);
+            setFrameMode(FrameMode.MAXIMIZED);
         }
     }
 
@@ -1207,14 +1244,17 @@ public class MainFrame extends PFUIComponent {
                 }
                 uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
                 plusButton.setToolTipText(Translation
-                        .getTranslation("main_frame.restore.tips"));
+                        .getTranslation("main_frame.compact.tips"));
                 plusButton.setIcons(
                         Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
                         Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
                         Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
-                minusButton.setVisible(true);
                 minusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.compact.tips"));
+                        Translation.getTranslation("main_frame.minimize.tips"));
+                // Don't show minimize button if systray is available
+                // and the exit button uses minimize option.
+                minusButton.setVisible(!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 checkSplitMinWidth();
                 break;
             case NORMAL:
@@ -1226,9 +1266,12 @@ public class MainFrame extends PFUIComponent {
                         Icons.WINDOW_MAXIMIZE_NORMAL), 
                         Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
                         Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
-                minusButton.setVisible(true);
                 minusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.compact.tips"));
+                        Translation.getTranslation("main_frame.minimize.tips"));
+                // Don't show minimize button if systray is available
+                // and the exit button uses minimize option.
+                minusButton.setVisible(!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 configureNormalSize();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1245,10 +1288,11 @@ public class MainFrame extends PFUIComponent {
                 uiComponent.setSize(uiComponent.getMinimumSize());
                 uiComponent.setResizable(false);
                 plusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.restore.tips"));
-                plusButton.setIcons(Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
-                        Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
-                        Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
+                        Translation.getTranslation("main_frame.maximize.tips"));
+                plusButton.setIcons(Icons.getIconById(
+                    Icons.WINDOW_MAXIMIZE_NORMAL), 
+                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
+                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
                 minusButton.setToolTipText(
                         Translation.getTranslation("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
