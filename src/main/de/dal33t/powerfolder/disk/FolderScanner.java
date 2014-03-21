@@ -414,7 +414,7 @@ public class FolderScanner extends PFComponent {
                 if (abort) {
                     break;
                 }
-                if (Files.isRegularFile(path)) {
+                if (Files.exists(path) && Files.isRegularFile(path)) {
                     if (PathUtils.isScannable(path, currentScanningFolder)) {
                         if (!scanFile(path, "")) {
                             failure = true;
