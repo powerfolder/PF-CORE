@@ -169,7 +169,11 @@ public class ProblemsTab extends PFUIComponent {
         if (selectedRow >= 0) {
             selectedProblem = (Problem) problemsTableModel.getValueAt(
                 problemsTable.getSelectedRow(), 0);
-            openProblemAction.setEnabled(true);
+            if (selectedProblem.getWikiLinkKey() == null) {
+                openProblemAction.setEnabled(false);
+            } else {
+                openProblemAction.setEnabled(true);
+            }
             resolveProblemAction
                 .setEnabled(selectedProblem instanceof ResolvableProblem);
             logFiner("Selected row: " + problemsTable.getSelectedRow()

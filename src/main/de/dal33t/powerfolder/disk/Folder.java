@@ -505,6 +505,8 @@ public class Folder extends PFComponent {
     public void addProblem(Problem problem) {
         problems.add(problem);
         problemListenerSupport.problemAdded(problem);
+        // FIXME: HACK (tm)
+        getController().setPaused(getController().isPaused());
         logFiner("Added problem");
     }
 
@@ -3201,6 +3203,7 @@ public class Folder extends PFComponent {
                             String nodeID = remoteFile.getModifiedBy()
                                 .getNode(getController(), false).getId();
                             // Build the message
+                            // HERE FIXME HERE
                             RevertedFile rf = new RevertedFile(revertedFileInfo);
                             // Plan a task
                             SendMessageTask smt = new SendMessageTask(rf,

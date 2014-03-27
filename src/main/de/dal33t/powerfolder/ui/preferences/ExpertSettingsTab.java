@@ -117,9 +117,8 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         massDeleteCB.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION
             .getValueBoolean(getController()));
         massDeleteCB.addItemListener(new MassDeleteItemListener());
-        massDeleteSlider = new JSlider(20, 100,
-            ConfigurationEntry.MASS_DELETE_THRESHOLD
-                .getValueInt(getController()));
+        massDeleteSlider = new JSlider(20, 100, ConfigurationEntry.MASS_DELETE_THRESHOLD
+            .getValueInt(getController()));
         massDeleteSlider.setMajorTickSpacing(20);
         massDeleteSlider.setMinorTickSpacing(5);
         massDeleteSlider.setPaintTicks(true);

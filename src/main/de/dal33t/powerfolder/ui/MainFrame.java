@@ -76,6 +76,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
@@ -232,10 +233,8 @@ public class MainFrame extends PFUIComponent {
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper
             .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        if ((!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
-            || getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE)) && setupLabel != null)
+        if (getController().getOSClient().isAllowedToCreateFolders()
+            && setupLabel != null)
         {
             builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         } else {
@@ -682,10 +681,8 @@ public class MainFrame extends PFUIComponent {
                 .getApplicationModel().getFolderRepositoryModel();
         boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
             || event.equals(SyncStatusEvent.NO_FOLDERS);
-        boolean showSetupLabel = (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController()) || getController().getOSClient()
-            .getAccount().hasPermission(FolderCreatePermission.INSTANCE))
-            && setupLabel != null;
+        boolean showSetupLabel = getController().getOSClient()
+            .isAllowedToCreateFolders() && setupLabel != null;
 
         // Set visibility of buttons and labels.
         pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
@@ -1575,7 +1572,20 @@ public class MainFrame extends PFUIComponent {
             if (frameMode == FrameMode.COMPACT) {
                 setFrameMode(FrameMode.NORMAL);
             }
-            getController().getUIController().openNoticesCard();
+            if (getController().getUIController().getApplicationModel()
+                .getNoticesModel().getAllNotices().size() > 0)
+            {
+                getController().getUIController().openNoticesCard();
+            } else if (getController().getFolderRepository().getFolderProblemsCount() > 0) {
+                for (Folder fo : getController().getFolderRepository().getFolders()) {
+                    if (fo.getProblems().size() > 0) {
+                        getController().getUIController().openProblemsInformation(fo.getInfo());
+                        break;
+                    }
+                }
+            } else {
+                logFine("No Notices and no Problems to show");
+            }
         }
     }
 
@@ -1662,11 +1672,7 @@ public class MainFrame extends PFUIComponent {
                 }
 
                 // Does user have folder create permission?
-                if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        && !getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
-                {
+                if (!getController().getOSClient().isAllowedToCreateFolders()) {
                     logInfo("Skipping importData (no folder create permission).");
                     return false;
                 }

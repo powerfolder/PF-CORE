@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -193,10 +192,8 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(false);
                     loginActionLabel.setVisible(false);
                     noFoldersFoundLabel.setVisible(false);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (!getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
@@ -207,10 +204,8 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(false);
                     loginActionLabel.setVisible(false);
                     noFoldersFoundLabel.setVisible(false);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (!getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
@@ -224,10 +219,8 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(true);
                     loginActionLabel.setVisible(true);
                     noFoldersFoundLabel.setVisible(false);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (!getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
@@ -238,10 +231,8 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(false);
                     loginActionLabel.setVisible(false);
                     noFoldersFoundLabel.setVisible(true);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (!getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(true);
                         newFolderActionLabel.setVisible(true);

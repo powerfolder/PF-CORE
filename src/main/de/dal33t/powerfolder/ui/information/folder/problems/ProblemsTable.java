@@ -67,9 +67,9 @@ public class ProblemsTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(550);
+        column.setPreferredWidth(350);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(100);
+        column.setPreferredWidth(300);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(100);
     }
@@ -89,15 +89,15 @@ public class ProblemsTable extends JTable {
                 if (column == 0) {
                     setText(problem.getDescription());
                 } else if (column == 1) {
-                    setText(Format.formatDateShort(problem.getDate()));
-                } else if (column == 2) {
                     if (problem instanceof ResolvableProblem) {
                         ResolvableProblem solvableProblem = (ResolvableProblem) problem;
                         setText(solvableProblem.getResolutionDescription());
                     } else {
                         setText(Translation.getTranslation(
-                                "folder_problem.table_model.not_available"));
+                            "folder_problem.table_model.not_available"));
                     }
+                } else if (column == 2) {
+                    setText(Format.formatDateShort(problem.getDate()));
                 }
             }
 

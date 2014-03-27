@@ -305,7 +305,8 @@ public class ApplicationModel extends PFUIComponent {
         boolean connected = client.isConnected();
         boolean loggingIn = client.isLoggingIn();
         boolean loggedIn = client.isLoggedIn();
-        boolean noticeAvailable = getNoticesModel().getHighestUnreadSeverity() != null;
+        boolean noticeAvailable = getNoticesModel().getHighestUnreadSeverity() != null
+            || repository.getFolderProblemsCount() > 0;
 
         SyncStatusEvent status = SyncStatusEvent.SYNC_INCOMPLETE;
         if (getController().isPaused() && !noticeAvailable) {
@@ -324,9 +325,12 @@ public class ApplicationModel extends PFUIComponent {
             status = SyncStatusEvent.SYNCING;
         } else if (repository.areAllFoldersInSync() && !noticeAvailable) {
             status = SyncStatusEvent.SYNCHRONIZED;
-        } else if (getNoticesModel().getHighestUnreadSeverity()==NoticeSeverity.WARINING) {
+        } else if (getNoticesModel().getHighestUnreadSeverity() == NoticeSeverity.WARINING
+            || repository.getFolderProblemsCount() > 0)
+        {
             status = SyncStatusEvent.WARNING;
-        } else if (getNoticesModel().getHighestUnreadSeverity()==NoticeSeverity.INFORMATION) {
+        } else if (getNoticesModel().getHighestUnreadSeverity() == NoticeSeverity.INFORMATION)
+        {
             status = SyncStatusEvent.INFORMATION;
         }
         triggerSyncStatusChange(status);

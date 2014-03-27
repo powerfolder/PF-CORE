@@ -619,21 +619,19 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             name = PathUtils.getSuggestedFolderName(dir);
         }
 
-        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController()))
-        {
-            if (!getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE))
-            {
-                if (getController().isUIEnabled()) {
-                    getController().getUIController().getMainFrame().toFront();
-                    DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation("remote_command_manager.make_folder.error_title"),
-                            Translation.getTranslation("remote_command_manager.make_folder.error_message", name),
-                            GenericDialogType.ERROR);
-                }
-                return;
+        if (!getController().getOSClient().isAllowedToCreateFolders()) {
+            if (getController().isUIEnabled()) {
+                getController().getUIController().getMainFrame().toFront();
+                DialogFactory
+                    .genericDialog(
+                        getController(),
+                        Translation
+                            .getTranslation("remote_command_manager.make_folder.error_title"),
+                        Translation.getTranslation(
+                            "remote_command_manager.make_folder.error_message",
+                            name), GenericDialogType.ERROR);
             }
+            return;
         }
 
         // Show user?

@@ -76,8 +76,8 @@ public class LocalDeletionProblem extends ResolvableProblem {
 
     @Override
     public String getResolutionDescription() {
-        // TODO Auto-generated method stub
-        return null;
+        return Translation
+            .getTranslation("local_delete_notice.resolution_description");
     }
 
     @Override
