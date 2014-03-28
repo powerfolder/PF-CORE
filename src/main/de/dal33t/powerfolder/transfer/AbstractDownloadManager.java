@@ -782,7 +782,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 if (checkCompleted()) {
                     setCompleted();
                 } else {
-                    setBroken(TransferProblem.MD5_ERROR, "File hash mismatch!");
+                    setBroken(TransferProblem.MD5_ERROR, "File hash mismatch");
                 }
             }
         });
