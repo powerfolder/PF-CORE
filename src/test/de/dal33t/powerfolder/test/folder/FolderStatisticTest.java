@@ -69,7 +69,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     public void testOneFile() throws IOException {
         LoggingManager.setConsoleLogging(Level.FINE);
         forceStatsCals();
-        assertHasLastSyncDate(true, true, true, true, true);
+        assertHasLastSyncDate(false, false, false, false, false);
 
         assertTrue(tryToConnectSimpsons());
         forceStatsCals();
