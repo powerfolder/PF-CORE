@@ -2307,6 +2307,9 @@ public class Controller extends PFComponent {
                 return true;
             }
         }
+        if (Feature.UI_ENABLED.isDisabled()) {
+            return true;
+        }
         return GraphicsEnvironment.isHeadless();
     }
 
