@@ -2633,7 +2633,8 @@ public class TransferManager extends PFComponent {
             Files.newOutputStream(transferFile))) {
             oOut.writeObject(storedDownloads);
         } catch (IOException e) {
-            logSevere("Unable to store pending downloads", e);
+            logWarning("Unable to store pending downloads. " + transferFile
+                + ": " + e);
         } finally {
             if (interrupted) {
                 Thread.currentThread().interrupt();
