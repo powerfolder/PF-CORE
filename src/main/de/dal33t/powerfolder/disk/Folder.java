@@ -862,15 +862,14 @@ public class Folder extends PFComponent {
             try {
                 Files.setLastModifiedTime(tempFile,
                     FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
-            }
-            catch (IOException ioe) {
-                logSevere("Failed to set modified date on " + tempFile
-                    + " for " + fInfo.getModifiedDate().getTime());
+            } catch (IOException ioe) {
+                logWarning("Failed to set modified date on " + tempFile
+                    + " for " + fInfo.getModifiedDate().getTime() + ": " + ioe);
                 return false;
             }
 
             updateFileOwnerIfNecessary(targetFile, fInfo);
-            
+
             if (Files.exists(targetFile) && !schemaZyncro) {
                 // if file was a "newer file" the file already exists here
                 // Using local var because of possible race condition!!
@@ -943,9 +942,9 @@ public class Folder extends PFComponent {
                     }
                 } catch (IOException e) {
                     // TODO give a diskfull warning?
-                    logSevere("Unable to store completed download "
+                    logWarning("Unable to store completed download "
                         + targetFile.toAbsolutePath() + ". " + e.getMessage()
-                        + ". " + fInfo.toDetailString());
+                        + ". " + fInfo.toDetailString() + ". " + e);
                     logFiner(e);
                     return false;
                 }
@@ -955,10 +954,9 @@ public class Folder extends PFComponent {
                 try {
                     Files.setLastModifiedTime(targetFile,
                         FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
-                }
-                catch (IOException e) {
-                    logSevere("Failed to set modified date on " + targetFile
-                        + " to " + fInfo.getModifiedDate().getTime());
+                } catch (IOException e) {
+                    logWarning("Failed to set modified date on " + targetFile
+                        + " to " + fInfo.getModifiedDate().getTime() + ". " + e);
                     return false;
                 }
 
@@ -2019,7 +2017,7 @@ public class Folder extends PFComponent {
         } catch (IOException e) {
             // TODO: if something failed shoudn't we try to restore the
             // backup (if backup exists and bd file not after this?
-            logSevere(this + ": Unable to write database file "
+            logWarning(this + ": Unable to write database file "
                 + dbFile.toAbsolutePath() + ". " + e);
             logFiner(e);
             return false;
