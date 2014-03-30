@@ -302,7 +302,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
                 return null;
             }
         } catch (IOException e) {
-            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
+            Logger.getLogger(FolderStatisticInfo.class.getName()).fine(
                 "Unable to read folder stats size from " + file + ". " + e);
             return null;
         }
