@@ -153,6 +153,11 @@ public class MacUtils extends Loggable {
                 public Object invoke(Object proxy, Method method, Object[] args)
                     throws Throwable
                 {
+                    // Skip, if this is the server.
+                    if (controller.getMySelf().isServer()) {
+                        return null;
+                    }
+
                     controller.getUIController().getMainFrame().toFront();
                     return null;
                 }
