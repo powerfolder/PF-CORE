@@ -2240,8 +2240,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             if (syncMemberShips) {
-                getController().getOSClient().getServer()
-                    .synchronizeFolderMemberships();
+                // getController().getOSClient().getServer()
+                // .synchronizeFolderMemberships();
+                for (Member node : getController().getNodeManager()
+                    .getNodesAsCollection())
+                {
+                    if (node.isServer() && node.isCompletelyConnected()) {
+                        node.synchronizeFolderMemberships();
+                    }
+                }
             }
         }
     }
