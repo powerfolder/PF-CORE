@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 /**
  * A Label which executes the action when clicked.
  * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
 public class ActionLabel extends PFComponent {
