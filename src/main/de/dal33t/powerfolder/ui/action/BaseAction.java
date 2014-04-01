@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Superclass for all actions used in pf
  * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
 public abstract class BaseAction extends AbstractAction {
