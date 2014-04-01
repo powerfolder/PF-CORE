@@ -134,6 +134,11 @@ public class ActionLabel extends PFComponent {
 
     public void setNeverUnderline(boolean neverUnderline) {
         this.neverUnderline = neverUnderline;
+        if (neverUnderline) {
+            CursorUtils.setDefaultCursor(uiComponent);
+        } else {
+            CursorUtils.setHandCursor(uiComponent);
+        }
         displayText();
     }
     
