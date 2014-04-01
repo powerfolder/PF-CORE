@@ -64,6 +64,8 @@ public class AccessDeniedProblem extends ResolvableProblem {
             return true;
         if (obj == null)
             return false;
+        if (!(obj instanceof AccessDeniedProblem))
+            return false;
         AccessDeniedProblem other = (AccessDeniedProblem) obj;
         if (folderInfo == null) {
             if (other.folderInfo != null)
