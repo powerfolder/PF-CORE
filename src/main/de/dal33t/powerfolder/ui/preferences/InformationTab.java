@@ -45,6 +45,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
@@ -112,6 +113,16 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     private JButton createActivateButton() {
+        boolean isAdvancedMode = !PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController())
+            && !PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
+        boolean isActivated = getController().getNodeManager().isStarted();
+
+        // PFC-2508
+        if (isAdvancedMode && isActivated) {
+            return null;
+        }
+
         JButton activateButton = new JButton(
             Translation.getTranslation("preferences.information.activate_text"));
         activateButton.setToolTipText(Translation
