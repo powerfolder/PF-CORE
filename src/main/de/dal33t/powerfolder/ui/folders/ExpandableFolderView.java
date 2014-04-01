@@ -1165,7 +1165,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (!getController().isBackupOnly()) {
                 boolean addedSeparator = false;
                 if (ConfigurationEntry.SERVER_INVITE_ENABLED
-                    .getValueBoolean(getController()))
+                    .getValueBoolean(getController()) && admin)
                 {
                     contextMenu.addSeparator();
                     addedSeparator = true;
