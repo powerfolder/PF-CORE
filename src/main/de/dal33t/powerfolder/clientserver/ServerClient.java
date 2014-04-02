@@ -1696,7 +1696,7 @@ public class ServerClient extends PFComponent {
         }
         server = newServerNode;
         server.setServer(true);
-        logInfo("New primary server: " + server);
+        logInfo("New primary server: " + server.getNick());
 
         // Why?
         // // Put on friendslist
