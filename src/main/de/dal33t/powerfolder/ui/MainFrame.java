@@ -1197,20 +1197,22 @@ public class MainFrame extends PFUIComponent {
                     loginActionLabel.setText(Translation
                         .getTranslation("main_frame.storage_subscription_disabled.text"));
                 } else {
+                    String s = ad.getAccount().getDisplayName();
+                    if (!StringUtils.isEmpty(s)) {
+                        loginActionLabel.setText(s);
+                    }
                     totalStorage = storageSubscription.getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
                     if (totalStorage > 0) {
                         percentageUsed = 100.0d * (double) spaceUsed
                             / (double) totalStorage;
                     } else {
+                        loginActionLabel.setText(Translation
+                            .getTranslation("main_frame.storage_subscription_disabled.text"));
                         percentageUsed = 100.0d;
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
-                    String s = ad.getAccount().getDisplayName();
-                    if (!StringUtils.isEmpty(s)) {
-                        loginActionLabel.setText(s);
-                    }
                 }
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
