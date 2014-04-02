@@ -1203,6 +1203,8 @@ public class MainFrame extends PFUIComponent {
                     if (totalStorage > 0) {
                         percentageUsed = 100.0d * (double) spaceUsed
                             / (double) totalStorage;
+                    } else {
+                        percentageUsed = 100.0d;
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
