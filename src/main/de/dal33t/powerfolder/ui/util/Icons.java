@@ -491,7 +491,7 @@ public class Icons {
         }
 
         String urlString = controller.getOSClient()
-            .getAvatarURL(member);
+            .getAvatarURL(member, true);
 
         try {
             URL url = new URL(urlString);
