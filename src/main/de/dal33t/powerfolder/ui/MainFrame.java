@@ -493,7 +493,6 @@ public class MainFrame extends PFUIComponent {
             .getValueBoolean(getController()))
         {
             lowerMainTextActionLabel.setNeverUnderline(true);
-            lowerMainTextActionLabel.setEnabled(false);
         }
 
         if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
