@@ -648,6 +648,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         backupOnlineStorageAction.allowWith(folderAdmin);
         stopOnlineStorageAction.allowWith(folderAdmin);
         inviteAction.allowWith(folderAdmin);
+
+        admin = getController().getOSClient().getAccount()
+            .hasAdminPermission(folderInfo);
     }
 
     private void updateLocalButtons() {
