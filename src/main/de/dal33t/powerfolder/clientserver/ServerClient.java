@@ -727,11 +727,17 @@ public class ServerClient extends PFComponent {
      * @param information about the account
      * @return the avatar URL.
      */
-    public String getAvatarURL(AccountInfo aInfo) {
+    public String getAvatarURL(AccountInfo aInfo, boolean thumbnail) {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL("/avatars/user/" + aInfo.getOID(), false);
+        StringBuilder url = new StringBuilder();
+        url.append("/avatars/user/");
+        url.append(aInfo.getOID());
+        if (thumbnail) {
+            url.append("_tn");
+        }
+        return getWebURL(url.toString(), false);
     }
 
     /**
