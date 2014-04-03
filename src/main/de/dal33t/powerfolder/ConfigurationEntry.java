@@ -955,16 +955,17 @@ public enum ConfigurationEntry {
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false) {
         @Override
         public Boolean getValueBoolean(Controller controller) {
-            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
-                && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
-            {
-                return Boolean.TRUE;
-            }
-
             String value = getValue(controller);
+
             if (value == null) {
+                if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
+                    && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
+                {
+                    return Boolean.TRUE;
+                }
                 value = getDefaultValue();
             }
+            
             try {
                 return value.trim().equalsIgnoreCase("true");
             } catch (NumberFormatException e) {
