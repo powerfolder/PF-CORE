@@ -363,9 +363,6 @@ public class MainFrame extends PFUIComponent {
                 .getUnreadNoticesCountVM().getValue();
         if (unreadCount == 0) {
             noticesActionLabel.setVisible(false);
-            //FIXME
-            //This is a hack to fire a handleSyncStatus Event
-            getController().setPaused(getController().isPaused());
         } else if (unreadCount == 1) {
             noticesActionLabel.setVisible(true);
             noticesActionLabel.setText(Translation.getTranslation(

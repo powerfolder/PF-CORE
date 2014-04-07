@@ -123,6 +123,8 @@ public class ApplicationModel extends PFUIComponent {
         getController().getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
         getApplicationModel().getFolderRepositoryModel().addOverallFolderStatListener(
                 new MyOverallFolderStatListener());
+        getNoticesModel().getUnreadNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
+        getNoticesModel().getAllNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
     }
 
     // Logic ******************************************************************
@@ -348,6 +350,16 @@ public class ApplicationModel extends PFUIComponent {
     // ////////////////
     // Inner Classes //
     // ////////////////
+    
+    private class MyNoticesModelPropertyChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            handleSyncStatusChange();
+            
+        }
+       
+    }
 
     private class MyPausedModeListener implements PausedModeListener {
 
