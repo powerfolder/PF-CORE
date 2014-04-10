@@ -1002,7 +1002,7 @@ public enum ConfigurationEntry {
      * Automatically setup all folders the user has access to and also
      * automatically accept folder invites.
      */
-    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", false),
+    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", true),
 
     REMOVED_FOLDER_FILES("removed.folder.files", ""),
 
