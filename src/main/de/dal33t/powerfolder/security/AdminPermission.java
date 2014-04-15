@@ -42,12 +42,12 @@ public class AdminPermission extends SingletonPermission {
         }
         if (impliedPermission instanceof FolderPermission) {
             return ADMIN_PERMISSION_FOLDER_IMPLICATION != null
-                && ADMIN_PERMISSION_FOLDER_IMPLICATION.implies(this, impliedPermission);
+                && ADMIN_PERMISSION_FOLDER_IMPLICATION.implies(this, (FolderPermission) impliedPermission);
         }
         return true;
     }
 
     public interface AdminPermissionFolderImplication {
-        boolean implies(AdminPermission p, Permission impliedPermission);
+        boolean implies(AdminPermission p, FolderPermission impliedPermission);
     }
 }
