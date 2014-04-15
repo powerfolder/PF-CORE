@@ -64,4 +64,37 @@ public class PermissionTest extends TestCase {
         assertEquals("FolderReadWritePermission IDs not equal", fap.getId(),
             "4711_FP_FolderReadWritePermission");
     }
+
+    /**
+     * Folder owner must be singular, therefore no other Permission should imply
+     * FolderOwnerPermission.
+     */
+    public void testFolderOwnerIndependence() {
+        Organization org = new Organization();
+        Group grp = new Group("testGroup");
+        Account acc = new Account();
+        acc.addGroup(grp);
+        acc.setOrganizationOID(org.getOID());
+        FolderInfo foInfo = new FolderInfo("testFolder", acc.createInfo());
+        Permission[] allPermissions = new Permission[] {
+            new FolderAdminPermission(foInfo),
+            new FolderReadPermission(foInfo),
+            new FolderReadWritePermission(foInfo),
+            new GroupAdminPermission(grp),
+            new OrganizationAdminPermission(org.getOID()),
+            AdminPermission.INSTANCE,
+            ChangePreferencesPermission.INSTANCE,
+            ChangeTransferModePermission.INSTANCE,
+            ComputersAppPermission.INSTANCE,
+            ConfigAppPermission.INSTANCE,
+            FolderCreatePermission.INSTANCE,
+            FolderRemovePermission.INSTANCE,
+            SystemSettingsPermission.INSTANCE
+        };
+        Permission ownerPermission = new FolderOwnerPermission(foInfo);
+        for (Permission p : allPermissions) {
+            assertFalse(p.getClass().getName() + " implies " + FolderOwnerPermission.class.getName(),
+                p.implies(ownerPermission));
+        }
+    }
 }

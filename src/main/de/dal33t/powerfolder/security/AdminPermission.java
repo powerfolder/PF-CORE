@@ -21,23 +21,33 @@ package de.dal33t.powerfolder.security;
 
 /**
  * Administration permission
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
 public class AdminPermission extends SingletonPermission {
+
     private static final long serialVersionUID = 100L;
     public static final AdminPermission INSTANCE = new AdminPermission();
+    public static AdminPermissionFolderImplication ADMIN_PERMISSION_FOLDER_IMPLICATION;
 
-    public boolean implies(Permission impliedPermision) {
+    public boolean implies(Permission impliedPermission) {
         // ADMIN, All permissions implied except SystemSettings
-        if (SystemSettingsPermission.INSTANCE.equals(impliedPermision)) {
+        if (SystemSettingsPermission.INSTANCE.equals(impliedPermission)) {
             return false;
         }
         // Also admin is NEVER owner of a folder.
-        if (impliedPermision instanceof FolderOwnerPermission) {
+        if (impliedPermission instanceof FolderOwnerPermission) {
             return false;
         }
+        if (impliedPermission instanceof FolderPermission) {
+            return ADMIN_PERMISSION_FOLDER_IMPLICATION != null
+                && ADMIN_PERMISSION_FOLDER_IMPLICATION.implies(this, (FolderPermission) impliedPermission);
+        }
         return true;
+    }
+
+    public interface AdminPermissionFolderImplication {
+        boolean implies(AdminPermission p, FolderPermission impliedPermission);
     }
 }
