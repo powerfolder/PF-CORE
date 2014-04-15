@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Test for FolderStatistic.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -60,6 +60,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerMaggie(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerHomer(), false);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerMarge(), false);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerLisa(), false);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerMaggie(), false);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerBart(), false);
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);
     }
 
@@ -645,6 +650,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
     private void waitForDeletion(final String filename) {
         TestHelper.waitForCondition(10, new Condition() {
+            @Override
             public boolean reached() {
                 Path fileAtHomer = getFolderAtHomer().getLocalBase().resolve(
                     filename);
@@ -690,7 +696,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
     /**
      * Waits till all Simpsons received the filelist of the given folder.
-     * 
+     *
      * @param folder
      */
     private void waitForFilelistReceived(final Folder folder) {
@@ -701,6 +707,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             Collection<FileInfo> filesOnLisa;
             Collection<FileInfo> filesOnMaggie;
 
+            @Override
             public String message() {
                 Collection<FileInfo> filesLocal = folder.getKnownFiles();
                 return "Not identical! Filelist of "
@@ -718,6 +725,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
                     + identicalFileList(filesLocal, filesOnMaggie) + ')';
             }
 
+            @Override
             public boolean reached() {
                 if (folder.getConnectedMembersCount() != 4) {
                     throw new RuntimeException("Not all members connected on "
