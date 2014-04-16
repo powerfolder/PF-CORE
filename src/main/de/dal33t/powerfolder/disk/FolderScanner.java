@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
@@ -82,7 +83,7 @@ public class FolderScanner extends PFComponent {
      * Maximum number of DirectoryCrawlers after test of a big folder this seams
      * the optimum number.
      */
-    private static final int MAX_CRAWLERS = 3;
+    private int maxCrawlers = 3;
 
     /**
      * The files which could not be scanned
@@ -117,6 +118,8 @@ public class FolderScanner extends PFComponent {
     FolderScanner(Controller controller) {
         super(controller);
         threadOwnership = new Semaphore(1);
+        maxCrawlers = ConfigurationEntry.FOLDER_SCANNER_MAX_CRAWLERS
+            .getValueInt(getController());
     }
 
     /**
@@ -125,7 +128,7 @@ public class FolderScanner extends PFComponent {
      */
     public void start() {
         // start directoryCrawlers
-        for (int i = 0; i < MAX_CRAWLERS; ++i) {
+        for (int i = 0; i < maxCrawlers; ++i) {
             DirectoryCrawler directoryCrawler = new DirectoryCrawler();
             Thread thread = new Thread(directoryCrawler,
                 "FolderScanner.DirectoryCrawler #" + i);
@@ -296,14 +299,17 @@ public class FolderScanner extends PFComponent {
             ScanResult myResult = currentScanResult;
             reset();
             if (isWarning()) {
-                if (currentScanResult.getResultState() == ResultState.SCANNED) {
+                long took = System.currentTimeMillis() - started;
+                if (currentScanResult.getResultState() == ResultState.SCANNED
+                    || took > 1000L * 60 * 5)
+                {
                     logFiner("Scan of folder " + folder.getName() + " done in "
-                        + (System.currentTimeMillis() - started)
-                        + "ms. Result: " + currentScanResult.getResultState());
+                        + took + "ms. Result: "
+                        + currentScanResult.getResultState());
                 } else {
                     logWarning("Scan of folder " + folder.getName()
-                        + " done in " + (System.currentTimeMillis() - started)
-                        + "ms. Result: " + currentScanResult.getResultState());
+                        + " done in " + took + "ms. Result: "
+                        + currentScanResult.getResultState());
                 }
             }
             return myResult;
@@ -476,7 +482,7 @@ public class FolderScanner extends PFComponent {
         boolean ready;
         synchronized (directoryCrawlersPool) {
             ready = activeDirectoryCrawlers.isEmpty()
-                && directoryCrawlersPool.size() == MAX_CRAWLERS;
+                && directoryCrawlersPool.size() == maxCrawlers;
         }
         return ready;
     }
