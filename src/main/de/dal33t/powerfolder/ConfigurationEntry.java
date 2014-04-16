@@ -997,6 +997,11 @@ public enum ConfigurationEntry {
      */
     DEFAULT_TRANSFER_MODE("default.transfer.mode",
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
+        
+    /**
+     * The number of maximum activate 
+     */
+    FOLDER_SCANNER_MAX_CRAWLERS("sync.folder.max_crawlers", 3),
 
     /**
      * Automatically setup all folders the user has access to and also
