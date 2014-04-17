@@ -35,7 +35,7 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         authInfo.setAuthState(ECPAuthState.NOT_STARTED);
     }
 
-    public ECPAuthenticator(String username, String password,
+    ECPAuthenticator(String username, String password,
         URI idpEcpEndpoint, URI spUrl)
     {
         this(new DefaultHttpClient(), username, password, idpEcpEndpoint, spUrl);
