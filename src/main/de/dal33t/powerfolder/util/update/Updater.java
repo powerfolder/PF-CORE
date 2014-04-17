@@ -31,6 +31,7 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -83,6 +84,10 @@ public class Updater extends Thread {
         final Controller controller, final UpdaterHandler updateHandler)
     {
         Reject.ifNull(controller, "Controller is null");
+        // PFS-2461: disable all updates, needed for MSI installation
+        if (!ConfigurationEntry.ENABLE_UPDATE.getValueBoolean(controller)) {
+            return;
+        }
         TimerTask updateCheckTask = new TimerTask() {
             @Override
             public void run() {

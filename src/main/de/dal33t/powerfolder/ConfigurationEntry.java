@@ -82,6 +82,13 @@ public enum ConfigurationEntry {
      */
     AUTO_UPDATE("auto.update", false),
 
+    // PFC-2461: possibility to disable updates completely for MSI installation
+    /**
+     * Enables/disables all updates. If disabled, prevents background process
+     * hides updates from the UI.
+     */
+    ENABLE_UPDATE("enable.update", true),
+
     /**
      * If some client options are available only with permissions such as create
      * folder or change client preferences.
