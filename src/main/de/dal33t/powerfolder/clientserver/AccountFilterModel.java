@@ -32,7 +32,9 @@ public class AccountFilterModel extends Model {
     public static final String PROPERTY_ACTIVE_TRIAL = "activeTrial";
     public static final String PROPERTY_USERNAME = "username";
     public static final String PROPERTY_QUERYNAME = "queryname";
-    
+    public static final String PROPERTY_PAGE_SIZE = "pageSize";
+    public static final String PROPERTY_PAGE_NUMBER = "pageNumber";
+
     private boolean disabledOnly;
     private boolean proUsersOnly;
     private boolean activeTrial;
@@ -41,7 +43,9 @@ public class AccountFilterModel extends Model {
     private String organizationOID = Organization.FILTER_MATCH_ALL;
     private String sortingProperty;
     private String sortingOrder;
-    
+    private int pageSize;
+    private int pageNumber;
+
     private int maxResults;
 
     // Getter and Setter ******************************************************
@@ -117,21 +121,37 @@ public class AccountFilterModel extends Model {
     public boolean isAnyOrganization() {
         return Organization.FILTER_MATCH_ALL.equals(organizationOID);
     }
-    
+
     public String getSortingProperty() {
         return sortingProperty;
     }
-    
+
     public void setSortingProperty(String sortingProperty) {
         this.sortingProperty = sortingProperty;
     }
-    
+
     public String getSortingOrder() {
         return sortingOrder;
     }
-    
+
     public void setSortingOrder(String sortingOrder) {
         this.sortingOrder = sortingOrder;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    public int getPageNumber() {
+        return pageNumber;
     }
 
     // Logic ******************************************************************
