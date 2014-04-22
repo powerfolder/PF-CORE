@@ -43,7 +43,6 @@ public class AccountFilterModel extends Model {
     private String organizationOID = Organization.FILTER_MATCH_ALL;
     private String sortingProperty;
     private String sortingOrder;
-    private int pageSize;
     private int pageNumber;
 
     private int maxResults;
@@ -136,14 +135,6 @@ public class AccountFilterModel extends Model {
 
     public void setSortingOrder(String sortingOrder) {
         this.sortingOrder = sortingOrder;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public int getPageSize() {
-        return pageSize;
     }
 
     public void setPageNumber(int pageNumber) {
