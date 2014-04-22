@@ -82,6 +82,23 @@ public enum ConfigurationEntry {
      */
     AUTO_UPDATE("auto.update", false),
 
+    // PFC-2461: possibility to disable updates completely for MSI installation
+    /**
+     * Enables/disables all updates. If disabled, prevents background process
+     * hides updates from the UI.
+     */
+    ENABLE_UPDATE("enable.update", true) {
+        @Override
+        public String getDefaultValue() {
+            // Hack for PFC-2461
+            // Updates disabled by default if software was installed via MSI
+            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+                return Boolean.FALSE.toString();
+            }
+            return super.getDefaultValue();
+        }
+    },
+
     /**
      * If some client options are available only with permissions such as create
      * folder or change client preferences.
