@@ -857,14 +857,17 @@ public class Controller extends PFComponent {
             }
 
             str = ConfigurationEntry.LOG_SYSLOG_HOST.getValue(this);
-            if (str != null && !str.trim().toLowerCase().contains("localhost")) {
-                Controller.setLogNickPrefix(true);
+            if (str != null) {
+                if (!str.trim().toLowerCase().contains("localhost")) {
+                    Controller.setLogNickPrefix(true);
+                }
+
+                str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
+                Level syslogLevel = LoggingManager.levelForName(str);
+                LoggingManager.setSyslogLogging(syslogLevel != null
+                    ? consoleLevel
+                        : Level.WARNING, this);
             }
-            str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
-            Level syslogLevel = LoggingManager.levelForName(str);
-            LoggingManager.setSyslogLogging(syslogLevel != null
-                ? consoleLevel
-                : Level.WARNING, this);
         }
 
         if (commandLine != null && commandLine.hasOption('l')) {
