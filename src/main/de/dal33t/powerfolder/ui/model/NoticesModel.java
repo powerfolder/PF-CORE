@@ -263,11 +263,9 @@ public class NoticesModel extends PFUIComponent {
     public void clearAll() {
         for (Notice n : notices) {
             if (n instanceof InvitationNotice) {
-                getController()
-                    .getOSClient()
-                    .getSecurityService()
-                    .declineInvitation(
-                        ((InvitationNotice) n).getPayload(getController()));
+                getController().getThreadPool().execute(
+                    new DeclineInvitationTask(((InvitationNotice) n)
+                        .getPayload(getController())));
             }
         }
         notices.clear();
@@ -278,11 +276,9 @@ public class NoticesModel extends PFUIComponent {
         for (Notice n : notices) {
             if (notice.equals(n)) {
                 if (n instanceof InvitationNotice) {
-                    getController()
-                        .getOSClient()
-                        .getSecurityService()
-                        .declineInvitation(
-                            ((InvitationNotice) n).getPayload(getController()));
+                    getController().getThreadPool().execute(
+                        new DeclineInvitationTask(((InvitationNotice) n)
+                            .getPayload(getController())));
                 }
                 notices.remove(notice);
                 updateNoticeCounts();
@@ -301,5 +297,19 @@ public class NoticesModel extends PFUIComponent {
             }
         }
         unreadNoticesCountVM.setValue(count);
+    }
+
+    private class DeclineInvitationTask implements Runnable {
+        Invitation invitation;
+
+        public DeclineInvitationTask(Invitation invitation) {
+            this.invitation = invitation;
+        }
+
+        @Override
+        public void run() {
+            getController().getOSClient().getSecurityService()
+                .declineInvitation(invitation);
+        }
     }
 }

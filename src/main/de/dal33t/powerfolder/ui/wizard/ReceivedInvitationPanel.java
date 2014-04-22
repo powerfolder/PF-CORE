@@ -163,7 +163,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
             .getValueBoolean(getController()))
         {
-            return new SwingWorkerPanel(getController(), new AcceptInviteTask(invitation),
+            return new SwingWorkerPanel(getController(), new AcceptInviteTask(),
                 Translation.getTranslation(""), Translation.getTranslation(""),
                 next);
         } else {
@@ -322,13 +322,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     }
 
     private class AcceptInviteTask implements Runnable {
-
-        private final Invitation inv;
-
-        public AcceptInviteTask(Invitation invitation) {
-            inv = invitation;
-        }
-
         @Override
         public void run() {
             getController().getOSClient().getSecurityService()
