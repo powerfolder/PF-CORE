@@ -1995,6 +1995,10 @@ public class Controller extends PFComponent {
             pluginManager.shutdown();
         }
 
+        if (MacUtils.isSupported()) {
+            MacUtils.getInstance().removeAppReOpenedListener(this);
+        }
+
         if (wasStarted) {
             System.out.println("------------ " + PowerFolder.NAME + " "
                 + PROGRAM_VERSION + " Controller Shutdown ------------");

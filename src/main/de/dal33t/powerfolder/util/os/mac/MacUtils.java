@@ -37,13 +37,15 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Utilities for Mac OS X
- * 
+ *
  * @author <A HREF="mailto:bytekeeper@powerfolder.com">Dennis Waldherr</A>
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @version $Revision$
  */
 public class MacUtils extends Loggable {
 
+    private Object application;
+    private Object reOpenedListener;
     private static MacUtils instance;
     private MacUtils() {
     }
@@ -114,7 +116,7 @@ public class MacUtils extends Loggable {
     /**
      * Create a 'PowerFolders' link in Links, pointing to the PowerFolder base
      * dir.
-     * 
+     *
      * @param setup
      * @param controller
      * @throws IOException
@@ -147,22 +149,6 @@ public class MacUtils extends Loggable {
             Method getApplication = appClass
                 .getDeclaredMethod("getApplication");
 
-            // The functionallity that should be executed
-            InvocationHandler openFrame = new InvocationHandler() {
-                @Override
-                public Object invoke(Object proxy, Method method, Object[] args)
-                    throws Throwable
-                {
-                    // Skip, if this is the server.
-                    if (controller.getMySelf().isServer()) {
-                        return null;
-                    }
-
-                    controller.getUIController().getMainFrame().toFront();
-                    return null;
-                }
-            };
-
             // Get the addAppEventListener method of com.apple.eawt.Application
             Method addAppEventListener = appClass.getMethod(
                 "addAppEventListener", Class
@@ -173,20 +159,59 @@ public class MacUtils extends Loggable {
                 .forName("com.apple.eawt.AppReOpenedListener");
 
             // Get the acutal Application instance
-            Object application = getApplication.invoke(null, new Object[0]);
+            application = getApplication.invoke(null, new Object[0]);
+
+            // The functionallity that should be executed
+            InvocationHandler openFrame = new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args)
+                    throws Throwable
+                    {
+                    // Skip, if this is the server.
+                    if (!controller.isUIEnabled()) {
+                        return null;
+                    }
+
+                    controller.getUIController().getMainFrame().toFront();
+                    return null;
+                    }
+            };
 
             // Associate the InvocationHandler with the AppReOpenedListener Interface
-            Object listener = Proxy.newProxyInstance(
+            reOpenedListener = Proxy.newProxyInstance(
                 appReOpenedListener.getClassLoader(),
                 new Class<?>[]{appReOpenedListener}, openFrame);
 
             // Add the InvocationHandler as AppReOpenedListener
-            addAppEventListener.invoke(application, listener);
+            addAppEventListener.invoke(application, reOpenedListener);
         } catch (ClassNotFoundException | SecurityException
             | NoSuchMethodException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException e)
         {
             logWarning("Could not add the AppReOpenedListener: " + e);
+            e.printStackTrace();
+        }
+    }
+
+    public void removeAppReOpenedListener(Controller controller) {
+        if (reOpenedListener == null) {
+            return;
+        }
+
+        try {
+            // Load the class com.apple.eawt.Application
+            Class<?> appClass = Class.forName("com.apple.eawt.Application");
+
+            Method removeAppEventListener = appClass.getMethod(
+                "removeAppEventListener", Class
+                .forName("com.apple.eawt.AppEventListener"));
+
+            removeAppEventListener.invoke(application, reOpenedListener);
+        } catch (ClassNotFoundException | NoSuchMethodException
+            | SecurityException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e)
+        {
+            logWarning("Could not remove the AppReOpenedListener: " + e);
             e.printStackTrace();
         }
     }
@@ -214,7 +239,7 @@ public class MacUtils extends Loggable {
                     + System.getProperty("os.name") + " "
                     + System.getProperty("os.version"));
         }
-        
+
         Path pfile = Paths.get(bundleLocation).toAbsolutePath();
         if (Files.notExists(pfile)) {
             logFine("Reset bundle path");
