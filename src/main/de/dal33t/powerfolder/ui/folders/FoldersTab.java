@@ -36,8 +36,9 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -56,6 +57,7 @@ public class FoldersTab extends PFUIComponent {
     private JLabel couldNotConnect;
     private JLabel notLoggedInLabel;
     private ActionLabel loginActionLabel;
+    private ActionLabel newFolderLink;
     private JLabel noFoldersFoundLabel;
     private ActionLabel folderWizardActionLabel;
     private ActionLabel newFolderActionLabel;
@@ -90,7 +92,6 @@ public class FoldersTab extends PFUIComponent {
         newFolderActionLabel.setText(Translation
             .getTranslation("folders_tab.new_folder"));
         client = getApplicationModel().getServerClientModel().getClient();
-        //        client.addListener(new MyServerClientListener());
 
         controller.getThreadPool().scheduleAtFixedRate(new Runnable() {
             @Override
@@ -193,13 +194,14 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(false);
                     loginActionLabel.setVisible(false);
                     noFoldersFoundLabel.setVisible(false);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
+                        if (newFolderLink != null) {
+                            newFolderLink.setEnabled(false);
+                        }
                     }
                 } else if (!client.isConnected()) {
                     connectingLabel.setVisible(true);
@@ -207,13 +209,14 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(false);
                     loginActionLabel.setVisible(false);
                     noFoldersFoundLabel.setVisible(false);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
+                        if (newFolderLink != null) {
+                            newFolderLink.setEnabled(false);
+                        }
                     }
                 } else if (username == null
                     || username.trim().length() == 0
@@ -224,13 +227,14 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(true);
                     loginActionLabel.setVisible(true);
                     noFoldersFoundLabel.setVisible(false);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
+                        if (newFolderLink != null) {
+                            newFolderLink.setEnabled(false);
+                        }
                     }
                 } else {
                     connectingLabel.setVisible(false);
@@ -238,13 +242,20 @@ public class FoldersTab extends PFUIComponent {
                     notLoggedInLabel.setVisible(false);
                     loginActionLabel.setVisible(false);
                     noFoldersFoundLabel.setVisible(true);
-                    if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
+                    if (getController().getOSClient()
+                        .isAllowedToCreateFolders())
                     {
                         folderWizardActionLabel.setVisible(true);
                         newFolderActionLabel.setVisible(true);
+                        if (newFolderLink != null) {
+                            newFolderLink.setEnabled(true);
+                        }
+                    } else {
+                        folderWizardActionLabel.setVisible(false);
+                        newFolderActionLabel.setVisible(false);
+                        if (newFolderLink != null) {
+                            newFolderLink.setEnabled(false);
+                        }
                     }
                 }
             }
@@ -259,9 +270,12 @@ public class FoldersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        ActionLabel newFolderLink = new ActionLabel(getController(),
+        newFolderLink = new ActionLabel(getController(),
             getApplicationModel().getActionModel().getNewFolderAction());
+        getController().getOSClient().addListener(new MyServerClientListener(newFolderLink));
         newFolderLink.convertToBigLabel();
+        newFolderLink.setEnabled(getController().getOSClient()
+            .isAllowedToCreateFolders());
         ActionLabel folderWizardLink = null;
         Boolean expertMode = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
@@ -322,30 +336,46 @@ public class FoldersTab extends PFUIComponent {
         }
     }
 
-//    private class MyServerClientListener implements ServerClientListener {
-//        public void accountUpdated(ServerClientEvent event) {
-//            updateEmptyLabel();
-//        }
-//
-//        public boolean fireInEventDispatchThread() {
-//            return true;
-//        }
-//
-//        public void login(ServerClientEvent event) {
-//            updateEmptyLabel();
-//        }
-//
-//        public void nodeServerStatusChanged(ServerClientEvent event) {
-//            updateEmptyLabel();
-//        }
-//
-//        public void serverConnected(ServerClientEvent event) {
-//            updateEmptyLabel();
-//        }
-//
-//        public void serverDisconnected(ServerClientEvent event) {
-//            updateEmptyLabel();
-//        }
-//    }
+    private class MyServerClientListener implements ServerClientListener {
+        ActionLabel label;
+
+        MyServerClientListener(ActionLabel label) {
+            this.label = label;
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                .isAllowedToCreateFolders());
+            updateEmptyLabel();
+        }
+
+        public void login(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                .isAllowedToCreateFolders());
+            updateEmptyLabel();
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                .isAllowedToCreateFolders());
+            updateEmptyLabel();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                .isAllowedToCreateFolders());
+            updateEmptyLabel();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                .isAllowedToCreateFolders());
+            updateEmptyLabel();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
 
 }

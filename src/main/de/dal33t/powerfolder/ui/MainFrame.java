@@ -76,6 +76,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
@@ -232,10 +233,8 @@ public class MainFrame extends PFUIComponent {
         builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper
             .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
-        if ((!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
-            || getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE)) && setupLabel != null)
+        if (getController().getOSClient().isAllowedToCreateFolders()
+            && setupLabel != null)
         {
             builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         } else {
@@ -364,9 +363,6 @@ public class MainFrame extends PFUIComponent {
                 .getUnreadNoticesCountVM().getValue();
         if (unreadCount == 0) {
             noticesActionLabel.setVisible(false);
-            //FIXME
-            //This is a hack to fire a handleSyncStatus Event           
-            getController().setPaused(getController().isPaused());
         } else if (unreadCount == 1) {
             noticesActionLabel.setVisible(true);
             noticesActionLabel.setText(Translation.getTranslation(
@@ -483,17 +479,17 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
+        upperMainTextActionLabel.setNeverUnderline(true);
+        lowerMainTextActionLabel.setNeverUnderline(true);
+
         if (ProUtil.isZyncro(getController())) {
-            upperMainTextActionLabel.setNeverUnderline(true);
-            lowerMainTextActionLabel.setNeverUnderline(true);
             lowerMainTextActionLabel.setToolTipText("");
         }
-        
+
         if (PreferencesEntry.BEGINNER_MODE
             .getValueBoolean(getController()))
         {
             lowerMainTextActionLabel.setNeverUnderline(true);
-            lowerMainTextActionLabel.setEnabled(false);
         }
 
         if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
@@ -663,17 +659,21 @@ public class MainFrame extends PFUIComponent {
         if (ProUtil.isZyncro(getController())) {
             return;
         }
-        if (getController().isPaused()) {
-            getController().setPaused(false);
-        } else if (frameMode == FrameMode.COMPACT && (!noticeWarningButton.isVisible()  && !noticeInfoButton.isVisible())) {
+
+        if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
             setFrameMode(FrameMode.NORMAL);
-        } else if(frameMode == FrameMode.COMPACT && ((noticeWarningButton.isVisible()) || noticeInfoButton.isVisible())) {
-            setFrameMode(FrameMode.NORMAL);
-            getController().getUIController().openNoticesCard();
-        } else {
-            setFrameMode(FrameMode.COMPACT);
+            if (getController().getUIController().getApplicationModel().getNoticesModel().getAllNotices().size() > 0) {
+                getController().getUIController().openNoticesCard();
+            } else {
+                for (Folder folder : getController().getFolderRepository().getFolders()) {
+                    if (folder.getProblems().size() > 0) {
+                        getController().getUIController().openProblemsInformation(folder.getInfo());
+                        break;
+                    }
+                }
+            }
         }
-        setLinkTooltips();
+//        setLinkTooltips();
     }
 
     private void updateMainStatus(SyncStatusEvent event) {
@@ -682,10 +682,8 @@ public class MainFrame extends PFUIComponent {
                 .getApplicationModel().getFolderRepositoryModel();
         boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
             || event.equals(SyncStatusEvent.NO_FOLDERS);
-        boolean showSetupLabel = (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController()) || getController().getOSClient()
-            .getAccount().hasPermission(FolderCreatePermission.INSTANCE))
-            && setupLabel != null;
+        boolean showSetupLabel = getController().getOSClient()
+            .isAllowedToCreateFolders() && setupLabel != null;
 
         // Set visibility of buttons and labels.
         pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
@@ -720,9 +718,11 @@ public class MainFrame extends PFUIComponent {
                 .formatDecimal(overallSyncPercentage) + '%' : "";
             upperText = Translation.getTranslation("main_frame.paused",
                 pausedTemp);
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NOT_STARTED)) {
             upperText = Translation.getTranslation("main_frame.not_running");
             setupText = Translation.getTranslation("main_frame.activate_now");
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
             if(getController().getOSClient().getAccount().getFolders().isEmpty()){
                 upperText = Translation.getTranslation("folders_tab.no_folders_found");
@@ -733,6 +733,7 @@ public class MainFrame extends PFUIComponent {
                 .getNewFolderAction().getName();
             zyncroLabel
                 .setText(Translation.getTranslation("main_frame.choose_folders"));
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCING)) {
             syncDate = folderRepositoryModel.getEstimatedSyncDate();
             String syncingTemp = overallSyncPercentage >= 0
@@ -740,35 +741,42 @@ public class MainFrame extends PFUIComponent {
                 .formatDecimal(overallSyncPercentage) + '%' : "...";
             upperText = Translation.getTranslation("main_frame.syncing",
                 syncingTemp);
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
-                upperText = Translation.getTranslation("main_frame.in_sync");
+            upperText = Translation.getTranslation("main_frame.in_sync");
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
-                upperText = Translation.getTranslation(
-                        "main_frame.sync_incomplete");
+            upperText = Translation
+                .getTranslation("main_frame.sync_incomplete");
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
             upperText = Translation.getTranslation("main_frame.connecting.text");
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.LOGGING_IN) || !client.isLoginExecuted()) {
             upperText = Translation.getTranslation("main_frame.logging_in.text");
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
             upperText = Translation.getTranslation("main_frame.log_in_failed.text");
+            upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.WARNING)){
             upperText = Translation.getTranslation("main_frame.warning_notice.text");
+            upperMainTextActionLabel.setNeverUnderline(false);
         } else if (event.equals(SyncStatusEvent.INFORMATION)){
             upperText = Translation.getTranslation("main_frame.info_notice.text");
+            upperMainTextActionLabel.setNeverUnderline(false);
         } else {
             logSevere("Not handling all sync states: " + event);
+            upperMainTextActionLabel.setNeverUnderline(true);
         }
 
         upperMainTextActionLabel.setText(upperText);
         if (showSetupLabel) {
             setupLabel.setText(setupText);
-        }
-
-        // The lowerMainTextActionLabel and setupLabel share the same slot,
-        // so visibility is mutually exclusive.
-        if (showSetupLabel) {
+            // The lowerMainTextActionLabel and setupLabel share the same slot,
+            // so visibility is mutually exclusive.
             setupLabel.setVisible(notStartedOrNoFolders);
         }
+
         lowerMainTextActionLabel.setVisible(!notStartedOrNoFolders);
 
         // Lower text - sync date stuff.
@@ -1191,6 +1199,10 @@ public class MainFrame extends PFUIComponent {
                     if (totalStorage > 0) {
                         percentageUsed = 100.0d * (double) spaceUsed
                             / (double) totalStorage;
+                    } else {
+                        loginActionLabel.setText(Translation
+                            .getTranslation("main_frame.storage_subscription_disabled.text"));
+                        percentageUsed = 100.0d;
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
@@ -1316,7 +1328,7 @@ public class MainFrame extends PFUIComponent {
                 break;
         }
 
-        setLinkTooltips();
+//        setLinkTooltips();
     }
 
     public void hideInlineInfoPanel() {
@@ -1488,7 +1500,7 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getUIController().askToPauseResume();
-            setLinkTooltips();
+//            setLinkTooltips();
         }
     }
 
@@ -1575,7 +1587,20 @@ public class MainFrame extends PFUIComponent {
             if (frameMode == FrameMode.COMPACT) {
                 setFrameMode(FrameMode.NORMAL);
             }
-            getController().getUIController().openNoticesCard();
+            if (getController().getUIController().getApplicationModel()
+                .getNoticesModel().getAllNotices().size() > 0)
+            {
+                getController().getUIController().openNoticesCard();
+            } else if (getController().getFolderRepository().getFolderProblemsCount() > 0) {
+                for (Folder fo : getController().getFolderRepository().getFolders()) {
+                    if (fo.getProblems().size() > 0) {
+                        getController().getUIController().openProblemsInformation(fo.getInfo());
+                        break;
+                    }
+                }
+            } else {
+                logFine("No Notices and no Problems to show");
+            }
         }
     }
 
@@ -1662,11 +1687,7 @@ public class MainFrame extends PFUIComponent {
                 }
 
                 // Does user have folder create permission?
-                if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                        .getValueBoolean(getController())
-                        && !getController().getOSClient().getAccount()
-                        .hasPermission(FolderCreatePermission.INSTANCE))
-                {
+                if (!getController().getOSClient().isAllowedToCreateFolders()) {
                     logInfo("Skipping importData (no folder create permission).");
                     return false;
                 }

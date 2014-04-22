@@ -648,6 +648,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         backupOnlineStorageAction.allowWith(folderAdmin);
         stopOnlineStorageAction.allowWith(folderAdmin);
         inviteAction.allowWith(folderAdmin);
+
+        admin = getController().getOSClient().getAccount()
+            .hasAdminPermission(folderInfo);
     }
 
     private void updateLocalButtons() {
@@ -1165,7 +1168,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (!getController().isBackupOnly()) {
                 boolean addedSeparator = false;
                 if (ConfigurationEntry.SERVER_INVITE_ENABLED
-                    .getValueBoolean(getController()))
+                    .getValueBoolean(getController()) && admin)
                 {
                     contextMenu.addSeparator();
                     addedSeparator = true;

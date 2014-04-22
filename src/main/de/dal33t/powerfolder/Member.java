@@ -1805,8 +1805,9 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof RevertedFile) {
                 RevertedFile msg = (RevertedFile) message;
                 if (targetFolder != null) {
+                    // HERE FIXME HERE
                     Path path = msg.file.getDiskFile(getController().getFolderRepository());
-                    FolderReadOnlyProblem problem = new FolderReadOnlyProblem(path, true);                    
+                    FolderReadOnlyProblem problem = new FolderReadOnlyProblem(path, true);
                     targetFolder.addProblem(problem);
                 }
 

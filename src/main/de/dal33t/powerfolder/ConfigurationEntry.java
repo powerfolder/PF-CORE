@@ -955,16 +955,17 @@ public enum ConfigurationEntry {
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false) {
         @Override
         public Boolean getValueBoolean(Controller controller) {
-            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
-                && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
-            {
-                return Boolean.TRUE;
-            }
-
             String value = getValue(controller);
+
             if (value == null) {
+                if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
+                    && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
+                {
+                    return Boolean.TRUE;
+                }
                 value = getDefaultValue();
             }
+            
             try {
                 return value.trim().equalsIgnoreCase("true");
             } catch (NumberFormatException e) {
@@ -996,12 +997,17 @@ public enum ConfigurationEntry {
      */
     DEFAULT_TRANSFER_MODE("default.transfer.mode",
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
+        
+    /**
+     * The number of maximum activate 
+     */
+    FOLDER_SCANNER_MAX_CRAWLERS("sync.folder.max_crawlers", 3),
 
     /**
      * Automatically setup all folders the user has access to and also
      * automatically accept folder invites.
      */
-    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", false),
+    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", true),
 
     REMOVED_FOLDER_FILES("removed.folder.files", ""),
 

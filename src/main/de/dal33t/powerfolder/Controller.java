@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 9;
     private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 78;
+    private static final int REVISION_VERSION = 98;
     
     /**
      * Program version.
@@ -1983,8 +1983,8 @@ public class Controller extends PFComponent {
         }
 
         if (wasStarted) {
-            System.out.println("------------ PowerFolder " + PROGRAM_VERSION
-                + " Controller Shutdown ------------");
+            System.out.println("------------ " + PowerFolder.NAME + " "
+                + PROGRAM_VERSION + " Controller Shutdown ------------");
         }
 
         // remove current config
@@ -2306,6 +2306,9 @@ public class Controller extends PFComponent {
             if (ConfigurationEntry.DISABLE_GUI.getValueBoolean(this)) {
                 return true;
             }
+        }
+        if (Feature.UI_ENABLED.isDisabled()) {
+            return true;
         }
         return GraphicsEnvironment.isHeadless();
     }

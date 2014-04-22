@@ -71,7 +71,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
@@ -730,6 +729,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public int getFoldersCount(boolean includeMetaFolders) {
         return folders.size() + (includeMetaFolders ? metaFolders.size() : 0);
+    }
+
+    public int getFolderProblemsCount() {
+        int i = 0;
+        for (Folder folder : getFolders()) {
+            i += folder.getProblems().size();
+        }
+        return i;
     }
 
     /**
@@ -1424,11 +1431,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 return;
             }
-            if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-                .getValueBoolean(getController())
-                && !getController().getOSClient().getAccount()
-                    .hasPermission(FolderCreatePermission.INSTANCE))
-            {
+            if (!getController().getOSClient().isAllowedToCreateFolders()) {
                 if (isFine()) {
                     logFine("Skipping searching for new folders (no permission)...");
                 }
@@ -2237,8 +2240,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             if (syncMemberShips) {
-                getController().getOSClient().getServer()
-                    .synchronizeFolderMemberships();
+                // getController().getOSClient().getServer()
+                // .synchronizeFolderMemberships();
+                for (Member node : getController().getNodeManager()
+                    .getNodesAsCollection())
+                {
+                    if (node.isServer() && node.isCompletelyConnected()) {
+                        node.synchronizeFolderMemberships();
+                    }
+                }
             }
         }
     }

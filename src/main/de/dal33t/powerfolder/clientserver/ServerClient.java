@@ -44,6 +44,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSManager;
@@ -78,6 +83,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
@@ -97,7 +103,7 @@ import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 
 /**
  * Client to a server.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -119,12 +125,12 @@ public class ServerClient extends PFComponent {
     // Tries to re-login with these if re-connection happens
     private String username;
     private String passwordObf;
-    
+
     private String shibUsername;
     private String shibToken;
-    
+
     private Member server;
-    private MyThrowableHandler throwableHandler = new MyThrowableHandler();
+    private final MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
     private final AtomicBoolean loginExecuted = new AtomicBoolean(false);
 
@@ -166,7 +172,7 @@ public class ServerClient extends PFComponent {
     /**
      * Constructs a server client with the defaults from the config. allows
      * server change.
-     * 
+     *
      * @param controller
      */
     public ServerClient(Controller controller) {
@@ -198,7 +204,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Constructs a server client with the defaults from the config.
-     * 
+     *
      * @param controller
      * @param name
      * @param host
@@ -258,7 +264,7 @@ public class ServerClient extends PFComponent {
         // Allowed by default
         allowServerChange = serverChange;
         setAnonAccount();
-        
+
         if (firstCall) {
             getController().getNodeManager().addNodeManagerListener(
                 new MyNodeManagerListener());
@@ -298,7 +304,7 @@ public class ServerClient extends PFComponent {
     /**
      * Answers if the node is a temporary node info for a server. It does not
      * contains a valid id, but a hostname/port.
-     * 
+     *
      * @param node
      * @return true if the node is a temporary node info.
      */
@@ -309,7 +315,7 @@ public class ServerClient extends PFComponent {
     /**
      * Answers if the node is a temporary node info for a server. It does not
      * contains a valid id, but a hostname/port.
-     * 
+     *
      * @param node
      * @return true if the node is a temporary node info.
      */
@@ -421,7 +427,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Sets/Changes the server.
-     * 
+     *
      * @param serverNode
      * @param allowServerChange
      */
@@ -509,7 +515,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * #2488
-     * 
+     *
      * @return true if web DAV is available at the server.
      */
     public boolean supportsWebDAV() {
@@ -522,7 +528,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * #2488
-     * 
+     *
      * @return true if web login as regular user is allowed at the server.
      */
     public boolean supportsWebLogin() {
@@ -544,7 +550,7 @@ public class ServerClient extends PFComponent {
     /**
      * Convenience method for getting login URL with preset username and
      * password if possible
-     * 
+     *
      * @return the login URL
      */
     public String getLoginURLWithCredentials() {
@@ -616,7 +622,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * #2675: Shell integration.
-     * 
+     *
      * @param fInfo
      * @return
      */
@@ -640,7 +646,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Convenience method for getting login URL with preset username if possible
-     * 
+     *
      * @return the registration URL for this server.
      */
     public String getRecoverPasswordURL() {
@@ -669,7 +675,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Convenience method for getting register URL
-     * 
+     *
      * @return the registration URL for this server.
      */
     public String getRegisterURL() {
@@ -684,7 +690,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Convenience method for getting register URL
-     * 
+     *
      * @return the registration URL for this server.
      */
     public String getRegisterURLReferral() {
@@ -710,7 +716,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Convenience method for getting activation URL
-     * 
+     *
      * @return the activation URL for this server.
      */
     public String getActivationURL() {
@@ -722,15 +728,21 @@ public class ServerClient extends PFComponent {
 
     /**
      * Convenience method to get the URL to an avatar
-     * 
+     *
      * @param information about the account
      * @return the avatar URL.
      */
-    public String getAvatarURL(AccountInfo aInfo) {
+    public String getAvatarURL(AccountInfo aInfo, boolean thumbnail) {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL("/avatars/user/" + aInfo.getOID(), false);
+        StringBuilder url = new StringBuilder();
+        url.append("/avatars/user/");
+        url.append(aInfo.getOID());
+        if (thumbnail) {
+            url.append("_tn");
+        }
+        return getWebURL(url.toString(), false);
     }
 
     /**
@@ -757,7 +769,7 @@ public class ServerClient extends PFComponent {
     /**
      * Tries to logs in with the last know username/password combination for
      * this server.uses default account setting as fallback
-     * 
+     *
      * @return the identity with this username or <code>InvalidAccount</code> if
      *         login failed.
      */
@@ -808,7 +820,7 @@ public class ServerClient extends PFComponent {
         {
             un = systemUserName;
         }
-        
+
         if (StringUtils.isBlank(un)
             && (pw == null || pw.length == 0)
             && ConfigurationEntry.KERBEROS_SSO_ENABLED
@@ -851,7 +863,7 @@ public class ServerClient extends PFComponent {
      * <p>
      * If the server is not connected and invalid account is returned and the
      * login data saved for auto-login on reconnect.
-     * 
+     *
      * @param theUsername
      * @param thePassword
      * @return the identity with this username or <code>InvalidAccount</code> if
@@ -866,7 +878,7 @@ public class ServerClient extends PFComponent {
      * <p>
      * If the server is not connected and invalid account is returned and the
      * login data saved for auto-login on reconnect.
-     * 
+     *
      * @param theUsername
      * @param thePasswordObj
      *            the obfuscated password
@@ -923,7 +935,7 @@ public class ServerClient extends PFComponent {
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
-                    
+
                     loginExecuted.set(true);
                 } catch (RemoteCallException e) {
                     if (e.getCause() instanceof NoSuchMethodException) {
@@ -974,6 +986,7 @@ public class ServerClient extends PFComponent {
                     loggingIn.set(false);
                     fireLogin(accountDetails);
                     getController().schedule(new Runnable() {
+                        @Override
                         public void run() {
                             // Also switches server
                             updateLocalSettings(accountDetails.getAccount());
@@ -1005,7 +1018,7 @@ public class ServerClient extends PFComponent {
             .getValueBoolean(getController())
             && StringUtils.isBlank(passwordObf);
     }
-    
+
     private byte[] prepareKerberosLogin() {
         try {
             Path outputFile = Controller.getTempFilesLocation().resolve(
@@ -1050,9 +1063,22 @@ public class ServerClient extends PFComponent {
             .hasValue(getController());
     }
 
+    public boolean isAllowedToCreateFolders() {
+        if (getAccount().getOSSubscription().getStorageSize() <= 0) {
+            return false;
+        }
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            && !getAccount().hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Prepare login information for shibboleth environment.
-     * 
+     *
      * @param username
      * @param thePassword
      * @param userChanged
@@ -1115,7 +1141,33 @@ public class ServerClient extends PFComponent {
                         + ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
                             .getValue(getController()) + ". " + e);
             }
-            ECPAuthenticator auth = new ECPAuthenticator(username, new String(
+
+            // PFC-2496: Start
+            DefaultHttpClient dhc = new DefaultHttpClient();
+
+            // Set Proxy credentials, if configured
+            if (ConfigurationEntry.HTTP_PROXY_HOST.hasValue(getController())) {
+                dhc.getCredentialsProvider().setCredentials(
+                    new AuthScope(ConfigurationEntry.HTTP_PROXY_HOST
+                        .getValue(getController()),
+                        ConfigurationEntry.HTTP_PROXY_PORT
+                            .getValueInt(getController())),
+                    new UsernamePasswordCredentials(
+                        ConfigurationEntry.HTTP_PROXY_USERNAME
+                            .getValue(getController()),
+                        ConfigurationEntry.HTTP_PROXY_PASSWORD
+                            .getValue(getController())));
+
+                HttpHost proxy = new HttpHost(
+                    ConfigurationEntry.HTTP_PROXY_HOST
+                        .getValue(getController()),
+                    ConfigurationEntry.HTTP_PROXY_PORT
+                        .getValueInt(getController()));
+                dhc.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+            }
+            // PFC-2496: End
+
+            ECPAuthenticator auth = new ECPAuthenticator(dhc, username, new String(
                 thePassword), idpURI, spURI);
             String[] result;
             try {
@@ -1128,7 +1180,7 @@ public class ServerClient extends PFComponent {
                 throw new SecurityException(e);
             }
         }
-        
+
         return false;
     }
 
@@ -1144,7 +1196,7 @@ public class ServerClient extends PFComponent {
             return;
         }
         if (isFine()) {
-            logFine("findAlternativeServer: " + getServersInCluster());            
+            logFine("findAlternativeServer: " + getServersInCluster());
         }
         for (Member server : getServersInCluster()) {
             if (!server.isConnected()) {
@@ -1171,7 +1223,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Load a new configuration from URL configURL
-     * 
+     *
      * @param configURL
      */
     public void loadConfigURL(String configURL) {
@@ -1241,7 +1293,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Are we currently logging in?
-     * 
+     *
      * @return
      */
     public boolean isLoggingIn() {
@@ -1262,7 +1314,7 @@ public class ServerClient extends PFComponent {
     public boolean isLoginExecuted() {
         return loginExecuted.get();
     }
-    
+
     /**
      * @return the username that is set for login.
      */
@@ -1278,7 +1330,7 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * 
+     *
      * @return true if the password is empty and Single Sign-on via Kerberos is disabled.
      */
     public boolean isPasswordRequired() {
@@ -1290,7 +1342,7 @@ public class ServerClient extends PFComponent {
     /**
      * ATTENTION: Make sure the returned char array is purged/cleared as soon as
      * possible with {@link LoginUtil#clear(char[])}
-     * 
+     *
      * @return the password that is set for login.
      */
     public char[] getPassword() {
@@ -1300,7 +1352,7 @@ public class ServerClient extends PFComponent {
     /**
      * ATTENTION: This password must not be used for long. It cannot be
      * purged/cleared from memory.
-     * 
+     *
      * @return the password used in CLEAR TEXT.
      */
     public String getPasswordClearText() {
@@ -1333,7 +1385,7 @@ public class ServerClient extends PFComponent {
     /**
      * Re-loads the account details from server. Should be done if it's likely
      * that currently logged in account has changed.
-     * 
+     *
      * @return the new account details
      */
     public AccountDetails refreshAccountDetails() {
@@ -1398,9 +1450,10 @@ public class ServerClient extends PFComponent {
                 }
             }
         }
-        
+
         if (checked) {
             getController().getIOProvider().startIO(new Runnable() {
+                @Override
                 public void run() {
                     if (!targetServerNode.isConnected()) {
                         if (!isConnected()) {
@@ -1535,6 +1588,7 @@ public class ServerClient extends PFComponent {
             logFiner("Connecting to cluster servers");
         }
         Runnable retriever = new Runnable() {
+            @Override
             public void run() {
                 retrieveAndConnectoClusterServers();
             }
@@ -1549,11 +1603,11 @@ public class ServerClient extends PFComponent {
             {
                 getController().getNodeManager().loadServerNodes(this);
             }
-            
+
             if (!isConnected() || !isLoggedIn()) {
                 return;
             }
-            
+
             Collection<FolderInfo> infos = getController()
                 .getFolderRepository().getJoinedFolderInfos();
             FolderInfo[] folders = infos.toArray(new FolderInfo[infos.size()]);
@@ -1586,7 +1640,7 @@ public class ServerClient extends PFComponent {
     /**
      * Saves the infos of the server into the config properties. Does not save
      * the config file.
-     * 
+     *
      * @param newServer
      */
     public void setServerInConfig(MemberInfo newServer) {
@@ -1682,7 +1736,7 @@ public class ServerClient extends PFComponent {
         }
         server = newServerNode;
         server.setServer(true);
-        logInfo("New primary server: " + server);
+        logInfo("New primary server: " + server.getNick());
 
         // Why?
         // // Put on friendslist
@@ -1860,6 +1914,7 @@ public class ServerClient extends PFComponent {
 
     }
 
+    @Override
     public String toString() {
         return "ServerClient "
             + (username != null ? username : "?")
@@ -1954,6 +2009,7 @@ public class ServerClient extends PFComponent {
             return n;
         }
 
+        @Override
         public void nodeConnected(NodeManagerEvent e) {
             if (e.getNode().isServer() && !isConnected()) {
                 findAlternativeServer();
@@ -1970,6 +2026,7 @@ public class ServerClient extends PFComponent {
             }
         }
 
+        @Override
         public void nodeDisconnected(NodeManagerEvent e) {
             if (isPrimaryServer(e.getNode())) {
                 findAlternativeServer();
@@ -1980,6 +2037,7 @@ public class ServerClient extends PFComponent {
             }
         }
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }
@@ -1989,13 +2047,16 @@ public class ServerClient extends PFComponent {
         FolderRepositoryListener
     {
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }
 
+        @Override
         public void folderRemoved(FolderRepositoryEvent e) {
         }
 
+        @Override
         public void folderCreated(FolderRepositoryEvent e) {
             if (!getController().isStarted()) {
                 return;
@@ -2003,9 +2064,11 @@ public class ServerClient extends PFComponent {
             retrieveAndConnectoClusterServers();
         }
 
+        @Override
         public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
+        @Override
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
     }
@@ -2090,6 +2153,7 @@ public class ServerClient extends PFComponent {
     private class MyThrowableHandler implements ThrowableHandler {
         private int loginProblems;
 
+        @Override
         public void handle(Throwable t) {
             if (t instanceof NotLoggedInException) {
                 autoLogin(t);
@@ -2123,10 +2187,11 @@ public class ServerClient extends PFComponent {
             }
         }
     }
-    
+
     private class ServiceTicketGenerator implements
         PrivilegedExceptionAction<byte[]>
     {
+        @Override
         public byte[] run() throws Exception {
             try {
             Oid kerberos5Oid = new Oid("1.2.840.113554.1.2.2");

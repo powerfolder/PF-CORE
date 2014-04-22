@@ -361,11 +361,11 @@ public class Upload extends Transfer {
                 new ReplyFilePartsRecord(fi, fpr));
             state.setState(TransferState.UPLOADING);
         } catch (FileNotFoundException e) {
-            logWarning("FileNotFoundException", e);
+            logWarning("FileNotFoundException" + e);
             getTransferManager().uploadBroken(Upload.this,
                 TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.getMessage());
         } catch (IOException e) {
-            logWarning("IOException", e);
+            logWarning("IOException: " + e);
             getTransferManager().uploadBroken(Upload.this,
                 TransferProblem.IO_EXCEPTION, e.getMessage());
         }
@@ -484,10 +484,10 @@ public class Upload extends Transfer {
             checkLastModificationDate(pr.getFile(), f);
 
         } catch (FileNotFoundException e) {
-            logSevere("FileNotFoundException", e);
+            logWarning(f + ": FileNotFoundException: " + e);
             throw new TransferException(e);
         } catch (IOException e) {
-            logSevere("IOException", e);
+            logWarning(f + ": IOException: " + e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
             logWarning("Connectiopn problem while uploading. " + e.toString());

@@ -39,7 +39,6 @@ import javax.swing.table.TableModel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
@@ -52,11 +51,11 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class MembersSimpleTable extends JTable {
 
-    private DefaultCellEditor cellEditor;
+    private final DefaultCellEditor cellEditor;
 
     /**
      * Constructor
-     * 
+     *
      * @param model
      */
     public MembersSimpleTable(MembersSimpleTableModel model) {
@@ -112,10 +111,11 @@ public class MembersSimpleTable extends JTable {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class TableHeaderMouseListener extends MouseAdapter {
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 JTableHeader tableHeader = (JTableHeader) e.getSource();
@@ -134,6 +134,7 @@ public class MembersSimpleTable extends JTable {
 
     private class MemberTableCellRenderer extends DefaultTableCellRenderer {
 
+        @Override
         public Component getTableCellRendererComponent(JTable table,
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column)
@@ -160,10 +161,9 @@ public class MembersSimpleTable extends JTable {
                     setIcon(icon);
                 }
                 else {
-                    AccountInfo member = folderMember.getAccountInfo();
-//                    Icon icon = member != null ? Icons.getIconFor(member) : Icons
-//                        .getIconById(Icons.NODE_DISCONNECTED);
-                    setIcon(Icons.getIconByAccount(member, folderMember.getFolder().getController()));
+                    setIcon(Icons.getIconByAccount(folderMember
+                        .getAccountInfo(), folderMember.getFolder()
+                        .getController()));
                     setText("");
                 }
             } else if (actualColumn == MembersSimpleTableModel.COL_USERNAME) {

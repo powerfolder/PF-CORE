@@ -46,14 +46,15 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
 {
 
     private static final int COL_DESCRIPTION = 0;
-    private static final int COL_DATE = 1;
+    private static final int COL_DATE = 3;
     private static final int COL_WIKI = 2;
-    private static final int COL_SOLUTION = 3;
+    private static final int COL_SOLUTION = 1;
 
     private String[] columnHeaders = {
         Translation.getTranslation("folder_problem.table_model.description"), // 0
-        Translation.getTranslation("folder_problem.table_model.date"), // 1
-        Translation.getTranslation("folder_problem.table_model.solution")}; // 2
+        Translation.getTranslation("folder_problem.table_model.solution"), // 2
+        Translation.getTranslation("folder_problem.table_model.date") // 1
+        };
 
     private final List<Problem> problems;
 
@@ -188,9 +189,9 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     {
 
         private static final int TYPE_DESCRIPTION = 0;
-        private static final int TYPE_DATE = 1;
+        private static final int TYPE_DATE = 3;
         private static final int TYPE_WIKI = 2;
-        private static final int TYPE_SOLUTION = 3;
+        private static final int TYPE_SOLUTION = 1;
 
         public static final FolderProblemComparator BY_DESCRIPTION = new FolderProblemComparator(
             TYPE_DESCRIPTION);

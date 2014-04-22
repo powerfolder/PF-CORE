@@ -71,7 +71,6 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
@@ -164,6 +163,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         RuntimeException rte = null;
         // Invitation by email
         try {
+            invitation.setInviteeUsername(invitee);
             InvitationUtil.invitationByServer(getController(), invitation,
                 invitee, false);
         } catch (RuntimeException e) {
