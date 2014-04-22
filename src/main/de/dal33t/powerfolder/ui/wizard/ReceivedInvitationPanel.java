@@ -43,6 +43,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -55,7 +56,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class to do folder creation for a specified invite.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
@@ -106,6 +107,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         return true;
     }
 
+    @Override
     public WizardPanel next() {
 
         // Set sync profile
@@ -143,18 +145,29 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             Translation.getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
+        WizardPanel next = null;
+
         // If preview, validateNext has created the folder, so all done.
         if (previewOnlyCB.isSelected()) {
-            return (WizardPanel) getWizardContext().getAttribute(
+            next = (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
         } else {
-
             getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
                 invitation.getInvitor());
 
-            return new ChooseDiskLocationPanel(getController(), invitation
+            next = new ChooseDiskLocationPanel(getController(), invitation
                 .getSuggestedLocalBase(getController()).toAbsolutePath().toString(),
                 new FolderCreatePanel(getController()));
+        }
+
+        if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+            .getValueBoolean(getController()))
+        {
+            return new SwingWorkerPanel(getController(), new AcceptInviteTask(invitation),
+                Translation.getTranslation(""), Translation.getTranslation(""),
+                next);
+        } else {
+            return next;
         }
     }
 
@@ -253,6 +266,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Do not let user select profile if preview.
         previewOnlyCB.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 syncProfileSelectorPanel.setEnabled(!previewOnlyCB.isSelected());
             }
@@ -305,5 +319,21 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             syncProfileSelectorPanel.setEnabled(false);
             previewOnlyCB.setEnabled(false);
         }
+    }
+
+    private class AcceptInviteTask implements Runnable {
+
+        private final Invitation inv;
+
+        public AcceptInviteTask(Invitation invitation) {
+            inv = invitation;
+        }
+
+        @Override
+        public void run() {
+            getController().getOSClient().getSecurityService()
+                .acceptInvitation(invitation);
+        }
+
     }
 }
