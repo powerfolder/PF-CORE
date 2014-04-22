@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -463,6 +464,10 @@ public class FolderSettings {
             }
         } catch (Exception e) {
             LOG.warning("Unable to translate directory path: " + str + ". " + e);
+        }
+        if (res != null) {
+            res = res.replace(Constants.FOLDER_PERSONAL_FILES.trim(),
+                Translation.getTranslation("general.personal_files"));
         }
         if (verify) {
             if (res.contains("$user.dir.") || res.contains("$apps.dir.")) {
