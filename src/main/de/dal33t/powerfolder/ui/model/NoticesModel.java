@@ -56,11 +56,11 @@ public class NoticesModel extends PFUIComponent {
     private final ValueModel allNoticesCountVM = new ValueHolder();
     private final ValueModel unreadNoticesCountVM = new ValueHolder();
 
-    private List<Notice> notices = new CopyOnWriteArrayList<Notice>();
+    private final List<Notice> notices = new CopyOnWriteArrayList<Notice>();
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public NoticesModel(Controller controller) {
@@ -81,8 +81,6 @@ public class NoticesModel extends PFUIComponent {
     public ValueModel getUnreadNoticesCountVM() {
         return unreadNoticesCountVM;
     }
-    
-    
 
     private void addNotice(Notice notice) {
         if (notices.contains(notice)) {
@@ -107,7 +105,7 @@ public class NoticesModel extends PFUIComponent {
         }
         return null;
     }
-    
+
     public NoticeSeverity getHighestUnreadSeverity() {
         NoticeSeverity unreadSeverity = null;
         for (Notice notice : notices) {
@@ -124,7 +122,7 @@ public class NoticesModel extends PFUIComponent {
     /**
      * This handles a notice object. If it is a notification, show in a
      * notification handler. If it is actionable, add to the app model notices.
-     * 
+     *
      * @param notice
      *            the Notice to handle
      */
@@ -135,7 +133,7 @@ public class NoticesModel extends PFUIComponent {
     /**
      * This handles a system notice object. If it is a notification, show in a
      * notification handler. If it is actionable, add to the app model notices.
-     * 
+     *
      * @param notice
      *            the Notice to handle
      */
@@ -185,7 +183,7 @@ public class NoticesModel extends PFUIComponent {
 
     /**
      * Handle a notice.
-     * 
+     *
      * @param notice
      */
     public void activateNotice(Notice notice) {
@@ -244,7 +242,7 @@ public class NoticesModel extends PFUIComponent {
 
     /**
      * Marks the notice as read.
-     * 
+     *
      * @param notice
      */
     public void markRead(Notice notice) {
@@ -254,7 +252,7 @@ public class NoticesModel extends PFUIComponent {
 
     /**
      * Handle an invitation notice.
-     * 
+     *
      * @param invitationNotice
      */
     private void handleInvitationNotice(InvitationNotice invitationNotice) {
@@ -263,6 +261,15 @@ public class NoticesModel extends PFUIComponent {
     }
 
     public void clearAll() {
+        for (Notice n : notices) {
+            if (n instanceof InvitationNotice) {
+                getController()
+                    .getOSClient()
+                    .getSecurityService()
+                    .declineInvitation(
+                        ((InvitationNotice) n).getPayload(getController()));
+            }
+        }
         notices.clear();
         updateNoticeCounts();
     }
@@ -270,6 +277,13 @@ public class NoticesModel extends PFUIComponent {
     public void clearNotice(Notice notice) {
         for (Notice n : notices) {
             if (notice.equals(n)) {
+                if (n instanceof InvitationNotice) {
+                    getController()
+                        .getOSClient()
+                        .getSecurityService()
+                        .declineInvitation(
+                            ((InvitationNotice) n).getPayload(getController()));
+                }
                 notices.remove(notice);
                 updateNoticeCounts();
                 return;
@@ -288,6 +302,4 @@ public class NoticesModel extends PFUIComponent {
         }
         unreadNoticesCountVM.setValue(count);
     }
-    
-    
 }
