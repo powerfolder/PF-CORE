@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * Refelects a entry setting in the configuration file. Provides basic method
  * for accessing and setting the configuration.
  *
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public enum ConfigurationEntry {
@@ -778,7 +778,7 @@ public enum ConfigurationEntry {
      */
     LOG_SYSLOG_LEVEL("log.syslog.level",  Level.INFO.getName()),
 
-    LOG_SYSLOG_HOST("log.syslog.host", "localhost"),
+    LOG_SYSLOG_HOST("log.syslog.host"),
 
     LOG_SYSLOG_PORT("log.syslog.port", 514),
 
