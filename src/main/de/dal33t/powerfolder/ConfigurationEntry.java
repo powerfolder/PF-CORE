@@ -87,7 +87,17 @@ public enum ConfigurationEntry {
      * Enables/disables all updates. If disabled, prevents background process
      * hides updates from the UI.
      */
-    ENABLE_UPDATE("enable.update", true),
+    ENABLE_UPDATE("enable.update", true) {
+        @Override
+        public String getDefaultValue() {
+            // Hack for PFC-2461
+            // Updates disabled by default if software was installed via MSI
+            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+                return Boolean.FALSE.toString();
+            }
+            return super.getDefaultValue();
+        }
+    },
 
     /**
      * If some client options are available only with permissions such as create
