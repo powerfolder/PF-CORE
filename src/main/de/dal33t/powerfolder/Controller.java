@@ -1983,8 +1983,8 @@ public class Controller extends PFComponent {
         }
 
         if (wasStarted) {
-            System.out.println("------------ PowerFolder " + PROGRAM_VERSION
-                + " Controller Shutdown ------------");
+            System.out.println("------------ " + PowerFolder.NAME + " "
+                + PROGRAM_VERSION + " Controller Shutdown ------------");
         }
 
         // remove current config
