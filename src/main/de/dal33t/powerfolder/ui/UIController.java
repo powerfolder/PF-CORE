@@ -132,7 +132,7 @@ import de.dal33t.powerfolder.util.update.UpdaterHandler;
 
 /**
  * The ui controller.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.86 $
  */
@@ -162,7 +162,7 @@ public class UIController extends PFComponent {
     private TrayIconManager trayIconManager;
     private MainFrame mainFrame;
     private SystemMonitorFrame systemMonitorFrame;
-    private InformationFrame informationFrame;
+    private final InformationFrame informationFrame;
     private WeakReference<JDialog> wizardDialogReference;
 
     // List of pending jobs, execute when ui is opened
@@ -201,7 +201,7 @@ public class UIController extends PFComponent {
 
     /**
      * Initializes a new UI controller. open UI with #start
-     * 
+     *
      * @param controller
      */
     public UIController(Controller controller) {
@@ -227,6 +227,7 @@ public class UIController extends PFComponent {
             // Show splash if not starting minimized
             try {
                 EventQueue.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         logFiner("Opening splash screen");
                         splash = new SplashScreen(getController(), 260 * 1000);
@@ -252,6 +253,7 @@ public class UIController extends PFComponent {
      */
     private void configureOomeHandler() {
         Handler oomeHandler = new Handler() {
+            @Override
             public void publish(LogRecord record) {
                 Throwable throwable = record.getThrown();
                 if (throwable instanceof OutOfMemoryError) {
@@ -260,9 +262,11 @@ public class UIController extends PFComponent {
                 }
             }
 
+            @Override
             public void flush() {
             }
 
+            @Override
             public void close() throws SecurityException {
             }
         };
@@ -279,7 +283,7 @@ public class UIController extends PFComponent {
             // RepaintManager
             // .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
-        
+
         // PFC-2423
         if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
@@ -342,6 +346,7 @@ public class UIController extends PFComponent {
         // Show main window
         try {
             EventQueue.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
                     mainFrame.getUIComponent().setVisible(
                         (!OSUtil.isSystraySupported()
@@ -383,6 +388,7 @@ public class UIController extends PFComponent {
         if (silent) {
             // Resuming - nothing to ask.
             getController().schedule(new Runnable() {
+                @Override
                 public void run() {
                     getController().setPaused(!silent);
                 }
@@ -395,6 +401,7 @@ public class UIController extends PFComponent {
                 pd.open();
             } else {
                 getController().schedule(new Runnable() {
+                    @Override
                     public void run() {
                         getController().setPaused(!silent);
                     }
@@ -414,6 +421,7 @@ public class UIController extends PFComponent {
         }
 
         ActionListener systrayActionHandler = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (COMMAND_OPEN_UI.equals(e.getActionCommand())) {
                     mainFrame.toFront();
@@ -464,12 +472,14 @@ public class UIController extends PFComponent {
                     getController().exitAfterSync(4);
                 } else if (COMMAND_SYNC_ALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             getController().performFullSync();
                         }
                     });
                 } else if (COMMAND_WEB.equals(e.getActionCommand())) {
                     BrowserLauncher.open(getController(), new URLProducer() {
+                        @Override
                         public String url() {
                             return getController().getOSClient()
                                 .getLoginURLWithCredentials();
@@ -621,6 +631,7 @@ public class UIController extends PFComponent {
 
         if (trayIcon != null) {
             trayIcon.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     mainFrame.toFront();
                 }
@@ -637,11 +648,13 @@ public class UIController extends PFComponent {
 
         // Switch Systray show/hide menuitem dynamically
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentShown(ComponentEvent arg0) {
                 openUI.setLabel(Translation.getTranslation("systray.hide"));
                 openUI.setActionCommand(COMMAND_HIDE_UI);
             }
 
+            @Override
             public void componentHidden(ComponentEvent arg0) {
                 openUI.setLabel(Translation.getTranslation("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
@@ -665,7 +678,7 @@ public class UIController extends PFComponent {
 
     /**
      * Add a folder to the SysTray menu structure.
-     * 
+     *
      * @param folder
      */
     private void addFolderToSysTray(Folder folder) {
@@ -687,6 +700,7 @@ public class UIController extends PFComponent {
         sysTrayFoldersMenu.setEnabled(true);
         final Path localBase = folder.getCommitOrLocalDir();
         menuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (Files.exists(localBase)) {
                     PathUtils.openFile(localBase);
@@ -697,7 +711,7 @@ public class UIController extends PFComponent {
 
     /**
      * Remove a folder from the SysTray menu structure.
-     * 
+     *
      * @param folder
      */
     private void removeFolderFromSysTray(Folder folder) {
@@ -782,11 +796,7 @@ public class UIController extends PFComponent {
         }
         try {
             LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
-        } catch (UnsupportedLookAndFeelException e) {
-            logSevere(
-                "Failed to set look and feel for skin " + activeSkin.getName(),
-                e);
-        } catch (ParseException e) {
+        } catch (UnsupportedLookAndFeelException | ParseException e) {
             logSevere(
                 "Failed to set look and feel for skin " + activeSkin.getName(),
                 e);
@@ -795,7 +805,7 @@ public class UIController extends PFComponent {
 
     /**
      * Shows an OutOfMemoryError to the user.
-     * 
+     *
      * @param oome
      */
     public void showOutOfMemoryError(OutOfMemoryError oome) {
@@ -834,7 +844,7 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     * 
+     *
      * @param folderInfo
      *            info of the folder to display files information for.
      */
@@ -861,7 +871,7 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     * 
+     *
      * @param folderInfo
      *            info of the folder to display files information for.
      * @return if the files information was actually opened
@@ -877,7 +887,7 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Settings information for a folder.
-     * 
+     *
      * @param folderInfo
      *            info of the folder to display member settings information for.
      */
@@ -892,7 +902,7 @@ public class UIController extends PFComponent {
 
     /**
      * Displays the Settings information move folder dialog.
-     * 
+     *
      * @param folderInfo
      *            info of the folder to display member settings information for.
      */
@@ -902,7 +912,7 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Members information for a folder.
-     * 
+     *
      * @param folderInfo
      *            info of the folder to display member computer information for.
      */
@@ -916,7 +926,7 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Problems information for a folder.
-     * 
+     *
      * @param folderInfo
      *            info of the folder to display problems information for.
      */
@@ -957,7 +967,7 @@ public class UIController extends PFComponent {
     /**
      * Handles single file transfer requests. Displays dialog to send offer to
      * member.
-     * 
+     *
      * @param file
      * @param node
      */
@@ -976,7 +986,7 @@ public class UIController extends PFComponent {
      * InformationFrame or (default) MainFrame. Used by dialogs, so focus does
      * not always jump to the wrong (Main) frame.
      * <P>
-     * 
+     *
      * @return the active frame.
      */
     public Window getActiveFrame() {
@@ -1061,7 +1071,7 @@ public class UIController extends PFComponent {
 
     /**
      * Sets the loading percentage
-     * 
+     *
      * @param percentage
      * @param nextPercentage
      */
@@ -1083,7 +1093,7 @@ public class UIController extends PFComponent {
     /**
      * For a more convenience way you can also use
      * PFUIComponent.getApplicationModel()
-     * 
+     *
      * @return the application model
      * @see PFUIComponent#getApplicationModel()
      */
@@ -1096,7 +1106,7 @@ public class UIController extends PFComponent {
     /**
      * Invokes a runner for later processing. It is ENSURED, that UI is open,
      * when the runner is executed
-     * 
+     *
      * @param runner
      */
     public void invokeLater(Runnable runner) {
@@ -1111,7 +1121,7 @@ public class UIController extends PFComponent {
 
     /**
      * Only use this for preview from the DialogSettingsTab.
-     * 
+     *
      * @param title
      * @param message
      */
@@ -1129,7 +1139,7 @@ public class UIController extends PFComponent {
     /**
      * Scan results have been created after the user requested folder sync. So
      * give the user some feedback.
-     * 
+     *
      * @param scanResult
      */
     public void scanResultCreated(ScanResult scanResult) {
@@ -1189,7 +1199,7 @@ public class UIController extends PFComponent {
     /**
      * Special case. A folder has just been created from an invite. Switch to
      * the folder tab and crack open the new folder info.
-     * 
+     *
      * @param folderInfo
      */
     public void displayInviteFolderContents(FolderInfo folderInfo) {
@@ -1212,6 +1222,7 @@ public class UIController extends PFComponent {
     private void checkStatus() {
         // logInfo("From", new RuntimeException());
         statusUpdater.schedule(new Runnable() {
+            @Override
             public void run() {
                 checkStatus0();
             }
@@ -1274,7 +1285,7 @@ public class UIController extends PFComponent {
 
     /**
      * Maintain a list of the most recently changed files.
-     * 
+     *
      * @param fileInfo
      */
     private void addRecentFileChange(FileInfo fileInfo) {
@@ -1323,6 +1334,7 @@ public class UIController extends PFComponent {
         // Delay updating the actual menu so we don't spam the UI with multiple
         // updates.
         recentlyChangedUpdater.schedule(new Runnable() {
+            @Override
             public void run() {
 
                 // Update menu.
@@ -1361,24 +1373,29 @@ public class UIController extends PFComponent {
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
+        @Override
         public void folderRemoved(FolderRepositoryEvent e) {
             removeFolderFromSysTray(e.getFolder());
             e.getFolder().removeFolderListener(folderListener);
             checkStatus();
         }
 
+        @Override
         public void folderCreated(FolderRepositoryEvent e) {
             addFolderToSysTray(e.getFolder());
             e.getFolder().addFolderListener(folderListener);
             checkStatus();
         }
 
+        @Override
         public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
+        @Override
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }
@@ -1386,16 +1403,19 @@ public class UIController extends PFComponent {
 
     private class MyFolderListener extends FolderAdapter {
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }
 
+        @Override
         public void statisticsCalculated(FolderEvent folderEvent) {
             // logWarning("Stats calced for " + folderEvent.getFolder(), new
             // RuntimeException());
             checkStatus();
         }
 
+        @Override
         public void fileChanged(FolderEvent folderEvent) {
             Collection<FileInfo> collection = folderEvent.getScannedFileInfos();
             if (collection != null) {
@@ -1407,6 +1427,7 @@ public class UIController extends PFComponent {
             }
         }
 
+        @Override
         public void filesDeleted(FolderEvent folderEvent) {
             Collection<FileInfo> collection = folderEvent.getDeletedFileInfos();
             if (collection != null) {
@@ -1421,42 +1442,52 @@ public class UIController extends PFComponent {
 
     private class MyTransferManagerListener extends TransferManagerAdapter {
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }
 
+        @Override
         public void downloadQueued(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void downloadStarted(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void downloadAborted(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void downloadBroken(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void downloadCompleted(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void uploadStarted(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void uploadAborted(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void uploadBroken(TransferManagerEvent event) {
             checkStatus();
         }
 
+        @Override
         public void uploadCompleted(TransferManagerEvent event) {
             checkStatus();
         }
@@ -1468,6 +1499,7 @@ public class UIController extends PFComponent {
      * warnings into the app model.
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
+        @Override
         public void localMassDeletion(LocalMassDeletionEvent event) {
             LocalDeleteNotice notice = new LocalDeleteNotice(
                 event.getFolderInfo());
@@ -1480,6 +1512,7 @@ public class UIController extends PFComponent {
             applicationModel.getNoticesModel().handleNotice(notice);
         }
 
+        @Override
         public void remoteMassDeletion(RemoteMassDeletionEvent event) {
             String message;
             if (event.isPercentage()) {
@@ -1507,6 +1540,7 @@ public class UIController extends PFComponent {
     }
 
     private class MyInvitationHandler implements InvitationHandler {
+        @Override
         public void gotInvitation(Invitation invitation) {
             boolean autoAccepted = false;
 
@@ -1542,10 +1576,12 @@ public class UIController extends PFComponent {
         FolderAutoCreateListener
     {
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return true;
         }
 
+        @Override
         public void folderAutoCreated(FolderAutoCreateEvent e) {
             handleFolderAutoCreate(e);
         }
@@ -1554,7 +1590,7 @@ public class UIController extends PFComponent {
     /**
      * Can we shut down? If WARN_ON_CLOSE, let user know if there are any
      * folders still syncing.
-     * 
+     *
      * @return if all clear to shut down.
      */
     public boolean isShutdownAllowed() {
@@ -1620,10 +1656,12 @@ public class UIController extends PFComponent {
 
     private class MyPausedModeListener implements PausedModeListener {
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return true;
         }
 
+        @Override
         public void setPausedMode(PausedModeEvent event) {
             configurePauseResumeLink();
         }
