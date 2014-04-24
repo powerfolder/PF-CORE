@@ -106,7 +106,6 @@ import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
@@ -1501,15 +1500,11 @@ public class UIController extends PFComponent {
     private class MyMassDeletionHandler implements MassDeletionHandler {
         @Override
         public void localMassDeletion(LocalMassDeletionEvent event) {
-            LocalDeleteNotice notice = new LocalDeleteNotice(
-                event.getFolderInfo());
             if (ProUtil.isZyncro(getController())) {
-                LocalDeletionProblem ldp = new LocalDeletionProblem(
-                    event.getFolderInfo(), notice);
+                LocalDeletionProblem ldp = new LocalDeletionProblem(event
+                    .getFolder().getInfo(), event.getFile());
                 event.getFolder().addProblem(ldp);
-                notice.setProblem(ldp);
             }
-            applicationModel.getNoticesModel().handleNotice(notice);
         }
 
         @Override

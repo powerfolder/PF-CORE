@@ -38,6 +38,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
@@ -59,8 +60,8 @@ public class ProblemsTab extends PFUIComponent {
     private MyResolveProblemAction resolveProblemAction;
 
     private FolderInfo folderInfo;
-    private ProblemsTable problemsTable;
-    private ProblemsTableModel problemsTableModel;
+    private final ProblemsTable problemsTable;
+    private final ProblemsTableModel problemsTableModel;
     private Problem selectedProblem;
 
     public ProblemsTab(Controller controller) {
@@ -75,7 +76,7 @@ public class ProblemsTab extends PFUIComponent {
 
     /**
      * Gets the ui component
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -117,14 +118,18 @@ public class ProblemsTab extends PFUIComponent {
 
     private Component createToolBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        JButton openBtn = new JButton(openProblemAction);
-        openBtn.setIcon(null);
-        bar.addGridded(openBtn);
-        bar.addRelatedGap();
-        JButton clearBtn = new JButton(clearProblemAction);
-        clearBtn.setIcon(null);
-        bar.addGridded(clearBtn);
-        bar.addRelatedGap();
+
+        if (!PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
+            JButton openBtn = new JButton(openProblemAction);
+            openBtn.setIcon(null);
+            bar.addGridded(openBtn);
+            bar.addRelatedGap();
+            JButton clearBtn = new JButton(clearProblemAction);
+            clearBtn.setIcon(null);
+            bar.addGridded(clearBtn);
+            bar.addRelatedGap();
+        }
+
         JButton resolveBtn = new JButton(resolveProblemAction);
         resolveBtn.setIcon(null);
         bar.addGridded(resolveBtn);
@@ -145,7 +150,7 @@ public class ProblemsTab extends PFUIComponent {
 
     /**
      * Display problems.
-     * 
+     *
      * @param problemList
      */
     public void updateProblems(List<Problem> problemList) {
@@ -195,6 +200,7 @@ public class ProblemsTab extends PFUIComponent {
             super("action_open_problem", controller);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int selectedRow = problemsTable.getSelectedRow();
             Problem problem = (Problem) problemsTableModel.getValueAt(
@@ -212,6 +218,7 @@ public class ProblemsTab extends PFUIComponent {
             super("action_clear_problem", controller);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Folder folder = getController().getFolderRepository().getFolder(
                 folderInfo);
@@ -230,6 +237,7 @@ public class ProblemsTab extends PFUIComponent {
             super("action_resolve_problem", controller);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (selectedProblem != null
                 && selectedProblem instanceof ResolvableProblem)
@@ -249,6 +257,7 @@ public class ProblemsTab extends PFUIComponent {
      * Class to detect table selection changes.
      */
     private class MySelectionListener implements ListSelectionListener {
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             enableOnSelection();
         }

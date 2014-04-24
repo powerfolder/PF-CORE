@@ -8,30 +8,29 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
 import de.dal33t.powerfolder.util.Translation;
 
 public class LocalDeletionProblem extends ResolvableProblem {
 
-    private FolderInfo folderInfo;
-    private LocalDeleteNotice notice;
+    private final FolderInfo folderInfo;
+    private final FileInfo fileInfo;
 
-    public LocalDeletionProblem(FolderInfo foInfo, LocalDeleteNotice notice) {
+    public LocalDeletionProblem(FolderInfo foInfo, FileInfo fileInfo) {
         this.folderInfo = foInfo;
-        this.notice = notice;
+        this.fileInfo = fileInfo;
     }
 
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
+            @Override
             public void run() {
                 int response = DialogFactory
                     .genericDialog(
                         controller,
-                        Translation.getTranslation("local_delete_notice.title"),
+                        Translation.getTranslation("local_delete_notice.title", fileInfo.getFilenameOnly()),
                         Translation.getTranslation(
-                            "local_delete_notice.message",
-                            folderInfo.getLocalizedName()),
+                            "local_delete_notice.message"),
                         new String[]{
                             Translation
                                 .getTranslation("local_delete_notice.broadcast_deletions"),
@@ -45,8 +44,6 @@ public class LocalDeletionProblem extends ResolvableProblem {
                         folder.scanLocalFiles(true);
                         folder.removeProblem(LocalDeletionProblem.this);
                     }
-                    controller.getUIController().getApplicationModel()
-                        .getNoticesModel().clearNotice(notice);
                 } else if (response == 1) {
                     // Discard changes. Remove all old FileInfos with
                     // deleted-flag.
@@ -67,8 +64,6 @@ public class LocalDeletionProblem extends ResolvableProblem {
                             .triggerFileRequesting(folderInfo);
                         folder.removeProblem(LocalDeletionProblem.this);
                     }
-                    controller.getUIController().getApplicationModel()
-                        .getNoticesModel().clearNotice(notice);
                 }
             }
         };
@@ -84,7 +79,7 @@ public class LocalDeletionProblem extends ResolvableProblem {
     public String getDescription() {
         return Translation
             .getTranslation("warning_notice.mass_deletion",
-                folderInfo.getLocalizedName());
+                fileInfo.getFilenameOnly());
     }
 
     @Override
@@ -93,4 +88,8 @@ public class LocalDeletionProblem extends ResolvableProblem {
         return null;
     }
 
+    @Override
+    public int hashCode() {
+        return fileInfo.hashCode();
+    }
 }

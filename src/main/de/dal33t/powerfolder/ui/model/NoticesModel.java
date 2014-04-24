@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
@@ -197,9 +196,6 @@ public class NoticesModel extends PFUIComponent {
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof RunnableNotice) {
             RunnableNotice eventNotice = (RunnableNotice) notice;
-            SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
-        } else if (notice instanceof LocalDeleteNotice) {
-            LocalDeleteNotice eventNotice = (LocalDeleteNotice) notice;
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof FolderAutoCreateNotice) {
             FolderAutoCreateNotice eventNotice = (FolderAutoCreateNotice) notice;
