@@ -1147,16 +1147,25 @@ public class ServerClient extends PFComponent {
 
             // Set Proxy credentials, if configured
             if (ConfigurationEntry.HTTP_PROXY_HOST.hasValue(getController())) {
+                String proxyUsername = "";
+                String proxyPassword = "";
+
+                if (ConfigurationEntry.HTTP_PROXY_USERNAME.hasValue(getController())) {
+                    proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME.getValue(getController());
+
+                    if (ConfigurationEntry.HTTP_PROXY_PASSWORD.hasValue(getController())) {
+                        proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD.getValue(getController());
+                    }
+                }
+
                 dhc.getCredentialsProvider().setCredentials(
                     new AuthScope(ConfigurationEntry.HTTP_PROXY_HOST
                         .getValue(getController()),
                         ConfigurationEntry.HTTP_PROXY_PORT
                             .getValueInt(getController())),
                     new UsernamePasswordCredentials(
-                        ConfigurationEntry.HTTP_PROXY_USERNAME
-                            .getValue(getController()),
-                        ConfigurationEntry.HTTP_PROXY_PASSWORD
-                            .getValue(getController())));
+                        proxyUsername,
+                        proxyPassword));
 
                 HttpHost proxy = new HttpHost(
                     ConfigurationEntry.HTTP_PROXY_HOST
