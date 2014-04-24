@@ -815,11 +815,12 @@ public class ServerClient extends PFComponent {
         }
 
         String systemUserName = System.getProperty("user.name");
-        if (StringUtils.isBlank(un)
-            && LoginUtil.isValidUsername(getController(), systemUserName))
-        {
-            un = systemUserName;
-        }
+        // PFC-2533: Don't use it for CFN
+        // if (StringUtils.isBlank(un)
+        // && LoginUtil.isValidUsername(getController(), systemUserName))
+        // {
+        // un = systemUserName;
+        // }
 
         if (StringUtils.isBlank(un)
             && (pw == null || pw.length == 0)
