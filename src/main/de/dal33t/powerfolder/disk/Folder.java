@@ -1780,6 +1780,11 @@ public class Folder extends PFComponent {
                     if (member.isMySelf()) {
                         continue;
                     }
+                    if (member.isConnected()) {
+                        logInfo("Not joining connected member "
+                            + member.getNick() + " into folder " + getName());
+                        continue;
+                    }
                     join0(member, !getController().isStarted());
                 }
 
