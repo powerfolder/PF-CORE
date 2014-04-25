@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * A Invitation to a folder
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
@@ -77,7 +77,7 @@ public class Invitation extends FolderRelatedMessage {
     private String username;
 
     // Since 9.1
-    private String oid;
+    private final String oid;
     private String inviteeUsername;
 
     /**
@@ -125,7 +125,7 @@ public class Invitation extends FolderRelatedMessage {
      * and PowerFolder local base. For subdirs of the PowerFolder base directory
      * and of the apps dir, the relative part of the location is extracted so
      * that the receiver can locate local to his computer's environment.
-     * 
+     *
      * @param controller
      * @param suggestedLocalBase
      */
@@ -188,7 +188,7 @@ public class Invitation extends FolderRelatedMessage {
     /**
      * Get the suggested local base. Uses 'relative' to adjust for the local
      * environment.
-     * 
+     *
      * @param controller
      * @return the suggestion path on the local computer
      */
@@ -221,7 +221,7 @@ public class Invitation extends FolderRelatedMessage {
         }
     }
 
-    // Return the user name if not blank, else the invitor nick. 
+    // Return the user name if not blank, else the invitor nick.
     public String getInvitorUsername() {
         if (StringUtils.isBlank(username)) {
             if (invitor == null) {
@@ -268,6 +268,14 @@ public class Invitation extends FolderRelatedMessage {
         this.permission = permission;
     }
 
+    public boolean isFolderInvitation() {
+        return StringUtils.isNotBlank(folder.getId());
+    }
+
+    public boolean isAccountInvitation() {
+        return StringUtils.isBlank(folder.getId());
+    }
+
     public SyncProfile getSuggestedSyncProfile() {
         if (suggestedSyncProfileConfig == null) {
             // For backward compatibility.
@@ -277,6 +285,7 @@ public class Invitation extends FolderRelatedMessage {
             .getSyncProfileByFieldList(suggestedSyncProfileConfig);
     }
 
+    @Override
     public String toString() {
         return "Invitation to " + folder + " from " + invitor;
     }
