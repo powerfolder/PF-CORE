@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -72,6 +74,7 @@ public class ProblemsTab extends PFUIComponent {
             ListSelectionModel.SINGLE_SELECTION);
         problemsTable.getSelectionModel().addListSelectionListener(
             new MySelectionListener());
+        problemsTable.addMouseListener(new TableMouseListener());
     }
 
     /**
@@ -202,14 +205,7 @@ public class ProblemsTab extends PFUIComponent {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            int selectedRow = problemsTable.getSelectedRow();
-            Problem problem = (Problem) problemsTableModel.getValueAt(
-                selectedRow, 0);
-            String wikiArticleURL = Help.getWikiArticleURL(getController(),
-                problem.getWikiLinkKey());
-            if (StringUtils.isNotBlank(wikiArticleURL)) {
-                BrowserLauncher.openURL(getController(), wikiArticleURL);
-            }
+            ProblemsTab.this.resolveProblem();
         }
     }
 
@@ -260,6 +256,40 @@ public class ProblemsTab extends PFUIComponent {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             enableOnSelection();
+        }
+    }
+
+
+    private class TableMouseListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                if (e.getClickCount() == 2) {
+                    ProblemsTab.this.resolveProblem();
+                }
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+        }
+    }
+
+    public void resolveProblem() {
+        int selectedRow = problemsTable.getSelectedRow();
+        Problem problem = (Problem) problemsTableModel.getValueAt(selectedRow,
+            0);
+        String wikiArticleURL = Help.getWikiArticleURL(getController(),
+            problem.getWikiLinkKey());
+        if (StringUtils.isNotBlank(wikiArticleURL)) {
+            BrowserLauncher.openURL(getController(), wikiArticleURL);
         }
     }
 }

@@ -19,26 +19,29 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
-import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.Controller;
-
-import javax.swing.*;
-import javax.swing.table.TableColumn;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+
 public class ProblemsTable extends JTable {
 
-    private Controller controller;
+    private final Controller controller;
 
     public ProblemsTable(ProblemsTableModel model, Controller controller) {
         super(model);
@@ -76,6 +79,7 @@ public class ProblemsTable extends JTable {
 
     private class ProblemTableCellRenderer extends DefaultTableCellRenderer {
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected,
                                                        boolean hasFocus,
@@ -111,6 +115,7 @@ public class ProblemsTable extends JTable {
     }
 
     private class TableHeaderMouseListener extends MouseAdapter {
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 JTableHeader tableHeader = (JTableHeader) e.getSource();
