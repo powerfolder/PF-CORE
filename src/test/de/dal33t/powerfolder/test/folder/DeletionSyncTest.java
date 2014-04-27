@@ -95,9 +95,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()
             .iterator().next(), getContollerBart());
-        assertEquals("Files at bart: "
-            + getFolderAtBart().getKnownFiles().toString(), 1,
-            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
+        assertEquals("Bart's files version mismatch: " + getFolderAtBart()
+            .getKnownFiles(), 1, getFolderAtBart()
+            .getKnownFiles().iterator().next().getVersion());
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
@@ -134,7 +134,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // @ Lisa, still the "old" version (=1).
         Path testFileLisa = getFolderAtLisa().getKnownFiles().iterator().next()
             .getDiskFile(getContollerLisa().getFolderRepository());
-        assertEquals("Files at Lisa: " + getFolderAtLisa().getKnownFiles(), 1,
+        assertEquals("Lisa files version mismatch: " + getFolderAtLisa().getKnownFiles(), 1,
             getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
         assertFileMatch(testFileLisa, getFolderAtLisa().getKnownFiles()
             .iterator().next(), getContollerLisa());
@@ -513,11 +513,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(50);
         scanFolder(getFolderAtBart());
 
-        assertEquals(1, getFolderAtBart().getKnownItemCount());
+        assertEquals("Files at bart: " + getFolderAtBart().getKnownFiles(), 1,
+            getFolderAtBart().getKnownItemCount());
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()
             .iterator().next(), getContollerBart());
-        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
-            .getVersion());
+        assertEquals("Bart files version mismatch", 1, getFolderAtBart()
+            .getKnownFiles().iterator().next().getVersion());
 
         connectBartAndLisa();
 
