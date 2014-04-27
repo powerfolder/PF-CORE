@@ -510,7 +510,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 Folder folder = getFileInfo().getFolder(
                     getController().getFolderRepository());
                 if (folder != null) {
-                    logWarning("Auto-recover from MD5_ERROR: Re-download of "
+                    logInfo("Auto-recover from MD5_ERROR: Re-download of "
                         + getFileInfo() + " started.");
                     if (folder.erase(getFileInfo())) {
                         getController().getTransferManager()
