@@ -38,6 +38,7 @@ import java.util.concurrent.Callable;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -504,6 +505,20 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 logSevere("Unable to remove tempfile on MD5_ERROR: "
                     + getTempFile().toString() + ". " + e, e);
             }
+            // PFC-2465: Start
+            if (isRequestedAutomatic()) {
+                Folder folder = getFileInfo().getFolder(
+                    getController().getFolderRepository());
+                if (folder != null) {
+                    logWarning("Auto-recover from MD5_ERROR: Re-download of "
+                        + getFileInfo() + " started.");
+                    if (folder.erase(getFileInfo())) {
+                        getController().getTransferManager()
+                            .downloadNewestVersion(getFileInfo(), true);
+                    }
+                }
+            }
+            // PFC-2465: End
         } else {
             try {
                 if (getTempFile() != null && Files.exists(getTempFile())

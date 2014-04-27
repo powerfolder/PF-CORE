@@ -1708,6 +1708,32 @@ public class Folder extends PFComponent {
         }
     }
 
+    /**
+     * Used for PFC-2465. Erases every knowledge of file. Deletes physical file
+     * and file meta-data. If possible local archive will be used to preserve
+     * physical file.
+     * 
+     * @param fInfo
+     * @return
+     */
+    public boolean erase(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "fInfo");
+        Path diskFile = getDiskFile(fInfo);
+        // 1) Archive local
+        synchronized (scanLock) {
+            synchronized (dbAccessLock) {
+                if (deleteFile(fInfo, diskFile)) {
+                    // 2) Purge DB
+                    dao.delete(null, fInfo);
+                    return true;
+                } else {
+                    logWarning("Unable to erase: " + diskFile + ". " + fInfo);
+                    return false;
+                }
+            }
+        }
+    }
+
     private void initFileInfoDAO() {
         if (dao != null) {
             // Stop old DAO
