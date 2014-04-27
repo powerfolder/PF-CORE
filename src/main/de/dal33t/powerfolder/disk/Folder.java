@@ -4229,7 +4229,7 @@ public class Folder extends PFComponent {
     /**
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
-     *
+     * 
      * @param newFileInfo
      * @param file
      */
@@ -4237,13 +4237,17 @@ public class Folder extends PFComponent {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         FileInfo fileInfo = getFile(newFileInfo);
         if (isInfo()) {
-            logInfo("Deleting file " + fileInfo.toDetailString() + (archiver.getVersionsPerFile() > 0)
-                + " moving to archive");
+            logInfo("Deleting file "
+                + fileInfo.toDetailString()
+                + ((archiver.getVersionsPerFile() > 0)
+                    ? " moving to archive"
+                    : ""));
         }
         try {
             watcher.addIgnoreFile(newFileInfo);
             synchronized (scanLock) {
-                if (fileInfo != null && fileInfo.isFile() && Files.exists(file)) {
+                if (fileInfo != null && fileInfo.isFile() && Files.exists(file))
+                {
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
