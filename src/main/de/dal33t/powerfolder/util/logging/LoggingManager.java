@@ -104,6 +104,7 @@ public class LoggingManager {
      * The default filter for the handlers
      */
     private static Filter DEFAULT_FILTER = new Filter() {
+        @Override
         public boolean isLoggable(LogRecord record) {
             String loggerName = record.getLoggerName();
             if (loggerName == null) {
@@ -160,7 +161,7 @@ public class LoggingManager {
     /**
      * Set the console handler level. Add handler to root logger if this is the
      * first time.
-     * 
+     *
      * @param level
      */
     public static void setConsoleLogging(Level level) {
@@ -176,7 +177,7 @@ public class LoggingManager {
     /**
      * Set the document handler level. Add handler to root logger if this is the
      * first time.
-     * 
+     *
      * @param level
      * @param controller
      */
@@ -196,7 +197,7 @@ public class LoggingManager {
      * Set the file handler level. Add handler to root logger if this is the
      * first time. Create the file handler inside a synchronized block to stop
      * other threads trying to access it during construction.
-     * 
+     *
      * @param level
      * @param rotate
      *            to rotate the file every day
@@ -220,7 +221,7 @@ public class LoggingManager {
     /**
      * Set the console handler level. Add handler to root logger if this is the
      * first time.
-     * 
+     *
      * @param level
      */
     public static void setBufferedLogging(Level level) {
@@ -239,17 +240,16 @@ public class LoggingManager {
                 syslogHandler.init(
                     ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller),
                     ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller));
-            } catch (SocketException e) {
 
+                getRootLogger().addHandler(syslogHandler);
+                syslogLoggingLevel = level;
+                syslogHandler.setLevel(level);
+
+                setMinimumBaseLoggingLevel();
+            } catch (SocketException e) {
                 e.printStackTrace();
             }
-            getRootLogger().addHandler(syslogHandler);
         }
-
-        syslogLoggingLevel = level;
-        syslogHandler.setLevel(level);
-
-        setMinimumBaseLoggingLevel();
     }
 
     public static void clearBuffer() {
@@ -260,7 +260,7 @@ public class LoggingManager {
 
     /**
      * Physically create the file handler.
-     * 
+     *
      * @param level
      */
     private static void createFileHandler() {
@@ -349,7 +349,7 @@ public class LoggingManager {
 
     /**
      * Convenience method for getting the root logger.
-     * 
+     *
      * @return
      */
     private static Logger getRootLogger() {
@@ -364,7 +364,7 @@ public class LoggingManager {
         if (Files.exists(candidate) && Files.isDirectory(candidate)) {
             return candidate;
         }
-        
+
         try {
             Files.createDirectories(candidate);
         } catch (IOException ioe) {
@@ -380,7 +380,7 @@ public class LoggingManager {
 
     /**
      * Sets the file logging file name prefix. Should be the config name.
-     * 
+     *
      * @param prefix
      */
     public static void setPrefix(String prefix) {
@@ -476,14 +476,14 @@ public class LoggingManager {
             // Close off the old one first.
             fileHandler.flush();
             fileHandler.close();
-            
+
             fileHandler = null;
         }
     }
 
     /**
      * PFS-475
-     * 
+     *
      * @param maxAgeDays
      */
     public static void removeOldLogs(final int maxAgeDays) {
@@ -513,7 +513,7 @@ public class LoggingManager {
                 Files.delete(logFile);
             }
         } catch (IOException ioe) {
-            
+
         }
     }
 }
