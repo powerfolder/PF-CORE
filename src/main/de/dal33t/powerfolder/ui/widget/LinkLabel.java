@@ -19,26 +19,25 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
+import javax.swing.JLabel;
+
 import com.jgoodies.forms.factories.Borders;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * A Label which opens a given link by click it
@@ -137,11 +136,7 @@ public class LinkLabel extends PFComponent {
             if (StringUtils.isBlank(url)) {
                 return;
             }
-            try {
-                BrowserLauncher.openURL(url);
-            } catch (IOException e1) {
-                log.log(Level.SEVERE, "IOException", e1);
-            }
+            BrowserLauncher.openURL(getController(), url);
         }
 
         public void mouseEntered(MouseEvent e) {

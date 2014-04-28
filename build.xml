@@ -73,7 +73,7 @@ For creation of the installer:
 	</target>
 	
 	<target name="detect-version" depends="loadproperties" unless="MajorVersion">
-		<script language="javascript" manager="bsf" classpath="lib-build/bsf.jar:lib-build/js.jar:lib-build/commons-logging-1.1.1.jar"><![CDATA[
+		<script language="javascript" manager="bsf" classpath="lib-build/ant-apache-bsf-1.9.2.jar:lib-build/bsf.jar:lib-build/js.jar:lib-build/commons-logging-1.1.1.jar"><![CDATA[
 			var prjDir = project.getProperty("powerfolder.project.dir");
 			if (!prjDir)  {
 				prjDir = '../PF-CORE';
@@ -172,10 +172,10 @@ For creation of the installer:
 			<include name="truezip-swing-7.6.6.jar" />
 
 			<!-- Shibboleth/ECP -->
-            <include name="httpclient-4.2.1.jar" />
-			<include name="httpclient-cache-4.2.1.jar" />
-            <include name="httpcore-4.2.1.jar" />
-            <include name="commons-logging-1.1.1.jar" />
+            <include name="httpclient-4.3.3.jar" />
+			<include name="httpclient-cache-4.3.3.jar" />
+            <include name="httpcore-4.3.2.jar" />
+            <include name="commons-logging-1.1.3.jar" />
 			<include name="json-20090306.jar" />
 		</fileset>
 
@@ -388,6 +388,8 @@ For creation of the installer:
             <option value="-Xdock:name=${dist.name}" />
         </bundleapp>
 
+        <copy file="${etc.dir}/mac64libs/libosxnative.jnilib" todir="${dist.dir}/${dist.name}.app/Contents/MacOS" />
+
         <antcall target="appSign" />
 
         <property name="bundle.name" value="${dist.dir}/${dist.binaryname}_v${versionString}" />
@@ -466,6 +468,14 @@ For creation of the installer:
 		<delete dir="${debug.dir}" />
 	</target>
 
+	<target name="jni-compile">
+		<mkdir dir="./build/mac/jni" />
+		<javah destdir="./build/mac/jni"
+		  force="yes"
+		  class="de.dal33t.powerfolder.jni.osx.Util"
+		  classpath="./build/" />
+	</target>
+	
 	<!-- Setup for test ******************************************************-->
 
 	<target name="run-tests" depends="debug, compile" description="Runs all JUnit tests">

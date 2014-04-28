@@ -30,6 +30,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -67,7 +68,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
     public static final Path TESTFOLDER_BASEDIR_BART = TestHelper.getTestDir()
-        .resolve("ControllerBart/testFolder.pfzip").toAbsolutePath();
+        .resolve("ControllerBart/testFolder").toAbsolutePath();
     public static final Path TESTFOLDER_BASEDIR_LISA = TestHelper.getTestDir()
         .resolve("ControllerLisa/testFolder").toAbsolutePath();
 
@@ -77,7 +78,7 @@ public abstract class TwoControllerTestCase extends TestCase {
     // The optional test folder
     private FolderInfo testFolder;
     
-    private Account lisasAccount;
+    protected Account lisasAccount;
 
     @Override
     protected void setUp() throws Exception {
@@ -285,6 +286,12 @@ public abstract class TwoControllerTestCase extends TestCase {
      * Connects both controllers and optionally logs in lisa at bart.
      */
     protected void connectBartAndLisa(boolean loginLisa) {
+        boolean sync = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+            .getValueBoolean(getContollerLisa());
+        if (loginLisa) {
+            ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
+                getContollerLisa(), true);
+        }
         if (!connect(controllerLisa, controllerBart)) {
             fail("Unable to connect Bart and Lisa");
         }
@@ -298,7 +305,10 @@ public abstract class TwoControllerTestCase extends TestCase {
             Member bartAtLisa = controllerBart.getMySelf().getInfo()
                 .getNode(controllerLisa, true);
             ServerClient client = getContollerLisa().getOSClient();
-            client.setServer(bartAtLisa, true);
+            if (!client.getServer().equals(bartAtLisa)) {
+                client.setServer(bartAtLisa, true);
+            }
+
             if (lisasAccount == null) {
                 lisasAccount = client.getAccountService().register("lisa",
                     "password", false, null, null, false);
@@ -306,7 +316,14 @@ public abstract class TwoControllerTestCase extends TestCase {
                     fail("Unable to register lisa's user account at bart");
                 }
             }
-            client.login("lisa", "password".toCharArray());
+            if (!client.getAccount().equals(lisasAccount)) {
+                client.login("lisa", "password".toCharArray());
+            }
+        }
+
+        if (loginLisa) {
+            ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
+                getContollerLisa(), sync);
         }
 
         // Bart should NOT be supernode. Not necessary on LAN
@@ -486,14 +503,14 @@ public abstract class TwoControllerTestCase extends TestCase {
         final Folder folder2;
         final Folder meta2;
         FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile,
-            false, 5);
+            5);
         folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
             folderSettings1);
         meta1 = getContollerBart().getFolderRepository()
             .getMetaFolderForParent(folder1.getInfo());
 
         FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
-            false, 5);
+            5);
         folder2 = getContollerLisa().getFolderRepository().createFolder(foInfo,
             folderSettings2);
         if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {

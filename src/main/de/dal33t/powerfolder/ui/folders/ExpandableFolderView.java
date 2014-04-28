@@ -27,7 +27,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,6 +75,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
@@ -87,6 +87,7 @@ import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -95,6 +96,7 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -646,6 +648,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         backupOnlineStorageAction.allowWith(folderAdmin);
         stopOnlineStorageAction.allowWith(folderAdmin);
         inviteAction.allowWith(folderAdmin);
+
+        admin = getController().getOSClient().getAccount()
+            .hasAdminPermission(folderInfo);
     }
 
     private void updateLocalButtons() {
@@ -1163,7 +1168,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (!getController().isBackupOnly()) {
                 boolean addedSeparator = false;
                 if (ConfigurationEntry.SERVER_INVITE_ENABLED
-                    .getValueBoolean(getController()))
+                    .getValueBoolean(getController()) && admin)
                 {
                     contextMenu.addSeparator();
                     addedSeparator = true;
@@ -1218,7 +1223,12 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (folder != null) {
             int newCount = getController().getTransferManager()
                 .countCompletedDownloads(folder);
-            newFiles = newCount > 0;
+            //#PFC-2497 Do not show new Files in Beginnger mode
+            if (!PreferencesEntry.BEGINNER_MODE
+                .getValueBoolean(getController()))
+            {
+                newFiles =  newCount > 0;
+            }
             if (newFiles) {
                 newCountString = " (" + newCount + ')';
                 nameLabel.setToolTipText(Translation.getTranslation(
@@ -1246,13 +1256,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
 
-        if (folder == null
-            && PreferencesEntry.BEGINNER_MODE
-                .getValueBoolean(getController())
-            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
-        {
+        if (folder == null) {
             nameLabel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.create"));
+                .getTranslation("exp_folder_view.folder_online_text"));
         }
 
         String folderName = folderInfo.getLocalizedName();
@@ -1315,15 +1321,28 @@ public class ExpandableFolderView extends PFUIComponent implements
                             }
                         }
                     } else if (result.startsWith("N")) {
-                        DialogFactory
+                        String[] ops;
+                        if (Help.hasWiki(getController())) {
+                            ops = new String[]{
+                                Translation.getTranslation("general.ok"),
+                                Translation.getTranslation("general.help")};
+                        } else {
+                            ops = new String[]{Translation
+                                .getTranslation("general.ok")};
+                        }
+                        int op = DialogFactory
                             .genericDialog(
                                 getController(),
                                 Translation
                                     .getTranslation("exp_folder_view.webdav_failure_title"),
                                 Translation.getTranslation(
                                     "exp_folder_view.webdav_failure_text",
-                                    result.substring(1)),
+                                    result.substring(1)), ops, 0,
                                 GenericDialogType.ERROR);
+                        if (op == 1) {
+                            Help.openWikiArticle(getController(),
+                                WikiLinks.WEBDAV);
+                        }
                     }
                 }
             }
@@ -1932,15 +1951,14 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            ServerClient client = getController().getOSClient();
+            final ServerClient client = getController().getOSClient();
             if (client.supportsWebLogin()) {
-                try {
-                    String folderURL = client
-                        .getFolderURLWithCredentials(folderInfo);
-                    BrowserLauncher.openURL(folderURL);
-                } catch (IOException e1) {
-                    logSevere(e1);
-                }
+                BrowserLauncher.open(getController(), new URLProducer() {
+                    public String url() {
+                        return client.getFolderURLWithCredentials(folder
+                            .getInfo());
+                    }
+                });
             }
         }
     }

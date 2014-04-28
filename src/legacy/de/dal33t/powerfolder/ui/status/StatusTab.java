@@ -179,7 +179,7 @@ public class StatusTab extends PFUIComponent {
             Translation.getTranslation("status_tab.no_folders"), false, true,
             null, null);
         sizeOfFoldersLine = new StatusTabLine(getController(),
-            Translation.getTranslation("status_tab.total", "KB"), null, true,
+            Translation.getTranslation("status_tab.total", "kB"), null, true,
             false, null, null);
         filesAvailableLine = new StatusTabLine(getController(),
             Translation.getTranslation("status_tab.files_available"), null,

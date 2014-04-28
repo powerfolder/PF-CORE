@@ -129,8 +129,12 @@ public class RelayedConnectionManager extends PFComponent {
         pendingConHansLock.unlock();
 
         if (pendingConHans.size() > 20) {
+            logWarning(pendingConHans.size()
+                + " pending relayed connection handlers found: "
+                + pendingConHans);
+        } else if (pendingConHans.size() > 200) {
             logSevere(pendingConHans.size()
-                + " PENDING RELAYED CONNECTION HANDLERS found: "
+                + " pending relayed connection handlers found: "
                 + pendingConHans);
         }
 

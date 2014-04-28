@@ -30,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -67,6 +68,7 @@ import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -220,6 +222,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             socket.close();
 
             return true;
+        } catch (ConnectException e) {
+            log.log(Level.WARNING,
+                "Unable to connect to running instance to send remote command: "
+                    + e.getMessage());
         } catch (IOException e) {
             log.log(Level.SEVERE, "Unable to send remote command", e);
         }
@@ -494,12 +500,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     });
                 }
 
-                final String linkURL = client.getFileLinkURL(fInfo);
-                try {
-                    BrowserLauncher.openURL(linkURL);
-                } catch (IOException e) {
-                    logWarning("Unable to open in browser: " + linkURL);
-                }
+                BrowserLauncher.open(getController(), new URLProducer() {
+                    public String url() {
+                        return client.getFileLinkURL(fInfo);
+                    }
+                });
 
                 return;
             }
@@ -614,21 +619,19 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             name = PathUtils.getSuggestedFolderName(dir);
         }
 
-        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController()))
-        {
-            if (!getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE))
-            {
-                if (getController().isUIEnabled()) {
-                    getController().getUIController().getMainFrame().toFront();
-                    DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation("remote_command_manager.make_folder.error_title"),
-                            Translation.getTranslation("remote_command_manager.make_folder.error_message", name),
-                            GenericDialogType.ERROR);
-                }
-                return;
+        if (!getController().getOSClient().isAllowedToCreateFolders()) {
+            if (getController().isUIEnabled()) {
+                getController().getUIController().getMainFrame().toFront();
+                DialogFactory
+                    .genericDialog(
+                        getController(),
+                        Translation
+                            .getTranslation("remote_command_manager.make_folder.error_title"),
+                        Translation.getTranslation(
+                            "remote_command_manager.make_folder.error_message",
+                            name), GenericDialogType.ERROR);
             }
+            return;
         }
 
         // Show user?
@@ -704,8 +707,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 syncProfile = SyncProfile.getDefault(getController());
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile,
-                false, dlScript,
+                dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                     .getValueInt(getController()), true);
             repository.createFolder(foInfo, settings);

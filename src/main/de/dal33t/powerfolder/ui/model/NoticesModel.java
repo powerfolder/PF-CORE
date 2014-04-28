@@ -37,8 +37,8 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
@@ -55,11 +55,11 @@ public class NoticesModel extends PFUIComponent {
     private final ValueModel allNoticesCountVM = new ValueHolder();
     private final ValueModel unreadNoticesCountVM = new ValueHolder();
 
-    private List<Notice> notices = new CopyOnWriteArrayList<Notice>();
+    private final List<Notice> notices = new CopyOnWriteArrayList<Notice>();
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public NoticesModel(Controller controller) {
@@ -104,10 +104,24 @@ public class NoticesModel extends PFUIComponent {
         }
         return null;
     }
+
+    public NoticeSeverity getHighestUnreadSeverity() {
+        NoticeSeverity unreadSeverity = null;
+        for (Notice notice : notices) {
+            if (!notice.isRead()){
+                if(notice.getNoticeSeverity()==NoticeSeverity.WARINING) {
+                    return NoticeSeverity.WARINING;
+                } else if(notice.getNoticeSeverity()==NoticeSeverity.INFORMATION) {
+                    unreadSeverity = NoticeSeverity.INFORMATION;
+                }
+            }
+        }
+        return unreadSeverity;
+    }
     /**
      * This handles a notice object. If it is a notification, show in a
      * notification handler. If it is actionable, add to the app model notices.
-     * 
+     *
      * @param notice
      *            the Notice to handle
      */
@@ -118,7 +132,7 @@ public class NoticesModel extends PFUIComponent {
     /**
      * This handles a system notice object. If it is a notification, show in a
      * notification handler. If it is actionable, add to the app model notices.
-     * 
+     *
      * @param notice
      *            the Notice to handle
      */
@@ -168,7 +182,7 @@ public class NoticesModel extends PFUIComponent {
 
     /**
      * Handle a notice.
-     * 
+     *
      * @param notice
      */
     public void activateNotice(Notice notice) {
@@ -182,9 +196,6 @@ public class NoticesModel extends PFUIComponent {
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof RunnableNotice) {
             RunnableNotice eventNotice = (RunnableNotice) notice;
-            SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
-        } else if (notice instanceof LocalDeleteNotice) {
-            LocalDeleteNotice eventNotice = (LocalDeleteNotice) notice;
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof FolderAutoCreateNotice) {
             FolderAutoCreateNotice eventNotice = (FolderAutoCreateNotice) notice;
@@ -227,7 +238,7 @@ public class NoticesModel extends PFUIComponent {
 
     /**
      * Marks the notice as read.
-     * 
+     *
      * @param notice
      */
     public void markRead(Notice notice) {
@@ -237,7 +248,7 @@ public class NoticesModel extends PFUIComponent {
 
     /**
      * Handle an invitation notice.
-     * 
+     *
      * @param invitationNotice
      */
     private void handleInvitationNotice(InvitationNotice invitationNotice) {
@@ -246,6 +257,13 @@ public class NoticesModel extends PFUIComponent {
     }
 
     public void clearAll() {
+        for (Notice n : notices) {
+            if (n instanceof InvitationNotice) {
+                getController().getThreadPool().execute(
+                    new DeclineInvitationTask(((InvitationNotice) n)
+                        .getPayload(getController())));
+            }
+        }
         notices.clear();
         updateNoticeCounts();
     }
@@ -253,6 +271,11 @@ public class NoticesModel extends PFUIComponent {
     public void clearNotice(Notice notice) {
         for (Notice n : notices) {
             if (notice.equals(n)) {
+                if (n instanceof InvitationNotice) {
+                    getController().getThreadPool().execute(
+                        new DeclineInvitationTask(((InvitationNotice) n)
+                            .getPayload(getController())));
+                }
                 notices.remove(notice);
                 updateNoticeCounts();
                 return;
@@ -270,5 +293,19 @@ public class NoticesModel extends PFUIComponent {
             }
         }
         unreadNoticesCountVM.setValue(count);
+    }
+
+    private class DeclineInvitationTask implements Runnable {
+        Invitation invitation;
+
+        public DeclineInvitationTask(Invitation invitation) {
+            this.invitation = invitation;
+        }
+
+        @Override
+        public void run() {
+            getController().getOSClient().getSecurityService()
+                .declineInvitation(invitation);
+        }
     }
 }

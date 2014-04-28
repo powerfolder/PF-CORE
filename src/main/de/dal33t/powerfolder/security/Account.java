@@ -90,6 +90,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
     public static final String PROPERTYNAME_PASSWORD = "password";
+    public static final String PROPERTYNAME_OTP = "otp";
     public static final String PROPERTYNAME_LDAPDN = "ldapDN";
     public static final String PROPERTYNAME_SHIBBOLETH_PERSISTENT_ID = "shibbolethPersistentID";
     public static final String PROPERTYNAME_LANGUAGE = "language";
@@ -110,6 +111,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_FIRSTNAME = "firstname";
     public static final String PROPERTYNAME_SURNAME = "surname";
     public static final String PROPERTYNAME_TELEPHONE = "telephone";
+    public static final String PROPERTYNAME_EMAILS = "emails";
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
 
     @Id
@@ -118,6 +120,9 @@ public class Account implements Serializable {
     @Column(nullable = false, unique = true)
     private String username;
     private String password;
+    // PFS-862: One time token password
+    @Index(name = "IDX_AOTP")
+    private String otp;
     private String language;
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
@@ -146,7 +151,7 @@ public class Account implements Serializable {
 
     @Column(length = 1024)
     private String notes;
-    
+
     @Index(name = "IDX_ACC_ORG_ID")
     @Column(nullable = true, unique = false)
     private String organizationOID;
@@ -487,7 +492,17 @@ public class Account implements Serializable {
         if (StringUtils.isNotBlank(firstname)
             || StringUtils.isNotBlank(surname))
         {
-            return (firstname + " " + surname).trim();
+            String fn = (firstname == null ? "" : firstname).trim();
+            String sn = (surname == null ? "" : surname).trim();
+
+            if (StringUtils.isBlank(fn)) {
+                return sn;
+            }
+            if (StringUtils.isBlank(sn)) {
+                return fn;
+            }
+
+            return (fn + " " + sn).trim();
         } else if (StringUtils.isNotBlank(username) && authByShibboleth()
             && !emails.isEmpty())
         {
@@ -520,6 +535,25 @@ public class Account implements Serializable {
         return LoginUtil.matches(pwCandidate, password);
     }
 
+    //  PFS-862: OTP Handling
+
+    public String getOTP() {
+        return otp;
+    }
+
+    public boolean isOTPValid() {
+        return LoginUtil.isOTPValid(otp);
+    }
+
+    public String generateAndSetOTP() {
+        this.otp = LoginUtil.generateOTP();
+        return this.otp;
+    }
+
+    public void invalidateOTP() {
+        this.otp = null;
+    }
+
     /**
      * setLanguage Set account language
      *
@@ -548,7 +582,7 @@ public class Account implements Serializable {
     public void setLdapDN(String ldapDN) {
         this.ldapDN = ldapDN;
     }
-    
+
     public String getShibbolethPersistentID() {
         return shibbolethPersistentID;
     }
@@ -572,7 +606,7 @@ public class Account implements Serializable {
     public void setOSSubscription(OnlineStorageSubscription osSubscription) {
         this.osSubscription = osSubscription;
     }
-    
+
     public boolean hasOwnStorage() {
         return osSubscription.getStorageSize() != 0;
     }
@@ -584,7 +618,7 @@ public class Account implements Serializable {
     public void setNotes(String notes) {
         this.notes = notes;
     }
-    
+
     public String getOrganizationOID() {
         return organizationOID;
     }
@@ -600,11 +634,11 @@ public class Account implements Serializable {
     public void setFirstname(String firstname) {
         this.firstname = firstname;
     }
-    
+
     public String getSurname() {
         return surname;
     }
-    
+
     public void setSurname(String surname) {
         this.surname = surname;
     }
@@ -656,7 +690,7 @@ public class Account implements Serializable {
         // Fine a better way:
         return notes != null && notes.toLowerCase().contains("radius");
     }
-    
+
     public boolean authByDatabase() {
         return !authByLDAP() && !authByRADIUS() && !authByShibboleth();
     }
@@ -679,7 +713,7 @@ public class Account implements Serializable {
 
     /**
      * Adds a line of info with the current date to the notes of that account.
-     * 
+     *
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
@@ -703,7 +737,7 @@ public class Account implements Serializable {
     public void setServer(ServerInfo server) {
         this.server = server;
     }
-    
+
     public boolean isServerStatic() {
         return serverStatic;
     }
@@ -839,6 +873,7 @@ public class Account implements Serializable {
         return (int) daysSinceRegistration;
     }
 
+    @Override
     public String toString() {
         return "Account '" + username + "', " + permissions.size()
             + " permissions";
@@ -852,6 +887,58 @@ public class Account implements Serializable {
     }
 
     // Convenience/Applogic ***************************************************
+
+    public void mergeAccounts(Account account) {
+        Reject.ifNull(account, "Account is null");
+
+        // Add Username and Emails
+        if (Util.isValidEmail(account.getUsername())) {
+            this.addEmail(account.getUsername());
+        }
+
+        this.emails.addAll(account.emails);
+
+        // Use the OSSubscription that has provides more space
+        if (account.getOSSubscription().getStorageSizeGB() > this.osSubscription.getStorageSizeGB()) {
+            this.osSubscription = account.osSubscription;
+        }
+
+        // Combine License Key Files
+        this.licenseKeyFileList.addAll(account.licenseKeyFileList);
+
+        // Set the Organization OID if this is account is not yet in an Organization
+        if (StringUtils.isBlank(this.organizationOID)) {
+            this.organizationOID = account.organizationOID;
+        }
+
+        // Add permissions
+        this.grant(account.permissions.toArray(new Permission[0]));
+
+        // Combine groups
+        for (Group newGroup : account.groups) {
+            if (!this.groups.contains(newGroup)) {
+                this.groups.add(newGroup);
+            }
+        }
+
+        // Combine computers
+        this.computers.addAll(account.computers);
+
+        // Combine Notes
+        if (StringUtils.isNotBlank(account.notes)) {
+            StringBuilder sb = new StringBuilder();
+            if (this.notes != null) {
+                sb.append(this.notes);
+                sb.append("\n");
+            }
+            sb.append("Beginn of notes of '" + account.getUsername() + "'\n");
+            sb.append(account.notes);
+            sb.append("\nEND of notes of '" + account.getUsername() + "'");
+            this.notes = sb.toString();
+        }
+
+        this.addNotesWithDate("Merged with account '" + account.getUsername() + "'");
+    }
 
     /**
      * Enables the selected account:
@@ -988,6 +1075,7 @@ public class Account implements Serializable {
         return hasPermission(FolderPermission.owner(foInfo));
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;

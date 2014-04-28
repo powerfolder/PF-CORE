@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util.logging;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +35,7 @@ import java.util.logging.Logger;
 
 import javax.swing.text.StyledDocument;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -72,6 +74,9 @@ public class LoggingManager {
     /** The file handler */
     private static FileHandler fileHandler;
 
+    /** The syslog handler */
+    private static SyslogHandler syslogHandler;
+
     /** Lock object when creating file handler */
     private static final Object fileHandlerLock = new Object();
 
@@ -86,6 +91,9 @@ public class LoggingManager {
 
     /** The name of the file logging file */
     private static String fileLoggingFileName;
+
+    /** The syslog logging level */
+    private static Level syslogLoggingLevel;
 
     /** #2585 */
     private static boolean fileRotate;
@@ -140,11 +148,13 @@ public class LoggingManager {
         consoleHandler = new ConsoleHandler();
         documentHandler = new DocumentHandler();
         bufferedHandler = new BufferedHandler(200);
+        syslogHandler = new SyslogHandler();
 
         rootLogger.setFilter(DEFAULT_FILTER);
         consoleHandler.setFilter(DEFAULT_FILTER);
         documentHandler.setFilter(DEFAULT_FILTER);
         bufferedHandler.setFilter(DEFAULT_FILTER);
+        syslogHandler.setFilter(DEFAULT_FILTER);
     }
 
     /**
@@ -219,6 +229,25 @@ public class LoggingManager {
         }
         bufferedLoggingLevel = level;
         bufferedHandler.setLevel(level);
+
+        setMinimumBaseLoggingLevel();
+    }
+
+    public static void setSyslogLogging(Level level, Controller controller) {
+        if (syslogLoggingLevel == null) {
+            try {
+                syslogHandler.init(
+                    ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller),
+                    ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller));
+            } catch (SocketException e) {
+
+                e.printStackTrace();
+            }
+            getRootLogger().addHandler(syslogHandler);
+        }
+
+        syslogLoggingLevel = level;
+        syslogHandler.setLevel(level);
 
         setMinimumBaseLoggingLevel();
     }

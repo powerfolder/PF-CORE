@@ -19,26 +19,29 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
-import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.Controller;
-
-import javax.swing.*;
-import javax.swing.table.TableColumn;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+
 public class ProblemsTable extends JTable {
 
-    private Controller controller;
+    private final Controller controller;
 
     public ProblemsTable(ProblemsTableModel model, Controller controller) {
         super(model);
@@ -67,15 +70,16 @@ public class ProblemsTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(550);
+        column.setPreferredWidth(350);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(100);
+        column.setPreferredWidth(300);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(100);
     }
 
     private class ProblemTableCellRenderer extends DefaultTableCellRenderer {
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected,
                                                        boolean hasFocus,
@@ -89,15 +93,15 @@ public class ProblemsTable extends JTable {
                 if (column == 0) {
                     setText(problem.getDescription());
                 } else if (column == 1) {
-                    setText(Format.formatDateShort(problem.getDate()));
-                } else if (column == 2) {
                     if (problem instanceof ResolvableProblem) {
                         ResolvableProblem solvableProblem = (ResolvableProblem) problem;
                         setText(solvableProblem.getResolutionDescription());
                     } else {
                         setText(Translation.getTranslation(
-                                "folder_problem.table_model.not_available"));
+                            "folder_problem.table_model.not_available"));
                     }
+                } else if (column == 2) {
+                    setText(Format.formatDateShort(problem.getDate()));
                 }
             }
 
@@ -111,6 +115,7 @@ public class ProblemsTable extends JTable {
     }
 
     private class TableHeaderMouseListener extends MouseAdapter {
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 JTableHeader tableHeader = (JTableHeader) e.getSource();

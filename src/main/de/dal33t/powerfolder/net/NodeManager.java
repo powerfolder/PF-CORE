@@ -1642,9 +1642,6 @@ public class NodeManager extends PFComponent {
             latestSupernodesInfos.add(getMySelf().getInfo());
             latestSupernodes.add(getMySelf());
         }
-        if (getController().isVerbose()) {
-            Debug.writeNodeListCSV(latestSupernodes, "SupernodesOnline.csv");
-        }
     }
 
     /**
@@ -1837,9 +1834,6 @@ public class NodeManager extends PFComponent {
         @Override
         public void run() {
             Debug.writeStatistics(getController());
-            Debug.writeNodeListCSV(new ArrayList<Member>(getController()
-                .getReconnectManager().getReconnectionQueue()),
-                "ReconnectionQueue.csv");
         }
     }
 

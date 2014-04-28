@@ -135,13 +135,11 @@ public class FolderStatistic extends PFComponent {
         if (calculatorTask != null) {
             return;
         }
-        // logInfo("Sched NEW Calc from: ", new RuntimeException());
         if (current.getAnalyzedFiles() < MAX_ITEMS) {
             setCalculateIn(2000);
         } else {
             setCalculateIn(delay);
         }
-
     }
 
     // Calculator timer code
@@ -242,12 +240,12 @@ public class FolderStatistic extends PFComponent {
             lastFileChangeDate = date;
         }
 
-        if (isFiner()) {
+        if (isFine()) {
             long took = System.currentTimeMillis() - startTime;
             double perf = took != 0 ? (current.getAnalyzedFiles() / took) : 0;
-            logFiner("Recalculation completed (" + current.getAnalyzedFiles()
+            logFine("Recalculation completed (" + current.getAnalyzedFiles()
                 + " Files analyzed) in " + took + "ms. Performance: " + perf
-                + " ana/ms");
+                + " ana/ms. Sync: " + getHarmonizedSyncPercentage());
         }
 
         // Fire event
@@ -576,15 +574,13 @@ public class FolderStatistic extends PFComponent {
             .getSyncProfile()))
         {
             // SYNC-143
-            if (ProUtil.isZyncro(getController())
-                && folder.getMembersCount() == 1)
-            {
+            if (folder.getMembersCount() == 1) {
                 return UNKNOWN_SYNC_STATUS;
             }
             // SYNC-143
 
             // Average of all folder member sync percentages.
-            return getAverageSyncPercentage();
+            return getLocalSyncPercentage();
         }
 
         // Otherwise, just return the local sync percentage.
@@ -790,7 +786,15 @@ public class FolderStatistic extends PFComponent {
                 // Member not on folder
                 return;
             }
-            if (!e.getNode().hasCompleteFileListFor(folder.getInfo())) {
+            // PFS-1144: Fallback:
+            if (folder.getStatistic().getHarmonizedSyncPercentage() != 100.0d) {
+                scheduleCalculate();
+                return;
+            }
+            // Fixes: PFS-1144 
+            if (!e.getNode().hasCompleteFileListFor(folder.getInfo())
+                && e.getNode().isConnected())
+            {
                 // Not full filelist yet.
                 return;
             }

@@ -99,7 +99,7 @@ public class SplitConfig extends Properties {
 
     @Override
     public synchronized Object put(Object key, Object value) {
-        if (String.valueOf(key).startsWith(FolderSettings.FOLDER_SETTINGS_PREFIX_V4)) {
+        if (String.valueOf(key).startsWith(FolderSettings.PREFIX_V4)) {
             return folders.put(key, value);
         } else {
             return regular.put(key, value);

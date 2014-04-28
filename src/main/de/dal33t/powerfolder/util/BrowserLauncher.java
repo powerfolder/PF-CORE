@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -52,6 +53,63 @@ public class BrowserLauncher {
 
     private static final String errMsg = "Error attempting to launch web browser";
 
+    /**
+     * Opens the browser in background thread. This method does not BLOCK. Can
+     * safely be used from UI-EDT Thread.
+     * 
+     * @param controller
+     * @param url
+     */
+    public static void openURL(Controller controller, final String url) {
+        open(controller, new URLProducer() {
+            @Override
+            public String url() {
+                return url;
+            }
+        });
+    }
+
+    /**
+     * Opens the browser in background thread. This method does not BLOCK. Can
+     * safely be used from UI-EDT Thread.
+     * 
+     * @param controller
+     * @param producer
+     */
+    public static void open(Controller controller, final URLProducer producer) {
+        Reject.ifNull(producer, "producer");
+        // PFC-2349 : Don't freeze UI
+        if (controller != null && controller.getIOProvider() != null) {
+            controller.getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    try {
+                        BrowserLauncher.openURL(producer.url());
+                    } catch (IOException e) {
+                        log.log(Level.WARNING, "Unable to open web browser. "
+                            + e);
+                    }
+                }
+            });
+        } else {
+            // Fallback
+            try {
+                openURL(producer.url());
+            } catch (IOException e) {
+                log.log(Level.WARNING, "Unable to open web browser. " + e);
+            }
+        }
+    }
+
+    /**
+     * Opens the given URL in the system browser. Method does BLOCK. Never call
+     * directly from User Interface code! Use
+     * {@link #open(Controller, URLProducer)} instead
+     * 
+     * @param url
+     * @throws IOException
+     * @Deprecated favor {@link #openURL(Controller, String)} or
+     *             {@link #open(Controller, URLProducer)}
+     */
     public static void openURL(String url) throws IOException {
         if (StringUtils.isBlank(url)) {
             log.fine("Not opening blank url!");
@@ -102,5 +160,9 @@ public class BrowserLauncher {
                 .initCause(e);
         }
         return false;
+    }
+    
+    public static interface URLProducer {
+        String url();
     }
 }

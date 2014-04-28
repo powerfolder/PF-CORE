@@ -60,6 +60,9 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
     }
 
     public void testJoinExistingFolder() {
+        getContollerLisa().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
+        getContollerBart().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
+
         assertEquals(1, getFolderAtLisa().getMembersCount());
         boolean sent = RemoteCommandManager.sendCommand(3458,
             RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.toAbsolutePath()
@@ -86,6 +89,9 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
     }
 
     public void testCreateNewFolder() {
+        getContollerLisa().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
+        getContollerBart().getOSClient().getAccount().getOSSubscription().setStorageSizeGB(1);
+
         assertEquals(0, getContollerBart().getFolderRepository()
             .getFoldersCount());
         assertEquals(1, getFolderAtLisa().getMembersCount());

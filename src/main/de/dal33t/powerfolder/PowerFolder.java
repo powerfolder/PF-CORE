@@ -54,6 +54,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  */
 public class PowerFolder {
 
+    public static String NAME = "PowerFolder";
     private static final Logger log = Logger.getLogger(PowerFolder.class
         .getName());
     public static final Options COMMAND_LINE_OPTIONS;
@@ -189,7 +190,7 @@ public class PowerFolder {
 
         if (commandLine.hasOption("k")) {
             if (runningInstanceFound) {
-                System.out.println("Stopping PowerFolder");
+                System.out.println("Stopping " + NAME);
                 // Send quit command
                 RemoteCommandManager.sendCommand(rconPort,
                     RemoteCommandManager.QUIT);
@@ -300,7 +301,7 @@ public class PowerFolder {
             return;
         }
 
-        System.out.println("------------ PowerFolder "
+        System.out.println("------------ " + NAME +" "
             + Controller.PROGRAM_VERSION + " started ------------");
 
         boolean restartRequested = false;
@@ -328,7 +329,7 @@ public class PowerFolder {
                     }
                 }
                 log.info("Restarting controller");
-                System.out.println("------------ PowerFolder "
+                System.out.println("------------ " + NAME + " "
                     + Controller.PROGRAM_VERSION + " restarting ------------");
                 controller = null;
                 System.gc();

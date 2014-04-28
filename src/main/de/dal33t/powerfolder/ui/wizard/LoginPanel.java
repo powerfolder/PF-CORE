@@ -325,7 +325,7 @@ public class LoginPanel extends PFWizardPanel {
 
                     idPSelectBox.removeAllItems();
                     idPSelectBox.addItem("Keine - Externer Benutzer");
-                    idPList.add("");
+                    idPList.add("ext");
 
                     for (int i = 0; i < resp.length(); i++) {
                         JSONObject obj = resp.getJSONObject(i);
@@ -371,8 +371,13 @@ public class LoginPanel extends PFWizardPanel {
         {
             usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME
                 .getValue(getController()));
-            passwordField.setText("");
-        } else if (client.isConnected()) {
+            passwordField.setText(new String(LoginUtil
+                .deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                    .getValue(getController()) == null
+                    ? ""
+                    : ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                        .getValue(getController()))));
+       } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
             passwordField.setText(client.getPasswordClearText());
         }
@@ -478,8 +483,8 @@ public class LoginPanel extends PFWizardPanel {
                             .getTranslation("wizard.webservice.connect_failed"));
                 }
 
-                char[] pw = passwordField.getPassword();
                 boolean loginOk = false;
+                char[] pw = passwordField.getPassword();
                 loginOk = client.login(usernameField.getText(), pw).isValid();
                 LoginUtil.clear(pw);
                 if (!loginOk) {

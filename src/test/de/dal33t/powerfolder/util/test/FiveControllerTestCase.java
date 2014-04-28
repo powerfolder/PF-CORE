@@ -121,15 +121,16 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
      * @return true if succeeded
      */
     protected boolean tryToConnectSimpsons() {
-        return connect(getContollerHomer(), getContollerBart())
-            && connect(getContollerHomer(), getContollerMarge())
+        return connect(getContollerHomer(), getContollerMarge())
+            && connect(getContollerHomer(), getContollerBart())
             && connect(getContollerMarge(), getContollerLisa())
+            && connect(getContollerMarge(), getContollerMaggie())
+            // The rest
             && connect(getContollerHomer(), getContollerLisa())
             && connect(getContollerHomer(), getContollerMaggie())
             && connect(getContollerBart(), getContollerMarge())
             && connect(getContollerBart(), getContollerLisa())
             && connect(getContollerBart(), getContollerMaggie())
-            && connect(getContollerMarge(), getContollerMaggie())
             && connect(getContollerLisa(), getContollerMaggie());
     }
 

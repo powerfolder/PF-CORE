@@ -116,6 +116,8 @@ public enum Feature {
      */
     ORGANIZATIONS(true),
     
+    UI_ENABLED(true),
+    
     /**
      * PFS-981: Preserve NTFS file owner while updating file from remote
      */

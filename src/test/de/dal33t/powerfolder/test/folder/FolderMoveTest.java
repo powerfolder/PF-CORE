@@ -138,8 +138,8 @@ public class FolderMoveTest extends ControllerTestCase {
 
             // Create new folder
             FolderSettings folderSettings = new FolderSettings(testFolder2,
-                getFolder().getSyncProfile(), false, getFolder()
-                            .getFileArchiver().getVersionsPerFile());
+                getFolder().getSyncProfile(), getFolder().getFileArchiver()
+                    .getVersionsPerFile());
 
             // Move the folder
             folder = repository.createFolder(folder.getInfo(), folderSettings);

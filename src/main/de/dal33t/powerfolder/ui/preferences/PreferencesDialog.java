@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -393,11 +392,6 @@ public class PreferencesDialog extends BaseDialog {
 
         String wikiArticleURL = Help
             .getWikiArticleURL(getController(), article);
-        try {
-            BrowserLauncher.openURL(wikiArticleURL);
-        } catch (IOException e1) {
-            logSevere("IOException", e1);
-        }
-
+        BrowserLauncher.openURL(getController(), wikiArticleURL);
     }
 }

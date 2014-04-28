@@ -3,6 +3,8 @@ package de.dal33t.powerfolder.ui.util;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -16,6 +18,8 @@ import org.apache.http.util.EntityUtils;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.StringUtils;
 
 @SuppressWarnings("unchecked")
 public class IdPSelectionAction extends PFComponent implements ActionListener {
@@ -32,7 +36,7 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
     public void actionPerformed(final ActionEvent e) {
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
-            protected Void doInBackground() {
+            protected Void doInBackground() throws UnsupportedEncodingException {
                 JComboBox<String> source = (JComboBox<String>) e.getSource();
 
                 int index = source.getSelectedIndex();
@@ -41,37 +45,34 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
                 ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(
                     getController(), entity);
 
-                HttpGet getECPBinding = new HttpGet(entity);
+                if (StringUtils.isBlank(entity)) {
+                    logFine("No entityID selected");
+                    return null;
+                } else if ("ext".equals(entity)) {
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(
+                        getController(), entity);
+                    logFine("External user: don't ask the server for the ECP URL.");
+                    return null;
+                }
+
+                String idpLookupURL = ConfigurationEntry.SERVER_WEB_URL
+                    .getValue(getController())
+                    + "/api/idpd?entityID="
+                    + URLEncoder.encode(entity, Convert.UTF8.toString());
+
+                HttpGet getBindingURL = new HttpGet(idpLookupURL);
                 DefaultHttpClient client = new DefaultHttpClient();
                 HttpResponse httpResponse;
+
                 try {
-                    httpResponse = client.execute(getECPBinding);
-                    String responseBody = EntityUtils.toString(httpResponse
+                    httpResponse = client.execute(getBindingURL);
+                    String ecpURL = EntityUtils.toString(httpResponse
                         .getEntity());
 
-                    // Find the section with SingleSignOnService Bindings
-                    int singleSOSBegin = responseBody
-                        .indexOf("SingleSignOnService");
-                    // Find the one, that contains the ECP/SOAP Binding
-                    // information
-                    int soapBegin = responseBody.indexOf(
-                        "urn:oasis:names:tc:SAML:2.0:bindings:SOAP",
-                        singleSOSBegin);
-                    // Get the position of the Location attibute
-                    int locationBegin = responseBody.indexOf("Location",
-                        soapBegin);
-                    // Get start and end index of the URL
-                    int locationURLBegin = responseBody.indexOf("\"",
-                        locationBegin);
-                    int locationURLEnd = responseBody.indexOf("\"",
-                        locationURLBegin + 1);
-
-                    String locationURL = responseBody.substring(
-                        locationURLBegin + 1, locationURLEnd);
-
                     ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(
-                        getController(), locationURL);
+                        getController(), ecpURL);
 
+                    logFine("ECP SOAP Endpoint URL set to " + ecpURL);
                 } catch (IOException e1) {
                     logSevere("Could not receive List of Identity Provider. "
                         + e1);

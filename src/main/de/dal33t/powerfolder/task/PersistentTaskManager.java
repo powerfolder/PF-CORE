@@ -73,6 +73,7 @@ public class PersistentTaskManager extends PFComponent {
             Files.createDirectories(taskFile.getParent());
             return taskFile;
         } catch (IOException ioe) {
+            logFine("Could not create parent directory for task file. " + ioe);
             return null;
         }
     }
@@ -84,7 +85,7 @@ public class PersistentTaskManager extends PFComponent {
         shuttingDown = false;
         pendingTasks = new Vector<PersistentTask>();
         Path taskfile = getTaskFile();
-        if (Files.exists(taskfile)) {
+        if (taskfile != null && Files.exists(taskfile)) {
             logFine("Loading taskfile: " + taskfile);
             try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(taskfile))) {
                 tasks = new LinkedList<PersistentTask>();

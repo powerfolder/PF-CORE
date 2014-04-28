@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.plaf.IconUIResource;
 
@@ -76,7 +77,7 @@ import de.dal33t.powerfolder.util.Reject;
  * approach is that Icons are only get as required, saving time and memory.
  * Similarly, Images should be got by calling something like
  * <code>Icons.getImageById(Icon.EXAMPLE)</code>.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.74 $
  */
@@ -189,17 +190,17 @@ public class Icons {
         "systray_sync03_lowres.icon", "systray_sync04_lowres.icon", "systray_sync05_lowres.icon",
         "systray_sync06_lowres.icon", "systray_sync07_lowres.icon", "systray_sync08_lowres.icon",
         "systray_sync09_lowres.icon", "systray_sync10_lowres.icon", "systray_sync11_lowres.icon"};
-    
+
     private static final String[] SYSTRAY_SYNC_ANIMATION_HI_RES = {
         "systray_sync00_hires.icon", "systray_sync01_hires.icon", "systray_sync02_hires.icon",
         "systray_sync03_hires.icon", "systray_sync04_hires.icon", "systray_sync05_hires.icon",
         "systray_sync06_hires.icon", "systray_sync07_hires.icon", "systray_sync08_hires.icon",
         "systray_sync09_hires.icon", "systray_sync10_hires.icon", "systray_sync11_hires.icon"};
-    
+
     public static final String SYSTRAY_SYNC_COMPLETE;
     private static final String SYSTRAY_SYNC_COMPLETE_LOW_RES = "systray_sync_complete_lowres.icon";
     private static final String SYSTRAY_SYNC_COMPLETE_HIGH_RES = "systray_sync_complete_hires.icon";
-    
+
     public static final String SYSTRAY_SYNC_INCOMPLETE;
     private static final String SYSTRAY_SYNC_INCOMPLETE_LOW_RES = "systray_sync_incomplete_lowres.icon";
     private static final String SYSTRAY_SYNC_INCOMPLETE_HIGH_RES = "systray_sync_incomplete_hires.icon";
@@ -207,11 +208,11 @@ public class Icons {
     public static final String SYSTRAY_WARNING;
     private static final String SYSTRAY_WARNING_LOW_RES = "systray_warning_lowres.icon";
     private static final String SYSTRAY_WARNING_HIGH_RES = "systray_warning_hires.icon";
-    
+
     public static final String SYSTRAY_PAUSE;
     private static final String SYSTRAY_PAUSE_LOW_RES = "systray_pause_lowres.icon";
     private static final String SYSTRAY_PAUSE_HIGH_RES = "systray_pause_hires.icon";
-    
+
     static {
         if (!TrayIconManager.isHiRes()) {
             SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_LOW_RES;
@@ -248,6 +249,9 @@ public class Icons {
     /** Map of Extension - Icon */
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
+    /** Map of Username - Icon */
+    private static final Map<String, Icon> USERNAME_ICON_MAP = new ConcurrentHashMap<>();
+
     // BlueGlobe is our default.
     private static final String DEFAULT_PROPERTIES_FILENAME = Origin.ICON_PROPERTIES_FILENAME;
 
@@ -265,7 +269,7 @@ public class Icons {
     /**
      * Configure the properties file / icons. PowerFolder will takes the icons
      * from this properties.
-     * 
+     *
      * @param icoProps
      */
     public static void setIconProperties(Properties icoProps) {
@@ -290,7 +294,7 @@ public class Icons {
 
     /**
      * Returns the icons for the specified id.
-     * 
+     *
      * @param id
      *            the icon id
      * @return the icon
@@ -361,7 +365,7 @@ public class Icons {
 
     /**
      * Returns the image for the specified id
-     * 
+     *
      * @param id
      *            the image id
      * @return the image
@@ -395,14 +399,14 @@ public class Icons {
 
     /**
      * Get the icon id from the properties for an id. So if there is a line
-     * 
+     *
      * <pre>
      * stop.icon = icons / Abort.png
      * </pre>
-     * 
+     *
      * then id of 'stop.icon' would return 'icons/Abort.png'. Tries override
      * properties first, then the normal PowerFolder ones.
-     * 
+     *
      * @param id
      * @return
      */
@@ -437,7 +441,7 @@ public class Icons {
 
     /**
      * Returns the icon for that node
-     * 
+     *
      * @param node
      * @return the icon
      */
@@ -481,6 +485,11 @@ public class Icons {
         return icon;
     }
 
+    /**
+     * @param member The account to retrieve the avatar for
+     * @param controller
+     * @return Return the avatar uploaded by the user.
+     */
     public static Icon getIconByAccount(AccountInfo member,
         Controller controller)
     {
@@ -488,38 +497,62 @@ public class Icons {
 
         if (username == null) {
             return getIconById(NODE_DISCONNECTED);
+        } else if (USERNAME_ICON_MAP.containsKey(username)) {
+            new IconBackgroundLoader(member, controller).execute();
+            return USERNAME_ICON_MAP.get(username);
+        } else {
+            new IconBackgroundLoader(member, controller).execute();
+            return getIconById(NODE_DISCONNECTED);
         }
-
-        String urlString = controller.getOSClient()
-            .getAvatarURL(member);
-
-        try {
-            URL url = new URL(urlString);
-
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.connect();
-            int code = con.getResponseCode();
-
-            if (code == 200) {
-                ImageIcon tempIcon = new ImageIcon(url);
-                Image img = tempIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
-
-                return new ImageIcon(img);
-            }
-        } catch (MalformedURLException e) {
-            log.warning("Avatar URL was malformed: " + urlString);
-        } catch (IOException e) {
-            log.fine(e.getMessage());
-        }
-
-        return getIconById(NODE_DISCONNECTED);
     }
-    
+
+    private static class IconBackgroundLoader extends SwingWorker<Void, Void> {
+        private final AccountInfo member;
+        private final Controller controller;
+
+        IconBackgroundLoader(AccountInfo member, Controller controller) {
+            this.member = member;
+            this.controller = controller;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            String urlString = controller.getOSClient().getAvatarURL(member,
+                true);
+
+            try {
+                URL url = new URL(urlString);
+
+                HttpURLConnection con = (HttpURLConnection) url
+                    .openConnection();
+                con.setRequestMethod("GET");
+                con.connect();
+                int code = con.getResponseCode();
+
+                if (code == 200) {
+                    ImageIcon tempIcon = new ImageIcon(url);
+                    Image img = tempIcon.getImage().getScaledInstance(25, 25,
+                        Image.SCALE_SMOOTH);
+
+                    USERNAME_ICON_MAP.put(member.getUsername(), new ImageIcon(
+                        img));
+
+                    controller.getUIController().getActiveFrame().repaint();
+                }
+            } catch (MalformedURLException e) {
+                log.warning("Avatar URL was malformed: " + urlString);
+            } catch (IOException e) {
+                log.warning(e.getMessage());
+            }
+
+            return null;
+        }
+    }
+
     /**
      * returns a icon based on the state of the fileinfo this maybe a normal
      * gray or red icon
-     * 
+     *
      * @param fileInfo
      *            the fileinfo to return a icon for
      * @param controller
@@ -583,7 +616,7 @@ public class Icons {
      * returns a icon (never gray or red)
      * <p>
      * TODO THIS IS A MESS
-     * 
+     *
      * @param fileInfo
      *            the fileinfo to return a icon for
      * @param controller
@@ -659,7 +692,7 @@ public class Icons {
     /**
      * we don't want to cache icons, executables and screensavers because they
      * have unique icons
-     * 
+     *
      * @param extension
      * @return true if extension is one of "EXE", "SCR", "ICO" else false
      */
@@ -711,7 +744,7 @@ public class Icons {
      * Creates a tmp file and get image.
      * FileSystemView.getFileSystemView().getSystemIcon(file) needs a existing
      * file to get a image for.
-     * 
+     *
      * @param extension
      *            the extension to get a Image for
      * @return the Image
@@ -730,7 +763,7 @@ public class Icons {
      * Creates a tmp file and get icon.
      * FileSystemView.getFileSystemView().getSystemIcon(file) needs a existing
      * file to get a icon for.
-     * 
+     *
      * @param extension
      *            the extension to get a Icon for
      * @return the icon
@@ -761,7 +794,7 @@ public class Icons {
 
     /**
      * converts Icon to red, note: first convert to gray *
-     * 
+     *
      * @param icon
      * @return the red icon
      */
@@ -794,7 +827,7 @@ public class Icons {
     /**
      * create a disabled (Gray) version of the Icon much better way than
      * GrayFilter, because GrayFilter does not handle the transparancy well.
-     * 
+     *
      * @param icon
      *            the icon to convert to gray icon
      * @return icon grayed out for use as disabled icon
@@ -818,7 +851,7 @@ public class Icons {
      * Extracts the image from an Icon. If the icon is not an ImageIcon but
      * wrapped into an IconUIResource, this method tries to get the image via
      * reflection.
-     * 
+     *
      * @param icon
      *            The icon to get the image from.
      * @return The image or null on failure
@@ -871,7 +904,7 @@ public class Icons {
      * "Converting" by drawing on image, but there seems to be no other way.
      * <P>
      * ATTENTION: Needs to be public. Used by PowerFolder Pro code.
-     * 
+     *
      * @param image
      * @return the buffered image.
      */
@@ -953,7 +986,7 @@ public class Icons {
 
     /**
      * Loads a properties file from classpath.
-     * 
+     *
      * @param filename
      *            the filename to load
      * @return the properties that have been loaded. Or <code>null</code> if not

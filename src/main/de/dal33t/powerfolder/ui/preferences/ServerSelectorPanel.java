@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -33,8 +35,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -68,6 +70,12 @@ public class ServerSelectorPanel extends PFUIComponent {
         addressField = new JTextField(getController().getOSClient()
             .getServerString());
         addressField.setEditable(false);
+        addressField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new ConfigurationLoaderDialog(getController()).openAndWait();
+            }
+        });
         searchButton = new JButtonMini(Icons.getIconById(Icons.EDIT),
             Translation.getTranslation("general.search"));
         searchButton.addActionListener(new ActionListener() {

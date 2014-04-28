@@ -837,10 +837,9 @@ public class SettingsTab extends PFUIComponent {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory,
-                folder.getSyncProfile(), false, folder.isPreviewOnly(),
-                folder.getDownloadScript(), folder.getFileArchiver()
-                    .getVersionsPerFile(), folder.isSyncPatterns(), commitDir,
-                folder.getSyncWarnSeconds());
+                folder.getSyncProfile(), folder.getDownloadScript(), folder
+                    .getFileArchiver().getVersionsPerFile(),
+                folder.isSyncPatterns(), commitDir, folder.getSyncWarnSeconds());
             folder = repository.createFolder(fi, fs);
 
             // Restore patterns if content not moved.

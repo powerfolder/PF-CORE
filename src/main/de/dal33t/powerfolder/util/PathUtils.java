@@ -1120,6 +1120,15 @@ public class PathUtils {
         }
     }
 
+    public static boolean openFileIfExists(Path file) {
+        if (Files.notExists(file)) {
+            log.fine("File to open does not exist: " + file.toAbsolutePath().toString());
+            return false;
+        }
+        
+        return openFile(file);
+    }
+    
     /**
      * Execute the file.
      * 

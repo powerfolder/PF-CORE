@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
@@ -52,6 +51,11 @@ public class ProUtil {
             || controller.getDistribution().getName().contains("yncro");
     }
 
+    public static final boolean isSwitchData(Controller controller) {
+        return controller.getDistribution().getBinaryName().toLowerCase().trim().contains("switchdata")
+            || controller.getDistribution().getName().toLowerCase().trim().contains("switchdata");
+    }
+    
     public static final boolean isServerConfig(Controller controller) {
         return controller.getConfig().get("plugin.server.maintenancefolderid") != null;
     }
@@ -100,14 +104,6 @@ public class ProUtil {
     }
 
     /**
-     * @return true if the server version is running.
-     */
-    public static final boolean isRunningServerVersion() {
-        return Util.class.getClassLoader().getResourceAsStream(
-            "de/dal33t/powerfolder/ConfigurationServerEntry.class") != null;
-    }
-
-    /**
      * @param controller
      * @return true if running a trial or non-registered version.
      */
@@ -116,23 +112,8 @@ public class ProUtil {
             return true;
         }
         try {
-            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX + Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c.getMethod("isTrial", Controller.class);
-            return (Boolean) m.invoke(null, controller);
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Exception. " + e, e);
-        }
-        return true;
-    }
-
-    /**
-     * @param controller
-     * @return true if running a trial or non-registered version.
-     */
-    public static final boolean isAllowedToRun(Controller controller) {
-        try {
-            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
-            Method m = c.getMethod("isAllowedToRun", Controller.class);
             return (Boolean) m.invoke(null, controller);
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Exception. " + e, e);
@@ -147,7 +128,8 @@ public class ProUtil {
             return null;
         }
         try {
-            Class<?> c = Class.forName(Constants.ENCRYPTION_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX
+                + Constants.ENCRYPTION_PLUGIN_CLASS);
             Method m = c.getMethod("getPublicKey", Controller.class,
                 MemberInfo.class);
             return (PublicKey) m.invoke(null, controller, node);
@@ -169,7 +151,8 @@ public class ProUtil {
         MemberInfo node, PublicKey key)
     {
         try {
-            Class<?> c = Class.forName(Constants.ENCRYPTION_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX
+                + Constants.ENCRYPTION_PLUGIN_CLASS);
             Method m = c.getMethod("addNodeToKeyStore", Controller.class,
                 MemberInfo.class, PublicKey.class);
             return (Boolean) m.invoke(null, controller, node, key);
@@ -184,7 +167,8 @@ public class ProUtil {
      */
     public static final String rtrvePwssd(Controller controller, String input) {
         try {
-            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
+            Class<?> c = Class.forName(Constants.PACKAGE_PREFIX
+                + Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c
                 .getMethod("rtrvePwssd", Controller.class, String.class);
             return (String) m.invoke(null, controller, input);

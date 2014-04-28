@@ -44,8 +44,8 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 /**
  * Refelects a entry setting in the configuration file. Provides basic method
  * for accessing and setting the configuration.
- * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+ *
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public enum ConfigurationEntry {
@@ -81,6 +81,23 @@ public enum ConfigurationEntry {
      * Don't prompt on update. Simply auto-upgrade silently
      */
     AUTO_UPDATE("auto.update", false),
+
+    // PFC-2461: possibility to disable updates completely for MSI installation
+    /**
+     * Enables/disables all updates. If disabled, prevents background process
+     * hides updates from the UI.
+     */
+    ENABLE_UPDATE("enable.update", true) {
+        @Override
+        public String getDefaultValue() {
+            // Hack for PFC-2461
+            // Updates disabled by default if software was installed via MSI
+            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+                return Boolean.FALSE.toString();
+            }
+            return super.getDefaultValue();
+        }
+    },
 
     /**
      * If some client options are available only with permissions such as create
@@ -253,7 +270,7 @@ public enum ConfigurationEntry {
      * established
      */
     SERVER_CONFIG_UPDATE("server.config.update", true),
-    
+
     /**
      * If to load server nodes from server URL
      */
@@ -289,7 +306,8 @@ public enum ConfigurationEntry {
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
 
     /**
-     * If the client is allowed to pass the current password to the web browser.
+     * PFS-862: Change to FALSE after major distribution of v9.2 If the client
+     * is allowed to pass the current password to the web browser.
      */
     WEB_PASSWORD_ALLOWED("web.login.password", true),
 
@@ -312,7 +330,7 @@ public enum ConfigurationEntry {
      * Enable/Disable the Files Tab
      */
     FILES_ENABLED("files.enabled", true),
-    
+
     ARCHIVE_DIRECTORY_NAME("files.archive.dir.name", "archive"),
 
     /**
@@ -390,16 +408,21 @@ public enum ConfigurationEntry {
     /**
      * #1715 If it should be possible to register at the server.
      */
-    SERVER_REGISTER_ENABLED("server.register.enabled", true),
-    
+    SERVER_REGISTER_ENABLED("server.register.enabled", false),
+
     /**
      * PFS-485 If it should be possible to send invite others.
      */
     SERVER_INVITE_ENABLED("server.invite.enabled", true),
-    
+
+    /**
+     * PFS-871: The user has to agree to invitations, if enabled
+     */
+    FOLDER_AGREE_INVITATION_ENABLED("folder.agree.invitation.enabled", false),
+
     /**
      * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
-     * Will create a new user account with server default settings for invitee. 
+     * Will create a new user account with server default settings for invitee.
      */
     SERVER_INVITE_NEW_USERS_ENABLED("server.invite.new_users.enabled", true),
 
@@ -453,12 +476,36 @@ public enum ConfigurationEntry {
      */
     SERVER_CONNECT_FROM_LAN_TO_INTERNET("server.connect.lan2internet", true),
 
+    // Kerberos settings ******************************************************
+
+    /**
+     * PFC-2446
+     *
+     * Enable Single Sign-on via Kerberos
+     */
+    KERBEROS_SSO_ENABLED("kerberos.sso.enabled", false),
+
+    /**
+     * The Realm aka Domain
+     */
+    KERBEROS_SSO_REALM("kerberos.sso.realm", "WORKGROUP"),
+
+    /**
+     * The Key Distribution Center
+     */
+    KERBEROS_SSO_KDC("kerberos.sso.kdc"),
+
+    /**
+     * Kerberos service name, as registered at the Domain Controller
+     */
+    KERBEROS_SSO_SERVICE_NAME("kerberos.sso.service_name", "powerfolder/hostname"), // + @realm
+
     // General settings *******************************************************
 
     /**
      * The networking mode. See class <code>NetworkingMode</code> for more
      * information.
-     * 
+     *
      * @see NetworkingMode
      */
     NETWORKING_MODE("networkingmode", NetworkingMode.PRIVATEMODE.name()),
@@ -644,7 +691,7 @@ public enum ConfigurationEntry {
      * if inaccessible during program start, e.g. USB- or Network-Drive
      */
     FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
-    
+
     /**
      * Lets do this flexible.
      */
@@ -715,7 +762,7 @@ public enum ConfigurationEntry {
     CONFLICT_DETECTION("conflict.detection", true),
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
-    
+
     LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
     /**
@@ -732,7 +779,7 @@ public enum ConfigurationEntry {
      * #2585
      */
     LOG_FILE_ROTATE("log.file.rotate", true),
-    
+
     /**
      * PFS-475: Remove old log files
      */
@@ -744,8 +791,22 @@ public enum ConfigurationEntry {
     LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName()),
 
     /**
+     * PFS-1017: Logging to syslog
+     */
+    LOG_SYSLOG_LEVEL("log.syslog.level",  Level.INFO.getName()),
+
+    LOG_SYSLOG_HOST("log.syslog.host"),
+
+    LOG_SYSLOG_PORT("log.syslog.port", 514),
+
+    /**
+     * Should the active threads be logged?
+     */
+    LOG_ACTIVE_THREADS("log.active_threads", true),
+
+    /**
      * Whether to request debug reports
-     * 
+     *
      * @see RequestNodeInformation
      */
     DEBUG_REPORTS("debug.reports", false),
@@ -908,7 +969,7 @@ public enum ConfigurationEntry {
      * Uses any existing directory found at the default path, even if not empty.
      */
     FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", false),
-    
+
     /**
      * PFC-2226: Option to restrict new folder creation to the default storage path
      * PFC-2424: If "Beginner mode" is switched on, set to "true"
@@ -916,16 +977,17 @@ public enum ConfigurationEntry {
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false) {
         @Override
         public Boolean getValueBoolean(Controller controller) {
-            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
-                && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
-            {
-                return Boolean.TRUE;
-            }
-
             String value = getValue(controller);
+
             if (value == null) {
+                if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
+                    && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
+                {
+                    return Boolean.TRUE;
+                }
                 value = getDefaultValue();
             }
+
             try {
                 return value.trim().equalsIgnoreCase("true");
             } catch (NumberFormatException e) {
@@ -937,7 +999,7 @@ public enum ConfigurationEntry {
             }
         }
     },
-    
+
     /**
      * Remove folder from setup if disappeared/deleted from basedir.
      */
@@ -959,10 +1021,15 @@ public enum ConfigurationEntry {
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
 
     /**
+     * The number of maximum activate
+     */
+    FOLDER_SCANNER_MAX_CRAWLERS("sync.folder.max_crawlers", 3),
+
+    /**
      * Automatically setup all folders the user has access to and also
      * automatically accept folder invites.
      */
-    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", false),
+    AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", true),
 
     REMOVED_FOLDER_FILES("removed.folder.files", ""),
 
@@ -972,7 +1039,9 @@ public enum ConfigurationEntry {
      */
     PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600), // One hour default.
 
-    SHOW_TINY_WIZARDS("show.tiny.wizards", false);
+    SHOW_TINY_WIZARDS("show.tiny.wizards", false),
+
+    SHOW_CREATE_FOLDER("show.create.folder", true);
 
     // Methods/Constructors ***************************************************
 
@@ -989,9 +1058,9 @@ public enum ConfigurationEntry {
     ConfigurationEntry(String aConfigKey, String theDefaultValue) {
         Reject.ifBlank(aConfigKey, "Config key is blank");
         Reject.ifTrue(
-            aConfigKey.startsWith(FolderSettings.FOLDER_SETTINGS_PREFIX_V4),
+            aConfigKey.startsWith(FolderSettings.PREFIX_V4),
             "Config entries must not start with '"
-                + FolderSettings.FOLDER_SETTINGS_PREFIX_V4 + '\'');
+                + FolderSettings.PREFIX_V4 + '\'');
         configKey = aConfigKey;
         if (theDefaultValue != null) {
             defaultValue = theDefaultValue;
@@ -1035,7 +1104,7 @@ public enum ConfigurationEntry {
 
     /**
      * Parses the configuration entry into a Integer.
-     * 
+     *
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
@@ -1057,7 +1126,7 @@ public enum ConfigurationEntry {
 
     /**
      * Parses the configuration entry into a Boolen.
-     * 
+     *
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
@@ -1083,7 +1152,7 @@ public enum ConfigurationEntry {
      * Changes from "below" won't be reflected.
      * <p>
      * TODO Resolve problem: Model not buffered!
-     * 
+     *
      * @param controller
      * @return a value model bound to the configuration entry.
      * @deprecated do not use util problems are resolved
@@ -1093,6 +1162,7 @@ public enum ConfigurationEntry {
         Reject.ifNull(controller, "Controller is null");
         ValueModel model = new ValueHolder(getValue(controller), false);
         model.addValueChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 setValue(controller, (String) evt.getNewValue());
             }
@@ -1102,7 +1172,7 @@ public enum ConfigurationEntry {
 
     /**
      * Sets the value of this config entry.
-     * 
+     *
      * @param controller
      *            the controller of the config
      * @param value
@@ -1115,7 +1185,7 @@ public enum ConfigurationEntry {
 
     /**
      * Sets the value of this config entry.
-     * 
+     *
      * @param controller
      *            the controller of the config
      * @param value
@@ -1127,7 +1197,7 @@ public enum ConfigurationEntry {
 
     /**
      * Sets the value of this config entry.
-     * 
+     *
      * @param controller
      *            the controller of the config
      * @param value
@@ -1139,7 +1209,7 @@ public enum ConfigurationEntry {
 
     /**
      * Removes the entry from the configuration.
-     * 
+     *
      * @param controller
      *            the controller to use
      */

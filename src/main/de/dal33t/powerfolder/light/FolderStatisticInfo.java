@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -268,11 +267,20 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         if (isFiner()) {
             logFiner("Writing folder " + folder.getName() + " stats to " + file);
         }
-        try (OutputStream fout = Files.newOutputStream(file)) {
-            ObjectOutputStream oout = new ObjectOutputStream(
-                new BufferedOutputStream(fout));
+
+        if (Files.notExists(file.getParent())) {
+            try {
+                Files.createDirectories(file.getParent());
+            } catch (IOException e) {
+                logWarning("Unable to create parent directory for file " + file
+                    + ". " + e);
+                return false;
+            }
+        }
+
+        try (ObjectOutputStream oout = new ObjectOutputStream(
+            new BufferedOutputStream(Files.newOutputStream(file)))) {
             oout.writeObject(this);
-            oout.close();
         } catch (Exception e) {
             logWarning("Unable to store stats for folder " + folder.getName()
                 + " to " + file + ". " + e);
@@ -294,8 +302,9 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
                 return null;
             }
         } catch (IOException e) {
-            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+            Logger.getLogger(FolderStatisticInfo.class.getName()).fine(
                 "Unable to read folder stats size from " + file + ". " + e);
+            return null;
         }
         try (InputStream fin = Files.newInputStream(file)) {
             ObjectInputStream oin = new ObjectInputStream(
@@ -309,7 +318,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             Logger.getLogger(FolderStatisticInfo.class.getName()).fine(
                 "Unable to read folder stats from " + file + ". " + e);
         } catch (OutOfMemoryError e) {
-            Logger.getLogger(FolderStatisticInfo.class.getName()).severe(
+            Logger.getLogger(FolderStatisticInfo.class.getName()).warning(
                 "Unable to read folder stats from " + file + ". " + e);
 
         }

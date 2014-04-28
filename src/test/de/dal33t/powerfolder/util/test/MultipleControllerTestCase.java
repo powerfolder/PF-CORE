@@ -43,7 +43,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.PropertiesUtil;
@@ -228,8 +227,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected static Folder joinFolder(FolderInfo foInfo, Path baseDir,
         Controller controller, SyncProfile profile)
     {
-        FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, 5);
+        FolderSettings folderSettings = new FolderSettings(baseDir, profile, 5);
         return controller.getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

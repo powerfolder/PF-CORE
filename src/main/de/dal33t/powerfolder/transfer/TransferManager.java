@@ -261,7 +261,7 @@ public class TransferManager extends PFComponent {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {
-                logWarning("Illegal value for KByte." + entry + " '" + cps
+                logWarning("Illegal value for kByte." + entry + " '" + cps
                     + '\'');
             }
         }
@@ -814,7 +814,8 @@ public class TransferManager extends PFComponent {
         autoClean = autoClean
             || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController()) == 0
-            || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
+            || (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController()) && !ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+                .hasValue(getController()));
         if (autoClean) {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());
@@ -2628,11 +2629,17 @@ public class TransferManager extends PFComponent {
                 logSevere("Failed to create misc directory! " + ioe);
             }
         }
+        boolean interrupted = Thread.interrupted();
         try (ObjectOutputStream oOut = new ObjectOutputStream(
             Files.newOutputStream(transferFile))) {
             oOut.writeObject(storedDownloads);
         } catch (IOException e) {
-            logSevere("Unable to store pending downloads", e);
+            logWarning("Unable to store pending downloads. " + transferFile
+                + ": " + e);
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -2694,13 +2701,13 @@ public class TransferManager extends PFComponent {
                                 + " download(s), "
                                 + Format.formatDecimal(getDownloadCounter()
                                     .calculateCurrentKBS())
-                                + " KByte/s, "
+                                + " kByte/s, "
                                 + activeUploads.size()
                                 + " active upload(s), "
                                 + queuedUploads.size()
                                 + " in queue, "
                                 + Format.formatDecimal(getUploadCounter()
-                                    .calculateCurrentKBS()) + " KByte/s");
+                                    .calculateCurrentKBS()) + " kByte/s");
                         }
                     }
 
@@ -3158,7 +3165,7 @@ public class TransferManager extends PFComponent {
         if (isInfo()) {
             String msg = (download ? "Download" : "Upload") + " completed: "
                 + Format.formatDecimal(fInfo.getSize()) + " bytes in " + took
-                / 1000 + "s (" + cpsStr + " KByte/s): " + fInfo + memberInfo;
+                / 1000 + "s (" + cpsStr + " kByte/s): " + fInfo + memberInfo;
             if (fInfo.getFolderInfo().isMetaFolder()) {
                 logFine(msg);
             } else {

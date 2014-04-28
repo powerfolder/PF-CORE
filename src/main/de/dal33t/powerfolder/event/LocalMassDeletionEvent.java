@@ -20,23 +20,25 @@
 package de.dal33t.powerfolder.event;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 
 public class LocalMassDeletionEvent {
 
     private final Folder folder;
+    private final FileInfo fInfo;
 
-    public LocalMassDeletionEvent(Folder folder) {
-        Reject.ifNull(folder, "Folder is null");
+    public LocalMassDeletionEvent(Folder folder, FileInfo fInfo) {
+        Reject.ifNull(fInfo, "Folder is null");
         this.folder = folder;
+        this.fInfo = fInfo;
+    }
+
+    public FileInfo getFile() {
+        return fInfo;
     }
 
     public Folder getFolder() {
         return folder;
-    }
-
-    public FolderInfo getFolderInfo() {
-        return folder.getInfo();
     }
 }

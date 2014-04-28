@@ -45,6 +45,10 @@ public class WarningNotice extends NoticeBase {
         };
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     public boolean isNotification() {
         return true;
     }
@@ -73,8 +77,6 @@ public class WarningNotice extends NoticeBase {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!super.equals(obj))
-            return false;
         if (getClass() != obj.getClass())
             return false;
         WarningNotice other = (WarningNotice) obj;

@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.folders;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -32,19 +31,20 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
 
 /**
  * Class showing the Online storage sync details for an ExpandableFolderView
@@ -141,15 +141,14 @@ public class OnlineStorageComponent extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             if (joined) {
-                ServerClient client = getController().getOSClient();
+                final ServerClient client = getController().getOSClient();
                 if (client.supportsWebLogin()) {
-                    try {
-                        String folderURL = client
-                            .getFolderURLWithCredentials(folder.getInfo());
-                        BrowserLauncher.openURL(folderURL);
-                    } catch (IOException e1) {
-                        logSevere(e1);
-                    }
+                    BrowserLauncher.open(getController(), new URLProducer() {
+                        public String url() {
+                            return client.getFolderURLWithCredentials(folder
+                                .getInfo());
+                        }
+                    });
                 }
             } else {
                 PFWizard.openMirrorFolderWizard(getController(), folder);

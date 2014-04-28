@@ -85,6 +85,16 @@ public class FolderInfo implements Serializable, Cloneable {
         this.id = id;
         hash = hashCode0();
     }
+    
+    /**
+     * PFS-1129: Account relative backup folder. Name must be unique.
+     * 
+     * @param name
+     * @param aInfo
+     */
+    public FolderInfo(String name, AccountInfo aInfo) {
+        this(name, "PB-" + aInfo.getOID() + "-" + name);
+    }
 
     public boolean isMetaFolder() {
         // #1548: Convert this into boolean flag?
@@ -258,6 +268,8 @@ public class FolderInfo implements Serializable, Cloneable {
             .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
                 Translation.getTranslation("general.department"))
             .replace(Constants.ZYNCRO_COMPANY_TOKEN.trim(),
-                Translation.getTranslation("general.company"));
+                Translation.getTranslation("general.company"))
+            .replace(Constants.FOLDER_PERSONAL_FILES.trim(),
+                Translation.getTranslation("general.personal_files"));
     }
 }

@@ -24,6 +24,7 @@ import javax.swing.Icon;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.UIController;
@@ -34,7 +35,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Superclass for all actions used in pf
  * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
 public abstract class BaseAction extends AbstractAction {
@@ -111,6 +112,11 @@ public abstract class BaseAction extends AbstractAction {
      * @param permission
      */
     public void allowWith(Permission permission) {
+        if (permission instanceof FolderPermission) {
+            setEnabled(getController().getOSClient().getAccount()
+                .hasPermission(permission));
+        }
+
         if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
             .getValueBoolean(getController()))
         {

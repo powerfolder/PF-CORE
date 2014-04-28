@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
@@ -122,6 +123,8 @@ public class ApplicationModel extends PFUIComponent {
         getController().getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
         getApplicationModel().getFolderRepositoryModel().addOverallFolderStatListener(
                 new MyOverallFolderStatListener());
+        getNoticesModel().getUnreadNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
+        getNoticesModel().getAllNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
     }
 
     // Logic ******************************************************************
@@ -194,7 +197,7 @@ public class ApplicationModel extends PFUIComponent {
                 long storageSize = client.getAccount().getOSSubscription()
                     .getStorageSize();
                 long used = client.getAccountDetails().getSpaceUsed();
-                if (used >= storageSize * 9 / 10) {
+                if ((storageSize + used) > 0 && used >= storageSize * 9 / 10) {
                     // More than 90% used. Notify.
                     WarningNotice notice = new WarningNotice(
                         Translation.getTranslation("warning_notice.title"),
@@ -269,7 +272,7 @@ public class ApplicationModel extends PFUIComponent {
         public void serverConnected(ServerClientEvent event) {
             handleSyncStatusChange();
             ServerClient client = event.getClient();
-            if (client.isPasswordEmpty() && !client.isLoggedIn()
+            if (client.isPasswordRequired() && !client.isLoggedIn()
                 && !PFWizard.isWizardOpen())
             {
                 PFWizard.openLoginWizard(getController(), client);
@@ -304,9 +307,11 @@ public class ApplicationModel extends PFUIComponent {
         boolean connected = client.isConnected();
         boolean loggingIn = client.isLoggingIn();
         boolean loggedIn = client.isLoggedIn();
+        boolean noticeAvailable = getNoticesModel().getHighestUnreadSeverity() != null
+            || repository.getFolderProblemsCount() > 0;
 
         SyncStatusEvent status = SyncStatusEvent.SYNC_INCOMPLETE;
-        if (getController().isPaused()) {
+        if (getController().isPaused() && !noticeAvailable) {
             status = SyncStatusEvent.PAUSED;
         } else if (!getController().getNodeManager().isStarted()) {
             status = SyncStatusEvent.NOT_STARTED;
@@ -316,12 +321,19 @@ public class ApplicationModel extends PFUIComponent {
             status = SyncStatusEvent.LOGGING_IN;
         } else if (!loggedIn) {
             status = SyncStatusEvent.NOT_LOGGED_IN;
-        } else if (repository.getFoldersCount() == 0) {
+        } else if (repository.getFoldersCount() == 0 && !noticeAvailable) {
             status = SyncStatusEvent.NO_FOLDERS;
-        } else if (folderRepositoryModel.isSyncing()) {
+        } else if (folderRepositoryModel.isSyncing() && !noticeAvailable) {
             status = SyncStatusEvent.SYNCING;
-        } else if (repository.areAllFoldersInSync()) {
+        } else if (repository.areAllFoldersInSync() && !noticeAvailable) {
             status = SyncStatusEvent.SYNCHRONIZED;
+        } else if (getNoticesModel().getHighestUnreadSeverity() == NoticeSeverity.WARINING
+            || repository.getFolderProblemsCount() > 0)
+        {
+            status = SyncStatusEvent.WARNING;
+        } else if (getNoticesModel().getHighestUnreadSeverity() == NoticeSeverity.INFORMATION)
+        {
+            status = SyncStatusEvent.INFORMATION;
         }
         triggerSyncStatusChange(status);
     }
@@ -338,6 +350,16 @@ public class ApplicationModel extends PFUIComponent {
     // ////////////////
     // Inner Classes //
     // ////////////////
+    
+    private class MyNoticesModelPropertyChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            handleSyncStatusChange();
+            
+        }
+       
+    }
 
     private class MyPausedModeListener implements PausedModeListener {
 

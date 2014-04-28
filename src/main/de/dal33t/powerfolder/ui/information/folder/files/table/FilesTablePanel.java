@@ -25,11 +25,9 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -75,6 +73,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -845,13 +844,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             if (getSelectedRows().length == 1) {
                 DiskItem diskItem = getSelectedRows()[0];
                 if (diskItem instanceof FileInfo) {
-                    FileInfo fileInfo = (FileInfo) diskItem;
-                    String fileLinkURL = getController().getOSClient().getFileLinkURL(fileInfo);
-                    try {
-                        BrowserLauncher.openURL(fileLinkURL);
-                    } catch (IOException ex) {
-                        logWarning("Unable to open in browser: " + fileLinkURL);
-                    }
+                    final FileInfo fileInfo = (FileInfo) diskItem;
+                    // Open in backgroud
+                    BrowserLauncher.open(getController(), new URLProducer() {
+                        public String url() {
+                            return getController().getOSClient()
+                                .getFileLinkURL(fileInfo);
+                        }
+                    });
                 }
             }
         }

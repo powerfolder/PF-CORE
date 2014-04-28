@@ -349,12 +349,11 @@ public class Constants {
 
     // Pro related ************************************************************
 
-    /**
-     * The classname of the ProLoader
-     */
-    public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
+    public static final String PACKAGE_PREFIX = "de.dal33t.powerfolder.";
+    
+    public static final String PRO_LOADER_PLUGIN_CLASS = "CD";
 
-    public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
+    public static final String ENCRYPTION_PLUGIN_CLASS = "BC";
 
     public static final String SESSIONS_SUB_DIR = "database/sessions";
     
@@ -365,6 +364,7 @@ public class Constants {
     public static final String UI_LOCK_UNLOCK_URI = "/unlock";
     public static final String LOGIN_URI = "/login";
     public static final String REGISTER_URI = "/register";
+    public static final String ACTIVATE_URI = "/activate";
     public static final String GET_LINK_URI = "/getlink";
     public static final String DL_LINK_URI = "/dl";
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
@@ -391,6 +391,7 @@ public class Constants {
     public static final String ZYNCRO_GROUP_TOKEN = "$group ";
     public static final String ZYNCRO_DEPARTMENT_TOKEN = "$department ";
     public static final String ZYNCRO_COMPANY_TOKEN = "$company ";
+    public static final String FOLDER_PERSONAL_FILES = "$personal_files";
 
     private Constants() {
         // No instance allowed

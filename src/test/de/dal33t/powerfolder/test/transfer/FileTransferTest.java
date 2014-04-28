@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests file transfer between nodes.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -63,6 +63,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         super.setUp();
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerLisa(), false);
+        PreferencesEntry.BEGINNER_MODE.setValue(getContollerBart(), false);
         deleteTestFolderContents();
         connectBartAndLisa();
         // Join on testfolder
@@ -86,7 +88,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     /**
      * #2480: Filename imcompatibilties between Mac client and Windows server
-     * 
+     *
      * @throws IOException
      */
     public void testSpecialChars() throws IOException {
@@ -135,17 +137,18 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.changeFile(fLisa);
         scanFolder(getFolderAtLisa());
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            
+
             @Override
             public boolean reached() {
                 return 1 == getContollerBart().getTransferManager()
                     .countCompletedDownloads();
             }
-            
+
             @Override
             public String message() {
                 return "Number of actually completed downloads for Bart: "
-                    + getContollerBart().getTransferManager().countCompletedDownloads();
+                    + getContollerBart().getTransferManager()
+                        .countCompletedDownloads();
             }
         });
         assertEquals(getFolderAtBart().getKnownFiles().toString(), 1,
@@ -166,11 +169,11 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testFileCopyCert8() throws IOException {
         LoggingManager.setConsoleLogging(Level.FINER);
-        Path testFileBart = getFolderAtBart().getLocalBase().resolve(
-            "cert8.db");
+        Path testFileBart = getFolderAtBart().getLocalBase()
+            .resolve("cert8.db");
         Path origFile = Paths.get("src/test-resources/cert8.db");
         Files.copy(origFile, testFileBart);
-//        FileUtils.copyFile(origFile, testFileBart);
+        // FileUtils.copyFile(origFile, testFileBart);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -194,13 +197,13 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-      // Test ;)
+        // Test ;)
         assertEquals("Known items at lisa: "
             + getFolderAtLisa().getKnownItemCount(), 1, getFolderAtLisa()
             .getKnownItemCount());
 
-        Path testFileLisa = getFolderAtLisa().getLocalBase().resolve(
-            "cert8.db");
+        Path testFileLisa = getFolderAtLisa().getLocalBase()
+            .resolve("cert8.db");
         assertEquals(Files.size(origFile), Files.size(testFileLisa));
         assertEquals(Files.size(testFileBart), Files.size(testFileLisa));
 
@@ -212,7 +215,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             "urlclassifier2.sqlite");
         Path origFile = Paths.get("src/test-resources/urlclassifier2.sqlite");
         Files.copy(origFile, testFileBart);
-//        FileUtils.copyFile(origFile, testFileBart);
+        // FileUtils.copyFile(origFile, testFileBart);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -266,15 +269,16 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Give them time to copy
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
-            
+
             @Override
             public boolean reached() {
                 return 1 == getFolderAtLisa().getKnownItemCount();
             }
-            
+
             @Override
             public String message() {
-                return "Known items at Lisa: " + getFolderAtLisa().getKnownItemCount();
+                return "Known items at Lisa: "
+                    + getFolderAtLisa().getKnownItemCount();
             }
         });
 
@@ -311,11 +315,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public String message() {
                 return "Icoming files at lisa: "
                     + getFolderAtLisa().getIncomingFiles().size();
             }
 
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getIncomingFiles().size() == 1;
             }
@@ -323,24 +329,25 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
         // Give them time to copy
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 try {
-                    return Files.size(testFile1) == getFolderAtLisa().getKnownFiles()
-                    .iterator().next().getSize();
+                    return Files.size(testFile1) == getFolderAtLisa()
+                        .getKnownFiles().iterator().next().getSize();
                 } catch (IOException ioe) {
                     return false;
                 }
             }
 
+            @Override
             public String message() {
                 long size = -1l;
                 try {
                     size = Files.size(testFile1);
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     // Ignore.
                 }
-                
+
                 return "Testfile length: "
                     + size
                     + ". Known size: "
@@ -388,7 +395,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         OutputStream fOut = Files.newOutputStream(testFile1);
         fOut.write(new byte[]{});
         fOut.close();
-        assertTrue("Testfile does not exists:" + testFile1, Files.exists(testFile1));
+        assertTrue("Testfile does not exists:" + testFile1,
+            Files.exists(testFile1));
 
         Path testFile2 = getFolderAtBart().getLocalBase().resolve(
             "subdir/TestFile2.txt");
@@ -400,16 +408,19 @@ public class FileTransferTest extends TwoControllerTestCase {
         fOut = Files.newOutputStream(testFile2);
         fOut.write(new byte[]{});
         fOut.close();
-        assertTrue("Testfile does not exists:" + testFile2, Files.exists(testFile2));
+        assertTrue("Testfile does not exists:" + testFile2,
+            Files.exists(testFile2));
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadCompleted >= 2;
             }
 
+            @Override
             public String message() {
                 return "Lisa dls requested " + lisasListener.downloadRequested
                     + ", completed " + lisasListener.downloadCompleted;
@@ -458,11 +469,13 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 0;
             }
 
+            @Override
             public String message() {
                 return "Lisa.countActiveDownloads: "
                     + getContollerLisa().getTransferManager()
@@ -479,7 +492,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     /**
-     * 
+     *
      */
     private void clearCompletedDownloadsAtLisa() {
         // Clear completed downloads
@@ -490,9 +503,9 @@ public class FileTransferTest extends TwoControllerTestCase {
                 download);
         }
     }
-    
+
     /**
-     * 
+     *
      */
     private void clearCompletedDownloadsAtBart() {
         // Clear completed downloads
@@ -503,7 +516,6 @@ public class FileTransferTest extends TwoControllerTestCase {
                 download);
         }
     }
-
 
     /**
      * Tests the copy of a big file. approx. 10 megs.
@@ -524,19 +536,20 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
-            
+
             @Override
             public boolean reached() {
                 return lisasListener.downloadRequested >= 1
                     && lisasListener.downloadCompleted >= 1
                     && bartsListener.uploadCompleted >= 1;
             }
-            
+
             @Override
             public String message() {
                 return "Downloads requested " + lisasListener.downloadRequested
-                    + "\nDownloads completed " + lisasListener.downloadCompleted
-                    + "\nUploads completed " + bartsListener.uploadCompleted;
+                    + "\nDownloads completed "
+                    + lisasListener.downloadCompleted + "\nUploads completed "
+                    + bartsListener.uploadCompleted;
             }
         });
 
@@ -584,11 +597,13 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 0;
             }
 
+            @Override
             public String message() {
                 return "Lisa.countActiveDownloads: "
                     + getContollerLisa().getTransferManager()
@@ -628,12 +643,14 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(200, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadRequested >= nFiles
                     && lisasListener.downloadCompleted >= nFiles
                     && bartsListener.uploadCompleted >= nFiles;
             }
 
+            @Override
             public String message() {
                 return "lisa: " + lisasListener.downloadRequested
                     + ", lisa dl comp: " + lisasListener.downloadCompleted
@@ -677,16 +694,18 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getKnownItemCount());
         // test physical files (1 + 1 system dir)
         assertEquals("Lisa.getLocalBase.list: "
-            + getFolderAtLisa().getLocalBase().toFile().list().length, nFiles + 1,
-            getFolderAtLisa().getLocalBase().toFile().list().length);
+            + getFolderAtLisa().getLocalBase().toFile().list().length,
+            nFiles + 1, getFolderAtLisa().getLocalBase().toFile().list().length);
 
         // No active downloads?
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 0;
             }
 
+            @Override
             public String message() {
                 return "Lisa.countActiveDownloads: "
                     + getContollerLisa().getTransferManager()
@@ -722,10 +741,12 @@ public class FileTransferTest extends TwoControllerTestCase {
             TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         }
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() == 35;
             }
 
+            @Override
             public String message() {
                 return "Known files at bart: "
                     + getFolderAtLisa().getKnownItemCount() + " Expected: "
@@ -742,12 +763,14 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(200, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return bartsListener.downloadRequested >= nFiles
                     && bartsListener.downloadCompleted >= nFiles
                     && lisasListener.uploadCompleted >= nFiles;
             }
 
+            @Override
             public String message() {
                 return "bart dl req: " + bartsListener.downloadRequested
                     + ", bart dl comp: " + bartsListener.downloadCompleted
@@ -777,7 +800,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtBart().getLocalBase().toFile().list().length);
+        assertEquals(nFiles + 1, getFolderAtBart().getLocalBase().toFile()
+            .list().length);
 
         // No active downloads?!
         assertEquals(0, getContollerBart().getTransferManager()
@@ -819,12 +843,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         long start = System.currentTimeMillis();
         // Wait for copy
         TestHelper.waitForCondition(300, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadRequested >= nFiles
                     && lisasListener.downloadCompleted >= nFiles
                     && bartsListener.uploadCompleted >= nFiles;
             }
 
+            @Override
             public String message() {
                 return "Lisa downloads completed: "
                     + lisasListener.downloadCompleted
@@ -842,7 +868,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile().list().length);
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile()
+            .list().length);
 
         // Check correct event fireing
         assertEquals(0, bartsListener.uploadAborted);
@@ -895,12 +922,14 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Wait for copy
         TestHelper.waitForCondition(200, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadRequested >= nFiles
                     && lisasListener.downloadCompleted >= nFiles
                     && bartsListener.uploadCompleted >= nFiles;
             }
 
+            @Override
             public String message() {
                 return "lisa.dreq: " + lisasListener.downloadRequested
                     + " lisa.dcomp: " + lisasListener.downloadCompleted
@@ -915,11 +944,13 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No active downloads?
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 0;
             }
 
+            @Override
             public String message() {
                 return "Lisa.countActiveDownloads: "
                     + getContollerLisa().getTransferManager()
@@ -971,19 +1002,20 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Wait for copy
         TestHelper.waitForCondition(200, new ConditionWithMessage() {
-            
+
             @Override
             public boolean reached() {
                 return lisasListener.downloadRequested >= nFiles
                     && lisasListener.downloadCompleted >= nFiles
                     && bartsListener.uploadCompleted >= nFiles;
             }
-            
+
             @Override
             public String message() {
                 return "Downloads requested " + lisasListener.downloadRequested
-                    + "\nDownloads completed " + lisasListener.downloadCompleted
-                    + "\nUploads completed " + bartsListener.uploadCompleted;
+                    + "\nDownloads completed "
+                    + lisasListener.downloadCompleted + "\nUploads completed "
+                    + bartsListener.uploadCompleted;
             }
         });
         // No active downloads?!
@@ -1027,11 +1059,13 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Wait for copy
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadCompleted >= nFiles
                     && getFolderAtLisa().getKnownItemCount() == nFiles;
             }
 
+            @Override
             public String message() {
                 return "Completed downloads at lisa actual: "
                     + lisasListener.downloadCompleted + ". Expected: " + nFiles;
@@ -1041,7 +1075,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile().list().length);
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile()
+            .list().length);
 
         // Check correct event fireing
         assertEquals(0, bartsListener.uploadAborted);
@@ -1094,10 +1129,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Wait for copy
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadCompleted >= nFiles;
             }
 
+            @Override
             public String message() {
                 return "Completed downloads at lisa. Actual: "
                     + lisasListener.downloadCompleted + ", Expected: " + nFiles;
@@ -1107,7 +1144,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile().list().length);
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile()
+            .list().length);
 
         // Check correct event fireing
         assertEquals(0, bartsListener.uploadAborted);
@@ -1175,10 +1213,12 @@ public class FileTransferTest extends TwoControllerTestCase {
             FileTime.fromMillis(System.currentTimeMillis() - 6000));
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() == 1;
             }
 
+            @Override
             public String message() {
                 return "getFolderAtLisa().getKnownItemCount(): "
                     + getFolderAtLisa().getKnownItemCount();
@@ -1190,11 +1230,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() > 0;
             }
 
+            @Override
             public String message() {
                 return "getContollerLisa.countActiveDownloads(): "
                     + getContollerLisa().getTransferManager()
@@ -1207,7 +1249,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let them copy some ~1 megs
         final long mbUntilBreak = 1;
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
-            
+
             @Override
             public boolean reached() {
                 try {
@@ -1216,28 +1258,30 @@ public class FileTransferTest extends TwoControllerTestCase {
                     return false;
                 }
             }
-            
+
             @Override
             public String message() {
                 long size = -1l;
-                
+
                 try {
                     size = Files.size(tempFile);
                 } catch (IOException e) {
                     return e.getMessage();
                 }
-                
+
                 return "Size of file should be " + (mbUntilBreak * 1024 * 1024)
                     + " but was " + size;
             }
         });
         disconnectBartAndLisa();
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 0;
             }
 
+            @Override
             public String message() {
                 return "Active downloads @ lisa: "
                     + getContollerLisa().getTransferManager()
@@ -1250,22 +1294,31 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(Files.exists(tempFile));
         assertTrue(Files.size(tempFile) > 0);
         assertTrue(Files.size(tempFile) < Files.size(testFile));
-        assertTrue("Size inc. file: " + Files.size(tempFile) + ", size testfile: "
-            + Files.size(testFile), Files.size(tempFile) < Files.size(testFile));
+        assertTrue("Size inc. file: " + Files.size(tempFile)
+            + ", size testfile: " + Files.size(testFile),
+            Files.size(tempFile) < Files.size(testFile));
 
         // Now mess up the tempfile = Force a MD5_ERROR
         long tempMod = Files.getLastModifiedTime(tempFile).toMillis();
         TestHelper.changeFile(tempFile, Files.size(tempFile));
         Files.setLastModifiedTime(tempFile, FileTime.fromMillis(tempMod));
 
+        Path testFileAtList = getFolderAtBart().getKnownFiles().iterator()
+            .next().getDiskFile(getContollerLisa().getFolderRepository());
+        long fileMod = Files.getLastModifiedTime(testFileAtList).toMillis();
+        TestHelper.changeFile(testFileAtList, Files.size(testFileAtList));
+        Files.setLastModifiedTime(testFileAtList, FileTime.fromMillis(fileMod));
+
         // Reconnect /Resume transfer
         connectBartAndLisa();
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return Files.notExists(tempFile);
             }
 
+            @Override
             public String message() {
                 return "Tempfile does exist although MD5_ERROR has been observed:"
                     + tempFile;
@@ -1275,6 +1328,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 getContollerLisa().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting();
@@ -1282,6 +1336,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     .countCompletedDownloads() > 1;
             }
 
+            @Override
             public String message() {
                 return "getContollerLisa.countCompletedDownloads(): "
                     + getContollerLisa().getTransferManager()
@@ -1301,6 +1356,174 @@ public class FileTransferTest extends TwoControllerTestCase {
             1, fLisa.getVersion());
         assertTrue("File content mismatch: " + fileBart + " and " + fileLisa,
             TestHelper.compareFiles(fileBart, fileLisa));
+    }
+
+    public void testDeltaSyncMD5Error() throws IOException {
+        getContollerBart().getTransferManager().setUploadCPSForLAN(400000);
+        getContollerBart().getTransferManager().setUploadCPSForWAN(400000);
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
+
+        Path fServer = Paths.get("src/test-resources/Deltafile_Server.pdf");
+        Path fPatricia = Paths.get("src/test-resources/Deltafile_Patricia.pdf");
+        Path fAna = Paths.get("src/test-resources/Deltafile_Ana.pdf");
+
+        disconnectBartAndLisa();
+        Path tServer = getFolderAtBart().getLocalBase()
+            .resolve("Deltafile.pdf");
+        PathUtils.copyFile(fServer, tServer);
+        TestHelper.scanFolder(getFolderAtBart());
+        Files.delete(tServer);
+        TestHelper.scanFolder(getFolderAtBart());
+        PathUtils.copyFile(fServer, tServer);
+        TestHelper.scanFolder(getFolderAtBart());
+
+        FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
+        assertEquals(2, fBart.getVersion());
+
+        connectBartAndLisa(false);
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtLisa().getKnownItemCount() == 1;
+            }
+
+            @Override
+            public String message() {
+                return "Lisa did not transfer: "
+                    + getFolderAtLisa().getKnownFiles();
+            }
+        });
+        FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
+        assertEquals(2, fLisa.getVersion());
+
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fAna,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 3 && fBart.getVersion() == 3;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed 3";
+            }
+        });
+
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fPatricia,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 4 && fBart.getVersion() == 4;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed 4";
+            }
+        });
+
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fServer,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 5 && fBart.getVersion() == 5;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed 5";
+            }
+        });
+
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fPatricia,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 6 && fBart.getVersion() == 6;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed 6";
+            }
+        });
+
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fAna,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 7 && fBart.getVersion() == 7;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed 7";
+            }
+        });
+
+        LoggingManager.setConsoleLogging(Level.FINER);
+        TestHelper.waitMilliSeconds(2500);
+        PathUtils.copyFile(fServer,
+            fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
+        TestHelper.scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next();
+                FileInfo fBart = getFolderAtBart().getKnownFiles().iterator()
+                    .next();
+                return fLisa.getVersion() == 8 && fBart.getVersion() == 8;
+            }
+
+            @Override
+            public String message() {
+                return "Updated failed 8";
+            }
+        });
     }
 
     /**
@@ -1341,6 +1564,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                             .newDirectoryStream(
                                 getFolderAtLisa().getSystemSubDir().resolve(
                                     "transfers"), new Filter<Path>() {
+                                    @Override
                                     public boolean accept(Path dir) {
                                         return dir.getFileName().toString()
                                             .contains("(incomplete) ");
@@ -1360,12 +1584,16 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         FileInfo fInfo = getFolderAtLisa().getIncomingFiles().iterator().next();
         Path file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
-        final Path incompleteFile = Files.newDirectoryStream(getFolderAtLisa()
-            .getSystemSubDir().resolve("transfers"), new Filter<Path>() {
-            public boolean accept(Path dir) {
-                return dir.getFileName().toString().contains("(incomplete) ");
-            }
-        }).iterator().next();
+        final Path incompleteFile = Files
+            .newDirectoryStream(
+                getFolderAtLisa().getSystemSubDir().resolve("transfers"),
+                new Filter<Path>() {
+                    @Override
+                    public boolean accept(Path dir) {
+                        return dir.getFileName().toString()
+                            .contains("(incomplete) ");
+                    }
+                }).iterator().next();
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles().iterator()
             .next();
         Path bartFile = bartFInfo.getDiskFile(getContollerBart()
@@ -1375,6 +1603,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let them copy some ~1 megs
         final long mbUntilBreak = 1;
         TestHelper.waitForCondition(100, new Condition() {
+            @Override
             public boolean reached() {
                 try {
                     return Files.size(incompleteFile) > mbUntilBreak * 1024 * 1024;
@@ -1421,8 +1650,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getDownloadCounter().getBytesTransferred();
         // Test has to be >= because it could happen that the download gets
         // broken before the received data is written
-        assertTrue("Downloaded: " + bytesDownloaded + " filesize: "
-            + Files.size(incompleteFile),
+        assertTrue(
+            "Downloaded: " + bytesDownloaded + " filesize: "
+                + Files.size(incompleteFile),
             bytesDownloaded >= Files.size(incompleteFile));
         // System.err.println("Incomplete file: " +
         // incompleteFile.lastModified()
@@ -1434,10 +1664,11 @@ public class FileTransferTest extends TwoControllerTestCase {
             DateUtil.equalsFileDateCrossPlattform(
                 Files.getLastModifiedTime(bartFile).toMillis(), Files
                     .getLastModifiedTime(incompleteFile).toMillis()));
-        assertEquals(bartFInfo.getModifiedDate().getTime(),
-            Files.getLastModifiedTime(incompleteFile).toMillis());
+        assertEquals(bartFInfo.getModifiedDate().getTime(), Files
+            .getLastModifiedTime(incompleteFile).toMillis());
 
-        System.err.println("Transferred " + Files.size(incompleteFile) + " bytes");
+        System.err.println("Transferred " + Files.size(incompleteFile)
+            + " bytes");
 
         // Reconnect /Resume transfer
         connectBartAndLisa();
@@ -1447,10 +1678,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Wait untill download is started
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadStarted >= 2;
             }
 
+            @Override
             public String message() {
                 return "Lisa download started: "
                     + lisasListener.downloadStarted + " requested, "
@@ -1466,11 +1699,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         // was too fast and the
         // file was completed already. Please check if this test is correct.
         assertTrue("Tempfile already removed", Files.exists(incompleteFile));
-        assertTrue("Temp file should be greater than " + mbUntilBreak
-            + "mb already. got " + Format.formatBytes(Files.size(incompleteFile)),
+        assertTrue(
+            "Temp file should be greater than " + mbUntilBreak
+                + "mb already. got "
+                + Format.formatBytes(Files.size(incompleteFile)),
             Files.size(incompleteFile) > mbUntilBreak * 1024 * 1024);
 
         TestHelper.waitForCondition(60, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisasListener.downloadCompleted == 1
                     && lisasListener.downloadRequested == 2
@@ -1484,6 +1720,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && bartsListener.uploadCompleted == 1;
             }
 
+            @Override
             public String message() {
                 return "lisa: completed dl= " + lisasListener.downloadCompleted
                     + ", req dl= " + lisasListener.downloadRequested
@@ -1616,7 +1853,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
     }
 
-    public void testDeltaFileNotChanged() throws InterruptedException, IOException {
+    public void testDeltaFileNotChanged() throws InterruptedException,
+        IOException
+    {
         ConfigurationEntry.USE_DELTA_ON_LAN
             .setValue(getContollerBart(), "true");
         ConfigurationEntry.USE_DELTA_ON_LAN
@@ -1637,6 +1876,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(20, new Condition() {
+            @Override
             public boolean reached() {
                 return lisaListener.downloadRequested >= 1
                     && lisaListener.downloadCompleted >= 1
@@ -1678,6 +1918,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
@@ -1691,6 +1932,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && bartListener.uploadCompleted >= 2;
             }
 
+            @Override
             public String message() {
                 return "lisa: " + lisaListener + " bart: " + bartListener;
             }
@@ -1727,6 +1969,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(20, new Condition() {
+            @Override
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 1
                     && lisaListener.downloadRequested >= 1
@@ -1745,18 +1988,17 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait at least 3000ms
         TestHelper.waitMilliSeconds(3000);
         // Make a modification in bart's file
-        Path tmpCopy = Paths.get(System.getProperty("java.io.tmpdir"),
-            fbart.getFileName().toString());
+        Path tmpCopy = Paths.get(System.getProperty("java.io.tmpdir"), fbart
+            .getFileName().toString());
         Files.copy(fbart, tmpCopy);
-//        FileUtils.copyFile(fbart, tmpCopy);
+        // FileUtils.copyFile(fbart, tmpCopy);
 
         int modSize = (int) (1024 + Math.random() * 8192);
         long seek = (long) (Math.random() * (Files.size(fbart) - modSize));
 
         byte[] buf = new byte[(int) seek];
         try (InputStream in = Files.newInputStream(tmpCopy);
-            OutputStream out = Files.newOutputStream(fbart))
-        {
+            OutputStream out = Files.newOutputStream(fbart)) {
             in.read(buf);
             out.write(buf);
             for (int i = 0; i < modSize; i++) {
@@ -1793,6 +2035,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtLisa());
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
@@ -1805,6 +2048,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && bartListener.uploadCompleted >= 2;
             }
 
+            @Override
             public String message() {
                 return "lisa: completed dl= " + lisaListener.downloadCompleted
                     + ", req dl= " + lisaListener.downloadRequested
@@ -1847,12 +2091,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().downloadNewestVersion(fInfo);
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public String message() {
                 return "Lisa active downloads: "
                     + getContollerLisa().getTransferManager()
                         .countActiveDownloads();
             }
 
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() > 0;
@@ -1863,11 +2109,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         disconnectBartAndLisa();
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .getPendingDownloads().size() >= 1;
             }
 
+            @Override
             public String message() {
                 return "Pending downloads at lisa: "
                     + getContollerLisa().getTransferManager()
@@ -1884,12 +2132,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
 
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public String message() {
                 return "Lisa active downloads: "
                     + getContollerLisa().getTransferManager()
                         .countActiveDownloads();
             }
 
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() > 0;
@@ -1898,12 +2148,14 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // No pending download no more
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
             public String message() {
                 return "Lisa pending downloads: "
                     + getContollerLisa().getTransferManager()
                         .getPendingDownloads();
             }
 
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .getPendingDownloads().isEmpty();
@@ -1938,12 +2190,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(70, new Condition() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 1;
             }
         });
         TestHelper.waitForCondition(70, new Condition() {
+            @Override
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .countAllUploads() == 1;
@@ -1955,6 +2209,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Download should break
         TestHelper.waitForCondition(70, new Condition() {
+            @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 0;
@@ -1965,6 +2220,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getPendingDownloads().size());
         TestHelper.waitForCondition(70, new Condition() {
+            @Override
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .countAllUploads() == 0;
@@ -1975,6 +2231,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
         TestHelper.waitForCondition(11, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 // #2557
                 getContollerLisa().getFolderRepository().getFileRequestor()
@@ -1983,6 +2240,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     .countCompletedDownloads() == 1;
             }
 
+            @Override
             public String message() {
                 return "Completed downloads at lisa: "
                     + getContollerLisa().getTransferManager()
@@ -1991,6 +2249,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
 
+            @Override
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .countAllUploads() == 1
@@ -1998,6 +2257,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                         .countLiveUploads() == 0;
             }
 
+            @Override
             public String message() {
                 return "Barts uploads: "
                     + getContollerBart().getTransferManager().countAllUploads();
@@ -2042,6 +2302,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             failOnSecondRequest = false;
         }
 
+        @Override
         public synchronized void downloadRequested(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2059,6 +2320,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             downloadsRequested.add(event.getFile());
         }
 
+        @Override
         public synchronized void downloadQueued(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2067,6 +2329,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void downloadStarted(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2075,6 +2338,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void downloadAborted(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2082,6 +2346,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             downloadAborted++;
         }
 
+        @Override
         public synchronized void downloadBroken(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2090,6 +2355,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void downloadCompleted(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2099,6 +2365,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void completedDownloadRemoved(
             TransferManagerEvent event)
         {
@@ -2109,8 +2376,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void pendingDownloadEnqueued(
-                TransferManagerEvent event)
+            TransferManagerEvent event)
         {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2119,6 +2387,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void uploadRequested(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2133,6 +2402,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             uploadsRequested.add(event.getFile());
         }
 
+        @Override
         public synchronized void uploadStarted(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2141,6 +2411,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void uploadAborted(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2149,6 +2420,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void uploadBroken(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2157,6 +2429,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void uploadCompleted(TransferManagerEvent event) {
             if (event.getFile().getFolderInfo().isMetaFolder()) {
                 return;
@@ -2165,6 +2438,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public synchronized void completedUploadRemoved(
             TransferManagerEvent event)
         {
@@ -2175,6 +2449,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             lastEvent = event;
         }
 
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }

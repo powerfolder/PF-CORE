@@ -38,6 +38,7 @@ import java.util.concurrent.Callable;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -344,6 +345,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             // If this error occurs, no downloads will ever succeed.
             logSevere("NoSuchAlgorithmException", e);
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            logWarning("IOException: " + e);
+            setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
         } catch (Exception e) {
             logSevere("Exception", e);
             setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
@@ -501,6 +505,20 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 logSevere("Unable to remove tempfile on MD5_ERROR: "
                     + getTempFile().toString() + ". " + e, e);
             }
+            // PFC-2465: Start
+            if (isRequestedAutomatic()) {
+                Folder folder = getFileInfo().getFolder(
+                    getController().getFolderRepository());
+                if (folder != null) {
+                    logInfo("Auto-recover from MD5_ERROR: Re-download of "
+                        + getFileInfo() + " started.");
+                    if (folder.erase(getFileInfo())) {
+                        getController().getTransferManager()
+                            .downloadNewestVersion(getFileInfo(), true);
+                    }
+                }
+            }
+            // PFC-2465: End
         } else {
             try {
                 if (getTempFile() != null && Files.exists(getTempFile())
@@ -513,7 +531,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 }
             } catch (IOException ioe) {
                 logWarning("Failed to delete temp file: "
-                    + getTempFile().toAbsolutePath().toString());
+                    + getTempFile().toAbsolutePath().toString() + ". " + ioe);
             }
         }
         final Download sources[] = getSources().toArray(new Download[0]);
@@ -612,15 +630,21 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             }
             tempRAF.close();
             tempRAF = null;
+        } catch (IOException e) {
+            logFine("IOException while closing temp file " + tempRAF + ": " + e);
+        }
 
+        try {
             if (isBroken()) {
                 saveMetaData();
             } else {
                 deleteMetaData();
             }
         } catch (IOException e) {
-            logSevere("IOException", e);
+            logWarning("IOException while savining meta-data of partial/broken download: "
+                + e);
         }
+
         // FIXME: Uncomment to save resources
         // setFilePartsState(null);
         // TODO: Actually the remote record shouldn't be dropped since if
@@ -782,7 +806,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 if (checkCompleted()) {
                     setCompleted();
                 } else {
-                    setBroken(TransferProblem.MD5_ERROR, "File hash mismatch!");
+                    setBroken(TransferProblem.MD5_ERROR, "File hash mismatch");
                 }
             }
         });
@@ -909,15 +933,23 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     private void loadMetaData() throws IOException {
         // logWarning("loadMetaData()");
 
-        if (getTempFile() == null
-            || Files.notExists(getTempFile())
-            || !DateUtil.equalsFileDateCrossPlattform(fileInfo
-                .getModifiedDate().getTime(), Files.getLastModifiedTime(getTempFile()).toMillis()))
-        {
-            // If something's wrong with the tempfile, kill the meta data file
-            // if it exists
-            deleteMetaData();
+        try {
+            if (getTempFile() == null
+                || Files.notExists(getTempFile())
+                || !DateUtil.equalsFileDateCrossPlattform(fileInfo
+                    .getModifiedDate().getTime(),
+                    Files.getLastModifiedTime(getTempFile()).toMillis()))
+            {
+                // If something's wrong with the tempfile, kill the meta data
+                // file
+                // if it exists
+                deleteMetaData();
+                deleteTempFile();
+                return;
+            }
+        } catch (IOException e) {
             deleteTempFile();
+            deleteMetaData();
             return;
         }
 
@@ -1240,7 +1272,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     .fromMillis(getFileInfo().getModifiedDate().getTime()));
                 return;
             } catch (IOException ioe) {
-                logSevere("Failed to update modification date! Detail:" + this);
+                logWarning("Unable to update modification date! "
+                    + getTempFile() + ". " + ioe);
                 // print message
             }
 

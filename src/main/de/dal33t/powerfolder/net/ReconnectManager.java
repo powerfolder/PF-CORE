@@ -231,11 +231,6 @@ public class ReconnectManager extends PFComponent {
                     + " were in queue before");
             }
 
-            if (getController().isVerbose()) {
-                Debug.writeNodeListCSV(reconnectionQueue,
-                    "ReconnectionQueue.csv");
-            }
-
             if (reconnectionQueue.size() > 100) {
                 logWarning("Reconnection queue contains more than 200 nodes");
             }

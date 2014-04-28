@@ -45,6 +45,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
@@ -112,6 +113,16 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     private JButton createActivateButton() {
+        boolean isAdvancedMode = !PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController())
+            && !PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
+        boolean isActivated = getController().getNodeManager().isStarted();
+
+        // PFC-2508
+        if (isAdvancedMode && isActivated) {
+            return null;
+        }
+
         JButton activateButton = new JButton(
             Translation.getTranslation("preferences.information.activate_text"));
         activateButton.setToolTipText(Translation
@@ -238,6 +249,18 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     private JPanel createPowerFolderBox() {
+        String config = getController().getConfig().getProperty("config.url");
+        if (config != null) {
+            int lastSlash = config.lastIndexOf("/");
+            int lastDot = config.lastIndexOf(".config");
+
+            if (lastDot > 0) {
+                config = config.substring(lastSlash + 1, lastDot);
+            } else {
+                config = "Default";
+            }
+        }
+
         return createTextBox(
                 Translation.getTranslation("general.application.name"),
                 Translation.getTranslation("preferences.information.power_folder_text",
@@ -251,7 +274,9 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                         + '\n'
                         + Translation.getTranslation(
                         "preferences.information.power_folder_distribution",
-                        getController().getDistribution().getName()) + '\n' +
+                        getController().getDistribution().getName()) + '\n'
+                        + Translation.getTranslation("preferences.information.config_name", config)
+                        + '\n' +
                         readLicense(),
                 createActivateButton()
                 );

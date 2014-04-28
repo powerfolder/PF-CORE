@@ -59,7 +59,7 @@ public class DelayedUpdater {
 
     /* Not static because log access is marshaled by synchronized call. */
     private final Logger log = Logger.getLogger(DelayedUpdater.class.getName());
-    private static final long DEFAULT_DELAY = 250L;
+    public static final long DEFAULT_DELAY = 250L;
     private static final int NOT_SCHEDULED = -1;
 
     private long delay;

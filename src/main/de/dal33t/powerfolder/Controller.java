@@ -120,6 +120,7 @@ import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.SplitConfig;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -137,8 +138,8 @@ import de.dal33t.powerfolder.util.update.UpdateSetting;
  * Central class gives access to all core components in PowerFolder. Make sure
  * to extend PFComponent so you always have a reference to the main
  * {@link Controller}.
- * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+ *
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.107 $
  */
 public class Controller extends PFComponent {
@@ -146,9 +147,9 @@ public class Controller extends PFComponent {
         .getName());
 
     private static final int MAJOR_VERSION = 9;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 46;
-    
+    private static final int MINOR_VERSION = 3;
+    private static final int REVISION_VERSION = 104;
+
     /**
      * Program version.
      */
@@ -167,9 +168,10 @@ public class Controller extends PFComponent {
      * The actual config file.
      */
     private Path configFile;
+    private Path configFolderFile;
 
     /** The config properties */
-    private Properties config;
+    private SplitConfig config;
 
     /**
      * The preferences
@@ -249,6 +251,7 @@ public class Controller extends PFComponent {
 
     private Callable<TransferManager> transferManagerFactory = new Callable<TransferManager>()
     {
+        @Override
         public TransferManager call() throws Exception {
             return new TransferManager(Controller.this);
         }
@@ -289,11 +292,11 @@ public class Controller extends PFComponent {
      */
     private boolean limitedConnectivity;
 
-    private PausedModeListener pausedModeListenerSupport;
+    private final PausedModeListener pausedModeListenerSupport;
 
-    private NetworkingModeListener networkingModeListenerSupport;
+    private final NetworkingModeListener networkingModeListenerSupport;
 
-    private LimitedConnectivityListener limitedConnectivityListenerSupport;
+    private final LimitedConnectivityListener limitedConnectivityListenerSupport;
 
     private ScheduledFuture<?> pauseResumeFuture;
 
@@ -318,16 +321,17 @@ public class Controller extends PFComponent {
     /**
      * Overwite the PFComponent.getController() otherwise that one returns null
      * for this Controller itself.
-     * 
+     *
      * @return a reference to this
      */
+    @Override
     public Controller getController() {
         return this;
     }
 
     /**
      * Creates a fresh Controller.
-     * 
+     *
      * @return the controller
      */
     public static Controller createController() {
@@ -343,7 +347,7 @@ public class Controller extends PFComponent {
 
     /**
      * Starts a config with the given command line arguments
-     * 
+     *
      * @param aCommandLine
      *            the command line as specified by the user
      */
@@ -368,7 +372,7 @@ public class Controller extends PFComponent {
     /**
      * Starts controller with a special config file, and creates and starts all
      * components of PowerFolder.
-     * 
+     *
      * @param filename
      *            The filename to uses as config file (located in the
      *            "getConfigLocationBase()")
@@ -436,6 +440,7 @@ public class Controller extends PFComponent {
         if (verbose) {
             ByteSerializer.BENCHMARK = true;
             scheduleAndRepeat(new Runnable() {
+                @Override
                 public void run() {
                     ByteSerializer.printStats();
                 }
@@ -683,12 +688,15 @@ public class Controller extends PFComponent {
         // Setup our background working tasks
         setupPeriodicalTasks();
 
-        if (MacUtils.isSupported() && isFirstStart()) {
-            try {
-                MacUtils.getInstance().setPFStartup(true, this);
-            } catch (IOException e) {
-                logWarning("Unable to setup auto start: " + e);
+        if (MacUtils.isSupported()) {
+            if (isFirstStart()) {
+                try {
+                    MacUtils.getInstance().setPFStartup(true, this);
+                } catch (IOException e) {
+                    logWarning("Unable to setup auto start: " + e);
+                }
             }
+            MacUtils.getInstance().setAppReOpenedListener(this);
         }
 
         if (pauseSecs == 0) {
@@ -760,7 +768,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add invitation listener.
-     * 
+     *
      * @param l
      */
     public void addInvitationHandler(InvitationHandler l) {
@@ -769,7 +777,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove invitation listener.
-     * 
+     *
      * @param l
      */
     public void removeInvitationHandler(InvitationHandler l) {
@@ -778,7 +786,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add mass delete listener.
-     * 
+     *
      * @param l
      */
     public void addMassDeletionHandler(MassDeletionHandler l) {
@@ -787,7 +795,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove mass delete listener.
-     * 
+     *
      * @param l
      */
     public void removeMassDeletionHandler(MassDeletionHandler l) {
@@ -847,6 +855,15 @@ public class Controller extends PFComponent {
             } else {
                 logInfo("No logging to file");
             }
+
+            str = ConfigurationEntry.LOG_SYSLOG_HOST.getValue(this);
+            if (str != null) {
+                str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
+                Level syslogLevel = LoggingManager.levelForName(str);
+                LoggingManager.setSyslogLogging(syslogLevel != null
+                    ? consoleLevel
+                        : Level.WARNING, this);
+            }
         }
 
         if (commandLine != null && commandLine.hasOption('l')) {
@@ -870,7 +887,7 @@ public class Controller extends PFComponent {
 
     /**
      * Loads a config file (located in "getConfigLocationBase()")
-     * 
+     *
      * @param theFilename
      * @return false if unsuccessful, true if file found and reading succeeded.
      */
@@ -886,7 +903,7 @@ public class Controller extends PFComponent {
         }
 
         configFilename = null;
-        config = new Properties();
+        config = new SplitConfig();
         configFilename = filename;
         configFile = getConfigLocationBase();
 
@@ -928,13 +945,50 @@ public class Controller extends PFComponent {
                 // Ignore.
             }
         }
+
+        String folderfilename = filename.replace(".config", "-Folder.config");
+        configFolderFile = getConfigLocationBase();
+        if (configFolderFile == null) {
+            configFolderFile = Paths.get(folderfilename).toAbsolutePath();
+        } else {
+            configFolderFile = configFolderFile.resolve(folderfilename);
+        }
+
+        if (Files.exists(configFolderFile)) {
+            try {
+                logInfo("Loading folder configfile "
+                    + configFolderFile.toString());
+                bis = new BufferedInputStream(
+                    Files.newInputStream(configFolderFile));
+                config.load(bis);
+            } catch (FileNotFoundException e) {
+                logWarning("Unable to start config, file '" + folderfilename
+                    + "' not found, using defaults");
+            } catch (IOException e) {
+                logSevere("Unable to start config from file '" + folderfilename
+                    + '\'');
+                configFolderFile = null;
+                return false;
+            } finally {
+                try {
+                    if (bis != null) {
+                        bis.close();
+                    }
+                } catch (Exception e) {
+                    // Ignore.
+                }
+            }
+        } else {
+            logFine("Folder config file does not exist. "
+                + configFolderFile.toString());
+        }
         return true;
     }
 
     /**
      * Use to schedule a lightweight short running task that gets repeated
      * periodically.
-     * 
+     *
      * @param task
      *            the task to schedule
      * @param period
@@ -951,7 +1005,7 @@ public class Controller extends PFComponent {
     /**
      * Use to schedule a lightweight short running task that gets repeated
      * periodically.
-     * 
+     *
      * @param task
      *            the task to schedule
      * @param initialDelay
@@ -972,7 +1026,7 @@ public class Controller extends PFComponent {
 
     /**
      * Use to schedule a lightweight short running task.
-     * 
+     *
      * @param task
      *            the task to schedule
      * @param delay
@@ -987,7 +1041,7 @@ public class Controller extends PFComponent {
 
     /**
      * Removes a schduled task for the threadpool
-     * 
+     *
      * @param task
      */
     public void removeScheduled(Runnable task) {
@@ -1004,7 +1058,7 @@ public class Controller extends PFComponent {
 
     /**
      * Removes a scheduled task for the threadpool
-     * 
+     *
      * @param future
      */
     public boolean removeScheduled(ScheduledFuture<?> future) {
@@ -1052,6 +1106,7 @@ public class Controller extends PFComponent {
         long secondsToMidnight = (midnight - now) / 1000;
         logFine("Initial log reconfigure in " + secondsToMidnight + " seconds");
         threadPool.scheduleAtFixedRate(new TimerTask() {
+            @Override
             public void run() {
                 performHousekeeping(true);
             }
@@ -1059,6 +1114,7 @@ public class Controller extends PFComponent {
 
         // Also run housekeeping one minute after start up.
         threadPool.schedule(new TimerTask() {
+            @Override
             public void run() {
                 performHousekeeping(false);
             }
@@ -1081,6 +1137,7 @@ public class Controller extends PFComponent {
         // ============
 
         threadPool.scheduleAtFixedRate(new TimerTask() {
+            @Override
             public void run() {
                 if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
                     .getValueBoolean(Controller.this))
@@ -1106,6 +1163,7 @@ public class Controller extends PFComponent {
         // instantly.
         long initialDelay = alreadyDetected ? 600 : 5;
         threadPool.scheduleAtFixedRate(new TimerTask() {
+            @Override
             public void run() {
                 performHourly();
             }
@@ -1117,6 +1175,7 @@ public class Controller extends PFComponent {
         // final Collector cpu = CollectorFactory.getFactory().createCollector(
         // CollectorID.CPU_USAGE.id);
         threadPool.scheduleAtFixedRate(new Runnable() {
+            @Override
             public void run() {
                 if (!verbose) {
                     return;
@@ -1133,7 +1192,11 @@ public class Controller extends PFComponent {
                         + Debug.countDataitems(Controller.this));
                 }
                 String dump = Debug.dumpCurrentStacktraces(false);
-                if (StringUtils.isNotBlank(dump) && isFine()) {
+                if (StringUtils.isNotBlank(dump)
+                    && isFine()
+                    && ConfigurationEntry.LOG_ACTIVE_THREADS
+                        .getValueBoolean(getController()))
+                {
                     logFine("Active threads:\n\n" + dump);
                 } else {
                     logFine("No active threads");
@@ -1172,7 +1235,7 @@ public class Controller extends PFComponent {
 
     /**
      * General houskeeping task. Runs one minute after start and every midnight.
-     * 
+     *
      * @param midnightRun
      *            true if this is the midnight invokation, false if this is at
      *            start up.
@@ -1223,6 +1286,16 @@ public class Controller extends PFComponent {
             PathUtils.copyFile(configFile, configBackup);
         } catch (IOException e) {
             logWarning("Unable to backup file " + configFile + ". " + e);
+        }
+        if (Files.exists(configFolderFile)) {
+            Path configFolderBackup = backupDir.resolve(configFolderFile
+                .getFileName());
+            try {
+                PathUtils.copyFile(configFolderFile, configFolderBackup);
+            } catch (IOException e) {
+                logWarning("Unable to backup file " + configFolderFile + ". "
+                    + e);
+            }
         }
         Path myKeyFile = getMiscFilesLocation().resolve(getConfigName()
             + ".mykey");
@@ -1317,6 +1390,7 @@ public class Controller extends PFComponent {
                 && connectionListener != null)
             {
                 Thread opener = new Thread(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             logFine("Opening port on Firewall.");
@@ -1343,7 +1417,7 @@ public class Controller extends PFComponent {
     /**
      * Call to notify the Controller of a problem while binding a required
      * listening socket.
-     * 
+     *
      * @param ports
      */
     private void portBindFailureProblem(String ports) {
@@ -1428,11 +1502,17 @@ public class Controller extends PFComponent {
 
         Path file;
         Path tempFile;
+        Path folderFile;
+        Path tempFolderFile;
         Path backupFile;
         if (getConfigLocationBase() == null) {
             file = Paths.get(getConfigName() + ".config").toAbsolutePath();
             tempFile = Paths.get(getConfigName() + ".writing.config")
                 .toAbsolutePath();
+            folderFile = Paths.get(getConfigName() + "-Folder.config")
+                .toAbsolutePath();
+            tempFolderFile = Paths.get(
+                getConfigName() + "-Folder.writing.config").toAbsolutePath();
             backupFile = Paths.get(getConfigName() + ".config.backup")
                 .toAbsolutePath();
         } else {
@@ -1441,6 +1521,10 @@ public class Controller extends PFComponent {
                 getConfigName() + ".writing.config").toAbsolutePath();
             backupFile = getConfigLocationBase().resolve(
                 getConfigName() + ".config.backup");
+            folderFile = getConfigLocationBase().resolve(
+                getConfigName() + "-Folder.config");
+            tempFolderFile = getConfigLocationBase().resolve(
+                getConfigName() + "-Folder.writing.config").toAbsolutePath();
         }
 
         try {
@@ -1453,19 +1537,44 @@ public class Controller extends PFComponent {
             {
                 distName = distribution.getName();
             }
-            // Store config in misc base
-            PropertiesUtil.saveConfig(tempFile, config, distName
-                + " config file (v" + PROGRAM_VERSION + ')');
-            
 
-            Files.deleteIfExists(file);
-            try {
-                Files.move(tempFile, file);
-            } catch (IOException e) {
-                Files.copy(tempFile, file);
-                Files.delete(tempFile);
+            Properties prev = new Properties();
+            if (Files.exists(file)) {
+                try (BufferedInputStream in = new BufferedInputStream(
+                    Files.newInputStream(file))) {
+                    prev.load(in);
+                }
             }
 
+            if (!prev.equals(config.getRegular())) {
+                // Store config in misc base
+                PropertiesUtil.saveConfig(tempFile, config.getRegular(),
+                    distName + " config file (v" + PROGRAM_VERSION + ')');
+                Files.deleteIfExists(file);
+                try {
+                    Files.move(tempFile, file);
+                } catch (IOException e) {
+                    Files.copy(tempFile, file);
+                    Files.delete(tempFile);
+                }
+            } else {
+                if (isFine()) {
+                    logFine("Not storing config to " + file + ". Base config remains unchanged");
+                }
+            }
+
+            if (!config.getFolders().isEmpty()) {
+                PropertiesUtil.saveConfig(tempFolderFile, config.getFolders(),
+                    distName + " folders config file (v" + PROGRAM_VERSION
+                        + ')');
+                Files.deleteIfExists(folderFile);
+                try {
+                    Files.move(tempFolderFile, folderFile);
+                } catch (IOException e) {
+                    Files.copy(tempFolderFile, folderFile);
+                    Files.delete(tempFolderFile);
+                }
+            }
         } catch (IOException e) {
             // FATAL
             logSevere("Unable to save config. " + e, e);
@@ -1479,7 +1588,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if controller is started (by config)
-     * 
+     *
      * @return true if controller is started (by config)
      */
     public boolean isStarted() {
@@ -1495,7 +1604,7 @@ public class Controller extends PFComponent {
 
     /**
      * the uptime in milliseconds.
-     * 
+     *
      * @return The uptime time in millis, or -1 if not started yet
      */
     public long getUptime() {
@@ -1531,7 +1640,7 @@ public class Controller extends PFComponent {
 
     /**
      * Sets the paused mode.
-     * 
+     *
      * @param newPausedValue
      */
     public void setPaused(boolean newPausedValue) {
@@ -1540,7 +1649,7 @@ public class Controller extends PFComponent {
 
     /**
      * Sets the paused mode.
-     * 
+     *
      * @param newPausedValue
      */
     private synchronized void setPaused0(boolean newPausedValue,
@@ -1612,7 +1721,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if node is running in LAN only networking mode
-     * 
+     *
      * @return true if in LAN only mode else false
      */
     public boolean isLanOnly() {
@@ -1629,7 +1738,7 @@ public class Controller extends PFComponent {
      * 2) If the client can add friends
      * <p>
      * 3) The client can connect to others except the server.
-     * 
+     *
      * @return true if running as backup only client.
      */
     public boolean isBackupOnly() {
@@ -1638,7 +1747,7 @@ public class Controller extends PFComponent {
 
     /**
      * returns the enum with the current networkin mode.
-     * 
+     *
      * @return The Networking mode either NetworkingMode.PUBLICMODE,
      *         NetworkingMode.PRIVATEMODE or NetworkingMode.LANONLYMODE
      */
@@ -1720,7 +1829,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if this controller has restricted connection to the network
-     * 
+     *
      * @return true if no incoming connections, else false.
      */
     public boolean isLimitedConnectivity() {
@@ -1737,7 +1846,7 @@ public class Controller extends PFComponent {
 
     /**
      * Shuts down controller and exits to system with the given status
-     * 
+     *
      * @param status
      *            the status to exit with.
      */
@@ -1817,6 +1926,7 @@ public class Controller extends PFComponent {
         {
             if (FirewallUtil.isFirewallAccessible()) {
                 Thread closer = new Thread(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             logFine("Closing port on Firewall.");
@@ -1885,9 +1995,13 @@ public class Controller extends PFComponent {
             pluginManager.shutdown();
         }
 
+        if (MacUtils.isSupported()) {
+            MacUtils.getInstance().removeAppReOpenedListener(this);
+        }
+
         if (wasStarted) {
-            System.out.println("------------ PowerFolder " + PROGRAM_VERSION
-                + " Controller Shutdown ------------");
+            System.out.println("------------ " + PowerFolder.NAME + " "
+                + PROGRAM_VERSION + " Controller Shutdown ------------");
         }
 
         // remove current config
@@ -1905,7 +2019,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns a debug report
-     * 
+     *
      * @return the Debug report.
      */
     public String getDebugReport() {
@@ -1931,7 +2045,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers the current config name loaded <configname>.properties
-     * 
+     *
      * @return The name of the current config
      */
     public String getConfigName() {
@@ -1950,9 +2064,13 @@ public class Controller extends PFComponent {
         return configFile;
     }
 
+    public Path getConfigFolderFile() {
+        return configFolderFile;
+    }
+
     /**
      * Returns the config, read from the configfile.
-     * 
+     *
      * @return the config as properties object
      */
     public Properties getConfig() {
@@ -1961,7 +2079,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the command line of the start
-     * 
+     *
      * @return The command line
      */
     public CommandLine getCommandLine() {
@@ -1979,7 +2097,7 @@ public class Controller extends PFComponent {
     /**
      * Returns local preferences, Preferences are stored till the next start. On
      * windows they are stored in the registry.
-     * 
+     *
      * @return The preferences
      */
     public Preferences getPreferences() {
@@ -2013,16 +2131,17 @@ public class Controller extends PFComponent {
 
     /**
      * Answers the own identity, of course with no connection
-     * 
+     *
      * @return a referens to the member object representing myself.
      */
+    @Override
     public Member getMySelf() {
         return nodeManager != null ? nodeManager.getMySelf() : null;
     }
 
     /**
      * Changes the nick and tells other nodes
-     * 
+     *
      * @param newNick
      *            the new nick
      * @param saveConfig
@@ -2059,7 +2178,7 @@ public class Controller extends PFComponent {
 
     /**
      * Retruns the plugin manager
-     * 
+     *
      * @return the plugin manager
      */
     public PluginManager getPluginManager() {
@@ -2068,7 +2187,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the dyndns manager
-     * 
+     *
      * @return the dyndns manager
      */
     public DynDnsManager getDynDnsManager() {
@@ -2077,7 +2196,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the broadcast manager
-     * 
+     *
      * @return broadcast manager
      */
     public BroadcastMananger getBroadcastManager() {
@@ -2086,7 +2205,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the NodeManager
-     * 
+     *
      * @return the NodeManager
      */
     public NodeManager getNodeManager() {
@@ -2103,7 +2222,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the folder repository
-     * 
+     *
      * @return the folder repository
      */
     public FolderRepository getFolderRepository() {
@@ -2112,7 +2231,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the transfer manager of the controller
-     * 
+     *
      * @return transfer manager
      */
     public TransferManager getTransferManager() {
@@ -2121,7 +2240,7 @@ public class Controller extends PFComponent {
 
     /**
      * ONLY USE THIS METHOD FOR TESTING PURPOSES!
-     * 
+     *
      * @param factory
      */
     public void setTransferManagerFactory(Callable<TransferManager> factory) {
@@ -2138,7 +2257,7 @@ public class Controller extends PFComponent {
 
     /**
      * Injects a security manager.
-     * 
+     *
      * @param securityManager
      *            the security manager to set.
      */
@@ -2149,7 +2268,7 @@ public class Controller extends PFComponent {
 
     /**
      * Connects to a remote peer, with ip and port
-     * 
+     *
      * @param address
      * @return the node that connected
      * @throws ConnectionException
@@ -2180,7 +2299,7 @@ public class Controller extends PFComponent {
     /**
      * Connect to a remote node Interprets a string as connection string Format
      * is expeced as ' <connect host>' or ' <connect host>: <port>'
-     * 
+     *
      * @param connectStr
      * @return the member that connected under the given addresse
      * @throws ConnectionException
@@ -2192,7 +2311,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if controller is started in console mode
-     * 
+     *
      * @return true if in console mode
      */
     public boolean isConsoleMode() {
@@ -2206,6 +2325,9 @@ public class Controller extends PFComponent {
                 return true;
             }
         }
+        if (Feature.UI_ENABLED.isDisabled()) {
+            return true;
+        }
         return GraphicsEnvironment.isHeadless();
     }
 
@@ -2213,7 +2335,7 @@ public class Controller extends PFComponent {
      * Whether to display notifications bottom-left instead of the normal
      * bottom-right. Primarily a development switch for running two PFs on one
      * PC.
-     * 
+     *
      * @return true if notifications should be displayed on the left.
      */
     public boolean isNotifyLeft() {
@@ -2229,7 +2351,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if the user interface (ui) is enabled
-     * 
+     *
      * @return true if the user interface is enabled, else false
      */
     public boolean isUIEnabled() {
@@ -2238,7 +2360,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if we have the ui open
-     * 
+     *
      * @return true if the uiserinterface is actualy started
      */
     public boolean isUIOpen() {
@@ -2247,7 +2369,7 @@ public class Controller extends PFComponent {
 
     /**
      * Exposing UIController, acces to all UserInterface elements
-     * 
+     *
      * @return the UIController
      */
     public UIController getUIController() {
@@ -2278,7 +2400,7 @@ public class Controller extends PFComponent {
      * Opens the listener on local port. The first listener is set to
      * "connectionListener". All others are added the the list of
      * additionalConnectionListeners.
-     * 
+     *
      * @return if succeeded
      */
     private boolean openListener(int port) {
@@ -2312,7 +2434,7 @@ public class Controller extends PFComponent {
 
     /**
      * Do we have a connection listener?
-     * 
+     *
      * @return true if we have a connection listener, otherwise false
      */
     public boolean hasConnectionListener() {
@@ -2321,7 +2443,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers the connection listener
-     * 
+     *
      * @return the connection listener
      */
     public ConnectionListener getConnectionListener() {
@@ -2332,7 +2454,7 @@ public class Controller extends PFComponent {
      * Answers if this controller is runing in verbose mode. Set verbose=true on
      * config file to enable this, this gives access to all kinds of debugging
      * stuff.
-     * 
+     *
      * @return true if we are in verbose mode
      */
     public boolean isVerbose() {
@@ -2343,7 +2465,7 @@ public class Controller extends PFComponent {
      * Answers if debug reports should be requested. Set debugReports=true on
      * config file to enable this, this request node information. Only enabled
      * if in verbose mode.
-     * 
+     *
      * @see RequestNodeInformation
      * @return true if we are in verbose mode
      */
@@ -2353,7 +2475,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the buildtime of this jar
-     * 
+     *
      * @return the Date the application jar was build.
      */
     public Date getBuildTime() {
@@ -2371,7 +2493,7 @@ public class Controller extends PFComponent {
     /**
      * Sets the loading completion of this controller. Used in the splash
      * screen.
-     * 
+     *
      * @param percentage
      *            the percentage complete
      */
@@ -2384,7 +2506,7 @@ public class Controller extends PFComponent {
     /**
      * Answers if minimized start is wanted. Use startup option -m to enable
      * this.
-     * 
+     *
      * @return if a minimized startup should be performed.
      */
     public boolean isStartMinimized() {
@@ -2394,18 +2516,21 @@ public class Controller extends PFComponent {
     /**
      * The base directory where to store/load config files. or null if on
      * working path
-     * 
+     *
      * @return The File object representing the absolute location of where the
      *         config files are/should be stored.
      */
     private Path getConfigLocationBase() {
         // First check if we have a config file in local path
-        Path aConfigFile = Paths.get(getConfigName() + ".config").toAbsolutePath();
+        Path aConfigFile = Paths.get(getConfigName() + ".config")
+            .toAbsolutePath();
 
         // Load configuration in misc file if config file if in
         if (OSUtil.isWebStart() || Files.notExists(aConfigFile)) {
-            logFine("Config location base: "
-                + getMiscFilesLocation().toString());
+            if (isFiner()) {
+                logFiner("Config location base: "
+                    + getMiscFilesLocation().toString());
+            }
             return getMiscFilesLocation();
         }
 
@@ -2416,7 +2541,7 @@ public class Controller extends PFComponent {
     /**
      * Answers the path, where to load/store miscellanouse files created by
      * PowerFolder. e.g. .nodes files
-     * 
+     *
      * @return the file base, a directory
      */
     public static Path getMiscFilesLocation() {
@@ -2490,7 +2615,7 @@ public class Controller extends PFComponent {
      * Pre Version 4, the config was in 'user.home'/.PowerFolder.
      * 'APPDATA'/PowerFolder is a more normal Windows location for application
      * data.
-     * 
+     *
      * @param unixBaseDir
      *            the old user.home based config directory.
      * @param windowsBaseDir
@@ -2520,7 +2645,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers the path, where to load/store temp files created by PowerFolder.
-     * 
+     *
      * @return the file base, a directory
      */
     public static Path getTempFilesLocation() {
@@ -2632,7 +2757,7 @@ public class Controller extends PFComponent {
                     distribution = br;
                 }
             }
-            
+
             if (distribution == null) {
                 if (ProUtil.isRunningProVersion()) {
                     distribution = new PowerFolderPro();
@@ -2668,20 +2793,21 @@ public class Controller extends PFComponent {
     /**
      * Answers the waittime for threads time differst a bit to avoid
      * concurrencies
-     * 
+     *
      * @return The time to wait
      */
     public static long getWaitTime() {
         return WAIT_TIME;
     }
 
+    @Override
     public String toString() {
         return "Controller '" + getMySelf() + '\'';
     }
 
     /**
      * Distribute ask for friendship events.
-     * 
+     *
      * @param event
      */
     public void makeFriendship(MemberInfo memberInfo) {
@@ -2721,7 +2847,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute invitations.
-     * 
+     *
      * @param invitation
      */
     public void invitationReceived(Invitation invitation) {
@@ -2732,7 +2858,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute local mass deletion notifications.
-     * 
+     *
      * @param event
      */
     public void localMassDeletionDetected(LocalMassDeletionEvent event) {
@@ -2743,7 +2869,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute remote mass deletion notifications.
-     * 
+     *
      * @param event
      */
     public void remoteMassDeletionDetected(RemoteMassDeletionEvent event) {
@@ -2820,13 +2946,14 @@ public class Controller extends PFComponent {
     /**
      * Wait for the repo to finish syncing. Then request system shutdown and
      * exit PF.
-     * 
+     *
      * @param password
      *            required only for Linux shutdowns.
      */
     public void shutdownAfterSync(final String password) {
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         scheduleAndRepeat(new Runnable() {
+            @Override
             public void run() {
                 // ALPS Problem: Change to check for all in sync.
 
@@ -2849,7 +2976,7 @@ public class Controller extends PFComponent {
     /**
      * Waits for the repo to finish syncing. Then request system shutdown and
      * exit PF.
-     * 
+     *
      * @param secWait
      *            number of seconds to wait.
      */
@@ -2857,6 +2984,7 @@ public class Controller extends PFComponent {
         logInfo("Sync and exit initiated. Begin check in " + secWait + 's');
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         scheduleAndRepeat(new Runnable() {
+            @Override
             public void run() {
                 // ALPS Problem: Change to check for all in sync.
                 if (oneShot.get() && folderRepository.isInSync()) {
@@ -2874,18 +3002,20 @@ public class Controller extends PFComponent {
      * #2485
      */
     private class PauseResumeTask extends TimerTask {
-        private boolean userAdaptive;
+        private final boolean userAdaptive;
 
         public PauseResumeTask(boolean whenUserIsInactive) {
             this.userAdaptive = whenUserIsInactive;
         }
 
+        @Override
         public void run() {
             if (userAdaptive && isUIOpen()) {
                 ApplicationModel appModel = uiController.getApplicationModel();
                 if (appModel.isUserActive()) {
                     if (!isPaused()) {
                         getController().schedule(new Runnable() {
+                            @Override
                             public void run() {
                                 setPaused0(true, true);
                                 log.info("User active. Executed pause task.");
@@ -2905,8 +3035,9 @@ public class Controller extends PFComponent {
             }
         }
     }
-    
+
     private class Resumer implements Runnable {
+        @Override
         public void run() {
           setPaused0(false, true);
           log.info("User inactive. Executed resume task.");

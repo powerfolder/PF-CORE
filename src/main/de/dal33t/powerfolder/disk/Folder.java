@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
+import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -125,7 +125,7 @@ import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.114 $
  */
@@ -294,7 +294,7 @@ public class Folder extends PFComponent {
 
     /**
      * Constructor for folder.
-     * 
+     *
      * @param controller
      * @param fInfo
      * @param folderSettings
@@ -402,6 +402,7 @@ public class Folder extends PFComponent {
         }
 
         Filter<Path> allExceptSystemDirFilter = new Filter<Path>() {
+            @Override
             public boolean accept(Path pathname) {
                 return !isSystemSubDir(pathname);
             }
@@ -426,6 +427,22 @@ public class Folder extends PFComponent {
 
         // Load folder database, ignore patterns and other metadata stuff.
         loadMetadata();
+
+        // PFS-457: Start
+        if (StringUtils.isNotBlank(folderSettings.getExcludes())) {
+            String separator = folderSettings.getExcludes().contains(",")
+                ? ","
+                : ";";
+            String[] excludes = folderSettings.getExcludes().split(separator);
+            for (String pattern : excludes) {
+                if (StringUtils.isNotBlank(pattern)) {
+                    // Don't use Folder#addPattern(String). We don't want to
+                    // persist yet.
+                    diskItemFilter.addPattern(pattern);
+                }
+            }
+        }
+        // PFS-457: End
 
         // put myself in membership
         // join0(controller.getMySelf());
@@ -483,26 +500,31 @@ public class Folder extends PFComponent {
 
     /**
      * Add a problem to the list of problems.
-     * 
+     *
      * @param problem
      */
     public void addProblem(Problem problem) {
+        if (problems.contains(problem)) {
+            return;
+        }
         problems.add(problem);
         problemListenerSupport.problemAdded(problem);
+        // FIXME: HACK (tm)
+        getController().setPaused(getController().isPaused());
         logFiner("Added problem");
     }
 
     /**
      * Remove a problem from the list of known problems.
-     * 
+     *
      * @param problem
      */
     public void removeProblem(Problem problem) {
         boolean removed = problems.remove(problem);
         if (removed) {
             problemListenerSupport.problemRemoved(problem);
-        } else {
-            logWarning("Failed to remove problem");
+        } else if (isFine()) {
+            logFine("Problem was not removed: " + problem);
         }
     }
 
@@ -538,8 +560,8 @@ public class Folder extends PFComponent {
             return;
         }
         archiver.setVersionsPerFile(versions);
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_VERSIONS;
+        String syncProfKey = PREFIX_V4 + configEntryId
+            + FolderSettings.VERSIONS;
         getController().getConfig().put(syncProfKey, String.valueOf(versions));
         getController().saveConfig();
         fireArchiveSettingsChanged();
@@ -562,7 +584,7 @@ public class Folder extends PFComponent {
     /**
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if necessary.
-     * 
+     *
      * @param scanResult
      *            the scanresult to commit.
      * @param ignoreLocalMassDeletions
@@ -581,8 +603,10 @@ public class Folder extends PFComponent {
         {
 
             // Advise controller of the carnage.
-            getController().localMassDeletionDetected(
-                new LocalMassDeletionEvent(this));
+            for (FileInfo info : scanResult.getDeletedFiles()) {
+                getController().localMassDeletionDetected(
+                    new LocalMassDeletionEvent(this, info));
+            }
 
             return;
 
@@ -607,13 +631,25 @@ public class Folder extends PFComponent {
         }
 
         hasOwnDatabase = true;
-        if (isFine()) {
-            logFine("Scanned " + scanResult.getTotalFilesCount() + " total, "
-                + scanResult.getChangedFiles().size() + " changed, "
-                + scanResult.getNewFiles().size() + " new, "
-                + scanResult.getRestoredFiles().size() + " restored, "
-                + scanResult.getDeletedFiles().size() + " removed, "
-                + scanResult.getProblemFiles().size() + " problems");
+
+        if (isInfo() || isFine()) {
+            if (scanResult.isChangeDetected()) {
+                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
+                    + scanResult.getChangedFiles().size() + " changed, "
+                    + scanResult.getNewFiles().size() + " new, "
+                    + scanResult.getRestoredFiles().size() + " restored, "
+                    + scanResult.getDeletedFiles().size() + " removed, "
+                    + scanResult.getProblemFiles().size() + " problems";
+                logInfo(msg);
+            } else {
+                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
+                    + scanResult.getChangedFiles().size() + " changed, "
+                    + scanResult.getNewFiles().size() + " new, "
+                    + scanResult.getRestoredFiles().size() + " restored, "
+                    + scanResult.getDeletedFiles().size() + " removed, "
+                    + scanResult.getProblemFiles().size() + " problems";
+                logFine(msg);
+            }
         }
 
         // Fire scan result
@@ -642,7 +678,7 @@ public class Folder extends PFComponent {
 
     /**
      * Convenience method to add a pattern if it does not exist.
-     * 
+     *
      * @param pattern
      */
     public void addPattern(String pattern) {
@@ -652,7 +688,7 @@ public class Folder extends PFComponent {
 
     /**
      * Convenience method to remove a pattern.
-     * 
+     *
      * @param pattern
      */
     public void removePattern(String pattern) {
@@ -662,7 +698,7 @@ public class Folder extends PFComponent {
 
     /**
      * Retrieves the transferpriorities for file in this folder.
-     * 
+     *
      * @return the associated TransferPriorities object
      */
     public TransferPriorities getTransferPriorities() {
@@ -675,7 +711,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks the basedir is valid
-     * 
+     *
      * @throws FolderException
      *             if base dir is not ok
      */
@@ -734,7 +770,7 @@ public class Folder extends PFComponent {
     /**
      * Scans a downloaded file, renames tempfile to real name moves possible
      * existing file to file archive.
-     * 
+     *
      * @param fInfo
      * @param tempFile
      * @return true if the download could be completed and the file got scanned.
@@ -832,82 +868,54 @@ public class Folder extends PFComponent {
             try {
                 Files.setLastModifiedTime(tempFile,
                     FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
-            }
-            catch (IOException ioe) {
-                logSevere("Failed to set modified date on " + tempFile
-                    + " for " + fInfo.getModifiedDate().getTime());
+            } catch (IOException ioe) {
+                logWarning("Failed to set modified date on " + tempFile
+                    + " for " + fInfo.getModifiedDate().getTime() + ": " + ioe);
                 return false;
             }
 
-            if (!schemaZyncro) {
-                if (Files.exists(targetFile)) {
-                    // if file was a "newer file" the file already exists here
-                    // Using local var because of possible race condition!!
-                    FileArchiver arch = archiver;
-                    if (arch != null) {
-                        try {
-                            FileInfo oldLocalFileInfo = fInfo
-                                .getLocalFileInfo(getController()
-                                    .getFolderRepository());
-                            if (oldLocalFileInfo != null) {
-                                arch.archive(oldLocalFileInfo, targetFile,
-                                    false);
+            updateFileOwnerIfNecessary(targetFile, fInfo);
 
-                                if (!currentInfo.isMetaFolder()
-                                    && ConfigurationEntry.CONFLICT_DETECTION
-                                        .getValueBoolean(getController()))
-                                {
-                                    try {
-                                        doSimpleConflictDetection(fInfo,
-                                            oldLocalFileInfo);
-                                    } catch (Exception e) {
-                                        logSevere("Problem withe conflict detection. "
-                                            + e);
-                                    }
+            if (Files.exists(targetFile) && !schemaZyncro) {
+                // if file was a "newer file" the file already exists here
+                // Using local var because of possible race condition!!
+                FileArchiver arch = archiver;
+                if (arch != null) {
+                    try {
+                        FileInfo oldLocalFileInfo = fInfo
+                            .getLocalFileInfo(getController()
+                                .getFolderRepository());
+                        if (oldLocalFileInfo != null) {
+                            arch.archive(oldLocalFileInfo, targetFile, false);
+
+                            if (!currentInfo.isMetaFolder()
+                                && ConfigurationEntry.CONFLICT_DETECTION
+                                    .getValueBoolean(getController()))
+                            {
+                                try {
+                                    doSimpleConflictDetection(fInfo,
+                                        oldLocalFileInfo);
+                                } catch (Exception e) {
+                                    logSevere("Problem withe conflict detection. "
+                                        + e);
                                 }
                             }
-                        } catch (IOException e) {
-                            // Same behavior as below, on failure drop out
-                            // TODO Maybe raise folder-problem....
-                            logWarning("Unable to archive old file!", e);
-                            return false;
                         }
-                    }
-                    try {
-                        Files.deleteIfExists(targetFile);
-                    } catch (IOException ioe) {
-                        logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                            + targetFile.toAbsolutePath()
-                            + ". "
-                            + fInfo.toDetailString());
+                    } catch (IOException e) {
+                        // Same behavior as below, on failure drop out
+                        // TODO Maybe raise folder-problem....
+                        logWarning("Unable to archive old file!", e);
                         return false;
                     }
                 }
-            } else {
                 try {
-                    AccountInfo aInfo = fInfo.getModifiedBy()
-                        .getNode(getController(), true).getAccountInfo();
-
-                    if (aInfo != null) {
-                        String username = aInfo.getUsername();
-                        FileSystem fs = targetFile.getFileSystem();
-                        UserPrincipalLookupService upls = fs
-                            .getUserPrincipalLookupService();
-                        UserPrincipal up = upls.lookupPrincipalByName(username);
-
-                        if (up != null) {
-                            Files.setOwner(targetFile, up);
-                        } else {
-                            logInfo("Could not find user '" + username
-                                + "' to set as owner");
-                        }
-                    } else {
-                        logWarning("Could not find an account for file '"
-                            + fInfo.toString() + "'");
-                    }
-                } catch (Exception e) {
-                    logWarning("Could not set owner to " + targetFile.toString()
-                        + ": " + e);
+                    Files.deleteIfExists(targetFile);
+                } catch (IOException ioe) {
+                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                        + targetFile.toAbsolutePath()
+                        + ". "
+                        + fInfo.toDetailString());
+                    return false;
                 }
             }
 
@@ -940,9 +948,9 @@ public class Folder extends PFComponent {
                     }
                 } catch (IOException e) {
                     // TODO give a diskfull warning?
-                    logSevere("Unable to store completed download "
+                    logWarning("Unable to store completed download "
                         + targetFile.toAbsolutePath() + ". " + e.getMessage()
-                        + ". " + fInfo.toDetailString());
+                        + ". " + fInfo.toDetailString() + ". " + e);
                     logFiner(e);
                     return false;
                 }
@@ -952,10 +960,9 @@ public class Folder extends PFComponent {
                 try {
                     Files.setLastModifiedTime(targetFile,
                         FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
-                }
-                catch (IOException e) {
-                    logSevere("Failed to set modified date on " + targetFile
-                        + " to " + fInfo.getModifiedDate().getTime());
+                } catch (IOException e) {
+                    logWarning("Failed to set modified date on " + targetFile
+                        + " to " + fInfo.getModifiedDate().getTime() + ". " + e);
                     return false;
                 }
 
@@ -995,10 +1002,47 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Set a new owner, if necessary (e. g. on Zyncro system).
+     *
+     * @param targetFile
+     * @param fInfo
+     */
+    private void updateFileOwnerIfNecessary(Path targetFile, FileInfo fInfo) {
+        if (!schemaZyncro) {
+            return;
+        }
+        try {
+            AccountInfo aInfo = fInfo.getModifiedBy()
+                .getNode(getController(), true).getAccountInfo();
+
+            if (aInfo != null) {
+                String username = aInfo.getUsername();
+                FileSystem fs = targetFile.getFileSystem();
+                UserPrincipalLookupService upls = fs
+                    .getUserPrincipalLookupService();
+                UserPrincipal up = upls.lookupPrincipalByName(username);
+
+                if (up != null) {
+                    Files.setOwner(targetFile, up);
+                } else {
+                    logInfo("Could not find user '" + username
+                        + "' to set as owner");
+                }
+            } else {
+                logWarning("Could not find an account for file '"
+                    + fInfo.toString() + "'");
+            }
+        } catch (Exception e) {
+            logWarning("Could not set owner to " + targetFile.toString()
+                + ": " + e);
+        }
+    }
+
+    /**
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     * 
+     *
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
@@ -1009,7 +1053,7 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be careful! This method is not
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     * 
+     *
      * @param ignoreLocalMassDeletion
      *            bypass the local mass delete checks.
      * @return if the local files where scanned
@@ -1225,7 +1269,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a new, deleted or restored File.
-     * 
+     *
      * @param fileInfo
      *            the file to scan
      * @return the new {@link FileInfo} or null if file was not actually changed
@@ -1246,7 +1290,7 @@ public class Folder extends PFComponent {
     /**
      * Scans all parent directories of a file. Useful after restoring single
      * files in deleted subdirs.
-     * 
+     *
      * @param fileInfo
      */
     public void scanAllParentDirectories(FileInfo fileInfo) {
@@ -1273,7 +1317,7 @@ public class Folder extends PFComponent {
     /**
      * Scans multiple new, deleted or restored File callback for
      * {@link #getFolderWatcher()} only.
-     * 
+     *
      * @param fileInfos
      *            the files to scan. ATTENTION: Does modify the {@link List}
      */
@@ -1283,7 +1327,7 @@ public class Folder extends PFComponent {
         boolean sendMassDeletionMessage = false;
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
-            FileInfo fileInfo = (FileInfo) it.next();
+            FileInfo fileInfo = it.next();
 
             FileInfo localFileInfo = scanChangedFile0(fileInfo);
             if (localFileInfo == null) {
@@ -1313,6 +1357,7 @@ public class Folder extends PFComponent {
             setDBDirty();
 
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, fileInfos,
                         diskItemFilter, useExt);
@@ -1320,15 +1365,19 @@ public class Folder extends PFComponent {
             });
         }
         if (sendMassDeletionMessage) {
-            getController().localMassDeletionDetected(
-                new LocalMassDeletionEvent(this));
+            for (FileInfo info : getKnownFiles()) {
+                if (info.isDeleted()) {
+                    getController().localMassDeletionDetected(
+                        new LocalMassDeletionEvent(this, info));
+                }
+            }
         }
     }
 
     /**
      * Scans one file and updates the internal db if required.
      * <p>
-     * 
+     *
      * @param fInfo
      *            the file to be scanned
      * @return null, if the file hasn't changed, the new FileInfo otherwise
@@ -1453,7 +1502,7 @@ public class Folder extends PFComponent {
 
     /**
      * Creates/Deletes and scans one directory.
-     * 
+     *
      * @param dirInfo
      *            the dir to be scanned.
      * @param dir
@@ -1479,6 +1528,7 @@ public class Folder extends PFComponent {
         watcher.addIgnoreFile(dirInfo);
         try {
             synchronized (scanLock) {
+                updateFileOwnerIfNecessary(dir, dirInfo);
                 if (dirInfo.isDeleted()) {
                     try {
                         Files.deleteIfExists(dir);
@@ -1512,7 +1562,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks a single filename if there are problems with the name
-     * 
+     *
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
@@ -1525,7 +1575,7 @@ public class Folder extends PFComponent {
 
     /**
      * Corrects the folder info
-     * 
+     *
      * @param theFInfo
      */
     private FileInfo correctFolderInfo(FileInfo theFInfo) {
@@ -1548,7 +1598,7 @@ public class Folder extends PFComponent {
     /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
-     * 
+     *
      * @param fInfo
      * @return The new deleted FileInfo, null if unchanged.
      */
@@ -1598,7 +1648,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes files from the local disk
-     * 
+     *
      * @param fInfos
      */
     public void removeFilesLocal(FileInfo... fInfos) {
@@ -1607,7 +1657,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes files from the local disk
-     * 
+     *
      * @param fInfos
      */
     public void removeFilesLocal(Collection<FileInfo> fInfos) {
@@ -1649,11 +1699,38 @@ public class Folder extends PFComponent {
             setDBDirty();
 
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, removedFiles,
                         diskItemFilter, useExt);
                 }
             });
+        }
+    }
+
+    /**
+     * Used for PFC-2465. Erases every knowledge of file. Deletes physical file
+     * and file meta-data. If possible local archive will be used to preserve
+     * physical file.
+     * 
+     * @param fInfo
+     * @return
+     */
+    public boolean erase(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "fInfo");
+        Path diskFile = getDiskFile(fInfo);
+        // 1) Archive local
+        synchronized (scanLock) {
+            synchronized (dbAccessLock) {
+                if (deleteFile(fInfo, diskFile)) {
+                    // 2) Purge DB
+                    dao.delete(null, fInfo);
+                    return true;
+                } else {
+                    logWarning("Unable to erase: " + diskFile + ". " + fInfo);
+                    return false;
+                }
+            }
         }
     }
 
@@ -1678,7 +1755,7 @@ public class Folder extends PFComponent {
 
     /**
      * Loads the folder database from disk
-     * 
+     *
      * @param dbFile
      *            the file to load as db file
      * @return true if succeeded
@@ -1727,6 +1804,11 @@ public class Folder extends PFComponent {
                 for (MemberInfo memberInfo : members1) {
                     Member member = memberInfo.getNode(getController(), true);
                     if (member.isMySelf()) {
+                        continue;
+                    }
+                    if (member.isConnected()) {
+                        logInfo("Not joining connected member "
+                            + member.getNick() + " into folder " + getName());
                         continue;
                     }
                     join0(member, !getController().isStarted());
@@ -1840,7 +1922,7 @@ public class Folder extends PFComponent {
      */
     public void shutdown() {
         if (isFine()) {
-            logFine("Shutting down folder " + this);
+            logFine("Shutting down " + this);
         }
         shutdown = true;
         watcher.remove();
@@ -1872,7 +1954,7 @@ public class Folder extends PFComponent {
     /**
      * This is the date that the folder last 100% synced with other members. It
      * may be null if never synchronized externally.
-     * 
+     *
      * @return the last sync date.
      */
     public Date getLastSyncDate() {
@@ -1887,7 +1969,7 @@ public class Folder extends PFComponent {
                 + PathUtils.removeInvalidFilenameChars(getController().getMySelf()
                     .getId()) + ".writing");
         Path dbFile = getSystemSubDir().resolve(Constants.DB_FILENAME);
-        
+
         // Not longer needed:
         Path dbFileBackup = getSystemSubDir().resolve(  Constants.DB_BACKUP_FILENAME);
         try {
@@ -1895,7 +1977,7 @@ public class Folder extends PFComponent {
         } catch (Exception e) {
             logFine("Unable to delete file " + dbFileBackup + ". " + e);
         }
-        
+
         try {
             FileInfo[] diskItems;
             synchronized (dbAccessLock) {
@@ -1912,7 +1994,7 @@ public class Folder extends PFComponent {
                     i++;
                 }
             }
- 
+
             // Prepare temp file
             try {
                 Files.deleteIfExists(dbTempFile);
@@ -1922,7 +2004,7 @@ public class Folder extends PFComponent {
                     + ". " + ioe);
                 return false;
             }
-            
+
             try (ObjectOutputStream oOut = new ObjectOutputStream(Files.newOutputStream(dbTempFile))) {
                 // Store files
                 oOut.writeObject(diskItems);
@@ -1932,7 +2014,7 @@ public class Folder extends PFComponent {
                 // Old blacklist. Maintained for backward serialization
                 // compatability. Do not remove.
                 oOut.writeObject(new ArrayList<FileInfo>());
-    
+
                 if (lastScan == null) {
                     if (isFiner()) {
                         logFiner("write default time: " + new Date());
@@ -1978,7 +2060,7 @@ public class Folder extends PFComponent {
         } catch (IOException e) {
             // TODO: if something failed shoudn't we try to restore the
             // backup (if backup exists and bd file not after this?
-            logSevere(this + ": Unable to write database file "
+            logWarning(this + ": Unable to write database file "
                 + dbFile.toAbsolutePath() + ". " + e);
             logFiner(e);
             return false;
@@ -2004,7 +2086,7 @@ public class Folder extends PFComponent {
      * deleted long ago do not stay in DB for ever.
      * <p>
      * Also: #2759 Check sync consistency
-     * 
+     *
      * @param removeBefore
      */
     public void maintainFolderDB(long removeBefore) {
@@ -2122,7 +2204,7 @@ public class Folder extends PFComponent {
 
     /**
      * #2311: Revert local changes.
-     * 
+     *
      * @return
      */
     private boolean isRevertLocalChanges() {
@@ -2247,7 +2329,7 @@ public class Folder extends PFComponent {
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     * 
+     *
      * @param desktopIni
      */
     private void makeFolderIcon(Path desktopIni) {
@@ -2269,7 +2351,7 @@ public class Folder extends PFComponent {
     /**
      * Creates or removes a desktop shortcut for this folder. currently only
      * available on windows systems.
-     * 
+     *
      * @param active
      *            true if the desktop shortcut should be created.
      * @return true if succeeded
@@ -2323,8 +2405,8 @@ public class Folder extends PFComponent {
             return;
         }
         this.downloadScript = downloadScript;
-        String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
+        String confKey = PREFIX_V4 + configEntryId
+            + FolderSettings.DOWNLOAD_SCRIPT;
         String confVal = downloadScript != null ? downloadScript : "";
         getController().getConfig().put(confKey, confVal);
         logInfo("Download script set to '" + confVal + '\'');
@@ -2333,7 +2415,7 @@ public class Folder extends PFComponent {
 
     /**
      * Gets the sync profile.
-     * 
+     *
      * @return the syncprofile of this folder
      */
     public SyncProfile getSyncProfile() {
@@ -2342,7 +2424,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets the synchronisation profile for this folder.
-     * 
+     *
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
@@ -2357,8 +2439,8 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         if (!currentInfo.isMetaFolder()) {
-            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-                + FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+            String syncProfKey = PREFIX_V4 + configEntryId
+                + FolderSettings.SYNC_PROFILE;
             getController().getConfig().put(syncProfKey,
                 syncProfile.getFieldList());
             getController().saveConfig();
@@ -2402,7 +2484,7 @@ public class Folder extends PFComponent {
      * or scheduled sync is setup unless manual. 'force' should only be true if
      * the user actually requests a scan from the local UI, like clicks the scan
      * button.
-     * 
+     *
      * @param force
      *            user actually requested scan, override scanAllowedNow
      */
@@ -2464,7 +2546,7 @@ public class Folder extends PFComponent {
 
     /**
      * Join a Member from its MemberInfo
-     * 
+     *
      * @param memberInfo
      */
     private boolean join0(MemberInfo memberInfo) {
@@ -2491,7 +2573,7 @@ public class Folder extends PFComponent {
 
     /**
      * Joins a member to the folder,
-     * 
+     *
      * @param member
      * @return true if actually joined the folder.
      */
@@ -2540,7 +2622,7 @@ public class Folder extends PFComponent {
 
     /**
      * Joins a member to the folder.
-     * 
+     *
      * @param member
      */
     private boolean join0(Member member, boolean init) {
@@ -2548,8 +2630,8 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
-            logInfo("Member " + member.getNick() + " joined (connected? "
-                + member.isConnected() + ")");
+            logInfo(getName() + ": Member " + member.getNick()
+                + " joined (connected? " + member.isConnected() + ")");
         }
         if (!init) {
             if (!wasMember && member.isCompletelyConnected()) {
@@ -2620,8 +2702,14 @@ public class Folder extends PFComponent {
             if (!memberInfo.isOnSameNetwork(getController())) {
                 continue;
             }
+            if (memberCanidate.isConnected()) {
+                // PFS-1144: May not actually member anymore in cluster setup.
+                // NEVER Ever join any member into a folder which is actually
+                // connected already.
+                continue;
+            }
             if (join0(memberInfo)) {
-                logInfo("Discovered new Member " + memberInfo);
+                logInfo("Discovered new " + memberInfo);
             }
         }
         // Update members map with my members.
@@ -2650,7 +2738,7 @@ public class Folder extends PFComponent {
     /**
      * Read the metafolder Members file from disk. It is a Map<String,
      * MemberInfo>.
-     * 
+     *
      * @param fileInfo
      * @return
      */
@@ -2679,7 +2767,7 @@ public class Folder extends PFComponent {
 
     /**
      * Write the metafolder Members file with all known members.
-     * 
+     *
      * @param membersMap
      * @param fileInfo
      */
@@ -2725,7 +2813,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes a member from this folder
-     * 
+     *
      * @param member
      */
     public void remove(Member member) {
@@ -2749,7 +2837,7 @@ public class Folder extends PFComponent {
      * Delete a FileInfo that has been deleted. This is used to remove a deleted
      * file entry so that it can be restored from the first Member that has the
      * file available in the future.
-     * 
+     *
      * @param fileInfo
      */
     public void removeDeletedFileInfo(FileInfo fileInfo) {
@@ -2769,7 +2857,7 @@ public class Folder extends PFComponent {
     /**
      * In sync = Folders is 100% synced and all syncing actions (
      * {@link #isSyncing()}) have stopped.
-     * 
+     *
      * @return true if this folder is 100% in sync
      */
     public boolean isInSync() {
@@ -2782,7 +2870,7 @@ public class Folder extends PFComponent {
     /**
      * Checks if the folder is syncing. Means: local file scan running or active
      * transfers.
-     * 
+     *
      * @return if this folder is currently synchronizing.
      */
     public boolean isSyncing() {
@@ -2794,7 +2882,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Sync, called by FolderRepository
-     * 
+     *
      * @return if this folder is transferring files
      */
     public boolean isTransferring() {
@@ -2811,7 +2899,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Downloading, called by FolderRepository
-     * 
+     *
      * @return if this folder downloading
      */
     public boolean isDownloading() {
@@ -2821,7 +2909,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Uploading, called by FolderRepository
-     * 
+     *
      * @return if this folder uploading
      */
     public boolean isUploading() {
@@ -2831,7 +2919,7 @@ public class Folder extends PFComponent {
     /**
      * Triggers the deletion sync in background.
      * <p>
-     * 
+     *
      * @param collection
      *            selected members to sync deletions with
      * @param force
@@ -2840,6 +2928,7 @@ public class Folder extends PFComponent {
         final Collection<Member> collection, final boolean force)
     {
         getController().getIOProvider().startIO(new Runnable() {
+            @Override
             public void run() {
                 syncRemoteDeletedFiles(collection, force);
             }
@@ -2848,7 +2937,7 @@ public class Folder extends PFComponent {
 
     /**
      * Synchronizes the deleted files with local folder
-     * 
+     *
      * @param force
      *            true if the sync is forced with ALL connected members of the
      *            folder. otherwise it checks the modifier.
@@ -2859,7 +2948,7 @@ public class Folder extends PFComponent {
 
     /**
      * Synchronizes the deleted files with local folder
-     * 
+     *
      * @param members
      *            the members to sync the deletions with.
      * @param force
@@ -2935,6 +3024,7 @@ public class Folder extends PFComponent {
             setDBDirty();
 
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, removedFiles,
                         diskItemFilter, useExt);
@@ -3044,8 +3134,8 @@ public class Folder extends PFComponent {
         if (Files.exists(localCopy)) {
             synchronized (scanLock) {
                 if (localFile.isDiretory()) {
-                    if (isFine()) {
-                        logFine("Deleting directory from remote: "
+                    if (isInfo()) {
+                        logInfo("Deleting directory from remote: "
                             + localFile.toDetailString());
                     }
                     watcher.addIgnoreFile(localFile);
@@ -3136,9 +3226,9 @@ public class Folder extends PFComponent {
                             + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
                         if (schemaZyncro) {
-                            
+
                             // SPECIAL HANDLING FOR ZYNCRO
-                            
+
                             // Revert delete, increase version number.
                             final FileInfo revertedFileInfo = FileInfoFactory
                                 .modifiedFile(remoteFile, this, localCopy,
@@ -3156,6 +3246,7 @@ public class Folder extends PFComponent {
                             String nodeID = remoteFile.getModifiedBy()
                                 .getNode(getController(), false).getId();
                             // Build the message
+                            // HERE FIXME HERE
                             RevertedFile rf = new RevertedFile(revertedFileInfo);
                             // Plan a task
                             SendMessageTask smt = new SendMessageTask(rf,
@@ -3216,7 +3307,7 @@ public class Folder extends PFComponent {
 
     /**
      * Broadcasts a message through the folder
-     * 
+     *
      * @param message
      */
     public void broadcastMessages(Message... message) {
@@ -3233,7 +3324,7 @@ public class Folder extends PFComponent {
      * Broadcasts a message through the folder.
      * <p>
      * Caches the built messages.
-     * 
+     *
      * @param msgProvider
      */
     public void broadcastMessages(MessageProducer msgProvider) {
@@ -3264,7 +3355,7 @@ public class Folder extends PFComponent {
     /**
      * Updated sync patterns have been downloaded to the metaFolder. Update the
      * sync patterns in this (parent) folder.
-     * 
+     *
      * @param fileInfo
      *            fileInfo of the new sync patterns
      */
@@ -3284,7 +3375,7 @@ public class Folder extends PFComponent {
         }
 
         Path syncPatternsFile = metaFolder.getDiskFile(fileInfo);
-        logInfo("Reading syncPatterns " + syncPatternsFile);
+        logFine("Reading syncPatterns " + syncPatternsFile);
         diskItemFilter.loadPatternsFrom(syncPatternsFile, true);
         // Trigger resync
         getController().getTransferManager().checkActiveTranfersForExcludes();
@@ -3325,6 +3416,7 @@ public class Folder extends PFComponent {
 
         if (!scanResult.getNewFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo,
                         scanResult.getNewFiles(), diskItemFilter, useExt);
@@ -3333,6 +3425,7 @@ public class Folder extends PFComponent {
         }
         if (!scanResult.getChangedFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo,
                         scanResult.getChangedFiles(), diskItemFilter, useExt);
@@ -3341,6 +3434,7 @@ public class Folder extends PFComponent {
         }
         if (!scanResult.getDeletedFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo,
                         scanResult.getDeletedFiles(), diskItemFilter, useExt);
@@ -3349,6 +3443,7 @@ public class Folder extends PFComponent {
         }
         if (!scanResult.getRestoredFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo,
                         scanResult.getRestoredFiles(), diskItemFilter, useExt);
@@ -3362,7 +3457,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a new filelist was send
-     * 
+     *
      * @param from
      * @param newList
      */
@@ -3427,7 +3522,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a filelist delta received
-     * 
+     *
      * @param from
      * @param changes
      */
@@ -3435,7 +3530,7 @@ public class Folder extends PFComponent {
         if (shutdown) {
             return;
         }
-        
+
         // Correct FolderInfo in case it differs.
         if (changes.getFiles() != null) {
             for (int i = 0; i < changes.getFiles().length; i++) {
@@ -3627,7 +3722,7 @@ public class Folder extends PFComponent {
      * This if files moved from node to node without PowerFolder. e.g. just copy
      * over windows share. Helps to identifiy same files and prevents unessesary
      * downloads.
-     * 
+     *
      * @param remoteFileInfos
      */
     private boolean findSameFiles(Member member,
@@ -3752,7 +3847,7 @@ public class Folder extends PFComponent {
      * Tries to find same files in the list of remotefiles of all members. This
      * methods takes over the file information from remote under following
      * circumstances: See #findSameFiles(FileInfo[])
-     * 
+     *
      * @see #findSameFiles(FileInfo[])
      */
     private void findSameFilesOnRemote() {
@@ -3783,7 +3878,7 @@ public class Folder extends PFComponent {
 
     /**
      * TRAC #2072
-     * 
+     *
      * @param member
      * @return if this member supports the {@link Externalizable} versions of
      *         {@link FileList} and {@link FolderFilesChanged}
@@ -3912,8 +4007,8 @@ public class Folder extends PFComponent {
      */
     public void setCommitDir(Path commitDir) {
         this.commitDir = commitDir;
-        String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
+        String confKey = PREFIX_V4 + configEntryId
+            + FolderSettings.COMMIT_DIR;
         String confVal = commitDir != null ? commitDir.toAbsolutePath()
             .toString() : "";
         getController().getConfig().put(confKey, confVal);
@@ -3958,7 +4053,7 @@ public class Folder extends PFComponent {
 
     /**
      * Is this directory the system subdirectory?
-     * 
+     *
      * @param aDir
      * @return
      */
@@ -3977,7 +4072,7 @@ public class Folder extends PFComponent {
     /**
      * Actually checks if the device is disconnected or available. Also sets the
      * property "deviceDisconnected".
-     * 
+     *
      * @return true if the device is disconnected. false if everything is ok.
      */
     public boolean checkIfDeviceDisconnected() {
@@ -4038,9 +4133,14 @@ public class Folder extends PFComponent {
             if (inBaseDir && !currentInfo.isMetaFolder() && remove) {
                 // Schedule for removal
                 getController().schedule(new Runnable() {
+                    @Override
                     public void run() {
-                        getController().getFolderRepository().removeFolder(
-                            Folder.this, false);
+                        if (getController().getFolderRepository()
+                            .hasJoinedFolder(currentInfo))
+                        {
+                            getController().getFolderRepository().removeFolder(
+                                Folder.this, false);
+                        }
                     }
                 }, 5000L);
             } else {
@@ -4078,7 +4178,7 @@ public class Folder extends PFComponent {
                     metaFolder.checkIfDeviceDisconnected();
                 }
             }
-            
+
             // TODO Correctly init Archive
         }
 
@@ -4108,7 +4208,7 @@ public class Folder extends PFComponent {
 
     /**
      * WARNING: Contents may change after getting the collection.
-     * 
+     *
      * @return a unmodifiable collection referecing the internal file database
      *         hashmap (keySet).
      */
@@ -4118,7 +4218,7 @@ public class Folder extends PFComponent {
 
     /**
      * WARNING: Contents may change after getting the collection.
-     * 
+     *
      * @return a unmodifiable collection referecing the internal directory
      *         database hashmap (keySet).
      */
@@ -4136,14 +4236,18 @@ public class Folder extends PFComponent {
     private boolean deleteFile(FileInfo newFileInfo, Path file) {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         FileInfo fileInfo = getFile(newFileInfo);
-        if (isFine()) {
-            logFine("Deleting file " + fileInfo.toDetailString()
-                + " moving to archive");
+        if (isInfo()) {
+            logInfo("Deleting file "
+                + fileInfo.toDetailString()
+                + ((archiver.getVersionsPerFile() > 0)
+                    ? " moving to archive"
+                    : ""));
         }
         try {
             watcher.addIgnoreFile(newFileInfo);
             synchronized (scanLock) {
-                if (fileInfo != null && fileInfo.isFile() && Files.exists(file)) {
+                if (fileInfo != null && fileInfo.isFile() && Files.exists(file))
+                {
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
@@ -4167,7 +4271,7 @@ public class Folder extends PFComponent {
     /**
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
-     * 
+     *
      * @return the list of files that are incoming/newer available on remote
      *         side as unmodifiable collection.
      */
@@ -4178,7 +4282,7 @@ public class Folder extends PFComponent {
     /**
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
-     * 
+     *
      * @param includeDeleted
      *            true if also deleted files should be considered.
      * @return the list of files that are incoming/newer available on remote
@@ -4191,7 +4295,7 @@ public class Folder extends PFComponent {
     /**
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
-     * 
+     *
      * @param includeDeleted
      *            true if also deleted files should be considered.
      * @param maxPerMember
@@ -4342,7 +4446,7 @@ public class Folder extends PFComponent {
      * 1) Do not exist locally or
      * <p>
      * 2) Are newer than the local version.
-     * 
+     *
      * @param vistor
      *            the {@link Visitor} to pass the incoming files to.
      */
@@ -4437,7 +4541,7 @@ public class Folder extends PFComponent {
 
     /**
      * Visits all {@link Member}s of this folder
-     * 
+     *
      * @param visitor
      */
     public void visitMembers(Visitor<Member> visitor) {
@@ -4450,7 +4554,7 @@ public class Folder extends PFComponent {
 
     /**
      * Visits all fully connected {@link Member}s of this folder.
-     * 
+     *
      * @param visitor
      */
     public void visitMembersConnected(Visitor<Member> visitor) {
@@ -4466,7 +4570,7 @@ public class Folder extends PFComponent {
 
     /**
      * This list also includes myself!
-     * 
+     *
      * @return all members in a collection. The collection is a unmodifiable
      *         referece to the internal member storage. May change after has
      *         been returned!
@@ -4767,7 +4871,7 @@ public class Folder extends PFComponent {
     }
 
     // PFS-638
-    private Map<Member, Date> hasWriteCache = Util.createConcurrentHashMap();
+    private final Map<Member, Date> hasWriteCache = Util.createConcurrentHashMap();
     private static final long HAS_WRITE_CACHE_TIMEOUT = 987L;
     private static volatile int CACHE_HITS;
 
@@ -4888,6 +4992,7 @@ public class Folder extends PFComponent {
             || diskItemFilter.isRetained(fileInfosList.get(0)))
         {
             broadcastMessages(new MessageProducer() {
+                @Override
                 public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(getInfo(), fileInfosList,
                         diskItemFilter, useExt);
@@ -5061,8 +5166,8 @@ public class Folder extends PFComponent {
 
     public void setSyncPatterns(boolean syncPatterns) {
         this.syncPatterns = syncPatterns;
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-            + FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
+        String syncProfKey = PREFIX_V4 + configEntryId
+            + FolderSettings.SYNC_PATTERNS;
         getController().getConfig().put(syncProfKey,
             String.valueOf(syncPatterns));
         getController().saveConfig();
@@ -5085,13 +5190,13 @@ public class Folder extends PFComponent {
         this.syncWarnSeconds = syncWarnSeconds;
         if (syncWarnSeconds != 0) {
             getController().getConfig().setProperty(
-                FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-                    + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS,
+                PREFIX_V4 + configEntryId
+                    + FolderSettings.SYNC_WARN_SECONDS,
                 String.valueOf(syncWarnSeconds));
         } else {
             getController().getConfig().remove(
-                FOLDER_SETTINGS_PREFIX_V4 + configEntryId
-                    + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS);
+                PREFIX_V4 + configEntryId
+                    + FolderSettings.SYNC_WARN_SECONDS);
         }
         getController().saveConfig();
         checkSync();

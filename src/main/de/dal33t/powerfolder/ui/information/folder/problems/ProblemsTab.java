@@ -21,7 +21,8 @@ package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -39,6 +40,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
@@ -60,8 +62,8 @@ public class ProblemsTab extends PFUIComponent {
     private MyResolveProblemAction resolveProblemAction;
 
     private FolderInfo folderInfo;
-    private ProblemsTable problemsTable;
-    private ProblemsTableModel problemsTableModel;
+    private final ProblemsTable problemsTable;
+    private final ProblemsTableModel problemsTableModel;
     private Problem selectedProblem;
 
     public ProblemsTab(Controller controller) {
@@ -72,11 +74,12 @@ public class ProblemsTab extends PFUIComponent {
             ListSelectionModel.SINGLE_SELECTION);
         problemsTable.getSelectionModel().addListSelectionListener(
             new MySelectionListener());
+        problemsTable.addMouseListener(new TableMouseListener());
     }
 
     /**
      * Gets the ui component
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -118,14 +121,18 @@ public class ProblemsTab extends PFUIComponent {
 
     private Component createToolBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        JButton openBtn = new JButton(openProblemAction);
-        openBtn.setIcon(null);
-        bar.addGridded(openBtn);
-        bar.addRelatedGap();
-        JButton clearBtn = new JButton(clearProblemAction);
-        clearBtn.setIcon(null);
-        bar.addGridded(clearBtn);
-        bar.addRelatedGap();
+
+        if (!PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
+            JButton openBtn = new JButton(openProblemAction);
+            openBtn.setIcon(null);
+            bar.addGridded(openBtn);
+            bar.addRelatedGap();
+            JButton clearBtn = new JButton(clearProblemAction);
+            clearBtn.setIcon(null);
+            bar.addGridded(clearBtn);
+            bar.addRelatedGap();
+        }
+
         JButton resolveBtn = new JButton(resolveProblemAction);
         resolveBtn.setIcon(null);
         bar.addGridded(resolveBtn);
@@ -146,7 +153,7 @@ public class ProblemsTab extends PFUIComponent {
 
     /**
      * Display problems.
-     * 
+     *
      * @param problemList
      */
     public void updateProblems(List<Problem> problemList) {
@@ -170,7 +177,11 @@ public class ProblemsTab extends PFUIComponent {
         if (selectedRow >= 0) {
             selectedProblem = (Problem) problemsTableModel.getValueAt(
                 problemsTable.getSelectedRow(), 0);
-            openProblemAction.setEnabled(true);
+            if (selectedProblem.getWikiLinkKey() == null) {
+                openProblemAction.setEnabled(false);
+            } else {
+                openProblemAction.setEnabled(true);
+            }
             resolveProblemAction
                 .setEnabled(selectedProblem instanceof ResolvableProblem);
             logFiner("Selected row: " + problemsTable.getSelectedRow()
@@ -192,19 +203,9 @@ public class ProblemsTab extends PFUIComponent {
             super("action_open_problem", controller);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-            int selectedRow = problemsTable.getSelectedRow();
-            Problem problem = (Problem) problemsTableModel.getValueAt(
-                selectedRow, 0);
-            String wikiArticleURL = Help.getWikiArticleURL(getController(),
-                problem.getWikiLinkKey());
-            if (StringUtils.isNotBlank(wikiArticleURL)) {
-                try {
-                    BrowserLauncher.openURL(wikiArticleURL);
-                } catch (IOException e1) {
-                    logSevere("IOException", e1);
-                }
-            }
+            ProblemsTab.this.resolveProblem();
         }
     }
 
@@ -213,6 +214,7 @@ public class ProblemsTab extends PFUIComponent {
             super("action_clear_problem", controller);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Folder folder = getController().getFolderRepository().getFolder(
                 folderInfo);
@@ -231,6 +233,7 @@ public class ProblemsTab extends PFUIComponent {
             super("action_resolve_problem", controller);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (selectedProblem != null
                 && selectedProblem instanceof ResolvableProblem)
@@ -250,8 +253,43 @@ public class ProblemsTab extends PFUIComponent {
      * Class to detect table selection changes.
      */
     private class MySelectionListener implements ListSelectionListener {
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             enableOnSelection();
+        }
+    }
+
+
+    private class TableMouseListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                if (e.getClickCount() == 2) {
+                    ProblemsTab.this.resolveProblem();
+                }
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+        }
+    }
+
+    public void resolveProblem() {
+        int selectedRow = problemsTable.getSelectedRow();
+        Problem problem = (Problem) problemsTableModel.getValueAt(selectedRow,
+            0);
+        String wikiArticleURL = Help.getWikiArticleURL(getController(),
+            problem.getWikiLinkKey());
+        if (StringUtils.isNotBlank(wikiArticleURL)) {
+            BrowserLauncher.openURL(getController(), wikiArticleURL);
         }
     }
 }

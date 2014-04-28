@@ -52,6 +52,7 @@ public class WinUtils extends Loggable {
     private static final String DESKTOP_FOLDER_CMD = REGQUERY_UTIL
         + "\"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\"
         + "Explorer\\Shell Folders\" /v DESKTOP";
+    private static final String MSI_MARKER_FILE = "MSI_INSTALLATION.txt";
 
     /**
      * The file system directory that contains the programs that appear in the
@@ -415,6 +416,10 @@ public class WinUtils extends Loggable {
 
     public static void killProcess(String serviceName) throws Exception {
         Runtime.getRuntime().exec(KILL + serviceName);
+    }
+
+    public static boolean isMSI() {
+        return Files.exists(getProgramInstallationPath().resolve(MSI_MARKER_FILE));
     }
 
     /**

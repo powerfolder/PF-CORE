@@ -67,6 +67,22 @@ public interface SecurityService {
     boolean login(String username, char[] password);
 
     /**
+     * Logs in from a remote location.
+     * 
+     * @param username
+     * @param credentials
+     *            the credentials
+     * @return if login succeeded
+     */
+    boolean login(String username, Serializable credentials);
+
+    /**
+     * 
+     * @return
+     */
+    AccountDetails loginAndGetAccountDetails(String username, Serializable credentials);
+
+    /**
      * @return true if a user is logged in currently = has open session.
      */
     boolean isLoggedIn();
@@ -75,6 +91,13 @@ public interface SecurityService {
      * Logs out.
      */
     void logout();
+
+    /**
+     * PFS-862
+     * 
+     * @return the valid OTP. Usable once within the next minute only.
+     */
+    String requestOTP();
 
     // Nodes information retrieval ********************************************
 
@@ -190,4 +213,12 @@ public interface SecurityService {
      *          the invitation.
      */
     void acceptInvitation(Invitation invitation);
+
+    /**
+     * Decline an invitation to a folder.
+     * 
+     * @param invitation
+     *            the invitation.
+     */
+    void declineInvitation(Invitation invitation);
 }

@@ -222,7 +222,7 @@ public class OSUtil {
             if (quiet) {
                 log.log(Level.FINER, "UnsatisfiedLinkError. " + e);
             } else {
-                log.log(Level.SEVERE, "UnsatisfiedLinkError. " + e);
+                log.log(Level.WARNING, "UnsatisfiedLinkError. " + e);
             }
             return false;
         }
