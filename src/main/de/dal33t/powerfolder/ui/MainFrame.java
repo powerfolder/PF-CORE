@@ -27,7 +27,6 @@ import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -1644,9 +1643,9 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class MyMouseWindowDragListener extends MouseAdapter {
-        private int startX;
-        private int startY;
+        private static final int UPDATE_INTERVAL = 30;
         private boolean inDrag;
+        private WindowDragManager dragManager;
 
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -1665,9 +1664,8 @@ public class MainFrame extends PFUIComponent {
                 // No drag allowed if maximized
                 return;
             }
-            Point p = e.getPoint();
-            startX = p.x;
-            startY = p.y;
+            dragManager = new WindowDragManager(uiComponent, UPDATE_INTERVAL);
+            dragManager.start(e);
             inDrag = true;
         }
 
@@ -1677,6 +1675,7 @@ public class MainFrame extends PFUIComponent {
                 // No drag allowed if maximized
                 return;
             }
+            dragManager.stop(e);
             inDrag = false;
         }
 
@@ -1686,12 +1685,8 @@ public class MainFrame extends PFUIComponent {
                 // No drag allowed if maximized
                 return;
             }
-            Point p = e.getPoint();
             if (inDrag) {
-                int dx = p.x - startX;
-                int dy = p.y - startY;
-                Point l = uiComponent.getLocation();
-                uiComponent.setLocation(l.x + dx, l.y + dy);
+                dragManager.update(e);
             }
         }
     }
