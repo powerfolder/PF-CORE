@@ -100,6 +100,7 @@ import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
+import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
 
 /**
  * Client to a server.
@@ -157,6 +158,13 @@ public class ServerClient extends PFComponent {
      * Log that is kept to synchronize calls to login
      */
     private final Object loginLock = new Object();
+
+    /**
+     * PFC-2534: remember last IdP and number of login retries to skip after
+     * unauthorized login try
+     */
+    private String lastIdPUsed;
+    private int shibbolethUnauthRetriesSkip;
 
     private AccountDetails accountDetails;
 
@@ -914,6 +922,22 @@ public class ServerClient extends PFComponent {
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
                     if (isShibbolethLogin()) {
+                        String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                            .getValue(getController());
+                        if (shibbolethUnauthRetriesSkip != 0
+                            && StringUtils.isEqual(prevUsername, username)
+                            && StringUtils
+                                .isEqual(prevPasswordObf, passwordObf)
+                            && StringUtils.isEqual(lastIdPUsed, currentIdP))
+                        {
+                            shibbolethUnauthRetriesSkip--;
+                            setAnonAccount();
+                            return accountDetails.getAccount();
+                        }
+
+                        lastIdPUsed = currentIdP;
+                        shibbolethUnauthRetriesSkip = 0;
+
                         boolean externalUser = prepareShibbolethLogin(
                             username,
                             pw,
@@ -1184,6 +1208,11 @@ public class ServerClient extends PFComponent {
                 result = auth.authenticate();
                 shibUsername = result[0];
                 shibToken = result[1];
+            } catch (ECPUnauthorizedException e) {
+                shibbolethUnauthRetriesSkip = 3;
+                shibUsername = null;
+                shibToken = null;
+                throw new SecurityException(e);
             } catch (ECPAuthenticationException e) {
                 shibUsername = null;
                 shibToken = null;
