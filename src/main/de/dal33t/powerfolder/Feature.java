@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  * Available features to enable/disable. Primary for testing.
  * <p>
  * By default ALL features are enabled.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -106,6 +106,8 @@ public enum Feature {
 
     ZYNCRO_PROFILING(false),
 
+    ZYNCRO_DEBUG(false),
+
     /**
      * Organize users into groups
      */
@@ -115,9 +117,9 @@ public enum Feature {
      * Multitenancy
      */
     ORGANIZATIONS(true),
-    
+
     UI_ENABLED(true),
-    
+
     /**
      * PFS-981: Preserve NTFS file owner while updating file from remote
      */
