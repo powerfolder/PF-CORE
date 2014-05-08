@@ -922,21 +922,36 @@ public class ServerClient extends PFComponent {
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
                     if (isShibbolethLogin()) {
-                        String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                            .getValue(getController());
-                        if (shibbolethUnauthRetriesSkip != 0
-                            && StringUtils.isEqual(prevUsername, username)
-                            && StringUtils
-                                .isEqual(prevPasswordObf, passwordObf)
-                            && StringUtils.isEqual(lastIdPUsed, currentIdP))
-                        {
-                            shibbolethUnauthRetriesSkip--;
-                            setAnonAccount();
-                            return accountDetails.getAccount();
-                        }
+                        // PFC-2534: Start
+                        try {
+                            String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                                .getValue(getController());
+                            boolean idpEqual = StringUtils.isEqual(lastIdPUsed,
+                                currentIdP);
+                            boolean pwEqual = StringUtils.isEqual(
+                                prevPasswordObf, passwordObf);
+                            boolean unEqual = StringUtils.isEqual(prevUsername,
+                                username);
+                            if (shibbolethUnauthRetriesSkip != 0 && unEqual
+                                && pwEqual && idpEqual)
+                            {
+                                shibbolethUnauthRetriesSkip--;
+                                if (isFine()) {
+                                    logFine("Skipping login another "
+                                        + shibbolethUnauthRetriesSkip
+                                        + " times");
+                                }
+                                setAnonAccount();
+                                return accountDetails.getAccount();
+                            }
 
-                        lastIdPUsed = currentIdP;
-                        shibbolethUnauthRetriesSkip = 0;
+                            lastIdPUsed = currentIdP;
+                            shibbolethUnauthRetriesSkip = 0;
+                        } catch (RuntimeException e) {
+                            logWarning("An error occured skipping shibboleth login: "
+                                + e);
+                        }
+                        // PFC-2534: End
 
                         boolean externalUser = prepareShibbolethLogin(
                             username,
@@ -1025,9 +1040,11 @@ public class ServerClient extends PFComponent {
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
                 if (isShibbolethLogin()) {
-                    username = prevUsername;
-                    passwordObf = prevPasswordObf;
-                    saveLastKnowLogin(prevUsername, prevPasswordObf);
+                    // PFC-2534: Start
+//                    username = prevUsername;
+//                    passwordObf = prevPasswordObf;
+                    // PFC-2534: End
+                    saveLastKnowLogin(username, passwordObf);
                 }
                 setAnonAccount();
                 fireLogin(accountDetails, false);
@@ -1209,7 +1226,8 @@ public class ServerClient extends PFComponent {
                 shibUsername = result[0];
                 shibToken = result[1];
             } catch (ECPUnauthorizedException e) {
-                shibbolethUnauthRetriesSkip = 3;
+                shibbolethUnauthRetriesSkip = ConfigurationEntry.SERVER_LOGIN_SKIP_RETRY
+                    .getValueInt(getController());
                 shibUsername = null;
                 shibToken = null;
                 throw new SecurityException(e);
