@@ -302,7 +302,7 @@ public enum ConfigurationEntry {
      * PFC-2534: Skip auto login for the specified number. Defaults to retrying
      * every 5 minutes.
      */
-    SERVER_LOGIN_SKIP_RETRY("server.skip.auto.login", 10),
+    SERVER_LOGIN_SKIP_RETRY("server.skip.auto.login", 1000),
 
     // Server WEB settings ****************************************************
 
