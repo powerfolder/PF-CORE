@@ -2,6 +2,8 @@ package de.dal33t.powerfolder.disk.problem;
 
 import java.nio.file.Path;
 
+import com.sun.istack.internal.logging.Logger;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -11,6 +13,8 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.Translation;
 
 public class LocalDeletionProblem extends ResolvableProblem {
+
+    private static final Logger log = Logger.getLogger(LocalDeletionProblem.class);
 
     private final FolderInfo folderInfo;
     private final FileInfo fileInfo;
@@ -37,17 +41,17 @@ public class LocalDeletionProblem extends ResolvableProblem {
                             Translation
                                 .getTranslation("local_delete_notice.discard_deletions")},
                         0, GenericDialogType.WARN);
+                Folder folder = folderInfo.getFolder(controller);
                 if (response == 0) {
                     // Broadcast deletions
-                    Folder folder = folderInfo.getFolder(controller);
                     if (folder != null) {
                         folder.scanLocalFiles(true);
-                        folder.removeProblem(LocalDeletionProblem.this);
+                    } else {
+                        log.info("Folder for " + folderInfo + " was null.");
                     }
                 } else if (response == 1) {
                     // Discard changes. Remove all old FileInfos with
                     // deleted-flag.
-                    Folder folder = folderInfo.getFolder(controller);
                     if (folder != null) {
                         // Discard all locally deleted files
                         for (FileInfo fInfo : folder.getKnownFiles()) {
@@ -62,9 +66,11 @@ public class LocalDeletionProblem extends ResolvableProblem {
                         // And re-download them
                         controller.getFolderRepository().getFileRequestor()
                             .triggerFileRequesting(folderInfo);
-                        folder.removeProblem(LocalDeletionProblem.this);
+                    } else {
+                        log.info("Folder for " + folderInfo + " was null.");
                     }
                 }
+                folder.removeProblem(LocalDeletionProblem.this);
             }
         };
     }
@@ -86,6 +92,21 @@ public class LocalDeletionProblem extends ResolvableProblem {
     public String getWikiLinkKey() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!obj.getClass().equals(this.getClass())) {
+            return false;
+        }
+
+        LocalDeletionProblem ldp = (LocalDeletionProblem) obj;
+
+        return fileInfo.equals(ldp.fileInfo);
     }
 
     @Override
