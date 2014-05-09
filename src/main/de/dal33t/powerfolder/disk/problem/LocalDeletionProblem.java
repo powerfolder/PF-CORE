@@ -1,8 +1,7 @@
 package de.dal33t.powerfolder.disk.problem;
 
 import java.nio.file.Path;
-
-import com.sun.istack.internal.logging.Logger;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -14,7 +13,8 @@ import de.dal33t.powerfolder.util.Translation;
 
 public class LocalDeletionProblem extends ResolvableProblem {
 
-    private static final Logger log = Logger.getLogger(LocalDeletionProblem.class);
+    private static final Logger log = Logger
+        .getLogger(LocalDeletionProblem.class.getName());
 
     private final FolderInfo folderInfo;
     private final FileInfo fileInfo;
