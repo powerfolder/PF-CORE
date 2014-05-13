@@ -29,7 +29,13 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.problem.LocalDeletionProblem;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -38,7 +44,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the correct synchronization of file deletions.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
  * @version $Revision: 1.5 $
@@ -102,12 +108,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() >= 1
                     && getFolderAtBart().getFilesAsCollection(lisaAtBart)
                         .size() >= 1;
             }
 
+            @Override
             public String message() {
                 return "Know files at lisa: "
                     + getFolderAtLisa().getKnownItemCount()
@@ -163,12 +171,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         TestHelper.waitMilliSeconds(200);
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            @Override
             public String message() {
                 return "File version at lisa: "
                     + getFolderAtLisa().getKnownFiles().iterator().next()
                         .getVersion();
             }
 
+            @Override
             public boolean reached() {
                 return 2 == getFolderAtLisa().getKnownFiles().iterator().next()
                     .getVersion();
@@ -205,10 +215,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .next();
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() >= 1;
             }
 
+            @Override
             public String message() {
                 return "Know files at lisa: "
                     + getFolderAtLisa().getKnownItemCount();
@@ -235,6 +247,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(size, fInfoLisaDeleted.getSize());
 
         TestHelper.waitForCondition(10, new Condition() {
+            @Override
             public boolean reached() {
                 return getFolderAtBart().getKnownFiles().iterator().next()
                     .isDeleted();
@@ -267,6 +280,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Copy
         TestHelper.waitForCondition(50, new Condition() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() >= nFiles;
             }
@@ -313,7 +327,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      * Complex scenario to test the the correct deletion synchronization.
      * <p>
      * Related tickets: #9
-     * 
+     *
      * @throws IOException
      */
     public void testDeletionSyncScenario() throws IOException {
@@ -339,12 +353,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Give them time to copy
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() >= 5
                     && getContollerBart().getTransferManager()
                         .getCompletedUploadsCollection().size() >= 3;
             }
 
+            @Override
             public String message() {
                 return "Lisa known files: "
                     + getFolderAtLisa().getKnownItemCount()
@@ -441,12 +457,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         }
 
         TestHelper.waitForCondition(2, new ConditionWithMessage() {
+            @Override
             public String message() {
                 return "Bart incoming: " + getFolderAtBart().getIncomingFiles()
                     + " Lisa known files: "
                     + getFolderAtLisa().getKnownItemCount();
             }
 
+            @Override
             public boolean reached() {
                 // Only files should be incoming
                 return getFolderAtBart().getIncomingFiles().size() == 3;
@@ -459,11 +477,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Give them time to undelete sync (means downloading;)
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .countCompletedDownloads() >= 3;
             }
 
+            @Override
             public String message() {
                 return "Downloaded files: "
                     + getContollerBart().getTransferManager()
@@ -525,12 +545,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() >= 1
                     && getFolderAtBart().getFilesAsCollection(lisaAtBart)
                         .size() >= 1;
             }
 
+            @Override
             public String message() {
                 return "Files at lisa: " + getFolderAtLisa().getKnownFiles()
                     + " Bart thinks: "
@@ -544,6 +566,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         final Path testFileLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next().getDiskFile(getContollerLisa().getFolderRepository());
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 try {
                     Files.delete(testFileLisa);
@@ -553,6 +576,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 }
             }
 
+            @Override
             public String message() {
                 return "Unable to delete testfile at lisa: " + testFileLisa;
             }
@@ -561,12 +585,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
 
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return Files.notExists(testFileBart)
                     && 2 == getFolderAtBart().getKnownFiles().iterator().next()
                         .getVersion();
             }
 
+            @Override
             public String message() {
                 return "Barts file: "
                     + getFolderAtBart().getKnownFiles().iterator().next()
@@ -593,10 +619,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .isDeleted());
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() == 1;
             }
 
+            @Override
             public String message() {
                 return "Know files at lisa: "
                     + getFolderAtLisa().getKnownItemCount();
@@ -653,11 +681,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertEquals(1, getFolderAtLisa().getKnownItemCount());
         } else {
             TestHelper.waitForCondition(10, new ConditionWithMessage() {
+                @Override
                 public boolean reached() {
                     return getFolderAtBart().getKnownItemCount() == 2
                         && getFolderAtLisa().getKnownItemCount() == 2;
                 }
 
+                @Override
                 public String message() {
                     return "Bart: " + getFolderAtBart().getKnownItemCount()
                         + ", Lisa: " + getFolderAtLisa().getKnownItemCount();
@@ -669,5 +699,160 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
             .getFileName().toString(), new byte[0]);
+    }
+
+    public void testLocalDeletionProblem() throws Exception {
+        getContollerLisa().addMassDeletionHandler(new MyMassDeletionHandler());
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getContollerLisa(), true);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        // 1) Create a file
+        final Path testFile = TestHelper.createRandomFile(getFolderAtLisa()
+            .getLocalBase());
+        scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtBart().getIncomingFiles().size() > 0;
+            }
+
+            @Override
+            public String message() {
+                return "There are " + getFolderAtBart().getIncomingFiles().size() + " incoming files. " +
+                     " Expected were at lease 1.";
+            }
+        });
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtBart().getIncomingFiles().size() == 0;
+            }
+
+            @Override
+            public String message() {
+                return "There are " + getFolderAtBart().getIncomingFiles().size() + " incoming files. " +
+                    " Expected were 0.";
+            }
+        });
+
+        assertTrue(Files.exists(getFolderAtBart().getLocalBase().resolve(
+            testFile.getFileName())));
+
+        // 2) Delete
+        Files.delete(testFile);
+        TestHelper.scanFolder(getFolderAtLisa(), false);
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtLisa().getProblems().size() == 1;
+            }
+
+            @Override
+            public String message() {
+                return "There was no Problem on Lisa's Folder, although one was expected!";
+            }
+        });
+
+        assertTrue(Files.exists(getFolderAtBart().getLocalBase().resolve(
+            testFile.getFileName())));
+
+        FileInfo fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
+
+        assertTrue(fInfo.getDiskFile(getContollerLisa().getFolderRepository())
+            .equals(testFile));
+
+        assertFalse(fInfo.isDeleted());
+
+        // 3) Discard changes and restore.
+        for (FileInfo fileInfo : getFolderAtLisa().getKnownFiles()) {
+            Path diskFile = fileInfo.getDiskFile(getContollerLisa().getFolderRepository());
+            boolean notInSync = !fileInfo.inSyncWithDisk(diskFile);
+            if (notInSync) {
+                getFolderAtLisa().getDAO().delete(null, fileInfo);
+            }
+        }
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting(getFolderAtLisa().getInfo());
+
+        Problem prob = getFolderAtLisa().getProblems().get(0);
+        getFolderAtLisa().removeProblem(prob);
+        assertTrue(getFolderAtLisa().getProblems().isEmpty());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return Files.exists(testFile);
+            }
+
+            @Override
+            public String message() {
+                return "The file " + testFile.toString()
+                    + " does not exist, although it should have been restored";
+            }
+        });
+
+        // 4) Delete
+        Files.delete(testFile);
+        TestHelper.scanFolder(getFolderAtLisa(), false);
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtLisa().getProblems().size() == 1;
+            }
+
+            @Override
+            public String message() {
+                return "There was no Problem on Lisa's Folder, although one was expected!";
+            }
+        });
+
+        fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
+
+        assertTrue(fInfo.getDiskFile(getContollerLisa().getFolderRepository())
+            .equals(testFile));
+
+        assertFalse(fInfo.isDeleted());
+
+        // 5) Really delete the file on Lisa
+        FileInfo oldFI = getFolderAtLisa().getFile(
+            FileInfoFactory.lookupInstance(getFolderAtLisa(), testFile));
+        FileInfo newFI = getFolderAtLisa().scanChangedFile(oldFI);
+
+        assertNotNull(newFI);
+
+        prob = getFolderAtLisa().getProblems().get(0);
+        getFolderAtLisa().removeProblem(prob);
+
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return Files.notExists(getFolderAtBart().getLocalBase().resolve(
+                    testFile.getFileName()));
+            }
+
+            @Override
+            public String message() {
+                return "The file " + getFolderAtBart().getLocalBase().resolve(testFile.getFileName()) + " still exists? "
+                    + Files.notExists(getFolderAtBart().getLocalBase().resolve(
+                        testFile.getFileName()));
+            }
+        });
+    }
+
+    private class MyMassDeletionHandler implements MassDeletionHandler {
+        @Override
+        public void localMassDeletion(LocalMassDeletionEvent event) {
+            LocalDeletionProblem ldp = new LocalDeletionProblem(event
+                .getFolder().getInfo(), event.getFile());
+            event.getFolder().addProblem(ldp);
+        }
+
+        @Override
+        public void remoteMassDeletion(RemoteMassDeletionEvent event) {
+        }
     }
 }
