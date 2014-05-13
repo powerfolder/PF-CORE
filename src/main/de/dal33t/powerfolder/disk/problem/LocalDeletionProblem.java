@@ -1,8 +1,5 @@
 package de.dal33t.powerfolder.disk.problem;
 
-import java.nio.file.Path;
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -12,9 +9,6 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.Translation;
 
 public class LocalDeletionProblem extends ResolvableProblem {
-
-    private static final Logger log = Logger
-        .getLogger(LocalDeletionProblem.class.getName());
 
     private final FolderInfo folderInfo;
     private final FileInfo fileInfo;
@@ -32,9 +26,10 @@ public class LocalDeletionProblem extends ResolvableProblem {
                 int response = DialogFactory
                     .genericDialog(
                         controller,
-                        Translation.getTranslation("local_delete_notice.title", fileInfo.getFilenameOnly()),
-                        Translation.getTranslation(
-                            "local_delete_notice.message"),
+                        Translation.getTranslation("local_delete_notice.title",
+                            fileInfo.getFilenameOnly()),
+                        Translation
+                            .getTranslation("local_delete_notice.message"),
                         new String[]{
                             Translation
                                 .getTranslation("local_delete_notice.broadcast_deletions"),
@@ -42,34 +37,20 @@ public class LocalDeletionProblem extends ResolvableProblem {
                                 .getTranslation("local_delete_notice.discard_deletions")},
                         0, GenericDialogType.WARN);
                 Folder folder = folderInfo.getFolder(controller);
+                if (folder == null) {
+                    return;
+                }
                 if (response == 0) {
                     // Broadcast deletions
-                    if (folder != null) {
-                        FileInfo oldFI = folder.getFile(fileInfo);
-                        folder.scanChangedFile(oldFI);
-                    } else {
-                        log.info("Folder for " + folderInfo + " was null.");
-                    }
+                    FileInfo oldFI = folder.getFile(fileInfo);
+                    folder.scanChangedFile(oldFI);
                 } else if (response == 1) {
                     // Discard changes. Remove all old FileInfos with
                     // deleted-flag.
-                    if (folder != null) {
-                        // Discard all locally deleted files
-                        for (FileInfo fInfo : folder.getKnownFiles()) {
-                            // Discard all changes which are not in sync with
-                            // disk.
-                            Path diskFile = fInfo.getDiskFile(controller.getFolderRepository());
-                            boolean notInSync = !fInfo.inSyncWithDisk(diskFile);
-                            if (notInSync) {
-                                folder.getDAO().delete(null, fInfo);
-                            }
-                        }
-                        // And re-download them
-                        controller.getFolderRepository().getFileRequestor()
-                            .triggerFileRequesting(folderInfo);
-                    } else {
-                        log.info("Folder for " + folderInfo + " was null.");
-                    }
+                    folder.getDAO().delete(null, fileInfo);
+                    // And re-download them
+                    controller.getFolderRepository().getFileRequestor()
+                        .triggerFileRequesting(folderInfo);
                 }
                 folder.removeProblem(LocalDeletionProblem.this);
             }
