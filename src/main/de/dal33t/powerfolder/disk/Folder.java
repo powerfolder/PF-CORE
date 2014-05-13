@@ -3161,7 +3161,7 @@ public class Folder extends PFComponent {
                     }
 
                     try {
-                        PathUtils.recursiveDelete(localCopy);
+                        Files.delete(localCopy);
                     }
                     catch (IOException ioe) {
                         // #1977
