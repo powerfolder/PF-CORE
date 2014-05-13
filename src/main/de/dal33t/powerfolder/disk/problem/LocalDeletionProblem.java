@@ -45,7 +45,8 @@ public class LocalDeletionProblem extends ResolvableProblem {
                 if (response == 0) {
                     // Broadcast deletions
                     if (folder != null) {
-                        folder.scanLocalFiles(true);
+                        FileInfo oldFI = folder.getFile(fileInfo);
+                        folder.scanChangedFile(oldFI);
                     } else {
                         log.info("Folder for " + folderInfo + " was null.");
                     }
