@@ -71,6 +71,7 @@ import de.dal33t.powerfolder.message.Notification;
 import de.dal33t.powerfolder.message.Ping;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.message.QuotaExceeded;
 import de.dal33t.powerfolder.message.RelayedMessage;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestDownload;
@@ -94,6 +95,7 @@ import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Filter;
@@ -102,6 +104,7 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -1809,11 +1812,25 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof RevertedFile) {
                 RevertedFile msg = (RevertedFile) message;
                 if (targetFolder != null) {
-                    // HERE FIXME HERE
                     Path path = msg.file.getDiskFile(getController().getFolderRepository());
                     FolderReadOnlyProblem problem = new FolderReadOnlyProblem(
                         targetFolder, path, true);
                     targetFolder.addProblem(problem);
+                }
+
+            } else if (message instanceof QuotaExceeded) {
+                QuotaExceeded msg = (QuotaExceeded) message;
+                if (targetFolder != null && getController().isUIEnabled()) {
+                    WarningNotice notice = new WarningNotice(
+                        Translation.getTranslation("warning_notice.title"),
+                        Translation
+                            .getTranslation("warning_notice.insufficient_quota_summary"),
+                        Translation.getTranslation(
+                            "warning_notice.insufficient_quota_message",
+                            msg.account.getDisplayName(),
+                            msg.file.getFilenameOnly()));
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().handleNotice(notice);
                 }
 
             } else if (message instanceof RequestPart) {
