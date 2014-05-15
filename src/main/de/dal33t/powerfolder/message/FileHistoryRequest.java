@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Reject;
  * the requester would have added overhead in trying to build good requests
  * messages if multiple remote clients have a shared set of "newest version"
  * files.
- * 
+ *
  * @author "Dennis Waldherr"
  */
 public class FileHistoryRequest extends Message {
@@ -47,7 +47,7 @@ public class FileHistoryRequest extends Message {
 
     /**
      * Returns the requested FileInfo.
-     * 
+     *
      * @return
      */
     public FileInfo getFileInfo() {

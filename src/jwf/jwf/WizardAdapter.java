@@ -3,7 +3,7 @@ package jwf;
 /**
  * This class provides means of abreviating work when using the WizardListener
  * allowing the developer to implement only the needed methods
- * 
+ *
  * @author rodrigomalara@users.sourceforge.net
  */
 public abstract class WizardAdapter implements WizardListener {
@@ -14,7 +14,7 @@ public abstract class WizardAdapter implements WizardListener {
 
     /**
      * Called when the wizard is cancelled.
-     * 
+     *
      * @param wizard
      *            the wizard that was cancelled.
      */
@@ -23,7 +23,7 @@ public abstract class WizardAdapter implements WizardListener {
 
     /**
      * Called when the wizard finishes.
-     * 
+     *
      * @param wizard
      *            the wizard that finished.
      */
@@ -32,7 +32,7 @@ public abstract class WizardAdapter implements WizardListener {
 
     /**
      * Called when a new panel has been displayed in the wizard.
-     * 
+     *
      * @param wizard
      *            the wizard that was updated
      */

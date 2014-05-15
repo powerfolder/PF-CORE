@@ -35,7 +35,7 @@ import java.util.prefs.Preferences;
 
 /**
  * Basic class which provides accessor to tranlation files
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
@@ -67,7 +67,7 @@ public class Translation {
     private static ResourceBundle resourceBundle;
 
     /**
-     * 
+     *
      */
     private Translation() {
         super();
@@ -104,7 +104,7 @@ public class Translation {
     /**
      * Adds a new locale to the list of supported locales. For adding a new
      * language dynamically.
-     * 
+     *
      * @param locale
      */
     public static synchronized void addSupportedLocales(Locale locale) {
@@ -132,7 +132,7 @@ public class Translation {
      * Saves/Overrides the locale setting. Next time the resource bundle is
      * initalized, it tries to gain bundle with that locale. Otherwise fallback
      * to default locale
-     * 
+     *
      * @param locale
      *            the locale, or null to reset
      */
@@ -202,7 +202,7 @@ public class Translation {
 
     /**
      * Returns translation for this id
-     * 
+     *
      * @param id
      *            the id for the translation entry
      * @return the localized string
@@ -244,7 +244,7 @@ public class Translation {
      * <p>
      * Use <code>{0}</code> <code>{1}</code> etc as placeholders in property
      * files
-     * 
+     *
      * @param id
      * @param params
      *            the parameters to be included.

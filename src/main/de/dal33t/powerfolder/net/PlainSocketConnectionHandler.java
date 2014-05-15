@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.ByteSerializer;
  * Handler for relayed connections to other clients. NO encrypted transfer.
  * <p>
  * TRAC #597.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.72 $
  */
@@ -44,7 +44,7 @@ public class PlainSocketConnectionHandler extends
      * Builds a new anonymous connection manager for the socket.
      * <p>
      * Should be called from <code>ConnectionHandlerFactory</code> only.
-     * 
+     *
      * @see ConnectionHandlerFactory
      * @param controller
      *            the controller.

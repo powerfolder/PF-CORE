@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Leightweight reference/info object to an {@link Account}
- * 
+ *
  * @author sprajc
  */
 @Embeddable
@@ -79,7 +79,7 @@ public class AccountInfo implements Serializable {
 
     /**
      * TODO Don't actually transfer unscrambled emails to any client.
-     * 
+     *
      * @return a scrabled version of the username in case its a email.
      */
     public String getScrabledUsername() {
@@ -88,7 +88,7 @@ public class AccountInfo implements Serializable {
 
     /**
      * TODO Don't actually transfer unscrambled emails to any client.
-     * 
+     *
      * @return a scrabled version of the username in case its a email.
      */
     private String getScrabledName(String val) {

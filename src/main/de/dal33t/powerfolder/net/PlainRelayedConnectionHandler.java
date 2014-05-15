@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.ByteSerializer;
  * A implementation of relayed connection that communicates non-encrypted.
  * <p>
  * TRAC #597
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

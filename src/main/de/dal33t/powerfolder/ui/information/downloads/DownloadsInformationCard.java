@@ -73,7 +73,7 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public DownloadsInformationCard(Controller controller) {
@@ -87,7 +87,7 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Gets the image for the card.
-     * 
+     *
      * @return
      */
     public Image getCardImage() {
@@ -96,7 +96,7 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Gets the title for the card.
-     * 
+     *
      * @return
      */
     public String getCardTitle() {
@@ -105,7 +105,7 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Gets the ui component after initializing and building if necessary
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {
@@ -171,7 +171,7 @@ public class DownloadsInformationCard extends InformationCard implements
             getController());
         addIgnoreAction = new AddIgnoreAction(getController());
 
-        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES        
+        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES
         Integer x = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController());
         if (x > 4) {
@@ -324,7 +324,7 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Aborts the selected downloads
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */

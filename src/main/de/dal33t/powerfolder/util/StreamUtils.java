@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 /**
  * Class containing utility methods for working with streams.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -46,7 +46,7 @@ public class StreamUtils {
 
     /**
      * Copies the file to the destination stream.
-     * 
+     *
      * @param source
      * @param destination
      * @throws IOException
@@ -59,7 +59,7 @@ public class StreamUtils {
 
     /**
      * Copies the file to the destination stream.
-     * 
+     *
      * @param source
      * @param destination
      * @param offset
@@ -86,7 +86,7 @@ public class StreamUtils {
     /**
      * Copies the content stream into the output stream unless no more data is
      * availble. Uses internal buffer to speed up operation.
-     * 
+     *
      * @param source
      * @param destination
      * @return the actual number of bytes copied
@@ -101,7 +101,7 @@ public class StreamUtils {
     /**
      * Copies the content stream into the output stream unless no more data is
      * availble. Uses internal buffer to speed up operation.
-     * 
+     *
      * @param source
      * @param destination
      * @param bytesToTransfer
@@ -143,7 +143,7 @@ public class StreamUtils {
     /**
      * Reads a specific amout of data from a stream. Wait util enough data is
      * available
-     * 
+     *
      * @param in
      *            the inputstream
      * @param buffer
@@ -178,7 +178,7 @@ public class StreamUtils {
 
     /**
      * Reads the input of the stream into a bytearray and returns it.
-     * 
+     *
      * @param in
      *            the input strea,
      * @return the bytearray containing the data read from the input stream
@@ -194,7 +194,7 @@ public class StreamUtils {
     /**
      * Reads an int from the stream. The int is expected to be encoded as 4 byte
      * (32-bit).
-     * 
+     *
      * @param in
      *            the input buf
      * @return the int.

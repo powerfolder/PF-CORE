@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.os.Win32.RecycleDeleteImpl;
 
 /**
  * Access to native recycle bin, now only implemented for win32 platform
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.4 $
  */
@@ -66,7 +66,7 @@ public class RecycleDelete {
      * Will move file to recycle bin. filename is a fully qualified
      * path+filename to an existing file. (So check before calling this method
      * if file exists.) Check isSupported before use.
-     * 
+     *
      * @param filename
      * @see isSupported
      * @see File.exists()
@@ -87,7 +87,7 @@ public class RecycleDelete {
      * Will move file to recycle bin. filename is a fully qualified
      * path+filename to an existing file. (So check before calling this method
      * if file exists.) Check isSupported before use.
-     * 
+     *
      * @param confirm
      *            show a yes/No confirm dialog
      * @param filename
@@ -115,7 +115,7 @@ public class RecycleDelete {
      * Will move file to recycle bin. filename is a fully qualified
      * path+filename to an existing file. (So check before calling this method
      * if file exists.) Check isSupported before use.
-     * 
+     *
      * @param confirm
      *            show a yes/No confirm dialog
      * @param showProgress

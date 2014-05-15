@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
  * {@link ConfigurationEntry#SECURITY_PERMISSIONS_STRICT}
  * <p>
  * Included since #1979 (4.2.5)
- * 
+ *
  * @author sprajc
  */
 public class ChangeTransferModePermission extends SingletonPermission {

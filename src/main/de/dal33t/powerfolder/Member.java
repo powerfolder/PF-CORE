@@ -110,7 +110,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 /**
  * A full quailfied member, can have a connection to interact with remote
  * member/friend/peer.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.115 $
  */
@@ -195,7 +195,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * <p>
      * Attention:Does not takes friend status from memberinfo !! you have to
      * manually
-     * 
+     *
      * @param controller
      *            Reference to the Controller
      * @param mInfo
@@ -284,7 +284,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if this is myself
-     * 
+     *
      * @return true if this object references to "myself" else false
      */
     public boolean isMySelf() {
@@ -298,7 +298,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * #1646
-     * 
+     *
      * @return true if this computer is one of mine computers (same login).
      */
     public boolean isMyComputer() {
@@ -311,7 +311,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if this member is a friend, also true if isMySelf()
-     * 
+     *
      * @return true if this user is a friend or myself.
      */
     public boolean isFriend() {
@@ -320,7 +320,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Sets friend status of this member
-     * 
+     *
      * @param newFriend
      *            The new friend status.
      * @param personalMessage
@@ -357,7 +357,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Answers if this node is interesting for us, that is defined as friends
      * users on LAN and has joined one of our folders. Or if its a supernode of
      * we are a supernode and there are still open connections slots.
-     * 
+     *
      * @return true if this node is interesting for us
      */
     public boolean isInteresting() {
@@ -442,7 +442,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Marks the node as connecting (inbound or outbound).
      * <P>
      * Make sure to unmark the connecting status
-     * 
+     *
      * @return the number of currently running connection tries. Should be 1
      */
     public int markConnecting() {
@@ -464,7 +464,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Answers if this member has a connected peer (a open socket). To check if
      * a node is completey connected & handshaked see
      * <code>isCompletelyConnected</code>
-     * 
+     *
      * @see #isCompletelyConnected()
      * @return true if connected
      */
@@ -478,7 +478,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if this node is completely connected & handshaked
-     * 
+     *
      * @return true if connected & handshaked
      */
     public boolean isCompletelyConnected() {
@@ -487,7 +487,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Convinience method
-     * 
+     *
      * @return true if the node is a supernode
      */
     public boolean isSupernode() {
@@ -496,7 +496,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if this member is on the local area network.
-     * 
+     *
      * @return true if this member is on LAN.
      */
     public boolean isOnLAN() {
@@ -522,7 +522,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * To set the lan status of the member for external source
-     * 
+     *
      * @param onlan
      *            new LAN status
      */
@@ -534,7 +534,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if we received a wrong identity on reconnect
-     * 
+     *
      * @return true if we received a wrong identity on reconnect
      */
     public boolean receivedWrongIdentity() {
@@ -563,7 +563,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Sets the new connection handler for this member
-     * 
+     *
      * @param newPeer
      *            The peer / connection handler to set
      * @throws InvalidIdentityException
@@ -714,7 +714,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Calls which can only be executed with connection
-     * 
+     *
      * @throws ConnectionException
      *             if not connected
      */
@@ -727,7 +727,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Tries to reconnect peer
-     * 
+     *
      * @return the result of the connection attempt.
      * @throws InvalidIdentityException
      */
@@ -737,7 +737,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Tries to reconnect peer
-     * 
+     *
      * @param markConnecting
      *            true if this member should be marked as connecting. sometimes
      *            this has already been done by calling code.
@@ -838,7 +838,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Completes the handshake between nodes. Exchanges the relevant information
-     * 
+     *
      * @return the result of the connection attempt.
      */
     private ConnectResult completeHandshake() {
@@ -1071,7 +1071,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Sends complete filelists for all folders, this node is an actual member
      * of.
-     * 
+     *
      * @return the list of actually allowed to join folder for which filelists
      *         have been sent.
      */
@@ -1127,7 +1127,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Waits for the filelists on those folders. After a certain amount of time
      * it runs on a timeout if no filelists were received. Waits max 2 minutes.
-     * 
+     *
      * @param folders
      * @return true if the filelists of those folders received successfully.
      */
@@ -1183,7 +1183,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Waits some time for the folder list
-     * 
+     *
      * @return true if list was received successfully
      */
     private boolean waitForFoldersJoin() {
@@ -1207,7 +1207,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Waits some time for the handshake to be completed
-     * 
+     *
      * @return true if list was received successfully
      */
     private boolean waitForHandshakeCompletion() {
@@ -1293,7 +1293,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Helper method for sending messages on peer handler. Method waits for the
      * sendmessagebuffer to get empty
-     * 
+     *
      * @param message
      *            The message to send
      * @throws ConnectionException
@@ -1317,7 +1317,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Enque one messages for sending. code execution does not wait util message
      * was sent successfully
-     * 
+     *
      * @see PlainSocketConnectionHandler#sendMessagesAsynchron(Message[])
      * @param message
      *            the message to send
@@ -1331,7 +1331,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Enque multiple messages for sending. code execution does not wait util
      * message was sent successfully
-     * 
+     *
      * @see PlainSocketConnectionHandler#sendMessagesAsynchron(Message[])
      * @param messages
      *            the messages to send
@@ -1344,7 +1344,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Handles an incomming message from the remote peer (ConnectionHandler)
-     * 
+     *
      * @param message
      *            The message to handle
      * @param fromPeer
@@ -1962,7 +1962,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Adds a message listener
-     * 
+     *
      * @param aListener
      *            The listener to add
      */
@@ -1973,7 +1973,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Adds a message listener, which is only triggerd if a message of type
      * <code>messageType</code> is received.
-     * 
+     *
      * @param messageType
      *            The type of messages to register too.
      * @param aListener
@@ -1987,7 +1987,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Removes a message listener completely from this member
-     * 
+     *
      * @param aListener
      *            The listener to remove
      */
@@ -2010,7 +2010,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Fires a message to all message listeners
-     * 
+     *
      * @param message
      *            the message to fire
      */
@@ -2086,7 +2086,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * #2569: Send only "filtered" client specific folder list if myself is a
      * server (server->client). For client<->client, server<->server and
      * client->server the full list of joined folders is returned.
-     * 
+     *
      * @param remoteFolderList
      * @return
      */
@@ -2122,7 +2122,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Joins member to all local folders which are also available on remote
      * peer, removes member from all local folders, if not longer member of
-     * 
+     *
      * @throws ConnectionException
      */
     private void joinToLocalFolders(FolderList folderList,
@@ -2231,7 +2231,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers the latest received folder list
-     * 
+     *
      * @return the latest received folder list
      */
     public FolderList getLastFolderList() {
@@ -2241,7 +2241,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Answers if we received the complete filelist (+all nessesary deltas) on
      * that folder.
-     * 
+     *
      * @param foInfo
      * @return true if we received the complete filelist (+all nessesary deltas)
      *         on that folder.
@@ -2258,7 +2258,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Returns the last transfer status of this node
-     * 
+     *
      * @return the last transfer status of this node
      */
     public TransferStatus getLastTransferStatus() {
@@ -2270,7 +2270,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * TODO Performance bottleneck.
-     * 
+     *
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
@@ -2338,7 +2338,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Answers if member has the file available to download. Does NOT check
      * version match
-     * 
+     *
      * @param file
      *            the FileInfo to find at this user
      * @return true if this user has this file, or false if not or if no
@@ -2353,7 +2353,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Returns the remote file info from the node. May return null if file is
      * not known by remote or no filelist was received yet. Does return the
      * internal database file if myself.
-     * 
+     *
      * @param file
      *            local file
      * @return the fileInfo of remote side, or null
@@ -2393,7 +2393,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * set the nick name of this member
-     * 
+     *
      * @param nick
      *            The nick to set
      */
@@ -2405,7 +2405,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * #1373
-     * 
+     *
      * @return true if this node is on the same network.
      */
     public boolean isOnSameNetwork() {
@@ -2414,7 +2414,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Returns the identity of this member.
-     * 
+     *
      * @return the identity if connection is established, otherwise null
      */
     public Identity getIdentity() {
@@ -2445,7 +2445,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * Answers when the member connected last time or null, if member never
      * connected
-     * 
+     *
      * @return Date Object representing the last connect time or null, if member
      *         never connected
      */
@@ -2457,7 +2457,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Answers the last connect time of the user to the network. Last connect
      * time is determinded by the information about users from other nodes and
      * own last connection date to that node
-     * 
+     *
      * @return Date object representing the last time on the network
      */
     public Date getLastNetworkConnectTime() {
@@ -2475,7 +2475,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Returns the member information. add connected info
-     * 
+     *
      * @return the MemberInfo object
      */
     public MemberInfo getInfo() {
@@ -2485,7 +2485,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if this member is connected to the PF network
-     * 
+     *
      * @return true if this member is connected to the PF network
      */
     public boolean isConnectedToNetwork() {
@@ -2494,7 +2494,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * set the connected to network status
-     * 
+     *
      * @param connected
      *            flag indicating if this member is connected
      */
@@ -2509,7 +2509,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if we the remote node told us not longer to connect.
-     * 
+     *
      * @return true if the remote side didn't want to be connected.
      */
     public boolean isDontConnect() {
@@ -2541,7 +2541,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Sets/Unsets this member as server that should be reconnected.
-     * 
+     *
      * @param server
      */
     public void setServer(boolean server) {
@@ -2549,7 +2549,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         this.server = server;
         // Notify nodemanager
         if (oldValue != server) {
-            
+
             if (!server) {
                 logFine("Not longer server: " + this);
             } else {
@@ -2582,12 +2582,12 @@ public class Member extends PFComponent implements Comparable<Member> {
         return updateInfo(newInfo, false);
     }
 
-    
+
     /**
      * Updates connection information, if the other is more 'valueble'.
      * <p>
      * TODO CLEAN UP THIS MESS!!!! -> Define behaviour and write tests.
-     * 
+     *
      * @param newInfo
      *            The new MemberInfo to use if more valueble
      * @return true if we found valueble information
@@ -2703,7 +2703,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * true if the ID's of the memberInfo objects are equal
-     * 
+     *
      * @param other
      * @return true if the ID's of the memberInfo objects are equal
      */

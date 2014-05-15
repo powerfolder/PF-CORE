@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.util;
 
 /**
  * Simple class for waiting some time.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.7 $
  */
@@ -32,7 +32,7 @@ public class Waiter {
 
     /**
      * Initializes a new waiter which timesout in timeout ms
-     * 
+     *
      * @param timeout
      *            ms to timeout
      */
@@ -48,7 +48,7 @@ public class Waiter {
 
     /**
      * Answers if this waiter is timed-out
-     * 
+     *
      * @return true if timeout
      */
     public boolean isTimeout() {

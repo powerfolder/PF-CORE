@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.ExternalizableUtil;
 
 /**
  * A message which contains only the deltas of the folders list
- * 
+ *
  * @see de.dal33t.powerfolder.message.FileList
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.2 $

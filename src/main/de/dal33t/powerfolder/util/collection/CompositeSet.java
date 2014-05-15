@@ -30,7 +30,7 @@ import java.util.Set;
  * Changes made to this set will actually be made on the decorated set. Add
  * operations require the use of a pluggable strategy. If no strategy is
  * provided then add is unsupported.
- * 
+ *
  * @since Commons Collections 3.0
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr
  *          2008) $
@@ -46,7 +46,7 @@ public class CompositeSet extends CompositeCollection implements Set {
 
     /**
      * Create a CompositeSet with just <code>set</code> composited
-     * 
+     *
      * @param set
      *            The initial set in the composite
      */
@@ -63,7 +63,7 @@ public class CompositeSet extends CompositeCollection implements Set {
 
     /**
      * Add a Set to this composite
-     * 
+     *
      * @param c
      *            Must implement Set
      * @throws IllegalArgumentException
@@ -105,7 +105,7 @@ public class CompositeSet extends CompositeCollection implements Set {
 
     /**
      * Add two sets to this composite
-     * 
+     *
      * @throws IllegalArgumentException
      *             if c or d does not implement java.util.Set
      */
@@ -121,7 +121,7 @@ public class CompositeSet extends CompositeCollection implements Set {
 
     /**
      * Add an array of sets to this composite
-     * 
+     *
      * @param comps
      * @throws IllegalArgumentException
      *             if any of the collections in comps do not implement Set
@@ -149,7 +149,7 @@ public class CompositeSet extends CompositeCollection implements Set {
     /**
      * If a <code>CollectionMutator</code> is defined for this CompositeSet then
      * this method will be called anyway.
-     * 
+     *
      * @param obj
      *            Object to be removed
      * @return true if the object is removed, false otherwise
@@ -195,7 +195,7 @@ public class CompositeSet extends CompositeCollection implements Set {
      * The cardinality of each element in the returned {@link Collection} will
      * be equal to the minimum of the cardinality of that element in the two
      * given {@link Collection}s.
-     * 
+     *
      * @param a
      *            the first collection, must not be null
      * @param b
@@ -239,7 +239,7 @@ public class CompositeSet extends CompositeCollection implements Set {
      * <p>
      * Only those elements present in the collection will appear as keys in the
      * map.
-     * 
+     *
      * @param coll
      *            the collection to get the cardinality map for, must not be
      *            null
@@ -278,7 +278,7 @@ public class CompositeSet extends CompositeCollection implements Set {
          * intersects after this method returns an IllegalArgumentException will
          * be thrown.
          * </p>
-         * 
+         *
          * @param comp
          *            The CompositeSet being modified
          * @param existing

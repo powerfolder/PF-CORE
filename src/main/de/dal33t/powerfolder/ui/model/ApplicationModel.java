@@ -59,7 +59,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Contains all core models for the application.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -81,7 +81,7 @@ public class ApplicationModel extends PFUIComponent {
     /**
      * Constructs a non-initialized application model. Before the model can be
      * used call {@link #initialize()}
-     * 
+     *
      * @param controller
      * @see #initialize()
      */
@@ -185,7 +185,7 @@ public class ApplicationModel extends PFUIComponent {
             .getTime()) / 1000;
         return forSeconds <= 10;
     }
-    
+
     private void checkCloudSpace() {
         if (!PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(getController()))
         {
@@ -250,7 +250,7 @@ public class ApplicationModel extends PFUIComponent {
         public void login(ServerClientEvent event) {
             handleSyncStatusChange();
             checkCloudSpace();
-            
+
             if (event.getAccountDetails().getAccount()
                 .hasPermission(AdminPermission.INSTANCE))
             {
@@ -339,7 +339,7 @@ public class ApplicationModel extends PFUIComponent {
     }
 
     private void triggerSyncStatusChange(SyncStatusEvent event) {
-        if (isFiner()) {            
+        if (isFiner()) {
             logFiner(event.toString());
         }
         for (SyncStatusListener listener : syncStatusListeners) {
@@ -350,15 +350,15 @@ public class ApplicationModel extends PFUIComponent {
     // ////////////////
     // Inner Classes //
     // ////////////////
-    
+
     private class MyNoticesModelPropertyChangeListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             handleSyncStatusChange();
-            
+
         }
-       
+
     }
 
     private class MyPausedModeListener implements PausedModeListener {

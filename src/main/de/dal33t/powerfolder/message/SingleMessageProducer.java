@@ -26,7 +26,7 @@ public abstract class SingleMessageProducer implements MessageProducer {
     /**
      * * @param useExt #2072: if use {@link Externalizable} versions of the
      * messages.
-     * 
+     *
      * @return the message for the protocol type
      */
     public abstract Message getMessage(boolean useExt);

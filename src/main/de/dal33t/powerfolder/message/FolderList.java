@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.Util;
 
 /**
  * List of available folders
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -74,7 +74,7 @@ public class FolderList extends Message {
      * Constructor which splits up public and secret folder into own array.
      * Folder Ids of secret folders will be encrypted with magic Id sent by
      * remote node
-     * 
+     *
      * @param allFolders
      * @param remoteMagicId
      *            the magic id which was sent by the remote side

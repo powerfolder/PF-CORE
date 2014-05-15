@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
  * Search for members, use to "make friends".
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.7 $
  */
@@ -87,7 +87,7 @@ public class FindComputersPanel extends PFUIComponent {
 
     /**
      * create a FriendsPanel
-     * 
+     *
      * @param controller
      */
     public FindComputersPanel(Controller controller) {
@@ -340,7 +340,7 @@ public class FindComputersPanel extends PFUIComponent {
     /**
      * listens to keys in the search input updates the searchAction state if
      * enough chars are available and preforms a search on enter key
-     * 
+     *
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
     private class MySearchInputVMListener implements PropertyChangeListener {
@@ -353,7 +353,7 @@ public class FindComputersPanel extends PFUIComponent {
     /**
      * Helper class which tracks the selections int the search Results and
      * updates the actions to the correct state
-     * 
+     *
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
     private class SearchResultSelectionListener implements

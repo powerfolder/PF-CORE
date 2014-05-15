@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Checks the connectivity if run and opens a dialog when UI is open.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -75,7 +75,7 @@ public class LimitedConnectivityChecker {
     /**
      * Central method to check if the connectivity is limited. Method call may
      * take some time.
-     * 
+     *
      * @return true the connectivty is limited.
      */
     public boolean hasLimitedConnecvitiy() {
@@ -110,7 +110,7 @@ public class LimitedConnectivityChecker {
     /**
      * Installs a task to check the connectivity of this system once. or when
      * the networking mode changes.
-     * 
+     *
      * @param ctrl
      */
     public static void install(Controller ctrl) {

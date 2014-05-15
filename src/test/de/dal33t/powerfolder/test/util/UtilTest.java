@@ -29,7 +29,7 @@ public class UtilTest extends TestCase {
         assertTrue(Util.betweenVersion("8.1.0", "8.1.0", "8.2.20"));
         assertTrue(Util.betweenVersion("8.1.0", "8.2.11", "8.2.20"));
         assertFalse(Util.betweenVersion("8.1.0", "8.3.0", "8.2.20"));
-        
+
         assertFalse(Util.betweenVersion("8.1.0", "8.2.1", "8.2.0"));
     }
 

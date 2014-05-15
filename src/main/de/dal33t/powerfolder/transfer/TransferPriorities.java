@@ -30,8 +30,8 @@ import java.util.Map;
 
 /**
  * Assigns transfer priorities to files.
- * <i>Note:</i> Priority assignments won't prevent the garbage collector from discarding FileInfos. 
- * 
+ * <i>Note:</i> Priority assignments won't prevent the garbage collector from discarding FileInfos.
+ *
  * @author Dennis "Bytekeeper" Waldherr
  *
  */
@@ -51,15 +51,15 @@ public class TransferPriorities implements Serializable {
          */
         NORMAL,
         /**
-         * Files with this priority should be requested at first. 
+         * Files with this priority should be requested at first.
          */
         HIGH;
     }
 
     private transient Comparator<FileInfo> priorityComparator;
-    
+
     /**
-     * To save space, files with NORMAL priority are not stored 
+     * To save space, files with NORMAL priority are not stored
      */
     private Map<FileInfo, TransferPriority> priorities;
 
@@ -78,18 +78,18 @@ public class TransferPriorities implements Serializable {
 
         validatePriorities();
     }
-    
-    
+
+
     /**
      * @return a comparator which compares files based on their priority.
      */
     public Comparator<FileInfo> getComparator() {
         return priorityComparator;
     }
-    
+
     /**
      * Retrieves the priority of the given file.
-     * Any file whose priority hasn't been set defaults to NORMAL. 
+     * Any file whose priority hasn't been set defaults to NORMAL.
      * @param file the file to retrieve the priority of.
      * @return the priority of the file.
      */
@@ -99,7 +99,7 @@ public class TransferPriorities implements Serializable {
         assert prio != TransferPriority.NORMAL;
         return prio != null ? prio : TransferPriority.NORMAL;
     }
-    
+
     /**
      * Assigns a file a priority.
      * @param file the file the priority should be assigned to.
@@ -113,7 +113,7 @@ public class TransferPriorities implements Serializable {
             priorities.put(file, priority);
         }
     }
-    
+
     /**
      * Removes any priority given to a file.
      * A call to getPriority with the same file will yield a return
@@ -124,12 +124,12 @@ public class TransferPriorities implements Serializable {
         Reject.ifNull(file, "Fileinfo is null");
         priorities.remove(file);
     }
-    
-    
+
+
     private void readObject(java.io.ObjectInputStream in)
         throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        
+
         validatePriorities();
     }
 

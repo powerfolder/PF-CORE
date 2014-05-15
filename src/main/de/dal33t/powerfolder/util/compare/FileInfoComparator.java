@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Comparator for FileInfo
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
@@ -75,7 +75,7 @@ public class FileInfoComparator extends Loggable implements
     /**
      * Compare by various types. If types are the same, sub-compare on file
      * name, for nice table display.
-     * 
+     *
      * @param o1
      * @param o2
      * @return the value

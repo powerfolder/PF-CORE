@@ -36,7 +36,7 @@ public abstract class NodeManagerAdapter implements NodeManagerListener {
 
     public void nodeConnecting(NodeManagerEvent e) {
     }
-    
+
     public void nodeConnected(NodeManagerEvent e) {
     }
 

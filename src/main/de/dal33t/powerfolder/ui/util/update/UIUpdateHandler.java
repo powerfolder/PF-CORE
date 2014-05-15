@@ -157,7 +157,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
 
     /**
      * Retrieves the Frame that is the current parent
-     * 
+     *
      * @return Parent JFrame
      */
     protected JFrame getParentFrame() {

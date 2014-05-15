@@ -264,7 +264,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
         public void serverDisconnected(ServerClientEvent event) {
             populateOnlineFolders();
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
             populateOnlineFolders();
         }

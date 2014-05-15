@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Lisa, Marge and Maggie run in normal node, Bart and Homer act as supernode.
  * <p>
  * You can access both controllers and do manupulating/testing stuff on them
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -105,7 +105,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
     /**
      * Connects and waits for connection of the simpsons controllers
-     * 
+     *
      * @throws RuntimeException
      *             if not all simpsons are connected afterwards.
      */
@@ -117,7 +117,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
     /**
      * Tries completely to connect the simpsons under each other.
-     * 
+     *
      * @return true if succeeded
      */
     protected boolean tryToConnectSimpsons() {
@@ -176,7 +176,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
     /**
      * Sets the syncprofile on the testfolder of all simpsons.
-     * 
+     *
      * @param profile
      *            the profile to set.
      */
@@ -190,7 +190,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
     /**
      * Lets the simpsons join all the same folder.
-     * 
+     *
      * @param profile
      *            the profile to use
      */
@@ -200,7 +200,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
     /**
      * Lets the simpsons join all the same folder.
-     * 
+     *
      * @param profile
      *            the profile to use
      */

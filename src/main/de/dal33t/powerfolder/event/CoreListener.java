@@ -40,7 +40,7 @@ public interface CoreListener {
      * Also when you return true when this method is added and false if the
      * method is removed from the class that fires the events will result in
      * undefined behaviour.
-     * 
+     *
      * @return true if the events should be fired in the Swing Event Dispatch
      *         Thread.
      */

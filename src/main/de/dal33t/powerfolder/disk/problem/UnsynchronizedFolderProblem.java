@@ -77,7 +77,7 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
 
     /**
      * Show folder unsynced files.
-     * 
+     *
      * @param controller
      * @return
      */

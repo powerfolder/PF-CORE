@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.message.Message;
 
 /**
  * Base interface for all connection handlers doing basic I/O communication.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -38,7 +38,7 @@ public interface ConnectionHandler {
 
     /**
      * Initalizes the connection handler.
-     * 
+     *
      * @throws ConnectionException
      */
     void init() throws ConnectionException;
@@ -60,7 +60,7 @@ public interface ConnectionHandler {
      * Associates the node with the connection handler IF a positive remote
      * accept is removed. Otherwise the connection try is invalid and can be
      * discarded. Also sends a identity acception to the remote peer.
-     * 
+     *
      * @return true if our identity was accepted and is not connected with the
      *         given node/member
      * @throws ConnectionException
@@ -70,7 +70,7 @@ public interface ConnectionHandler {
 
     /**
      * Waits for the send queue to get send
-     * 
+     *
      * @param tm
      *            the maximum number of miliseconds to wait. -1 for infintive.
      * @return if the queue is empty now. if ms = -1 always true.
@@ -84,7 +84,7 @@ public interface ConnectionHandler {
      * before the node is completely connected.
      * <p>
      * ATTENTION: Never call this method from anywhere else!
-     * 
+     *
      * @return true if this connection is accepted the handshake will be
      *         completed. false when the handshakre should be be aborted and the
      *         member disconnected
@@ -154,7 +154,7 @@ public interface ConnectionHandler {
      * @return our magic id, which has been sent to the remote side
      */
     String getMyMagicId();
-    
+
     /**
      * @return my Identity sent to the remote side.
      */
@@ -169,7 +169,7 @@ public interface ConnectionHandler {
      * @return the last time a message was received
      */
     Date getLastKeepaliveMessageTime();
-    
+
     /**
      * @return the quality of this connection.
      */
@@ -179,7 +179,7 @@ public interface ConnectionHandler {
 
     /**
      * Sends a message to the remote peer. Waits until send is complete
-     * 
+     *
      * @param message
      * @throws ConnectionException
      */
@@ -187,7 +187,7 @@ public interface ConnectionHandler {
 
     /**
      * Sends multiple messages ansychron, all with error message = null
-     * 
+     *
      * @param messages
      *            the messages to send
      */

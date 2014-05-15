@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.Member;
 
 /**
  * To retrieve relays
- * 
+ *
  * @author sprajc
  */
 public interface RelayFinder {

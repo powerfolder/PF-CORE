@@ -32,12 +32,12 @@ public class TransferCounterTest extends TestCase {
         ac = TransferCounter.class.getDeclaredField("CURRENT_CPS_CALCULATION_PERIOD");
         ac.setAccessible(true);
         long period = ac.getLong(tc);
-        
+
         ac = TransferCounter.class.getDeclaredField("counter1Active");
-       
+
         ac.setAccessible(true);
         tc.startedTransfer();
-        
+
         // Starts out with counter2 active
         for (int i = 0; i < period / 1000; i++) {
             tc.calculateCurrentCPS();

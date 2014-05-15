@@ -44,7 +44,7 @@ public class UserDirectory {
     public Path getDirectory() {
         return directory;
     }
-    
+
     public String toString() {
         return translatedName + '/' + placeholder + " @ " + directory;
     }

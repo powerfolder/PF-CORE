@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 
 /**
  * Simple factory for creating PowerFolder ui elements
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
  */
@@ -120,7 +120,7 @@ public class SimpleComponentFactory {
 
     /**
      * Sets the fontsize on of label
-     * 
+     *
      * @param label
      * @param fontSize
      */
@@ -131,7 +131,7 @@ public class SimpleComponentFactory {
 
     /**
      * Sets the fontsize and style on of label
-     * 
+     *
      * @param label
      * @param fontSize
      * @param style
@@ -144,7 +144,7 @@ public class SimpleComponentFactory {
 
     /**
      * Creates a checkbox with a title
-     * 
+     *
      * @param title
      *            the title of the checkbox
      * @return the fresh intalized checkbox

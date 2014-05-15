@@ -72,7 +72,7 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
         this.controller = controller;
         this.volume = volume;
         this.real = real;
-        
+
         try {
             if (volume) {
                 add(new DefaultMutableTreeNode());
@@ -80,7 +80,7 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
             } else if (directory != null && Files.isDirectory(directory)
                 && Files.isReadable(directory) && !Files.isHidden(directory))
             {
-    
+
                 // A quick peek.
                 // If there are any subdirectories,
                 // set scanned false and add a dummy,
@@ -88,11 +88,11 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
                 // Otherwise if there are no readable directories,
                 // set as scanned with no dummy node.
                 scanned = true;
-    
+
                 // Patch for Windows Vista.
                 // Vista may deny access to directories
                 // and this results in a null file list.
-                
+
                 try (DirectoryStream<Path> files = Files.newDirectoryStream(directory)) {
                     for (Path entry : files) {
                         if (entry != null && Files.isReadable(entry) && Files.isDirectory(entry)

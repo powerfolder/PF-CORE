@@ -54,7 +54,7 @@ public class MainTabbedPane extends PFUIComponent {
 
     /**
      * Constructor. Creates the main tabbed pane.
-     * 
+     *
      * @param controller
      */
     public MainTabbedPane(Controller controller) {
@@ -149,7 +149,7 @@ public class MainTabbedPane extends PFUIComponent {
 
     /**
      * Add a change listener to the main tabbed pane.
-     * 
+     *
      * @param l
      */
     public void addTabbedPaneChangeListener(ChangeListener l) {
@@ -160,7 +160,7 @@ public class MainTabbedPane extends PFUIComponent {
 
     /**
      * Remove a change listener from the main tabbed pane.
-     * 
+     *
      * @param l
      */
     public void removeTabbedPaneChangeListener(ChangeListener l) {

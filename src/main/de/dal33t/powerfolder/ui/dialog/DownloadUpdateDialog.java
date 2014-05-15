@@ -39,7 +39,7 @@ import java.awt.event.WindowEvent;
 
 /**
  * Dialog opened, when an programm update is detected and downloading
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
@@ -57,7 +57,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
 
     /**
      * Initialize
-     * 
+     *
      * @param controller
      */
     public DownloadUpdateDialog(Controller controller, String version) {
@@ -130,7 +130,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
 
     /**
      * Returns the ui component (dialog)
-     * 
+     *
      * @return
      */
     private synchronized JDialog getUIComponent() {
@@ -163,7 +163,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
 
     /**
      * Sets the completion state of this download
-     * 
+     *
      * @param compState
      */
     public void setCompletionPercentage(int compState) {
@@ -181,7 +181,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
 
     /**
      * Answers if was canceled
-     * 
+     *
      * @return
      */
     public boolean isCancelled() {

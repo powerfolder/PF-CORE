@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.Reject;
  * message.
  * <p>
  * TODO Add filter criteria for folders.
- * 
+ *
  * @see de.dal33t.powerfolder.message.KnownNodes
  * @see de.dal33t.powerfolder.message.SearchNodeRequest
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -84,7 +84,7 @@ public class RequestNodeList extends Message {
 
     /**
      * Creates a request nodes message, which requests all node infomations.
-     * 
+     *
      * @return the request message
      */
     public static RequestNodeList createRequestAllNodes() {
@@ -94,7 +94,7 @@ public class RequestNodeList extends Message {
     /**
      * Creates a request nodes message, which requests nodes information of the
      * given nodes. Can additionally obtain information about supernodes.
-     * 
+     *
      * @param nodes
      *            the nodes to request new information for
      * @param supernodesCriteria
@@ -119,7 +119,7 @@ public class RequestNodeList extends Message {
 
     /**
      * Filter the collection of nodes with the criterias of this request.
-     * 
+     *
      * @param source
      *            the list of nodes
      * @return the filtered list of node infos. never contains temporary sever

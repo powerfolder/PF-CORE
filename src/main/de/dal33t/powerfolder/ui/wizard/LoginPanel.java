@@ -98,7 +98,7 @@ public class LoginPanel extends PFWizardPanel {
 
     /**
      * Constructs a login panel for login to the default OS.
-     * 
+     *
      * @param controller
      * @param nextPanel
      *            the next panel to display

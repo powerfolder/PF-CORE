@@ -111,7 +111,7 @@ public class FolderScanner extends PFComponent {
      * Do not use this constructor, this should only be done by the Folder
      * Repositoty, to get the folder scanner call:
      * folderRepository.getFolderScanner()
-     * 
+     *
      * @param controller
      *            the controller that holds this folder.
      */
@@ -163,7 +163,7 @@ public class FolderScanner extends PFComponent {
     /**
      * Abort scanning. when called the scanning process will be aborted and the
      * resultState of the scan will be ScanResult.ResultState.USER_ABORT
-     * 
+     *
      * @return true if abort has been initiated, false if not currently scanning
      */
     public boolean abortScan() {
@@ -176,7 +176,7 @@ public class FolderScanner extends PFComponent {
 
     /**
      * Scans a folder. See class description for explaining.
-     * 
+     *
      * @param folder
      *            The folder to scan.
      * @return a ScanResult the scan result.
@@ -352,7 +352,7 @@ public class FolderScanner extends PFComponent {
     /**
      * Produces a list of FilenameProblems per FileInfo that has problems.
      * Public for testing
-     * 
+     *
      * @param files
      */
     private void tryFindProblemsInCurrentScan() {
@@ -385,7 +385,7 @@ public class FolderScanner extends PFComponent {
 
     /**
      * Scans folder from the local base folder as root
-     * 
+     *
      * @param folderBase
      *            The file root of the folder to scan from.
      * @returns true on success, false on failure (hardware not found?)
@@ -395,7 +395,7 @@ public class FolderScanner extends PFComponent {
             failure = true;
             return false;
         }
-        
+
         try (DirectoryStream<Path> stream = Files
             .newDirectoryStream(folderBase)) {
 
@@ -516,7 +516,7 @@ public class FolderScanner extends PFComponent {
 
     /**
      * scans a single file.
-     * 
+     *
      * @param fileToScan
      *            the disk file to examine.
      * @param currentDirName
@@ -541,7 +541,7 @@ public class FolderScanner extends PFComponent {
 
     /**
      * scans a single directory.
-     * 
+     *
      * @param dirToScan
      *            the disk directory to examine.
      * @param currentDirName
@@ -563,7 +563,7 @@ public class FolderScanner extends PFComponent {
 
     /**
      * scans a single file.
-     * 
+     *
      * @param fileToScan
      *            the disk file to examine.
      * @param currentDirName
@@ -741,7 +741,7 @@ public class FolderScanner extends PFComponent {
 
         /**
          * Scans a directory, will recurse into subdirectories
-         * 
+         *
          * @param dirToScan
          *            The directory to scan
          * @return true or succes or false is failed (harware failure or
@@ -759,10 +759,10 @@ public class FolderScanner extends PFComponent {
                 throw new RuntimeException(e);
             }
             scanDirectory(dirToScan, currentDirName);
-            
+
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirToScan)) {
                 Iterator<Path> it = stream.iterator();
-                
+
                 if (it == null) {
                     throw new IOException("Unable to access directory");
                 }

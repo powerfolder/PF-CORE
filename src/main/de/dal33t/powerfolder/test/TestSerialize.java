@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
  * Tests the serializing perfomance
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */

@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 /**
  * A {@link FileInfoDAO} implementation based on fast, in-memory
  * {@link ConcurrentHashMap}s.
- * 
+ *
  * @author sprajc
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {

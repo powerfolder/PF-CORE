@@ -62,7 +62,7 @@ public class DiskItemFilter {
      * Patterns file name.
      */
     public static final String PATTERNS_FILENAME = "ignore.patterns";
-    
+
     /**
      * Never allow this.
      */
@@ -105,7 +105,7 @@ public class DiskItemFilter {
     /**
      * Loads patterns from file. Removes all previous patterns. Only if there is
      * actually a change to the patterns.
-     * 
+     *
      * @param file
      *            file to read patterns from
      * @param markDirtyIfChanged
@@ -168,7 +168,7 @@ public class DiskItemFilter {
 
     /**
      * Saves patterns to a file.
-     * 
+     *
      * @param file
      */
     public void savePatternsTo(Path file, boolean createBackup) {
@@ -209,7 +209,7 @@ public class DiskItemFilter {
 
     /**
      * Add a patterns to the list for filtering.
-     * 
+     *
      * @param patternText
      */
     void addPattern(String patternText) {
@@ -218,7 +218,7 @@ public class DiskItemFilter {
 
     /**
      * Add a patterns to the list for filtering.
-     * 
+     *
      * @param pattern
      */
     private void addPattern0(Pattern pattern) {
@@ -252,7 +252,7 @@ public class DiskItemFilter {
 
     /**
      * Remove a pattern from the list.
-     * 
+     *
      * @param patternText
      */
     void removePattern(String patternText) {
@@ -277,7 +277,7 @@ public class DiskItemFilter {
     /**
      * Pattern matches diskItem against patterns. Note that Directories have
      * "/*" appended for matching.
-     * 
+     *
      * @param diskItem
      * @return
      */
@@ -306,7 +306,7 @@ public class DiskItemFilter {
 
     /**
      * Returns patterns.
-     * 
+     *
      * @return a unmodifable version the list of patterns that may match files
      *         that should be ignored
      */
@@ -336,7 +336,7 @@ public class DiskItemFilter {
 
     /**
      * Returns true if the item is excluded by this filter (is filtered out).
-     * 
+     *
      * @param diskItem
      * @return true if filtered out / excluded
      */
@@ -347,7 +347,7 @@ public class DiskItemFilter {
     /**
      * Returns true if the relative name is excluded by this filter (is filtered
      * out).
-     * 
+     *
      * @param relativeName
      * @return true if filtered out / excluded
      */
@@ -366,7 +366,7 @@ public class DiskItemFilter {
     /**
      * Returns true if the item is retained by this filter (is not filtered
      * out).
-     * 
+     *
      * @param diskItem
      * @return
      */

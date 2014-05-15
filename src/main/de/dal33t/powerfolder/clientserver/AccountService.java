@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.security.Account;
 
 /**
  * Contains all methods to modify/alter, create or notify Accounts.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -42,7 +42,7 @@ public interface AccountService {
 
     /**
      * Tries to register a new account.
-     * 
+     *
      * @param username
      *            the username
      * @param password
@@ -81,7 +81,7 @@ public interface AccountService {
 
     /**
      * Logs in from a remote location.
-     * 
+     *
      * @param username
      * @param passwordMD5
      *            the password mixed with the salt as MD5
@@ -102,7 +102,7 @@ public interface AccountService {
 
     /**
      * TRAC #1567, #1042
-     * 
+     *
      * @param emails
      * @param personalMessage
      * @return true if all messages was successfully delivered
@@ -117,14 +117,14 @@ public interface AccountService {
 
     /**
      * Removes a computer from the own list of computers.
-     * 
+     *
      * @param node
      */
     void removeComputer(MemberInfo node);
 
     /**
      * Performs all checks on the given online storage user accounts.
-     * 
+     *
      * @param accounts
      */
     void checkAccounts(Collection<Account> accounts);

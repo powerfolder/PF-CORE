@@ -97,7 +97,7 @@ import de.dal33t.powerfolder.util.UserDirectory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -131,7 +131,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     /**
      * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
-     * 
+     *
      * @param controller
      * @param next
      *            the next panel after selecting the directory.
@@ -805,7 +805,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         public void serverDisconnected(ServerClientEvent event) {
             startConfigureCheckboxes();
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
 

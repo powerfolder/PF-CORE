@@ -166,7 +166,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             int row = 1;
             builder.add(myDnsLabel, cc.xy(1, row));
             builder.add(myDnsField, cc.xy(3, row));
-            
+
             row += 2;
             builder.add(cbAutoUpdate, cc.xy(3, row));
 

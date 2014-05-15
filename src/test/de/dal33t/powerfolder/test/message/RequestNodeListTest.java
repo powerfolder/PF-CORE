@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the requesting and answer building of the nodelist from remote peers.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -121,7 +121,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
     /**
      * Tests the default request for nodelist from a normal peer (lisa)
-     * 
+     *
      * @throws ConnectionException
      */
     public void testRequestDefaultNodesList() throws ConnectionException {
@@ -149,7 +149,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
         // Let supernode state sync/broadcast
         TestHelper.waitMilliSeconds(3000);
-        
+
         // Should have all online supernodes
         assertEquals(N_CON_SUPERNODES, getContollerLisa().getNodeManager()
             .countSupernodes());
@@ -162,7 +162,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
     /**
      * Test request by nodelist. Usual for requesting new information about own
      * friendlist.
-     * 
+     *
      * @throws ConnectionException
      */
     public void testRequestNodesListByNodeIdList() throws ConnectionException {

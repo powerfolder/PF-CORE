@@ -23,7 +23,7 @@ import java.util.EventObject;
 
 /**
  * Event fired if a selection has changed in the SelectionModel
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.4 $
  */

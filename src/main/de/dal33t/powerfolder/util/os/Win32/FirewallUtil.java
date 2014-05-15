@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 /**
  * This class gives access to some functions of the windows firewall. Note that
  * some methods may take some seconds to complete.
- * 
+ *
  * @author <A HREF="mailto:bytekeeper@powerfolder.com">Dennis Waldherr</A>
  * @version $Revision$
  */
@@ -43,7 +43,7 @@ public class FirewallUtil {
     /**
      * Tries to open a port on the windows firewall. In case of an error it
      * either doesn't return or it throws an IOException.
-     * 
+     *
      * @param port
      *            the port to open
      * @throws IOException
@@ -56,7 +56,7 @@ public class FirewallUtil {
     /**
      * Tries to open a port on the windows firewall. In case of an error it
      * either doesn't return or it throws an IOException.
-     * 
+     *
      * @param port
      *            the port to open
      * @param protocol
@@ -109,7 +109,7 @@ public class FirewallUtil {
     /**
      * Tries to close a port on the windows firewall. In case of an error it
      * either doesn't return or it throws an IOException.
-     * 
+     *
      * @param port
      *            the port to close
      * @throws IOException
@@ -122,7 +122,7 @@ public class FirewallUtil {
     /**
      * Tries to close a port on the windows firewall. In case of an error it
      * either doesn't return or it throws an IOException.
-     * 
+     *
      * @param port
      *            the port to close
      * @throws IOException
@@ -162,7 +162,7 @@ public class FirewallUtil {
     /**
      * Tries to close one port an open another one on the windows firewall. In
      * case of an error it either doesn't return or it throws an IOException.
-     * 
+     *
      * @param from
      * @param to
      * @throws IOException

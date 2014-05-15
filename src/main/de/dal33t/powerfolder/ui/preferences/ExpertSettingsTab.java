@@ -232,7 +232,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
     /**
      * Creates a pair of location text field and button.
-     * 
+     *
      * @return
      */
     private JComponent createLocationField() {
@@ -257,7 +257,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
     /**
      * Creates the JPanel for advanced settings
-     * 
+     *
      * @return the created panel
      */
     public JPanel getUIPanel() {
@@ -446,7 +446,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             needsRestart = true;
         }
     }
-    
+
     // ////////////////
     // Inner Classes //
     // ////////////////

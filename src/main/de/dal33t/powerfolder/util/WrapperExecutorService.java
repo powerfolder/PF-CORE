@@ -32,7 +32,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * A {@link ScheduledThreadPoolExecutor} that wraps all {@link Runnable}s and
  * {@link Callable}s to log their exceptions and errors
- * 
+ *
  * @author sprajc
  */
 public class WrapperExecutorService implements ExecutorService {

@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * A Label which opens a given link by click it
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */

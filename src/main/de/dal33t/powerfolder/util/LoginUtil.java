@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.Controller;
 
 /**
  * Utility class for login helpers
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.29 $
  */
@@ -56,7 +56,7 @@ public class LoginUtil {
      * Encrypted or secure, but it prevents accidentally reveal.
      * <p>
      * Passwords can easily deobfuscated by calling {@link #deobfuscate(String)}
-     * 
+     *
      * @param password
      *            the password to obfuscate
      * @return the obfuscated password
@@ -83,7 +83,7 @@ public class LoginUtil {
 
     /**
      * Deobfuscates a obfuscated password by {@link #obfuscate(char[])}
-     * 
+     *
      * @param passwordOBF
      *            the obfuscated password
      * @return the original password
@@ -120,7 +120,7 @@ public class LoginUtil {
 
     /**
      * Decorates the login URL with credentials if given.
-     * 
+     *
      * @param loginURL
      *            the login URL, e.g. http://localhost/login
      * @param username
@@ -148,7 +148,7 @@ public class LoginUtil {
 
     /**
      * Decorates the login URL with credentials if given.
-     * 
+     *
      * @param loginURL
      *            the login URL, e.g. http://localhost/login
      * @param username
@@ -168,7 +168,7 @@ public class LoginUtil {
         }
         if (StringUtils.isNotBlank(passwordObf)) {
             if (url.contains("?")) {
-                url += "&";                
+                url += "&";
             } else {
                 url += "?";
             }
@@ -227,7 +227,7 @@ public class LoginUtil {
     /**
      * Clears a password array to avoid keeping the password in plain text in
      * memory.
-     * 
+     *
      * @param password
      *            the password array to clear. Array is destroyed and unusable
      *            after.
@@ -296,7 +296,7 @@ public class LoginUtil {
 
     /**
      * PFS-569: Hack alert!
-     * 
+     *
      * @param controller
      * @return
      */
@@ -310,7 +310,7 @@ public class LoginUtil {
     /**
      * #2401: Texts: "Email" should not be shown if using AD username, e.g. on
      * login
-     * 
+     *
      * @param controller
      * @return
      */
@@ -321,7 +321,7 @@ public class LoginUtil {
     /**
      * #2401: Texts: "Email" should not be shown if using AD username, e.g. on
      * login
-     * 
+     *
      * @param controller
      * @return
      */
@@ -399,7 +399,7 @@ public class LoginUtil {
     /**
      * Calculates the SHA digest and returns the value as a 16 element
      * {@code byte[]}.
-     * 
+     *
      * @param data
      *            Data to digest
      * @return digest
@@ -410,7 +410,7 @@ public class LoginUtil {
 
     /**
      * Returns a MessageDigest for the given {@code algorithm}.
-     * 
+     *
      * @param algorithm
      *            The MessageDigest algorithm name.
      * @return An MD5 digest instance.
@@ -427,7 +427,7 @@ public class LoginUtil {
 
     /**
      * Returns an MD5 MessageDigest.
-     * 
+     *
      * @return An MD5 digest instance.
      * @throws RuntimeException
      *             when a {@link NoSuchAlgorithmException} is caught,

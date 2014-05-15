@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * Test the filelist message.
  * <p>
  * TODO Test in combination with blacklist
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

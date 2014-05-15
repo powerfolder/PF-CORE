@@ -55,7 +55,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Dialog for offering a file to transfer to another computer..
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -87,7 +87,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
     /**
      * Gets the title of the dialog.
-     * 
+     *
      * @return
      */
     public String getTitle() {
@@ -100,7 +100,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
     /**
      * Gets the icon for the dialog.
-     * 
+     *
      * @return
      */
     protected Icon getIcon() {
@@ -113,7 +113,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
     /**
      * Creates the visual component.
-     * 
+     *
      * @return
      */
     protected JComponent getContent() {
@@ -235,7 +235,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
         /**
          * Open a UserSelectDialog
-         * 
+         *
          * @param e
          */
         public void actionPerformed(ActionEvent e) {

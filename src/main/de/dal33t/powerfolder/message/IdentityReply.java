@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 /**
  * Indicated the accept of the identity, which was sent
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -34,7 +34,7 @@ public class IdentityReply extends Message {
 	public IdentityReply() {
 		// Serialisation constructor
 	}
-	
+
     /**
      * Builds a new identity reply
      * @param accepted
@@ -48,7 +48,7 @@ public class IdentityReply extends Message {
     /**
      * Builds a identity reply rejecting the
      * identity. a cause should be declared
-     * 
+     *
      * @param why
      * @return
      */

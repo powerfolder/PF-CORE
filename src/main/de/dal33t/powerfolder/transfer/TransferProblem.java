@@ -23,7 +23,7 @@ package de.dal33t.powerfolder.transfer;
  * Enum of variaous problems that can occur when transfering files.
  */
 public enum TransferProblem {
-    
+
     FILE_CHANGED("transfer.problem.transfer.broken"),
     NODE_DISCONNECTED("transfer.problem.transfer.broken"),
     FOLDER_REMOVED("transfer.problem.transfer.broken"),
@@ -31,7 +31,7 @@ public enum TransferProblem {
     BROKEN_DOWNLOAD("transfer.problem.broken.download"),
     BROKEN_UPLOAD("transfer.problem.broken.upload"),
     PAUSED("transfer.problem.paused"),
-    
+
     /**
      * This is a canidate to be replace through other problem codes.
      */

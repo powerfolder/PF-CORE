@@ -32,7 +32,7 @@ public class ExpandableFolderModel {
         Local,
         Typical,
         CloudOnly
-    }  
+    }
 
     private final Type type;
     private final FolderInfo folderInfo;

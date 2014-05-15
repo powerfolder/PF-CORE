@@ -92,7 +92,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         super(controller);
         this.initialText = initialText;
     }
-    
+
     public ConfigurationLoaderDialog(Controller controller) {
         super(controller);
     }
@@ -218,13 +218,13 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
         addressBox = new JComboBox(serviceProviderUrls);
         addressBox.setEditable(true);
-        
+
         try {
             JTextField editorField = (JTextField) addressBox.getEditor()
                 .getEditorComponent();
             if (StringUtils.isNotBlank(initialText)) {
                 editorField.setText(initialText);
-            } else {                
+            } else {
                 editorField.setText("http://");
             }
             editorField.setCaretPosition(editorField.getText().length());
@@ -316,7 +316,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
     /**
      * Creates an internationalized ok button
-     * 
+     *
      * @param listener
      *            the listener to be put on the button
      * @return

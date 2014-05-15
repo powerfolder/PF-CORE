@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  * Test for relayed connections.
  * <p>
  * TRAC #597.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

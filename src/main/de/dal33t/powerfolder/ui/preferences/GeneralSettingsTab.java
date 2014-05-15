@@ -207,7 +207,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             CellConstraints cc = new CellConstraints();
             int row = 3;
-            
+
             // Start: PFC-2385
             if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
                 row += 2;
@@ -218,14 +218,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(modeChooser, cc.xy(3, row));
             }
             // End: PFC-2385
-            
+
             row += 2;
             builder.add(
                 new JLabel(Translation
                     .getTranslation("preferences.general.account_label")), cc
                     .xy(1, row));
             builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
-            
+
             row += 2;
             builder.add(
                 new JLabel(Translation
@@ -250,7 +250,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         archiveCleanupCombo, new JButton(cleanupAction)), cc
                         .xyw(3, row, 2));
             }
-            
+
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
 
@@ -590,7 +590,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     getController().getOSClient().logout();
                     return null;
                 }
-                
+
             };
             logout.execute();
 

@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Permission that allows the user to write into the folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -33,7 +33,7 @@ public class FolderReadWritePermission extends FolderPermission {
 
     /**
      * Construct externally with {@link FolderPermission#readWrite(FolderInfo)}
-     * 
+     *
      * @param foInfo
      */
     FolderReadWritePermission(FolderInfo foInfo) {

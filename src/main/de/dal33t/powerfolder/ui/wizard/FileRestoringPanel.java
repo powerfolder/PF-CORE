@@ -232,7 +232,7 @@ public class FileRestoringPanel extends PFWizardPanel {
          * @param chunks
          */
         protected void process(List<FileInfo> chunks) {
-            fileInfosProcessed += chunks.size();   
+            fileInfosProcessed += chunks.size();
             if (fileInfosToRestore.isEmpty()) {
                 bar.setIndeterminate(true);
             } else {

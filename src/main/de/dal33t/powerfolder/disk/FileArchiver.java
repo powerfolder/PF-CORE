@@ -60,7 +60,7 @@ import de.dal33t.powerfolder.util.Util;
  * stored in an archives directory, with suffix '_K_nnn', where 'nnn' is the
  * version number. So 'data/info.txt' archive version 6 would be
  * 'archive/data/info.txt_K_6'.
- * 
+ *
  * @author dante
  */
 public class FileArchiver {
@@ -84,7 +84,7 @@ public class FileArchiver {
     /**
      * Constructs a new FileArchiver which stores backups in the given
      * directory.
-     * 
+     *
      * @param archiveDirectory
      * @param mySelf
      *            myself
@@ -246,7 +246,7 @@ public class FileArchiver {
     /**
      * Tries to ensure that only the allowed amount of versions per file is in
      * the archive.
-     * 
+     *
      * @return true the maintenance worked successfully for all files, false if
      *         it failed for at least one file
      */
@@ -360,7 +360,7 @@ public class FileArchiver {
      * Convert a file name and version into archive file name, something like
      * /bob/file.txt_K_4 . This is the old way of doing it, kept for
      * compatibility.
-     * 
+     *
      * @param fileInfo
      * @return
      */
@@ -401,7 +401,7 @@ public class FileArchiver {
     /**
      * Parse the file name for the last "_K_" and extract the following version
      * number. Like 'file_K_45.txt' returns 45.
-     * 
+     *
      * @param file
      *            file to parse name.
      * @return the version.
@@ -533,7 +533,7 @@ public class FileArchiver {
 
     /**
      * Restore a file version.
-     * 
+     *
      * @param versionInfo
      *            the FileInfo of the archived file.
      * @param target
@@ -602,7 +602,7 @@ public class FileArchiver {
 
     /**
      * Delete archives older that a specified number of days.
-     * 
+     *
      * @param cleanupDate
      *            Age in days of archive files to delete.
      */

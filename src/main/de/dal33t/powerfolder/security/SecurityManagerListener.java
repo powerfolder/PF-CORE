@@ -23,14 +23,14 @@ import de.dal33t.powerfolder.event.CoreListener;
 
 /**
  * Changes in security manager.
- * 
+ *
  * @author sprajc
  */
 public interface SecurityManagerListener extends CoreListener {
     /**
      * Fired when the account status on the given node is changed. e.g. logout
      * through disconnect.
-     * 
+     *
      * @param event
      *            the event.
      */

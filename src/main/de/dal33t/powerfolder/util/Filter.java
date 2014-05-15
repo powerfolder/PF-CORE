@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.util;
 
 /**
  * General filter for items
- * 
+ *
  * @author sprajc
  * @param <T>
  *            the item class

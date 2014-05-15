@@ -37,9 +37,9 @@ import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /*
- * The class DynDnsOrg is implemented to provide update service for those 
+ * The class DynDnsOrg is implemented to provide update service for those
  * with dynamic IP addresses in "http://www.dyndns.org".
- * 
+ *
  * @author Albena Roshelova
  */
 
@@ -172,7 +172,7 @@ public class DynDnsOrg extends PFComponent implements DynDns {
      * The method provides update service for those with DynDns IP adresses. It
      * updates the host IP to DynDns IP. @return an int of the
      * http://www.dyndns.org server response
-     * 
+     *
      * @see de.dal33t.powerfolder.net.DynDns#update(DynDnsUpdateData updateData)
      */
     public int update(DynDnsUpdateData updateData) {
@@ -267,7 +267,7 @@ public class DynDnsOrg extends PFComponent implements DynDns {
 
     /*
      * @return the dyndns server error message
-     * 
+     *
      * @see de.dal33t.powerfolder.net.DynDns#getErrorShortText()
      */
 
@@ -299,7 +299,7 @@ public class DynDnsOrg extends PFComponent implements DynDns {
 
     /*
      * @return the error text
-     * 
+     *
      * @see de.dal33t.powerfolder.net.DynDns#getErrorText()
      */
     public String getErrorText() {

@@ -71,7 +71,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * <p>
  * Extracts the settings for the folder from the
  * <code>WizardContextAttributes</code>.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -150,7 +150,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 SEND_INVIATION_AFTER_ATTRIBUTE);
             sendInvitations = false;
             if (attribute != null && attribute instanceof Boolean) {
-                sendInvitations = (Boolean) attribute; 
+                sendInvitations = (Boolean) attribute;
             }
 
             // Either we have FOLDER_CREATE_ITEMS ...
@@ -190,7 +190,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     "Local base for folder is null/not set");
                 SyncProfile syncProfile = (SyncProfile) getWizardContext()
                     .getAttribute(SYNC_PROFILE_ATTRIBUTE);
-                
+
                 if (syncProfile == null) {
                     syncProfile = SyncProfile.getDefault(getController());
                 }

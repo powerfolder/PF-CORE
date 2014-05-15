@@ -168,7 +168,7 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     /**
      * Re-sorts the folder list with the new comparator only if comparator
      * differs from old one
-     * 
+     *
      * @param newComparator
      * @return if the table was freshly sorted
      */

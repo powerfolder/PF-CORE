@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Administration permission on one folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -42,7 +42,7 @@ public class FolderAdminPermission extends FolderPermission {
 
     /**
      * Construct externally with {@link FolderPermission#admin(FolderInfo)}
-     * 
+     *
      * @param foInfo
      */
     FolderAdminPermission(FolderInfo foInfo) {
@@ -79,7 +79,7 @@ public class FolderAdminPermission extends FolderPermission {
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;

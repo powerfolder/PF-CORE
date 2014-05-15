@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Security settings per folder. Contains general security header data.
  * <P>
  * TRAC #1046
- * 
+ *
  * @author sprajc
  */
 @Deprecated

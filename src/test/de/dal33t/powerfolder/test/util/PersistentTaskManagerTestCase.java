@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests for the TaskManager and the possible tasks.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  * @version $revision$
  */

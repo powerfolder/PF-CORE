@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 /**
  * Debug panel shows buttons to shutdown/start the FileRquestor, TransferManager
  * and the NodeManager.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.0 $
  */

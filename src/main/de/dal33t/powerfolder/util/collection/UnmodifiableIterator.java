@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 /**
  * Decorates an iterator such that it cannot be modified.
- * 
+ *
  * @since Commons Collections 3.0
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr
  *          2008) $
@@ -36,7 +36,7 @@ public final class UnmodifiableIterator implements Iterator, Unmodifiable {
      * Decorates the specified iterator such that it cannot be modified.
      * <p>
      * If the iterator is already unmodifiable it is returned directly.
-     * 
+     *
      * @param iterator
      *            the iterator to decorate
      * @throws IllegalArgumentException
@@ -55,7 +55,7 @@ public final class UnmodifiableIterator implements Iterator, Unmodifiable {
     // -----------------------------------------------------------------------
     /**
      * Constructor.
-     * 
+     *
      * @param iterator
      *            the iterator to decorate
      */

@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * Represents the request for the request - response logic.
  * <p>
  * Subclass this for concrete requests.
- * 
+ *
  * @see Response
  * @see de.dal33t.powerfolder.clientserver.RequestExecutor
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
@@ -40,7 +40,7 @@ public abstract class Request extends Message {
     public Request() {
         requestId = IdGenerator.makeId();
     }
-    
+
     public String getRequestId() {
         return requestId;
     }

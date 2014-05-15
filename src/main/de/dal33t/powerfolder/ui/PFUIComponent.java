@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.Controller;
 
 /**
  * A element which is owned by a ui controller
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -40,7 +40,7 @@ public abstract class PFUIComponent extends PFComponent {
 
     /**
      * Answers the ui controller gives acces to all user interface componenets
-     * 
+     *
      * @return The UIController.
      */
     protected UIController getUIController() {

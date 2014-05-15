@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  * This {@link FileRecordProvider} never caches or remembers
  * {@link FilePartsRecord}s. Every request performs a new computation of the
  * record.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class VolatileFileRecordProvider extends AbstractFileRecordProvider {

@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.event;
 
 /**
  * Convinience adataper for <code>FolderListener</code>
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

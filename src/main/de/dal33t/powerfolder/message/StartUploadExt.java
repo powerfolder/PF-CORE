@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 /**
  * Message to indicate that the upload can be started. This message is sent by
  * the uploader. The remote side should send PartRequests or PartinfoRequests.
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */

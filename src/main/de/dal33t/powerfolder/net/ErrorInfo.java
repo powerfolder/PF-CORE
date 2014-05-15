@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.net;
 
 /*
  * creates a class of DynDns server errors
- * 
+ *
  * @author albena roshelova
  *
  */
@@ -31,7 +31,7 @@ public class ErrorInfo {
 	private int    	intCode;
 	private int    	errType;
 	private String 	errTxt;
-	
+
 	public ErrorInfo(String code, int intCode, int errType, String errTxt)
 	{
 		this.code = code;
@@ -45,17 +45,17 @@ public class ErrorInfo {
 	 * NO_ERROR, ERROR, WARN, GOOD.
 	 */
 	public int getType() { return errType; }
-	
+
 	/*
-	 * Returns the type of the code error 
+	 * Returns the type of the code error
 	 * (e.g. nochg, badsys, badagent, badauth, and etc).
 	 */
 	public int getCode() { return intCode; }
-	
+
 	/*
 	 * Returns the specific code error text
 	 */
 	public String getText() { return errTxt; }
-	
+
 	public String getShortText() { return code; }
 }

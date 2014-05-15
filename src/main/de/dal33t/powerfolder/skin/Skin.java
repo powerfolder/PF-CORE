@@ -27,7 +27,7 @@ import javax.swing.LookAndFeel;
 /**
  * Interface which describes the information that can be retrieved from a skin,
  * which contains look-and-feel and image information.
- * 
+ *
  * @author harry
  * @version $Revision$
  */

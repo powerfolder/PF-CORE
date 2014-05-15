@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel displayed when wanting to move a folder from preview to join
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow </a>
  * @version $Revision: 2.3 $
  */
@@ -67,7 +67,7 @@ public class PreviewToJoinDialog extends BaseDialog {
 
     /**
      * Contructor when used on choosen folder
-     * 
+     *
      * @param controller
      * @param folder
      */
@@ -179,7 +179,7 @@ public class PreviewToJoinDialog extends BaseDialog {
 
     /**
      * Creates a pair of location text field and button.
-     * 
+     *
      * @return
      */
     private JComponent createLocationField() {

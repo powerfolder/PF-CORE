@@ -34,7 +34,7 @@ import java.awt.*;
 
 /**
  * Helper class which renders the search results
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 class MemberTableCellRenderer extends DefaultTableCellRenderer {

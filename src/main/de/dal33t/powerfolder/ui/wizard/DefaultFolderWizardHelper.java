@@ -62,7 +62,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Helper class to setup the default folder during wizard steps
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -195,7 +195,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
 
         public void serverDisconnected(ServerClientEvent event) {
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
 

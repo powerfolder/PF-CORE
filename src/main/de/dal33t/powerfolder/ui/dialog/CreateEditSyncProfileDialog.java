@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * Dialog for creatigng or editing profile configuration. User can select a
  * default profile and then adjust the configuration.
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -72,7 +72,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     /**
      * Constructor.
-     * 
+     *
      * @param controller
      * @param syncProfileSelectorPanel
      */
@@ -90,7 +90,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     /**
      * Gets the title of the dialog.
-     * 
+     *
      * @return
      */
     public String getTitle() {
@@ -105,7 +105,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     /**
      * Gets the icon for the dialog.
-     * 
+     *
      * @return
      */
     protected Icon getIcon() {
@@ -114,7 +114,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     /**
      * Creates the visual component.
-     * 
+     *
      * @return
      */
     protected JComponent getContent() {
@@ -328,7 +328,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     /**
      * Create a suggested profile name based on current profile. Like 'Automatic
      * download (copy)', or 'Manual synchronization (copy 6)'.
-     * 
+     *
      * @param profileName
      * @return
      */
@@ -409,7 +409,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     /**
      * The OK / Cancel buttons.
-     * 
+     *
      * @return
      */
     protected Component getButtonBar() {
@@ -525,7 +525,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     /**
      * Check if there are already profiles with this name.
-     * 
+     *
      * @param profileName
      *            name to check
      * @return true if a profile already exists with this name
@@ -549,7 +549,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     /**
      * Check if there are already profiles with this configuration.
-     * 
+     *
      * @param newConfiguration
      * @return
      */

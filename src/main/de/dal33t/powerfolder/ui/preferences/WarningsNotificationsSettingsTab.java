@@ -203,7 +203,7 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
 
     /**
      * Creates the JPanel for advanced settings
-     * 
+     *
      * @return the created panel
      */
     public JPanel getUIPanel() {

@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * Event about changes in the folder, mostly file changes. Exception: Stats
  * calculated event.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

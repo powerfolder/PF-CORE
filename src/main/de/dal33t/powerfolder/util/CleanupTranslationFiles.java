@@ -44,7 +44,7 @@ import java.util.Properties;
 
 /**
  * A Translation file cleaner
- * 
+ *
  * @version $Revision: 1.3 $
  */
 public class CleanupTranslationFiles {
@@ -104,7 +104,7 @@ public class CleanupTranslationFiles {
                 }
             }
            if (!key.startsWith("transfer_mode.")) {
-               searchContents.add(key);               
+               searchContents.add(key);
            }
         }
         Collections.sort(keys);
@@ -147,7 +147,7 @@ public class CleanupTranslationFiles {
                 + locale.getLanguage() + ".properties");
             writeTranslationFile(locale.getLanguage(), keys, foreignProperties);
         }
-        
+
         writeTranslationFile(null, keys, originals);
 
         System.out.println("Streamlined " + originals.size()
@@ -304,7 +304,7 @@ public class CleanupTranslationFiles {
 
     /**
      * Copied from SUN Properties
-     * 
+     *
      * @param theString
      * @param escapeSpace
      * @return
@@ -377,7 +377,7 @@ public class CleanupTranslationFiles {
 
     /**
      * Convert a nibble to a hex character
-     * 
+     *
      * @param nibble
      *            the nibble to convert.
      */

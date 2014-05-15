@@ -81,7 +81,7 @@ public class NodesSelectTableModel implements TableModel {
 
     /**
      * Hide / show offline users in table.
-     * 
+     *
      * @param hide
      */
     public void setHideOffline(boolean hide) {

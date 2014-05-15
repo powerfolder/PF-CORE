@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * The DynDnsManager class is responsible for: - to provide services to the
  * DynDns updates and, - DynDns validation as well as some UI utility methods.
- * 
+ *
  * @author Albena Roshelova
  */
 
@@ -120,7 +120,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Validates given dynDns for compatibility with the current host
-     * 
+     *
      * @param dynDns
      *            to validate
      * @return true if validation succeeded, false otherwise
@@ -196,7 +196,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Shows warning message to the user in case the validation goes wrong
-     * 
+     *
      * @param type
      *            of validation failure
      * @param arg
@@ -294,7 +294,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * retrieves the title of the message box
-     * 
+     *
      * @return
      */
     private String getTitle() {
@@ -303,7 +303,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * saves updated ip to the config file
-     * 
+     *
      * @param updateData
      */
     private void saveUpdatedIP(DynDnsUpdateData updateData) {
@@ -315,7 +315,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Setups the UI for the wait message box
-     * 
+     *
      * @param dyndns
      * @return
      */
@@ -360,7 +360,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Checks if the current dyndns host is still valid (=matches the real ip).
-     * 
+     *
      * @return false, if the dyndns service should be updated.
      */
     private boolean dyndnsValid() {
@@ -385,7 +385,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Forces an update of the DynDNS service.
-     * 
+     *
      * @return The update result
      */
     private int updateDynDNS() {
@@ -462,7 +462,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Returns dyndns IP address
-     * 
+     *
      * @param newDns
      */
 
@@ -488,7 +488,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Returns the internet address of this machine.
-     * 
+     *
      * @return the ip address or empty string if none is found
      */
 
@@ -528,7 +528,7 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * Parse the HTML string and filter everything out but the ip address
-     * 
+     *
      * @param str
      * @return
      */

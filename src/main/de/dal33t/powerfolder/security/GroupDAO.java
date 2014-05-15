@@ -14,7 +14,7 @@ public interface GroupDAO extends GenericDAO<Group> {
 
     /**
      * Find a group by its name.
-     * 
+     *
      * @param groupname
      * @return
      */
@@ -22,14 +22,14 @@ public interface GroupDAO extends GenericDAO<Group> {
 
     /**
      * Get all Groups.
-     * 
+     *
      * @return
      */
     List<Group> getGroups();
 
     /**
      * Get a list of Groups that apply to the passed filter.
-     * 
+     *
      * @param filterModel
      * @return
      */
@@ -37,7 +37,7 @@ public interface GroupDAO extends GenericDAO<Group> {
 
     /**
      * Get a list of all groups, that hold a permission to a folder.
-     * 
+     *
      * @param folderInfo
      * @return
      */
@@ -45,14 +45,14 @@ public interface GroupDAO extends GenericDAO<Group> {
 
     /**
      * Store several groups.
-     * 
+     *
      * @param groups
      */
     void store(Group... groups);
-    
+
     /**
      * Get the number of groups, that belong to an organization.
-     * 
+     *
      * @param org
      * @return
      */

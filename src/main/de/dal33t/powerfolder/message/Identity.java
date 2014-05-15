@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message which contains information about me.
- * 
+ *
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
@@ -57,7 +57,7 @@ public class Identity extends Message {
 
     /**
      * If to wait for handshake ack from remote side.
-     * 
+     *
      * @see HandshakeCompleted
      */
     private boolean acknowledgesHandshakeCompletion;
@@ -203,7 +203,7 @@ public class Identity extends Message {
     /**
      * #2569: Connection improvement: Don't send full folderlist from server to
      * client.
-     * 
+     *
      * @return
      */
     public boolean isRequestFullFolderlist() {

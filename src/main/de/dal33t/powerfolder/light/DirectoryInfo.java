@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Reject;
  * A lightweight object representing an actual directory in the PowerFolder.
  * <p>
  * Related ticket: #378
- * 
+ *
  * @author sprajc
  */
 public class DirectoryInfo extends FileInfo {
@@ -78,7 +78,7 @@ public class DirectoryInfo extends FileInfo {
 
     /**
      * appends to buffer
-     * 
+     *
      * @param str
      *            the stringbuilder to add the detail info to.
      */

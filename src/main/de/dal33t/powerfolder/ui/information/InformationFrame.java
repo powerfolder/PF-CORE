@@ -56,7 +56,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public InformationFrame(Controller controller) {
@@ -95,7 +95,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Displays file info for a folder.
-     * 
+     *
      * @param folderInfo
      */
     public void displayFolderFiles(FolderInfo folderInfo) {
@@ -105,7 +105,7 @@ public class InformationFrame extends PFUIComponent {
         displayCard(folderInformationCard);
         showingFolder = true;
         currentFolderInfo = folderInfo;
-        
+
         if (isFine()) {
             logFine("displayedFolderFiles: " + folderInfo);
         }
@@ -132,7 +132,7 @@ public class InformationFrame extends PFUIComponent {
     /**
      * Displays file info for a folder with filter set to new and sort set to
      * date descending.
-     * 
+     *
      * @param folderInfo
      */
     public void displayFolderFilesLatest(FolderInfo folderInfo) {
@@ -146,7 +146,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Displays file info for a folder with filter set to incoming.
-     * 
+     *
      * @param folderInfo
      */
 //    public void displayFolderFilesIncoming(FolderInfo folderInfo) {
@@ -160,7 +160,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Displays settings info for a folder
-     * 
+     *
      * @param folderInfo
      */
     public void displayFolderSettings(FolderInfo folderInfo) {
@@ -180,7 +180,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Displays folder member info
-     * 
+     *
      * @param folderInfo
      */
     public void displayFolderMembers(FolderInfo folderInfo) {
@@ -194,7 +194,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Displays folder problems
-     * 
+     *
      * @param folderInfo
      */
     public void displayFolderProblems(FolderInfo folderInfo) {
@@ -239,7 +239,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Displays a card with tile and icon.
-     * 
+     *
      * @param card
      */
     public void displayCard(InformationCard card) {
@@ -297,7 +297,7 @@ public class InformationFrame extends PFUIComponent {
 
     /**
      * Fires when a folder is removed. Hide this if showing the folder.
-     * 
+     *
      * @param folderInfo
      */
     private void removedFolder(FolderInfo folderInfo) {

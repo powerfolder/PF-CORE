@@ -59,7 +59,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Offers several helping methods for junit tests.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -128,7 +128,7 @@ public class TestHelper {
 
     /**
      * Makes sure that no (incomplete) files are left over.
-     * 
+     *
      * @param folderList
      */
     public static void assertIncompleteFilesGone(List<Folder> folderList) {
@@ -304,7 +304,7 @@ public class TestHelper {
     /**
      * Wraps <code>Thread.sleep()</code> and just try/catches the
      * InterruptedException
-     * 
+     *
      * @param ms
      * @throws RuntimeException
      *             if InterruptedException occoured
@@ -319,7 +319,7 @@ public class TestHelper {
 
     /**
      * Waits for a condition to reach and/or a timeout.
-     * 
+     *
      * @param secondsTimeout
      *            the timeout in seconds to wait for the condition.
      * @param condition
@@ -372,7 +372,7 @@ public class TestHelper {
 
     /**
      * Creates a file with a random name and random content in the directory.
-     * 
+     *
      * @param directory
      *            the dir to place the file
      * @return the file that was created
@@ -386,7 +386,7 @@ public class TestHelper {
     /**
      * Creates a file with a random name and random content with a defined size
      * in the directory. The file is guaranteed to be new.
-     * 
+     *
      * @param directory
      *            the dir to place the file
      * @param size
@@ -427,7 +427,7 @@ public class TestHelper {
 
     /**
      * will overwrite file with random contents.
-     * 
+     *
      * @param file
      *            the file to change.
      */
@@ -437,7 +437,7 @@ public class TestHelper {
 
     /**
      * will overwrite file with random contents.
-     * 
+     *
      * @param file
      *            the file to change.
      * @param size
@@ -480,7 +480,7 @@ public class TestHelper {
     /**
      * Creates a test file with name with random content in a specified
      * directory
-     * 
+     *
      * @param directory
      * @param filename
      * @return the created file
@@ -497,7 +497,7 @@ public class TestHelper {
 
     /**
      * Creates a test file with name and contents in a specified directory
-     * 
+     *
      * @param directory
      * @param filename
      * @param contents
@@ -537,7 +537,7 @@ public class TestHelper {
      * Creats a random name for a file.
      * <p>
      * Ensures, that there are upper and lower case characters in the filename.
-     * 
+     *
      * @return the filename with upper/lower case characters.
      */
     public static final String createRandomFilename() {
@@ -561,7 +561,7 @@ public class TestHelper {
 
     /**
      * Scans a folder and waits for the scan to complete.
-     * 
+     *
      * @param folder
      */
     public static void scanFolder(final Folder folder) {
@@ -622,7 +622,7 @@ public class TestHelper {
 
     /**
      * Searches for transfers that don't have an associated counter-part.
-     * 
+     *
      * @param swarmingTest
      * @return
      */

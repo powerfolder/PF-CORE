@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Helper to set/load the general HTTP proxy settings of this VM.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.14 $
  */

@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * destination is this client or 2) Sends the messages to the destination if
  * possible Establishes connections thru UDT sockets. Like with TCP every
  * connection requires it's own port!
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class UDTSocketConnectionManager extends PFComponent {
@@ -60,7 +60,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 
     /**
      * Constructs a manager for establishing UDT connections.
-     * 
+     *
      * @param controller
      * @param portRange
      *            the range of possible ports
@@ -74,7 +74,7 @@ public class UDTSocketConnectionManager extends PFComponent {
      * Creates and initializes an UDT connection. The means used for this are
      * similar to that of the RelayedConnectionManager, in that a special
      * message is relayed to the target client.
-     * 
+     *
      * @param destination
      *            the destination member to connect to
      * @return on successfully establishing a connection, null otherwise
@@ -173,7 +173,7 @@ public class UDTSocketConnectionManager extends PFComponent {
     /**
      * Handles UDT messages. Based on the content of the message it might get
      * relayed if the destination != mySelf or processed otherwise.
-     * 
+     *
      * @param sender
      *            the Member who sent the message
      * @param msg
@@ -192,7 +192,7 @@ public class UDTSocketConnectionManager extends PFComponent {
      * Returns a port to use for the given destination. Each connection requires
      * it's own port on both sides. The returned slot contains an UDTSocket
      * which is already bound to the selected port.
-     * 
+     *
      * @param destination
      * @return the slot
      */
@@ -251,7 +251,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 
     /**
      * Frees a slot taken by selectPortFor
-     * 
+     *
      * @param port
      *            the port slot to free
      */
@@ -264,7 +264,7 @@ public class UDTSocketConnectionManager extends PFComponent {
     /**
      * Creates an initialized connection handler for a UDT socket based on UDP
      * connection.
-     * 
+     *
      * @param controller
      *            the controller.
      * @param socket

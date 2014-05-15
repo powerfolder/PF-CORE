@@ -36,9 +36,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /*
- * This class creates a dialog box which is designed to display 
+ * This class creates a dialog box which is designed to display
  * given DynDns error message
- * 
+ *
  * @author Albena Roshelova
  *
  */
@@ -211,7 +211,7 @@ public class ErrorDialog extends PFUIComponent {
 
     /**
      * Get the component title
-     * 
+     *
      * @return the title
      */
     private String getTitle() {
@@ -254,7 +254,7 @@ public class ErrorDialog extends PFUIComponent {
 
     /**
      * Build the ui component
-     * 
+     *
      * @return
      */
     protected final JDialog getUIComponent() {

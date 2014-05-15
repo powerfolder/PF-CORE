@@ -100,7 +100,7 @@ public class OSUtil {
 
     /**
      * Tested on Mac OS X 10.6.5 Build 10H574.
-     * 
+     *
      * @return if the operating system is mac os x 10.6 or newer.
      */
     public static boolean isMacOSSnowLeopardOrNewer() {
@@ -148,7 +148,7 @@ public class OSUtil {
      * <P>
      * http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-
      * jre-is-installed-32bit-vs-64bit
-     * 
+     *
      * @return true if this VM is running a 64 bit version. false if 32 bit.
      */
     public static boolean is64BitPlatform() {
@@ -162,7 +162,7 @@ public class OSUtil {
 
     /**
      * Determines if this is a web start via Java WebStart
-     * 
+     *
      * @return true if started via web
      */
     public static boolean isWebStart() {
@@ -179,7 +179,7 @@ public class OSUtil {
 
     /**
      * #2751: java.vm.name=Excelsior JET
-     * 
+     *
      * @return
      */
     public static boolean isJETRuntime() {
@@ -190,7 +190,7 @@ public class OSUtil {
     /**
      * Systray only on win2000 and newer. win 98/ME gives a "could not create
      * main-window error"
-     * 
+     *
      * @return if systray is supported on this platform
      */
     public static boolean isSystraySupported() {
@@ -231,7 +231,7 @@ public class OSUtil {
     /**
      * Tries to load a library of PowerFolder. It tries to load the lib from
      * several locations.
-     * 
+     *
      * @param clazz
      * @param lib
      * @return if succeeded

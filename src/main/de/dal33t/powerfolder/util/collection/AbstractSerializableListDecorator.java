@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Serializable subclass of AbstractListDecorator.
- * 
+ *
  * @author Stephen Colebourne
  * @since Commons Collections 3.1
  */
@@ -46,7 +46,7 @@ public abstract class AbstractSerializableListDecorator extends
     // -----------------------------------------------------------------------
     /**
      * Write the list out using a custom routine.
-     * 
+     *
      * @param out
      *            the output stream
      * @throws IOException
@@ -58,7 +58,7 @@ public abstract class AbstractSerializableListDecorator extends
 
     /**
      * Read the list in using a custom routine.
-     * 
+     *
      * @param in
      *            the input stream
      * @throws IOException

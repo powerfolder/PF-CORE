@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.transfer.Upload;
 
 /**
  * Event fired by TransferManager
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
@@ -77,7 +77,7 @@ public class TransferManagerEvent extends EventObject {
 
     /**
      * Returns the affected file of upload/download event
-     * 
+     *
      * @return
      */
     public FileInfo getFile() {

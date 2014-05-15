@@ -27,10 +27,10 @@ import java.io.Serializable;
 
 /**
  * Manages the parts of a file which contain data or not.
- * This class is Thread-safe. 
- * 
+ * This class is Thread-safe.
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: 4280 $ 
+ * @version $Revision: 4280 $
  *
  */
 public class FilePartsState implements Serializable {
@@ -42,9 +42,9 @@ public class FilePartsState implements Serializable {
 		PENDING, // Requested for download but not yet received
 		AVAILABLE // Available for own upload
 	}
-	
+
 	private Partitions<PartState> parts;
-	
+
 	/**
 	 * Creates a new instance with the given length.
 	 * All elements are set to NEEDED initially.
@@ -53,7 +53,7 @@ public class FilePartsState implements Serializable {
 	public FilePartsState(long fileLength) {
 		parts = new Partitions<PartState>(Range.getRangeByLength(0, fileLength), PartState.NEEDED);
 	}
-	
+
 	/**
 	 * Returns the first range that lies within "in", which is marked with the given state.
 	 * @param in
@@ -63,7 +63,7 @@ public class FilePartsState implements Serializable {
 	public synchronized Range findPart(Range in, PartState state) {
 		return parts.search(in, state);
 	}
-	
+
 	/**
 	 * Returns the first range that is marked with the state.
 	 * @param state
@@ -81,7 +81,7 @@ public class FilePartsState implements Serializable {
 	public synchronized void setPartState(Range range, PartState state) {
 		parts.insert(range, state);
 	}
-	
+
 	/**
 	 * Counts the number of PartStates in the given range that match the given PartState.
 	 * @param r
@@ -91,7 +91,7 @@ public class FilePartsState implements Serializable {
 	public synchronized long countPartStates(Range r, PartState s) {
 		return parts.count(r, s);
 	}
-	
+
 	/**
 	 * Resets all pending ranges to needed.
 	 */
@@ -103,7 +103,7 @@ public class FilePartsState implements Serializable {
 			r = Range.getRangeByNumbers(wr.getEnd() + 1, r.getEnd());
 		}
 	}
-	
+
 	public long getFileLength() {
 		return parts.getPartionedRange().getLength();
 	}
@@ -111,7 +111,7 @@ public class FilePartsState implements Serializable {
 	public Range getRange() {
 		return parts.getPartionedRange();
 	}
-	
+
 	public synchronized boolean isCompleted() {
 	    if (parts.getPartionedRange().getLength() == 0) {
 	        return true;

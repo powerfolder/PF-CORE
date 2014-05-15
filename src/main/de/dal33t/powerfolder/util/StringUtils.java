@@ -94,7 +94,7 @@ public class StringUtils {
         }
         return false;
     }
-    
+
     /**
      * <p>Replaces all occurrences of a String within another String.</p>
      *
@@ -121,7 +121,7 @@ public class StringUtils {
     public static String   replace(String   text, String   repl, String   with) {
         return replace(text, repl, with, -1);
     }
-    
+
     /**
      * <p>Replaces a String with another String inside a larger String,
      * for the first <code>max</code> values of the search String.</p>

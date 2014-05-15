@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.util.Util;
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
  * calculated if needed.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.22 $
  */
@@ -162,7 +162,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Calculates the statistics
-     * 
+     *
      * @private public because for test
      */
     public synchronized void calculate0() {
@@ -487,7 +487,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Answers the sync percentage of a member
-     * 
+     *
      * @param member
      * @return the sync percentage of the member, -1 if unknown
      */
@@ -625,7 +625,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Returns the download-TransferCounter for this Folder
-     * 
+     *
      * @return a TransferCounter or null if no such information is available
      *         (might be available later)
      */
@@ -640,7 +640,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Put a partial sync stat in the holding map.
-     * 
+     *
      * @param fileInfo
      * @param member
      * @param bytesTransferred
@@ -758,7 +758,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Listens to the nodemanager and triggers recalculation if required
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyNodeManagerListener extends NodeManagerAdapter {
@@ -791,7 +791,7 @@ public class FolderStatistic extends PFComponent {
                 scheduleCalculate();
                 return;
             }
-            // Fixes: PFS-1144 
+            // Fixes: PFS-1144
             if (!e.getNode().hasCompleteFileListFor(folder.getInfo())
                 && e.getNode().isConnected())
             {

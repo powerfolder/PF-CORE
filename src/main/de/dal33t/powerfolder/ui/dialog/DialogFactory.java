@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Provides some convenient one method access to some dialogs.
  * <p>
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @author <A HREF="mailto:harry@powerfolder.com">Harry</A>
  * @version $Revision: 1.3 $
@@ -85,7 +85,7 @@ public class DialogFactory {
      * Opens a DirectoryChooser with the current dir and returns the new
      * selection. Returns null if operation is cancelled. Also displays
      * virtual online folders.
-     * 
+     *
      * @param uiController
      *            the ui controller, used to get the parent frame
      * @param initialDirectory
@@ -126,7 +126,7 @@ public class DialogFactory {
 
     /**
      * The preferred way to create a FileChooser in PowerFolder.
-     * 
+     *
      * @return a file chooser
      */
     public static JFileChooser createFileChooser() {
@@ -140,7 +140,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with message and OK button.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog
@@ -160,7 +160,7 @@ public class DialogFactory {
     /**
      * Generic dialog with message and throwable and OK button. The throwable is
      * only shown in verbose mode.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog
@@ -189,7 +189,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with message.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog
@@ -214,7 +214,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with message.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog
@@ -244,7 +244,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with custom panel.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog
@@ -270,7 +270,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with custom panel.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog
@@ -302,7 +302,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with 'never ask again' checkbox.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog
@@ -333,7 +333,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with custom panle and 'never ask again' checkbox.
-     * 
+     *
      * @param controller
      * @param title
      *            the title for the dialog

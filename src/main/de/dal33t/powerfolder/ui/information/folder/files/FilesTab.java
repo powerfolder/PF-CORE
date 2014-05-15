@@ -76,7 +76,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public FilesTab(Controller controller) {
@@ -126,7 +126,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Set the tab with details for a folder.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -149,7 +149,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     /**
      * Set the tab with details for a folder with new set and sort date
      * descending.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
@@ -195,7 +195,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Set the tab with details for a folder with incoming files.
-     * 
+     *
      * @param folderInfo
      */
     // public void setFolderInfoIncoming(FolderInfo folderInfo) {
@@ -213,7 +213,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Gets the ui component
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {

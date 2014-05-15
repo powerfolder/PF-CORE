@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Rationale: Executes a request on a remote node.
  * <p>
  * Is thread safe. Can execute only one request.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

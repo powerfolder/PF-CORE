@@ -133,7 +133,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public MembersTableModel(Controller controller) {
@@ -198,7 +198,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Sets model for a new folder.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -230,7 +230,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Adds a listener to the list.
-     * 
+     *
      * @param l
      */
     public void addTableModelListener(TableModelListener l) {
@@ -239,7 +239,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Removes a listener from the list.
-     * 
+     *
      * @param l
      */
     public void removeTableModelListener(TableModelListener l) {
@@ -360,7 +360,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Not implemented - cannot set values in this model.
-     * 
+     *
      * @param aValue
      * @param rowIndex
      * @param columnIndex
@@ -446,7 +446,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Handle node add event.
-     * 
+     *
      * @param e
      */
     private void handleNodeChanged(Member eventMember) {
@@ -467,7 +467,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Checks that the folder and member are valid.
-     * 
+     *
      * @param e
      * @throws IllegalStateException
      */
@@ -491,7 +491,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Sorts by this column.
-     * 
+     *
      * @param columnIndex
      * @return always tru.
      */

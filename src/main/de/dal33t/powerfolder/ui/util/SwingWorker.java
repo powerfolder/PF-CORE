@@ -28,7 +28,7 @@ import javax.swing.SwingUtilities;
  * http://java.sun.com/docs/books/tutorial/uiswing/misc/threads.html Note that
  * the API changed slightly in the 3rd version: You must now invoke start() on
  * the SwingWorker after creating it.
- * 
+ *
  * @deprecated Please use {@link javax.swing.SwingWorker}
  */
 @Deprecated
@@ -101,7 +101,7 @@ public abstract class SwingWorker {
      * Return the value created by the <code>construct</code> method. Returns
      * null if either the constructing thread or the current thread was
      * interrupted before a value was produced.
-     * 
+     *
      * @return the value created by the <code>construct</code> method
      */
     public Object get() {
@@ -123,7 +123,7 @@ public abstract class SwingWorker {
      * Return the Throwable that occurred by the <code>construct</code> method.
      * Returns null if either the constructing thread, the current thread was
      * interrupted before a value was produced or now exception occurred.
-     * 
+     *
      * @return the value created by the <code>construct</code> method
      */
     public Throwable getThrowable() {

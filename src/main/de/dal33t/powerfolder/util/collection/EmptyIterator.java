@@ -18,7 +18,7 @@ package de.dal33t.powerfolder.util.collection;
 
 import java.util.Iterator;
 
-/** 
+/**
  * Provides an implementation of an empty iterator.
  * <p>
  * This class provides an implementation of an empty iterator.
@@ -27,7 +27,7 @@ import java.util.Iterator;
  *
  * @since Commons Collections 2.1.1 and 3.1
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr 2008) $
- * 
+ *
  * @author Stephen Colebourne
  */
 public class EmptyIterator extends AbstractEmptyIterator implements ResettableIterator {

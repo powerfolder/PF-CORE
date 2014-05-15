@@ -23,7 +23,7 @@ import java.io.Externalizable;
 
 /**
  * Something that produces messages.
- * 
+ *
  * @author sprajc
  */
 public interface MessageProducer {

@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
 
 /**
  * A Folder hash info
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -85,10 +85,10 @@ public class FolderInfo implements Serializable, Cloneable {
         this.id = id;
         hash = hashCode0();
     }
-    
+
     /**
      * PFS-1129: Account relative backup folder. Name must be unique.
-     * 
+     *
      * @param name
      * @param aInfo
      */
@@ -152,7 +152,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Returns the joined folder, or null if folder is not joined
-     * 
+     *
      * @param controller
      * @return the folder
      */
@@ -164,7 +164,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Calculates the secure Id for this folder with magicid from remote
-     * 
+     *
      * @param magicId
      * @return the secure Id for this folder with magicid from remote
      */

@@ -32,7 +32,7 @@ import java.util.Properties;
 
 /**
  * Utility for configuration stuff.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -43,7 +43,7 @@ public class PropertiesUtil {
     /**
      * Writes the config to the file. The file contains the configurations in a
      * sorted order.
-     * 
+     *
      * @param file
      * @param config
      * @throws IOException

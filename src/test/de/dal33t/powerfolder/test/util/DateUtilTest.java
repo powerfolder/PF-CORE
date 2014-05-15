@@ -32,7 +32,7 @@ public class DateUtilTest extends TestCase {
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(1000), new Date(3000)));
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(11111111), new Date(11111000)));
         assertFalse(DateUtil.equalsFileDateCrossPlattform(new Date(222222222), new Date(222220000)));
-        
+
         // 2000 milliseconds we assume the same
         assertFalse(DateUtil.isNewerFileDateCrossPlattform(new Date(3000),new Date(1000)));
         // 2001 milliseconds we assume different
@@ -40,7 +40,7 @@ public class DateUtilTest extends TestCase {
         // other is newer
         assertFalse(DateUtil.isNewerFileDateCrossPlattform(new Date(1000),new Date(3001)));
     }
-    
+
     public void testSpecial() {
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(1146605870000L), new Date(1146605868805L)));
     }

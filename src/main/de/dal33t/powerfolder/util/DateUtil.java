@@ -150,7 +150,7 @@ public class DateUtil {
         Calendar cal = new GregorianCalendar();
         Date now = cal.getTime();
         long diff = date.getTime() - now.getTime();
-        return (int) (diff / 1000 / 60);        
+        return (int) (diff / 1000 / 60);
     }
 
     /**
@@ -205,5 +205,5 @@ public class DateUtil {
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
-    
+
 }

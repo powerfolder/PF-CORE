@@ -20,22 +20,22 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
     }
-    
+
     /**
      * Transfer a file from Bart to Lisa.
      */
     private void transferFile() {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
-        scanFolder(getFolderAtBart());  
-        scanFolder(getFolderAtLisa());  
+        scanFolder(getFolderAtBart());
+        scanFolder(getFolderAtLisa());
         // Give it a couple of seconds to settle.
         TestHelper.waitMilliSeconds(2000);
     }
 
-    
+
     /**
      * Expert user and download cleanup is never. Downloads will NOT be cleaned up.
-     * 
+     *
      * @throws IOException
      */
     public void testExpertNoCleanupOfDownloads() throws IOException {
@@ -47,10 +47,10 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
         int downloadsSize = getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size();
         assertEquals("Expert No Cleanup", 1, downloadsSize);
     }
-   
+
     /**
      * Expert user and download cleanup is immediate. Downloads will be cleaned up.
-     * 
+     *
      * @throws IOException
      */
     public void testExpertImmediateCleanupOfDownloads() throws IOException {
@@ -62,12 +62,12 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
         int downloadsSize = getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size();
         assertEquals("Expert Immediate Cleanup", 0, downloadsSize);
     }
-    
+
     /**
      * Novice user and download cleanup is never. Downloads will be cleaned up
      * even though the cleanup is 'never' - because novice users cannot clean up
      * downloads.
-     * 
+     *
      * @throws IOException
      */
     public void testBeginnerModeAutoCleanupOfDownloads() throws IOException {

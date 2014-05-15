@@ -24,7 +24,7 @@ import java.util.EventObject;
 
 /**
  * An update event.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.27 $
  */
@@ -45,7 +45,7 @@ public class UpdaterEvent extends EventObject {
         this.newReleaseVersion = newReleaseVersion;
         this.newWindowsExeURL = newWindowsExeURL;
     }
-    
+
     public Updater getUpdater() {
         return (Updater) source;
     }

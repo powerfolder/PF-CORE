@@ -63,7 +63,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
  * Utility class with methods for debugging
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.30 $
  */
@@ -112,7 +112,7 @@ public class Debug {
 
     /**
      * Writes a list of files to disk as CSV file.
-     * 
+     *
      * @param folderName
      * @param memberName
      * @param fileInfos
@@ -140,7 +140,7 @@ public class Debug {
 
     /**
      * Writes a list of files to disk as CSV file.
-     * 
+     *
      * @param logFile
      * @param fileInfos
      * @param header
@@ -196,7 +196,7 @@ public class Debug {
 
     /**
      * Details infos about the fileinfo to a comma separated line.
-     * 
+     *
      * @param f
      */
     private static String toCSVLine(FileInfo f) {
@@ -228,7 +228,7 @@ public class Debug {
 
     /**
      * Builds a debug report for remote analyse
-     * 
+     *
      * @param c
      * @return
      */
@@ -429,7 +429,7 @@ public class Debug {
 
     /**
      * Adds a detailed info about the member to the buffer
-     * 
+     *
      * @param b
      * @param m
      */
@@ -442,7 +442,7 @@ public class Debug {
 
     /**
      * Details infos about the member.
-     * 
+     *
      * @param m
      */
     private static String toDetailInfo(Member m) {
@@ -486,7 +486,7 @@ public class Debug {
 
     /**
      * Details infos about the member ad a comma separated line.
-     * 
+     *
      * @param m
      */
     private static String toCSVLine(Member m) {
@@ -531,7 +531,7 @@ public class Debug {
 
     /**
      * Adds detailed info about the folder to buffer
-     * 
+     *
      * @param b
      * @param f
      */
@@ -550,7 +550,7 @@ public class Debug {
 
     /**
      * Writes debug report to disk.
-     * 
+     *
      * @see #loadDebugReport(MemberInfo)
      * @param nodeInfo
      * @return if succeeded
@@ -583,7 +583,7 @@ public class Debug {
 
     /**
      * Loads a stored debug report from disk for that node
-     * 
+     *
      * @see #writeNodeInformation(NodeInformation)
      * @param node
      * @return
@@ -609,7 +609,7 @@ public class Debug {
 
     /**
      * Writes a list of nodes to a debut output file.
-     * 
+     *
      * @param nodes
      *            the list of nodes
      * @param fileName
@@ -633,7 +633,7 @@ public class Debug {
 
     /**
      * Writes a list of nodes to a debut output file in csv format.
-     * 
+     *
      * @param nodes
      *            the list of nodes
      * @param fileName
@@ -663,7 +663,7 @@ public class Debug {
 
     /**
      * Writes statistics to disk
-     * 
+     *
      * @param controller
      */
     public static void writeStatistics(Controller controller) {

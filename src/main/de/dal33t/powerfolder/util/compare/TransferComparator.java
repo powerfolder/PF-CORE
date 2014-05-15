@@ -25,7 +25,7 @@ import java.util.Comparator;
 
 /**
  * Comparator for FileInfo
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
@@ -59,7 +59,7 @@ public class TransferComparator implements Comparator<Transfer> {
                 if (comp == 0 && o1.getCompletedDate() != null
                     && o2.getCompletedDate() != null)
                 {
-                    
+
                     return -o1.getCompletedDate().compareTo(
                         o2.getCompletedDate());
                 }

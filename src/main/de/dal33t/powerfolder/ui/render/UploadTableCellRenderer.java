@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Renderer for any transfer table
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.20 $
  */
@@ -60,7 +60,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
     /**
      * Initalizes the renderer for a transfertable. renderDownloads determines
      * if we are rendering ul or dls. Maybe split this class up into two
-     * 
+     *
      * @param controller
      */
     public UploadTableCellRenderer(Controller controller) {
@@ -252,7 +252,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
      * Only some types of problem are relevant for display.
      * <p>
      * TODO COPIED from DownloadsTableModel
-     * 
+     *
      * @param problem
      *            the transfer problem
      * @return true if it should be displayed.

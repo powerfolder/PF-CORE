@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * an external value model. The internal vm tracks the text field changes. The
  * external one is what the public accessor sees. External value does not expose
  * 'hint' text.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</A>
  */
 public class FileFilterTextField extends PFComponent {
@@ -73,7 +73,7 @@ public class FileFilterTextField extends PFComponent {
 
     /**
      * create a FilterTextField
-     * 
+     *
      * @param controller
      */
     public FileFilterTextField(Controller controller) {
@@ -196,7 +196,7 @@ public class FileFilterTextField extends PFComponent {
 
     /**
      * Returns true if there is external text.
-     * 
+     *
      * @return
      */
     private boolean hasExternalText() {
@@ -240,7 +240,7 @@ public class FileFilterTextField extends PFComponent {
 
     /**
      * Update changes to the members in the filter list.
-     * 
+     *
      * @param members
      */
     public void setMembers(Collection<Member> members) {

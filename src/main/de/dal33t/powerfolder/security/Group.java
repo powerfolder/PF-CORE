@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A group of accounts.
- * 
+ *
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @version $Revision: 1.5 $
  */
@@ -58,7 +58,7 @@ public class Group implements Serializable {
     public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
-    
+
     private static final long serialVersionUID = 100L;
 
     private static final Logger LOG = Logger.getLogger(Group.class.getName());
@@ -75,7 +75,7 @@ public class Group implements Serializable {
     @Index(name = "IDX_GRP_ORG_ID")
     @Column(nullable = true, unique = false)
     private String organizationOID;
-    
+
     @CollectionOfElements
     @Type(type = "permissionType")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -194,7 +194,7 @@ public class Group implements Serializable {
     public void setOrganizationOID(String organizationOID) {
         this.organizationOID = organizationOID;
     }
-    
+
     public GroupInfo createInfo() {
         return new GroupInfo(oid, name);
     }

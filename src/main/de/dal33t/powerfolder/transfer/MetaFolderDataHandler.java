@@ -37,7 +37,7 @@ public class MetaFolderDataHandler extends PFComponent {
 
     /**
      * Handle file change to metaFolder files.
-     * 
+     *
      * @param fileInfo
      *            metaFolder file info
      */
@@ -77,7 +77,7 @@ public class MetaFolderDataHandler extends PFComponent {
     /**
      * Updated sync patterns have been downloaded to the metaFolder. Update the
      * sync patterns in the parent folder.
-     * 
+     *
      * @param fileInfo
      *            fileInfo of the new sync patterns
      */

@@ -29,8 +29,8 @@ import java.io.InputStream;
  *
  */
 public class CountedInputStream extends FilterInputStream {
-	private long readBytes; 
-	
+	private long readBytes;
+
 	public CountedInputStream(InputStream in) {
 		super(in);
 	}

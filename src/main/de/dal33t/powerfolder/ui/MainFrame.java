@@ -112,7 +112,7 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
  * Powerfolder gui mainframe
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.44 $
  */
@@ -146,7 +146,7 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel lowerMainTextActionLabel;
     private ActionLabel setupLabel;
     private JLabel zyncroLabel;
-    
+
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
     private ActionLabel noticesActionLabel;
@@ -450,12 +450,12 @@ public class MainFrame extends PFUIComponent {
         setupButton.setText(null);
 
         notConnectedLoggedInLabel = new JLabel(Icons.getIconById(Icons.WARNING));
-        
+
         MyShowNoticesAction myShowNoticesAction = new MyShowNoticesAction(getController());
         noticeWarningButton = new JButtonMini(myShowNoticesAction);
         noticeWarningButton.setIcon(Icons.getIconById(Icons.WARNING));
         noticeWarningButton.setText(null);
-        
+
         noticeInfoButton = new JButtonMini(myShowNoticesAction);
         noticeInfoButton.setIcon(Icons.getIconById(Icons.INFORMATION));
         noticeInfoButton.setText(null);
@@ -870,7 +870,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Add a change listener to the main tabbed pane selection.
-     * 
+     *
      * @param l
      */
     public void addTabbedPaneChangeListener(ChangeListener l) {
@@ -879,7 +879,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Remove a change listener from the main tabbed pane.
-     * 
+     *
      * @param l
      */
     public void removeTabbedPaneChangeListener(ChangeListener l) {
@@ -917,7 +917,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * Determine if application is currently minimized or hidden (for example,
      * in the systray)
-     * 
+     *
      * @return true, if application is currently minimized or hidden
      */
     public boolean isIconifiedOrHidden() {
@@ -1108,7 +1108,7 @@ public class MainFrame extends PFUIComponent {
 
         /**
          * Hide other frames when main frame gets minimized.
-         * 
+         *
          * @param e
          */
         public void windowIconified(WindowEvent e) {
@@ -1274,7 +1274,7 @@ public class MainFrame extends PFUIComponent {
                 plusButton.setToolTipText(
                         Translation.getTranslation("main_frame.maximize.tips"));
                 plusButton.setIcons(Icons.getIconById(
-                        Icons.WINDOW_MAXIMIZE_NORMAL), 
+                        Icons.WINDOW_MAXIMIZE_NORMAL),
                         Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
                         Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
                 minusButton.setToolTipText(
@@ -1301,7 +1301,7 @@ public class MainFrame extends PFUIComponent {
                 plusButton.setToolTipText(
                         Translation.getTranslation("main_frame.maximize.tips"));
                 plusButton.setIcons(Icons.getIconById(
-                    Icons.WINDOW_MAXIMIZE_NORMAL), 
+                    Icons.WINDOW_MAXIMIZE_NORMAL),
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
                 minusButton.setToolTipText(
@@ -1316,7 +1316,7 @@ public class MainFrame extends PFUIComponent {
                         uiComponent.setSize(uiComponent.getMinimumSize());
                     }
                 });
-                
+
                 // PFC-2417: To hide on startup
                 if (init) {
                     centralPanel.setVisible(false);

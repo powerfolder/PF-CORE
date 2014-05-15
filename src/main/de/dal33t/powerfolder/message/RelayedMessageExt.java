@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Ext version of {@link RelayedMessage}
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

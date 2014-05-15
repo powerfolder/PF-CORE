@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Simple class for a scheduled Upload
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
@@ -69,7 +69,7 @@ public class Upload extends Transfer {
     /**
      * Constructs a new uploads, package protected, can only be called by
      * transfermanager
-     * 
+     *
      * @param manager
      * @param member
      * @param dl
@@ -195,7 +195,7 @@ public class Upload extends Transfer {
                             "Upload broken/aborted while starting. "
                                 + Upload.this);
                     }
-                    
+
                     debugState = "Opening file";
                     boolean useInputStream = true;
                     Folder f = getFile().getFolder(
@@ -305,7 +305,7 @@ public class Upload extends Transfer {
         // Perfom upload in threadpool
         getTransferManager().perfomUpload(uploadPerfomer);
     }
-    
+
     private synchronized void closeIO() {
         if (in != null) {
             try {
@@ -374,7 +374,7 @@ public class Upload extends Transfer {
 
     /**
      * Sends one requested part.
-     * 
+     *
      * @return false if the upload should stop, true otherwise
      * @throws TransferException
      */

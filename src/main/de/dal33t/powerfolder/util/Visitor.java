@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.util;
 
 /**
  * General visitor of a class of objects.
- * 
+ *
  * @author sprajc
  * @param <T>
  *            The object class to visit.

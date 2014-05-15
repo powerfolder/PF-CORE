@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * Factory to retrieve the pattern match implementation which is most performant
  * for given pattern.
- * 
+ *
  * @author sprajc
  */
 public class PatternFactory {
@@ -38,7 +38,7 @@ public class PatternFactory {
 
     /**
      * Auto-chooses fastest implementation of pattern algo.
-     * 
+     *
      * @param patternText
      * @return a pattern implementation for the given pattern text.
      */

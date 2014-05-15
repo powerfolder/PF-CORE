@@ -135,7 +135,7 @@ public class PathUtilsTest extends TestCase {
     /**
      * Move of ... build/test/a build/test/dir/b build/test/dir/c
      * build/test/dir/sub/d ... to ... build/move/
-     * 
+     *
      * @throws IOException
      */
     public void testFileMove() throws IOException {
@@ -214,7 +214,7 @@ public class PathUtilsTest extends TestCase {
     /**
      * Copy of ... build/test/a build/test/dir/b build/test/dir/c
      * build/test/dir/sub/d ... to ... build/copy/
-     * 
+     *
      * @throws IOException
      */
     public void testFileCopy() throws IOException {
@@ -303,7 +303,7 @@ public class PathUtilsTest extends TestCase {
 
     /**
      * Copy build/test/a to build/test/a Should not be permitted.
-     * 
+     *
      * @throws IOException
      */
     public void testRecursiveCopy() throws IOException {
@@ -351,7 +351,7 @@ public class PathUtilsTest extends TestCase {
 
     /**
      * Move build/test to build/test Should not be permitted.
-     * 
+     *
      * @throws IOException
      */
     public void testRecursiveMove() throws IOException {

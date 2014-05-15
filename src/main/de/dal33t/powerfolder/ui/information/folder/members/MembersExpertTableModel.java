@@ -135,7 +135,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public MembersExpertTableModel(Controller controller) {
@@ -200,7 +200,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Sets model for a new folder.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -232,7 +232,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Adds a listener to the list.
-     * 
+     *
      * @param l
      */
     public void addTableModelListener(TableModelListener l) {
@@ -241,7 +241,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Removes a listener from the list.
-     * 
+     *
      * @param l
      */
     public void removeTableModelListener(TableModelListener l) {
@@ -364,7 +364,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Not implemented - cannot set values in this model.
-     * 
+     *
      * @param aValue
      * @param rowIndex
      * @param columnIndex
@@ -471,7 +471,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Handle node add event.
-     * 
+     *
      * @param e
      */
     private void handleNodeChanged(Member eventMember) {
@@ -492,7 +492,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Checks that the folder and member are valid.
-     * 
+     *
      * @param e
      * @throws IllegalStateException
      */
@@ -516,7 +516,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     /**
      * Sorts by this column.
-     * 
+     *
      * @param columnIndex
      * @return always tru.
      */
@@ -735,7 +735,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
                 permissionsListModel.getList().add(
                     FolderPermission.owner(folder.getInfo()));
             }
-            
+
         }
 
         updatingDefaultPermissionModel = true;

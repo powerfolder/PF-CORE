@@ -23,10 +23,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Holds the info of one set of PartInfos. 
- *  
+ * Holds the info of one set of PartInfos.
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision: $
  */
 public final class FilePartsRecord implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -90,7 +90,7 @@ public final class FilePartsRecord implements Serializable {
             return false;
         }
         FilePartsRecord o = (FilePartsRecord) arg0;
-        return partLength == o.partLength 
+        return partLength == o.partLength
             && Arrays.equals(infos, o.infos)
             && Arrays.equals(fileDigest, o.fileDigest)
             && fileLength == o.fileLength;

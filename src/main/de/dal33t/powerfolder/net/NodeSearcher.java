@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.Reject;
  * This class searches nodes matching a given pattern.
  * <p>
  * TODO Check if search request should really send to LAN nodes.
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  */
@@ -70,7 +70,7 @@ public class NodeSearcher extends PFComponent {
      * <p>
      * Changes of the list model will be done in a own thread (not swing event
      * dispatcher thread!)
-     * 
+     *
      * @param controller
      * @param pattern
      * @param resultListModel
@@ -320,7 +320,7 @@ public class NodeSearcher extends PFComponent {
 
         /**
          * Gives the cache a hit.
-         * 
+         *
          * @param nodes
          */
         private void fetchAccountInfos(Collection<Member> nodes) {

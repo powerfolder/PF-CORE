@@ -76,7 +76,7 @@ public class JNotifyAdapterMacOSX implements IJNotify
 			JNFile j = (JNFile) o;
 			return j.inode == inode && j.deviceid == deviceid;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
@@ -281,7 +281,7 @@ public class JNotifyAdapterMacOSX implements IJNotify
 				}
 				lastGroup.put(entry.getKey(), entry.getValue());
 			}
-			
+
 			return grouped;
 		}
 

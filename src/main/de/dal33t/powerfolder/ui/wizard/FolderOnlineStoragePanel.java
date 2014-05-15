@@ -71,7 +71,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
     /**
      * Give user warning if stopping backing up.
-     * 
+     *
      * @param panelList
      * @return
      */

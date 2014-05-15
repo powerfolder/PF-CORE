@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 /**
  * Reads a folder database and sets the last modified date of the files
  * according to the database IF the size of the file is completely identical.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -61,7 +61,7 @@ public class FolderSetLastmodified {
                     correct(dir.resolve(".PowerFolder/meta"));
                 }
             } catch (IOException ioe) {
-                
+
             }
         }
     }

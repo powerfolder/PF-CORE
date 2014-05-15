@@ -59,7 +59,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class to do folder creations for optional specified FolderCreateItems.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
@@ -79,7 +79,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public MultiFolderSetupPanel(Controller controller) {
@@ -238,7 +238,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     /**
      * Create folder info now if none exists, and assign to item.
-     * 
+     *
      * @param item
      */
     private static void createFolderInfo(FolderCreateItem item) {

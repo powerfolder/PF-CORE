@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * Reads a folder database file and writes it to a debug file (human readable).
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */

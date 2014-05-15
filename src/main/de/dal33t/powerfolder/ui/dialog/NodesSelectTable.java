@@ -45,7 +45,7 @@ public class NodesSelectTable extends JTable {
 
     /**
      * Make the height same as viewport (JScrollPane) if bigger than this.
-     * 
+     *
      * @return
      */
     public boolean getScrollableTracksViewportHeight() {

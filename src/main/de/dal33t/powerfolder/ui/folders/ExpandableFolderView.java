@@ -186,7 +186,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      * @param folderInfo
      */
@@ -205,7 +205,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     /**
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
-     * 
+     *
      * @param folderModel
      */
     public void configure(ExpandableFolderModel folderModel) {
@@ -341,7 +341,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Gets the ui component, building if required.
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -1132,7 +1132,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Is the view expanded?
-     * 
+     *
      * @return
      */
     public boolean isExpanded() {
@@ -1778,9 +1778,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             panel.open();
         }
     }
-    
+
     private class FolderOnlineRemoveAction extends BaseAction {
-        
+
         private FolderOnlineRemoveAction(Controller controller) {
             super(removeLabel, controller);
         }

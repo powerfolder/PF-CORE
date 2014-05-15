@@ -27,9 +27,9 @@ import de.dal33t.powerfolder.util.RingBuffer;
  * Although there is a java Adler32 implementation (even done in native code), it lacks
  * the ability to "roll" over data making it much slower when continuous data has to be
  * processed.
- * 
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: 4280 $ 
+ * @version $Revision: 4280 $
  */
 public final class RollingAdler32 implements RollingChecksum {
 	private final static int MOD_ADLER = 65521;
@@ -38,12 +38,12 @@ public final class RollingAdler32 implements RollingChecksum {
 
 	/** Adler32 specific */
 	private int A = 1, B;
-	
+
 	public RollingAdler32(int n) {
 		rbuf = new RingBuffer(n);
 		this.n = n;
 	}
-	
+
 	public void update(int nd) {
 		int fb = 0;
 		nd &= 0xff; // This allows update to be called with bytes directly
@@ -54,7 +54,7 @@ public final class RollingAdler32 implements RollingChecksum {
 		}
 
 		rbuf.write(nd);
-		
+
 		A = A + nd - fb;
 		if (A < 0) {
 			A += MOD_ADLER;
@@ -70,7 +70,7 @@ public final class RollingAdler32 implements RollingChecksum {
 	public void update(byte[] data) {
 		update(data, 0, data.length);
 	}
-	
+
 	public void reset() {
 		A = 1;
 		B = 0;

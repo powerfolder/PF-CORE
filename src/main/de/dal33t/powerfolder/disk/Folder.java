@@ -1712,7 +1712,7 @@ public class Folder extends PFComponent {
      * Used for PFC-2465. Erases every knowledge of file. Deletes physical file
      * and file meta-data. If possible local archive will be used to preserve
      * physical file.
-     * 
+     *
      * @param fInfo
      * @return
      */
@@ -4229,7 +4229,7 @@ public class Folder extends PFComponent {
     /**
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
-     * 
+     *
      * @param newFileInfo
      * @param file
      */

@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 
 /**
  * This class represents an IP range in a subnet.
- * Instances are immutable. 
- * 
+ * Instances are immutable.
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
@@ -38,13 +38,13 @@ public final class AddressRange {
 
 	private Inet4Address start;
 	private Inet4Address end;
-	
+
 	public AddressRange(Inet4Address start, Inet4Address end) {
 		super();
 		this.start = start;
 		this.end = end;
 	}
-	
+
 	public static AddressRange parseRange(String s) throws ParseException {
 		try {
 			Matcher m = addressPattern.matcher(s);
@@ -59,13 +59,13 @@ public final class AddressRange {
 			throw new ParseException(s, 0);
 		}
 	}
-	
+
 	public Inet4Address getEnd() {
 		return end;
 	}
-	
+
 	/**
-	 * Checks if the given address is in range of the interval [start, end]. 
+	 * Checks if the given address is in range of the interval [start, end].
 	 * @param addr the address to check
 	 * @return true if the address is contained in this range
 	 */
@@ -83,7 +83,7 @@ public final class AddressRange {
 		}
 		return true;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int PRIME = 31;

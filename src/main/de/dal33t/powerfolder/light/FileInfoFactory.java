@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Factory to create {@link FileInfo} and {@link DirectoryInfo} objects.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  */
 public final class FileInfoFactory {
@@ -97,7 +97,7 @@ public final class FileInfoFactory {
     /**
      * Returns a FileInfo with changed FolderInfo. No version update etc.
      * whatsoever happens.
-     * 
+     *
      * @param original
      * @param fi
      * @return the new (or existing) instance.
@@ -161,7 +161,7 @@ public final class FileInfoFactory {
 
     /**
      * Initalize within a folder
-     * 
+     *
      * @param folder
      * @param localFile
      * @param creator
@@ -276,7 +276,7 @@ public final class FileInfoFactory {
     /**
      * #2480: Encodes illegal characters in filenames for windows such as: |, :,
      * <, >,
-     * 
+     *
      * @param relativeFilename
      *            containing the illegal chars, e.g. "My|File.txt"
      * @return
@@ -324,7 +324,7 @@ public final class FileInfoFactory {
     /**
      * #2480: Decodes illegal characters in filenames for windows such as: |, :,
      * <, >,
-     * 
+     *
      * @param relativeFilename
      *            containing the legal chars, e.g. "My$%fA%$File.txt"
      * @return

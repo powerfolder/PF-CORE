@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
  * This download manager will try to download from all available sources.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class MultiSourceDownloadManager extends AbstractDownloadManager {
@@ -167,7 +167,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     /**
      * Returns an available source for requesting the {@link FilePartsRecord}
-     * 
+     *
      * @param download
      * @return
      */

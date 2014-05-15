@@ -61,7 +61,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  * <p>
  * It is possible to access both controllers and do manipulating/testing stuff
  * on them.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -77,7 +77,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     // The optional test folder
     private FolderInfo testFolder;
-    
+
     protected Account lisasAccount;
 
     @Override
@@ -229,7 +229,7 @@ public abstract class TwoControllerTestCase extends TestCase {
     /**
      * Joins both controllers into a testfolder. get these testfolders with
      * <code>getTestFolderBart()</code> and <code>getTestFolderLisa()</code>
-     * 
+     *
      * @see #getFolderAtBart()
      * @see #getFolderAtLisa()
      */
@@ -255,7 +255,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     /**
      * Waits for the controller to startup
-     * 
+     *
      * @param controller
      */
     protected static void waitForStart(final Controller controller) {
@@ -268,7 +268,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     /**
      * Try to connect controllers.
-     * 
+     *
      * @return true if the lisa and bart are connected.
      */
     protected boolean tryToConnectBartAndLisa() {
@@ -382,7 +382,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     /**
      * Connects and waits for connection of both controllers
-     * 
+     *
      * @param cont1
      * @param cont2
      * @throws InterruptedException
@@ -406,7 +406,7 @@ public abstract class TwoControllerTestCase extends TestCase {
             e = ex;
             // Try harder.
             try {
-                cont1.connect(cont2.getConnectionListener().getAddress());                
+                cont1.connect(cont2.getConnectionListener().getAddress());
             } catch (Exception e2) {
                 e = e2;
             }
@@ -444,7 +444,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * controllers have two members. Otherwise the test will fail.
      * <p>
      * Sets the transfer mode to {@link SyncProfile#HOST_FILES}
-     * 
+     *
      * @param foInfo
      *            the folder to join
      * @param bartFolderDir
@@ -463,7 +463,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * <p>
      * After the method is invoked, it is ensured that folders on both
      * controllers have two members. Otherwise the test will fail.
-     * 
+     *
      * @param foInfo
      *            the folder to join
      * @param baseDir1
@@ -485,7 +485,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * <p>
      * After the method is invoked, it is ensured that folders on both
      * controllers have two members. Otherwise the test will fail.
-     * 
+     *
      * @param foInfo
      *            the folder to join
      * @param baseDir1
@@ -548,7 +548,7 @@ public abstract class TwoControllerTestCase extends TestCase {
     /**
      * Tests if the diskfile matches the fileinfo. Checks name, lenght/size,
      * modification date and the deletion status.
-     * 
+     *
      * @param diskFile
      *            the diskfile to compare
      * @param fInfo

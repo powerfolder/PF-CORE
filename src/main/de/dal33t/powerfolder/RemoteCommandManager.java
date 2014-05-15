@@ -90,13 +90,13 @@ import de.dal33t.powerfolder.util.Waiter;
  * PowerFolder://|folder|<foldername>|<P or S>|<folderid>|<size>|<numFiles>
  * <P or S> P = public, S = secret
  * PowerFolder://|folder|test|S|[test-AAgwZXFLgigj222]|99900000|1000
- * 
+ *
  * File links:
  * PowerFolder://|file|<foldername>|<P or S>|<folderid>|<fullpath_filename>
  * <P or S> P = public, S = secret
  * PowerFolder://|folder|test|S|[test-AAgwZXFLgigj222]|/test/New_text_docuement.txt
  * </code>
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.10 $
  */
@@ -134,7 +134,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
     /**
      * Initialization
-     * 
+     *
      * @param controller
      */
     public RemoteCommandManager(Controller controller) {
@@ -144,7 +144,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     /**
      * Checks if there is a running instance of RemoteCommandManager. Determines
      * this by opening a server socket port on the default remote command port.
-     * 
+     *
      * @return true if port already taken
      */
     public static boolean hasRunningInstance() {
@@ -155,7 +155,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     /**
      * Checks if there is a running instance of RemoteComamndManager. Determines
      * this by opening a server socket port.
-     * 
+     *
      * @param port
      *            the port to check
      * @return true if port already taken
@@ -189,7 +189,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
     /**
      * Sends a remote command to a running instance of PowerFolder
-     * 
+     *
      * @param command
      *            the command
      * @return true if succeeded, otherwise false
@@ -202,7 +202,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
     /**
      * Sends a remote command to a running instance of PowerFolder
-     * 
+     *
      * @param port
      *            the port to send this to.
      * @param command
@@ -379,7 +379,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
     /**
      * Processes a remote command
-     * 
+     *
      * @param command
      */
     private void processCommand(String command) {
@@ -522,7 +522,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
     /**
      * Opens a file and processes its content
-     * 
+     *
      * @param file
      */
     private void openFile(Path file) {
@@ -739,7 +739,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     /**
      * Tries to load a list of nodes from a nodes file. Returns null if wasn't
      * able to read the file
-     * 
+     *
      * @param file
      *            The file to load from
      * @return array of MemberInfo, null if failed

@@ -77,7 +77,7 @@ public class ComputersList extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public ComputersList(Controller controller, ComputersTab computersTab) {
@@ -114,7 +114,7 @@ public class ComputersList extends PFUIComponent {
 
     /**
      * Get the UI component
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -171,7 +171,7 @@ public class ComputersList extends PFUIComponent {
     /**
      * Rebuild the whole list, if there is a significant change. This detects
      * things like Ln nodes becoming friends, etc.
-     * 
+     *
      * @param expCol
      *            true if expand or collapse change - MUST redisplay, even if
      *            previous are all the same.

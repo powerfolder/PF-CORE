@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Renderer for any transfer table
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.20 $
  */
@@ -58,7 +58,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
     /**
      * Initalizes the renderer for a transfertable. renderDownloads determines
      * if we are rendering ul or dls. Maybe split this class up into two
-     * 
+     *
      * @param controller
      */
     public DownloadManagerTableCellRenderer(Controller controller) {

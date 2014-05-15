@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * A Panel to display detail infos about a file
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.17 $
  */
@@ -68,7 +68,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
     /**
      * Initalizes the panel with empty content
-     * 
+     *
      * @param controller
      */
     public FileDetailsPanel(Controller controller, boolean includeSeparator) {
@@ -78,7 +78,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
     /**
      * Sets the information on this panel by the file
-     * 
+     *
      * @param fileInfo
      */
     public void setFileInfo(FileInfo fileInfo) {
@@ -200,7 +200,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
     /**
      * Answers if we have joined the the folder of the file
-     * 
+     *
      * @return
      */
     private boolean hasJoinedFolder(FileInfo fileInfo) {
@@ -209,7 +209,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
     /**
      * Answers the folder of the file, if joined
-     * 
+     *
      * @return
      */
     private Folder getFolderOfFile(FileInfo fileInfo) {
@@ -218,7 +218,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
     /**
      * Returns the ui component for the fileinfo panel
-     * 
+     *
      * @return the panel component
      */
     public JPanel getPanel() {

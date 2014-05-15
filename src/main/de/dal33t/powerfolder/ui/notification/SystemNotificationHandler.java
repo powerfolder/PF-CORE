@@ -37,7 +37,7 @@ public class SystemNotificationHandler extends NotificationHandlerBase {
 
     /**
      * Constructor. Shows a system message.
-     * 
+     *
      * @param controller
      * @param notice
      */

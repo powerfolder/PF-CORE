@@ -27,7 +27,7 @@ import java.io.Serializable;
  * Class representing the configuration of a SyncProfile. This determines how a
  * folder with a particular SyncProfile behaves. SyncProfileConfigurations are
  * immutable.
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.0 $
  */
@@ -131,7 +131,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * Simple construtor. Default values set for advanced configuration.
-     * 
+     *
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -151,7 +151,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * Full construtor.
-     * 
+     *
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -201,7 +201,7 @@ public class SyncProfileConfiguration implements Serializable {
     /**
      * The time between regular scans. TimeType determins whether this period is
      * hours, minutes or seconds.
-     * 
+     *
      * @return
      */
     public int getTimeBetweenRegularScans() {
@@ -210,7 +210,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * Whther this scan is periodic.
-     * 
+     *
      * @return
      */
     public boolean isPeriodicSync() {
@@ -228,7 +228,7 @@ public class SyncProfileConfiguration implements Serializable {
     /**
      * Whther this scan is regular (every n hours, minutes or seconds), or daily
      * (once per day / week period at a particular hour of the day).
-     * 
+     *
      * @return
      */
     public boolean isDailySync() {
@@ -246,7 +246,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * The hour of the day to do a daily scan. 0 through 23.
-     * 
+     *
      * @return
      */
     public int getDailyHour() {
@@ -257,7 +257,7 @@ public class SyncProfileConfiguration implements Serializable {
      * Day / week period to do daily scans. 0 == every day, 1 through 7 as
      * Calendar.DAY_OF_WEEK, 8 == weekdays (Monday through Friday), 9 ==
      * weekends.
-     * 
+     *
      * @return
      */
     public int getDailyDay() {
@@ -267,7 +267,7 @@ public class SyncProfileConfiguration implements Serializable {
     /**
      * The time type to do regular sacns (every n hours, minutes or seconds)
      * Hours, minutes or seconds.
-     * 
+     *
      * @return
      */
     public String getRegularTimeType() {

@@ -5,7 +5,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A message to re-request the file list from another member.
- * 
+ *
  * @author Sprajc
  */
 public class FileListRequest extends FolderRelatedMessage {

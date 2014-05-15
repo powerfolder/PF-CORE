@@ -490,7 +490,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             getController().getThreadPool().execute(new Runnable() {
                 public void run() {
-                    TransferManager transferManager = 
+                    TransferManager transferManager =
                             getController().getTransferManager();
                     FutureTask<Object> task =
                             transferManager.getRecalculateAutomaticRate();

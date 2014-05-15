@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * EXT version of: List of available folders
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */

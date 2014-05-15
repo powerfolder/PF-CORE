@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  * collection of {@link FileInfo} objects related to one {@link Member}. The
  * domain with identified by <code>null</code> represents the {@link FileInfo}s
  * of myself. A domain is in fact the Member's id field.
- * 
+ *
  * @author sprajc
  * @see FileInfo
  * @see Folder
@@ -51,7 +51,7 @@ public interface FileInfoDAO {
     /**
      * Puts the file into the index, replacs existing FileInfo that has same
      * fileName, folderId and domain
-     * 
+     *
      * @param domain
      * @param fInfos
      */
@@ -60,7 +60,7 @@ public interface FileInfoDAO {
     /**
      * Adds or updates the file in the DAO, replaces existing FileInfo that has
      * same fileName, folderId and domain
-     * 
+     *
      * @param domain
      * @param fInfos
      *            the <code>FileInfo</code>s to store.
@@ -69,7 +69,7 @@ public interface FileInfoDAO {
 
     /**
      * Finds the newest version of this file in the given domains.
-     * 
+     *
      * @param fInfo
      * @param domains
      * @return the newest FileInfo
@@ -78,7 +78,7 @@ public interface FileInfoDAO {
 
     /**
      * Finds the {@link FileInfo} in the given domain
-     * 
+     *
      * @param fInfo
      * @param domain
      * @return the matching {@link FileInfo} or null if not found
@@ -87,7 +87,7 @@ public interface FileInfoDAO {
 
     /**
      * Deletes the FileInfo from the DAO.
-     * 
+     *
      * @param fInfo
      * @param domain
      */
@@ -95,7 +95,7 @@ public interface FileInfoDAO {
 
     /**
      * Clears the whole domain by deleting all FileInfo within that domain.
-     * 
+     *
      * @param domain
      */
     void deleteDomain(String domain, int newInitialSize);
@@ -105,7 +105,7 @@ public interface FileInfoDAO {
      * <P>
      * TODO: Think about the usage of this method. 2. Change return value to
      * Iterator<FileInfo>
-     * 
+     *
      * @param domain
      * @return all {@link FileInfo} objects of the given domain.
      * @deprecated Try to implement a more intelligent method to obtain FileInfo
@@ -118,7 +118,7 @@ public interface FileInfoDAO {
     /**
      * All directories in the given base directory. optionally adds ALL
      * subdirectories recursively.
-     * 
+     *
      * @param domain
      * @return the collection of available directories
      */
@@ -128,7 +128,7 @@ public interface FileInfoDAO {
      * Finds all files in the given (sub) directory and domain only.
      * <p>
      * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
-     * 
+     *
      * @param criteria
      *            the selection criteria.
      * @return the collection of matching directories.
@@ -139,7 +139,7 @@ public interface FileInfoDAO {
      * Finds all files in the given (sub) directory and domain only.
      * <p>
      * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
-     * 
+     *
      * @param domain
      *            the domain to check.
      * @param path
@@ -156,7 +156,7 @@ public interface FileInfoDAO {
      * Finds all files in the given (sub) directory and domain only.
      * <p>
      * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
-     * 
+     *
      * @param domain
      *            the domain to check.
      * @param directoryInfo
@@ -177,7 +177,7 @@ public interface FileInfoDAO {
 
     /**
      * Counts all {@link FileInfo} objects of the given domain.
-     * 
+     *
      * @param domain
      * @param includeDirs
      *            if directories should be included in counting or not * @param
@@ -190,7 +190,7 @@ public interface FileInfoDAO {
 
     /**
      * Counts all {@link FileInfo} objects of the given domain that are in sync.
-     * 
+     *
      * @param domain
      * @param includeDirs
      *            if directories should be included in counting or not
@@ -204,7 +204,7 @@ public interface FileInfoDAO {
     /**
      * Counts the total size of all {@link FileInfo} objects of the given domain
      * that are in sync. Ignored files won't be included in the result.
-     * 
+     *
      * @param domain
      * @return the total number of bytes in this domain that are in sync
      */

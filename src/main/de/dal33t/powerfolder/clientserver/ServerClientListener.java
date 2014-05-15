@@ -26,7 +26,7 @@ public interface ServerClientListener extends CoreListener {
     /**
      * When a new login attempt has been performed. Covers failed and successful
      * logins.
-     * 
+     *
      * @param event
      */
     void login(ServerClientEvent event);
@@ -35,28 +35,28 @@ public interface ServerClientListener extends CoreListener {
      * When the account has changed on the server.
      * <p>
      * TODO Implement
-     * 
+     *
      * @param event
      */
     void accountUpdated(ServerClientEvent event);
 
     /**
      * When the server is fully connected
-     * 
+     *
      * @param event
      */
     void serverConnected(ServerClientEvent event);
 
     /**
      * When the server disconnects.
-     * 
+     *
      * @param event
      */
     void serverDisconnected(ServerClientEvent event);
 
     /**
      * When a Member becomes a server.
-     * 
+     *
      * @param event
      * @see Member#setServer(boolean)
      */

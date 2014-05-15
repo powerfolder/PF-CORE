@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Offer various helper methods for branding
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -112,7 +112,7 @@ public abstract class AbstractDistribution extends Loggable implements
     /**
      * Loads and merges the default config file (Default.config) from classpath
      * and merges it with the existing config and preferences.
-     * 
+     *
      * @param controller
      * @param replaceExisting
      *            true to replace all values, false to preserve all values of
@@ -193,7 +193,7 @@ public abstract class AbstractDistribution extends Loggable implements
     /**
      * Sets the folder basedir subdir name if not already set in config. e.g.
      * C:\Users\sprajc\myDir.
-     * 
+     *
      * @param c
      * @param myDir
      *            e.g. "MySierraCloud"

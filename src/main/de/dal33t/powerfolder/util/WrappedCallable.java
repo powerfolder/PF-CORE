@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 /**
  * A Callable that wraps an deligate and logs all exceptions and errors
- * 
+ *
  * @author sprajc
  * @param <V>
  */

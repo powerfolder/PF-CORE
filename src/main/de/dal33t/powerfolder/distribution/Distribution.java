@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.net.RelayFinder;
 /**
  * Interface which describes the information that can be retrieved from an
  * branding.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -44,7 +44,7 @@ public interface Distribution {
     /**
      * Initializes the branding. This should take care of load: Icon set,
      * Translation texts, Preconfiguration file.
-     * 
+     *
      * @param controller
      *            the controller this branding is loaded on
      */

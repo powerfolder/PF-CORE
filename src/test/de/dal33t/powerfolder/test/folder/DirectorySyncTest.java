@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  * <p>
  * Many/random changes
  * <p>
- * 
+ *
  * @author sprajc
  */
 public class DirectorySyncTest extends FiveControllerTestCase {

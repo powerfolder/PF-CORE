@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Request to start download a file
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
@@ -39,7 +39,7 @@ public class RequestDownload extends Message {
 
     /**
      * Start a complete new download
-     * 
+     *
      * @param file
      */
     public RequestDownload(FileInfo file) {
@@ -48,7 +48,7 @@ public class RequestDownload extends Message {
 
     /**
      * Requests file download, starting at offset
-     * 
+     *
      * @param file
      * @param startOffset
      */

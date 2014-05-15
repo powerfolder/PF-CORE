@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.util.ProfilingEntry;
 /**
  * The invocation handler, which delegates fire event method calls to the
  * listener. Maybe suspended, in this state it will not fire events.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  */
 class ListenerSupportInvocationHandler<T> implements InvocationHandler {
@@ -33,7 +33,7 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
 
     /**
      * Creates an invocation handler which basically handles the event support.
-     * 
+     *
      * @param listenerInterface
      *            the listener event interface
      */
@@ -47,7 +47,7 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
 
     /**
      * Adds a listener to this support impl
-     * 
+     *
      * @param listener
      */
     void addListener(CoreListener listener) {
@@ -74,7 +74,7 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
      * Adds a weak listener to this support impl. Listener gets removed if not
      * other references to it is hold except by this listener support (or any
      * other weak or soft referece).
-     * 
+     *
      * @param listener
      */
     void addWeakListener(CoreListener listener) {
@@ -125,7 +125,7 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
 
     /**
      * Removes a listener from this support impl
-     * 
+     *
      * @param listener
      */
     void removeListener(CoreListener listener) {
@@ -191,7 +191,7 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
     /**
      * Checks if the listener is an instance of our supported listener
      * interface.
-     * 
+     *
      * @param listener
      *            The listener to check
      * @return true if succeeded, otherwise exception is thrown
@@ -212,7 +212,7 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
 
     /**
      * Delegates calls to registered listeners
-     * 
+     *
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object,
      *      java.lang.reflect.Method, java.lang.Object[])
      */

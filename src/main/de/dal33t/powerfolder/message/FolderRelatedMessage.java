@@ -23,12 +23,12 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * Basic message which is related to a folder
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public abstract class FolderRelatedMessage extends Message {
 	private static final long serialVersionUID = 100L;
-	
+
 	public FolderInfo folder;
 }

@@ -55,7 +55,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Panel for displaying selected sync profile and opening the
  * CustomSyncProfileDialog.
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -86,7 +86,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
 
     /**
      * Builds panel and returns the component.
-     * 
+     *
      * @return the component.
      */
     public Component getUIComponent() {
@@ -108,7 +108,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
     /**
      * Sets a Folder that will have its syncProfile updated if the syncProfile
      * is changed on this panel.
-     * 
+     *
      * @param folder
      *            the Folder to update.
      */
@@ -119,7 +119,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
 
     /**
      * Initialize the visual components.
-     * 
+     *
      * @param syncProfile
      */
     private void initComponents(SyncProfile syncProfile) {
@@ -225,7 +225,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
 
     /**
      * Shows a warning if the syncProfile will sync deletions.
-     * 
+     *
      * @param syncProfile
      *            the syncProfile selected
      * @return true only if the profile doesn't sync deletion or the user
@@ -239,7 +239,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
 
     /**
      * Sets the syncProfile on the panel.
-     * 
+     *
      * @param syncProfile
      *            the SyncProfile
      * @param updateFolder
@@ -276,7 +276,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
 
     /**
      * Gets the SyncProfile
-     * 
+     *
      * @return the sync profile
      */
     public SyncProfile getSyncProfile() {
@@ -286,7 +286,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
     /**
      * Adds a value change listener for the sync profile model. This allows
      * things to react to changes.
-     * 
+     *
      * @param propertyChangeListener
      */
     public void addModelValueChangeListener(
@@ -297,7 +297,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
 
     /**
      * Enable the components of the panel.
-     * 
+     *
      * @param enable
      */
     public void setEnabled(boolean enable) {
@@ -348,7 +348,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
 
     /**
      * Show duplicate folders to user, warning.
-     * 
+     *
      * @param folders
      * @param messageKey
      * @return

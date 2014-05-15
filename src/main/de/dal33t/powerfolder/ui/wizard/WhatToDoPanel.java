@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The start panel of the "what to do" wizard line
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */

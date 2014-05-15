@@ -322,7 +322,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
                 throw new RuntimeException(e);
             }
         }
-        //        
+        //
         // int size1 = 0;
         // for (File file : ) {
         // size1 += file.length();

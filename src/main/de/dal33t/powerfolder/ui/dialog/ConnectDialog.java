@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The dialog opened when connecting
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
@@ -126,7 +126,7 @@ public class ConnectDialog extends PFUIComponent {
 
     /**
      * Returns the ui component (dialog)
-     * 
+     *
      * @return
      */
     private JDialog getUIComponent() {
@@ -138,7 +138,7 @@ public class ConnectDialog extends PFUIComponent {
 
     /**
      * Sets the infotext
-     * 
+     *
      * @param text
      */
     public void setInfoText(String text) {

@@ -31,7 +31,7 @@ public class ExactMatchPattern extends AbstractPattern {
 
     /**
      * Constructor.
-     * 
+     *
      * @param patternStringArg
      */
     public ExactMatchPattern(String patternStringArg) {

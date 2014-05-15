@@ -31,7 +31,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * Constuct a simple notification notice.
-     * 
+     *
      * @param title
      *            the title to display in the notification.
      * @param summary
@@ -43,7 +43,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * Just a notification; low importance.
-     * 
+     *
      * @return
      */
     public NoticeSeverity getNoticeSeverity() {
@@ -52,7 +52,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * No payload; notification opnly.
-     * 
+     *
      * @return
      */
     public Object getPayload(Controller controller) {
@@ -61,7 +61,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * Not actionable; only for notifications.
-     * 
+     *
      * @return
      */
     public boolean isActionable() {
@@ -70,7 +70,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * This is a simple notification notice.
-     * 
+     *
      * @return
      */
     public boolean isNotification() {
@@ -79,7 +79,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * Not applicable to unactionable notices.
-     * 
+     *
      * @return
      */
     public boolean isPersistable() {

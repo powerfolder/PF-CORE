@@ -85,7 +85,7 @@ public class RequestPart extends Message {
      * this value so the uploader can show a progress to the user. The actual
      * progress is implementation dependent and is therefore given as a double
      * value in the range [0,1]
-     * 
+     *
      * @return the progress
      */
     public double getProgress() {

@@ -35,7 +35,7 @@ import java.util.concurrent.Semaphore;
  * working time.
  * <p>
  * TODO Add cancel button.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -52,7 +52,7 @@ public abstract class ActivityVisualizationWorker extends de.dal33t.powerfolder.
 
     /**
      * Activity visualization worker constructor for indeterminate progress.
-     * 
+     *
      * @param uiController
      *            the UI Controller
      */
@@ -62,7 +62,7 @@ public abstract class ActivityVisualizationWorker extends de.dal33t.powerfolder.
 
     /**
      * Activity visualization worker constructor with progress listener
-     * 
+     *
      * @param uiController
      *            the UI Controller
      * @param indeterminate

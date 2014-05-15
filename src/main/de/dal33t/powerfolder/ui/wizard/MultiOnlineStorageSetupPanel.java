@@ -76,7 +76,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Class to do sync profile configuration for OS joins.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
@@ -101,7 +101,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     /**
      * Constuctor
-     * 
+     *
      * @param controller
      */
     public MultiOnlineStorageSetupPanel(Controller controller) {
@@ -361,7 +361,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         }
     }
 
-    
+
 
     private void closeWizard() {
         JDialog diag = getWizardDialog();
@@ -373,7 +373,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         return (JDialog) getWizardContext().getAttribute(
             WizardContextAttributes.DIALOG_ATTRIBUTE);
     }
-    
+
     /**
      * Create a WebDAV connection to this folder. Should be something like 'net
      * use * "https://my.powerfolder.com/webdav/afolder"

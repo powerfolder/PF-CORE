@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Utilities for windows. http://vbnet.mvps.org/index.html?code/browse/csidl.htm
- * 
+ *
  * @author <A HREF="mailto:bytekeeper@powerfolder.com">Dennis Waldherr</A>
  * @version $Revision$
  */
@@ -135,7 +135,7 @@ public class WinUtils extends Loggable {
 
     /**
      * Retrieve a path from Windows.
-     * 
+     *
      * @param id
      *            the path-id to retrieve
      * @param defaultPath
@@ -153,7 +153,7 @@ public class WinUtils extends Loggable {
     /**
      * Create a 'PowerFolders' link in Links, pointing to the PowerFolder base
      * dir.
-     * 
+     *
      * @param setup
      * @param controller
      * @throws IOException
@@ -184,7 +184,7 @@ public class WinUtils extends Loggable {
             }
         }
     }
-    
+
     public static void removePFLinks(String shortcutName) {
         if (!OSUtil.isWindowsSystem()) {
             return;
@@ -290,7 +290,7 @@ public class WinUtils extends Loggable {
     /**
      * It returns the default location where the PowerFolder installer installs
      * the program.
-     * 
+     *
      * @return the path on a Windows installation or null if unable to resolve.
      */
     public static Path getProgramInstallationPath() {

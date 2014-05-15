@@ -24,7 +24,7 @@ import java.util.ListIterator;
  * Decorates another <code>List</code> to provide additional behaviour.
  * <p>
  * Methods are forwarded directly to the decorated list.
- * 
+ *
  * @since Commons Collections 3.0
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr
  *          2008) $
@@ -36,7 +36,7 @@ public abstract class AbstractListDecorator extends AbstractCollectionDecorator
 
     /**
      * Constructor only used in deserialization, do not use otherwise.
-     * 
+     *
      * @since Commons Collections 3.1
      */
     protected AbstractListDecorator() {
@@ -45,7 +45,7 @@ public abstract class AbstractListDecorator extends AbstractCollectionDecorator
 
     /**
      * Constructor that wraps (not copies).
-     * 
+     *
      * @param list
      *            the list to decorate, must not be null
      * @throws IllegalArgumentException
@@ -57,7 +57,7 @@ public abstract class AbstractListDecorator extends AbstractCollectionDecorator
 
     /**
      * Gets the list being decorated.
-     * 
+     *
      * @return the decorated list
      */
     protected List getList() {

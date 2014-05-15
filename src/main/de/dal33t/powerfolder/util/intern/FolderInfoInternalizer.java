@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * To internalize {@link FolderInfo}s into a weak hash map.
- * 
+ *
  * @author sprajc
  */
 public class FolderInfoInternalizer implements Internalizer<FolderInfo> {

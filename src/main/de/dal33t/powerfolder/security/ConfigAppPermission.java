@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.security;
 
 /**
  * #2185 permission to start the app.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

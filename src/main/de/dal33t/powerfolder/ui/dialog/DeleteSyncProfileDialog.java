@@ -191,7 +191,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
                 // Delete the profile from the SyncProfile cache.
                 SyncProfile.deleteProfile(oldProfile);
 
-                // Finally, update the selector panel combo to remove the 
+                // Finally, update the selector panel combo to remove the
                 // deleted profile from the list.
                 syncProfileSelectorPanel.configureCombo(newProfile);
 

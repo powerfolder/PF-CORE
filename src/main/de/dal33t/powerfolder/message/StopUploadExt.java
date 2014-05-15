@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
  * Tells the uploader to stop uploading.
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */

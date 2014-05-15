@@ -23,13 +23,13 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Answer to a <code>ServiceMethodCall</code>
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class RemoteMethodCallResponse extends Response {
     private static final long serialVersionUID = 100L;
-    
+
     private boolean exception;
     private Object result;
 
@@ -40,7 +40,7 @@ public class RemoteMethodCallResponse extends Response {
         this.exception = false;
         this.result = result;
     }
-    
+
     public RemoteMethodCallResponse(RemoteMethodCallRequest call,
         Throwable throwable)
     {
@@ -57,11 +57,11 @@ public class RemoteMethodCallResponse extends Response {
     public Object getResult() {
         return result;
     }
-    
+
     public Throwable getException() {
         return (Throwable) result;
     }
-    
+
 
     public String toString() {
         return "RemoteResponse result: " + result + ", exception: " + exception;

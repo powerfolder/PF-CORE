@@ -20,18 +20,18 @@ package de.dal33t.powerfolder.util.collection;
  * Marker interface for collections, maps and iterators that are unmodifiable.
  * <p>
  * This interface enables testing such as:
- * 
+ *
  * <pre>
  * if (coll instanceof Unmodifiable) {
  *     coll = new ArrayList(coll);
  * }
  * // now we know coll is modifiable
  * </pre>
- * 
+ *
  * Of course all this only works if you use the Unmodifiable classes defined in
  * this library. If you use the JDK unmodifiable class via java util Collections
  * then the interface won't be there.
- * 
+ *
  * @since Commons Collections 3.0
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr
  *          2008) $

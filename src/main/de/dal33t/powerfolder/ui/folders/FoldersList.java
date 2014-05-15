@@ -83,7 +83,7 @@ public class FoldersList extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public FoldersList(Controller controller, FoldersTab foldersTab) {
@@ -118,7 +118,7 @@ public class FoldersList extends PFUIComponent {
 
     /**
      * Gets the UI component.
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {

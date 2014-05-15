@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.util.Waiter;
  * 2) Send the message to the destination if connected.
  * <p>
  * TRAC #597.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -88,7 +88,7 @@ public class RelayedConnectionManager extends PFComponent {
     /**
      * Creates and initializes a relayed channel via a relay. The returned
      * ConnectionHandler is in init state.
-     * 
+     *
      * @param destination
      *            the remote destination to connect to
      * @return the relayed connection handler.
@@ -160,7 +160,7 @@ public class RelayedConnectionManager extends PFComponent {
      * Callback from <code>AbstractRelayedConnectionHandler</code> to inform,
      * that the handler is not longer pending (=on shutdown or assigend to his
      * <code>Member</code>).
-     * 
+     *
      * @param conHan
      */
     public void removePedingRelayedConnectionHandler(
@@ -175,7 +175,7 @@ public class RelayedConnectionManager extends PFComponent {
 
     /**
      * Callback method from <code>Member</code>.
-     * 
+     *
      * @param receivedFrom
      *            the node/relay which relayed the message
      * @param message
@@ -197,7 +197,7 @@ public class RelayedConnectionManager extends PFComponent {
 
     /**
      * For TESTS only.
-     * 
+     *
      * @param relayFinder
      */
     public void setRelayFiner(RelayFinder relayFinder) {

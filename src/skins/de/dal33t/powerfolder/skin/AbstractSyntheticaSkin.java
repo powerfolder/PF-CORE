@@ -30,7 +30,7 @@ import de.javasoft.util.IVersion;
 
 /**
  * Base class for own skin with synthetica LAF
- * 
+ *
  * @author sprajc
  */
 public abstract class AbstractSyntheticaSkin implements Skin {

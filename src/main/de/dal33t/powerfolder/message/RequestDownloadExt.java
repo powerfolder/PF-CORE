@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
  * Request to start download a file
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */

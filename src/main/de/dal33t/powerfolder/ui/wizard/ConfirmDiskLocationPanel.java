@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */

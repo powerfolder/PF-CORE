@@ -27,7 +27,7 @@ import java.util.Date;
  * needs some kind of "provider" which sets the amount of available bandwidth.
  * The BandwidthProvider class is an example of such. Instances start with no
  * limit. $Id$
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.3 $
  */
@@ -68,7 +68,7 @@ public class BandwidthLimiter {
 
     /**
      * Requests bandwidth on a medium. Blocks until bandwidth is available.
-     * 
+     *
      * @param size
      *            the amount requested
      * @return the amount of bandwidth granted.
@@ -91,7 +91,7 @@ public class BandwidthLimiter {
     /**
      * Sets the amount of available "bandwidth". As a side-effect this call will
      * wake Threads waiting in requestBandwidth().
-     * 
+     *
      * @param amount
      *            the amount to set available. An amount < 0 states that there
      *            is no limit.
@@ -122,7 +122,7 @@ public class BandwidthLimiter {
 
     /**
      * Returns the amount of "bandwidth" available
-     * 
+     *
      * @return the "bandwidth"
      */
     public long getAvailable() {
@@ -135,7 +135,7 @@ public class BandwidthLimiter {
      * Returns an amount of "bandwidth" back to the limiter. Called after an
      * invocation of requestBandwidth which didn't use all of the requested
      * bandwidth.
-     * 
+     *
      * @param amount
      */
     public void returnAvailable(int amount) {

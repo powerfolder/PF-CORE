@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 /**
  * Base class for wizard panels All subclasses have a title, optional picto and
  * a content area.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
@@ -53,7 +53,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Initialization
-     * 
+     *
      * @param controller
      *            the controller
      */
@@ -83,7 +83,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Override if this panel can finish
-     * 
+     *
      * @return
      */
     public boolean canFinish() {
@@ -92,7 +92,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Override if this panel can cancel
-     * 
+     *
      * @return
      */
     public boolean canCancel() {
@@ -101,7 +101,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Override if validation is required.
-     * 
+     *
      * @param list
      * @return
      */
@@ -111,7 +111,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Override if finish validation is required.
-     * 
+     *
      * @param list
      * @return
      */
@@ -127,7 +127,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * This builds the actual content panel that is displayed below the title.
-     * 
+     *
      * @return
      */
     protected abstract JComponent buildContent();
@@ -140,7 +140,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Returns the title for the panel
-     * 
+     *
      * @return
      */
     protected abstract String getTitle();
@@ -152,7 +152,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * We have help. Open docs in browser
-     * 
+     *
      * @return true
      */
     public boolean hasHelp() {
@@ -230,7 +230,7 @@ public abstract class PFWizardPanel extends WizardPanel {
         pageBuilder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI)), cc
             .xywh(1, row, 2, 1, "left, default"));
         row += 2;
-        
+
         titleLabel = createTitleLabel(title);
         pageBuilder.add(titleLabel, cc.xy(2, row));
         row += 2;

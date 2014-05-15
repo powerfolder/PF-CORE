@@ -32,7 +32,7 @@ import java.util.Locale;
 
 /**
  * Helper class for all formatting
- * 
+ *
  * @version $Revision: 1.6 $
  */
 public class Format extends PFComponent {
@@ -51,7 +51,7 @@ public class Format extends PFComponent {
 
     /**
      * Returns a count of bytes in a string
-     * 
+     *
      * @param bytes
      * @return
      */
@@ -100,7 +100,7 @@ public class Format extends PFComponent {
             number /= 1024;
             suffix = "TB";
         }
-        
+
         String str = formatDecimal(number);
         if (number < 0) {
             str = "??";
@@ -110,7 +110,7 @@ public class Format extends PFComponent {
 
     /**
      * Long time format. Something like 15:45:46 PM
-     * 
+     *
      * @param date
      * @return
      */
@@ -123,7 +123,7 @@ public class Format extends PFComponent {
 
     /**
      * Short time format. Something like 15:45 PM
-     * 
+     *
      * @param date
      * @return
      */
@@ -139,7 +139,7 @@ public class Format extends PFComponent {
      * (English).
      * <p>
      * Examples: 10 JAN 2010, 30 DEC 2009.
-     * 
+     *
      * @param date
      * @return a date as universal canonical string.
      */
@@ -152,7 +152,7 @@ public class Format extends PFComponent {
      * (English).
      * <p>
      * Examples: 10 JAN 2010, 30 DEC 2009.
-     * 
+     *
      * @param str
      *            the string to parse
      * @return the date.
@@ -164,7 +164,7 @@ public class Format extends PFComponent {
 
     /**
      * Short date format.
-     * 
+     *
      * @param date
      * @return Something like 10/10/09 12:12
      */
@@ -174,7 +174,7 @@ public class Format extends PFComponent {
 
     /**
      * Short date format.
-     * 
+     *
      * @param date
      * @param renderTodayYesterday
      *            if not today, tomorrow or yesterday rendered as actual date
@@ -212,7 +212,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats decimal numbers
-     * 
+     *
      * @param n
      * @return
      */
@@ -222,7 +222,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats long numbers
-     * 
+     *
      * @param n
      * @return
      */
@@ -232,7 +232,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats numbers as percentage. 100.0 --> 100%
-     * 
+     *
      * @param n
      * @return
      */
@@ -259,7 +259,7 @@ public class Format extends PFComponent {
 
     /**
      * Translates a "how much time remaining" value into a string.
-     * 
+     *
      * @param dt
      *            The time in milliseconds
      * @return the formatted string.

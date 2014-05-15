@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.util;
 
 /**
  * Used to easily add gurading clauses.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -33,7 +33,7 @@ public class Reject {
     /**
      * Checks if the given object is null. If yes a
      * <code>NullPointException</code> will be thrown with the given message
-     * 
+     *
      * @param obj
      *            the object to check
      * @param message
@@ -51,7 +51,7 @@ public class Reject {
      * Checks if the given argument of a method is null. If true, will throw a
      * <code>IllegalArgumentException</code> stating the name of the argument
      * that was null.
-     * 
+     *
      * @param obj
      * @param argumentName
      */
@@ -65,7 +65,7 @@ public class Reject {
     /**
      * Checks if any of the given objects is null. If one is null, a
      * <code>IllegalArgumentException</code> is thrown.
-     * 
+     *
      * @param objs
      *            the objects where each is expected to be not null
      */
@@ -77,7 +77,7 @@ public class Reject {
      * Checks if the given string is blank. If yes a
      * <code>IllegalArgumentException</code> will be thrown with the given
      * message
-     * 
+     *
      * @param str
      *            the string to check
      * @param message
@@ -95,7 +95,7 @@ public class Reject {
      * Checks if the given expression is true. If yes a
      * <code>IllegalArgumentException</code> will be thrown with the given
      * message
-     * 
+     *
      * @param expression
      *            the expression to check
      * @param message
@@ -113,7 +113,7 @@ public class Reject {
      * Checks if the given expression is false. If yes a
      * <code>IllegalArgumentException</code> will be thrown with the given
      * message
-     * 
+     *
      * @param expression
      *            the expression to check
      * @param message

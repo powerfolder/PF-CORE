@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * Contains the statistic calculation result / infos about one folder. This
  * object is produced by {@link FolderStatistic}. May be used to transfer info
  * to another computer over the wire. So make sure it is fully serializable.
- * 
+ *
  * @author sprajc
  */
 public class FolderStatisticInfo extends Loggable implements Serializable {
@@ -174,7 +174,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     /**
      * Calculate the sync percentage for a member. This is the size of files in
      * sync divided by the total size of the folder.
-     * 
+     *
      * @param member
      * @return the sync percentage for the given member
      */
@@ -220,7 +220,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     /**
      * Calculate the average sync percentage for a folder. This is the sync
      * percentage for each member divided by the number of members.
-     * 
+     *
      * @return the total sync percentage for a folder
      */
     public double getAverageSyncPercentage() {
@@ -258,7 +258,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
 
     /**
      * Saves this FolderStatisticInfo contents to the given OutputStream.
-     * 
+     *
      * @param out
      * @throws IOException
      */
@@ -406,7 +406,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             return false;
         return true;
     }
-    
+
     /**
      * PFS-818
      * @return
@@ -417,7 +417,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             && partialSyncStatMap != null;
     }
 
-    
+
     @Override
     public String toString() {
         return "FolderStatisticInfo [folder=" + folder + ", totalSize="

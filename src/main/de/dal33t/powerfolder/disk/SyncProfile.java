@@ -62,7 +62,7 @@ import de.dal33t.powerfolder.util.Translation;
  * They will not be accepted into the caches on the target system when
  * deserialized. Use getFieldList() to transfer. This implements Serializable
  * ONLY for compliance with old Invitations.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  * @see Invitation
@@ -181,7 +181,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Constructor.
-     * 
+     *
      * @param profileNameId
      *            name (custom) or id (preset) of the profile
      * @param custom
@@ -203,7 +203,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Returns tue if this is a custom profile.
-     * 
+     *
      * @return
      */
     public boolean isCustom() {
@@ -225,7 +225,7 @@ public class SyncProfile implements Serializable {
      * Sets the profile name. It is illegal to set the profileName the same as
      * another profile, because this breaks the required uniquness of profiles.
      * Always test for name uniqueness first with the safe checkName() method.
-     * 
+     *
      * @param profileName
      */
     public void setName(String profileName) {
@@ -292,7 +292,7 @@ public class SyncProfile implements Serializable {
      * This is used to persist profiles to the configuration. NOTE: Existing
      * sync profiles may not load if this is changed. Add any new fields to the
      * end of the list.
-     * 
+     *
      * @return string representation of the profile config as a list of fields
      */
     public String getFieldList() {
@@ -314,7 +314,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * For preset config, the name is i18n using 'transfer_mode.x.name'.
-     * 
+     *
      * @param id
      *            translate 'syncprofile.[id].name'
      * @return
@@ -387,7 +387,7 @@ public class SyncProfile implements Serializable {
     /**
      * Gets a copy of the sync profiles. Adding or deleting from this list does
      * not affect the SyncProfile caches, but changing the profile config does.
-     * 
+     *
      * @return Shallow copy of SyncProfile caches.
      */
     public static List<SyncProfile> getSyncProfilesCopy() {
@@ -406,7 +406,7 @@ public class SyncProfile implements Serializable {
     /**
      * Tries to resolve a sync profile by id (the old way of storing sync
      * profiles). Else it expects a comma-separated list of profile fieldList.
-     * 
+     *
      * @param fieldList
      * @return
      * @see #getFieldList()
@@ -481,7 +481,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * #2132
-     * 
+     *
      * @param controller
      * @return the default sync profile according to the configuration.
      */
@@ -534,7 +534,7 @@ public class SyncProfile implements Serializable {
     /**
      * Answers the seconds to wait between disk scans. Only relevant if
      * auto-detect changes is enabled
-     * 
+     *
      * @return
      */
     public int getSecondsBetweenScans() {
@@ -570,7 +570,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Remove a profile from the cache.
-     * 
+     *
      * @param profileArg
      */
     public static void deleteProfile(SyncProfile profileArg) {
@@ -588,7 +588,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Check equality on configuration only. This is the important field.
-     * 
+     *
      * @param obj
      * @return
      */
@@ -605,7 +605,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Like equal.
-     * 
+     *
      * @return
      */
     public int hashCode() {

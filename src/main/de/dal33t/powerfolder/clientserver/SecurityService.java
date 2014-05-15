@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.security.Permission;
  * Service for client authentication and permission checks.
  * <P>
  * TODO Traffic optimize
- * 
+ *
  * @author sprajc
  */
 public interface SecurityService {
@@ -45,7 +45,7 @@ public interface SecurityService {
 
     /**
      * Logs in from a remote location.
-     * 
+     *
      * @param username
      * @param passwordMD5
      *            the password mixed with the salt as MD5
@@ -58,7 +58,7 @@ public interface SecurityService {
 
     /**
      * Logs in from a remote location.
-     * 
+     *
      * @param username
      * @param password
      *            the password
@@ -68,7 +68,7 @@ public interface SecurityService {
 
     /**
      * Logs in from a remote location.
-     * 
+     *
      * @param username
      * @param credentials
      *            the credentials
@@ -77,7 +77,7 @@ public interface SecurityService {
     boolean login(String username, Serializable credentials);
 
     /**
-     * 
+     *
      * @return
      */
     AccountDetails loginAndGetAccountDetails(String username, Serializable credentials);
@@ -86,7 +86,7 @@ public interface SecurityService {
      * @return true if a user is logged in currently = has open session.
      */
     boolean isLoggedIn();
-    
+
     /**
      * Logs out.
      */
@@ -94,7 +94,7 @@ public interface SecurityService {
 
     /**
      * PFS-862
-     * 
+     *
      * @return the valid OTP. Usable once within the next minute only.
      */
     String requestOTP();
@@ -109,7 +109,7 @@ public interface SecurityService {
     /**
      * Resulting map may not contain all nodes only those connected to the
      * server.
-     * 
+     *
      * @param nodes
      * @return the {@link AccountInfo} for the nodes.
      */
@@ -117,7 +117,7 @@ public interface SecurityService {
 
     /**
      * TRAC #1566
-     * 
+     *
      * @param pattern
      * @return the nodes
      */
@@ -135,7 +135,7 @@ public interface SecurityService {
     /**
      * Bulk method to reduce RPC overhead. Supported by versions HIGHER than
      * "4.2.9".
-     * 
+     *
      * @param accountInfo
      * @param permissions
      * @return the list of results
@@ -151,7 +151,7 @@ public interface SecurityService {
 
     /**
      * Sets the default permission for the given folder.
-     * 
+     *
      * @param foInfo
      * @param permission
      */
@@ -165,7 +165,7 @@ public interface SecurityService {
 
     /**
      * Sets the Anonyoumus permission for the given folder.
-     * 
+     *
      * @param foInfo
      * @param permission
      */
@@ -182,11 +182,11 @@ public interface SecurityService {
      * @return All permissions to an account and group on the folder.
      */
     Map<Serializable, FolderPermission> getAllFolderPermissions(FolderInfo foInfo);
-    
+
     /**
      * Tries to obtain a permission on the given folder for the logged in
      * account.
-     * 
+     *
      * @param foInfo
      * @return the permission that was granted to the logged in account. null if
      *         not possible.
@@ -196,7 +196,7 @@ public interface SecurityService {
     /**
      * Changes a folder permission of a target account. Removes all existing
      * FolderPermissions of this account.
-     * 
+     *
      * @param aInfo
      *            the target account.
      * @param foInfo
@@ -208,7 +208,7 @@ public interface SecurityService {
 
     /**
      * Accept an invitation to a folder.
-     * 
+     *
      * @param invitation
      *          the invitation.
      */
@@ -216,7 +216,7 @@ public interface SecurityService {
 
     /**
      * Decline an invitation to a folder.
-     * 
+     *
      * @param invitation
      *            the invitation.
      */

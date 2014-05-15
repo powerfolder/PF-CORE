@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.security;
 
 /**
  * Different access level for resources (Folders, Groups, Users, etc.pp)
- * 
+ *
  * @author sprajc
  */
 public enum AccessMode {

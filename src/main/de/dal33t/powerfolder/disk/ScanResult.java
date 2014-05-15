@@ -58,7 +58,7 @@ public class ScanResult {
 
     /** files with potential problems in filenames (like 2 long or illegal chars) */
     private Map<FileInfo, List<Problem>> problemFiles;
-    
+
     private volatile int totalFilesCount;
 
     public ScanResult(ResultState result) {

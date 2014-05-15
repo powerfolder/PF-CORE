@@ -92,7 +92,7 @@ public class UIUtil {
      * and waits until execution was finished.
      * <p>
      * If swing is not available the task gets directly executed.
-     * 
+     *
      * @param task
      * @throws InterruptedException
      */
@@ -121,7 +121,7 @@ public class UIUtil {
      * The task just gets queued in the event queue.
      * <p>
      * If swing is not available the task gets directly executed.
-     * 
+     *
      * @param task
      */
     public static void invokeLaterInEDT(Runnable task) {
@@ -138,7 +138,7 @@ public class UIUtil {
      * <p>
      * FIXME: Only works when the table is already i a scrollpane. better set
      * the background of the viewport from the scrollpane
-     * 
+     *
      * @param table
      * @return
      */
@@ -174,7 +174,7 @@ public class UIUtil {
      * Sets the preferred height of a component to zero (0).
      * <p>
      * Useful for <code>JScrollPanes</code>.
-     * 
+     *
      * @param comp
      *            the component
      * @return the component
@@ -188,7 +188,7 @@ public class UIUtil {
 
     /**
      * Removes the border from a component
-     * 
+     *
      * @param comp
      * @return
      */
@@ -201,7 +201,7 @@ public class UIUtil {
      * Sets the preferred width of a component to zero (0).
      * <p>
      * Useful for <code>JScrollPanes</code>.
-     * 
+     *
      * @param comp
      *            the component
      * @return the component
@@ -215,7 +215,7 @@ public class UIUtil {
 
     /**
      * Adds a task, which is executed, when the L&F changes
-     * 
+     *
      * @param task
      */
     public static void addUIChangeTask(final Runnable task) {
@@ -276,7 +276,7 @@ public class UIUtil {
 
     /**
      * Sets a preferred minimum width in Dialog units (dlu) on a component
-     * 
+     *
      * @param dlu
      *            the size in dlu
      * @param comp
@@ -293,7 +293,7 @@ public class UIUtil {
      * Apply opacity to a window. Done with reflection to ensure there is no
      * issue pre Java 1.6.0_10, although the Java version should already have
      * been checked ({@link Constants#OPACITY_SUPPORTED}).
-     * 
+     *
      * @param window
      * @param opacity
      */
@@ -400,7 +400,7 @@ public class UIUtil {
 
     /**
      * #2440
-     * 
+     *
      * @return the screen width of all screens summarized.
      */
     public static int getScreenWidthAllMonitors() {

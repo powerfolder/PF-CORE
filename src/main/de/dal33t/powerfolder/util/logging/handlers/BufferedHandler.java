@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * A handler that buffers a given amount of {@link LogRecord}s in memory. Older
  * entries get discarded.
- * 
+ *
  * @author sprajc
  */
 public class BufferedHandler extends Handler {
@@ -75,7 +75,7 @@ public class BufferedHandler extends Handler {
     }
 
     // API ********************************************************************
-    
+
     public void clear() {
         logRecords.clear();
     }

@@ -25,7 +25,7 @@ import java.util.ListIterator;
  * Decorates another <code>List</code> to ensure it can't be altered.
  * <p>
  * This class is Serializable from Commons Collections 3.1.
- * 
+ *
  * @since Commons Collections 3.0
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr
  *          2008) $
@@ -40,7 +40,7 @@ public final class UnmodifiableList extends AbstractSerializableListDecorator
 
     /**
      * Factory method to create an unmodifiable list.
-     * 
+     *
      * @param list
      *            the list to decorate, must not be null
      * @throws IllegalArgumentException
@@ -56,7 +56,7 @@ public final class UnmodifiableList extends AbstractSerializableListDecorator
     // -----------------------------------------------------------------------
     /**
      * Constructor that wraps (not copies).
-     * 
+     *
      * @param list
      *            the list to decorate, must not be null
      * @throws IllegalArgumentException

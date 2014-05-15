@@ -36,7 +36,7 @@ public class ViewNoticesAction extends BaseAction {
 
     /**
      * Display the notices handler dialog.
-     * 
+     *
      * @param e
      */
     public void actionPerformed(ActionEvent e) {

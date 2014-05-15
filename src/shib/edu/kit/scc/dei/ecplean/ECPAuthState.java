@@ -9,5 +9,5 @@ public enum ECPAuthState {
 	AUTH_COMPLETED,
 	AUTH_DENIED,
 	AUTH_ERROR
-	
+
 }

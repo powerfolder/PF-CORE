@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.Reject;
  * An converter, that translates {@link FileInfo} object into a
  * {@link PreparedStatement} and constructs a {@link FileInfo} object from a
  * {@link ResultSet}
- * 
+ *
  * @author sprajc
  */
 public class FileInfoSQLConverter {
@@ -73,7 +73,7 @@ public class FileInfoSQLConverter {
      * 8 = deleted flag
      * <p>
      * 9 = folder id
-     * 
+     *
      * @param fInfo
      *            the {@link FileInfo}
      * @param ps
@@ -112,7 +112,7 @@ public class FileInfoSQLConverter {
      * Retrieves a {@link FileInfo} from the given {@link ResultSet} by using
      * the {@link Controller} to resolve {@link FolderInfo} and
      * {@link MemberInfo} objects.
-     * 
+     *
      * @param controller
      *            the controller to retrieve {@link FolderInfo} and
      *            {@link MemberInfo} from. Can be left null.

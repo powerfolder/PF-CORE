@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  * <a href="http://www.clientjava.com/blog/2004/08/20/1093059428000.html">Easily
  * Find Swing Threading Mistakes</a>
  * </p>
- * 
+ *
  * @author Scott Delap
  * @author Alexander Potochkin https://swinghelper.dev.java.net/
  */
@@ -96,8 +96,8 @@ public class CheckThreadViolationRepaintManager extends RepaintManager {
                 }
             }
             if (imageUpdate) {
-                //assuming it is java.awt.image.ImageObserver.imageUpdate(...) 
-                //image was asynchronously updated, that's ok 
+                //assuming it is java.awt.image.ImageObserver.imageUpdate(...)
+                //image was asynchronously updated, that's ok
                 return;
             }
             if (repaint && !fromSwing) {
@@ -121,7 +121,7 @@ public class CheckThreadViolationRepaintManager extends RepaintManager {
     public static void main(String[] args) throws Exception {
         // set CheckThreadViolationRepaintManager
         RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
-        //Valid code  
+        //Valid code
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
                 test();
@@ -130,7 +130,7 @@ public class CheckThreadViolationRepaintManager extends RepaintManager {
         System.out.println("Valid code passed...");
         repaintTest();
         System.out.println("Repaint test - correct code");
-        //Invalide code (stack trace expected) 
+        //Invalide code (stack trace expected)
         test();
     }
 
@@ -150,7 +150,7 @@ public class CheckThreadViolationRepaintManager extends RepaintManager {
         JEditorPane editor = new JEditorPane();
         frame.setContentPane(editor);
         editor.setContentType("text/html");
-        //it works with no valid image as well 
+        //it works with no valid image as well
         editor.setText("<html><img src=\"file:\\lala.png\"></html>");
         frame.setSize(300, 200);
         frame.setVisible(true);
@@ -167,7 +167,7 @@ public class CheckThreadViolationRepaintManager extends RepaintManager {
             });
         } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }
         // repaint(Rectangle) should be ok
         test.repaint(test.getBounds());
         test.repaint(0, 0, 100, 100);

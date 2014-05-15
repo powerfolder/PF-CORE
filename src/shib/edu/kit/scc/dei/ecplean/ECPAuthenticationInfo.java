@@ -9,7 +9,7 @@ public class ECPAuthenticationInfo {
 	private URI idpEcpEndpoint;
 	private URI spUrl;
 	private ECPAuthState authState;
-	
+
 	public ECPAuthenticationInfo(String username, String password,
 			URI idpEcpEndpoint, URI spUrl) {
 		super();
@@ -22,15 +22,15 @@ public class ECPAuthenticationInfo {
 	public String getUsername() {
 		return username;
 	}
-	
+
 	public String getPassword() {
 		return password;
 	}
-	
+
 	public URI getIdpEcpEndpoint() {
 		return idpEcpEndpoint;
 	}
-	
+
 	public URI getSpUrl() {
 		return spUrl;
 	}
@@ -43,5 +43,5 @@ public class ECPAuthenticationInfo {
 		this.authState = authState;
 	}
 
-	
+
 }

@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  * href="http://elliotth.blogspot.com/2005/05/automatically-detecting-awt-event.html">
  * Automatically detecting AWT event dispatch thread hangs</a>
  * </p>
- * 
+ *
  * @author Elliott Hughes <enh@jessies.org> Advice, bug fixes, and test cases
  *         from Alexander Potochkin and Oleg Sukhodolsky.
  *         https://swinghelper.dev.java.net/

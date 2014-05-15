@@ -65,7 +65,7 @@ import de.dal33t.powerfolder.util.delta.MatchResultWorker;
 /**
  * Shared implementation of download managers. This class leaves details on what
  * to request from whom to the implementing class.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public abstract class AbstractDownloadManager extends PFComponent implements
@@ -362,7 +362,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     /**
      * Call this after construction. Otherwise download might not have tempfile
      * ready. Does not prepare tempfile if completed
-     * 
+     *
      * @param completed
      *            if this download is already completed.
      * @throws IOException
@@ -476,7 +476,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * internal locks in place. Reason: This method will access filepartsstate,
      * which is also accessed in here. TODO: Find a "cleaner" way so this method
      * doesn't need to be locked.
-     * 
+     *
      * @throws BrokenDownloadException
      */
     protected abstract void sendPartRequests() throws BrokenDownloadException;
@@ -551,7 +551,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         if (isInfo()) {
             if (fileInfo.getFolderInfo().isMetaFolder()) {
-                logFine("Download completed: " + fileInfo.toDetailString());    
+                logFine("Download completed: " + fileInfo.toDetailString());
             } else {
                 logInfo("Download completed: " + fileInfo.toDetailString());
             }
@@ -840,7 +840,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     /**
      * Returns the base directory for transfer specific meta data. If the
      * directory doesn't exist, it's created.
-     * 
+     *
      * @return the base directory
      * @throws IOException
      *             if the directory couldn't be created

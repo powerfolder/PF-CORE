@@ -131,7 +131,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible completed downloads.
-     * 
+     *
      * @return
      */
     public int countCompletedDownloads() {
@@ -149,7 +149,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible active downloads.
-     * 
+     *
      * @return
      */
     public int countActiveDownloads() {
@@ -167,7 +167,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count total visible downloads.
-     * 
+     *
      * @return
      */
     public int countTotalDownloads() {
@@ -176,7 +176,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of active displayed uploads.
-     * 
+     *
      * @return
      */
     public ValueModel getActiveUploadsCountVM() {
@@ -185,7 +185,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of active displayed downloads.
-     * 
+     *
      * @return
      */
     public ValueModel getActiveDownloadsCountVM() {
@@ -194,7 +194,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of all displayed downloads.
-     * 
+     *
      * @return
      */
     public ValueModel getAllDownloadsCountVM() {
@@ -203,7 +203,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of all displayed uploads.
-     * 
+     *
      * @return
      */
     public ValueModel getAllUploadsCountVM() {
@@ -212,7 +212,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of completed displayed uploads.
-     * 
+     *
      * @return
      */
     public ValueModel getCompletedUploadsCountVM() {
@@ -242,8 +242,8 @@ public class TransferManagerModel extends PFUIComponent {
         int completedDownloadsCount = getTransferManager().countCompletedDownloads();
         int activeDownloadCount = getTransferManager().countActiveDownloads();
         int allDownloadsCount = completedDownloadsCount + activeDownloadCount;
-        
-       
+
+
 //        for (int i = 0; i < downloadCount; i++) {
 //            DownloadManager dlm = downloadManagersTableModel
 //                .getDownloadManagerAtRow(i);
@@ -298,7 +298,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Listens on transfermanager and fires change events on tree
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener implements TransferManagerListener {

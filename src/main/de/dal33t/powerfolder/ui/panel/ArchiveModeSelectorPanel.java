@@ -42,7 +42,7 @@ import java.util.Collections;
  * Panel for displaying and selecting archive mode. Attached are a pair of
  * ValueModels that get notified of selection changes (One for mode, one for
  * version history).
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -74,7 +74,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      *            the necessary evil...
      * @param modeModels
@@ -120,7 +120,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
     /**
      * Set the archive mode and verions history for the panel. Value models are
      * not notified of changes during the set operation.
-     * 
+     *
      * @param versionHistory
      */
     public void setArchiveMode(int versionHistory) {
@@ -149,7 +149,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
 
     /**
      * Builds panel and returns the component.
-     * 
+     *
      * @return
      */
     public Component getUIComponent() {

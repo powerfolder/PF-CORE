@@ -75,7 +75,7 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
  * #1784: For locking the user interface.
- * 
+ *
  * @author sprajc
  */
 public class UIUnLockDialog extends PFUIComponent {
@@ -270,7 +270,7 @@ public class UIUnLockDialog extends PFUIComponent {
 
     /**
      * Creates an internationalized ok button
-     * 
+     *
      * @param listener
      *            the listener to be put on the button
      * @return

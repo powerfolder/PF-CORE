@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Tests the node table model.
- * 
+ *
  * @see de.dal33t.powerfolder.ui.model.NodeTableModel
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $

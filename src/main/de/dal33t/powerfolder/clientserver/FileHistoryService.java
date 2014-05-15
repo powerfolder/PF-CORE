@@ -31,15 +31,15 @@ import de.dal33t.powerfolder.light.FileInfo;
  * TRAC #388
  * <P>
  * TODO Add required methods.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
 public interface FileHistoryService {
     /**
-     * Adds a new version to the file history metadata storage. Creates a new FileHistory 
+     * Adds a new version to the file history metadata storage. Creates a new FileHistory
      * #
-     * 
+     *
      * @param newFileVersion
      */
     void add(FileInfo newFileVersion);

@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message to reply to a FileHistoryRequest message.
- * 
+ *
  * @author "Dennis Waldherr"
  */
 public class FileHistoryReply extends Message {
@@ -44,7 +44,7 @@ public class FileHistoryReply extends Message {
 
     /**
      * Returns the FileHistory for a FileInfo
-     * 
+     *
      * @return a FileHistory or null if the FileInfo was unknown
      */
     public FileHistory getFileHistory() {
@@ -55,7 +55,7 @@ public class FileHistoryReply extends Message {
      * Returns the FileInfo the request was made with. This is for
      * identification purposes only, it doesn't mean the sender really has a
      * FileHistory or the file at all.
-     * 
+     *
      * @return
      */
     public FileInfo getRequestFileInfo() {

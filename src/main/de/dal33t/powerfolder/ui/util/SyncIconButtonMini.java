@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Displays a rotating sync icon when spin is true.
- * 
+ *
  * @author sprajc
  */
 public class SyncIconButtonMini extends JButtonMini {

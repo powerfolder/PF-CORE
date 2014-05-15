@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * BareBonesBrowserLaunch.openURL(url);
  * <p>
  * Public Domain Software -- Free to Use as You Like
- * 
+ *
  * @version $Revision: 1.5 $
  */
 public class BrowserLauncher {
@@ -56,7 +56,7 @@ public class BrowserLauncher {
     /**
      * Opens the browser in background thread. This method does not BLOCK. Can
      * safely be used from UI-EDT Thread.
-     * 
+     *
      * @param controller
      * @param url
      */
@@ -72,7 +72,7 @@ public class BrowserLauncher {
     /**
      * Opens the browser in background thread. This method does not BLOCK. Can
      * safely be used from UI-EDT Thread.
-     * 
+     *
      * @param controller
      * @param producer
      */
@@ -104,7 +104,7 @@ public class BrowserLauncher {
      * Opens the given URL in the system browser. Method does BLOCK. Never call
      * directly from User Interface code! Use
      * {@link #open(Controller, URLProducer)} instead
-     * 
+     *
      * @param url
      * @throws IOException
      * @Deprecated favor {@link #openURL(Controller, String)} or
@@ -161,7 +161,7 @@ public class BrowserLauncher {
         }
         return false;
     }
-    
+
     public static interface URLProducer {
         String url();
     }

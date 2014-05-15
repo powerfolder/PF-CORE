@@ -64,7 +64,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class that selects an invitation then does the folder setup for that invite.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */

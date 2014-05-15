@@ -92,7 +92,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
 
     /**
      * Creates the JPanel for plugin settings
-     * 
+     *
      * @return the created panel
      */
     public JPanel getUIPanel() {

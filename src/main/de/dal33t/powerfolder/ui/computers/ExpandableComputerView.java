@@ -104,7 +104,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      * @param node
      */
@@ -157,7 +157,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Gets the ui component, building if required.
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -296,7 +296,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Gets the name of the associated folder.
-     * 
+     *
      * @return
      */
     public Member getNode() {
@@ -305,7 +305,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Updates the displayed details if for this member.
-     * 
+     *
      * @param eventNode
      */
     private void updateDetailsIfRequired(Member eventNode) {
@@ -438,7 +438,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Add an expansion listener.
-     * 
+     *
      * @param listener
      */
     public void addExpansionListener(ExpansionListener listener) {
@@ -447,7 +447,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Remove an expansion listener.
-     * 
+     *
      * @param listener
      */
     public void removeExpansionListener(ExpansionListener listener) {
@@ -691,7 +691,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         /**
          * Get the directory to import. The transfer is a list of files; need to
          * check the list has one directory, else return null.
-         * 
+         *
          * @param support
          * @return
          */

@@ -101,7 +101,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     /**
      * Handles the invitation to nodes option.
-     * 
+     *
      * @return true if send otherwise false
      */
     private boolean sendInvitation() {
@@ -140,7 +140,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             } else {
                 invalidEmail.setVisible(true);
                 return false;
-            }            
+            }
             theResult = true;
         }
         for (Object o : inviteesListModel.toArray()) {
@@ -155,7 +155,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     /**
      * Send an invite to a friend. The invitee must be in the list of friends or
      * be a valid email.
-     * 
+     *
      * @param candidates
      * @param invitee
      */
@@ -197,7 +197,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        
+
         Runnable inviteTask = new Runnable() {
             public void run() {
                 if (!sendInvitation()) {
@@ -254,7 +254,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         panel2.setOpaque(false);
         builder.add(panel2, cc.xy(1, row));
         row += 2;
-        
+
 
         inviteesListScrollPane = new JScrollPane(inviteesList);
         inviteesListScrollPane.setPreferredSize(new Dimension(
@@ -300,7 +300,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         viaPowerFolderText = new JTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
-        
+
         invalidEmail = new JLabel("<html><font color='red'>"+Translation.getTranslation("wizard.send_invitations.invalid_email", LoginUtil.getUsernameText(getController()))+"</font></html>");
         invalidEmail.setVisible(false);
 

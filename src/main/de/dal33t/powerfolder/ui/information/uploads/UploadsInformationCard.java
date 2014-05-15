@@ -88,7 +88,7 @@ public class UploadsInformationCard extends InformationCard implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public UploadsInformationCard(Controller controller) {
@@ -98,11 +98,11 @@ public class UploadsInformationCard extends InformationCard implements
 
     public InformationCardType getInformationCardType() {
         return InformationCardType.TRANSFERS;
-    }    
+    }
 
     /**
      * Gets the image for the card.
-     * 
+     *
      * @return
      */
     public Image getCardImage() {
@@ -111,7 +111,7 @@ public class UploadsInformationCard extends InformationCard implements
 
     /**
      * Gets the title for the card.
-     * 
+     *
      * @return
      */
     public String getCardTitle() {
@@ -120,7 +120,7 @@ public class UploadsInformationCard extends InformationCard implements
 
     /**
      * Gets the ui component after initializing and building if necessary
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {

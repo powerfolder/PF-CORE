@@ -49,7 +49,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * A table model which contains the search result.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
@@ -78,7 +78,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Initalizes the node table model which contains user/nodes
-     * 
+     *
      * @param controller
      */
     public SearchNodeTableModel(Controller controller) {
@@ -135,7 +135,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Sorts the model by a column
-     * 
+     *
      * @param columnIndex
      * @return if the model was sorted freshly
      */
@@ -163,7 +163,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     /**
      * Re-sorts the folder list with the new comparator only if comparator
      * differs from old one
-     * 
+     *
      * @param newComparator
      * @return if the table was freshly sorted
      */
@@ -202,7 +202,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     /**
      * Returns the listmodel containing the nodes of the tablemodel. Changes in
      * the model will be reflected in the list.
-     * 
+     *
      * @return the listmodel containing the nodes.
      */
     public ObservableList<Member> getListModel() {

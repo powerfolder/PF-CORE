@@ -48,7 +48,7 @@ public class LoggingFormatter extends Formatter {
 
     /**
      * Format a log record nicely.
-     * 
+     *
      * @param record
      * @return
      */

@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Test for UDT connections. Mostly copied from RelayConnectionTest. TRAC #591
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  * @version $Revision: 1.5 $
  */

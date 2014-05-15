@@ -25,7 +25,7 @@ import java.util.Date;
 
 /**
  * File information of a local or remote file
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */

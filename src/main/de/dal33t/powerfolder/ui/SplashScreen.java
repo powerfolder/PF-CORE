@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.util.Waiter;
 
 /**
  * Splash screen
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.16 $
  */
@@ -65,7 +65,7 @@ public class SplashScreen extends JWindow {
 
     /**
      * New splashscreen
-     * 
+     *
      * @param controller
      *            the controller.
      * @param waitTime
@@ -132,7 +132,7 @@ public class SplashScreen extends JWindow {
 
     /**
      * Updates the bar and intercalculate completion percentage
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class BarUpdater extends TimerTask {
@@ -152,7 +152,7 @@ public class SplashScreen extends JWindow {
 
     /**
      * Sets the completion percentage of loading process
-     * 
+     *
      * @param absPerc
      */
     public void setCompletionPercentage(final int absPerc, int nextPerc) {

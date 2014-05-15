@@ -57,7 +57,7 @@ public class FolderDatabaseProblem extends ResolvableProblem {
 
     /**
      * Cleans up the database
-     * 
+     *
      * @param controller
      * @return
      */

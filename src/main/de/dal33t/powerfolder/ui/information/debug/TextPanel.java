@@ -29,7 +29,7 @@ import java.awt.*;
 
 /**
  * Displays text
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.6 $
  */
@@ -38,7 +38,7 @@ public class TextPanel {
     private JTextPane textArea;
     private JScrollPane textAreaPane;
     private boolean autoScroll;
-    
+
     public JComponent getUIComponent() {
         if (textAreaPane == null) {
             initComponents();
@@ -89,14 +89,14 @@ public class TextPanel {
 
     /**
      * For scrolling the document automatically
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class AutoScrollDocumentListner implements DocumentListener {
         public void changedUpdate(DocumentEvent e) {
         }
 
-        public void insertUpdate(DocumentEvent e) {        
+        public void insertUpdate(DocumentEvent e) {
             if (autoScroll) {
                 textArea.setCaretPosition(textArea.getDocument().getLength());
             }
@@ -106,7 +106,7 @@ public class TextPanel {
             if (autoScroll) {
                 textArea.setCaretPosition(textArea.getDocument().getLength());
             }
-        }        
+        }
     }
 
     public void setAutoScroll(boolean autoScroll) {

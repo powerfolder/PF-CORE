@@ -37,7 +37,7 @@ public class FolderRepositoryEvent extends EventObject {
 
     /**
      * create a FolderRepositoryEvent about a Folder
-     * 
+     *
      * @param folder
      *            the folder this event is about
      */
@@ -49,7 +49,7 @@ public class FolderRepositoryEvent extends EventObject {
 
     /**
      * create a FolderRepositoryEvent about a FolderInfo
-     * 
+     *
      * @param folderInfo
      *            the folder this event is about
      */

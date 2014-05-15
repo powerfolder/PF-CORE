@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
  * For weak property change listeners. Unregisteres itself once a propertyChange
  * is fired and the listener has been gced. Make sure that <code>source</code>
  * implements the method #removePropertyChangeListener
- * 
+ *
  * @author sprajc
  */
 public class WeakPropertyChangeListener implements PropertyChangeListener {

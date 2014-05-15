@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
 /**
  * Model for the node manager. Create filtered list of nodes based on friend and
  * lan values.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
@@ -74,7 +74,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public NodeManagerModel(Controller controller) {
@@ -87,7 +87,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Add a node manager model listener.
-     * 
+     *
      * @param l
      */
     public void addNodeManagerModelListener(NodeManagerModelListener l) {
@@ -96,7 +96,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Remove a node manager model listener.
-     * 
+     *
      * @param l
      */
     public void removeNodeManagerModelListener(NodeManagerModelListener l) {
@@ -158,7 +158,7 @@ public class NodeManagerModel extends PFUIComponent {
      * Answers if the node is required based on value models. This only returns
      * nodes that are my computer, friend or connected lan. Also filters online
      * based on showOfflineModel
-     * 
+     *
      * @param node
      * @return
      */
@@ -188,7 +188,7 @@ public class NodeManagerModel extends PFUIComponent {
     /**
      * Returns a Map of Members. Map 0 is My Computers Map 1 is Friends Map 2 is
      * Connected LAN
-     * 
+     *
      * @return
      */
     public Map<Type, Set<Member>> getNodesMap() {
@@ -240,7 +240,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Returns a count of the nodes in the three groups.
-     * 
+     *
      * @return
      */
     public int getSize() {
@@ -269,7 +269,7 @@ public class NodeManagerModel extends PFUIComponent {
     /**
      * Update method responding to changes of nodes. Fire changed if added,
      * removed or in list.
-     * 
+     *
      * @param node
      */
     private void updateNode(Member node) {
@@ -369,7 +369,7 @@ public class NodeManagerModel extends PFUIComponent {
         public void login(ServerClientEvent event) {
             updateNode(getController().getMySelf());
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
             updateNode(event.getServerNode());
         }

@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
  * CLASS. YOU ARE DOING IT WRONG!. Use {@link FileInfoFactory}
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
@@ -183,7 +183,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Syncs fileinfo with diskfile. If diskfile has other lastmodified date
      * that this. Assume that file has changed on disk and update its modified
      * info.
-     * 
+     *
      * @param folder
      *            the folder to sync with
      * @param diskFile
@@ -345,7 +345,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Gets the filename only, without the directory structure
-     * 
+     *
      * @return the filename only of this file.
      */
     public String getFilenameOnly() {
@@ -454,7 +454,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     public boolean isFile() {
         return true;
     }
-    
+
     public boolean isBaseDirectory() {
         return StringUtils.isBlank(fileName);
     }
@@ -503,7 +503,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Also considers myself.
-     * 
+     *
      * @param repo
      *            the folder repository
      * @return if there is a newer version available of this file
@@ -515,7 +515,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Also considers myself
-     * 
+     *
      * @param repo
      * @return the newest available version of this file
      */
@@ -599,7 +599,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Resolves a file from local disk by folder repository, File MAY NOT Exist!
      * Returns null if folder was not found
-     * 
+     *
      * @param repo
      * @return the file.
      */
@@ -616,7 +616,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Resolves a FileInfo from local folder db by folder repository, File MAY
      * NOT Exist! Returns null if folder was not found
-     * 
+     *
      * @param repo
      * @return the FileInfo which is is in my own DB/knownfiles.
      */
@@ -719,7 +719,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * appends to buffer
-     * 
+     *
      * @param str
      *            the stringbuilder to add the detail info to.
      */
@@ -770,7 +770,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Validates the state of the FileInfo. This should actually not be public -
      * checks should be made while constructing this class (by
      * constructor/deserialization).
-     * 
+     *
      * @throws IllegalArgumentException
      *             if the state is corrupt
      */

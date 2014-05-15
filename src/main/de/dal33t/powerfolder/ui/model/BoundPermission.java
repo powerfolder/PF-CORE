@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
  * Does only check permission if
  * {@link ConfigurationEntry#SECURITY_PERMISSIONS_STRICT} is set to true.
  * Otherwise always calls hasPermission(true)
- * 
+ *
  * @author sprajc
  */
 public abstract class BoundPermission extends PFComponent {
@@ -69,7 +69,7 @@ public abstract class BoundPermission extends PFComponent {
     /**
      * Called in EDT if the permission actual changed. Called ONCE on
      * construction to set initial value.
-     * 
+     *
      * @param hasPermission
      */
     public abstract void hasPermission(boolean hasPermission);

@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * This class represents a persistent task which PowerFolder should perform. The
  * task remains stored until remove() is called.
- * 
+ *
  * @author Christian Sprajc
  * @author Dennis "Bytekeeper" Waldherr
  * @version $Revision$
@@ -53,7 +53,7 @@ public abstract class PersistentTask implements Serializable {
 
     /**
      * Schedules this task for execution
-     * 
+     *
      * @param controller
      * @return if succeeded
      */
@@ -86,7 +86,7 @@ public abstract class PersistentTask implements Serializable {
     /**
      * Called when a new Task has been created or if one has been loaded from
      * the task file.
-     * 
+     *
      * @param handler
      *            active task handler
      */
@@ -110,7 +110,7 @@ public abstract class PersistentTask implements Serializable {
 
     /**
      * Returns the controller.
-     * 
+     *
      * @return the controller
      */
     protected final Controller getController() {

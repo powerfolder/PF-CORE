@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Action which opens folder create wizard.
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
  */
@@ -164,7 +164,7 @@ public class NewFolderAction extends BaseAction {
     /**
      * Is user is only allowed to select folder base subdirs and selects
      * outside? Disallow (#2226).
-     * 
+     *
      * @param files
      * @return
      */
@@ -193,7 +193,7 @@ public class NewFolderAction extends BaseAction {
     /**
      * Is one of the files the PowerFolder base directory? A bad thing if true.
      * Should be managing a subdirectory of this.
-     * 
+     *
      * @param files
      * @return
      */

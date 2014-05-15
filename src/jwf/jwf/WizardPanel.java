@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 
 /**
  * The base class used for implementing a panel that is displayed in a Wizard.
- * 
+ *
  * @author Christopher Brind
  */
 public abstract class WizardPanel extends JPanel {
@@ -27,14 +27,14 @@ public abstract class WizardPanel extends JPanel {
 
     /**
      * Is there be a next panel?
-     * 
+     *
      * @return true if there is a panel to move to next
      */
     public abstract boolean hasNext();
 
     /**
      * Called to validate the panel before moving to next panel.
-     * 
+     *
      * @param panelList
      *            a List of error messages to be displayed.
      * @return true if the panel is valid,
@@ -46,7 +46,7 @@ public abstract class WizardPanel extends JPanel {
 
     /**
      * Can this panel finish the wizard?
-     * 
+     *
      * @return true if this panel can finish the wizard.
      */
     public abstract boolean canFinish();
@@ -54,7 +54,7 @@ public abstract class WizardPanel extends JPanel {
     /**
      * Whether a wizard can go back to this panel. Some flows may not allow this
      * like where folders have been created.
-     * 
+     *
      * @return
      */
     public boolean canGoBackTo() {
@@ -64,7 +64,7 @@ public abstract class WizardPanel extends JPanel {
     /**
      * Can this panel cancel the wizard? Terminating panels, where Finish is the
      * only logical option, should set this to false.
-     * 
+     *
      * @return true if this panel can cancel the wizard.
      */
     public abstract boolean canCancel();
@@ -72,7 +72,7 @@ public abstract class WizardPanel extends JPanel {
     /**
      * Called to validate the panel before finishing the wizard. Should return
      * false if canFinish returns false.
-     * 
+     *
      * @param panelList
      *            a List of error messages to be displayed.
      * @return true if it is valid for this wizard to finish.
@@ -84,7 +84,7 @@ public abstract class WizardPanel extends JPanel {
 
     /**
      * Has this panel got help? Defaults to false, override to change.
-     * 
+     *
      * @return false if there is no help for this panel.
      */
     public boolean hasHelp() {
@@ -97,7 +97,7 @@ public abstract class WizardPanel extends JPanel {
 
     /**
      * Get the wizard context.
-     * 
+     *
      * @return a WizardContext object
      */
     protected WizardContext getWizardContext() {
@@ -132,7 +132,7 @@ public abstract class WizardPanel extends JPanel {
         if (getWizard().isTiny()) {
             return Borders.createEmptyBorder("0, 0, 0, 0");
         } else {
-            return Borders.createEmptyBorder("30dlu, 10dlu, 0, 0");            
+            return Borders.createEmptyBorder("30dlu, 10dlu, 0, 0");
         }
     }
 }

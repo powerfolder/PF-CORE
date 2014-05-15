@@ -48,7 +48,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Listens on a local port for incoming connections
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.41 $
  */
@@ -97,7 +97,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
     /**
      * Opens the serversocket
-     * 
+     *
      * @throws ConnectionException
      *             if port is blocked
      */
@@ -130,7 +130,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
     /**
      * Answers if the server socket is opened
-     * 
+     *
      * @return
      */
     private boolean isServerSocketOpen() {
@@ -140,7 +140,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     /**
      * parse entered dyndns and gets rid of any 'http://' found at the beginning
      * of it
-     * 
+     *
      * @param newDns
      * @return string
      */
@@ -155,7 +155,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
     /**
      * get local networ interfaces.
-     * 
+     *
      * @return an array of local inet addresses
      */
     private List<InetAddress> getNetworkAddresses() {
@@ -192,7 +192,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
     /**
      * Tries to set a new dyndns address.
-     * 
+     *
      * @newDns new dyndns to set
      * @validate flag indicating whether to perform dyndns validtion or just to
      *           set it
@@ -323,7 +323,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
     /**
      * Starts the connection listener
-     * 
+     *
      * @throws ConnectionException
      *             if port is blocked
      */

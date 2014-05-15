@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 /**
  * Example program which shows how to use the
  * <code>ActivityVisualizationWorker</code>
- * 
+ *
  * @see de.dal33t.powerfolder.util.ui.ActivityVisualizationWorker
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $

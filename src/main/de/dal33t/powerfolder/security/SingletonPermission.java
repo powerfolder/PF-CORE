@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 /**
  * Permission for simple yes/no rights on actions without resources such as
  * folders.
- * 
+ *
  * @author sprajc
  */
 public class SingletonPermission implements Permission {

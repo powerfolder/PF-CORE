@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.message;
 /**
  * A search request for nodes. Expected answer is a <code>KnowNodes</code>
  * message containing all nodes machting this search criteria.
- * 
+ *
  * @see de.dal33t.powerfolder.message.KnownNodes
  * @see de.dal33t.powerfolder.message.RequestNodeList
  * @author Dennis "Dante" Waldherr

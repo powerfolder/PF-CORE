@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Service to retrieve public keys from the server.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

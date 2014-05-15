@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.Util;
 
 /**
  * The security manager for the client.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -282,7 +282,7 @@ public class SecurityManagerClient extends PFComponent implements
     /**
      * Gets the {@link AccountInfo} for the given node. Retrieves it from server
      * if necessary. NEVER refreshes from server when running in EDT thread.
-     * 
+     *
      * @see de.dal33t.powerfolder.security.SecurityManager#getAccountInfo(de.dal33t.powerfolder.Member)
      */
     public AccountInfo getAccountInfo(Member node) {
@@ -352,7 +352,7 @@ public class SecurityManagerClient extends PFComponent implements
     }
 
     private final Map<String, Member> refreshing = Util.createConcurrentHashMap();
-    
+
     public void nodeAccountStateChanged(final Member node,
         boolean refreshFolderMemberships)
     {
@@ -463,7 +463,7 @@ public class SecurityManagerClient extends PFComponent implements
 
     /**
      * Refreshes a AccountInfo for the given node if it should be pre-fetched.
-     * 
+     *
      * @param node
      */
     private void refresh(Member node) {

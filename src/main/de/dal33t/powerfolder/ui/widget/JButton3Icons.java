@@ -24,7 +24,7 @@ import com.jgoodies.forms.factories.Borders;
 import javax.swing.*;
 import java.awt.*;
 
-    
+
 public class JButton3Icons extends JButton {
 
     public JButton3Icons(Icon normalIcon, Icon hoverIcon, Icon pushIcon) {

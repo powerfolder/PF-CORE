@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.ui.panel.LineSpeedSelectionPanel;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.8 $
  */
@@ -219,7 +219,7 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     /**
      * Creates a language chooser, which contains the supported locales
-     * 
+     *
      * @return a language chooser, which contains the supported locales
      */
     private static JComboBox createLanguageChooser() {

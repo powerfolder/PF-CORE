@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 /**
  * General Exception for folder
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
@@ -41,11 +41,11 @@ public class FolderException extends Exception implements Serializable {
 
     private static final Logger log = Logger.getLogger(FolderException.class.getName());
     private static final long serialVersionUID = 100L;
-    
+
     public FolderInfo fInfo;
 
     /**
-     * 
+     *
      */
     public FolderException() {
         super();
@@ -84,7 +84,7 @@ public class FolderException extends Exception implements Serializable {
 
     /**
      * Shows this error to the user if ui open
-     * 
+     *
      * @param controller
      */
     public void show(Controller controller) {
@@ -93,7 +93,7 @@ public class FolderException extends Exception implements Serializable {
 
     /**
      * Shows this error to the user if ui open
-     * 
+     *
      * @param controller
      * @param additonalText
      *            the additional text which is displayed

@@ -25,7 +25,7 @@ import java.io.Serializable;
  * General superclass for all messages sent from or to another member.
  * <P>
  * ATTENTION: All extending classes have to define a serialVersionUID.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */

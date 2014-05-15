@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
  * Panel displayed when wanting to remove a folder
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.00 $
  */
@@ -72,7 +72,7 @@ public class FolderRemoveDialog extends BaseDialog {
 
     /**
      * Contructor when used on choosen folder
-     * 
+     *
      * @param controller
      * @param foInfo
      */
@@ -98,7 +98,7 @@ public class FolderRemoveDialog extends BaseDialog {
             .getValueBoolean(getController())
             || getController().getOSClient().getAccount()
                 .hasPermission(FolderRemovePermission.INSTANCE);
-        
+
         // Create folder leave dialog message
         boolean syncFlag = folder != null && folder.isTransferring();
         String folderLeaveText;
@@ -115,7 +115,7 @@ public class FolderRemoveDialog extends BaseDialog {
         if(admin) {
             removeKey = onlineFolder && !localFolder
                 ? folderLeaveMessageAdmin
-                : "folder_remove.dialog.text"; 
+                : "folder_remove.dialog.text";
         }else {
             removeKey = onlineFolder && !localFolder
                 ? folderLeaveMessage
@@ -157,7 +157,7 @@ public class FolderRemoveDialog extends BaseDialog {
         removeFromServerBox.setSelected(!localFolder && onlineFolder);
         removeFromServerBox.setEnabled(allowRemove);
         removeFromServerBox.setVisible(allowRemove);
-        
+
         // Buttons
         createRemoveButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -249,7 +249,7 @@ public class FolderRemoveDialog extends BaseDialog {
                 layout = new FormLayout("pref:grow, 3dlu, pref:grow",
                     "pref");
             }
-            
+
         }
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -260,7 +260,7 @@ public class FolderRemoveDialog extends BaseDialog {
 
         builder.add(messageLabel, cc.xyw(1, row, 3));
         row += 2;
-        
+
         if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController()) && !localFolder){
             String noteLabel;
             if(admin){

@@ -140,7 +140,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             bar.setIndeterminate(true);
             bar.setValue(0);
             warningLabel.setText("");
-            
+
             List<FileInfo> versions = new ArrayList<FileInfo>(fileInfosToRestore.size());
             try {
 
@@ -216,7 +216,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             } else {
                 bar.setIndeterminate(false);
                 bar.setValue(100 * fileInfosProcessed / fileInfosToRestore.size());
-                infoLabel.setText(Translation.getTranslation("general.processed", String.valueOf(fileInfosProcessed), 
+                infoLabel.setText(Translation.getTranslation("general.processed", String.valueOf(fileInfosProcessed),
                         String.valueOf(fileInfosToRestore.size())));
             }
         }

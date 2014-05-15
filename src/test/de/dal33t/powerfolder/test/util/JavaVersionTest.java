@@ -149,7 +149,7 @@ public class JavaVersionTest extends TestCase {
     public void testSystemSingleton() {
         JavaVersion javaVersion1 = JavaVersion.systemVersion();
         JavaVersion javaVersion2 = JavaVersion.systemVersion();
-        assertTrue("Singleton", javaVersion1 == javaVersion2 
+        assertTrue("Singleton", javaVersion1 == javaVersion2
                 && javaVersion1.equals(javaVersion2));
     }
 }

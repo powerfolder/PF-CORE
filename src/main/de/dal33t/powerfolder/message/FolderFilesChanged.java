@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A message which contains only the deltas of the folders list
- * 
+ *
  * @see de.dal33t.powerfolder.message.FileList
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.2 $
@@ -64,7 +64,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
 
     /**
      * Contructs a new filelist with added files from argument
-     * 
+     *
      * @param added
      */
     FolderFilesChanged(FolderInfo aFolder, FileInfo[] addedFiles) {
@@ -77,7 +77,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
 
     /**
      * Build a filelist marking the one file as added/updated to the DB.
-     * 
+     *
      * @param fileInfo
      *            the file to broadcast
      */
@@ -94,7 +94,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
 
     /**
      * Build a filelist marking the one file as added/updated to the DB.
-     * 
+     *
      * @param fileInfo
      *            the file to broadcast
      */
@@ -121,7 +121,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
     /**
      * Splits the filelist into small delta message. Splits into multiple
      * <code>FolderFilesChanged</code> messages
-     * 
+     *
      * @param foInfo
      *            the folder for the message
      * @param files

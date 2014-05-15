@@ -27,7 +27,7 @@ import java.util.zip.DeflaterOutputStream;
 /**
  * A GZipoutput stream which is resettable and does not need new buffer
  * allocation. Also no trailer writing code included
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
@@ -37,7 +37,7 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
 
     /**
      * Creates a new output stream with the specified buffer size.
-     * 
+     *
      * @param out
      *            the output stream
      * @param size
@@ -58,7 +58,7 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
         try {
             // Workaround for: PFS-1172: http://bugs.java.com/view_bug.do?bug_id=4797189
             if (def != null) {
-                def.end();                
+                def.end();
             }
         } catch (Exception e) {
         }
@@ -66,7 +66,7 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
 
     /**
      * Creates a new output stream with a default buffer size.
-     * 
+     *
      * @param out
      *            the output stream
      * @exception IOException
@@ -92,7 +92,7 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
 
     /**
      * Writes a new header
-     * 
+     *
      * @throws IOException
      */
     private synchronized void writeHeader() throws IOException {

@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Asks for ip and tries to connect
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */

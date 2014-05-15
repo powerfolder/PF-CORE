@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.util.Format;
 
 /**
  * Answer to a ping message
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
@@ -45,7 +45,7 @@ public class Pong extends Message {
 
     /**
      * Calculates the response time of ping pong. Ping has to match Ping !
-     * 
+     *
      * @param ping
      * @return the response time in ms
      */

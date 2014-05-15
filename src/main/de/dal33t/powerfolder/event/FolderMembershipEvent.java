@@ -27,12 +27,12 @@ import java.util.EventObject;
 public class FolderMembershipEvent extends EventObject {
 
     private Member member;
-    
+
     public FolderMembershipEvent(Folder source, Member member) {
         super(source);
-        this.member = member;       
+        this.member = member;
     }
-    
+
     public Member getMember() {
         return member;
     }

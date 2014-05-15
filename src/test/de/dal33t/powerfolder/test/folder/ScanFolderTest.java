@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  * Tests the scanning of file in the local folders.
  * <p>
  * TODO Test scan of folder which already has a database.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -693,7 +693,7 @@ public class ScanFolderTest extends ControllerTestCase {
 
     /**
      * TRAC #1880
-     * 
+     *
      * @throws IOException
      */
     public void testScanDirMovementWithWatcher() throws IOException {
@@ -724,7 +724,7 @@ public class ScanFolderTest extends ControllerTestCase {
         // Now move
         Path subdir2 = getFolder().getLocalBase().resolve("SUBDIR2");
         PathUtils.recursiveMove(subdir1, subdir2);
-        
+
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {

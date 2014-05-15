@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
  * A file chunk, part of a upload / donwload
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */

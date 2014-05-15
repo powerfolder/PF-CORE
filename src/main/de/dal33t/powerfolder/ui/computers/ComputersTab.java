@@ -48,7 +48,7 @@ public class ComputersTab extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public ComputersTab(Controller controller) {
@@ -72,7 +72,7 @@ public class ComputersTab extends PFUIComponent {
 
     /**
      * Gets the UI component
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {

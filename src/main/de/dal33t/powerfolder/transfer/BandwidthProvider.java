@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * A BandwidthProvider can be used to periodically assign BandwidthLimiters a
  * given amount of bandwidth. It uses a one Thread solution to perform this.
  * $Id$
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.5 $
  */
@@ -87,7 +87,7 @@ public class BandwidthProvider extends Loggable {
 
     /**
      * Sets the bps for the given limiter.
-     * 
+     *
      * @param limiter
      * @param bps
      *            the number of bandwidth per second to apply. 0 will set the
@@ -106,7 +106,7 @@ public class BandwidthProvider extends Loggable {
 
     /**
      * Returns the limit for a given limiter.
-     * 
+     *
      * @param limiter
      * @return the bps limit for the given limiter
      */
@@ -125,7 +125,7 @@ public class BandwidthProvider extends Loggable {
      * weak references to BandwidthLimiters, so even if you don't call this
      * method the limiters get removed as soon as the garbage collector clears
      * them)
-     * 
+     *
      * @param limiter
      *            the limiter to remove
      */

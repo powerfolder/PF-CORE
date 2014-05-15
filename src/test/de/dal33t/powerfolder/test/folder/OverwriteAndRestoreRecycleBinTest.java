@@ -55,7 +55,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
     /**
      * Test the overwrite of file (due to sync) results in copy of old one in
      * RecycleBin. After that the file is restored.
-     * 
+     *
      * @throws IOException
      */
     public void testOverwriteToRecycleAndRestore() throws IOException {

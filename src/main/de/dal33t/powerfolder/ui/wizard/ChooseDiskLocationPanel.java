@@ -76,7 +76,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * A wizard panel for choosing a disk location for a single folder, like when processing a join invite.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  * @deprecated use ChooseMultiDiskLocationPanel
@@ -102,7 +102,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     /**
      * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
-     * 
+     *
      * @param controller
      * @param initialLocation
      * @param next
@@ -321,7 +321,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         while (Files.exists(alternate)) {
                             alternate = Paths.get(baseDir, name + '-' + x++);
                         }
-                        
+
                         Files.createDirectories(alternate);
                         startFolderSizeCalculator();
                         locationModel.setValue(alternate.toAbsolutePath().toString());
@@ -344,7 +344,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Creates a pair of location text field and button.
-     * 
+     *
      * @return
      */
     private JComponent createLocationField() {

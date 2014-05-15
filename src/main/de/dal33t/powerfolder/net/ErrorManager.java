@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*
- * The ErrorManager manages the errors 
+ * The ErrorManager manages the errors
  * recieved from the updated dyndns server
- * 
+ *
  * @author albena roshelova
  */
 public class ErrorManager extends PFComponent {

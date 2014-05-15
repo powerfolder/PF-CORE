@@ -31,7 +31,7 @@ public abstract class AbstractPattern implements Pattern {
 
     /**
      * Constructor.
-     * 
+     *
      * @param patternStringArg
      */
     protected AbstractPattern(String patternStringArg) {

@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the correct response to mass deletions.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry</a>
  * @version $Revision: 4.0 $
  */
@@ -93,7 +93,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
     /**
      * #1842
-     * 
+     *
      * @throws Exception
      */
     public void testNotTriggerOnHistoricDeletion() throws Exception {

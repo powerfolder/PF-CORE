@@ -173,7 +173,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         lanSpeed = new LineSpeedSelectionPanel(getController(), false, true);
 
         enableDisableComponents(getController().isLanOnly());
-        
+
 
         TransferManager tm = getController().getTransferManager();
 
@@ -249,7 +249,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
     /**
      * Creates the JPanel for advanced settings
-     * 
+     *
      * @return the created panel
      */
     public JPanel getUIPanel() {

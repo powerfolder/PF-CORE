@@ -37,7 +37,7 @@ public class CompiledPattern extends AbstractPattern {
 
     /**
      * Constructor.
-     * 
+     *
      * @param patternStringArg
      */
     public CompiledPattern(String patternStringArg) {

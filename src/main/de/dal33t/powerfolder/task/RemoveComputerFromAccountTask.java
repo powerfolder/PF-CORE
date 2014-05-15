@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Task to remote a computer from the computers list of a account.
- * 
+ *
  * @author sprajc
  */
 public final class RemoveComputerFromAccountTask extends ServerRemoteCallTask {

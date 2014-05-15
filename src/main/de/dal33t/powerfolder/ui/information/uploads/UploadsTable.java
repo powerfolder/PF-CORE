@@ -38,14 +38,14 @@ import de.dal33t.powerfolder.ui.render.UploadTableCellRenderer;
 
 /**
  * A Table for displaying the uploads.
- * 
+ *
  * @version $Revision: 1.2 $
  */
 public class UploadsTable extends JTable {
 
     /**
      * Initalizes the table.
-     * 
+     *
      * @param transferManagerModel
      */
     public UploadsTable(TransferManagerModel transferManagerModel) {

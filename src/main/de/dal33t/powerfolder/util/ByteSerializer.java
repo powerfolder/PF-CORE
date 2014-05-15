@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Helper class which serializes and deserializes java objects into byte arrays
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.14 $
  */
@@ -76,7 +76,7 @@ public class ByteSerializer extends Loggable {
     /**
      * Serialize an object. This method is non-static an re-uses the internal
      * byteoutputstream
-     * 
+     *
      * @param target
      *            The object to be serialized
      * @param compress
@@ -167,7 +167,7 @@ public class ByteSerializer extends Loggable {
 
     /**
      * Re-uses internal received buffer for incoming readings.
-     * 
+     *
      * @param in
      *            the input stream to deserialize from
      * @param expectedSize
@@ -227,7 +227,7 @@ public class ByteSerializer extends Loggable {
 
     /**
      * Serialize an object
-     * 
+     *
      * @param target
      *            The object to be serialized
      * @param compress
@@ -244,7 +244,7 @@ public class ByteSerializer extends Loggable {
 
     /**
      * Deserialize a byte[] array into an Object.
-     * 
+     *
      * @param base
      *            The byte[] array
      * @param expectCompression
@@ -293,7 +293,7 @@ public class ByteSerializer extends Loggable {
     /**
      * Deserializer method with flag indicating if the base array is zip
      * compressed
-     * 
+     *
      * @param base
      * @param compressed
      * @return the dezerialized object

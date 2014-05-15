@@ -55,7 +55,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The main wizard class
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
@@ -101,7 +101,7 @@ public class PFWizard extends PFUIComponent {
     /**
      * Make absolutely sure decrementOpenWizards() gets called. Should have been
      * called by Window closed / closing.
-     * 
+     *
      * @throws Throwable
      */
     protected void finalize() throws Throwable {
@@ -138,7 +138,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the wizard for the basic setup.
-     * 
+     *
      * @param controller
      */
     public static void openBasicSetupWizard(Controller controller) {
@@ -152,7 +152,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the what to do wizard. Wizard to create / join folders.
-     * 
+     *
      * @param controller
      */
     public static void openWhatToDoWizard(Controller controller) {
@@ -163,7 +163,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the send-invitation wizard.
-     * 
+     *
      * @param controller
      *            the controller.
      * @param foInfo
@@ -236,7 +236,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Handles/Accepts and invitation that has been received.
-     * 
+     *
      * @param controller
      * @param invitation
      */
@@ -265,7 +265,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the wizard to setup a new webservice mirror.
-     * 
+     *
      * @param controller
      * @param folderToSetup
      *            folder to configure for O/S
@@ -297,10 +297,10 @@ public class PFWizard extends PFUIComponent {
             .getValueBoolean(controller)
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller);
     }
-    
+
     /**
      * Opens the wizard on a panel.
-     * 
+     *
      * @param wizardPanel
      */
     public void open(PFWizardPanel wizardPanel) {

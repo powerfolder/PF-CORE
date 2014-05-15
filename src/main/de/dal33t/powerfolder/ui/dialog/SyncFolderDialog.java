@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * The Sync action panel. User can input his sync actions. e.g. scan. scan &
  * download. Now used only if syncprofile is Project work
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */

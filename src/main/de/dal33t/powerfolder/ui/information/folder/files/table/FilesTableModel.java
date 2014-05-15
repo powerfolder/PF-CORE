@@ -77,7 +77,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public FilesTableModel(Controller controller) {
@@ -109,7 +109,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Set the folder for the model to get details from.
-     * 
+     *
      * @param folder
      */
     public void setFolder(Folder folder) {
@@ -124,7 +124,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Pass the filtered directory model to get the file infos from.
-     * 
+     *
      * @param model
      */
     public void setFilteredDirectoryModel(FilteredDirectoryModel model) {
@@ -207,7 +207,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * During an update, has the model data changed significantly?
-     * 
+     *
      * @return
      */
     public boolean isSignificantlyChanged() {
@@ -313,7 +313,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     * 
+     *
      * @param newComparatorType
      * @return if the table was freshly sorted
      */

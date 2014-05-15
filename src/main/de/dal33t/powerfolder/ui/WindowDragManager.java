@@ -12,16 +12,16 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Handles relocating of components via drag events.
- * 
+ *
  * On some platforms (e.g. Linux) sending a lot of location updates
  * is a problem, because the underlying window system cannot process
  * the location updates fast enough. This leads to a window that
  * lags behind the mouse motion.
- * 
+ *
  * {@link WindowDragManager} solves this problem by accepting an arbitrary
  * number of {@link MouseEvent}s, but updating the location of the
  * window in constant intervals, and only if the position actually differs.
- * 
+ *
  * @author <a href="mailto:radig@powerfolder.com">Matthias Radig</a>
  *
  */

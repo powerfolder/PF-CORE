@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A {@link ScheduledThreadPoolExecutor} that wraps all {@link Runnable}s and
  * {@link Callable}s to log their exceptions and errors
- * 
+ *
  * @author sprajc
  */
 public class WrappedScheduledThreadPoolExecutor extends

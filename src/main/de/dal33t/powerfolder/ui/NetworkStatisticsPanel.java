@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Displays some network statistics and file statistics.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $
  */

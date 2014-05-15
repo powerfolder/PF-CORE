@@ -65,7 +65,7 @@ public abstract class Loggable {
     /**
      * Answers whether the logger level for this class is severe. Use to check
      * whether it is worth assebling a message to log.
-     * 
+     *
      * @return
      */
     protected boolean isSevere() {
@@ -75,7 +75,7 @@ public abstract class Loggable {
     /**
      * Answers whether the logger level for this class is warning. Use to check
      * whether it is worth assebling a message to log.
-     * 
+     *
      * @return
      */
     protected boolean isWarning() {
@@ -85,7 +85,7 @@ public abstract class Loggable {
     /**
      * Answers whether the logger level for this class is info. Use to check
      * whether it is worth assebling a message to log.
-     * 
+     *
      * @return
      */
     protected boolean isInfo() {
@@ -95,7 +95,7 @@ public abstract class Loggable {
     /**
      * Answers whether the logger level for this class is fine. Use to check
      * whether it is worth assebling a message to log.
-     * 
+     *
      * @return
      */
     protected boolean isFine() {
@@ -105,7 +105,7 @@ public abstract class Loggable {
     /**
      * Answers whether the logger level for this class is finer. Use to check
      * whether it is worth assebling a message to log.
-     * 
+     *
      * @return
      */
     protected boolean isFiner() {
@@ -114,7 +114,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is severe.
-     * 
+     *
      * @param message
      */
     protected void logSevere(String message) {
@@ -123,7 +123,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is warning.
-     * 
+     *
      * @param message
      */
     protected void logWarning(String message) {
@@ -132,7 +132,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is info.
-     * 
+     *
      * @param message
      */
     protected void logInfo(String message) {
@@ -141,7 +141,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is fine.
-     * 
+     *
      * @param message
      */
     protected void logFine(String message) {
@@ -150,7 +150,7 @@ public abstract class Loggable {
 
     /**
      * Log a message if logging level is finer.
-     * 
+     *
      * @param message
      */
     protected void logFiner(String message) {
@@ -159,7 +159,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is severe.
-     * 
+     *
      * @param message
      * @param t
      */
@@ -169,7 +169,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is warning.
-     * 
+     *
      * @param message
      * @param t
      */
@@ -179,7 +179,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is info.
-     * 
+     *
      * @param message
      * @param t
      */
@@ -189,7 +189,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is fine.
-     * 
+     *
      * @param message
      * @param t
      */
@@ -199,7 +199,7 @@ public abstract class Loggable {
 
     /**
      * Log a message and throwable if logging level is finer.
-     * 
+     *
      * @param message
      * @param t
      */
@@ -209,7 +209,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is severe.
-     * 
+     *
      * @param t
      */
     protected void logSevere(Throwable t) {
@@ -218,7 +218,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is warning.
-     * 
+     *
      * @param t
      */
     protected void logWarning(Throwable t) {
@@ -227,7 +227,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is info.
-     * 
+     *
      * @param t
      */
     protected void logInfo(Throwable t) {
@@ -236,7 +236,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is fine.
-     * 
+     *
      * @param t
      */
     protected void logFine(Throwable t) {
@@ -245,7 +245,7 @@ public abstract class Loggable {
 
     /**
      * Log a throwable if logging level is finer.
-     * 
+     *
      * @param t
      */
     protected void logFiner(Throwable t) {
@@ -254,7 +254,7 @@ public abstract class Loggable {
 
     /**
      * Actually check if a logger is at or above a specific logging level.
-     * 
+     *
      * @param level
      * @return
      */
@@ -273,7 +273,7 @@ public abstract class Loggable {
 
     /**
      * Actually log a message and optionally a Throwable.
-     * 
+     *
      * @param level
      * @param message
      * @param t

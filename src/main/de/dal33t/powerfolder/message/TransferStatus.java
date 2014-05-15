@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.util.Format;
 
 /**
  * Information about peers transferstatus
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.7 $
  */
@@ -53,7 +53,7 @@ public class TransferStatus extends Message {
 
     /**
      * TODO: Calculate this with the "real" maximum upload cps
-     * 
+     *
      * @return the available upload bandwidth.
      */
     public long getAvailbleUploadCPS() {

@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.Format;
 
 /**
  * Capsulates all the account information for the Online Storage.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -72,7 +72,7 @@ public class OnlineStorageSubscription implements Serializable {
     /**
      * Use {@link #isExpired()} for checking exactly if a subcription has
      * expired. This method returns "0" during the last day of subscription.
-     * 
+     *
      * @return the days left until expire. 0 if expired -1 if never expires.
      */
     public int getDaysLeft() {

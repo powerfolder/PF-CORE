@@ -37,7 +37,7 @@ public class TextLinesPanelBuilder {
         String[] contentsArray = text.split("\n");
         FormLayout contentsForm = new FormLayout("pref");
         PanelBuilder builder = new PanelBuilder(contentsForm);
-        
+
         int row = 1;
         CellConstraints cc = new CellConstraints();
 

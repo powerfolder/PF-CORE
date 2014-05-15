@@ -106,7 +106,7 @@ public class SystemMonitorFrame extends PFUIComponent {
         if (uiComponent == null) {
             return;
         }
-        
+
         // Store main window preferences
         Preferences prefs = getController().getPreferences();
 

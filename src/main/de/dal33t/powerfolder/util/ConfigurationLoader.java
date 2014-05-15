@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 
 /**
  * Helper class around configuration
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -93,7 +93,7 @@ public class ConfigurationLoader {
 
     /**
      * Processes/Handles a configuration (re-) load request.
-     * 
+     *
      * @param controller
      * @param clr
      */
@@ -178,7 +178,7 @@ public class ConfigurationLoader {
 
     /**
      * #2467: Set server URL via command line option in installer
-     * 
+     *
      * @param controller
      * @return
      */
@@ -247,7 +247,7 @@ public class ConfigurationLoader {
     /**
      * #2179 Loads the the config URL from the command line interface and merges
      * it with the controllers config.
-     * 
+     *
      * @param controller
      * @return if a config was successfully loaded
      */
@@ -269,7 +269,7 @@ public class ConfigurationLoader {
     /**
      * #2179 Loads the the config from the server and merges it with the
      * controllers config.
-     * 
+     *
      * @param controller
      * @return if a config was successfully loaded
      */
@@ -280,7 +280,7 @@ public class ConfigurationLoader {
     /**
      * #2179 Loads the the config from the URL and merges it with the
      * controllers config.
-     * 
+     *
      * @param controller
      * @return if a config was successfully loaded
      */
@@ -308,7 +308,7 @@ public class ConfigurationLoader {
                 controller.getPreferences(), overWrite);
             LOG.info("Loaded " + i + " settings (overwrite? " + overWrite
                 + ") from server: " + configURL);
-            
+
             if (i > 0) {
                 controller.saveConfig();
             }
@@ -323,7 +323,7 @@ public class ConfigurationLoader {
     /**
      * Loads a pre-configuration from a server. Automatically adds HTTP:// and
      * url suffix.
-     * 
+     *
      * @param server
      * @return the loaded config.
      * @throws IOException
@@ -333,11 +333,11 @@ public class ConfigurationLoader {
     {
         return loadPreConfiguration(server, null, null);
     }
-    
+
     /**
      * Loads a pre-configuration from a server. Automatically adds HTTP:// and
      * url suffix.
-     * 
+     *
      * @param server
      * @return the loaded config.
      * @throws IOException
@@ -361,7 +361,7 @@ public class ConfigurationLoader {
 
     /**
      * Loads a pre-configuration from the URL
-     * 
+     *
      * @param from
      *            the URL to load from
      * @return the loaded properties WITHOUT those in config.
@@ -394,7 +394,7 @@ public class ConfigurationLoader {
 
     /**
      * Loads the pre configuration from file from the classpath.
-     * 
+     *
      * @param filename
      *            the filename to load
      * @return the loaded properties
@@ -436,7 +436,7 @@ public class ConfigurationLoader {
      * Convenient method to combine
      * {@link #mergeConfigs(Properties, Properties, boolean)} and
      * {@link #mergePreferences(Properties, Preferences, boolean)}
-     * 
+     *
      * @param preConfig
      *            the pre config
      * @param targetConfig
@@ -459,7 +459,7 @@ public class ConfigurationLoader {
      * Merges the give pre configuration properties into the target config
      * properties. It can be choosen if existing keys in the target properties
      * should be replaced or not.
-     * 
+     *
      * @param preConfig
      *            the pre config
      * @param targetConfig
@@ -505,7 +505,7 @@ public class ConfigurationLoader {
      * replaced or not. Will only set those values from preConfig where the key
      * begins with "pref." and cut it off. "pref.xxx=true" will be set to
      * "xxx=true" in preferences.
-     * 
+     *
      * @param preConfig
      *            the pre config
      * @param targetPreferences
@@ -547,7 +547,7 @@ public class ConfigurationLoader {
 
     /**
      * Loads a configuration file from the given input stream.
-     * 
+     *
      * @param in
      *            the input stream to read the pre-config from
      * @return the loaded properties.
