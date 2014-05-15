@@ -106,6 +106,8 @@ public enum Feature {
 
     ZYNCRO_PROFILING(false),
 
+    ZYNCRO_DEBUG(false),
+
     /**
      * Organize users into groups
      */

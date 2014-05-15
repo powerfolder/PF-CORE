@@ -3,22 +3,25 @@ package de.dal33t.powerfolder.disk.problem;
 import java.nio.file.Path;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 public class FolderReadOnlyProblem extends ResolvableProblem {
-    private Path path;
-    private boolean revertedOnly;
+    private final Path path;
+    private final boolean revertedOnly;
+    private final Folder folder;
 
-    public FolderReadOnlyProblem(Path path) {
-        this(path, false);
+    public FolderReadOnlyProblem(Folder folder, Path path) {
+        this(folder, path, false);
     }
 
-    public FolderReadOnlyProblem(Path path, boolean revertedOnly) {
+    public FolderReadOnlyProblem(Folder folder, Path path, boolean revertedOnly) {
         Reject.ifNull(path, "Path");
         this.path = path;
         this.revertedOnly = revertedOnly;
+        this.folder = folder;
     }
 
     @Override
@@ -45,6 +48,8 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
             @Override
             public void run() {
                 PathUtils.openFileIfExists(path.getParent());
+
+                folder.removeProblem(FolderReadOnlyProblem.this);
             }
         };
     }

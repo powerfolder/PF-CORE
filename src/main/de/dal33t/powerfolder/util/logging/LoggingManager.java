@@ -104,6 +104,7 @@ public class LoggingManager {
      * The default filter for the handlers
      */
     private static Filter DEFAULT_FILTER = new Filter() {
+        @Override
         public boolean isLoggable(LogRecord record) {
             String loggerName = record.getLoggerName();
             if (loggerName == null) {
@@ -239,17 +240,16 @@ public class LoggingManager {
                 syslogHandler.init(
                     ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller),
                     ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller));
-            } catch (SocketException e) {
 
+                getRootLogger().addHandler(syslogHandler);
+                syslogLoggingLevel = level;
+                syslogHandler.setLevel(level);
+
+                setMinimumBaseLoggingLevel();
+            } catch (SocketException e) {
                 e.printStackTrace();
             }
-            getRootLogger().addHandler(syslogHandler);
         }
-
-        syslogLoggingLevel = level;
-        syslogHandler.setLevel(level);
-
-        setMinimumBaseLoggingLevel();
     }
 
     public static void clearBuffer() {

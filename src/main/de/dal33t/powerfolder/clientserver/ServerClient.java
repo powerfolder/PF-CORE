@@ -100,6 +100,7 @@ import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
+import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
 
 /**
  * Client to a server.
@@ -157,6 +158,13 @@ public class ServerClient extends PFComponent {
      * Log that is kept to synchronize calls to login
      */
     private final Object loginLock = new Object();
+
+    /**
+     * PFC-2534: remember last IdP and number of login retries to skip after
+     * unauthorized login try
+     */
+    private String lastIdPUsed;
+    private int shibbolethUnauthRetriesSkip;
 
     private AccountDetails accountDetails;
 
@@ -914,6 +922,37 @@ public class ServerClient extends PFComponent {
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
                     if (isShibbolethLogin()) {
+                        // PFC-2534: Start
+                        try {
+                            String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                                .getValue(getController());
+                            boolean idpEqual = StringUtils.isEqual(lastIdPUsed,
+                                currentIdP);
+                            boolean pwEqual = StringUtils.isEqual(
+                                prevPasswordObf, passwordObf);
+                            boolean unEqual = StringUtils.isEqual(prevUsername,
+                                username);
+                            if (shibbolethUnauthRetriesSkip != 0 && unEqual
+                                && pwEqual && idpEqual)
+                            {
+                                shibbolethUnauthRetriesSkip--;
+                                if (isFine()) {
+                                    logFine("Skipping login another "
+                                        + shibbolethUnauthRetriesSkip
+                                        + " times");
+                                }
+                                setAnonAccount();
+                                return accountDetails.getAccount();
+                            }
+
+                            lastIdPUsed = currentIdP;
+                            shibbolethUnauthRetriesSkip = 0;
+                        } catch (RuntimeException e) {
+                            logWarning("An error occured skipping shibboleth login: "
+                                + e);
+                        }
+                        // PFC-2534: End
+
                         boolean externalUser = prepareShibbolethLogin(
                             username,
                             pw,
@@ -1001,9 +1040,11 @@ public class ServerClient extends PFComponent {
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
                 if (isShibbolethLogin()) {
-                    username = prevUsername;
-                    passwordObf = prevPasswordObf;
-                    saveLastKnowLogin(prevUsername, prevPasswordObf);
+                    // PFC-2534: Start
+//                    username = prevUsername;
+//                    passwordObf = prevPasswordObf;
+                    // PFC-2534: End
+                    saveLastKnowLogin(username, passwordObf);
                 }
                 setAnonAccount();
                 fireLogin(accountDetails, false);
@@ -1184,6 +1225,12 @@ public class ServerClient extends PFComponent {
                 result = auth.authenticate();
                 shibUsername = result[0];
                 shibToken = result[1];
+            } catch (ECPUnauthorizedException e) {
+                shibbolethUnauthRetriesSkip = ConfigurationEntry.SERVER_LOGIN_SKIP_RETRY
+                    .getValueInt(getController());
+                shibUsername = null;
+                shibToken = null;
+                throw new SecurityException(e);
             } catch (ECPAuthenticationException e) {
                 shibUsername = null;
                 shibToken = null;

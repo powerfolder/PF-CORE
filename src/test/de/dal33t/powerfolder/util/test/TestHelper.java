@@ -174,6 +174,7 @@ public class TestHelper {
         final MultipleControllerTestCase testCase)
     {
         waitForCondition(10, new Condition() {
+            @Override
             public boolean reached() {
                 for (Controller c : testCase.getControllers()) {
                     if (c.getTransferManager().countActiveDownloads() != 0
@@ -196,6 +197,7 @@ public class TestHelper {
         final TwoControllerTestCase testCase)
     {
         waitForCondition(20, new Condition() {
+            @Override
             public boolean reached() {
                 for (Controller c : new Controller[]{
                     testCase.getContollerLisa(), testCase.getContollerBart()})
@@ -358,6 +360,7 @@ public class TestHelper {
      */
     public static void waitForEmptyEDT() {
         Runnable nothing = new Runnable() {
+            @Override
             public void run() {
             }
         };
@@ -559,12 +562,16 @@ public class TestHelper {
 
     // Scanning help **********************************************************
 
+    public static void scanFolder(final Folder folder) {
+        scanFolder(folder, true);
+    }
+
     /**
      * Scans a folder and waits for the scan to complete.
      *
      * @param folder
      */
-    public static void scanFolder(final Folder folder) {
+    public static void scanFolder(final Folder folder, boolean ignoreMassDeletion) {
         // if (!folder.getSyncProfile().isInstantSync()) {
         // throw new IllegalStateException(
         // "Folder has auto-detect of local files disabled: " + folder
@@ -574,6 +581,7 @@ public class TestHelper {
         // Break scanning process
         folder.getController().setPaused(true);
         TestHelper.waitForCondition(30, new Condition() {
+            @Override
             public boolean reached() {
                 return folder.getController().getFolderRepository()
                     .getCurrentlyMaintainingFolder() == null
@@ -583,7 +591,7 @@ public class TestHelper {
         });
 
         // Scan // Ignore mass deletion
-        if (!folder.scanLocalFiles(true)) {
+        if (!folder.scanLocalFiles(ignoreMassDeletion)) {
             throw new RuntimeException("Unable to scan " + folder
                 + ". Last scan result: " + folder.getLastScanResultState()
                 + ". Device disconnected? " + folder.isDeviceDisconnected());

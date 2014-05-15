@@ -1276,7 +1276,7 @@ public class Folder extends PFComponent {
      */
     public FileInfo scanChangedFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
-        FileInfo localFileInfo = scanChangedFile0(fileInfo);
+        FileInfo localFileInfo = scanChangedFile0(fileInfo, true);
         if (localFileInfo != null) {
             FileInfo existinfFInfo = findSameFile(localFileInfo);
             if (existinfFInfo != null) {
@@ -1324,12 +1324,13 @@ public class Folder extends PFComponent {
     void scanChangedFiles(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo collection is null");
         boolean checkRevert = isRevertLocalChanges();
-        boolean sendMassDeletionMessage = false;
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = it.next();
 
-            FileInfo localFileInfo = scanChangedFile0(fileInfo);
+            FileInfo localFileInfo = scanChangedFile0(fileInfo,
+                !ConfigurationEntry.MASS_DELETE_PROTECTION
+                    .getValueBoolean(getController()));
             if (localFileInfo == null) {
                 // No change
                 it.remove();
@@ -1340,7 +1341,8 @@ public class Folder extends PFComponent {
                 && ConfigurationEntry.MASS_DELETE_PROTECTION
                     .getValueBoolean(getController()))
             {
-                sendMassDeletionMessage = true;
+                getController().localMassDeletionDetected(
+                    new LocalMassDeletionEvent(this, localFileInfo));
                 it.remove();
             } else {
                 // Allowed to change files
@@ -1364,14 +1366,6 @@ public class Folder extends PFComponent {
                 }
             });
         }
-        if (sendMassDeletionMessage) {
-            for (FileInfo info : getKnownFiles()) {
-                if (info.isDeleted()) {
-                    getController().localMassDeletionDetected(
-                        new LocalMassDeletionEvent(this, info));
-                }
-            }
-        }
     }
 
     /**
@@ -1382,7 +1376,7 @@ public class Folder extends PFComponent {
      *            the file to be scanned
      * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
-    private FileInfo scanChangedFile0(FileInfo fInfo) {
+    private FileInfo scanChangedFile0(FileInfo fInfo, boolean ignoreDeleteProtection) {
         if (isFiner()) {
             logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
         }
@@ -1477,6 +1471,14 @@ public class Folder extends PFComponent {
                     FileInfo syncFile = localFile.syncFromDiskIfRequired(this,
                         file);
                     if (syncFile != null) {
+
+                        if (!ignoreDeleteProtection
+                            && syncFile.isDeleted()
+                            && !currentInfo.isMetaFolder())
+                        {
+                            return null;
+                        }
+
                         store(getMySelf(), syncFile);
                         if (isFiner()) {
                             logFiner("Scan file changed: "
@@ -2295,7 +2297,7 @@ public class Folder extends PFComponent {
 
                         Files.deleteIfExists(file);
                         if (!currentInfo.isMetaFolder()) {
-                            addProblem(new FolderReadOnlyProblem(archiver
+                            addProblem(new FolderReadOnlyProblem(this, archiver
                                 .getArchiveDir().resolve(
                                     fileInfo.getRelativeName())));
                         }
@@ -2313,7 +2315,7 @@ public class Folder extends PFComponent {
                     }
                 } else {
                     if (!currentInfo.isMetaFolder()) {
-                        addProblem(new FolderReadOnlyProblem(archiver
+                        addProblem(new FolderReadOnlyProblem(this, archiver
                             .getArchiveDir().resolve(
                                 fileInfo.getRelativeName())));
                     }

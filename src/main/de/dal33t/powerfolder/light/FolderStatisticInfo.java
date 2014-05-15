@@ -269,13 +269,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         }
 
         if (Files.notExists(file.getParent())) {
-            try {
-                Files.createDirectories(file.getParent());
-            } catch (IOException e) {
-                logWarning("Unable to create parent directory for file " + file
-                    + ". " + e);
-                return false;
-            }
+            return false;
         }
 
         try (ObjectOutputStream oout = new ObjectOutputStream(

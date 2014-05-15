@@ -71,6 +71,7 @@ import de.dal33t.powerfolder.message.Notification;
 import de.dal33t.powerfolder.message.Ping;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.message.QuotaExceeded;
 import de.dal33t.powerfolder.message.RelayedMessage;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestDownload;
@@ -94,6 +95,7 @@ import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Filter;
@@ -102,6 +104,7 @@ import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -166,7 +169,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * on that folder. Might contain negativ values! means we received deltas
      * after the inital filelist.
      */
-    private Map<FolderInfo, Integer> expectedListMessages = Util
+    private final Map<FolderInfo, Integer> expectedListMessages = Util
         .createConcurrentHashMap();
 
     /** Last trasferstatus */
@@ -1419,6 +1422,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     logWarning("Received large " + fList);
                 }
                 Runnable r = new Runnable() {
+                    @Override
                     public void run() {
                         folderJoinLock.lock();
                         try {
@@ -1503,6 +1507,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 final FolderDBMaintCommando m = (FolderDBMaintCommando) message;
                 if (targetFolder != null) {
                     getController().getIOProvider().startIO(new Runnable() {
+                        @Override
                         public void run() {
                             targetFolder
                                 .maintainFolderDB(m.getDate().getTime());
@@ -1521,6 +1526,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     sendMessagesAsynchron(new AbortUpload(dlReq.file));
                 } else {
                     Runnable runner = new Runnable() {
+                        @Override
                         public void run() {
                             Upload ul = getController().getTransferManager()
                                 .queueUpload(Member.this, dlReq);
@@ -1647,6 +1653,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                 if (targetFolder != null) {
                     Runnable filelistSender = new Runnable() {
+                        @Override
                         public void run() {
                             if (targetFolder.hasReadPermission(Member.this)) {
                                 // FIX for #924
@@ -1805,10 +1812,25 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof RevertedFile) {
                 RevertedFile msg = (RevertedFile) message;
                 if (targetFolder != null) {
-                    // HERE FIXME HERE
                     Path path = msg.file.getDiskFile(getController().getFolderRepository());
-                    FolderReadOnlyProblem problem = new FolderReadOnlyProblem(path, true);
+                    FolderReadOnlyProblem problem = new FolderReadOnlyProblem(
+                        targetFolder, path, true);
                     targetFolder.addProblem(problem);
+                }
+
+            } else if (message instanceof QuotaExceeded) {
+                QuotaExceeded msg = (QuotaExceeded) message;
+                if (targetFolder != null && getController().isUIEnabled()) {
+                    WarningNotice notice = new WarningNotice(
+                        Translation.getTranslation("warning_notice.title"),
+                        Translation
+                            .getTranslation("warning_notice.insufficient_quota_summary"),
+                        Translation.getTranslation(
+                            "warning_notice.insufficient_quota_message",
+                            msg.account.getDisplayName(),
+                            msg.file.getFilenameOnly()));
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().handleNotice(notice);
                 }
 
             } else if (message instanceof RequestPart) {
@@ -1882,6 +1904,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     .getFileInfo();
                 // No need to wait for the FileDAO to have built the FileHistory
                 getController().getIOProvider().startIO(new Runnable() {
+                    @Override
                     public void run() {
                         Folder f = getController().getFolderRepository()
                             .getFolder(requested.getFolderInfo());
@@ -1916,6 +1939,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     getController().getNodeManager().broadcastMessage(asc,
                         new Filter<Member>() {
                             // Don't send the message back to the source.
+                            @Override
                             public boolean accept(Member item) {
                                 return !equals(item) && !item.isServer();
                             }
@@ -2725,6 +2749,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         return (info.id == null) ? 0 : info.id.hashCode();
     }
 
+    @Override
     public int compareTo(Member m) {
         return info.id.compareTo(m.info.id);
     }
