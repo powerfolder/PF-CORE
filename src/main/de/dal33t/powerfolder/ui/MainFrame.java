@@ -662,18 +662,26 @@ public class MainFrame extends PFUIComponent {
 
         if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
             setFrameMode(FrameMode.NORMAL);
-            if (getController().getUIController().getApplicationModel().getNoticesModel().getAllNotices().size() > 0) {
+
+            int unreadNoticesCount = (Integer) getController().getUIController()
+                .getApplicationModel().getNoticesModel()
+                .getUnreadNoticesCountVM().getValue();
+
+            if (unreadNoticesCount > 0) {
                 getController().getUIController().openNoticesCard();
             } else {
-                for (Folder folder : getController().getFolderRepository().getFolders()) {
+                for (Folder folder : getController().getFolderRepository()
+                    .getFolders())
+                {
                     if (folder.getProblems().size() > 0) {
-                        getController().getUIController().openProblemsInformation(folder.getInfo());
+                        getController().getUIController()
+                            .openProblemsInformation(folder.getInfo());
                         break;
                     }
                 }
             }
         }
-//        setLinkTooltips();
+        //        setLinkTooltips();
     }
 
     private void updateMainStatus(SyncStatusEvent event) {
