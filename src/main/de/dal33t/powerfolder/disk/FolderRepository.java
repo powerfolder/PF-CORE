@@ -1536,7 +1536,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning(ioe.getMessage());
         }
 
-        if (!getController().getMySelf().isServer()) {
+        if (!getController().getMySelf().isServer() && getController().isUIEnabled()) {
             filter = new Filter<Path>() {
                 @Override
                 public boolean accept(Path entry) {
@@ -1586,8 +1586,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                             };
                         }
                     };
-
-
 
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
