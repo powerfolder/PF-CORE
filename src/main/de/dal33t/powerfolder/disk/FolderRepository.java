@@ -253,7 +253,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController()))
         {
             String shortcutName = getController().getFolderRepository()
-                .getFoldersBasedir().getFileName().toString();
+                .getFoldersBasedir().toAbsolutePath().toString();
             if (Util.isDesktopShortcut(shortcutName)) {
                 Util.removeDesktopShortcut(shortcutName);
             }
@@ -282,7 +282,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (Util.isDesktopShortcut(oldShortcutName)) {
                 Util.removeDesktopShortcut(oldShortcutName);
                 String shortcutName = getController().getFolderRepository()
-                    .getFoldersBasedir().getFileName().toString();
+                    .getFoldersBasedir().toAbsolutePath().toString();
                 Util.createDesktopShortcut(shortcutName, getController()
                     .getFolderRepository().getFoldersBasedir());
             }
