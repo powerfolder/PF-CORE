@@ -1808,8 +1808,13 @@ public class Folder extends PFComponent {
                     if (member.isMySelf()) {
                         continue;
                     }
-                    if (member.isConnected()) {
-                        logInfo("Not joining connected member "
+                    if (member.isConnected() && member.isServer()) {
+                        // PFS-1144: May not actually member anymore in cluster
+                        // setup.
+                        // NEVER Ever join any member into a folder which is
+                        // actually
+                        // connected already.
+                        logInfo("(I) Not joining connected server "
                             + member.getNick() + " into folder " + getName());
                         continue;
                     }
@@ -2704,10 +2709,12 @@ public class Folder extends PFComponent {
             if (!memberInfo.isOnSameNetwork(getController())) {
                 continue;
             }
-            if (memberCanidate.isConnected()) {
+            if (memberCanidate.isConnected() && memberCanidate.isServer()) {
                 // PFS-1144: May not actually member anymore in cluster setup.
                 // NEVER Ever join any member into a folder which is actually
                 // connected already.
+                logInfo("(U) Not joining connected server "
+                    + memberCanidate.getNick() + " into folder " + getName());
                 continue;
             }
             if (join0(memberInfo)) {
