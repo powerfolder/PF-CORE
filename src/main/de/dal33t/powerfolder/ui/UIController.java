@@ -1514,16 +1514,16 @@ public class UIController extends PFComponent {
                 message = Translation.getTranslation(
                     "uicontroller.remote_mass_delete.warning_message", event
                         .getMemberInfo().nick, String.valueOf(event
-                        .getDeleteFigure()), event.getFolderInfo().name, event
-                        .getOldProfile().getName(), event.getNewProfile()
-                        .getName());
+                        .getDeleteFigure()), event.getFolderInfo()
+                        .getLocalizedName(), event.getOldProfile().getName(),
+                    event.getNewProfile().getName());
             } else {
                 message = Translation.getTranslation(
                     "uicontroller.remote_mass_delete.warning_absolute_message",
                     event.getMemberInfo().nick, String.valueOf(event
-                        .getDeleteFigure()), event.getFolderInfo().name, event
-                        .getOldProfile().getName(), event.getNewProfile()
-                        .getName());
+                        .getDeleteFigure()), event.getFolderInfo()
+                        .getLocalizedName(), event.getOldProfile().getName(),
+                    event.getNewProfile().getName());
             }
 
             WarningNotice notice = new WarningNotice(

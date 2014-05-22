@@ -550,8 +550,8 @@ public class FoldersList extends PFUIComponent {
         private static final FolderBeanComparator INSTANCE = new FolderBeanComparator();
 
         public int compare(ExpandableFolderModel o1, ExpandableFolderModel o2) {
-            return o1.getFolderInfo().name.compareToIgnoreCase(o2
-                .getFolderInfo().name);
+            return o1.getFolderInfo().getLocalizedName()
+                .compareToIgnoreCase(o2.getFolderInfo().getLocalizedName());
         }
     }
 
