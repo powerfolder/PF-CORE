@@ -1047,7 +1047,9 @@ public enum ConfigurationEntry {
 
     SHOW_TINY_WIZARDS("show.tiny.wizards", false),
 
-    SHOW_CREATE_FOLDER("show.create.folder", true);
+    SHOW_CREATE_FOLDER("show.create.folder", true),
+    
+    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
 
     // Methods/Constructors ***************************************************
 

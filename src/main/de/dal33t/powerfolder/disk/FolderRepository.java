@@ -437,6 +437,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (ok) {
             logInfo("Using base path for folders: " + foldersBasedir);
             PathUtils.maintainDesktopIni(getController(), foldersBasedir);
+            // PFC-2538
+            try {
+                if (ConfigurationEntry.COPY_GETTING_STARTED_GUIDE
+                    .getValueBoolean(getController()))
+                {
+                    Path gsFile = foldersBasedir
+                        .resolve(Constants.GETTING_STARTED_GUIDE_FILENAME);
+                    if (Files.notExists(gsFile)) {
+                        Util.copyResourceTo(
+                            Constants.GETTING_STARTED_GUIDE_FILENAME, null,
+                            gsFile, false, true);
+                    }
+                }
+            } catch (Exception e) {
+                logWarning("Unable to copy getting started guide. " + e);
+            }
         } else {
             logWarning("Unable to access base path for folders: "
                 + foldersBasedir);
@@ -1545,6 +1561,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                     if (entry.getFileName().toString().toLowerCase()
                         .endsWith(".lnk"))
+                    {
+                        return false;
+                    }
+                    if (entry
+                        .getFileName()
+                        .toString()
+                        .equalsIgnoreCase(
+                            Constants.GETTING_STARTED_GUIDE_FILENAME))
                     {
                         return false;
                     }

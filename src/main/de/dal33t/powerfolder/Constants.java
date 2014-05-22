@@ -83,6 +83,11 @@ public class Constants {
      * @see ConfigurationEntry#FOLDER_BASEDIR
      */
     public static final String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
+    
+    /**
+     * PFC-2538
+     */
+    public static final String GETTING_STARTED_GUIDE_FILENAME = "Getting started.pdf";
 
     /**
      * #2056: Temporary directory to download the updates before performing an
