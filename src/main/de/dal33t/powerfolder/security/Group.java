@@ -58,6 +58,7 @@ public class Group implements Serializable {
     public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
+    public static final String PROPERTYNAME_LDAPDN = "ldapDN";
 
     private static final long serialVersionUID = 100L;
 
@@ -68,6 +69,10 @@ public class Group implements Serializable {
     @Index(name = "IDX_GROUP_NAME")
     @Column(nullable = false)
     private String name;
+
+    @Index(name = "IDX_GROUP_LDAPDN")
+    @Column(length = 512)
+    private String ldapDN;
 
     @Column(length = 1024)
     private String notes;
@@ -199,6 +204,7 @@ public class Group implements Serializable {
         return new GroupInfo(oid, name);
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Group)) {
             return false;
