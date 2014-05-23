@@ -184,6 +184,14 @@ public class Group implements Serializable {
         return name;
     }
 
+    public void setLdapDN(String newLdapDN) {
+        ldapDN = newLdapDN;
+    }
+
+    public String getLdapDN() {
+        return ldapDN;
+    }
+
     public String getNotes() {
         return notes;
     }
