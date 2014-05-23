@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
@@ -40,8 +41,10 @@ import org.hibernate.annotations.Type;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.GroupInfo;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * A group of accounts.
@@ -190,6 +193,20 @@ public class Group implements Serializable {
 
     public String getLdapDN() {
         return ldapDN;
+    }
+
+    public void addNotesWithDate(String infoText) {
+        if (StringUtils.isBlank(infoText)) {
+            return;
+        }
+        String infoLine = Format.formatDateCanonical(new Date());
+        infoLine += ": ";
+        infoLine += infoText;
+        if (StringUtils.isBlank(notes)) {
+            setNotes(infoLine);
+        } else {
+            setNotes(notes + "\n" + infoLine);
+        }
     }
 
     public String getNotes() {
