@@ -65,5 +65,5 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @param ldapDN
      * @return
      */
-    Group findWithLdapDN(String ldapDN);
+    Group findByLdapDN(String ldapDN);
 }
