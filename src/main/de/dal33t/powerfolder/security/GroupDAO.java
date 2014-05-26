@@ -57,4 +57,13 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return
      */
     int countGroupsWithOrganization(Organization org);
+
+    /**
+     * PFS-420
+     *
+     *
+     * @param ldapDN
+     * @return
+     */
+    Group findWithLdapDN(String ldapDN);
 }
