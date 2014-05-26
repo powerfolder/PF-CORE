@@ -59,11 +59,19 @@ public interface GroupDAO extends GenericDAO<Group> {
     int countGroupsWithOrganization(Organization org);
 
     /**
+     * Find a group with a certain LDAP distinguished name.
      * PFS-420
-     *
      *
      * @param ldapDN
      * @return
      */
     Group findByLdapDN(String ldapDN);
+
+    /**
+     * Get all groups, that have an LDAP distinguished name set.
+     * PFS-420
+     *
+     * @return
+     */
+    List<Group> getLdapGroups();
 }
