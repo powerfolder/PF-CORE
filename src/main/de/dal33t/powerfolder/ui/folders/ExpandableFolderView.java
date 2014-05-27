@@ -81,6 +81,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
@@ -1761,7 +1762,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }
                 });
             } else {
-                getApplicationModel().syncFolder(folder);
+                new SyncFolderDialog(getController(), folder).open();
             }
         }
     }
@@ -1778,12 +1779,12 @@ public class ExpandableFolderView extends PFUIComponent implements
             panel.open();
         }
     }
-    
+
     private class FolderOnlineRemoveAction extends BaseAction {
-        
+
         private FolderOnlineRemoveAction(Controller controller) {
             super(removeLabel, controller);
-        }
+   }
 
         public void actionPerformed(ActionEvent e) {
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
