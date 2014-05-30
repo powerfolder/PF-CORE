@@ -1254,7 +1254,6 @@ public class TransferManager extends PFComponent {
                     }
                 }
             }
-            // folder.recommendScanOnNextMaintenance();
             return null;
         }
 
