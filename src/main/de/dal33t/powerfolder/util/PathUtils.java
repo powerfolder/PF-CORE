@@ -1018,13 +1018,16 @@ public class PathUtils {
                     + filename.substring(index + 1, filename.length());
             }
         }
+        while (filename.endsWith(".")) {
+            filename = filename.substring(0, filename.length() - 1);
+        }
         return filename;
     }
 
     /**
      * #2467: Encode URL in filename by substituting illegal chars with legal
      * one.
-     * 
+     *
      * @param url
      * @return
      */

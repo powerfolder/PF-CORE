@@ -2052,7 +2052,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
 
-                String folderName = folderInfo.getLocalizedName();
+                String folderName = PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName());
 
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()
