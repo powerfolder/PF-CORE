@@ -130,6 +130,8 @@ public class PathUtilsTest extends TestCase {
         assertEquals(0, PathUtils.getNumberOfSiblings(actual3));
         assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3
             .getFileName().toString());
+        
+        assertEquals("", PathUtils.removeInvalidFilenameChars("....."));
     }
 
     /**
