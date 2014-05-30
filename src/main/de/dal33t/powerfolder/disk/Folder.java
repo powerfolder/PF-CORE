@@ -429,6 +429,7 @@ public class Folder extends PFComponent {
         loadMetadata();
 
         // PFS-457: Start
+        List<String> oldPatterns = diskItemFilter.getPatterns();
         if (StringUtils.isNotBlank(folderSettings.getExcludes())) {
             String separator = folderSettings.getExcludes().contains(",")
                 ? ","
@@ -486,6 +487,12 @@ public class Folder extends PFComponent {
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         watcher = new FolderWatcher(this);
+        
+        // PFS-457: Make sure the new patterns are broadcasted
+        List<String> newPatterns = diskItemFilter.getPatterns();
+        if (!newPatterns.equals(oldPatterns)) {
+            triggerPersist();
+        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -4760,6 +4767,7 @@ public class Folder extends PFComponent {
         Path pFile = getSystemSubDir().resolve(
             DiskItemFilter.PATTERNS_FILENAME);
         boolean init = Files.notExists(pFile);
+        boolean wasDirty = diskItemFilter.isDirty();
 
         for (DefaultExcludes pattern : DefaultExcludes.values()) {
             addPattern(pattern.getPattern());
@@ -4813,11 +4821,16 @@ public class Folder extends PFComponent {
 
         if (init) {
             diskItemFilter.savePatternsTo(pFile, false);
-            // Defaults have 0
-            try {
-                Files.setLastModifiedTime(pFile, FileTime.fromMillis(0));
-            } catch (IOException e) {
-                logWarning(e.getMessage());
+            if (!wasDirty) {
+                // Pure defaults have 0
+                try {
+                    Files.setLastModifiedTime(pFile, FileTime.fromMillis(0));
+                } catch (IOException e) {
+                    logWarning(e.getMessage());
+                }
+            } else {
+                // PFS-457
+                savePatternsToMetaFolder();
             }
         }
     }
