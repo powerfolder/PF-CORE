@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -100,7 +101,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
     private boolean createPreviewFolder() {
         FolderSettings folderSettings = new FolderSettings(
-            invitation.getSuggestedLocalBase(getController()),
+            PathUtils.removeInvalidFilenameChars(invitation
+                .getSuggestedLocalBase(getController())),
             syncProfileSelectorPanel.getSyncProfile(), null, 0, true);
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);

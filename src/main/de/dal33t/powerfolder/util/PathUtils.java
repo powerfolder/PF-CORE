@@ -1024,6 +1024,13 @@ public class PathUtils {
         return filename;
     }
 
+    public static Path removeInvalidFilenameChars(Path path) {
+        String filename = path.getFileName().toString();
+        String cleared = PathUtils.removeInvalidFilenameChars(filename);
+
+        return path.getParent().resolve(cleared);
+    }
+
     /**
      * #2467: Encode URL in filename by substituting illegal chars with legal
      * one.

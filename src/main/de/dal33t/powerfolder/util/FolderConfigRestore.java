@@ -65,6 +65,7 @@ public class FolderConfigRestore {
 
     private static void restoreFolderConfig(Path baseDir, Properties config) {
         FolderInfo foInfo;
+        baseDir = PathUtils.removeInvalidFilenameChars(baseDir);
         try {
             foInfo = readFolderInfo(baseDir);
         } catch (Exception e) {

@@ -985,8 +985,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
             Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
         Path systemSubdir = folder.getSystemSubDir();
-        FolderSettings metaFolderSettings = new FolderSettings(
-            systemSubdir.resolve(Constants.METAFOLDER_SUBDIR),
+        FolderSettings metaFolderSettings = new FolderSettings(systemSubdir
+                .resolve(Constants.METAFOLDER_SUBDIR),
             SyncProfile.META_FOLDER_SYNC, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
@@ -1836,7 +1836,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         {
             // Moderate strategy. Use existing folders.
             suggestedLocalBase = getController().getFolderRepository()
-                .getFoldersBasedir().resolve(invitation.folder.name);
+                .getFoldersBasedir().resolve(invitation.folder.getLocalizedName());
             if (Files.exists(suggestedLocalBase)) {
                 logWarning("Using existing directory " + suggestedLocalBase
                     + " for " + invitation.folder);
@@ -1845,8 +1845,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Defensive strategy. Find free new empty directory.
             suggestedLocalBase = PathUtils.createEmptyDirectory(getController()
                 .getFolderRepository().getFoldersBasedir(),
-                invitation.folder.name);
+                invitation.folder.getLocalizedName());
         }
+
+        suggestedLocalBase = PathUtils.removeInvalidFilenameChars(suggestedLocalBase);
 
         // Is this invitation from a friend?
         boolean invitorIsFriend = false;

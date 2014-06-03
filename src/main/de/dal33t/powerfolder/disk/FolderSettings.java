@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -382,7 +383,8 @@ public class FolderSettings {
             }
         }
 
-        FolderSettings settings = new FolderSettings(folderDir, syncProfile,
+        FolderSettings settings = new FolderSettings(
+            PathUtils.removeInvalidFilenameChars(folderDir), syncProfile,
             downloadScript, versions, syncPatterns, commitDir, syncWarnSeconds);
         settings.configEntryId = entryId;
         settings.localBaseDirStr = folderDirStr;
