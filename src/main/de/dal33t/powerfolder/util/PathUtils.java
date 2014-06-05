@@ -1025,6 +1025,10 @@ public class PathUtils {
     }
 
     public static Path removeInvalidFilenameChars(Path path) {
+        if (path.getFileName() == null) {
+            return path;
+        }
+
         String filename = path.getFileName().toString();
         String cleared = PathUtils.removeInvalidFilenameChars(filename);
 
