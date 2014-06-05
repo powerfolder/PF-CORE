@@ -300,9 +300,6 @@ public class LoginPanel extends PFWizardPanel {
             {
                 @Override
                 protected Void doInBackground() throws Exception {
-                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
-                        .getValue(getController());
-
                     URL url = new URL(
                         ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                             .getValue(getController()));
@@ -321,11 +318,15 @@ public class LoginPanel extends PFWizardPanel {
                     }
 
                     JSONArray resp = new JSONArray(body.toString());
-                    List<String> idPList = new ArrayList<>();
+                    List<String> idPList = new ArrayList<>(resp.length());
 
                     idPSelectBox.removeAllItems();
                     idPSelectBox.addItem("Keine - Externer Benutzer");
                     idPList.add("ext");
+
+                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
+                        .getValue(getController());
+                    boolean lastIdPSet = false;
 
                     for (int i = 0; i < resp.length(); i++) {
                         JSONObject obj = resp.getJSONObject(i);
@@ -339,7 +340,16 @@ public class LoginPanel extends PFWizardPanel {
 
                         if (entity.equals(lastIdP)) {
                             idPSelectBox.setSelectedIndex(i + 1);
+                            lastIdPSet = true;
                         }
+                    }
+
+                    if (!lastIdPSet) {
+                        idPSelectBox.setSelectedIndex(0);
+                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(
+                            getController(), "ext");
+                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                            .setValue(getController(), "ext");
                     }
 
                     idPSelectBox.addActionListener(new IdPSelectionAction(
