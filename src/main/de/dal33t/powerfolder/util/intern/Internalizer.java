@@ -35,4 +35,6 @@ public interface Internalizer<T> {
      * @return the interned instance of the item
      */
     T intern(T item);
+    
+    T sudoIntern(T item);
 }

@@ -1897,6 +1897,31 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         accountSyncLock.lock();
+
+        if (ProUtil.isZyncro(getController())) {
+            for (FolderInfo foInfo : a.getFolders()) {
+                FolderInfo old = foInfo.intern();
+
+                if (!old.getName().equals(foInfo.getName())) {
+                    foInfo = foInfo.intern(true);
+
+                    try {
+                        Folder folder = folders.get(foInfo);
+                        if (folder == null) {
+                            continue;
+                        }
+
+                        Path newDirectory = folder.getLocalBase().getParent()
+                            .resolve(foInfo.getLocalizedName());
+
+                        moveLocalFolder(folder, newDirectory);
+                    } catch (IOException ioe) {
+                        logWarning("Could not move Folder " + foInfo);
+                    }
+                }
+            }
+        }
+
         try {
             logInfo("Syncing folder setup with account permissions("
                 + a.getFolders().size() + "): " + a.getUsername());
@@ -1937,6 +1962,30 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         } finally {
             accountSyncLock.unlock();
+        }
+    }
+
+    private void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+        Path originalDirectory = folder.getLocalBase().toRealPath();
+        FolderSettings fs = FolderSettings.load(getController(),
+            folder.getConfigEntryId());
+
+        // Remove the old folder from the repository.
+        removeFolder(folder, false);
+
+        // Move it.
+        PathUtils.recursiveMove(originalDirectory, newDirectory);
+
+        // Remember patterns if content not moving.
+        List<String> patterns = folder.getDiskItemFilter().getPatterns();
+
+        // Create the new Folder in the repository.
+        fs = fs.changeBaseDir(newDirectory);
+        folder = createFolder0(folder.getInfo().intern(), fs, true);
+
+        // Restore patterns if content not moved.
+        for (String pattern : patterns) {
+            folder.addPattern(pattern);
         }
     }
 

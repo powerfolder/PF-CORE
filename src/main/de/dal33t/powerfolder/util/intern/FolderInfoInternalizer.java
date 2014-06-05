@@ -62,4 +62,19 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         return internInstance;
     }
 
+    public FolderInfo sudoIntern(FolderInfo foInfo) {
+        if (foInfo == null) {
+            return null;
+        }
+
+        FolderInfo oldInstance = INSTANCES.get(foInfo);
+
+        if (oldInstance.getName().equals(foInfo.getName())) {
+            return oldInstance;
+        }
+
+        INSTANCES.put(foInfo, foInfo);
+
+        return foInfo;
+    }
 }

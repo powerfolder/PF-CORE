@@ -113,7 +113,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     ExpandableView
 {
 
-    private final FolderInfo folderInfo;
+    private FolderInfo folderInfo;
     private Folder folder;
     private Type type;
     private boolean online;
@@ -212,6 +212,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void configure(ExpandableFolderModel folderModel) {
         boolean changed = false;
         Folder beanFolder = folderModel.getFolder();
+        FolderInfo beanFolderInfo = folderModel.getFolderInfo().intern();
         Type beanType = folderModel.getType();
         boolean beanOnline = folderModel.isOnline();
         if (beanFolder != null && folder == null) {
@@ -219,6 +220,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         } else if (beanFolder == null && folder != null) {
             changed = true;
         } else if (beanFolder != null && !folder.equals(beanFolder)) {
+            changed = true;
+        } else if (!folderInfo.getName().equals(beanFolderInfo.getName())) {
             changed = true;
         } else if (beanType != type) {
             changed = true;
@@ -235,6 +238,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         type = beanType;
         folder = beanFolder;
+        folderInfo = beanFolderInfo;
         online = beanOnline;
         osComponent.setFolder(beanFolder);
 

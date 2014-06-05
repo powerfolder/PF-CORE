@@ -54,4 +54,8 @@ public class MemberInfoInternalizer implements Internalizer<MemberInfo> {
             return nodeManager.addNode(item).getInfo();
         }
     }
+    
+    public MemberInfo sudoIntern(MemberInfo item) {
+        return intern(item);
+    }
 }
