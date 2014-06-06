@@ -974,7 +974,7 @@ public enum ConfigurationEntry {
     /**
      * Uses any existing directory found at the default path, even if not empty.
      */
-    FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", false),
+    FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", true),
 
     /**
      * PFC-2226: Option to restrict new folder creation to the default storage path
