@@ -19,16 +19,24 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.Window;
+import java.util.concurrent.Semaphore;
+
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.ProgressListener;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.concurrent.Semaphore;
+import de.dal33t.powerfolder.ui.util.SwingWorker;
 
 /**
  * Basically a SwingWorker, which shows some activity visualisation after some
@@ -39,7 +47,7 @@ import java.util.concurrent.Semaphore;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public abstract class ActivityVisualizationWorker extends de.dal33t.powerfolder.ui.util.SwingWorker {
+public abstract class ActivityVisualizationWorker extends SwingWorker {
     private JDialog dialog;
     private JLabel infoText;
     private JProgressBar bar;

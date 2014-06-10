@@ -299,7 +299,7 @@ public class UIUtil {
      */
     public static void applyTranslucency(Window window, Float opacity) {
         try {
-            Class clazz = Class.forName("com.sun.awt.AWTUtilities");
+            Class<?> clazz = Class.forName("com.sun.awt.AWTUtilities");
             Method m = clazz.getMethod("setWindowOpacity", Window.class,
                 Float.TYPE);
             m.invoke(clazz, window, opacity);

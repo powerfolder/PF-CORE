@@ -404,7 +404,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         return sortAscending;
     }
 
-    public Class getColumnClass(int columnIndex) {
+    public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case COLTYPE :
             case COLFILE :
