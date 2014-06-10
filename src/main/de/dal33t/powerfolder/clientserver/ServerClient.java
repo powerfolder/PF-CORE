@@ -683,7 +683,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Convenience method for getting register URL
-     *
+     * 
      * @return the registration URL for this server.
      */
     public String getRegisterURL() {
@@ -693,12 +693,12 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        return getWebURL("/register", false);
+        return getWebURL(Constants.REGISTER_URI, false);
     }
 
     /**
      * Convenience method for getting register URL
-     *
+     * 
      * @return the registration URL for this server.
      */
     public String getRegisterURLReferral() {

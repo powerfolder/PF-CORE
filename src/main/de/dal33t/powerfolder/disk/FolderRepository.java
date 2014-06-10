@@ -450,6 +450,22 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             PathUtils.maintainDesktopIni(getController(), foldersBasedir);
+            // PFC-2538
+            try {
+                if (ConfigurationEntry.COPY_GETTING_STARTED_GUIDE
+                    .getValueBoolean(getController()))
+                {
+                    Path gsFile = foldersBasedir
+                        .resolve(Constants.GETTING_STARTED_GUIDE_FILENAME);
+                    if (Files.notExists(gsFile)) {
+                        Util.copyResourceTo(
+                            Constants.GETTING_STARTED_GUIDE_FILENAME, null,
+                            gsFile, false, true);
+                    }
+                }
+            } catch (Exception e) {
+                logWarning("Unable to copy getting started guide. " + e);
+            }
         } else {
             logWarning("Unable to access base path for folders: "
                 + foldersBasedir);
@@ -982,8 +998,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
             Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
         Path systemSubdir = folder.getSystemSubDir();
-        FolderSettings metaFolderSettings = new FolderSettings(
-            systemSubdir.resolve(Constants.METAFOLDER_SUBDIR),
+        FolderSettings metaFolderSettings = new FolderSettings(systemSubdir
+                .resolve(Constants.METAFOLDER_SUBDIR),
             SyncProfile.META_FOLDER_SYNC, 0);
         boolean deviceDisconnected = folder.checkIfDeviceDisconnected();
         if (!deviceDisconnected) {
@@ -1561,6 +1577,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                     {
                         return false;
                     }
+                    if (entry
+                        .getFileName()
+                        .toString()
+                        .equalsIgnoreCase(
+                            Constants.GETTING_STARTED_GUIDE_FILENAME))
+                    {
+                        return false;
+                    }
                     try {
                         if (Files.isHidden(entry)) {
                             return false;
@@ -1823,7 +1847,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         {
             // Moderate strategy. Use existing folders.
             suggestedLocalBase = getController().getFolderRepository()
-                .getFoldersBasedir().resolve(invitation.folder.name);
+                .getFoldersBasedir().resolve(invitation.folder.getLocalizedName());
             if (Files.exists(suggestedLocalBase)) {
                 logWarning("Using existing directory " + suggestedLocalBase
                     + " for " + invitation.folder);
@@ -1832,8 +1856,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Defensive strategy. Find free new empty directory.
             suggestedLocalBase = PathUtils.createEmptyDirectory(getController()
                 .getFolderRepository().getFoldersBasedir(),
-                invitation.folder.name);
+                invitation.folder.getLocalizedName());
         }
+
+        suggestedLocalBase = PathUtils.removeInvalidFilenameChars(suggestedLocalBase);
 
         // Is this invitation from a friend?
         boolean invitorIsFriend = false;
@@ -1882,6 +1908,31 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         accountSyncLock.lock();
+
+        if (ProUtil.isZyncro(getController())) {
+            for (FolderInfo foInfo : a.getFolders()) {
+                FolderInfo old = foInfo.intern();
+
+                if (!old.getName().equals(foInfo.getName())) {
+                    foInfo = foInfo.intern(true);
+
+                    try {
+                        Folder folder = folders.get(foInfo);
+                        if (folder == null) {
+                            continue;
+                        }
+
+                        Path newDirectory = folder.getLocalBase().getParent()
+                            .resolve(foInfo.getLocalizedName());
+
+                        moveLocalFolder(folder, newDirectory);
+                    } catch (IOException ioe) {
+                        logWarning("Could not move Folder " + foInfo);
+                    }
+                }
+            }
+        }
+
         try {
             logInfo("Syncing folder setup with account permissions("
                 + a.getFolders().size() + "): " + a.getUsername());
@@ -1922,6 +1973,30 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         } finally {
             accountSyncLock.unlock();
+        }
+    }
+
+    private void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+        Path originalDirectory = folder.getLocalBase().toRealPath();
+        FolderSettings fs = FolderSettings.load(getController(),
+            folder.getConfigEntryId());
+
+        // Remove the old folder from the repository.
+        removeFolder(folder, false);
+
+        // Move it.
+        PathUtils.recursiveMove(originalDirectory, newDirectory);
+
+        // Remember patterns if content not moving.
+        List<String> patterns = folder.getDiskItemFilter().getPatterns();
+
+        // Create the new Folder in the repository.
+        fs = fs.changeBaseDir(newDirectory);
+        folder = createFolder0(folder.getInfo().intern(), fs, true);
+
+        // Restore patterns if content not moved.
+        for (String pattern : patterns) {
+            folder.addPattern(pattern);
         }
     }
 
@@ -2039,7 +2114,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
 
-                String folderName = folderInfo.getLocalizedName();
+                String folderName = PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName());
 
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()

@@ -33,7 +33,6 @@ import javax.persistence.Id;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.Constants;
@@ -51,7 +50,6 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
  * @version $Revision: 1.9 $
  */
 @Entity
-@Immutable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FolderInfo implements Serializable, Cloneable {
     private static final long serialVersionUID = 102L;
@@ -214,6 +212,14 @@ public class FolderInfo implements Serializable, Cloneable {
         }
 
         return false;
+    }
+
+    public FolderInfo intern(boolean force) {
+        if (force) {
+            return INTERNALIZER.sudoIntern(this);
+        } else {
+            return intern();
+        }
     }
 
     public FolderInfo intern() {

@@ -504,7 +504,7 @@ public enum ConfigurationEntry {
     /**
      * Kerberos service name, as registered at the Domain Controller
      */
-    KERBEROS_SSO_SERVICE_NAME("kerberos.sso.service_name", "powerfolder/hostname"), // + @realm
+    KERBEROS_SSO_SERVICE_NAME("kerberos.sso.service_name", "domain/hostname"), // + @realm
 
     // General settings *******************************************************
 
@@ -974,7 +974,7 @@ public enum ConfigurationEntry {
     /**
      * Uses any existing directory found at the default path, even if not empty.
      */
-    FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", false),
+    FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", true),
 
     /**
      * PFC-2226: Option to restrict new folder creation to the default storage path
@@ -1047,7 +1047,9 @@ public enum ConfigurationEntry {
 
     SHOW_TINY_WIZARDS("show.tiny.wizards", false),
 
-    SHOW_CREATE_FOLDER("show.create.folder", true);
+    SHOW_CREATE_FOLDER("show.create.folder", true),
+    
+    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
 
     // Methods/Constructors ***************************************************
 

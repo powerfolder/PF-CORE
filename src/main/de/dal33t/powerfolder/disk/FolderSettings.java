@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -300,13 +301,13 @@ public class FolderSettings {
 
     public static FolderSettings load(Properties properties, String entryId,
         int fallbackDefaultVersions, String fallbackDefaultProfile,
-        boolean verify)
+        boolean verifyPaths)
     {
         Reject.ifNull(properties, "Config");
         Reject.ifBlank(entryId, "Entry Id");
         String folderDirStr = properties.getProperty(PREFIX_V4 + entryId + DIR);
 
-        Path folderDir = translateFolderDir(folderDirStr, verify);
+        Path folderDir = translateFolderDir(folderDirStr, verifyPaths);
         if (folderDir == null) {
             return null;
         }
@@ -315,7 +316,7 @@ public class FolderSettings {
         String commitDirStr = properties.getProperty(PREFIX_V4 + entryId
             + COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
-            commitDir = translateFolderDir(commitDirStr, verify);
+            commitDir = translateFolderDir(commitDirStr, verifyPaths);
         }
 
         String syncProfConfig = properties.getProperty(PREFIX_V4 + entryId
@@ -359,7 +360,7 @@ public class FolderSettings {
                 + ". Using default: " + versions);
         }
 
-        String dlScript = properties.getProperty(PREFIX_V4 + entryId
+        String downloadScript = properties.getProperty(PREFIX_V4 + entryId
             + DOWNLOAD_SCRIPT);
 
         String syncPatternsSetting = properties.getProperty(PREFIX_V4 + entryId
@@ -382,10 +383,20 @@ public class FolderSettings {
             }
         }
 
-        FolderSettings settings = new FolderSettings(folderDir, syncProfile,
-            dlScript, versions, syncPatterns, commitDir, syncWarnSeconds);
+        FolderSettings settings = new FolderSettings(
+            PathUtils.removeInvalidFilenameChars(folderDir), syncProfile,
+            downloadScript, versions, syncPatterns, commitDir, syncWarnSeconds);
         settings.configEntryId = entryId;
         settings.localBaseDirStr = folderDirStr;
+        settings.excludes = excludes;
+        return settings;
+    }
+
+    public FolderSettings changeBaseDir(Path baseDir) {
+        FolderSettings settings = new FolderSettings(baseDir, syncProfile,
+            downloadScript, versions, syncPatterns, commitDir, syncWarnSeconds);
+        settings.configEntryId = configEntryId;
+        settings.localBaseDirStr = baseDir.toString();
         settings.excludes = excludes;
         return settings;
     }
