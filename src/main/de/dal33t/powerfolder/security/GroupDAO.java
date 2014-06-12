@@ -14,64 +14,70 @@ public interface GroupDAO extends GenericDAO<Group> {
 
     /**
      * Find a group by its name.
-     *
+     * 
      * @param groupname
-     * @return
+     *            The group's name
+     * @return the group referenced by {@code name}, or {@code null} if it was
+     *         not found.
      */
     Group findByGroupname(String groupname);
 
     /**
      * Get all Groups.
-     *
-     * @return
+     * 
+     * @return a list of all groups.
      */
     List<Group> getGroups();
 
     /**
      * Get a list of Groups that apply to the passed filter.
-     *
+     * 
      * @param filterModel
-     * @return
+     *            The filters to apply
+     * @return a list of all groups that fit the filter.
      */
     List<Group> getGroups(GroupFilterModel filterModel);
 
     /**
      * Get a list of all groups, that hold a permission to a folder.
-     *
+     * 
      * @param folderInfo
-     * @return
+     *            The folder
+     * @return a list of all groups that have permission to {@code folderInfo}.
      */
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
 
     /**
      * Store several groups.
-     *
+     * 
      * @param groups
+     *            The groups to store
      */
     void store(Group... groups);
 
     /**
      * Get the number of groups, that belong to an organization.
-     *
+     * 
      * @param org
-     * @return
+     *            The organization
+     * @return the number of groups associated with {@code org}.
      */
     int countGroupsWithOrganization(Organization org);
 
     /**
-     * Find a group with a certain LDAP distinguished name.
-     * PFS-420
-     *
+     * Find a group with a certain LDAP distinguished name. PFS-420
+     * 
      * @param ldapDN
-     * @return
+     *            The destinguished name
+     * @return the group that is referenced by the {@code ldapDN}, or
+     *         {@code null} if no group was found.
      */
     Group findByLdapDN(String ldapDN);
 
     /**
-     * Get all groups, that have an LDAP distinguished name set.
-     * PFS-420
-     *
-     * @return
+     * Get all groups, that have an LDAP distinguished name set. PFS-420
+     * 
+     * @return a list of all groups that were imported from an LDAP/AD server.
      */
     List<Group> getLdapGroups();
 }
