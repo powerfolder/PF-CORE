@@ -57,7 +57,6 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -618,6 +617,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         } else {
             name = PathUtils.getSuggestedFolderName(dir);
         }
+
+        dir = PathUtils.removeInvalidFilenameChars(dir);
 
         if (!getController().getOSClient().isAllowedToCreateFolders()) {
             if (getController().isUIEnabled()) {

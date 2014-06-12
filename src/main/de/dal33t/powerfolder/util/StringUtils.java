@@ -1,5 +1,8 @@
 package de.dal33t.powerfolder.util;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
 public class StringUtils {
 	/**
      * <p>Checks if a String is empty ("") or null.</p>
@@ -178,6 +181,54 @@ public class StringUtils {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Concatenates a list of Strings, using a given seperator.
+     *
+     * <pre>
+     * StringUtils.join(",", []) = ""
+     * StringUtils.join(",", ["a", "b"]) = "a,b"
+     * StringUtils.join("x", ["a", "b", "c", "d", "e"]) = "axbxcxdxe"
+     * </pre>
+     *
+     * @param separator
+     *            a String to separate the joined values. May be empty.
+     * @param strings
+     *            a list of Strings to be joined
+     * @return a single String containing all of the individual strings
+     */
+    public static String join(String separator, Iterable<String> strings) {
+        Iterator<String> it = strings.iterator();
+        if (!it.hasNext()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(it.next());
+        while (it.hasNext()) {
+            sb.append(separator);
+            sb.append(it.next());
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * Concatenates a list of Strings, using a given seperator.
+     *
+     * <pre>
+     * StringUtils.join(",") = ""
+     * StringUtils.join(",", "a", "b") = "a,b"
+     * StringUtils.join("x", "a", "b", "c", "d", "e") = "axbxcxdxe"
+     * </pre>
+     *
+     * @param separator
+     *            a String to separate the joined values. May be empty.
+     * @param strings
+     *            a list of Strings to be joined
+     * @return a single String containing all of the individual strings
+     */
+    public static String join(String separator, String... strings) {
+        return join(separator, Arrays.asList(strings));
     }
 
 }

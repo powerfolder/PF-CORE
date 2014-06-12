@@ -81,6 +81,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
@@ -112,7 +113,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     ExpandableView
 {
 
-    private final FolderInfo folderInfo;
+    private FolderInfo folderInfo;
     private Folder folder;
     private Type type;
     private boolean online;
@@ -211,6 +212,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void configure(ExpandableFolderModel folderModel) {
         boolean changed = false;
         Folder beanFolder = folderModel.getFolder();
+        FolderInfo beanFolderInfo = folderModel.getFolderInfo().intern();
         Type beanType = folderModel.getType();
         boolean beanOnline = folderModel.isOnline();
         if (beanFolder != null && folder == null) {
@@ -218,6 +220,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         } else if (beanFolder == null && folder != null) {
             changed = true;
         } else if (beanFolder != null && !folder.equals(beanFolder)) {
+            changed = true;
+        } else if (!folderInfo.getName().equals(beanFolderInfo.getName())) {
             changed = true;
         } else if (beanType != type) {
             changed = true;
@@ -234,6 +238,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         type = beanType;
         folder = beanFolder;
+        folderInfo = beanFolderInfo;
         online = beanOnline;
         osComponent.setFolder(beanFolder);
 
@@ -1761,7 +1766,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }
                 });
             } else {
-                getApplicationModel().syncFolder(folder);
+                new SyncFolderDialog(getController(), folder).open();
             }
         }
     }
@@ -1783,7 +1788,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         private FolderOnlineRemoveAction(Controller controller) {
             super(removeLabel, controller);
-        }
+   }
 
         public void actionPerformed(ActionEvent e) {
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),

@@ -158,7 +158,9 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 .getAttribute(FOLDER_CREATE_ITEMS);
             if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
                 for (FolderCreateItem folderCreateItem : folderCreateItems) {
-                    Path localBase = folderCreateItem.getLocalBase();
+                    Path localBase = PathUtils
+                        .removeInvalidFilenameChars(folderCreateItem
+                            .getLocalBase());
                     Reject.ifNull(localBase,
                         "Local base for folder is null/not set");
                     SyncProfile syncProfile = folderCreateItem.getSyncProfile();
@@ -184,8 +186,9 @@ public class FolderCreatePanel extends SwingWorkerPanel {
 
                 // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
                 // FOLDERINFO_ATTRIBUTE...
-                Path localBase = (Path) getWizardContext().getAttribute(
-                    FOLDER_LOCAL_BASE);
+                Path localBase = PathUtils
+                    .removeInvalidFilenameChars((Path) getWizardContext()
+                        .getAttribute(FOLDER_LOCAL_BASE));
                 Reject.ifNull(localBase,
                     "Local base for folder is null/not set");
                 SyncProfile syncProfile = (SyncProfile) getWizardContext()

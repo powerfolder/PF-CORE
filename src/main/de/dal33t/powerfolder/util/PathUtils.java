@@ -1018,7 +1018,21 @@ public class PathUtils {
                     + filename.substring(index + 1, filename.length());
             }
         }
+        while (filename.endsWith(".")) {
+            filename = filename.substring(0, filename.length() - 1);
+        }
         return filename;
+    }
+
+    public static Path removeInvalidFilenameChars(Path path) {
+        if (path.getFileName() == null) {
+            return path;
+        }
+
+        String filename = path.getFileName().toString();
+        String cleared = PathUtils.removeInvalidFilenameChars(filename);
+
+        return path.getParent().resolve(cleared);
     }
 
     /**

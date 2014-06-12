@@ -799,6 +799,7 @@ public class SettingsTab extends PFUIComponent {
         Path newDirectory)
     {
         try {
+            newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
 
             // Copy the files to the new local base
             if (Files.notExists(newDirectory)) {
