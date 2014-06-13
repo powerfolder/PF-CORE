@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public class PermissionUserType extends Loggable implements UserType {
 

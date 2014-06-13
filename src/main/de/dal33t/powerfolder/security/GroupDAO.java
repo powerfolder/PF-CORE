@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.db.GenericDAO;
 
 /**
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public interface GroupDAO extends GenericDAO<Group> {
 

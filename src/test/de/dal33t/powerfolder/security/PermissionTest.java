@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public class PermissionTest extends TestCase {
     public void testAdminPermission() {
