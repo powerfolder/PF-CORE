@@ -77,7 +77,9 @@ public interface GroupDAO extends GenericDAO<Group> {
     /**
      * Get all groups, that have an LDAP distinguished name set. PFS-420
      * 
+     * @param groupSearchBase
+     *            The search context for groups
      * @return a list of all groups that were imported from an LDAP/AD server.
      */
-    List<Group> getLdapGroups();
+    List<Group> getLdapGroups(String groupSearchBase);
 }
