@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.util.db;
 /**
  * Generic Data Access Object for any persistent class.
  *
- * @author <a href="krickl@powerfolder.com">Maximilian Krickl</a>
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @param <T>
  *            Type of the mapped class
  */
