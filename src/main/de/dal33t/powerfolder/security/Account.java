@@ -813,7 +813,7 @@ public class Account implements Serializable {
             }
         }
 
-        return Collections.unmodifiableCollection(ldapGroups);
+        return ldapGroups;
     }
 
     public void addLicenseKeyFile(String filename) {
