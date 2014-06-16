@@ -801,6 +801,21 @@ public class Account implements Serializable {
         return Collections.unmodifiableCollection(groups);
     }
 
+    /**
+     * @return all groups that were synchronized via LDAP/AD
+     */
+    public Collection<Group> getLdapGroups() {
+        Collection<Group> ldapGroups = new ArrayList<>();
+
+        for (Group g : groups) {
+            if (StringUtils.isNotBlank(g.getLdapDN())) {
+                ldapGroups.add(g);
+            }
+        }
+
+        return ldapGroups;
+    }
+
     public void addLicenseKeyFile(String filename) {
         if (licenseKeyFileList.contains(filename)) {
             return;
