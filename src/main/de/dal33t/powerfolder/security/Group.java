@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
@@ -40,8 +41,10 @@ import org.hibernate.annotations.Type;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.GroupInfo;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * A group of accounts.
@@ -58,6 +61,7 @@ public class Group implements Serializable {
     public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
+    public static final String PROPERTYNAME_LDAPDN = "ldapDN";
 
     private static final long serialVersionUID = 100L;
 
@@ -68,6 +72,10 @@ public class Group implements Serializable {
     @Index(name = "IDX_GROUP_NAME")
     @Column(nullable = false)
     private String name;
+
+    @Index(name = "IDX_GROUP_LDAPDN")
+    @Column(length = 512)
+    private String ldapDN;
 
     @Column(length = 1024)
     private String notes;
@@ -179,6 +187,28 @@ public class Group implements Serializable {
         return name;
     }
 
+    public void setLdapDN(String newLdapDN) {
+        ldapDN = newLdapDN;
+    }
+
+    public String getLdapDN() {
+        return ldapDN;
+    }
+
+    public void addNotesWithDate(String infoText) {
+        if (StringUtils.isBlank(infoText)) {
+            return;
+        }
+        String infoLine = Format.formatDateCanonical(new Date());
+        infoLine += ": ";
+        infoLine += infoText;
+        if (StringUtils.isBlank(notes)) {
+            setNotes(infoLine);
+        } else {
+            setNotes(notes + "\n" + infoLine);
+        }
+    }
+
     public String getNotes() {
         return notes;
     }
@@ -199,6 +229,7 @@ public class Group implements Serializable {
         return new GroupInfo(oid, name);
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Group)) {
             return false;
