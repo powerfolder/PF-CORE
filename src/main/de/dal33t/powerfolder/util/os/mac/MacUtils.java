@@ -260,4 +260,45 @@ public class MacUtils extends Loggable {
             de.dal33t.powerfolder.jni.osx.Util.removeLoginItem(pfile.toAbsolutePath().toString());
         }
     }
+
+    public boolean hasPFStartup(Controller controller) {
+        if (!de.dal33t.powerfolder.jni.osx.Util.loaded) {
+            logFine("JNI bindings not loaded");
+            return false;
+        }
+        String bundleLocation = null;
+
+        try {
+            Class<?> c = Class.forName("com.apple.eio.FileManager");
+            Method getPathToAppBundle = c
+                .getMethod("getPathToApplicationBundle");
+            bundleLocation = (String) getPathToAppBundle.invoke(null);
+        } catch (ClassNotFoundException | NoSuchMethodException
+            | SecurityException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e)
+        {
+            logWarning(
+                "Enabling start up item is not supported on your system. Your system is a "
+                    + System.getProperty("os.name") + " "
+                    + System.getProperty("os.version"));
+            return false;
+        }
+
+        Path pfile = Paths.get(bundleLocation).toAbsolutePath();
+        if (Files.notExists(pfile)) {
+            logFine("Reset bundle path");
+            pfile = Paths.get(
+                controller.getDistribution().getBinaryName() + ".app")
+                .toAbsolutePath();
+            if (Files.notExists(pfile)) {
+                logWarning("Couldn't find executable! "
+                    + "Note: Setting up a startup shortcut only works "
+                    + "when "
+                    + controller.getDistribution().getBinaryName()
+                    + " was started by " + pfile.getFileName());
+                return false;
+            }
+        }
+        return de.dal33t.powerfolder.jni.osx.Util.hasLoginItem(pfile.toAbsolutePath().toString());
+    }
 }

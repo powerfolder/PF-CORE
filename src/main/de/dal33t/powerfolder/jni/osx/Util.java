@@ -18,6 +18,7 @@ public class Util {
 
     public native static void addLoginItem(String path);
     public native static void removeLoginItem(String path);
+    public native static boolean hasLoginItem(String path);
     public native static void addFavorite(String path);
     public native static void removeFavorite(String path);
 }
