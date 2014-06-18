@@ -53,7 +53,6 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -67,8 +66,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JPanel panel;
     private JTextField nickField;
-    private JCheckBox startWithWindowsBox;
-    private ActionLabel startWithMacOSLabel;
+    private JCheckBox runOnStartupBox;
     private JCheckBox updateCheck;
     private boolean originalQuitOnX;
     private JComboBox<String> xBehaviorChooser;
@@ -114,34 +112,17 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         xBehaviorChooser = createXBehaviorChooser();
 
-        // Windows only...
-        if (OSUtil.isWindowsSystem()) {
-            if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
-                startWithWindowsBox = new JCheckBox(
-                    Translation
-                        .getTranslation("preferences.general.start_with_windows"));
-                startWithWindowsBox.setSelected(WinUtils.getInstance()
+        if (!OSUtil.isLinux()) {
+            runOnStartupBox = new JCheckBox(
+                Translation
+                    .getTranslation("preferences.general.start_with_windows"));
+            if (OSUtil.isWindowsSystem()) {
+                runOnStartupBox.setSelected(WinUtils.getInstance()
                     .isPFStartup(getController()));
+            } else {
+                runOnStartupBox.setSelected(MacUtils.getInstance()
+                    .hasPFStartup(getController()));
             }
-        }
-
-        if (MacUtils.isSupported()) {
-            startWithMacOSLabel = new ActionLabel(getController(),
-                new BaseAction("action_preferences.dialog.start_with_macosx",
-                    getController())
-                {
-                    private static final long serialVersionUID = 100L;
-
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            MacUtils.getInstance().setPFStartup(true,
-                                getController());
-                        } catch (IOException ex) {
-                            logWarning("Unable to setup auto start on logon. "
-                                + ex);
-                        }
-                    }
-                });
         }
 
         versionModel = new ValueHolder();
@@ -251,29 +232,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .xyw(3, row, 2));
             }
 
-            // Add info for non-windows systems
-            if (OSUtil.isWindowsSystem()) { // Windows System
-
-                if (startWithWindowsBox != null) {
+            if (!OSUtil.isLinux()) {
+                if (runOnStartupBox != null) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
                     row += 2;
                     builder.add(new JLabel(Translation
                         .getTranslation("preferences.general.start_behavior")), cc.xy(1, row));
-                    builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
-                }
-
-            } else {
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                if (startWithMacOSLabel != null) {
-                    builder.appendRow("3dlu");
-                    builder.appendRow("pref");
-                    row += 2;
-                    builder.add(new JLabel(Translation
-                        .getTranslation("preferences.general.start_behavior")), cc.xy(1, row));
-                    builder.add(startWithMacOSLabel.getUIComponent(), cc.xyw(3, row, 2));
+                    builder.add(runOnStartupBox, cc.xyw(3, row, 2));
                 }
             }
 
@@ -485,13 +451,22 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         if (WinUtils.isSupported()) {
             boolean changed = WinUtils.getInstance().isPFStartup(
-                getController()) != startWithWindowsBox.isSelected();
+                getController()) != runOnStartupBox.isSelected();
             if (changed) {
                 try {
-                    if (WinUtils.getInstance() != null) {
-                        WinUtils.getInstance().setPFStartup(
-                            startWithWindowsBox.isSelected(), getController());
-                    }
+                    WinUtils.getInstance().setPFStartup(
+                        runOnStartupBox.isSelected(), getController());
+                } catch (IOException e) {
+                    logWarning("Unable to setup autostart: " + e);
+                }
+            }
+        } else if (MacUtils.isSupported()) {
+            boolean changed = MacUtils.getInstance().hasPFStartup(
+                getController()) != runOnStartupBox.isSelected();
+            if (changed) {
+                try {
+                    MacUtils.getInstance().setPFStartup(
+                        runOnStartupBox.isSelected(), getController());
                 } catch (IOException e) {
                     logWarning("Unable to setup autostart: " + e);
                 }
