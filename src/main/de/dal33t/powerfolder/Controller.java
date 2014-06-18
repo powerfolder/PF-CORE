@@ -689,13 +689,6 @@ public class Controller extends PFComponent {
         setupPeriodicalTasks();
 
         if (MacUtils.isSupported()) {
-            if (isFirstStart()) {
-                try {
-                    MacUtils.getInstance().setPFStartup(true, this);
-                } catch (IOException e) {
-                    logWarning("Unable to setup auto start: " + e);
-                }
-            }
             MacUtils.getInstance().setAppReOpenedListener(this);
         }
 
