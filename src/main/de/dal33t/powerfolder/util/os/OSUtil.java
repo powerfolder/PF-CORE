@@ -20,12 +20,15 @@
 package de.dal33t.powerfolder.util.os;
 
 import java.awt.SystemTray;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 public class OSUtil {
 
@@ -198,6 +201,58 @@ public class OSUtil {
             sysTraySupport = SystemTray.isSupported();
         }
         return sysTraySupport;
+    }
+
+    /**
+     * @return @code True if start up items are supported on the current
+     *         platform, @code fals otherwise
+     */
+    public static boolean isStartupItemSupported() {
+        return OSUtil.isWindowsSystem() || OSUtil.isMacOS();
+    }
+
+    /**
+     * @param controller
+     * @return @code True if the system has a start up item implemented, @code
+     *         false otherwise.
+     * @throws UnsupportedOperationException
+     *             If the platform does not support start up items.
+     */
+    public static boolean hasPFStartup(Controller controller)
+        throws UnsupportedOperationException
+    {
+        if (OSUtil.isWindowsSystem()) {
+            return WinUtils.getInstance().hasPFStartup(controller);
+        } else if (OSUtil.isMacOS()) {
+            return MacUtils.getInstance().hasPFStartup(controller);
+        }
+
+        throw new UnsupportedOperationException(
+            "This platform does not support start up items");
+    }
+
+    /**
+     * @param setup
+     *            @code True to set the start up item, @code false to remove it.
+     * @param controller
+     *            The controller
+     * @throws IOException
+     *             If the start up item could not be set.
+     * @throws UnsupportedOperationException
+     *             If this method was called on a platform that does not support
+     *             to set the start up item.
+     */
+    public static void setPFStartup(boolean setup, Controller controller)
+        throws IOException, UnsupportedOperationException
+    {
+        if (OSUtil.isWindowsSystem()) {
+            WinUtils.getInstance().setPFStartup(setup, controller);
+        } else if (OSUtil.isMacOS()) {
+            MacUtils.getInstance().setPFStartup(setup, controller);
+        }
+
+        throw new UnsupportedOperationException(
+            "This platform does not support start up items");
     }
 
     /**

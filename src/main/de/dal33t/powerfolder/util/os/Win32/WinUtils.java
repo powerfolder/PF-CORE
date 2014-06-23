@@ -238,10 +238,12 @@ public class WinUtils extends Loggable {
             pfile = Paths.get(controller.getDistribution().getBinaryName()
                 + ".exe").toAbsolutePath();
             if (Files.notExists(pfile)) {
-                throw new UnsupportedOperationException("Couldn't find executable! "
-                    + "Note: Setting up a startup shortcut only works "
-                    + "when " + controller.getDistribution().getBinaryName()
-                    + " was started by " + pfile.getFileName());
+                String message = Translation.getTranslation(
+                    "exception.startup_item.executable_not_found.text", controller
+                        .getDistribution().getBinaryName(), pfile.getFileName()
+                        .toString());
+                logWarning(message);
+                throw new UnsupportedOperationException(message);
             }
             return;
         }

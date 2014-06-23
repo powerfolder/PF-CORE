@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.HTTPProxySettings;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -252,10 +253,12 @@ public class MacUtils extends Loggable {
             | SecurityException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException e)
         {
-            throw new UnsupportedOperationException(
-                "Enabling start up item is not supported on your system. Your system is a "
-                    + System.getProperty("os.name") + " "
-                    + System.getProperty("os.version"));
+            String message = Translation
+                .getTranslation("exception.startup_item.unsupported_system.text",
+                    System.getProperty("os.name"),
+                    System.getProperty("os.version"));
+            logWarning(message);
+            throw new UnsupportedOperationException(message);
         }
 
         Path pfile = Paths.get(bundleLocation).toAbsolutePath();
@@ -265,11 +268,12 @@ public class MacUtils extends Loggable {
                 controller.getDistribution().getBinaryName() + ".app")
                 .toAbsolutePath();
             if (Files.notExists(pfile)) {
-                throw new UnsupportedOperationException("Couldn't find executable! "
-                    + "Note: Setting up a startup shortcut only works "
-                    + "when "
-                    + controller.getDistribution().getBinaryName()
-                    + " was started by " + pfile.getFileName());
+                String message = Translation.getTranslation(
+                    "exception.startup_item.executable_not_found.text", controller
+                        .getDistribution().getBinaryName(), pfile.getFileName()
+                        .toString());
+                logWarning(message);
+                throw new UnsupportedOperationException(message);
             }
         }
         if (setup) {
@@ -302,10 +306,10 @@ public class MacUtils extends Loggable {
             | SecurityException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException e)
         {
-            String message = "Enabling start up item is not supported on your system. Your system is a "
-                + System.getProperty("os.name")
-                + " "
-                + System.getProperty("os.version");
+            String message = Translation
+                .getTranslation("exception.startup_item.unsupported_system.text",
+                    System.getProperty("os.name"),
+                    System.getProperty("os.version"));
             logWarning(message);
             throw new UnsupportedOperationException(message);
         }
@@ -317,11 +321,10 @@ public class MacUtils extends Loggable {
                 controller.getDistribution().getBinaryName() + ".app")
                 .toAbsolutePath();
             if (Files.notExists(pfile)) {
-                String message = "Couldn't find executable! "
-                    + "Note: Setting up a startup shortcut only works "
-                    + "when "
-                    + controller.getDistribution().getBinaryName()
-                    + " was started by " + pfile.getFileName();
+                String message = Translation.getTranslation(
+                    "exception.startup_item.executable_not_found.text", controller
+                        .getDistribution().getBinaryName(), pfile.getFileName()
+                        .toString());
                 logWarning(message);
                 throw new UnsupportedOperationException(message);
             }
