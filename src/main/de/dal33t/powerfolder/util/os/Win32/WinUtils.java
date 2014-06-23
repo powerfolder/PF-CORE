@@ -217,8 +217,19 @@ public class WinUtils extends Loggable {
         return Files.exists(shortCut);
     }
 
+    /**
+     * @param setup
+     *            @code True to set the start up item, @code false to remove it.
+     * @param controller
+     * @throws UnsupportedOperationException
+     *             If requesting the status of a start up item is not supported
+     *             on the platform, or the executable ".app" could not be
+     *             located.
+     * @throws IOException
+     *             If setting the start up item did fail.
+     */
     public void setPFStartup(boolean setup, Controller controller)
-        throws IOException
+        throws IOException, UnsupportedOperationException
     {
         Path pfile = Paths.get(System.getProperty("java.class.path"))
             .getParent()
@@ -227,10 +238,12 @@ public class WinUtils extends Loggable {
             pfile = Paths.get(controller.getDistribution().getBinaryName()
                 + ".exe").toAbsolutePath();
             if (Files.notExists(pfile)) {
-                throw new IOException("Couldn't find executable! "
-                    + "Note: Setting up a startup shortcut only works "
-                    + "when " + controller.getDistribution().getBinaryName()
-                    + " was started by " + pfile.getFileName());
+                String message = Translation.getTranslation(
+                    "exception.startup_item.executable_not_found.text", controller
+                        .getDistribution().getBinaryName(), pfile.getFileName()
+                        .toString());
+                logWarning(message);
+                throw new UnsupportedOperationException(message);
             }
             return;
         }
@@ -270,7 +283,11 @@ public class WinUtils extends Loggable {
         }
     }
 
-    public boolean isPFStartup(Controller controller) {
+    /**
+     * @param controller
+     * @return @code True if the start up item is set, @code false otherwise.
+     */
+    public boolean hasPFStartup(Controller controller) {
         String shortCutname = controller.getDistribution().getName()
             + Constants.LINK_EXTENSION;
         Path pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),

@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.HTTPProxySettings;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -140,6 +141,12 @@ public class MacUtils extends Loggable {
         }
     }
 
+    /**
+     * Register a listener on the host OS. If the App Icon in the Dock is clicked,
+     * the UI will be put to the foreground.
+     * 
+     * @param controller
+     */
     public void setAppReOpenedListener(final Controller controller) {
         try {
             // Load the class com.apple.eawt.Application
@@ -193,6 +200,11 @@ public class MacUtils extends Loggable {
         }
     }
 
+    /**
+     * Unregister the listener, set by {@link #setAppReOpenedListener(Controller)}.
+     * 
+     * @param controller
+     */
     public void removeAppReOpenedListener(Controller controller) {
         if (reOpenedListener == null) {
             return;
@@ -216,8 +228,15 @@ public class MacUtils extends Loggable {
         }
     }
 
+    /**
+     * @param setup @code True to set the start up item, @code false to remove it.
+     * @param controller
+     * @throws UnsupportedOperationException
+     *             If requesting the status of a start up item is not supported
+     *             on the platform, or the executable ".app" could not be located.
+     */
     public void setPFStartup(boolean setup, Controller controller)
-        throws IOException
+        throws UnsupportedOperationException
     {
         if (!de.dal33t.powerfolder.jni.osx.Util.loaded) {
             logFine("JNI bindings not loaded");
@@ -234,10 +253,12 @@ public class MacUtils extends Loggable {
             | SecurityException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException e)
         {
-            throw new IOException(
-                "Enabling start up item is not supported on your system. Your system is a "
-                    + System.getProperty("os.name") + " "
-                    + System.getProperty("os.version"));
+            String message = Translation
+                .getTranslation("exception.startup_item.unsupported_system.text",
+                    System.getProperty("os.name"),
+                    System.getProperty("os.version"));
+            logWarning(message);
+            throw new UnsupportedOperationException(message);
         }
 
         Path pfile = Paths.get(bundleLocation).toAbsolutePath();
@@ -247,11 +268,12 @@ public class MacUtils extends Loggable {
                 controller.getDistribution().getBinaryName() + ".app")
                 .toAbsolutePath();
             if (Files.notExists(pfile)) {
-                throw new IOException("Couldn't find executable! "
-                    + "Note: Setting up a startup shortcut only works "
-                    + "when "
-                    + controller.getDistribution().getBinaryName()
-                    + " was started by " + pfile.getFileName());
+                String message = Translation.getTranslation(
+                    "exception.startup_item.executable_not_found.text", controller
+                        .getDistribution().getBinaryName(), pfile.getFileName()
+                        .toString());
+                logWarning(message);
+                throw new UnsupportedOperationException(message);
             }
         }
         if (setup) {
@@ -259,5 +281,54 @@ public class MacUtils extends Loggable {
         } else {
             de.dal33t.powerfolder.jni.osx.Util.removeLoginItem(pfile.toAbsolutePath().toString());
         }
+    }
+
+    /**
+     * @param controller
+     * @return @code True if the start up item is set, @code false otherwise.
+     * @throws UnsupportedOperationException
+     *             If requesting the status of a start up item is not supported
+     *             on the platform, or the executable ".app" could not be located.
+     */
+    public boolean hasPFStartup(Controller controller) throws UnsupportedOperationException {
+        if (!de.dal33t.powerfolder.jni.osx.Util.loaded) {
+            logFine("JNI bindings not loaded");
+            return false;
+        }
+        String bundleLocation = null;
+
+        try {
+            Class<?> c = Class.forName("com.apple.eio.FileManager");
+            Method getPathToAppBundle = c
+                .getMethod("getPathToApplicationBundle");
+            bundleLocation = (String) getPathToAppBundle.invoke(null);
+        } catch (ClassNotFoundException | NoSuchMethodException
+            | SecurityException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e)
+        {
+            String message = Translation
+                .getTranslation("exception.startup_item.unsupported_system.text",
+                    System.getProperty("os.name"),
+                    System.getProperty("os.version"));
+            logWarning(message);
+            throw new UnsupportedOperationException(message);
+        }
+
+        Path pfile = Paths.get(bundleLocation).toAbsolutePath();
+        if (Files.notExists(pfile)) {
+            logFine("Reset bundle path");
+            pfile = Paths.get(
+                controller.getDistribution().getBinaryName() + ".app")
+                .toAbsolutePath();
+            if (Files.notExists(pfile)) {
+                String message = Translation.getTranslation(
+                    "exception.startup_item.executable_not_found.text", controller
+                        .getDistribution().getBinaryName(), pfile.getFileName()
+                        .toString());
+                logWarning(message);
+                throw new UnsupportedOperationException(message);
+            }
+        }
+        return de.dal33t.powerfolder.jni.osx.Util.hasLoginItem(pfile.toAbsolutePath().toString());
     }
 }

@@ -122,7 +122,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
             if (WinUtils.getInstance() != null) {
                 ValueModel startWithWindowsVM = new ValueHolder(WinUtils
-                    .getInstance().isPFStartup(getController()));
+                    .getInstance().hasPFStartup(getController()));
                 startWithWindowsVM
                     .addValueChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
