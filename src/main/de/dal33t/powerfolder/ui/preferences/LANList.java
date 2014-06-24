@@ -37,18 +37,18 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.dialog.AddressEditor;
+import de.dal33t.powerfolder.ui.dialog.AddressEditor.EditorResult;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.AddressRange;
-import de.dal33t.powerfolder.ui.dialog.AddressEditor.EditorResult;
 
 public class LANList extends PFComponent {
 
     private JPanel panel;
-    private JList networklist;
+    private JList<String> networklist;
     private JButton addButton;
     private JButton removeButton;
     private JButton editButton;
@@ -61,7 +61,7 @@ public class LANList extends PFComponent {
     }
 
     private void initComponents() {
-        networklist = new JList(new DefaultListModel());
+        networklist = new JList<>(new DefaultListModel<String>());
         networklist
             .setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         addButton = new JButtonMini(Icons.getIconById(Icons.ADD), Translation
@@ -81,7 +81,7 @@ public class LANList extends PFComponent {
                 editor.open();
                 if (editor.getResult() == EditorResult.OK) {
                     modified = true;
-                    ((DefaultListModel) networklist.getModel())
+                    ((DefaultListModel<String>) networklist.getModel())
                         .addElement(editor.getAddressRange());
                 }
             }
@@ -96,7 +96,7 @@ public class LANList extends PFComponent {
                     networklist.getSelectedValue().toString());
                 editor.open();
                 if (editor.getResult() == EditorResult.OK) {
-                    ((DefaultListModel) networklist.getModel()).set(networklist
+                    ((DefaultListModel<String>) networklist.getModel()).set(networklist
                         .getSelectedIndex(), editor.getAddressRange());
                     modified = true;
                 }
@@ -105,8 +105,8 @@ public class LANList extends PFComponent {
 
         removeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                for (Object o : networklist.getSelectedValues()) {
-                    ((DefaultListModel) networklist.getModel())
+                for (String o : networklist.getSelectedValuesList()) {
+                    ((DefaultListModel<String>) networklist.getModel())
                         .removeElement(o);
                     modified = true;
                 }
@@ -134,7 +134,7 @@ public class LANList extends PFComponent {
     }
 
     public boolean save() {
-        Object[] ips = ((DefaultListModel) networklist.getModel()).toArray();
+        Object[] ips = ((DefaultListModel<String>) networklist.getModel()).toArray();
         StringBuilder list = new StringBuilder();
         for (Object o : ips) {
             if (list.length() > 0) {
@@ -161,7 +161,7 @@ public class LANList extends PFComponent {
                 logWarning("Invalid lanlist entry in configuration file!");
                 continue;
             }
-            ((DefaultListModel) networklist.getModel()).addElement(ar
+            ((DefaultListModel<String>) networklist.getModel()).addElement(ar
                 .toString());
         }
     }
