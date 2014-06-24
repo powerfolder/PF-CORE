@@ -67,7 +67,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     private Comparator[] columComparators = new Comparator[COLUMN_NAMES.length];
     private boolean sortAscending;
     private int sortColumn;
-    private Comparator comparator;
+    private Comparator<Member> comparator;
 
     private static final String[] COLUMN_NAMES = {
         Translation.getTranslation("friend_search.node_table.name"),
@@ -124,7 +124,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
                     Collections.sort(members, comparator);
                 } else {
                     Collections
-                        .sort(members, new ReverseComparator(comparator));
+                        .sort(members, new ReverseComparator<Member>(comparator));
                 }
             }
             fireModelChanged();
@@ -167,8 +167,8 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
      * @param newComparator
      * @return if the table was freshly sorted
      */
-    private boolean sortBy(Comparator newComparator) {
-        Comparator oldComparator = comparator;
+    private boolean sortBy(Comparator<Member> newComparator) {
+        Comparator<Member> oldComparator = comparator;
         comparator = newComparator;
         if (!Util.equals(oldComparator, newComparator)) {
             return sort();

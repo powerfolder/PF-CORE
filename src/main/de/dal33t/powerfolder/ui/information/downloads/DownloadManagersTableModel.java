@@ -210,7 +210,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             if (sortAscending) {
                 Collections.sort(downloadManagers, comparator);
             } else {
-                Collections.sort(downloadManagers, new ReverseComparator(
+                Collections.sort(downloadManagers, new ReverseComparator<DownloadManager>(
                     comparator));
             }
             return true;

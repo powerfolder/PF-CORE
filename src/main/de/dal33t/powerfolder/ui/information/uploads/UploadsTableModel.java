@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
@@ -202,7 +203,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
                     Collections.sort(uploads, comparator);
                 } else {
                     Collections
-                        .sort(uploads, new ReverseComparator(comparator));
+                        .sort(uploads, new ReverseComparator<Transfer>(comparator));
                 }
             }
             return true;

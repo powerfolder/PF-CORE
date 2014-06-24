@@ -19,20 +19,21 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.util.compare.FileInfoVersionTypeComparator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.FileInfoVersionTypeComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 
 /**
  * Class to model file versions for the versions table.
@@ -192,7 +193,7 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
                 if (sortAscending) {
                     Collections.sort(versionInfos, comparator);
                 } else {
-                    Collections.sort(versionInfos, new ReverseComparator(comparator));
+                    Collections.sort(versionInfos, new ReverseComparator<FileInfoVersionTypeHolder>(comparator));
                 }
             }
             return true;

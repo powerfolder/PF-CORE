@@ -343,7 +343,6 @@ public class FilesTableModel extends PFComponent implements TableModel,
         }
     }
 
-    @SuppressWarnings({"unchecked"})
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
             FileInfoComparator comparator = new FileInfoComparator(
@@ -352,7 +351,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
                 if (sortAscending) {
                     Collections.sort(fileInfos, comparator);
                 } else {
-                    Collections.sort(fileInfos, new ReverseComparator(
+                    Collections.sort(fileInfos, new ReverseComparator<FileInfo>(
                         comparator));
                 }
             }
