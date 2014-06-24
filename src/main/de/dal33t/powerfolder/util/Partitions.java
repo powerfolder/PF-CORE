@@ -177,7 +177,7 @@ public class Partitions<T> implements Serializable {
 		return a == b || (a != null && a.equals(b));
 	}
 
-	public void logRanges(Class clazz) {
+	public void logRanges(Class<T> clazz) {
 		if (isLeaf()) {
 			log.info(clazz.getName() + ' ' + getPartionedRange() + " with value " + content);
 			return;

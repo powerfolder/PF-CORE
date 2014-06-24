@@ -35,17 +35,17 @@ import com.jgoodies.binding.list.ObservableList;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * A table model which contains the search result.

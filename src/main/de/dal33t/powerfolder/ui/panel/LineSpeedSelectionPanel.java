@@ -19,25 +19,35 @@
  */
 package de.dal33t.powerfolder.ui.panel;
 
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.PFUIComponent;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
-import de.dal33t.powerfolder.transfer.TransferManager;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.*;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.ExecutionException;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
@@ -56,7 +66,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
     private final boolean wan;
 
     private JPanel uiComponent;
-    private JComboBox speedSelectionBox;
+    private JComboBox<LineSpeed> speedSelectionBox;
     private JComponent customSpeedPanel;
     private SpinnerNumberModel customUploadSpeedSpinnerModel;
     private SpinnerNumberModel customDownloadSpeedSpinnerModel;
@@ -120,7 +130,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
 
         customSpeedPanel = createCustomSpeedInputFieldPanel();
 
-        speedSelectionBox = new JComboBox();
+        speedSelectionBox = new JComboBox<>();
         if (wan) {
             loadWanSelection();
         } else {
@@ -364,7 +374,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
             // if none matches, falls thru to "Custom".
             int count = speedSelectionBox.getItemCount();
             for (int i = 0; i < count; i++) {
-                LineSpeed lineSpeed = (LineSpeed) speedSelectionBox.getItemAt(i);
+                LineSpeed lineSpeed = speedSelectionBox.getItemAt(i);
                 if (lineSpeed.getUploadSpeed() == uploadSpeed
                         && lineSpeed.getDownloadSpeed() == downloadSpeed) {
                     speedSelectionBox.setSelectedItem(lineSpeed);

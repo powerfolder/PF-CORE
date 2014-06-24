@@ -19,25 +19,39 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.List;
+
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.SyncProfileConfiguration;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.List;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Dialog for creatigng or editing profile configuration. User can select a
@@ -51,7 +65,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 {
 
     private JTextField syncProfileName;
-    private JComboBox syncProfilesCombo;
+    private JComboBox<String> syncProfilesCombo;
     private JCheckBox autoDownloadBox;
     private JCheckBox syncDeletionBox;
     private SpinnerNumberModel scanTimeModel;
@@ -63,8 +77,8 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     private JRadioButton instantRadioButton;
     private SpinnerNumberModel hourModel;
     private JSpinner hourSpinner;
-    private JComboBox dayCombo;
-    private JComboBox timeTypeCombo;
+    private JComboBox<String> dayCombo;
+    private JComboBox<String> timeTypeCombo;
     private final boolean create;
     private JButton saveButton;
     private final SyncProfileConfiguration originalConfiguration;
@@ -217,7 +231,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
         syncProfileName.addKeyListener(this);
 
-        syncProfilesCombo = new JComboBox();
+        syncProfilesCombo = new JComboBox<>();
         syncProfilesCombo.addItem("");
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
             syncProfilesCombo.addItem(syncProfile.getName());
@@ -257,7 +271,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             .getTranslation("dialog.create_edit_profile.instant_sync"));
         instantRadioButton.addActionListener(this);
 
-        dayCombo = new JComboBox(new Object[]{
+        dayCombo = new JComboBox<>(new String[]{
             Translation.getTranslation("dialog.create_edit_profile.every_day"),
             Translation.getTranslation("general.sunday"),
             Translation.getTranslation("general.monday"),
@@ -275,7 +289,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
         dayCombo.addActionListener(this);
 
-        timeTypeCombo = new JComboBox(new Object[]{
+        timeTypeCombo = new JComboBox<>(new String[]{
             Translation.getTranslation("general.hours"),
             Translation.getTranslation("general.minutes"),
             Translation.getTranslation("general.seconds")});

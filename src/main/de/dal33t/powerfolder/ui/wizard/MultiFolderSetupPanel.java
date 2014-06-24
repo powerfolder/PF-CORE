@@ -66,8 +66,8 @@ import de.dal33t.powerfolder.util.Translation;
 public class MultiFolderSetupPanel extends PFWizardPanel {
 
     private List<FolderCreateItem> folderCreateItems;
-    private JComboBox localBaseCombo;
-    private DefaultComboBoxModel localBaseComboModel;
+    private JComboBox<String> localBaseCombo;
+    private DefaultComboBoxModel<String> localBaseComboModel;
 
     private FolderCreateItem selectedItem;
     private ValueModel versionsModel;
@@ -170,8 +170,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         folderCreateItems = new ArrayList<FolderCreateItem>();
 
-        localBaseComboModel = new DefaultComboBoxModel();
-        localBaseCombo = new JComboBox(localBaseComboModel);
+        localBaseComboModel = new DefaultComboBoxModel<>();
+        localBaseCombo = new JComboBox<>(localBaseComboModel);
 
         nameField = new JTextField();
         nameField.addKeyListener(myKeyListener);

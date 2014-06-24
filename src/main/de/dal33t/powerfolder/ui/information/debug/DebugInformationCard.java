@@ -66,7 +66,7 @@ public class DebugInformationCard extends InformationCard {
     private JButton openDebugDir;
     private JButton dumpThreads;
 
-    private JComboBox logLevelCombo;
+    private JComboBox<Level> logLevelCombo;
 
     private JCheckBox logToFileCheckBox;
 
@@ -102,7 +102,7 @@ public class DebugInformationCard extends InformationCard {
     private void initialize() {
         textPanel = new TextPanel();
         textPanel.setText(LoggingManager.getLogBuffer(), true);
-        logLevelCombo = new JComboBox();
+        logLevelCombo = new JComboBox<>();
         logLevelCombo.addItem(Level.OFF);
         logLevelCombo.addItem(Level.SEVERE);
         logLevelCombo.addItem(Level.WARNING);

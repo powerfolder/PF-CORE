@@ -84,9 +84,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     private Map<FolderInfo, SyncProfile> folderProfileMap;
     private Map<FolderInfo, Path> folderLocalBaseMap;
-    private JComboBox folderInfoCombo;
+    private JComboBox<String> folderInfoCombo;
     private JTextField folderInfoField;
-    private DefaultComboBoxModel folderInfoComboModel;
+    private DefaultComboBoxModel<String> folderInfoComboModel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JCheckBox manualSyncCB;
     private boolean changingSelection;
@@ -216,8 +216,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         syncProfileSelectorPanel
             .addModelValueChangeListener(new MyPropertyValueChangeListener());
 
-        folderInfoComboModel = new DefaultComboBoxModel();
-        folderInfoCombo = new JComboBox(folderInfoComboModel);
+        folderInfoComboModel = new DefaultComboBoxModel<>();
+        folderInfoCombo = new JComboBox<>(folderInfoComboModel);
 
         folderInfoCombo.addItemListener(new MyItemListener());
         folderInfoField = new JTextField();

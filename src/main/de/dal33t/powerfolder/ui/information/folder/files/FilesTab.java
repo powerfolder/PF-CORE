@@ -66,7 +66,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private JPanel uiComponent;
     private FilesTablePanel tablePanel;
     private FileFilterTextField filterTextField;
-    private JComboBox filterSelectionComboBox;
+    private JComboBox<String> filterSelectionComboBox;
     private FilesStatsPanel statsPanel;
     private DirectoryFilter directoryFilter;
     private ValueModel flatMode;
@@ -101,7 +101,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
 
-        filterSelectionComboBox = new JComboBox();
+        filterSelectionComboBox = new JComboBox<>();
         filterSelectionComboBox.setToolTipText(Translation
             .getTranslation("files_tab.combo.tool_tip"));
         filterSelectionComboBox.addItem(Translation

@@ -52,7 +52,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
 
     private JButton deleteButton;
 
-    private JComboBox syncProfilesCombo;
+    private JComboBox<String> syncProfilesCombo;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
     /**
@@ -126,7 +126,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
         SyncProfile initialProfile = syncProfileSelectorPanel.getSyncProfile();
 
         // Combo
-        syncProfilesCombo = new JComboBox();
+        syncProfilesCombo = new JComboBox<>();
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
 
             // Don't add the profile being deleted.

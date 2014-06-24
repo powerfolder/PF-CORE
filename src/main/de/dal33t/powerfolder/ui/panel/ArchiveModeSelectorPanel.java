@@ -19,24 +19,27 @@
  */
 package de.dal33t.powerfolder.ui.panel;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
 import java.awt.Component;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.List;
-import java.util.Collections;
+
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel for displaying and selecting archive mode. Attached are a pair of
@@ -67,7 +70,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
             .getTranslation("archive_mode_selector_panel.unlimited"), -1));
     }
 
-    private JComboBox archiveCombo;
+    private JComboBox<String> archiveCombo;
     private JPanel panel;
     private List<ValueModel> versionModels; // {Integer}
     private ActionListener purgeListener;
@@ -168,7 +171,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
         for (NameValuePair pair : PAIRS) {
             names[i++] = pair.getName();
         }
-        archiveCombo = new JComboBox(names);
+        archiveCombo = new JComboBox<>(names);
         archiveCombo.addItemListener(new MyItemListener());
     }
 
