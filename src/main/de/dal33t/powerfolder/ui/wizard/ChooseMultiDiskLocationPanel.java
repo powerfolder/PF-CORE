@@ -109,8 +109,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private LinkLabel warningLabel;
 
     private JComponent customDirectoryComp;
-    private JList customDirectoryList;
-    private DefaultListModel customDirectoryListModel;
+    private JList<String> customDirectoryList;
+    private DefaultListModel<String> customDirectoryListModel;
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox manualSyncCheckBox;
     private JCheckBox sendInviteAfterCB;
@@ -210,7 +210,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         // Additional folders
         for (int i = 0; i < customDirectoryListModel.size(); i++) {
-            String dir = (String) customDirectoryListModel.getElementAt(i);
+            String dir = customDirectoryListModel.getElementAt(i);
             Path file = Paths.get(dir);
             FolderCreateItem item = new FolderCreateItem(file);
             item.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
@@ -352,8 +352,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         linkAction = new MyLinkAction(getController());
         linkButton = new JButtonMini(linkAction);
 
-        customDirectoryListModel = new DefaultListModel();
-        customDirectoryList = new JList(customDirectoryListModel);
+        customDirectoryListModel = new DefaultListModel<>();
+        customDirectoryList = new JList<>(customDirectoryListModel);
         customDirectoryComp = new JScrollPane(customDirectoryList);
         customDirectoryList
             .setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -561,7 +561,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
-                    String dir = (String) customDirectoryListModel.elementAt(i);
+                    String dir = customDirectoryListModel.elementAt(i);
                     Path file = Paths.get(dir);
                     originalList.add(file);
                 }
@@ -589,7 +589,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     }
                 }
                 for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
-                    String dir = (String) customDirectoryListModel.elementAt(i);
+                    String dir = customDirectoryListModel.elementAt(i);
                     Path file = Paths.get(dir);
                     finalList.add(file);
                 }
@@ -751,7 +751,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String fileName = (String) customDirectoryList.getSelectedValue();
+            String fileName = customDirectoryList.getSelectedValue();
             Path file = Paths.get(fileName);
             LinkFolderOnlineDialog dialog = new LinkFolderOnlineDialog(
                 getController(), ChooseMultiDiskLocationPanel.this, file,

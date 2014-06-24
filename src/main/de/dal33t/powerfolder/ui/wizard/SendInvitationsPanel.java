@@ -87,13 +87,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JButtonMini removeButton;
     private JTextField viaPowerFolderText;
     private JLabel invalidEmail;
-    private JList inviteesList;
+    private JList<String> inviteesList;
     private JScrollPane inviteesListScrollPane;
-    private DefaultListModel inviteesListModel;
+    private DefaultListModel<String> inviteesListModel;
     private Invitation invitation;
     private JPanel removeButtonPanel;
-    private DefaultComboBoxModel permissionsComboModel;
-    private JComboBox permissionsCombo;
+    private DefaultComboBoxModel<String> permissionsComboModel;
+    private JComboBox<String> permissionsCombo;
 
     public SendInvitationsPanel(Controller controller) {
         super(controller);
@@ -304,8 +304,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invalidEmail = new JLabel("<html><font color='red'>"+Translation.getTranslation("wizard.send_invitations.invalid_email", LoginUtil.getUsernameText(getController()))+"</font></html>");
         invalidEmail.setVisible(false);
 
-        inviteesListModel = new DefaultListModel();
-        inviteesList = new JList(inviteesListModel);
+        inviteesListModel = new DefaultListModel<>();
+        inviteesList = new JList<>(inviteesListModel);
         inviteesList.getSelectionModel().setSelectionMode(
             ListSelectionModel.SINGLE_SELECTION);
         inviteesList.getSelectionModel().addListSelectionListener(
@@ -313,8 +313,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         List<String> candidateAddresses = getCandidatesAddresses();
 
-        permissionsComboModel = new DefaultComboBoxModel();
-        permissionsCombo = new JComboBox(permissionsComboModel);
+        permissionsComboModel = new DefaultComboBoxModel<>();
+        permissionsCombo = new JComboBox<>(permissionsComboModel);
         permissionsComboModel.addElement(FolderPermission.readWrite(folderInfo).getName());
         permissionsComboModel.addElement(FolderPermission.read(folderInfo).getName());
         if (ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController()))

@@ -116,7 +116,7 @@ public class SettingsTab extends PFUIComponent {
     private ValueModel localVersionModel;
     private ValueModel onlineVersionModel;
     private final ValueModel scriptModel;
-    private DefaultListModel patternsListModel = new DefaultListModel();
+    private DefaultListModel<String> patternsListModel = new DefaultListModel<>();
     private final SelectionModel selectionModel;
     private FolderMembershipListener membershipListener;
     private final DiskItemFilterListener patternChangeListener;
@@ -133,7 +133,7 @@ public class SettingsTab extends PFUIComponent {
     private final SyncProfileSelectorPanel transferModeSelectorPanel;
     private final ArchiveModeSelectorPanel localArchiveModeSelectorPanel;
     private final ArchiveModeSelectorPanel onlineArchiveModeSelectorPanel;
-    private JList patternsList;
+    private JList<String> patternsList;
     private final JTextField localFolderField;
     private final JButton localFolderButton;
     private ActionLabel confOSActionLabel;
@@ -165,7 +165,7 @@ public class SettingsTab extends PFUIComponent {
         localFolderButton.setEnabled(false);
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
-        patternsListModel = new DefaultListModel();
+        patternsListModel = new DefaultListModel<>();
         removeFolderAction = new RemoveFolderAction(getController());
         maintainDBAction = new MaintainFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
@@ -400,7 +400,7 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private JPanel createPatternsPanel() {
-        patternsList = new JList(patternsListModel);
+        patternsList = new JList<>(patternsListModel);
         patternsList.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
