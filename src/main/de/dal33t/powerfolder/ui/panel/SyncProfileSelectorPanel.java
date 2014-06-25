@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.security.ChangeTransferModePermission;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
@@ -47,9 +48,8 @@ import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -61,7 +61,7 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class SyncProfileSelectorPanel extends PFUIComponent {
 
-    private JComboBox syncProfilesCombo;
+    private JComboBox<String> syncProfilesCombo;
     private JPanel panel;
     private ValueModel valueModel;
     private Folder updateableFolder;
@@ -124,7 +124,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
      */
     private void initComponents(SyncProfile syncProfile) {
 
-        syncProfilesCombo = new JComboBox();
+        syncProfilesCombo = new JComboBox<>();
         syncProfilesCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 udateSyncProfile();

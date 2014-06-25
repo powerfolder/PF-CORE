@@ -29,7 +29,12 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -48,8 +53,8 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.panel.LineSpeedSelectionPanel;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
@@ -58,13 +63,13 @@ import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
-    private JComboBox networkingModeCombo;
+    private JComboBox<String> networkingModeCombo;
     private JCheckBox relayedConnectionCB;
     private JCheckBox udtConnectionCB;
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
     private JButton httpProxyButton;
-    private JComboBox serverDisconnectBehaviorCombo;
+    private JComboBox<String> serverDisconnectBehaviorCombo;
     private JCheckBox randomPortCB;
     private JTextField advPortTF;
     private JCheckBox openPortCB;
@@ -102,7 +107,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("general.network_mode.lan_only");
         options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
             .getTranslation("general.network_mode.server_only");
-        networkingModeCombo = new JComboBox(options);
+        networkingModeCombo = new JComboBox<>(options);
 
         NetworkingMode currentNetworkingMode = getController()
             .getNetworkingMode();
@@ -190,7 +195,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.network.server_disconnect_sync"),
             Translation
                 .getTranslation("preferences.network.server_disconnect_no_sync")};
-        serverDisconnectBehaviorCombo = new JComboBox(options);
+        serverDisconnectBehaviorCombo = new JComboBox<>(options);
         int selected = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
             .getValueBoolean(getController()) ? 0 : 1;
         serverDisconnectBehaviorCombo.setSelectedIndex(selected);
