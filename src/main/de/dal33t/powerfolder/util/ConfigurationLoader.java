@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 public class ConfigurationLoader {
     private static final String INITIAL_STARTUP_CONFIG_FILENAME = "initial_startup.config";
     public static final String DEFAULT_CONFIG_FILENAME = "Default.config";
+    public static final String RADIUS_CONFIG_FILENAME = "RADIUS.config";
     private static final String DEFAULT_PROPERTIES_URI = "/client_deployment/"
         + DEFAULT_CONFIG_FILENAME;
     private static final String PREFERENCES_PREFIX = "pref.";
