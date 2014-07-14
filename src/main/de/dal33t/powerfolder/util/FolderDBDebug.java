@@ -59,6 +59,7 @@ public class FolderDBDebug {
         FileInfo[] files = (FileInfo[]) in.readObject();
         System.err.println(in.readObject());
         System.err.println(in.readObject());
+        in.close();
 
         if (!checkForDupes(files)) {
             System.out.println("OK: DB contain NO dupes.");

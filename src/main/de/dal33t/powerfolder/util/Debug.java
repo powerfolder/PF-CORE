@@ -151,9 +151,11 @@ public class Debug {
     {
         if (Files.notExists(logFile)) {
             try {
-                if (logFile.getParent() != null) {
+                if (logFile.getParent() != null
+                    && Files.notExists(logFile.getParent()))
+                {
                     try {
-                        Files.createDirectories(logFile);
+                        Files.createDirectories(logFile.getParent());
                     } catch (IOException ioe) {
                         return null;
                     }
