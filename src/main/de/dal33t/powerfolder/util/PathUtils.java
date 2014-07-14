@@ -1032,6 +1032,10 @@ public class PathUtils {
         String filename = path.getFileName().toString();
         String cleared = PathUtils.removeInvalidFilenameChars(filename);
 
+        if (path.getParent() == null) {
+            return Paths.get(cleared);
+        }
+
         return path.getParent().resolve(cleared);
     }
 
