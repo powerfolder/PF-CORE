@@ -3138,8 +3138,9 @@ public class Folder extends PFComponent {
                     .getAccountInfo();
             }
             logInfo("File " + localFile + " was deleted by "
-                + ((by != null) ? by.getDisplayName() : "n/a")
-                + ", deleting local at " + localCopy.toAbsolutePath());
+                + ((by != null) ? by.getDisplayName() : "n/a") + " on "
+                + remoteFile.getModifiedDate() + " , deleting local at "
+                + localCopy.toAbsolutePath());
         }
 
         // Abort transfers on file.
