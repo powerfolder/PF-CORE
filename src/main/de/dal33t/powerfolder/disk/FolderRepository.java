@@ -362,7 +362,34 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getValue(getController());
         }
 
+        // PFC-2544: Start
+        try {
+            if (StringUtils.isNotBlank(baseDir)) {
+                // Fallback: Take system username. OS Client is not initialized
+                // when this method is called.
+                String username = System.getProperty("user.name");
+                if (StringUtils.isNotBlank(getController().getOSClient()
+                    .getUsername()))
+                {
+                    username = getController().getOSClient().getUsername();
+                }
+                if (baseDir.contains("%username%")) {
+                    baseDir = baseDir.replace("%username%", username);
+                    logWarning("New basedir: " + baseDir);
+                }
+                if (baseDir.contains("$username")) {
+                    baseDir = baseDir.replace("$username", username);
+                    logWarning("New basedir: " + baseDir);
+                }
+            }
+        } catch (Exception e) {
+            logWarning("Unable to resolve 'username' placeholder in basepath: "
+                + baseDir + ". " + e);
+        }
+        // PFC-2544: End
+
         // Check if this a windows network drive.
+        // TODO: Check: Does this really work?
         boolean winNetworkDrive = baseDir != null && baseDir.contains(":\\")
             && baseDir.charAt(1) == ':';
 
@@ -783,7 +810,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!targetDir.isAbsolute()) {
             targetDir = foldersBasedir
                 .resolve(targetDir);
-            logWarning("Original path: " + targetDir
+            logInfo("Original path: " + targetDir
                 + ". Choosen relative path: " + targetDir);
         }
         for (Folder folder : getController().getFolderRepository().getFolders())
@@ -2129,7 +2156,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     suggestedLocalBase = getController().getFolderRepository()
                         .getFoldersBasedir().resolve(folderName);
                     if (Files.exists(suggestedLocalBase)) {
-                        logWarning("Using existing directory "
+                        logInfo("Using existing directory "
                             + suggestedLocalBase + " for " + folderInfo);
                     }
                 } else {
