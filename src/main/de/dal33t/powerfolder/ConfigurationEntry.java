@@ -1027,6 +1027,13 @@ public enum ConfigurationEntry {
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
 
     /**
+     * PFC-2545: Special transfer mode if UNC path is encountered (used for
+     * "Passive" client/Virtual Desktop/O4IT/CFN).
+     * https://wiki.powerfolder.com/display/PFD/Passive+Client
+     */
+    UNC_TRANSFER_MODE("unc.transfer.mode"),
+
+    /**
      * The number of maximum activate
      */
     FOLDER_SCANNER_MAX_CRAWLERS("sync.folder.max_crawlers", 3),
