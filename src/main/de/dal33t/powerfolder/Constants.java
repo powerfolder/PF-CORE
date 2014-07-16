@@ -82,7 +82,7 @@ public class Constants {
      * 
      * @see ConfigurationEntry#FOLDER_BASEDIR
      */
-    public static final String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
+    public static String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
     
     /**
      * PFC-2538

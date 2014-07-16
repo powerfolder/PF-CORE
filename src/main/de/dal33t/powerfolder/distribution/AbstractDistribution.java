@@ -205,6 +205,8 @@ public abstract class AbstractDistribution extends Loggable implements
                 .getDefaultValue().replace(
                     Constants.FOLDERS_BASE_DIR_SUBDIR_NAME, myDir);
             ConfigurationEntry.FOLDER_BASEDIR.setValue(c, folderBaseDir);
+        } else {
+            Constants.FOLDERS_BASE_DIR_SUBDIR_NAME = myDir;
         }
     }
 }
