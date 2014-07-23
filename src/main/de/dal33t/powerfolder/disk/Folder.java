@@ -999,6 +999,20 @@ public class Folder extends PFComponent {
         conflict |= oldLocalFileInfo.getVersion() <= fInfo.getVersion()
             && DateUtil.isNewerFileDateCrossPlattform(
                 oldLocalFileInfo.getModifiedDate(), fInfo.getModifiedDate());
+
+        //
+        // [PowerFolder Temp]:/POWERFOLDER ERKLÄRVIDEO.mp4, size: 73418472
+        // bytes, version: 1, modified: Thu Jul 10 13:00:33 CEST 2014
+        // (1404990033000) by 'betag'
+        // [PowerFolder Temp]:/POWERFOLDER ERKLÄRVIDEO.mp4, size: 0 bytes,
+        // version: 0, modified: Fri Jul 18 18:00:01 CEST 2014 (1405699201450)
+        // by 'betag'
+        //
+        // PFS-1329
+        if (oldLocalFileInfo.getSize() == 0) {
+            return null;
+        }
+
         if (conflict) {
             logWarning("Conflict detected on file " + fInfo.toDetailString()
                 + ". old: " + oldLocalFileInfo.toDetailString());
@@ -3132,14 +3146,16 @@ public class Folder extends PFComponent {
 
         if (isInfo()) {
             // PFC-2434
-            AccountInfo by = null;
+            String by = "n/a";
             if (remoteFile.getModifiedBy() != null) {
-                by = remoteFile.getModifiedBy().getNode(getController(), true)
-                    .getAccountInfo();
+                AccountInfo aInfo = remoteFile.getModifiedBy()
+                    .getNode(getController(), true).getAccountInfo();
+                if (aInfo != null) {
+                    by = aInfo.getDisplayName();
+                }
             }
-            logInfo("File " + localFile + " was deleted by "
-                + ((by != null) ? by.getDisplayName() : "n/a") + " on "
-                + remoteFile.getModifiedDate() + " , deleting local at "
+            logInfo("File " + localFile + " was deleted by " + by + ": "
+                + remoteFile.toDetailString() + " , deleting local at "
                 + localCopy.toAbsolutePath());
         }
 
