@@ -49,12 +49,19 @@ public class FolderDBDebug {
     public static void main(String[] args) throws IOException,
         ClassNotFoundException
     {
+        String fn;
         if (args.length < 1) {
-            throw new IllegalArgumentException(
-                "The first argument has to be the filename of the folder database file");
+            // throw new IllegalArgumentException(
+            // "The first argument has to be the filename of the folder database file");
+            fn = "PowerFolder.db";
+        } else {
+            fn = args[0];
         }
 
-        InputStream fIn = new BufferedInputStream(new FileInputStream(args[0]));
+        if (!fn.contains(".")) {
+            fn += ".db";
+        }
+        InputStream fIn = new BufferedInputStream(new FileInputStream(fn));
         ObjectInputStream in = new ObjectInputStream(fIn);
         FileInfo[] files = (FileInfo[]) in.readObject();
         System.err.println(in.readObject());
@@ -76,14 +83,16 @@ public class FolderDBDebug {
             }
             totalSize += fileInfo.getSize();
         }
-        Path f = Paths.get(args[0] + ".csv");
+        Path f = Paths.get(fn + ".csv");
         // Write filelist to disk
         Path outFile = Debug.writeFileListCSV(f, Arrays.asList(files),
             "FileList of folder " + fName);
 
         System.out.println("Read " + files.length + " files ("
-            + Format.formatBytesShort(totalSize) + ") from " + args[0]
+            + Format.formatBytesShort(totalSize) + ") from " + fn
             + ". \nOutput: " + outFile.toRealPath());
+
+        PathUtils.openFile(outFile);
     }
 
     private static boolean checkForDupes(FileInfo[] list) {
