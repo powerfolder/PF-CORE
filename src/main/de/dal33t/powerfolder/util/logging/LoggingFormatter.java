@@ -27,6 +27,8 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -34,12 +36,17 @@ import de.dal33t.powerfolder.util.Util;
  * [logger name] message.
  */
 public class LoggingFormatter extends Formatter {
+    private static final String POWERFOLDER_LCASE = "powerfolder";
+    private static final String POWERFOLDER = "PowerFolder";
+    private static final String DAL33T = ".dal33t";
 
     private boolean showDate;
+    private boolean replacePF;
 
     public LoggingFormatter(boolean showDate) {
         super();
         this.showDate = showDate;
+        this.replacePF = !POWERFOLDER.equals(Constants.MISC_DIR_NAME);
     }
 
     public LoggingFormatter() {
@@ -89,7 +96,7 @@ public class LoggingFormatter extends Formatter {
             buf.append(loggerName);
         }
         buf.append("]: ");
-        buf.append(record.getMessage());
+        buf.append(replacePFString(record.getMessage()));
         buf.append(Util.getLineFeed());
         if (record.getThrown() != null) {
             Throwable throwable = record.getThrown();
@@ -105,9 +112,21 @@ public class LoggingFormatter extends Formatter {
                 }
             }
             sw.flush();
-            String trace = sw.toString();
+            String trace = replacePFString(sw.toString());
             buf.append(trace).append(Util.getLineFeed());
         }
         return buf.toString();
+    }
+
+    private String replacePFString(String input) {
+        if (!replacePF) {
+            return input;
+        }
+        if (StringUtils.isBlank(input)) {
+            return input;
+        }
+        return input.replace(POWERFOLDER, Constants.MISC_DIR_NAME)
+            .replace(POWERFOLDER_LCASE, Constants.MISC_DIR_NAME)
+            .replace(DAL33T, "");
     }
 }
