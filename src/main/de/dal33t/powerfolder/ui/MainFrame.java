@@ -697,8 +697,12 @@ public class MainFrame extends PFUIComponent {
         pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
         if (showSetupLabel) {
             setupLabel.setVisible(notStartedOrNoFolders);
+
         }
-        setupButton.setVisible(notStartedOrNoFolders || !client.isLoginExecuted());
+        setupButton.setVisible(notStartedOrNoFolders
+            || !client.isLoginExecuted());
+        setupButton.setEnabled(getController().getOSClient()
+            .isAllowedToCreateFolders());
         allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
         syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
         syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
