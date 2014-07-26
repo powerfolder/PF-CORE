@@ -110,6 +110,12 @@ public interface FolderService {
      * @param request
      */
     void sendInvitationEmail(SendInvitationEmail request);
+    
+    /**
+     * @param request
+     * @param wait block until send process is finished
+     */
+    void sendInvitationEmail(SendInvitationEmail request, boolean wait);
 
     /**
      * Changes the sync profile on the remote server for this folder.
