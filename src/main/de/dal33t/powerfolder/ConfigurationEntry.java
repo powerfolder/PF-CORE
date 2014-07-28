@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
+import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -112,6 +113,16 @@ public enum ConfigurationEntry {
      */
     SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN(
         "security.permissions.show_folder_admin", true),
+
+    /**
+     * Required permission to access/use the archive of a folder.
+     * <p>
+     * PFS-1336
+     * <p>
+     * http://www.powerfolder.com/wiki/Security_Permissions
+     */
+    SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
+        AccessMode.READ_WRITE.name()),
 
     // Node setup *************************************************************
 

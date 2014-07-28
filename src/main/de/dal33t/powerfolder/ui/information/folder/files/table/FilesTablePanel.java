@@ -56,6 +56,9 @@ import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.AccessMode;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -601,6 +604,19 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     fileVersionsPanel.setFileInfo(null);
                     downloadState = true;
                     restoreArchiveAction.setEnabled(true);
+                    
+                    // PFS-1336
+                    AccessMode mode = AccessMode.fromString(
+                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                            .getValue(getController()),
+                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                            .getDefaultValue());
+                    FolderInfo foInfo = ((DirectoryInfo) diskItem)
+                        .getFolderInfo();
+                    restoreArchiveAction.allowWith(FolderPermission.get(foInfo,
+                        mode));
+                    // PFS-1336: End
+                    
                     done = true;
                 } else if (diskItem != null && diskItem instanceof FileInfo) {
                     TransferManager tm = getController().getTransferManager();
@@ -641,6 +657,18 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     singleFileTransferAction.setEnabled(true);
 
                     restoreArchiveAction.setEnabled(true);
+                    
+                    // PFS-1336
+                    AccessMode mode = AccessMode.fromString(
+                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                            .getValue(getController()),
+                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                            .getDefaultValue());
+                    FolderInfo foInfo = ((FileInfo) diskItem)
+                        .getFolderInfo();
+                    restoreArchiveAction.allowWith(FolderPermission.get(foInfo,
+                        mode));
+                    // PFS-1336: End
 
                     done = true;
                 }
