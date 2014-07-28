@@ -19,11 +19,35 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.util.StringUtils;
+
 /**
  * Different access level for resources (Folders, Groups, Users, etc.pp)
  * 
  * @author sprajc
  */
 public enum AccessMode {
-    NO_ACCESS, READ, READ_WRITE, ADMIN, OWNER
+    NO_ACCESS, READ, READ_WRITE, ADMIN, OWNER;
+
+    public static AccessMode fromString(String value, String defValue) {
+        // PFS-1336
+        AccessMode mode = AccessMode.valueOf(defValue);
+        String perm = value;
+        try {
+            if (StringUtils.isBlank(perm)) {
+                mode = AccessMode.NO_ACCESS;
+            } else {
+                mode = AccessMode.valueOf(perm.toUpperCase().trim());
+            }
+        } catch (Exception e) {
+            Logger.getLogger(FolderSettings.class.getName()).severe(
+                "Malformed value for folder permission: " + value
+                    + ". Using fallback: " + mode + ". " + e);
+        }
+        return mode;
+        // PFS-1336: End
+    }
 }
