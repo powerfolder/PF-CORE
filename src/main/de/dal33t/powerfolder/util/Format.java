@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.PFComponent;
-
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -35,7 +33,7 @@ import java.util.Locale;
  *
  * @version $Revision: 1.6 $
  */
-public class Format extends PFComponent {
+public class Format {
 
     private static final CanonicalDateFormat CANONICAL_DATE_FORMAT = new CanonicalDateFormat();
     private static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
@@ -267,27 +265,31 @@ public class Format extends PFComponent {
      */
     public static String formatDeltaTime(long dt) {
         Formatter f = new Formatter();
-        long days = dt / 24 / 3600 / 1000;
-        if (days >= 2) {
-            return f.format(Translation.getTranslation("format.n.days",
-                    String.valueOf(days))).out().toString();
-        }
-        long hours = dt / 3600 / 1000;
-        if (hours >= 2) {
-            return f.format(Translation.getTranslation("format.n.hours",
-                    String.valueOf(hours))).out().toString();
-        }
-        long minutes = dt / 60 / 1000;
-        if (minutes >= 1) {
-            return f.format(Translation.getTranslation("format.n.minutes",
-                    String.valueOf(minutes))).out().toString();
-        } else if (minutes == 1) {
-            return f.format(Translation.getTranslation(
-                    "format.one_minute")).out().toString();
-        } else {
-            return f.format(
-                    Translation.getTranslation("format.less_than_one_minute"))
-                    .out().toString();
+        try {
+            long days = dt / 24 / 3600 / 1000;
+            if (days >= 2) {
+                return f.format(Translation.getTranslation("format.n.days",
+                        String.valueOf(days))).out().toString();
+            }
+            long hours = dt / 3600 / 1000;
+            if (hours >= 2) {
+                return f.format(Translation.getTranslation("format.n.hours",
+                        String.valueOf(hours))).out().toString();
+            }
+            long minutes = dt / 60 / 1000;
+            if (minutes >= 1) {
+                return f.format(Translation.getTranslation("format.n.minutes",
+                        String.valueOf(minutes))).out().toString();
+            } else if (minutes == 1) {
+                return f.format(Translation.getTranslation(
+                        "format.one_minute")).out().toString();
+            } else {
+                return f.format(
+                        Translation.getTranslation("format.less_than_one_minute"))
+                        .out().toString();
+            }
+        } finally {
+            f.close();
         }
     }
 
