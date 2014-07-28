@@ -435,6 +435,7 @@ public class Util {
         if (url == null) {
             throw new NullPointerException("URL is null");
         }
+        InputStream in = null;
         try {
             Object content = url.getContent();
             if (!(content instanceof InputStream)) {
@@ -442,7 +443,7 @@ public class Util {
                     + ". content is of type " + content.getClass().getName());
                 return null;
             }
-            InputStream in = (InputStream) content;
+            in = (InputStream) content;
 
             StringBuilder buf = new StringBuilder();
             while (in.available() > 0) {
@@ -452,6 +453,14 @@ public class Util {
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Unable to get content from " + url + ". "
                 + e.toString(), e);
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ioe) {
+                // ignore
+            }
         }
         return null;
     }
