@@ -1415,7 +1415,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed 3";
+                return "Updated failed 3. At Bart: "
+                    + getFolderAtBart().getKnownFiles().iterator().next()
+                        .toDetailString()
+                    + ". At Lisa: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .toDetailString();
             }
         });
 
@@ -1436,7 +1441,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed 4";
+                return "Updated failed 4. At Bart: "
+                    + getFolderAtBart().getKnownFiles().iterator().next()
+                        .toDetailString()
+                    + ". At Lisa: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .toDetailString();
             }
         });
 
@@ -1457,7 +1467,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed 5";
+                return "Updated failed 5. At Bart: "
+                    + getFolderAtBart().getKnownFiles().iterator().next()
+                        .toDetailString()
+                    + ". At Lisa: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .toDetailString();
             }
         });
 
@@ -1478,7 +1493,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed 6";
+                return "Updated failed 6. At Bart: "
+                    + getFolderAtBart().getKnownFiles().iterator().next()
+                        .toDetailString()
+                    + ". At Lisa: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .toDetailString();
             }
         });
 
@@ -1499,7 +1519,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed 7";
+                return "Updated failed 7. At Bart: "
+                    + getFolderAtBart().getKnownFiles().iterator().next()
+                        .toDetailString()
+                    + ". At Lisa: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .toDetailString();
             }
         });
 
@@ -1521,7 +1546,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "Updated failed 8";
+                return "Updated failed 8. At Bart: "
+                    + getFolderAtBart().getKnownFiles().iterator().next()
+                        .toDetailString()
+                    + ". At Lisa: "
+                    + getFolderAtLisa().getKnownFiles().iterator().next()
+                        .toDetailString();
             }
         });
     }
