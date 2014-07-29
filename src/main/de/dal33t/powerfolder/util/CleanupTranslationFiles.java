@@ -176,12 +176,16 @@ public class CleanupTranslationFiles {
             throw new RuntimeException(e);
         }
 
-        BufferedWriter out;
+        BufferedWriter out = null;
         try {
             out = new BufferedWriter(new OutputStreamWriter(
                 new BufferedOutputStream(fOut), "8859_1"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
         }
 
         String lastPrefix = null;

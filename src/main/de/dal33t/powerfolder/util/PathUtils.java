@@ -321,8 +321,9 @@ public class PathUtils {
                 + to.toAbsolutePath().toString());
         }
 
-        try (OutputStream out = new BufferedOutputStream(
-            Files.newOutputStream(to))) {
+        OutputStream out = new BufferedOutputStream(
+            Files.newOutputStream(to));
+        try {
             byte[] buffer = new byte[BYTE_CHUNK_SIZE];
             int read;
             long position = 0;
@@ -348,6 +349,7 @@ public class PathUtils {
         } finally {
             // Close streams
             try {
+                out.close();
                 in.close();
             } catch (IOException e) {
             }
