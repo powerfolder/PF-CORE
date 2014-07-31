@@ -1914,6 +1914,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 FolderInfo old = foInfo.intern();
 
                 if (!old.getName().equals(foInfo.getName())) {
+                    logInfo("Renaming Folder " + old.getName() + " to "
+                        + foInfo.getName());
                     foInfo = foInfo.intern(true);
 
                     try {
