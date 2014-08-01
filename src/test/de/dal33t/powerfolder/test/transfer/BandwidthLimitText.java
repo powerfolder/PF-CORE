@@ -89,8 +89,7 @@ public class BandwidthLimitText extends TestCase {
         byte b[] = new byte[1000];
 
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        LimitedOutputStream out = new LimitedOutputStream(bl, bout);
-        try {
+        try (LimitedOutputStream out = new LimitedOutputStream(bl, bout)) {
             out.write(b);
         } catch (IOException e) {
             fail(e.toString());
@@ -100,9 +99,8 @@ public class BandwidthLimitText extends TestCase {
         assertTrue("Wrong amount written", bout.size() == b.length);
         ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
         bl.setAvailable(10000);
-        LimitedInputStream in = new LimitedInputStream(bl, bin);
         int read = 0;
-        try {
+        try (LimitedInputStream in = new LimitedInputStream(bl, bin)) {
             read = in.read(b);
         } catch (IOException e) {
             fail(e.toString());

@@ -129,7 +129,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
      * Tests the mutation of the node table model via its listmodel.
      */
     public void testListModelChanges() {
-        ObservableList list = model.getListModel();
+        ObservableList<Member> list = model.getListModel();
         // Test = No users found
         assertEquals(1, model.getRowCount());
         assertTrue(model.getValueAt(0, 0) instanceof String);
