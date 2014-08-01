@@ -70,6 +70,10 @@ public class Organization implements Serializable {
 
     private int maxUsers;
 
+    @Index(name = "IDX_ORGANIZATION_LDAPDN")
+    @Column(length = 512)
+    private String ldapDN;
+
     @Embedded
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
@@ -115,6 +119,14 @@ public class Organization implements Serializable {
 
     public boolean hasMaxUsers() {
         return this.maxUsers > 0 && this.maxUsers != UNLIMITED_USERS;
+    }
+
+    public void setLdapDN(String ldapDN) {
+        this.ldapDN = ldapDN;
+    }
+
+    public String getLdapDN() {
+        return ldapDN;
     }
 
     public OnlineStorageSubscription getOSSubscription() {
