@@ -451,7 +451,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             String errorMsg = null;
             if (preConfig == null) {
                 errorMsg = Translation
-                    .getTranslation("config.loader.dialog.error.generic");
+                    .getTranslation("config.loader.dialog.error.generic^^");
                 if (t != null) {
                     if (t instanceof FileNotFoundException) {
                         errorMsg = Translation

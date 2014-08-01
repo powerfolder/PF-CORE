@@ -189,7 +189,7 @@ public class InvitationUtil {
 
             public String getDescription() {
                 return Translation
-                    .getTranslation("invitation_files.description");
+                    .getTranslation("exp.invitation_files.description");
             }
         };
     }
@@ -258,9 +258,9 @@ public class InvitationUtil {
 //        log.info("Writing invitation to " + file);
 //        if (!save(invitation, file)) {
 //            DialogFactory.genericDialog(controller, Translation
-//                .getTranslation("invitation.utils.unable.write.title"),
+//                .getTranslation("exp.invitation.utils.unable.write.title"),
 //                Translation
-//                    .getTranslation("invitation.utils.unable.write.text"),
+//                    .getTranslation("exp.invitation.utils.unable.write.text"),
 //                GenericDialogType.ERROR);
 //            return false;
 //        }

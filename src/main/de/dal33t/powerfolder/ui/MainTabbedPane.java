@@ -82,7 +82,7 @@ public class MainTabbedPane extends PFUIComponent {
 
                 if (showComputersTab) {
                     tabbedPane.add(Translation
-                        .getTranslation("main_tabbed_pane.computers.name"),
+                        .getTranslation("exp.main_tabbed_pane.computers.name"),
                         computersTab.getUIComponent());
                 } else {
                     // Do not display computers tab in backup only mode, BUT
@@ -99,12 +99,12 @@ public class MainTabbedPane extends PFUIComponent {
 
                 if (showComputersTab) {
                     key = Translation
-                        .getTranslation("main_tabbed_pane.computers.key");
+                        .getTranslation("exp.main_tabbed_pane.computers.key");
                     tabbedPane.setMnemonicAt(COMPUTERS_INDEX,
                         (int) Character.toUpperCase(key.charAt(0)));
                     tabbedPane.setToolTipTextAt(COMPUTERS_INDEX,
                         Translation.getTranslation(""
-                            + "main_tabbed_pane.computers.description"));
+                            + "exp.main_tabbed_pane.computers.description"));
                 }
 
                 tabbedPane.addChangeListener(new MyChangelistener());

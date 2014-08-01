@@ -170,7 +170,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
                 BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(
             Translation
-                .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
+                .getTranslation("exp.wizard.choose_disk_location.backup_by_online_storage"));
         // Is backup suggested?
         if (backupByOS) {
             backupByOnlineStorageBox.setSelected(true);
@@ -189,7 +189,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
             .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("wizard.choose_disk_location.send_invitation"));
+            .getTranslation("exp.wizard.choose_disk_location.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -197,6 +197,6 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
     protected String getTitle() {
         return Translation
-            .getTranslation("wizard.choose_disk_location.options");
+            .getTranslation("exp.wizard.choose_disk_location.options");
     }
 }

@@ -110,10 +110,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     public String getTitle() {
         if (create) {
             return Translation
-                .getTranslation("dialog.create_edit_profile.title_create");
+                .getTranslation("exp.dialog.create_edit_profile.title_create");
         } else {
             return Translation
-                .getTranslation("dialog.create_edit_profile.title_edit");
+                .getTranslation("exp.dialog.create_edit_profile.title_edit");
         }
     }
 
@@ -142,24 +142,24 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
         // Profile name
         builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.profile_name")), cc.xy(
+            .getTranslation("exp.dialog.create_edit_profile.profile_name")), cc.xy(
             1, 1));
         builder.add(syncProfileName, cc.xy(3, 1));
 
         builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.configure_from")), cc
+            .getTranslation("exp.dialog.create_edit_profile.configure_from")), cc
             .xy(1, 3));
         builder.add(createSyncComboPanel(), cc.xy(3, 3));
 
         builder.addSeparator(Translation
-            .getTranslation("dialog.create_edit_profile.synchronization"), cc
+            .getTranslation("exp.dialog.create_edit_profile.synchronization"), cc
             .xyw(1, 5, 3));
 
         builder.add(autoDownloadBox, cc.xy(3, 7));
         builder.add(syncDeletionBox, cc.xy(3, 9));
 
         builder.addSeparator(Translation
-            .getTranslation("dialog.create_edit_profile.change_detection"), cc
+            .getTranslation("exp.dialog.create_edit_profile.change_detection"), cc
             .xyw(1, 11, 3));
 
         builder.add(instantRadioButton, cc.xy(3, 13));
@@ -167,14 +167,14 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         builder.add(periodicRadioButton, cc.xy(3, 15));
 
         builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.time_between_scans")),
+            .getTranslation("exp.dialog.create_edit_profile.time_between_scans")),
             cc.xy(1, 17));
         builder.add(createRegularPanel(), cc.xy(3, 17));
 
         builder.add(dailyRadioButton, cc.xy(3, 19));
 
         builder.add(new JLabel(Translation
-            .getTranslation("dialog.create_edit_profile.hour_day_sync")), cc
+            .getTranslation("exp.dialog.create_edit_profile.hour_day_sync")), cc
             .xy(1, 21));
         builder.add(createDailyComboPanel(), cc.xy(3, 21));
 
@@ -243,15 +243,15 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         });
 
         autoDownloadBox = new JCheckBox(Translation
-            .getTranslation("dialog.create_edit_profile.auto_download"));
+            .getTranslation("exp.dialog.create_edit_profile.auto_download"));
         syncDeletionBox = new JCheckBox(Translation
-            .getTranslation("dialog.create_edit_profile.sync_deletion"));
+            .getTranslation("exp.dialog.create_edit_profile.sync_deletion"));
 
         scanTimeModel = new SpinnerNumberModel(0, 0, 9999, 1);
         scanTimeSpinner = new JSpinner(scanTimeModel);
         scanInfoLabel = new JLabel(
             Translation
-                .getTranslation("dialog.create_edit_profile.change_detection_manual"));
+                .getTranslation("exp.dialog.create_edit_profile.change_detection_manual"));
         scanTimeModel.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
@@ -260,19 +260,19 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         });
 
         periodicRadioButton = new JRadioButton(Translation
-            .getTranslation("dialog.create_edit_profile.periodic_sync"));
+            .getTranslation("exp.dialog.create_edit_profile.periodic_sync"));
         periodicRadioButton.addActionListener(this);
 
         dailyRadioButton = new JRadioButton(Translation
-            .getTranslation("dialog.create_edit_profile.daily_sync"));
+            .getTranslation("exp.dialog.create_edit_profile.daily_sync"));
         dailyRadioButton.addActionListener(this);
 
         instantRadioButton = new JRadioButton(Translation
-            .getTranslation("dialog.create_edit_profile.instant_sync"));
+            .getTranslation("exp.dialog.create_edit_profile.instant_sync"));
         instantRadioButton.addActionListener(this);
 
         dayCombo = new JComboBox<>(new String[]{
-            Translation.getTranslation("dialog.create_edit_profile.every_day"),
+            Translation.getTranslation("exp.dialog.create_edit_profile.every_day"),
             Translation.getTranslation("general.sunday"),
             Translation.getTranslation("general.monday"),
             Translation.getTranslation("general.tuesday"),
@@ -280,8 +280,8 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             Translation.getTranslation("general.thursday"),
             Translation.getTranslation("general.friday"),
             Translation.getTranslation("general.saturday"),
-            Translation.getTranslation("dialog.create_edit_profile.weekdays"),
-            Translation.getTranslation("dialog.create_edit_profile.weekends")});
+            Translation.getTranslation("exp.dialog.create_edit_profile.weekdays"),
+            Translation.getTranslation("exp.dialog.create_edit_profile.weekends")});
         dayCombo.setMaximumRowCount(10);
 
         hourModel = new SpinnerNumberModel(12, 0, 23, 1);
@@ -358,11 +358,11 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
             if (copy == 0) {
                 profileNameCopy = Translation.getTranslation(
-                    "dialog.create_edit_profile.suggestNameTemplate0",
+                    "exp.dialog.create_edit_profile.suggestNameTemplate0",
                     profileName);
             } else {
                 profileNameCopy = Translation.getTranslation(
-                    "dialog.create_edit_profile.suggestNameTemplateN",
+                    "exp.dialog.create_edit_profile.suggestNameTemplateN",
                     profileName, String.valueOf(copy));
             }
 
@@ -549,9 +549,9 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
             if (syncProfile.getName().equals(profileName)) {
                 String title = Translation
-                    .getTranslation("dialog.create_edit_profile.duplicate_profile_title");
+                    .getTranslation("exp.dialog.create_edit_profile.duplicate_profile_title");
                 String message = Translation.getTranslation(
-                    "dialog.create_edit_profile.cannot_save_name", syncProfile
+                    "exp.dialog.create_edit_profile.cannot_save_name", syncProfile
                         .getName());
                 DialogFactory.genericDialog(getController(), title, message,
                     GenericDialogType.ERROR);
@@ -574,9 +574,9 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
             if (syncProfile.getConfiguration().equals(newConfiguration)) {
                 String title = Translation
-                    .getTranslation("dialog.create_edit_profile.duplicate_profile_title");
+                    .getTranslation("exp.dialog.create_edit_profile.duplicate_profile_title");
                 String message = Translation.getTranslation(
-                    "dialog.create_edit_profile.cannot_save_profile",
+                    "exp.dialog.create_edit_profile.cannot_save_profile",
                     syncProfile.getName());
                 DialogFactory.genericDialog(getController(), title, message,
                     GenericDialogType.ERROR);

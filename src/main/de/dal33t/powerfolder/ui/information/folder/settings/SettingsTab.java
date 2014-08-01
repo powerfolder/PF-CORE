@@ -301,7 +301,7 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         if (expertMode) {
             builder.addLabel(
-                Translation.getTranslation("settings_tab.download_script"),
+                Translation.getTranslation("exp.settings_tab.download_script"),
                 cc.xy(2, row));
             builder.add(createScriptField(), cc.xyw(4, row, 4));
         }
@@ -309,7 +309,7 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         if (expertMode) {
             builder.add(new JLabel(Translation
-                    .getTranslation("settings_tab.ignore_patterns")), cc.xy(2,
+                    .getTranslation("exp.settings_tab.ignore_patterns")), cc.xy(2,
                     row, "right, top"));
             builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
             row += 2;
@@ -448,7 +448,7 @@ public class SettingsTab extends PFUIComponent {
 
         JButton locationButton = new JButtonMini(
             Icons.getIconById(Icons.DIRECTORY),
-            Translation.getTranslation("settings_tab.download_script"));
+            Translation.getTranslation("exp.settings_tab.download_script"));
         locationButton.addActionListener(new SelectScriptAction());
         builder.add(locationButton, cc.xy(3, 1));
         builder.add(Help.createWikiLinkButton(getController(),
@@ -496,9 +496,9 @@ public class SettingsTab extends PFUIComponent {
         bar.add(Help.createWikiLinkButton(getController(),
             WikiLinks.EXCLUDING_FILES_FROM_SYNCHRONIZATION), cc.xy(4, 1));
         syncPatternsCheckBox = new JCheckBox(
-            Translation.getTranslation("settings_tab.sync_patterns"));
+            Translation.getTranslation("exp.settings_tab.sync_patterns"));
         syncPatternsCheckBox.setToolTipText(Translation
-            .getTranslation("settings_tab.sync_patterns.tip"));
+            .getTranslation("exp.settings_tab.sync_patterns.tip"));
         syncPatternsCheckBox.addActionListener(new MyActionListener());
         bar.add(syncPatternsCheckBox, cc.xy(5, 1));
         syncPatternsCheckBox.setVisible(true);
@@ -558,9 +558,9 @@ public class SettingsTab extends PFUIComponent {
         if (patternArray.length == 1) {
             String pattern = patternArray[0];
             String title = Translation
-                .getTranslation("settings_tab.add_a_pattern.title");
+                .getTranslation("exp.settings_tab.add_a_pattern.title");
             String text = Translation
-                .getTranslation("settings_tab.add_a_pattern.text");
+                .getTranslation("exp.settings_tab.add_a_pattern.text");
             String patternResult = (String) JOptionPane.showInputDialog(
                 getUIController().getActiveFrame(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null, pattern);
@@ -584,11 +584,11 @@ public class SettingsTab extends PFUIComponent {
                 sb.append(pattern + '\n');
             }
             String message = Translation
-                .getTranslation("settings_tab.add_patterns.text_1")
+                .getTranslation("exp.settings_tab.add_patterns.text_1")
                 + "\n\n"
                 + sb.toString();
             String title = Translation
-                .getTranslation("settings_tab.add_patterns.title");
+                .getTranslation("exp.settings_tab.add_patterns.title");
             int result = DialogFactory.genericDialog(getController(), title,
                 message, new String[]{Translation.getTranslation("general.ok"),
                     Translation.getTranslation("general.cancel")}, 0,
@@ -771,8 +771,8 @@ public class SettingsTab extends PFUIComponent {
         {
             int result = DialogFactory.genericDialog(getController(),
                 Translation
-                    .getTranslation("settings_tab.folder_not_empty.title"),
-                Translation.getTranslation("settings_tab.folder_not_empty",
+                    .getTranslation("exp.settings_tab.folder_not_empty.title"),
+                Translation.getTranslation("exp.settings_tab.folder_not_empty",
                     newDirectory.toAbsolutePath().toString()),
                 new String[]{Translation.getTranslation("general.continue"),
                     Translation.getTranslation("general.cancel")}, 1,
@@ -887,15 +887,15 @@ public class SettingsTab extends PFUIComponent {
             boolean osConfigured = serverClient.joinedByCloud(folder);
             if (osConfigured) {
                 confOSActionLabel.setText(Translation
-                    .getTranslation("action_stop_online_storage.name"));
+                    .getTranslation("exp.action_stop_online_storage.name"));
                 confOSActionLabel.setToolTipText(Translation
-                    .getTranslation("action_stop_online_storage.description"));
+                    .getTranslation("exp.action_stop_online_storage.description"));
             } else {
                 confOSActionLabel.setText(Translation
-                    .getTranslation("action_backup_online_storage.name"));
+                    .getTranslation("exp.action_backup_online_storage.name"));
                 confOSActionLabel
                     .setToolTipText(Translation
-                        .getTranslation("action_backup_online_storage.description"));
+                        .getTranslation("exp.action_backup_online_storage.description"));
             }
         }
         confOSAction.allowWith(FolderPermission.admin(folder.getInfo()));
@@ -912,14 +912,14 @@ public class SettingsTab extends PFUIComponent {
             enabled = true;
             if (folder.isPreviewOnly()) {
                 previewFolderActionLabel.setText(Translation
-                    .getTranslation("action_stop_preview_folder.name"));
+                    .getTranslation("exp.action_stop_preview_folder.name"));
                 previewFolderActionLabel.setToolTipText(Translation
-                    .getTranslation("action_stop_preview_folder.description"));
+                    .getTranslation("exp.action_stop_preview_folder.description"));
             } else {
                 previewFolderActionLabel.setText(Translation
-                    .getTranslation("action_preview_folder.name"));
+                    .getTranslation("exp.action_preview_folder.name"));
                 previewFolderActionLabel.setToolTipText(Translation
-                    .getTranslation("action_preview_folder.description"));
+                    .getTranslation("exp.action_preview_folder.description"));
             }
         }
         previewFolderActionLabel.getUIComponent().setVisible(enabled);
@@ -940,12 +940,12 @@ public class SettingsTab extends PFUIComponent {
                         int i = DialogFactory.genericDialog(
                             getController(),
                             Translation
-                                .getTranslation("settings_tab.offer_maintenance.title"),
+                                .getTranslation("exp.settings_tab.offer_maintenance.title"),
                             Translation
-                                .getTranslation("settings_tab.offer_maintenance.text"),
+                                .getTranslation("exp.settings_tab.offer_maintenance.text"),
                             new String[]{
                                 Translation
-                                    .getTranslation("settings_tab.offer_maintenance.cleanup_button"),
+                                    .getTranslation("exp.settings_tab.offer_maintenance.cleanup_button"),
                                 Translation.getTranslation("general.cancel")},
                             0, GenericDialogType.QUESTION);
                         if (i == 0) {
@@ -970,12 +970,12 @@ public class SettingsTab extends PFUIComponent {
                 .genericDialog(
                     controller,
                     Translation
-                        .getTranslation("settings_tab.preview_warning_title"),
+                        .getTranslation("exp.settings_tab.preview_warning_title"),
                     Translation
-                        .getTranslation("settings_tab.preview_warning_message"),
+                        .getTranslation("exp.settings_tab.preview_warning_message"),
                     new String[]{
                         Translation
-                            .getTranslation("settings_tab.preview_warning_convert"),
+                            .getTranslation("exp.settings_tab.preview_warning_convert"),
                         Translation.getTranslation("general.cancel")}, 0,
                     GenericDialogType.WARN);
 
@@ -1135,7 +1135,7 @@ public class SettingsTab extends PFUIComponent {
     private class PreviewFolderAction extends BaseAction {
 
         private PreviewFolderAction(Controller controller) {
-            super("action_preview_folder", controller);
+            super("exp.action_preview_folder", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1146,7 +1146,7 @@ public class SettingsTab extends PFUIComponent {
     private class FolderOnlineStorageAction extends BaseAction {
 
         private FolderOnlineStorageAction(Controller controller) {
-            super("action_backup_online_storage", controller);
+            super("exp.action_backup_online_storage", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1158,7 +1158,7 @@ public class SettingsTab extends PFUIComponent {
     private class MaintainFolderAction extends BaseAction {
 
         private MaintainFolderAction(Controller controller) {
-            super("action_maintain_folder_db", controller);
+            super("exp.action_maintain_folder_db", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1264,9 +1264,9 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             String text = Translation
-                .getTranslation("settings_tab.edit_a_pattern.text");
+                .getTranslation("exp.settings_tab.edit_a_pattern.text");
             String title = Translation
-                .getTranslation("settings_tab.edit_a_pattern.title");
+                .getTranslation("exp.settings_tab.edit_a_pattern.title");
 
             String pattern = (String) JOptionPane.showInputDialog(
                 UIUtil.getParentWindow(e), text, title,
@@ -1299,7 +1299,7 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             showAddPane(Translation
-                .getTranslation("settings_tab.add_a_pattern.example"));
+                .getTranslation("exp.settings_tab.add_a_pattern.example"));
         }
     }
 

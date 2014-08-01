@@ -117,7 +117,7 @@ public class NodesSelectTableModel implements TableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (nodes.isEmpty()) {
             return Translation
-                .getTranslation("friend_search.no_computers_found");
+                .getTranslation("exp.friend_search.no_computers_found");
         }
         int i = 0;
         for (Member node : nodes) {

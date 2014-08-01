@@ -104,7 +104,7 @@ public class TellFriendPanel extends PFWizardPanel {
         emailLabel.setIcon(Icons.getIconById(Icons.EMAIL_BUTTON));
 
         infoLabel = new LinkLabel(getController(), Translation
-            .getTranslation("pro.wizard.activation.learn_more"), Help
+            .getTranslation("wizard.activation.learn_more"), Help
             .getWikiArticleURL(getController(),
                 WikiLinks.REFERRAL_REWARD_SYSTEM));
         infoLabel.convertToBigLabel();

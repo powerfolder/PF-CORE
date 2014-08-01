@@ -95,7 +95,7 @@ public class FindComputersPanel extends PFUIComponent {
         addFriendAction = new AddFriendAction();
         connectAction = new MyConnectAction(controller);
         noResultsLabel = new JLabel(Translation
-            .getTranslation("friend_search.no_computers_found"),
+            .getTranslation("exp.friend_search.no_computers_found"),
             SwingConstants.CENTER);
         noResultsLabel.setEnabled(false);
     }
@@ -133,9 +133,9 @@ public class FindComputersPanel extends PFUIComponent {
         searchInput = new FilterTextField(
             15,
             Translation
-                .getTranslation("find_computers_panel.search_for_computer.hint"),
+                .getTranslation("exp.find_computers_panel.search_for_computer.hint"),
             Translation
-                .getTranslation("find_computers_panel.search_for_computer.tooltip"));
+                .getTranslation("exp.find_computers_panel.search_for_computer.tooltip"));
         searchInputVM = searchInput.getValueModel();
         searchInputVM.addValueChangeListener(new MySearchInputVMListener());
 
@@ -317,7 +317,7 @@ public class FindComputersPanel extends PFUIComponent {
     /** The hide offline user to perform on click on checkbox */
     private class HideOfflineAction extends BaseAction {
         private HideOfflineAction() {
-            super("action_hide_offline", FindComputersPanel.this
+            super("exp.action_hide_offline", FindComputersPanel.this
                 .getController());
         }
 

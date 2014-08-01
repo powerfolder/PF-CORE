@@ -1514,7 +1514,7 @@ public class MainFrame extends PFUIComponent {
     private class MyOpenTransfersAction extends BaseAction {
 
         private MyOpenTransfersAction(Controller controller) {
-            super("action_open_transfers_information", controller);
+            super("exp.action_open_transfers_information", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

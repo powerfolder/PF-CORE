@@ -74,7 +74,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
      * @return
      */
     public String getTitle() {
-        return Translation.getTranslation("dialog.delete_profile.title");
+        return Translation.getTranslation("exp.dialog.delete_profile.title");
     }
 
     /**

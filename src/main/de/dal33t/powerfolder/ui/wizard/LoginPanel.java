@@ -193,7 +193,7 @@ public class LoginPanel extends PFWizardPanel {
         if (client.supportsWebRegistration()) {
             LinkLabel signupLabel = new LinkLabel(getController(),
                 Translation
-                    .getTranslation("pro.wizard.activation.register_now"),
+                    .getTranslation("wizard.activation.register_now"),
                 client.getRegisterURL());
             signupLabel.convertToBigLabel();
             builder.add(signupLabel.getUIComponent(), cc.xy(5, row));
@@ -208,7 +208,7 @@ public class LoginPanel extends PFWizardPanel {
         if (client.supportsRecoverPassword()) {
             LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
                 Translation
-                    .getTranslation("wizard.webservice.recover_password"),
+                    .getTranslation("exp.wizard.webservice.recover_password"),
                 client.getRecoverPasswordURL());
             recoverPasswordLabel.convertToBigLabel();
             builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
@@ -443,7 +443,7 @@ public class LoginPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.webservice.login");
+        return Translation.getTranslation("exp.wizard.webservice.login");
     }
 
     private void updateOnlineStatus() {
