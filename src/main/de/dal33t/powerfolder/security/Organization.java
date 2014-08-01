@@ -117,6 +117,10 @@ public class Organization implements Serializable {
         this.maxUsers = maxUsers;
     }
 
+    public void setUnlimitedUsers() {
+        this.maxUsers = UNLIMITED_USERS;
+    }
+
     public boolean hasMaxUsers() {
         return this.maxUsers > 0 && this.maxUsers != UNLIMITED_USERS;
     }
