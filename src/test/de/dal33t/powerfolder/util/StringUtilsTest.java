@@ -94,4 +94,14 @@ public class StringUtilsTest {
             StringUtils.join(" -> ", "from here", "to there", "and back"));
     }
 
+    @Test
+    public void testCountChar() {
+        String input0c = "snfsnsdn";
+        String input5c = "123,1451,1,,,15155";
+
+        assertEquals(5, StringUtils.countChar(input5c, ','));
+        assertEquals(6, StringUtils.countChar(input5c, '1'));
+        assertEquals(0, StringUtils.countChar(input0c, ','));
+        assertEquals(3, StringUtils.countChar(input0c, 's'));
+    }
 }
