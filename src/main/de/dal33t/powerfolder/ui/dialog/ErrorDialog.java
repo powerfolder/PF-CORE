@@ -114,7 +114,7 @@ public class ErrorDialog extends PFUIComponent {
 
     protected JButton createDetailsButton(ActionListener listener) {
         JButton detailsButton = new JButton(Translation
-            .getTranslation("preferences.dyn_dns.error_expand_button"));
+            .getTranslation("exp.preferences.dyn_dns.error_expand_button"));
         detailsButton.addActionListener(listener);
         return detailsButton;
     }
@@ -186,7 +186,7 @@ public class ErrorDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         if (kindOfError == ErrorManager.WARN) {
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dyn_dns_update_warning")
+                .getTranslation("exp.preferences.dyn_dns_update_warning")
                 + "  "
                 + getController().getDynDnsManager().activeDynDns
                     .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
@@ -194,7 +194,7 @@ public class ErrorDialog extends PFUIComponent {
         }
         if (kindOfError == ErrorManager.ERROR) {
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dyn_dns.update_error")
+                .getTranslation("exp.preferences.dyn_dns.update_error")
                 + "  "
                 + getController().getDynDnsManager().activeDynDns
                     .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
@@ -244,11 +244,11 @@ public class ErrorDialog extends PFUIComponent {
         if (downPanel.isVisible()) {
             expand();
             detailsButton.setText(Translation
-                .getTranslation("preferences.dyn_dns.error_shrink_button"));
+                .getTranslation("exp.preferences.dyn_dns.error_shrink_button"));
         } else {
             shrink();
             detailsButton.setText(Translation
-                .getTranslation("preferences.dyn_dns.error_expand_button"));
+                .getTranslation("exp.preferences.dyn_dns.error_expand_button"));
         }
     }
 

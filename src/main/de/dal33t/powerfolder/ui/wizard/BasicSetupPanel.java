@@ -87,7 +87,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(
-            Translation.getTranslation("wizard.basic_setup.computer_name"),
+            Translation.getTranslation("exp.wizard.basic_setup.computer_name"),
             cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
         builder.addLabel(
@@ -95,7 +95,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             cc.xywh(1, 3, 1, 1, "default, top"));
         builder.add(wanLineSpeed.getUiComponent(), cc.xy(3, 3));
         builder.addLabel(
-            Translation.getTranslation("wizard.basic_setup.language_restart"),
+            Translation.getTranslation("exp.wizard.basic_setup.language_restart"),
             cc.xy(1, 5));
         builder.add(languageChooser, cc.xy(3, 5));
         builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 7, 2));
@@ -200,7 +200,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.basic_setup.title");
+        return Translation.getTranslation("exp.wizard.basic_setup.title");
     }
 
     // Helper classes *********************************************************

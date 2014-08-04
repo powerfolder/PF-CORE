@@ -97,7 +97,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
             .getFoldersBasedir()
             .resolve(
                 Translation
-                    .getTranslation("wizard.basic_setup.default_folder_name"));
+                    .getTranslation("exp.wizard.basic_setup.default_folder_name"));
 
         if (Files.exists(defaultSynchronizedFolder)) {
             // Hmmm. User has already created this???

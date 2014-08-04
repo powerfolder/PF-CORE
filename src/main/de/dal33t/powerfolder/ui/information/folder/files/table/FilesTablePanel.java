@@ -697,7 +697,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private class AbortDownloadAction extends BaseAction {
 
         private AbortDownloadAction(Controller controller) {
-            super("action_abort_download", controller);
+            super("exp.action_abort_download", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

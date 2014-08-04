@@ -62,7 +62,7 @@ public class TellFriendEmailPanel extends PFWizardPanel {
         int row = 1;
 
         builder.add(new JLabel(Translation
-            .getTranslation("wizard.tell_friend.add_email_address")), cc.xyw(1,
+            .getTranslation("exp.wizard.tell_friend.add_email_address")), cc.xyw(1,
             row, 2));
         row += 2;
 
@@ -72,7 +72,7 @@ public class TellFriendEmailPanel extends PFWizardPanel {
         row += 2;
 
         builder.add(new JLabel(Translation
-            .getTranslation("wizard.tell_friend.personal_message")), cc.xyw(1,
+            .getTranslation("exp.wizard.tell_friend.personal_message")), cc.xyw(1,
             row, 2));
         row += 2;
 
@@ -84,7 +84,7 @@ public class TellFriendEmailPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.tell_friend.title");
+        return Translation.getTranslation("exp.wizard.tell_friend.title");
     }
 
     protected void initComponents() {
@@ -103,8 +103,8 @@ public class TellFriendEmailPanel extends PFWizardPanel {
 
     public WizardPanel next() {
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.tell_friend.title"), Translation
-                .getTranslation("wizard.tell_friend.success"), true);
+            Translation.getTranslation("exp.wizard.tell_friend.title"), Translation
+                .getTranslation("exp.wizard.tell_friend.success"), true);
         Runnable r = new Runnable() {
             public void run() {
                 String[] emails = emailTextArea.getText().split("\n");
@@ -113,8 +113,8 @@ public class TellFriendEmailPanel extends PFWizardPanel {
             }
         };
         return new SwingWorkerPanel(getController(), r, Translation
-            .getTranslation("wizard.tell_friend.sending"), Translation
-            .getTranslation("wizard.tell_friend.sending"), successPanel);
+            .getTranslation("exp.wizard.tell_friend.sending"), Translation
+            .getTranslation("exp.wizard.tell_friend.sending"), successPanel);
     }
 
     public boolean validateNext() {
@@ -127,9 +127,9 @@ public class TellFriendEmailPanel extends PFWizardPanel {
                         .genericDialog(
                             getController(),
                             Translation
-                                .getTranslation("wizard.tell_friend.title.warning_title"),
+                                .getTranslation("exp.wizard.tell_friend.title.warning_title"),
                             Translation.getTranslation(
-                                "wizard.tell_friend.title.warning_bad_email",
+                                "exp.wizard.tell_friend.title.warning_bad_email",
                                 email), GenericDialogType.ERROR);
                     return false;
                 }

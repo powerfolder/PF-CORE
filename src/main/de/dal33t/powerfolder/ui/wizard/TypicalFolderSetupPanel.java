@@ -172,6 +172,6 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.typical_folder_setup.title");
+        return Translation.getTranslation("exp.wizard.typical_folder_setup.title");
     }
 }

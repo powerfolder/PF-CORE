@@ -1812,7 +1812,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private class MyClearCompletedDownloadsAction extends BaseAction {
 
         private MyClearCompletedDownloadsAction(Controller controller) {
-            super("action_clear_completed_downloads", controller);
+            super("exp.action_clear_completed_downloads", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1872,7 +1872,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     @SuppressWarnings("serial")
     private class BackupOnlineStorageAction extends BaseAction {
         private BackupOnlineStorageAction(Controller controller) {
-            super("action_backup_online_storage", controller);
+            super("exp.action_backup_online_storage", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1886,7 +1886,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     @SuppressWarnings("serial")
     private class StopOnlineStorageAction extends BaseAction {
         private StopOnlineStorageAction(Controller controller) {
-            super("action_stop_online_storage", controller);
+            super("exp.action_stop_online_storage", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

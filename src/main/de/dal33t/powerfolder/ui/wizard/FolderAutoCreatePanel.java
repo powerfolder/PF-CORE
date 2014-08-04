@@ -187,7 +187,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
 
         // Cloud space
         inviteCB = new JCheckBox(Translation.getTranslation(
-                "wizard.choose_disk_location.send_invitation"));
+                "exp.wizard.choose_disk_location.send_invitation"));
         inviteCB.setOpaque(false);
 
         // Undo link

@@ -157,16 +157,16 @@ public class TrayIconManager extends PFComponent {
             // State changed, notify ui.
             String notificationText;
             String title = Translation
-                .getTranslation("tray_icon_manager.status_change.title");
+                .getTranslation("exp.tray_icon_manager.status_change.title");
             if (connected && loggedIn) {
                 notificationText = Translation
-                    .getTranslation("tray_icon_manager.status_change.connected");
+                    .getTranslation("exp.tray_icon_manager.status_change.connected");
             } else if (!getController().getNodeManager().isStarted()) {
                 notificationText = Translation
-                    .getTranslation("tray_icon_manager.status_change.disabled");
+                    .getTranslation("exp.tray_icon_manager.status_change.disabled");
             } else {
                 notificationText = Translation
-                    .getTranslation("tray_icon_manager.status_change.connecting");
+                    .getTranslation("exp.tray_icon_manager.status_change.connecting");
             }
             uiController
                 .getApplicationModel()

@@ -173,7 +173,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Please select invite...
         builder.addLabel(Translation
-            .getTranslation("wizard.load_invitation.select_file"), cc.xy(3, 1));
+            .getTranslation("exp.wizard.load_invitation.select_file"), cc.xy(3, 1));
 
         // Invite selector
         builder.add(locationField, cc.xyw(3, 3, 2));
@@ -233,7 +233,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Invite selector
         locationField = FileSelectorFactory.createFileSelectionField(
-            Translation.getTranslation("wizard.load_invitation.choose_file"),
+            Translation.getTranslation("exp.wizard.load_invitation.choose_file"),
             locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
                 .createInvitationsFilefilter(), true);
         locationField.setOpaque(false);
@@ -287,7 +287,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("wizard.load_invitation.select");
+        return Translation.getTranslation("exp.wizard.load_invitation.select");
     }
 
     private void loadInvitation(String file) {

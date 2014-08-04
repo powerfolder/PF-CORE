@@ -47,7 +47,7 @@ public enum TransferProblem {
     /**
      * This one is too general.
      */
-    GENERAL_EXCEPTION("transfer.problem.general.exception");
+    GENERAL_EXCEPTION("exp.transfer.problem.general.exception");
 
     /** Translation id that should be in the Translation.properties file */
     private String translationId;

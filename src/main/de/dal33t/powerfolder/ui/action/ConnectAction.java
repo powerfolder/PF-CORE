@@ -45,7 +45,7 @@ public class ConnectAction extends BaseAction {
         .getName());
 
     public ConnectAction(Controller controller) {
-        super("action_connect", controller);
+        super("exp.action_connect", controller);
     }
 
     public void setInputConnect(String conStr) {
@@ -58,8 +58,8 @@ public class ConnectAction extends BaseAction {
             parent = getUIController().getMainFrame().getUIComponent();
         }
         Object input = JOptionPane.showInputDialog(parent, Translation
-            .getTranslation("connect.dialog.text"), Translation
-            .getTranslation("connect.dialog.title"),
+            .getTranslation("exp.connect.dialog.text"), Translation
+            .getTranslation("exp.connect.dialog.title"),
             JOptionPane.QUESTION_MESSAGE, null, null, getController()
                 .getPreferences().get("input.lastconnect", ""));
         if (StringUtils.isBlank((String) input)) {

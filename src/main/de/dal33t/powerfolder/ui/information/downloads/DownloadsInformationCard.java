@@ -100,7 +100,7 @@ public class DownloadsInformationCard extends InformationCard implements
      * @return
      */
     public String getCardTitle() {
-        return Translation.getTranslation("downloads_information_card.title");
+        return Translation.getTranslation("exp.downloads_information_card.title");
     }
 
     /**
@@ -122,7 +122,7 @@ public class DownloadsInformationCard extends InformationCard implements
     private void initialize() {
         cleanupLabel = new JLabel();
         cleanupLabel.setToolTipText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.frequency_tip"));
+                "exp.downloads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController(),
             openDownloadAction, abortDownloadsAction,
@@ -189,7 +189,7 @@ public class DownloadsInformationCard extends InformationCard implements
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
         cleanupSlider.setToolTipText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.frequency_tip"));
+                "exp.downloads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
@@ -277,14 +277,14 @@ public class DownloadsInformationCard extends InformationCard implements
         getController().saveConfig();
         if (cleanupSlider.getValue() == 0) {
             cleanupLabel.setText(Translation.getTranslation(
-                    "downloads_information_card.auto_cleanup.immediate"));
+                    "exp.downloads_information_card.auto_cleanup.immediate"));
         } else if (cleanupSlider.getValue() >= 4) {
             cleanupLabel.setText(Translation.getTranslation(
-                    "downloads_information_card.auto_cleanup.never"));
+                    "exp.downloads_information_card.auto_cleanup.never"));
         } else {
             int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider.getValue()];
             cleanupLabel.setText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.days",
+                "exp.downloads_information_card.auto_cleanup.days",
                     String.valueOf(trueCleanupDays)));
         }
     }
@@ -331,7 +331,7 @@ public class DownloadsInformationCard extends InformationCard implements
     private class AbortDownloadAction extends BaseAction {
 
         AbortDownloadAction() {
-            super("action_abort_download", DownloadsInformationCard.this
+            super("exp.action_abort_download", DownloadsInformationCard.this
                 .getController());
         }
 
@@ -385,7 +385,7 @@ public class DownloadsInformationCard extends InformationCard implements
      */
     private class ClearCompletedDownloadsAction extends BaseAction {
         ClearCompletedDownloadsAction(Controller controller) {
-            super("action_clear_completed_downloads", controller);
+            super("exp.action_clear_completed_downloads", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

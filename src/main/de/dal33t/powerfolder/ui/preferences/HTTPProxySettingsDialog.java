@@ -71,7 +71,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     public void open() {
         if (dialog == null) {
             dialog = new JDialog(parentFrame, Translation
-                .getTranslation("pro.http.options.title"),
+                .getTranslation("http.options.title"),
                 ModalityType.APPLICATION_MODAL);
             dialog.setContentPane(getUIComponent());
             dialog.pack();
@@ -104,21 +104,21 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             builder.add(httpProxyButton, cc.xyw(1, row, 3));
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("pro.http.options.host"), cc.xy(1, row));
+                .getTranslation("http.options.host"), cc.xy(1, row));
             builder.add(proxyHostField, cc.xy(3, row));
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("pro.http.options.port"), cc.xy(1, row));
+                .getTranslation("http.options.port"), cc.xy(1, row));
             builder.add(proxyPortField, cc.xy(3, row));
             row += 2;
             builder.add(useUserAndPasswordBox, cc.xy(3, row));
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("pro.http.options.username"), cc.xy(1, row));
+                .getTranslation("http.options.username"), cc.xy(1, row));
             builder.add(proxyUsernameField, cc.xy(3, row));
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("pro.http.options.password"), cc.xy(1, row));
+                .getTranslation("http.options.password"), cc.xy(1, row));
             builder.add(proxyPasswordField, cc.xy(3, row));
             row += 2;
             builder.add(buttonBar, cc.xyw(1, row, 3));
@@ -151,12 +151,12 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
         // Proxy select
         directButton = BasicComponentFactory.createRadioButton(proxyTypeModel,
             Proxy.Type.DIRECT, Translation
-                .getTranslation("pro.http.options.directconnect"));
+                .getTranslation("http.options.directconnect"));
         directButton.setOpaque(false);
 
         httpProxyButton = BasicComponentFactory.createRadioButton(
             proxyTypeModel, Proxy.Type.HTTP, Translation
-                .getTranslation("pro.http.options.httpproxy"));
+                .getTranslation("http.options.httpproxy"));
         httpProxyButton.setOpaque(false);
 
         // Proxy data
@@ -169,7 +169,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             "####0"));
 
         useUserAndPasswordBox = new JCheckBox(Translation
-            .getTranslation("pro.http.options.withauth"));
+            .getTranslation("http.options.withauth"));
         useUserAndPasswordBox.setOpaque(false);
         useUserAndPasswordBox
             .setSelected(tempProxyUsernameModel.getValue() != null);

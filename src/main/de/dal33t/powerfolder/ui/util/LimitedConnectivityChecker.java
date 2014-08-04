@@ -283,12 +283,12 @@ public class LimitedConnectivityChecker {
                 }
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                         controllerArg, Translation
-                        .getTranslation("limited_connection.title"),
-                        Translation.getTranslation("limited_connection.text",
+                        .getTranslation("exp.limited_connection.title"),
+                        Translation.getTranslation("exp.limited_connection.text",
                                 wikiLink), new String[]{Translation
                         .getTranslation("general.ok")}, 0,
                         GenericDialogType.INFO, Translation
-                        .getTranslation("limited_connection.dont_autodetect"));
+                        .getTranslation("exp.limited_connection.dont_autodetect"));
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY.setValue(controllerArg, false);
                     log.warning("store do not show this dialog again");

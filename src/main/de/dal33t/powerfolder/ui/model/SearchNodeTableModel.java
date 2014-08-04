@@ -70,11 +70,11 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     private Comparator<Member> comparator;
 
     private static final String[] COLUMN_NAMES = {
-        Translation.getTranslation("friend_search.node_table.name"),
-        Translation.getTranslation("friend_search.node_table.account"),
-        Translation.getTranslation("friend_search.node_table.last_seen_online"),
-        Translation.getTranslation("friend_search.node_table.ip"),
-        Translation.getTranslation("friend_search.node_table.on_local_network")};
+        Translation.getTranslation("exp.friend_search.node_table.name"),
+        Translation.getTranslation("exp.friend_search.node_table.account"),
+        Translation.getTranslation("exp.friend_search.node_table.last_seen_online"),
+        Translation.getTranslation("exp.friend_search.node_table.ip"),
+        Translation.getTranslation("exp.friend_search.node_table.on_local_network")};
 
     /**
      * Initalizes the node table model which contains user/nodes

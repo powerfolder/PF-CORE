@@ -396,7 +396,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
     private class MyConfigureAction extends BaseAction {
 
         private MyConfigureAction(Controller controller) {
-            super("action_configure_transfer_mode", controller);
+            super("exp.action_configure_transfer_mode", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -410,7 +410,7 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
     private class MyDeleteAction extends BaseAction {
 
         private MyDeleteAction(Controller controller) {
-            super("action_delete_transfer_mode", controller);
+            super("exp.action_delete_transfer_mode", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

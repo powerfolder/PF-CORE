@@ -73,7 +73,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.information.title");
+        return Translation.getTranslation("exp.preferences.information.title");
     }
 
     public boolean needsRestart() {
@@ -90,7 +90,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     private static JPanel createTeamPanel() {
     return createTextBox(
-        Translation.getTranslation("preferences.information.team"),
+        Translation.getTranslation("exp.preferences.information.team"),
         "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\n");
     }
 
@@ -124,11 +124,11 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         }
 
         JButton activateButton = new JButton(
-            Translation.getTranslation("preferences.information.activate_text"));
+            Translation.getTranslation("exp.preferences.information.activate_text"));
         activateButton.setToolTipText(Translation
-            .getTranslation("preferences.information.activate_tips"));
+            .getTranslation("exp.preferences.information.activate_tips"));
         activateButton.setMnemonic(Translation
-            .getTranslation("preferences.information.activate_key").trim().charAt(0));
+            .getTranslation("exp.preferences.information.activate_key").trim().charAt(0));
         Action action = getController().getUIController().getApplicationModel()
                 .getLicenseModel().getActivationAction();
         if (action != null) {
@@ -144,7 +144,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     private static JPanel createTranslators() {
         return createTextBox(
-            Translation.getTranslation("preferences.information.translators"),
+            Translation.getTranslation("exp.preferences.information.translators"),
             "Bayan El Ameen\n" + "Cecilia Saltori\n" + "Javier Isassi\n"
                 + "Keblo\n" + "Olle Wikstrom\n" + "Zhang Jia\n ");
     }
@@ -204,35 +204,35 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         long dbSize = Debug.countDataitems(getController());
 
         return createTextBox(
-            Translation.getTranslation("preferences.information.your_system_title"),
-            Translation.getTranslation("preferences.information.your_system_java_version",
+            Translation.getTranslation("exp.preferences.information.your_system_title"),
+            Translation.getTranslation("exp.preferences.information.your_system_java_version",
                 JavaVersion.systemVersion().toString())
                 + '\n'
-                + Translation.getTranslation("preferences.information.your_system_os",
+                + Translation.getTranslation("exp.preferences.information.your_system_os",
                     System.getProperty("os.name"))
                 + " ("
                 + (OSUtil.is64BitPlatform() ? "64bit" : "32bit")
                 + ')'
                 + '\n'
-                + Translation.getTranslation("preferences.information.screen",
+                + Translation.getTranslation("exp.preferences.information.screen",
                     String.valueOf(dim.width), String.valueOf(dim.height))
                 + '\n'
                 + Translation.getTranslation(
-                    "preferences.information.power_folder_max",
+                    "exp.preferences.information.power_folder_max",
                     String
                         .valueOf(Runtime.getRuntime().maxMemory() / 1024 / 1024))
                 + '\n'
                 + Translation.getTranslation(
-                    "preferences.information.power_folder_used",
+                    "exp.preferences.information.power_folder_used",
                     String
                         .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
                 + '\n'
                 + Translation.getTranslation(
-                    "preferences.information.power_folder_data_size",
+                    "exp.preferences.information.power_folder_data_size",
                     Format.formatBytesShort(calculateTotalLocalSharedSize()))
                 + '\n'
                 + Translation.getTranslation(
-                    "preferences.information.power_folder_db_size", String.valueOf(dbSize)));
+                    "exp.preferences.information.power_folder_db_size", String.valueOf(dbSize)));
     }
 
     private String readLicense() {
@@ -242,7 +242,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                 .getApplicationModel().getLicenseModel().getLicenseKeyModel()
                 .getValue();
             return licKey != null ? Translation.getTranslation(
-                "preferences.information.power_folder_license",
+                "exp.preferences.information.power_folder_license",
                 licKey.toString()) : "";
         }
         return "";
@@ -263,19 +263,19 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
         return createTextBox(
                 Translation.getTranslation("general.application.name"),
-                Translation.getTranslation("preferences.information.power_folder_text",
+                Translation.getTranslation("exp.preferences.information.power_folder_text",
                         Controller.PROGRAM_VERSION)
                         + '\n'
                         + Translation.getTranslation(
-                        "preferences.information.power_folder_build_date", buildDate)
+                        "exp.preferences.information.power_folder_build_date", buildDate)
                         + '\n'
                         + Translation.getTranslation(
-                        "preferences.information.power_folder_build_time", buildTime)
+                        "exp.preferences.information.power_folder_build_time", buildTime)
                         + '\n'
                         + Translation.getTranslation(
-                        "preferences.information.power_folder_distribution",
+                        "exp.preferences.information.power_folder_distribution",
                         getController().getDistribution().getName()) + '\n'
-                        + Translation.getTranslation("preferences.information.config_name", config)
+                        + Translation.getTranslation("exp.preferences.information.config_name", config)
                         + '\n' +
                         readLicense(),
                 createActivateButton()
@@ -331,14 +331,14 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         CellConstraints cc = new CellConstraints();
 
         builder.add(TextLinesPanelBuilder.createTextPanel(
-            Translation.getTranslation("preferences.information.app_description"),
+            Translation.getTranslation("exp.preferences.information.app_description"),
             HEADER_FONT_SIZE), cc.xy(1, 1));
         builder.add(createHomeLink().getUIComponent(), cc.xy(1, 3));
         builder.add(createDocLink().getUIComponent(), cc.xy(1, 5));
         builder.add(createSupportLink().getUIComponent(), cc.xy(1, 7));
 
         TitledBorder titledBorder = new TitledBorder(
-            Translation.getTranslation("preferences.information.general_information"));
+            Translation.getTranslation("exp.preferences.information.general_information"));
         titledBorder.setTitleColor(Color.BLACK);
         builder.setBorder(new CompoundBorder(titledBorder, new EmptyBorder(2,
             2, 2, 2)));
@@ -350,7 +350,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     private LinkLabel createHomeLink() {
         LinkLabel homeLink =  new LinkLabel(getController(),
-            Translation.getTranslation("preferences.information.home_page"),
+            Translation.getTranslation("exp.preferences.information.home_page"),
             ConfigurationEntry.PROVIDER_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize(homeLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
@@ -365,7 +365,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                 .getValue(getController());
         }
         LinkLabel docLink = new LinkLabel(getController(),
-            Translation.getTranslation("preferences.information.documentation"),
+            Translation.getTranslation("exp.preferences.information.documentation"),
             docLinkStr);
         docLink.setVisible(StringUtils.isNotBlank(docLinkStr));
         SimpleComponentFactory.setFontSize(docLink.getUIComponent(),
@@ -375,7 +375,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
     private LinkLabel createSupportLink() {
         LinkLabel supportLink = new LinkLabel(getController(),
-            Translation.getTranslation("preferences.information.support"),
+            Translation.getTranslation("exp.preferences.information.support"),
             ConfigurationEntry.PROVIDER_SUPPORT_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize(supportLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);

@@ -269,7 +269,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         //builder.add(updateCheck, cc.xy(3, 1));
-        builder.add(new JLabel(Translation.getTranslation("preferences.information.power_folder_text",
+        builder.add(new JLabel(Translation.getTranslation("exp.preferences.information.power_folder_text",
             Controller.PROGRAM_VERSION)), cc.xy(1,1));
         builder.add(createCheckForUpdatesButton(), cc.xy(1, 3));
         return builder.getPanel();
