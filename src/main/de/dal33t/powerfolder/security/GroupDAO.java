@@ -75,6 +75,12 @@ public interface GroupDAO extends GenericDAO<Group> {
     Group findByLdapDN(String ldapDN);
 
     /**
+     * @param ldapDNSuffix
+     * @return A list of all groups where the LDAP DN end with {@code ldapDNSuffix}.
+     */
+    List<Group> findByLdapDNSuffix(String ldapDNSuffix);
+
+    /**
      * Get all groups, that have an LDAP distinguished name set. PFS-420
      * 
      * @param groupSearchBase
