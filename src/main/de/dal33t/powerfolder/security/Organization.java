@@ -55,6 +55,7 @@ public class Organization implements Serializable {
     public static final String FILTER_MATCH_ALL = "/ALL/";
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_NAME = "name";
+    public static final String PROPERTYNAME_LDAPDN = "ldapDN";
     public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_OSS = "osSubscription";
     public static final String PROPERTYNAME_MAX_USERS = "maxUsers";
