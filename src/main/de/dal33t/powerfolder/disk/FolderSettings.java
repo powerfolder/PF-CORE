@@ -410,7 +410,7 @@ public class FolderSettings {
                 .getBytes())));
         }
 
-        config.setProperty(PREFIX_V4 + entryId + NAME, folderInfo.name);
+        config.setProperty(PREFIX_V4 + entryId + NAME, folderInfo.getName());
         config.setProperty(PREFIX_V4 + entryId + ID, folderInfo.id);
         String baseDir = localBaseDirStr;
         if (StringUtils.isBlank(baseDir)) {

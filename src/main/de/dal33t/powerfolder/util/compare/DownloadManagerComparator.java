@@ -67,8 +67,8 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
                     return s1 - s2 > 0 ? 1 : -1;
                 }
             case BY_FOLDER :
-                return o1.getFileInfo().getFolderInfo().name.compareTo(o2
-                    .getFileInfo().getFolderInfo().name);
+                return o1.getFileInfo().getFolderInfo().getName().compareTo(o2
+                    .getFileInfo().getFolderInfo().getName());
             case BY_MEMBER :
                 if (o1.getSources().size() > 1 && o1.getSources().size() > 1) {
                     return 0;

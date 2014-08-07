@@ -68,7 +68,7 @@ public class FolderDBDebug {
         FolderInfo folderInfo = files.length > 0
             ? files[0].getFolderInfo()
             : null;
-        String fName = folderInfo != null ? folderInfo.name : "-unknown-";
+        String fName = folderInfo != null ? folderInfo.getLocalizedName() : "-unknown-";
 
         long totalSize = 0;
         for (FileInfo fileInfo : files) {

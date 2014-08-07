@@ -713,7 +713,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     @Override
     public String toString() {
-        return '[' + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
+        return '[' + folderInfo.getName() + "]:" + (deleted ? "(del) /" : "/")
             + fileName;
     }
 

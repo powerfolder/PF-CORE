@@ -48,7 +48,7 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
         // Minutes
         if (time <= 59) {
             return Translation.getTranslation(
-                "folder_problem.unsynchronized_minutes", folderInfo.name,
+                "folder_problem.unsynchronized_minutes", folderInfo.getLocalizedName(),
                 String.valueOf(time));
         }
 
@@ -56,14 +56,14 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
         time /= 60;
         if (time <= 23) {
             return Translation.getTranslation(
-                "folder_problem.unsynchronized_hours", folderInfo.name,
+                "folder_problem.unsynchronized_hours", folderInfo.getLocalizedName(),
                 String.valueOf(time));
         }
 
         // Days
         time /= 24;
         return Translation.getTranslation("folder_problem.unsynchronized",
-            folderInfo.name, String.valueOf(time));
+            folderInfo.getLocalizedName(), String.valueOf(time));
     }
 
     public String getWikiLinkKey() {

@@ -665,7 +665,7 @@ public class TransferManager extends PFComponent {
             for (Upload upload : queuedUploads) {
                 if (foInfo.equals(upload.getFile().getFolderInfo())) {
                     uploadBroken(upload, TransferProblem.FOLDER_REMOVED,
-                        foInfo.name);
+                        foInfo.getName());
                 }
             }
         }
@@ -674,14 +674,14 @@ public class TransferManager extends PFComponent {
             for (Upload upload : activeUploads) {
                 if (foInfo.equals(upload.getFile().getFolderInfo())) {
                     uploadBroken(upload, TransferProblem.FOLDER_REMOVED,
-                        foInfo.name);
+                        foInfo.getName());
                 }
             }
         }
 
         for (DownloadManager man : dlManagers.values()) {
             if (foInfo.equals(man.getFileInfo().getFolderInfo())) {
-                man.setBroken(TransferProblem.FOLDER_REMOVED, foInfo.name);
+                man.setBroken(TransferProblem.FOLDER_REMOVED, foInfo.getName());
             }
         }
     }

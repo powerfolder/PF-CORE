@@ -157,13 +157,13 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
             }
         }
         Reject.ifNull(folderInfo, "Expecting a single folder info");
-        folderTextField.setText(folderInfo.name);
+        folderTextField.setText(folderInfo.getLocalizedName());
         boolean showAppData = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
         Map<String, UserDirectory> userDirectoryMap = UserDirectories
             .getUserDirectoriesFiltered(getController(), showAppData);
         for (String s : userDirectoryMap.keySet()) {
-            if (s.equals(folderInfo.name)) {
+            if (s.equals(folderInfo.getName())) {
                 UserDirectory userDirectory = userDirectoryMap.get(s);
                 localFolderField.setText(userDirectory.getDirectory()
                     .toAbsolutePath().toString());

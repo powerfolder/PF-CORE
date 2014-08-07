@@ -197,7 +197,7 @@ public class Invitation extends FolderRelatedMessage {
         if (suggestedLocalBasePath == null) {
             return controller.getFolderRepository()
                 .getFoldersBasedir().resolve(
-                PathUtils.removeInvalidFilenameChars(folder.name));
+                PathUtils.removeInvalidFilenameChars(folder.getName()));
         }
 
         if (OSUtil.isLinux() || OSUtil.isMacOS()) {

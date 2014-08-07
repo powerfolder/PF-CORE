@@ -128,9 +128,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 testFolder = createRandomFolder("r-" + (i + 1));
             }
             Path folderDirBart = TESTFOLDER_BASEDIR_BART
-                .resolve(testFolder.name);
+                .resolve(testFolder.getName());
             Path folderDirLisa = TESTFOLDER_BASEDIR_LISA
-                .resolve(testFolder.name);
+                .resolve(testFolder.getName());
             System.err.println("Joining folder: " + testFolder);
             // joinFolder(testFolder, folderDirBart, folderDirLisa);
 

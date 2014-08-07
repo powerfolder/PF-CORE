@@ -188,7 +188,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         builder.addLabel(Translation.getTranslation(
             "wizard.folder_invitation.intro", invitation.getInvitorUsername(),
-            invitation.folder.name), cc.xyw(1, 1, 4));
+            invitation.folder.getLocalizedName()), cc.xyw(1, 1, 4));
 
         // Message
 
@@ -286,7 +286,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         log.info("Loaded invitation " + invitation);
         if (invitation != null) {
             folderHintLabel.setEnabled(true);
-            folderNameLabel.setText(invitation.folder.name);
+            folderNameLabel.setText(invitation.folder.getLocalizedName());
 
             invitorHintLabel.setEnabled(true);
             invitorLabel.setText(invitation.getInvitorUsername());

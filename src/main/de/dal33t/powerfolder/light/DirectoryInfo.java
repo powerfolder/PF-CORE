@@ -72,7 +72,7 @@ public class DirectoryInfo extends FileInfo {
 
     @Override
     public String toString() {
-        return '[' + getFolderInfo().name + "]:"
+        return '[' + getFolderInfo().getLocalizedName() + "]:"
             + (isDeleted() ? "(del) /" : "/") + getRelativeName() + " (D)";
     }
 

@@ -985,7 +985,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (folderSettings.isPreviewOnly()) {
             // Need to use preview folder settings.
             FolderSettings previewFolderSettings = FolderPreviewHelper
-                .createPreviewFolderSettings(folderInfo.name);
+                .createPreviewFolderSettings(folderInfo.getName());
             folder = new Folder(getController(), folderInfo,
                 previewFolderSettings);
         } else {
@@ -1035,7 +1035,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             metaFolder.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
             metaFolder.recommendScanOnNextMaintenance(true);
         }
-        logFine("Created metaFolder " + metaFolderInfo.name
+        logFine("Created metaFolder " + metaFolderInfo.getName()
             + ", local copy at '" + metaFolderSettings.getLocalBaseDir() + '\'');
 
         // Synchronize folder memberships
@@ -1056,7 +1056,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (isFine()) {
             String message = "Setup "
                 + (folder.isEncrypted() ? "encrypted " : "") + "folder "
-                + folderInfo.name + " at " + folder.getLocalBase();
+                + folderInfo.getLocalizedName() + " at " + folder.getLocalBase();
             logFine(message);
         }
 

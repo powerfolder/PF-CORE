@@ -239,11 +239,11 @@ public class FolderFilesChanged extends FolderRelatedMessage {
 
     public String toString() {
         if (removed != null) {
-            return "FolderFilesChanged '" + folder.name + "': "
+            return "FolderFilesChanged '" + folder.getLocalizedName() + "': "
                 + (removed != null ? removed.length : 0)
                 + " (removed/legacy) files";
         }
-        return "FolderFilesChanged '" + folder.name + "': "
+        return "FolderFilesChanged '" + folder.getLocalizedName() + "': "
             + (added != null ? added.length : 0) + " files";
     }
 

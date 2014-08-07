@@ -1704,7 +1704,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
                     logSevere("Received folder changes on "
-                        + changes.folder.name
+                        + changes.folder.getLocalizedName()
                         + ", but not received the full filelist");
                     return;
                 }

@@ -130,7 +130,7 @@ public class FolderSecuritySettings implements Serializable {
 
     @Override
     public String toString() {
-        return "FolderSecSettings '" + folder.name + "' defPerm: "
+        return "FolderSecSettings '" + folder.getLocalizedName() + "' defPerm: "
             + defaultPermission;
     }
 

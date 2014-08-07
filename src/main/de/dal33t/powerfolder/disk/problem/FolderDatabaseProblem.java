@@ -44,7 +44,7 @@ public class FolderDatabaseProblem extends ResolvableProblem {
 
     public String getDescription() {
         return Translation.getTranslation(
-            "folder_problem.folderdb.description", folderInfo.name);
+            "folder_problem.folderdb.description", folderInfo.getLocalizedName());
     }
 
     public String getWikiLinkKey() {

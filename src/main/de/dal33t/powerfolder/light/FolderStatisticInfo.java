@@ -209,7 +209,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
                     + ". map: " + map);
             }
             if (Double.compare(sync, 100.0) > 0) {
-                logFiner("Sync percentage > 100% - folder=" + folder.name
+                logFiner("Sync percentage > 100% - folder=" + folder.getLocalizedName()
                     + ", member=" + memberInfo.nick + ", sync=" + sync);
                 sync = 100.0;
             }
@@ -233,7 +233,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         }
         double sync = syncSum / sizesInSync.size();
         if (Double.compare(sync, 100.0) > 0) {
-            logWarning("Average sync percentage > 100% - folder=" + folder.name
+            logWarning("Average sync percentage > 100% - folder=" + folder.getLocalizedName()
                 + ", sync=" + sync);
             sync = 100.0;
         }

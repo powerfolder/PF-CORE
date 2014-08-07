@@ -59,7 +59,7 @@ public class FolderInfo implements Serializable, Cloneable {
     public static final String PROPERTYNAME_NAME = "name";
 
     @Index(name="IDX_FOLDER_NAME")
-    public String name;
+    private String name;
     @Id
     public String id;
 

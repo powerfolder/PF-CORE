@@ -130,7 +130,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     .getTranslation("exp.wizard.folder_online_storage.backup_success_title"),
                 Translation.getTranslation(
                     "exp.wizard.folder_online_storage.backup_success_message",
-                    foInfo.name));
+                    foInfo.getLocalizedName()));
         }
         return new SwingWorkerPanel(getController(), task,
             Translation.getTranslation("exp.wizard.folder_online_storage.working"),
@@ -176,7 +176,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         List<Folder> folders = new ArrayList<Folder>(getController()
             .getFolderRepository().getFolders());
         folders.removeAll(ws.getJoinedCloudFolders());
-        folderLabel = new JLabel(foInfo.name);
+        folderLabel = new JLabel(foInfo.getName());
         updateButtons();
     }
 

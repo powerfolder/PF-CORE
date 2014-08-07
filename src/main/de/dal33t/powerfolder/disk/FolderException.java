@@ -77,7 +77,7 @@ public class FolderException extends Exception implements Serializable {
     public String getMessage() {
         String prefix = "";
         if (fInfo != null) {
-            prefix = "Folder '" + fInfo.name + "': ";
+            prefix = "Folder '" + fInfo.getLocalizedName() + "': ";
         }
         return prefix + super.getMessage();
     }
@@ -109,9 +109,9 @@ public class FolderException extends Exception implements Serializable {
                             + additonalText : "";
                     DialogFactory.genericDialog(controller,
                             Translation.getTranslation("folder_exception.dialog.title",
-                                    fInfo == null ? "null" : fInfo.name),
+                                    fInfo == null ? "null" : fInfo.getLocalizedName()),
                             Translation.getTranslation("folder_exception.dialog.text",
-                                    fInfo == null ? "null" : fInfo.name,
+                                    fInfo == null ? "null" : fInfo.getLocalizedName(),
                                     FolderException.super.getMessage()) + addText,
                             controller.isVerbose(), FolderException.this);
                 }

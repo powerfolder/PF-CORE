@@ -309,7 +309,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     if (client.joinedByCloud(folder)) {
                         // Already have this os folder.
                         log.log(Level.WARNING, "Already have os folder "
-                            + folderInfo.name);
+                            + folderInfo.getLocalizedName());
                         continue;
                     }
 

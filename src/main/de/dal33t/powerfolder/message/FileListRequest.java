@@ -18,6 +18,6 @@ public class FileListRequest extends FolderRelatedMessage {
 
     @Override
     public String toString() {
-        return "FileListRequest [folder=" + folder.name + "/" + folder.id + "]";
+        return "FileListRequest [folder=" + folder.getLocalizedName() + "/" + folder.id + "]";
     }
 }

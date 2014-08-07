@@ -152,8 +152,8 @@ public class FileInfoComparator extends Loggable implements
                 } else if (o2.getFolderInfo() == null) {
                     return AFTER;
                 }
-                x = o1.getFolderInfo().name.compareToIgnoreCase(o2
-                    .getFolderInfo().name);
+                x = o1.getFolderInfo().getName().compareToIgnoreCase(o2
+                    .getFolderInfo().getName());
                 if (x == 0) {
                     return sortByFileName(o1, o2, false);
                 }

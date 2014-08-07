@@ -98,8 +98,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         // Check that all folders have names.
         for (FolderCreateItem folderCreateItem : folderCreateItems) {
-            if (folderCreateItem.getFolderInfo().name == null
-                || folderCreateItem.getFolderInfo().name.length() == 0)
+            if (folderCreateItem.getFolderInfo().getName() == null
+                || folderCreateItem.getFolderInfo().getName().length() == 0)
             {
                 DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("wizard.multi_folder_setup.no_name.title"),
@@ -225,7 +225,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
             if (item.getLocalBase().toAbsolutePath().toString().equals(dirName)) {
                 selectedItem = item;
                 FolderInfo folderInfo = item.getFolderInfo();
-                nameField.setText(folderInfo.name);
+                nameField.setText(folderInfo.getName());
                 SyncProfile profile = item.getSyncProfile();
                 if (profile == null) {
                     profile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;

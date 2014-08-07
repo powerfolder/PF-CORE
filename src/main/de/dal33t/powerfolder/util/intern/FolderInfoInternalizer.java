@@ -46,7 +46,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         synchronized (INSTANCES) {
             internInstance = INSTANCES.get(folderInfo);
             if (internInstance == null) {
-                if (StringUtils.isBlank(folderInfo.name)) {
+                if (StringUtils.isBlank(folderInfo.getName())) {
                     // Not interned folder info without name.
                     // System.err.println("INTERN FAILED: " + folderInfo + " / "
                     // + folderInfo.getId());

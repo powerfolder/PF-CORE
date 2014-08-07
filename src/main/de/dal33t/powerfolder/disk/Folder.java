@@ -307,7 +307,7 @@ public class Folder extends PFComponent {
 
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
-        currentInfo = new FolderInfo(fInfo.name, fInfo.id).intern();
+        currentInfo = new FolderInfo(fInfo.getName(), fInfo.id).intern();
 
         // Create listener support
         folderListenerSupport = ListenerSupportFactory
@@ -3707,7 +3707,7 @@ public class Folder extends PFComponent {
     private void switchToSafe(Member from, int delsCount, boolean percentage) {
         logWarning("Received a FolderFilesChanged message from "
             + from.getInfo().nick + " which will delete " + delsCount
-            + " files in folder " + currentInfo.name
+            + " files in folder " + currentInfo.getLocalizedName()
             + ". The sync profile will now be switched from "
             + syncProfile.getName() + " to " + SyncProfile.HOST_FILES.getName()
             + " to protect the files.");
@@ -4202,7 +4202,7 @@ public class Folder extends PFComponent {
     }
 
     public String getName() {
-        return currentInfo.name;
+        return currentInfo.getName();
     }
 
     public String getConfigEntryId() {
