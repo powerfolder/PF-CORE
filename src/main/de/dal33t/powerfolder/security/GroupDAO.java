@@ -65,6 +65,11 @@ public interface GroupDAO extends GenericDAO<Group> {
     int countGroupsWithOrganization(Organization org);
 
     /**
+     * @return The number of groups that were imported via LDAP/AD.
+     */
+    int countWithLdapDN();
+
+    /**
      * Find a group with a certain LDAP distinguished name. PFS-420
      * 
      * @param ldapDN
@@ -73,6 +78,12 @@ public interface GroupDAO extends GenericDAO<Group> {
      *         {@code null} if no group was found.
      */
     Group findByLdapDN(String ldapDN);
+
+    /**
+     * @param ldapDNSuffix
+     * @return A list of all groups where the LDAP DN end with {@code ldapDNSuffix}.
+     */
+    List<Group> findByLdapDNSuffix(String ldapDNSuffix);
 
     /**
      * Get all groups, that have an LDAP distinguished name set. PFS-420

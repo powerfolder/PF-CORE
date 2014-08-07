@@ -231,4 +231,23 @@ public class StringUtils {
         return join(separator, Arrays.asList(strings));
     }
 
+    /**
+     * Count the number of {@code c} chars in {@code input}.
+     * 
+     * @param input
+     * @param c
+     * @return
+     */
+    public static int countChar(String input, char c) {
+        Reject.ifBlank(input, "String is blank");
+
+        int count = 0;
+        int i = 0;
+
+        for (i = input.indexOf(c, i); i != -1; count++) {
+            i = input.indexOf(c, i + 1);
+        }
+
+        return count;
+    }
 }
