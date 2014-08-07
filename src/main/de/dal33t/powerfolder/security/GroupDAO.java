@@ -65,6 +65,11 @@ public interface GroupDAO extends GenericDAO<Group> {
     int countGroupsWithOrganization(Organization org);
 
     /**
+     * @return The number of groups that were imported via LDAP/AD.
+     */
+    int countWithLdapDN();
+
+    /**
      * Find a group with a certain LDAP distinguished name. PFS-420
      * 
      * @param ldapDN
