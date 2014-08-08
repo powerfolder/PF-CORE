@@ -237,7 +237,7 @@ public class LoggingManager {
     public static void setSyslogLogging(Level level, Controller controller) {
         if (syslogLoggingLevel == null) {
             try {
-                syslogHandler.init(
+                syslogHandler.init(controller.getMySelf().getNick(),
                     ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller),
                     ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller));
 
