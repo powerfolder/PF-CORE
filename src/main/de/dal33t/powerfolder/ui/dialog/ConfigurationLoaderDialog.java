@@ -51,6 +51,7 @@ import javax.swing.WindowConstants;
 
 import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -130,7 +131,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         if (frame == null) {
             initComponents();
 
-            FormLayout layout = new FormLayout("p:g, 3dlu, p",
+            FormLayout layout = new FormLayout("max(p;150dlu), 3dlu, p",
                 "p, 7dlu, p, 3dlu, p, 7dlu, p, 7dlu, 12dlu, 14dlu, p");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setDefaultDialogBorder();
@@ -451,7 +452,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             String errorMsg = null;
             if (preConfig == null) {
                 errorMsg = Translation
-                    .getTranslation("config.loader.dialog.error.generic^^");
+                    .getTranslation("config.loader.dialog.error.generic");
                 if (t != null) {
                     if (t instanceof FileNotFoundException) {
                         errorMsg = Translation
