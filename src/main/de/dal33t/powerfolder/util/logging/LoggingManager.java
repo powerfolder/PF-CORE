@@ -20,7 +20,9 @@
 package de.dal33t.powerfolder.util.logging;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -237,7 +239,13 @@ public class LoggingManager {
     public static void setSyslogLogging(Level level, Controller controller) {
         if (syslogLoggingLevel == null) {
             try {
-                syslogHandler.init(controller.getMySelf().getNick(),
+                String name;
+                try {
+                    name = InetAddress.getLocalHost().getHostName();
+                } catch (UnknownHostException e) {
+                    name = null;
+                }
+                syslogHandler.init(name,
                     ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller),
                     ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller));
 
@@ -260,7 +268,7 @@ public class LoggingManager {
 
     /**
      * Physically create the file handler.
-     *
+     * 
      * @param level
      */
     private static void createFileHandler() {
@@ -274,8 +282,8 @@ public class LoggingManager {
                     logFilename += sdf.format(new Date());
                 }
                 logFilename += LOGFILE_SUFFIX;
-                fileLoggingFileName = getDebugDir().resolve(
-                    PathUtils.removeInvalidFilenameChars(logFilename))
+                fileLoggingFileName = getDebugDir()
+                    .resolve(PathUtils.removeInvalidFilenameChars(logFilename))
                     .toAbsolutePath().toString();
                 fileHandler = new FileHandler(fileLoggingFileName, true);
                 fileHandler.setFormatter(new LoggingFormatter(!fileRotate));
