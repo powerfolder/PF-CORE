@@ -243,18 +243,20 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         FormLayout layout2 = new FormLayout("pref:grow, pref, 3dlu", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
-        builder2.addLabel(LoginUtil.getInviteUsernameLabel(getController()), cc.xy(2, 1));
+        builder2.addLabel(LoginUtil.getInviteUsernameLabel(getController()),
+            cc.xy(2, 1));
         builder.add(viaPowerFolderText, cc.xy(2, row));
         builder.add(addButton, cc.xy(4, row));
         builder.add(invalidEmail, cc.xy(7, row));
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
+            && PreferencesEntry.SHOW_DEVICES.getValueBoolean(getController()))
+        {
             builder.add(searchButton, cc.xy(5, row));
         }
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
         builder.add(panel2, cc.xy(1, row));
         row += 2;
-        
 
         inviteesListScrollPane = new JScrollPane(inviteesList);
         inviteesListScrollPane.setPreferredSize(new Dimension(
@@ -311,8 +313,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         inviteesList.getSelectionModel().addListSelectionListener(
             new MyListSelectionListener());
 
-        List<String> candidateAddresses = getCandidatesAddresses();
-
         permissionsComboModel = new DefaultComboBoxModel();
         permissionsCombo = new JComboBox(permissionsComboModel);
         permissionsComboModel.addElement(FolderPermission.readWrite(folderInfo).getName());
@@ -327,34 +327,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     }
 
-    private List<String> getCandidatesAddresses() {
-        List<String> candidateAddresses = new LinkedList<String>();
-        for (Member friend : getController().getNodeManager().getFriends()) {
-            AccountInfo aInfo = friend.getAccountInfo();
-            if (aInfo != null && aInfo.getDisplayName() != null) {
-                // FIXME Shows email unscrambled!
-                candidateAddresses.add(0, aInfo.getDisplayName());
-            }
-            //candidateAddresses.add(friend.getNick());
-        }
-        for (Member node : getController().getNodeManager().getConnectedNodes())
-        {
-            if (!node.isOnLAN()) {
-                continue;
-            }
-            AccountInfo aInfo = node.getAccountInfo();
-            if (aInfo != null && aInfo.getDisplayName() != null) {
-                // FIXME Shows email unscrambled!
-                candidateAddresses.add(0, aInfo.getDisplayName());
-            }
-            //candidateAddresses.add(node.getNick());
-        }
-        return candidateAddresses;
-    }
-
     private Set<Member> getCandidates() {
+        if (!PreferencesEntry.SHOW_DEVICES.getValueBoolean(getController())) {
+            Collections.emptySet();
+        }
         Set<Member> candidate = new TreeSet<Member>(MemberComparator.NICK);
-        Collections.addAll(candidate, getController().getNodeManager().getFriends());
+        Collections.addAll(candidate, getController().getNodeManager()
+            .getFriends());
         for (Member node : getController().getNodeManager().getConnectedNodes())
         {
             if (!node.isOnLAN()) {

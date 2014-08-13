@@ -78,7 +78,10 @@ public class FolderInformationCard extends InformationCard {
 
         if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(getController()))
         {
-            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+            if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
+                && PreferencesEntry.SHOW_DEVICES
+                    .getValueBoolean(getController()))
+            {
                 membersTab = new MembersExpertTab(getController());
             } else {
                 membersTab = new MembersSimpleTab(getController());
