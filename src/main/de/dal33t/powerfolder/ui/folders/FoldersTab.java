@@ -270,26 +270,15 @@ public class FoldersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        newFolderLink = new ActionLabel(getController(),
-            getApplicationModel().getActionModel().getNewFolderAction());
-        getController().getOSClient().addListener(new MyServerClientListener(newFolderLink));
+        newFolderLink = new ActionLabel(getController(), getApplicationModel()
+            .getActionModel().getNewFolderAction());
+        getController().getOSClient().addListener(
+            new MyServerClientListener(newFolderLink));
         newFolderLink.convertToBigLabel();
         newFolderLink.setEnabled(getController().getOSClient()
             .isAllowedToCreateFolders());
-        ActionLabel folderWizardLink = null;
-        Boolean expertMode = PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController());
-        if (expertMode) {
-            folderWizardLink = new ActionLabel(getController(),
-                getApplicationModel().getActionModel().getFolderWizardAction());
-            folderWizardLink.convertToBigLabel();
-        }
-        FormLayout layout;
-        if (expertMode) {
-            layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu:grow", "pref");
-        } else {
-            layout = new FormLayout("3dlu, pref, 3dlu:grow", "pref");
-        }
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow", "pref");
+
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -297,9 +286,6 @@ public class FoldersTab extends PFUIComponent {
             .getValueBoolean(getController()))
         {
             builder.add(newFolderLink.getUIComponent(), cc.xy(2, 1));
-        }
-        if (expertMode) {
-            builder.add(folderWizardLink.getUIComponent(), cc.xy(4, 1));
         }
         return builder.getPanel();
     }
