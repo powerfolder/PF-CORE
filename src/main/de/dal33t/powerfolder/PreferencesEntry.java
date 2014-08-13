@@ -57,7 +57,7 @@ public enum PreferencesEntry {
 
     BEGINNER_MODE("BeginnerMode", true),
     
-    SHOW_DEVICES("show.devices", false),
+    SHOW_DEVICES("show.devices", true),
 
     VIEW_ACHIVE("view.archive", true),
 
