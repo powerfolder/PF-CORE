@@ -108,15 +108,6 @@ public enum Feature {
 
     ZYNCRO_DEBUG(false),
 
-    /**
-     * Organize users into groups
-     */
-    GROUPS(true),
-
-    /**
-     * Multitenancy
-     */
-    ORGANIZATIONS(true),
 
     UI_ENABLED(true),
 
