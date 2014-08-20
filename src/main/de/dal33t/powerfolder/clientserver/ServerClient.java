@@ -969,9 +969,15 @@ public class ServerClient extends PFComponent {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
                     } else if (isKerberosLogin()) {
+                        String uName = username;
+                        int atIndex = username.indexOf('@');
+                        if (atIndex != -1) {
+                            uName = username.substring(0, atIndex);
+                        }
+
                         byte[] serviceTicket = prepareKerberosLogin();
                         loginOk = securityService
-                            .login(username, serviceTicket);
+                            .login(uName, serviceTicket);
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
