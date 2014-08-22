@@ -2156,6 +2156,15 @@ public class TransferManager extends PFComponent {
 
     /**
      * @param fInfo
+     * @return true if the file is currently downloaded or has been queued for download
+     *         download.
+     */
+    public boolean isDownloading(FileInfo fInfo) {
+        return isDownloadingActive(fInfo) || isDownloadingPending(fInfo);
+    }
+
+    /**
+     * @param fInfo
      * @return true if that file gets downloaded
      */
     public boolean isDownloadingActive(FileInfo fInfo) {
@@ -2182,12 +2191,12 @@ public class TransferManager extends PFComponent {
      */
     public boolean isUploading(FileInfo fInfo) {
         for (Upload upload : activeUploads) {
-            if (upload.getFile() == fInfo) {
+            if (upload.getFile().equals(fInfo)) {
                 return true;
             }
         }
         for (Upload upload : queuedUploads) {
-            if (upload.getFile() == fInfo) {
+            if (upload.getFile().equals(fInfo)) {
                 return true;
             }
         }
