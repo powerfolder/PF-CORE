@@ -846,12 +846,19 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
         FolderSettings folderSettings)
     {
-        if (!folderSettings.getLocalBaseDir().endsWith(".pfzip")) {
-            try {
+        try {
+            if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
+                .getValueBoolean(getController()))
+            {
                 Files.createDirectories(folderSettings.getLocalBaseDir());
-            } catch (IOException ioe) {
-                logInfo(ioe.getMessage());
+            } else {
+                Path baseDir = folderSettings.getLocalBaseDir().getParent();
+                String rawName = folderSettings.getLocalBaseDir().getFileName()
+                    .toString();
+                PathUtils.createEmptyDirectory(baseDir, rawName);
             }
+        } catch (IOException ioe) {
+            logInfo(ioe.getMessage());
         }
         Folder folder = createFolder0(folderInfo, folderSettings, true);
 
@@ -1768,7 +1775,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } else {
                     PathUtils.recursiveDelete(dir);
                 }
-                if (getController().isUIEnabled()) {
+                // Start: PFS-1361
+/*                if (getController().isUIEnabled()) {
                     WarningNotice notice = new WarningNotice(
                         Translation
                             .getTranslation("notice.folder_removed.title"),
@@ -1779,7 +1787,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 .toString()));
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
-                }
+                }*/
+                // End: PFS-1361
 
             }
         } catch (IOException ioe) {
