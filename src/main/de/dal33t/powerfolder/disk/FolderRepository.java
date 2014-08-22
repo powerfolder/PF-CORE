@@ -1775,7 +1775,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } else {
                     PathUtils.recursiveDelete(dir);
                 }
-                if (getController().isUIEnabled()) {
+                // Start: PFS-1361
+/*                if (getController().isUIEnabled()) {
                     WarningNotice notice = new WarningNotice(
                         Translation
                             .getTranslation("notice.folder_removed.title"),
@@ -1786,7 +1787,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 .toString()));
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
-                }
+                }*/
+                // End: PFS-1361
 
             }
         } catch (IOException ioe) {
