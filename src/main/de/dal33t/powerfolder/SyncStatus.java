@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 */
-package de.dal33t.powerfolder.transfer;
+package de.dal33t.powerfolder;
 
 /**
  * Identify the icon overlay by index and name.
