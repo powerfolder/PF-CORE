@@ -846,19 +846,19 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
         FolderSettings folderSettings)
     {
-        if (!folderSettings.getLocalBaseDir().endsWith(".pfzip")) {
-            try {
-                if (ProUtil.isZyncro(getController())) {
-                    Path baseDir = folderSettings.getLocalBaseDir().getParent();
-                    String rawName = folderSettings.getLocalBaseDir()
-                        .getFileName().toString();
-                    PathUtils.createEmptyDirectory(baseDir, rawName);
-                } else {
-                    Files.createDirectories(folderSettings.getLocalBaseDir());
-                }
-            } catch (IOException ioe) {
-                logInfo(ioe.getMessage());
+        try {
+            if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
+                .getValueBoolean(getController()))
+            {
+                Files.createDirectories(folderSettings.getLocalBaseDir());
+            } else {
+                Path baseDir = folderSettings.getLocalBaseDir().getParent();
+                String rawName = folderSettings.getLocalBaseDir().getFileName()
+                    .toString();
+                PathUtils.createEmptyDirectory(baseDir, rawName);
             }
+        } catch (IOException ioe) {
+            logInfo(ioe.getMessage());
         }
         Folder folder = createFolder0(folderInfo, folderSettings, true);
 
