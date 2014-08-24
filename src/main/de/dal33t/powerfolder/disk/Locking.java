@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.util.StreamUtils;
  * @version $Revision: 1.114 $
  */
 public class Locking extends PFComponent {
+    private static final String LOCK_FILE_EXT = ".lck";
     private LockingListener listenerSupport;
 
     public Locking(Controller controller) {
@@ -168,11 +169,16 @@ public class Locking extends PFComponent {
         return 0;
     }
 
+    /**
+     * Callback from <code>MetaFolderDataHandler</code>
+     * 
+     * @param lockFileInfo
+     */
     public void lockStateChanged(FileInfo lockFileInfo) {
         String originalFileName = lockFileInfo.getRelativeName();
         originalFileName = originalFileName.replace(Folder.METAFOLDER_LOCKS_DIR
             + "/", "");
-        originalFileName = originalFileName.replace(".lck", "");
+        originalFileName = originalFileName.replace(LOCK_FILE_EXT, "");
         FolderInfo origFoInfo = lockFileInfo.getFolderInfo()
             .getParentFolderInfo();
         FileInfo fInfo = FileInfoFactory.lookupInstance(origFoInfo,
@@ -231,6 +237,6 @@ public class Locking extends PFComponent {
         Path baseDir = metaFolder.getLocalBase().resolve(
             Folder.METAFOLDER_LOCKS_DIR);
         return baseDir.resolve(FileInfoFactory.encodeIllegalChars(fInfo
-            .getRelativeName() + ".lck"));
+            .getRelativeName() + LOCK_FILE_EXT));
     }
 }

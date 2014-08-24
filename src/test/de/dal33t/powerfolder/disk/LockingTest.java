@@ -160,6 +160,8 @@ public class LockingTest extends TwoControllerTestCase {
             lockingListenerBart.unlocked.clear();
             testLockUnlockLocal();
 
+            TestHelper.waitMilliSeconds(50);
+            
             lockingListenerBart.locked.clear();
             lockingListenerBart.unlocked.clear();
             lockingListenerLisa.locked.clear();
