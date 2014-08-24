@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -471,6 +472,26 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         String dirName = fileName.substring(0, i);
         return FileInfoFactory.lookupDirectory(folderInfo, dirName);
     }
+
+    // PFC-1962: Deligating methods.
+
+    public boolean lock(Controller controller) {
+        return controller.getFolderRepository().getLocking().lock(this);
+    }
+
+    public boolean unlock(Controller controller) {
+        return controller.getFolderRepository().getLocking().unlock(this);
+    }
+
+    public boolean isLocked(Controller controller) {
+        return controller.getFolderRepository().getLocking().isLocked(this);
+    }
+
+    public Lock getLock(Controller controller) {
+        return controller.getFolderRepository().getLocking().getLock(this);
+    }
+
+    // PFC-1962: End
 
     /**
      * @param ofInfo

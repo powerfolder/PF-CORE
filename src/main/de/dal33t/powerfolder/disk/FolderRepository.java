@@ -126,6 +126,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** The disk scanner */
     private final FolderScanner folderScanner;
+    
+    /**
+     * PFC-1962: For locking files
+     */
+    private final Locking locking;
 
     /**
      * The current synchronizater of all folder memberships
@@ -166,6 +171,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         loadRemovedFolderDirectories();
 
         folderScanner = new FolderScanner(getController());
+        locking = new Locking(getController());
 
         // Create listener support
         folderRepositoryListenerSupport = ListenerSupportFactory
@@ -215,6 +221,10 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** @return The folder scanner that performs the scanning of files on disk */
     public FolderScanner getFolderScanner() {
         return folderScanner;
+    }
+    
+    public Locking getLocking() {
+        return locking;
     }
 
     public void setSuspendFireEvents(boolean suspended) {
@@ -1413,6 +1423,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                         break;
                     }
                 }
+                
+                // Maintain locks
+                locking.maintain();
+                
                 if (isFiner()) {
                     logFiner("Maintained " + scanningFolders.size()
                         + " folder(s)");

@@ -100,6 +100,7 @@ import de.dal33t.powerfolder.message.RevertedFile;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
+import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -133,6 +134,7 @@ public class Folder extends PFComponent {
 
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
     public static final String METAFOLDER_MEMBERS = "Members";
+    public static final String METAFOLDER_LOCKS_DIR = "locks";
     public static final String FOLDER_STATISTIC = "FolderStatistic";
 
     private static final int FIVE_MINUTES = 60 * 5;
@@ -3271,6 +3273,12 @@ public class Folder extends PFComponent {
                             getController().getTaskManager().scheduleTask(smt);
                         }
                         return;
+                    } else {
+                        if (remoteFile.getFolderInfo().isMetaFolder()) {
+                            MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                                getController());
+                            mfdh.handleMetaFolderFileInfo(remoteFile);
+                        }
                     }
                 } else {
                     logSevere("Unable to apply remote deletion: "

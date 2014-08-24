@@ -55,6 +55,9 @@ public enum SyncStatus {
         if (tm.isDownloading(fInfo) || tm.isUploading(fInfo)) {
             return SYNCING;
         }
+        if (fInfo.isLocked(controller)) {
+            return LOCKED;
+        }
         if (fInfo.isNewerAvailable(controller.getFolderRepository())) {
             return SYNCING;
         }

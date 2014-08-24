@@ -37,7 +37,7 @@ public class MetaFolderDataHandler extends PFComponent {
 
     /**
      * Handle file change to metaFolder files.
-     *
+     * 
      * @param fileInfo
      *            metaFolder file info
      */
@@ -57,33 +57,15 @@ public class MetaFolderDataHandler extends PFComponent {
         if (fileInfo.getRelativeName().endsWith(
             DiskItemFilter.PATTERNS_FILENAME))
         {
-            handleMetaFolderSyncPatterns(parentFolder, fileInfo);
+            parentFolder.handleMetaFolderSyncPatterns(fileInfo);
         }
         if (fileInfo.getRelativeName().equals(Folder.METAFOLDER_MEMBERS)) {
-            handleMetaFolderMembers(parentFolder);
+            parentFolder.updateMetaFolderMembers();
         }
-    }
-
-    /**
-     * Update the members in the parent folder.
-     *
-     * @param parentFolder
-     * @param fileInfo
-     */
-    private static void handleMetaFolderMembers(Folder parentFolder) {
-        parentFolder.updateMetaFolderMembers();
-    }
-
-    /**
-     * Updated sync patterns have been downloaded to the metaFolder. Update the
-     * sync patterns in the parent folder.
-     *
-     * @param fileInfo
-     *            fileInfo of the new sync patterns
-     */
-    private static void handleMetaFolderSyncPatterns(Folder parentFolder,
-        FileInfo fileInfo)
-    {
-        parentFolder.handleMetaFolderSyncPatterns(fileInfo);
+        if (fileInfo.getRelativeName().startsWith(Folder.METAFOLDER_LOCKS_DIR))
+        {
+            getController().getFolderRepository().getLocking()
+                .lockStateChanged(fileInfo);
+        }
     }
 }
