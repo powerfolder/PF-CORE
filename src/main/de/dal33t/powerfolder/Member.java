@@ -1620,9 +1620,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 200;
 
             } else if (message instanceof RequestNodeInformation) {
-                // send him our node information
-                sendMessageAsynchron(new NodeInformation(getController()));
-                expectedTime = 50;
+                if (getController().isDebugReports()) {
+                    // send him our node information, if allowed/set
+                    sendMessageAsynchron(new NodeInformation(getController()));
+                    expectedTime = 50;                    
+                }
 
             } else if (message instanceof TransferStatus) {
                 // Hold transfer status

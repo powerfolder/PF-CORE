@@ -246,6 +246,7 @@ public interface FolderService {
      * 
      * @param fInfo
      * @param folder
+     * @return the URL to the file link
      */
     String getFileLink(FileInfo fInfo);
 
