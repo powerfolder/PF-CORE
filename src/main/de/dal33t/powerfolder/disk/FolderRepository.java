@@ -865,7 +865,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 Path baseDir = folderSettings.getLocalBaseDir().getParent();
                 String rawName = folderSettings.getLocalBaseDir().getFileName()
                     .toString();
-                PathUtils.createEmptyDirectory(baseDir, rawName);
+                Path newBaseDir = PathUtils.createEmptyDirectory(baseDir, rawName);
+                if (!newBaseDir.equals(baseDir)) {
+                    folderSettings = folderSettings.changeBaseDir(newBaseDir);
+                }
             }
         } catch (IOException ioe) {
             logInfo(ioe.getMessage());

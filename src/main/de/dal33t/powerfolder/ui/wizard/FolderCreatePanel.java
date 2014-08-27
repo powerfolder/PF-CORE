@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -240,8 +241,10 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                         // folder with the same name. Join instead of creating
                         // duplicates.
                         for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                            // PFC-2562
                             if (onlineFolderInfo.getName().equals(
-                                folderInfo.getName()))
+                                folderInfo.getName())
+                                && !ProUtil.isZyncro(getController()))
                             {
                                 if (!onlineFolderInfo.equals(folderInfo)) {
                                     log.info("Found online folder with same name: "
