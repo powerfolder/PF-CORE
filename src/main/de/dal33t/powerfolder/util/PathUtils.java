@@ -255,7 +255,11 @@ public class PathUtils {
         if (from.equals(to)) {
             throw new IOException("cannot copy onto itself");
         }
-        copyFromStreamToFile(Files.newInputStream(from), to);
+        try {
+            copyFromStreamToFile(Files.newInputStream(from), to);
+        } catch (IOException e) {
+            throw new IOException(from + " -> " + to + ":" + e.getMessage(), e);
+        }
     }
 
     /**
