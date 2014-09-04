@@ -2348,7 +2348,8 @@ public class Folder extends PFComponent {
     private Path createTimestampedCopy(Path file) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat();
         String targetFilename = PathUtils.removeInvalidFilenameChars(dateFormat
-            .format(new Date()).replace(" ", "_").replace(":", "_"));
+            .format(new Date()).replace(":", "_"));
+        targetFilename += " ";
         targetFilename += file.getFileName().toString();
         Path target = file.getParent().resolve(targetFilename);
         addPattern("*" + targetFilename);
