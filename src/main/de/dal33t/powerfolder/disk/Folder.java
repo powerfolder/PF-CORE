@@ -37,6 +37,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -2299,21 +2301,24 @@ public class Folder extends PFComponent {
             }
             synchronized (scanLock) {
                 if (Files.exists(file)) {
-                    int version = archiver.getVersionsPerFile();
                     try {
-                        // SYNC-98 Start
-                        if (ProUtil.isZyncro(getController())) {
-                            archiver.setVersionsPerFile(1);
+                        Path problemPath = archiver.getArchiveDir().resolve(
+                            fileInfo.getRelativeName());
+                        // PFS-1361 Start
+                        if (ProUtil.isZyncro(getController())
+                            && !currentInfo.isMetaFolder())
+                        {
+                            createTimestampedCopy(file);
+                            problemPath = file;
                         }
-                        // SYNC-98 End
+                        // PFS-1361 End
                         watcher.addIgnoreFile(fileInfo);
                         archiver.archive(fileInfo, file, false);
 
                         Files.deleteIfExists(file);
                         if (!currentInfo.isMetaFolder()) {
-                            addProblem(new FolderReadOnlyProblem(this, archiver
-                                .getArchiveDir().resolve(
-                                    fileInfo.getRelativeName())));
+                            addProblem(new FolderReadOnlyProblem(this,
+                                problemPath));
                         }
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
@@ -2321,11 +2326,6 @@ public class Folder extends PFComponent {
                         return false;
                     } finally {
                         watcher.removeIgnoreFile(fileInfo);
-                        // SYNC-98 Start
-                        if (ProUtil.isZyncro(getController())) {
-                            archiver.setVersionsPerFile(version);
-                        }
-                        // SYNC-98 End
                     }
                 } else {
                     if (!currentInfo.isMetaFolder()) {
@@ -2343,9 +2343,23 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * PFS-1361
+     */
+    private Path createTimestampedCopy(Path file) throws IOException {
+        DateFormat dateFormat = new SimpleDateFormat();
+        String targetFilename = PathUtils.removeInvalidFilenameChars(dateFormat
+            .format(new Date()).replace(" ", "_").replace(":", "_"));
+        targetFilename += file.getFileName().toString();
+        Path target = file.getParent().resolve(targetFilename);
+        addPattern("*" + targetFilename);
+        Files.copy(file, target);
+        return target;
+    }
+
+    /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     *
+     * 
      * @param desktopIni
      */
     private void makeFolderIcon(Path desktopIni) {
