@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 9;
     private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 160;
+    private static final int REVISION_VERSION = 161;
 
     /**
      * Program version.
@@ -1564,15 +1564,25 @@ public class Controller extends PFComponent {
             }
 
             if (!config.getFolders().isEmpty()) {
-                PropertiesUtil.saveConfig(tempFolderFile, config.getFolders(),
-                    distName + " folders config file (v" + PROGRAM_VERSION
-                        + ')');
-                Files.deleteIfExists(folderFile);
-                try {
-                    Files.move(tempFolderFile, folderFile);
-                } catch (IOException e) {
-                    Files.copy(tempFolderFile, folderFile);
-                    Files.delete(tempFolderFile);
+                Properties prevFolders = new Properties();
+                if (Files.exists(folderFile)) {
+                    try (BufferedInputStream in = new BufferedInputStream(
+                        Files.newInputStream(folderFile))) {
+                        prevFolders.load(in);
+                    }
+                }
+                if (!prevFolders.equals(config.getFolders())) {
+                    PropertiesUtil
+                        .saveConfig(tempFolderFile, config.getFolders(),
+                            distName + " folders config file (v"
+                                + PROGRAM_VERSION + ')');
+                    Files.deleteIfExists(folderFile);
+                    try {
+                        Files.move(tempFolderFile, folderFile);
+                    } catch (IOException e) {
+                        Files.copy(tempFolderFile, folderFile);
+                        Files.delete(tempFolderFile);
+                    }
                 }
             }
         } catch (IOException e) {
