@@ -1661,7 +1661,14 @@ public class ServerClient extends PFComponent {
                 getController().getNodeManager().loadServerNodes(this);
             }
 
-            if (!isConnected() || !isLoggedIn()) {
+            if (!isConnected()) {
+                return;
+            }
+
+            if (!isLoggedIn()
+                && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                    .getValueBoolean(getController()))
+            {
                 return;
             }
 
@@ -1674,6 +1681,15 @@ public class ServerClient extends PFComponent {
                 logFine("Got " + hostingServers.size() + " servers for our "
                     + folders.length + " folders: " + hostingServers);
             }
+            // if (hostingServers.isEmpty()) {
+            // for (Member node : getController().getNodeManager()
+            // .getNodesAsCollection())
+            // {
+            // if (node.isServer()) {
+            // node.markForImmediateConnect();
+            // }
+            // }
+            // }
             for (MemberInfo hostingServerInfo : hostingServers) {
                 Member hostingServer = hostingServerInfo.getNode(
                     getController(), true);
