@@ -479,6 +479,8 @@ public class FolderSettings {
         if (res != null) {
             res = res.replace(Constants.FOLDER_PERSONAL_FILES.trim(),
                 Translation.getTranslation("general.personal_files"));
+            res = res.replace(Constants.FOLDER_PUBLIC_SHARED_FILES.trim(),
+                Translation.getTranslation("general.public_shared_files"));
         }
         if (verify) {
             if (res.contains("$user.dir.") || res.contains("$apps.dir.")) {
