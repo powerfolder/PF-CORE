@@ -82,6 +82,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * So like 'myFile.txt' or 'directory/myFile.txt' or 'directory/subdirectory/myFile.txt'.
      */
     private String fileName;
+    
+    // PFC-2352
+    private String oid;
+    private String hashes;
+    private String tags;
 
     /** The size of the file */
     private Long size;
@@ -109,6 +114,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * folderInfo.intern();
      */
     private FolderInfo folderInfo;
+    
+    // Caching -----------------------------------
 
     /**
      * The cached hash info.
@@ -124,6 +131,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // ONLY for backward compatibility to MP3FileInfo
 
         fileName = null;
+        oid = null;
+        hashes = null;
+        tags = null;
         size = null;
         modifiedBy = null;
         lastModifiedDate = null;
@@ -135,9 +145,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // this.hash = hashCode0();
     }
 
-    protected FileInfo(String relativeName, long size, MemberInfo modifiedBy,
-        Date lastModifiedDate, int version, boolean deleted,
-        FolderInfo folderInfo)
+    protected FileInfo(String relativeName, String oid, long size,
+        MemberInfo modifiedBy, Date lastModifiedDate, int version,
+        String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
@@ -146,7 +156,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 "relativeName must not contain /../: " + relativeName);
         }
 
-        fileName = relativeName;
+        this.fileName = relativeName;
+        this.oid = oid;
+        this.hashes = hashes;
+        this.tags = tags;
         this.size = size;
         this.modifiedBy = modifiedBy;
         this.lastModifiedDate = lastModifiedDate;
@@ -170,6 +183,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         fileName = relativeName;
         folderInfo = folder;
 
+        oid = null;
+        hashes = null;
+        tags = null;
         size = null;
         modifiedBy = null;
         lastModifiedDate = null;
@@ -367,6 +383,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             return fileName;
         }
+    }
+
+    public String getOID() {
+        return oid;
+    }
+
+    public String getHashes() {
+        return hashes;
+    }
+
+    public String getTags() {
+        return tags;
     }
 
     /**
@@ -884,26 +912,28 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Utility method for changing the fileName part of a relative file path.
-     * Example renameRelativeFileName('directory/subdirectory/myFile.txt', 'newFile.txt') ==>
-     * 'directory/subdirectory/newFile.txt'
-     *
-     * NOTE: This is static, so does not affect a FileInfo.
-     *
+     * Example renameRelativeFileName('directory/subdirectory/myFile.txt',
+     * 'newFile.txt') ==> 'directory/subdirectory/newFile.txt' NOTE: This is
+     * static, so does not affect a FileInfo.
+     * 
      * @param relativeName
      * @param newFileName
      * @return
      */
-    public static String renameRelativeFileName(String relativeName, String newFileName) {
+    public static String renameRelativeFileName(String relativeName,
+        String newFileName)
+    {
         if (newFileName.contains(UNIX_SEPARATOR)) {
-            throw new IllegalArgumentException(
-                "newFileName must not contain " + UNIX_SEPARATOR + ": " + relativeName);
+            throw new IllegalArgumentException("newFileName must not contain "
+                + UNIX_SEPARATOR + ": " + relativeName);
         }
         if (relativeName.contains(UNIX_SEPARATOR)) {
-            String directoryPart = relativeName.substring(0, relativeName.lastIndexOf(UNIX_SEPARATOR));
+            String directoryPart = relativeName.substring(0,
+                relativeName.lastIndexOf(UNIX_SEPARATOR));
             return directoryPart + UNIX_SEPARATOR + newFileName;
         } else {
             // No path - just use the relative filename.
             return newFileName;
         }
-}
+    }
 }

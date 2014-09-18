@@ -92,8 +92,8 @@ public class TestSerialize {
             + "/and another/test filename.gif";
 
         return FileInfoFactory.unmarshallExistingFile(generateFolderInfo(), fn,
-            (long) (Math.random() * 100000), generateMemberInfo(), new Date(),
-            0, false);
+            IdGenerator.makeFileId(), (long) (Math.random() * 100000),
+            generateMemberInfo(), new Date(), 0, null, false, null);
     }
 
     private static MemberInfo generateMemberInfo() {

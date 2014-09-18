@@ -500,8 +500,13 @@ public class FileArchiver {
                 Date modDate = new Date(Files.getLastModifiedTime(file)
                     .toMillis());
                 String name = getFileInfoName(file);
+                // PFC-2352: TODO: Support ID, hashes and tags
+                String oid = null;
+                String hashes = null;
+                String tags = null;
                 FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo,
-                    name, Files.size(file), mySelf, modDate, version);
+                    name, oid, Files.size(file), mySelf, modDate, version,
+                    hashes, tags);
                 list.add(archiveFile);
             } catch (IOException ioe) {
                 log.warning(ioe.getMessage());

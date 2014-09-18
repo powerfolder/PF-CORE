@@ -334,8 +334,8 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         FolderInfo foInfo = createRandomFolderInfo();
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(),
             IdGenerator.makeId(), IdGenerator.makeId());
-        return FileInfoFactory.unmarshallExistingFile(foInfo, name, 100, mInfo,
-            new Date(), version, directory);
+        return FileInfoFactory.unmarshallExistingFile(foInfo, name, null, 100,
+            mInfo, new Date(), version, null, directory, null);
     }
 
     protected static FileInfo createRandomFileInfo(int n, String name,
@@ -351,8 +351,8 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         String fn = "subdir1/SUBDIR2/" + name + "-" + n;
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(),
             IdGenerator.makeId(), IdGenerator.makeId());
-        return FileInfoFactory.unmarshallExistingFile(foInfo, fn, n, mInfo,
-            new Date(), version, directory);
+        return FileInfoFactory.unmarshallExistingFile(foInfo, fn, null, n, mInfo,
+            new Date(), version, null, directory, null);
     }
 
     protected static FileInfo createRandomFileInfo(int n, String name) {
@@ -367,14 +367,15 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
     protected static FileInfo version(FileInfo fInfo, int version) {
         return FileInfoFactory.unmarshallExistingFile(fInfo.getFolderInfo(),
-            fInfo.getRelativeName(), fInfo.getSize(), fInfo.getModifiedBy(),
-            fInfo.getModifiedDate(), version, fInfo.isDiretory());
+            fInfo.getRelativeName(), fInfo.getOID(), fInfo.getSize(),
+            fInfo.getModifiedBy(), fInfo.getModifiedDate(), version,
+            fInfo.getHashes(), fInfo.isDiretory(), fInfo.getTags());
     }
 
     protected static FileInfo version(FileInfo fInfo, int version, Date modDate)
     {
         return FileInfoFactory.unmarshallExistingFile(fInfo.getFolderInfo(),
-            fInfo.getRelativeName(), fInfo.getSize(), fInfo.getModifiedBy(),
-            modDate, version, fInfo.isDiretory());
+            fInfo.getRelativeName(), fInfo.getOID(), fInfo.getSize(), fInfo.getModifiedBy(),
+            modDate, version,fInfo.getHashes(), fInfo.isDiretory(), fInfo.getTags());
     }
 }

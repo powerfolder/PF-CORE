@@ -166,11 +166,11 @@ public class FileInfoSQLConverter {
         Date modDate = new Date(modifiedTime);
 
         if (deleted) {
-            return FileInfoFactory.unmarshallDeletedFile(foInfo, fileName,
-                modifiedByInfo, modDate, version, dir);
+            return FileInfoFactory.unmarshallDeletedFile(foInfo, fileName, null,
+                modifiedByInfo, modDate, version, null, dir, null);
         } else {
-            return FileInfoFactory.unmarshallExistingFile(foInfo, fileName,
-                size, modifiedByInfo, modDate, version, dir);
+            return FileInfoFactory.unmarshallExistingFile(foInfo, fileName, null,
+                size, modifiedByInfo, modDate, version, null, dir, null);
         }
     }
 }

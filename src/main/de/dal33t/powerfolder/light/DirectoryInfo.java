@@ -38,20 +38,20 @@ public class DirectoryInfo extends FileInfo {
         super();
     }
 
-    DirectoryInfo(String fileName, MemberInfo modifiedBy,
-        Date lastModifiedDate, int version, boolean deleted,
-        FolderInfo folderInfo)
+    DirectoryInfo(String fileName, String oid, MemberInfo modifiedBy,
+        Date lastModifiedDate, int version, String hashes, boolean deleted,
+        String tags, FolderInfo folderInfo)
     {
-        super(fileName, 0, modifiedBy, lastModifiedDate, version, deleted,
-            folderInfo);
+        super(fileName, oid, 0, modifiedBy, lastModifiedDate, version, hashes,
+            deleted, tags, folderInfo);
     }
 
-    DirectoryInfo(String fileName, long size, MemberInfo modifiedBy,
-        Date lastModifiedDate, int version, boolean deleted,
-        FolderInfo folderInfo)
+    DirectoryInfo(String fileName, String oid, long size,
+        MemberInfo modifiedBy, Date lastModifiedDate, int version,
+        String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
-        super(fileName, size, modifiedBy, lastModifiedDate, version, deleted,
-            folderInfo);
+        super(fileName, oid, size, modifiedBy, lastModifiedDate, version,
+            hashes, deleted, tags, folderInfo);
     }
 
     DirectoryInfo(FolderInfo folder, String name) {

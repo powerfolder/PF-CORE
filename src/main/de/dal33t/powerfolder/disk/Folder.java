@@ -1450,16 +1450,21 @@ public class Folder extends PFComponent {
                             }
                         }
 
+                        // PFC-2352: TODO: Recalc hashes:
+                        String oid = fInfo.getOID();
+                        String hashes = null;
+                        String tags = fInfo.getTags();
+
                         if (deleted) {
                             fInfo = FileInfoFactory.unmarshallDeletedFile(
-                                currentInfo, fInfo.getRelativeName(),
+                                currentInfo, fInfo.getRelativeName(), oid,
                                 modifiedBy, modDate, fInfo.getVersion(),
-                                Files.isDirectory(file));
+                                hashes, Files.isDirectory(file), tags);
                         } else {
                             fInfo = FileInfoFactory.unmarshallExistingFile(
-                                currentInfo, fInfo.getRelativeName(), size,
-                                modifiedBy, modDate, fInfo.getVersion(),
-                                Files.isDirectory(file));
+                                currentInfo, fInfo.getRelativeName(), oid,
+                                size, modifiedBy, modDate, fInfo.getVersion(),
+                                hashes, Files.isDirectory(file), tags);
                         }
 
                         store(getMySelf(), fInfo);
@@ -2179,10 +2184,11 @@ public class Folder extends PFComponent {
             for (int i = 0; i < brokenExisting.size(); i++) {
                 FileInfo fileInfo = brokenExisting.get(i);
                 FileInfo newFileInfo = FileInfoFactory.unmarshallExistingFile(
-                    currentInfo, fileInfo.getRelativeName(),
+                    currentInfo, fileInfo.getRelativeName(), fileInfo.getOID(),
                     fileInfo.getSize(), fileInfo.getModifiedBy(),
                     fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
-                    fileInfo.isDiretory());
+                    fileInfo.getHashes(), fileInfo.isDiretory(),
+                    fileInfo.getTags());
                 brokenExisting.set(i, newFileInfo);
             }
             store(getMySelf(), brokenExisting);
