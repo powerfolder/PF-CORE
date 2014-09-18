@@ -2222,7 +2222,7 @@ public class Folder extends PFComponent {
 
     /**
      * #2311: Revert local changes.
-     *
+     * 
      * @return
      */
     private boolean isRevertLocalChanges() {
@@ -2266,7 +2266,7 @@ public class Folder extends PFComponent {
         try {
             if (newestVersion == null) {
                 boolean remoteFilesFound = false;
-                for (Member member: getConnectedMembers()) {
+                for (Member member : getConnectedMembers()) {
                     if (!hasWritePermission(member)) {
                         continue;
                     }
@@ -3513,7 +3513,7 @@ public class Folder extends PFComponent {
                     currentInfo);
             }
         }
-
+        
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
         if (newList.files != null
@@ -3534,10 +3534,10 @@ public class Folder extends PFComponent {
         // Store but also deleted/clear domain before.
         int expectedItems = newList.nFollowingDeltas * newList.files.length;
         store(from, expectedItems, newList.files);
-
+        
         // Try to find same files
         findSameFiles(from, Arrays.asList(newList.files));
-
+        
         if (syncProfile.isAutodownload() && from.isCompletelyConnected()) {
             // Trigger file requestor
             if (isFiner()) {
@@ -3555,7 +3555,7 @@ public class Folder extends PFComponent {
 
         // Logging
         writeFilelist(from);
-
+        
         fireRemoteContentsChanged(from, newList);
     }
 
