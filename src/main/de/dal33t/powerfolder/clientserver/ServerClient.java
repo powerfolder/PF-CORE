@@ -1061,6 +1061,7 @@ public class ServerClient extends PFComponent {
         }
     }
 
+
     private boolean isKerberosLogin() {
         return ConfigurationEntry.KERBEROS_SSO_ENABLED
             .getValueBoolean(getController())
@@ -1356,11 +1357,19 @@ public class ServerClient extends PFComponent {
 
     /**
      * Are we currently logging in?
-     *
+     * 
      * @return
      */
     public boolean isLoggingIn() {
         return loggingIn.get();
+    }
+
+    /**
+     * Blocks until the current login attempt has finished.
+     */
+    public void waitForLoginComplete() {
+        synchronized (loginLock) {
+        }
     }
 
     /**

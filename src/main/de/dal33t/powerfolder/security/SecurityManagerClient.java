@@ -110,7 +110,13 @@ public class SecurityManagerClient extends PFComponent implements
         if (client.isClusterServer(m)) {
             return true;
         }
-        if (!client.isConnected() || !client.isLoggedIn()) {
+        if (!client.isConnected()) {
+            return hasPermissionDisconnected(permission);
+        }
+        if (client.isLoggingIn()) {
+            client.waitForLoginComplete();
+        }
+        if (!client.isLoggedIn()) {
             return hasPermissionDisconnected(permission);
         }
         AccountInfo a = m.getAccountInfo();
