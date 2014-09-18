@@ -32,7 +32,7 @@ public interface GenericDAO<T> {
      *
      * @param id
      *            The id of the object to load
-     * @return The object associated with the id
+     * @return The object associated with the id or null if not found.
      */
     T findByID(String id);
 
