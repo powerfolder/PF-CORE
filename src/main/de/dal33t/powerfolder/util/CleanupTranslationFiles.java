@@ -183,9 +183,6 @@ public class CleanupTranslationFiles {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         } finally {
-            if (out != null) {
-                out.close();
-            }
         }
 
         String lastPrefix = null;
