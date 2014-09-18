@@ -60,7 +60,6 @@ public class ProblemsTab extends PFUIComponent {
     private MyOpenProblemAction openProblemAction;
     private MyClearProblemAction clearProblemAction;
     private MyResolveProblemAction resolveProblemAction;
-    private MyClearAllProblemsAction clearAllProblemsAction;
 
     private FolderInfo folderInfo;
     private final ProblemsTable problemsTable;
@@ -96,7 +95,6 @@ public class ProblemsTab extends PFUIComponent {
         openProblemAction = new MyOpenProblemAction(getController());
         clearProblemAction = new MyClearProblemAction(getController());
         resolveProblemAction = new MyResolveProblemAction(getController());
-        clearAllProblemsAction = new MyClearAllProblemsAction(getController());
 
         scrollPane = new JScrollPane(problemsTable);
 
@@ -132,8 +130,6 @@ public class ProblemsTab extends PFUIComponent {
             JButton clearBtn = new JButton(clearProblemAction);
             clearBtn.setIcon(null);
             bar.addGridded(clearBtn);
-            // bar.addRelatedGap();
-            // bar.addGridded(new JButton(clearAllProblemsAction));
             bar.addRelatedGap();
         }
 
@@ -232,21 +228,6 @@ public class ProblemsTab extends PFUIComponent {
         }
     }
 
-    private class MyClearAllProblemsAction extends BaseAction {
-        MyClearAllProblemsAction(Controller controller) {
-            super("action_clear_all_problems", controller);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Folder folder = getController().getFolderRepository().getFolder(
-                folderInfo);
-            if (folder != null) {
-                folder.removeAllProblems();
-            }
-        }
-    }
-
     private class MyResolveProblemAction extends BaseAction {
         MyResolveProblemAction(Controller controller) {
             super("action_resolve_problem", controller);
@@ -294,9 +275,6 @@ public class ProblemsTab extends PFUIComponent {
                     ProblemsTab.this.resolveProblem();
                 }
             }
-        }
-
-        private void showContextMenu(MouseEvent evt) {
         }
     }
 
