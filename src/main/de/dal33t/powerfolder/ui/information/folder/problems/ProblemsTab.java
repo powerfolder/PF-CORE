@@ -132,8 +132,8 @@ public class ProblemsTab extends PFUIComponent {
             JButton clearBtn = new JButton(clearProblemAction);
             clearBtn.setIcon(null);
             bar.addGridded(clearBtn);
-            bar.addRelatedGap();
-            bar.addGridded(new JButton(clearAllProblemsAction));
+            // bar.addRelatedGap();
+            // bar.addGridded(new JButton(clearAllProblemsAction));
             bar.addRelatedGap();
         }
 
