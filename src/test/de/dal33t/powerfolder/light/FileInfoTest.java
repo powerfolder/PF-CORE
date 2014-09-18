@@ -59,9 +59,9 @@ public class FileInfoTest extends TestCase {
             + IdGenerator.makeFolderId(), IdGenerator.makeFolderId());
         MemberInfo mInfo = new MemberInfo("Nickname", IdGenerator.makeId(),
             IdGenerator.makeId());
-        FileInfo fInfo = FileInfoFactory
-            .unmarshallExistingFile(foInfo, "subdir/Xyz/Filename.xlsx", null,
-                6300404, mInfo, new Date(), 4711, null, false, null);
+        FileInfo fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
+            "subdir/Xyz/Filename.xlsx", IdGenerator.makeFileId(), 6300404,
+            mInfo, new Date(), 4711, "MD5:XYZ", false, "sync,share,xx");
 
         byte[] buf = ByteSerializer.serializeStatic(fInfo, true);
 
