@@ -1266,7 +1266,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         lastTransferStatus = null;
         expectedListMessages.clear();
         messageListenerSupport = null;
-
+        
         // Remove filelist to save memory.
         for (Folder folder : getFoldersActuallyJoined()) {
             folder.getDAO().deleteDomain(getId(), -1);
@@ -2276,7 +2276,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             return false;
         }
         // nUpcomingMsgs might have negativ values! means we received deltas
-        // after the inital filelist.
+        // after the initial filelist.
         return nUpcomingMsgs <= 0;
     }
 
