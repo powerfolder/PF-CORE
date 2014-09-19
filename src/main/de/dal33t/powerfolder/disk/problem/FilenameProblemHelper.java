@@ -212,12 +212,13 @@ public class FilenameProblemHelper {
             return;
         }
 
-        Path newFile = PathUtils.buildFileFromRelativeName(folder
-                .getLocalBase(), newFilename);
+        Path newFile = PathUtils.buildFileFromRelativeName(
+            folder.getLocalBase(), newFilename);
         try {
             Files.move(file, newFile);
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
-                controller.getMySelf().getInfo(), false);
+                fileInfo.getOID(), controller.getMySelf().getInfo(),
+                fileInfo.getHashes(), false, fileInfo.getTags());
             if (folder.isKnown(fileInfo)) {
                 folder.removeFilesLocal(fileInfo);
             }

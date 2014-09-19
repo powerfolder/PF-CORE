@@ -639,9 +639,10 @@ public class FolderScanner extends PFComponent {
                 }
             } else {
                 // file is new
+                // PFC-2352: TODO Generate ID / Hashes
                 FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
-                    fileToScan, getController().getMySelf().getInfo(),
-                    directory);
+                    fileToScan, null, getController().getMySelf().getInfo(),
+                    null, directory, null);
                 currentScanResult.newFiles.add(info);
                 if (isFiner()) {
                     logFiner("New found: " + info.toDetailString());

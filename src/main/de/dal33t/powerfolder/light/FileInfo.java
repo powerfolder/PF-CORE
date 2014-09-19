@@ -241,8 +241,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (!inSyncWithDisk(diskFile)) {
             MemberInfo mySelf = folder.getController().getMySelf().getInfo();
             if (Files.exists(diskFile)) {
+                // PFC-2352: TODO: Calc new hashes
+                String newHashes = null;
                 return FileInfoFactory.modifiedFile(this, folder, diskFile,
-                    mySelf);
+                    mySelf, newHashes);
             } else {
                 return FileInfoFactory.deletedFile(this, mySelf, new Date());
             }

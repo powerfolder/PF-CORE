@@ -173,8 +173,8 @@ public final class FileInfoFactory {
      *            if the given file is a directory.
      * @return the new file
      */
-    public static FileInfo newFile(Folder folder, Path localFile,
-        MemberInfo creator, boolean directory)
+    public static FileInfo newFile(Folder folder, Path localFile, String oid,
+        MemberInfo creator, String hashes, boolean directory, String tags)
     {
         long date = new Date().getTime();
         long size = 0;
@@ -186,26 +186,23 @@ public final class FileInfoFactory {
         }
 
         if (directory) {
-            // PFC-2352: ID, Hashes, tags empty. TODO: Think about filling it
             return new DirectoryInfo(buildFileName(folder.getLocalBase(),
-                localFile), null, creator, new Date(date), 0, null, false,
-                null, folder.getInfo());
+                localFile), oid, creator, new Date(date), 0, hashes, false,
+                tags, folder.getInfo());
         } else {
             try {
                 size = Files.size(localFile);
             } catch (IOException ioe) {
                 LOG.fine(ioe.getMessage());
             }
-
-            // PFC-2352: ID, Hashes, tags empty. TODO: Think about filling it
             return new FileInfo(
-                buildFileName(folder.getLocalBase(), localFile), null, size,
-                creator, new Date(date), 0, null, false, null, folder.getInfo());
+                buildFileName(folder.getLocalBase(), localFile), oid, size,
+                creator, new Date(date), 0, hashes, false, tags, folder.getInfo());
         }
     }
 
     public static FileInfo modifiedFile(FileInfo original, Folder folder,
-        Path localFile, MemberInfo modby)
+        Path localFile, MemberInfo modby, String newHashes)
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
@@ -219,36 +216,30 @@ public final class FileInfoFactory {
         boolean isDir = Files.isDirectory(localFile);
         try {
             if (original.isFile()) {
-                // PFC-2352: Keep OID and Tags, but delete hashes.
-                // TODO: recalculate hashes?
-                String hashes = null;
                 if (isDir) {
                     return new DirectoryInfo(fn, original.getOID(),
                         Files.size(localFile), modby, new Date(Files
                             .getLastModifiedTime(localFile).toMillis()),
-                        original.getVersion() + 1, hashes, false,
+                        original.getVersion() + 1, newHashes, false,
                         original.getTags(), original.getFolderInfo());
                 }
                 return new FileInfo(fn, original.getOID(),
                     Files.size(localFile), modby, new Date(Files
                         .getLastModifiedTime(localFile).toMillis()),
-                    original.getVersion() + 1, hashes, false,
+                    original.getVersion() + 1, newHashes, false,
                     original.getTags(), original.getFolderInfo());
             } else if (original.isDiretory()) {
-                // PFC-2352: Keep OID and Tags, but delete hashes.
-                // TODO: Recalc hashes?
-                String hashes = null;
                 if (!isDir) {
                     return new FileInfo(fn, original.getOID(),
                         Files.size(localFile), modby, new Date(Files
                             .getLastModifiedTime(localFile).toMillis()),
-                        original.getVersion() + 1, hashes, false,
+                        original.getVersion() + 1, newHashes, false,
                         original.getTags(), original.getFolderInfo());
                 }
                 return new DirectoryInfo(fn, original.getOID(),
                     Files.size(localFile), modby, new Date(Files
                         .getLastModifiedTime(localFile).toMillis()),
-                    original.getVersion() + 1, hashes, false,
+                    original.getVersion() + 1, newHashes, false,
                     original.getTags(), original.getFolderInfo());
             } else {
                 throw new IllegalArgumentException(
@@ -267,6 +258,7 @@ public final class FileInfoFactory {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
             "Cannot delete template FileInfo!");
+        // PFC-2352: TODO Think about hashes!
         if (original.isFile()) {
             return new FileInfo(original.getRelativeName(), original.getOID(),
                 original.getSize(), delby, delDate, original.getVersion() + 1,

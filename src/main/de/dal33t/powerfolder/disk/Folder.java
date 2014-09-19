@@ -3269,9 +3269,11 @@ public class Folder extends PFComponent {
                             // SPECIAL HANDLING FOR ZYNCRO
 
                             // Revert delete, increase version number.
+                            // PFC-2352: TODO: Calc new hashes?
+                            String newHashes = null;
                             final FileInfo revertedFileInfo = FileInfoFactory
                                 .modifiedFile(remoteFile, this, localCopy,
-                                    remoteFile.getModifiedBy());
+                                    remoteFile.getModifiedBy(), newHashes);
                             store(getMySelf(), revertedFileInfo);
                             broadcastMessages(new MessageProducer() {
                                 @Override
