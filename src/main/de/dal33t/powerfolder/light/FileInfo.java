@@ -51,14 +51,15 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
  * CLASS. YOU ARE DOING IT WRONG!. Use {@link FileInfoFactory}
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
 public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     public static final String UNIX_SEPARATOR = "/";
-    private static final Logger log = Logger.getLogger(FileInfo.class.getName());
+    private static final Logger log = Logger
+        .getLogger(FileInfo.class.getName());
 
     /**
      * #1531: If this system should ignore cases of files in
@@ -78,11 +79,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private static final long serialVersionUID = 100L;
 
     /**
-     * Unix-style separated path of the file relative to the folder base dir.
-     * So like 'myFile.txt' or 'directory/myFile.txt' or 'directory/subdirectory/myFile.txt'.
+     * Unix-style separated path of the file relative to the folder base dir. So
+     * like 'myFile.txt' or 'directory/myFile.txt' or
+     * 'directory/subdirectory/myFile.txt'.
      */
     private String fileName;
-    
+
     // PFC-2352
     private String oid;
     private String hashes;
@@ -114,7 +116,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * folderInfo.intern();
      */
     private FolderInfo folderInfo;
-    
+
     // Caching -----------------------------------
 
     /**
@@ -200,7 +202,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Syncs fileinfo with diskfile. If diskfile has other lastmodified date
      * that this. Assume that file has changed on disk and update its modified
      * info.
-     *
+     * 
      * @param folder
      *            the folder to sync with
      * @param diskFile
@@ -228,7 +230,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo name '" + getFilenameOnly()
                     + "', details: " + toDetailString() + ", diskfile name '"
-                    + diskFile.getFileName().toString() + "', path: " + diskFile);
+                    + diskFile.getFileName().toString() + "', path: "
+                    + diskFile);
         }
 
         // if (!diskFile.exists()) {
@@ -283,10 +286,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         if (!diskFileDeleted) {
             try {
-                Map<String, Object> attrs = Files.readAttributes(diskFile, "size,lastModifiedTime,isDirectory");
-                diskSize = ((Long)attrs.get("size")).longValue();
-                diskLastMod = ((FileTime)attrs.get("lastModifiedTime")).toMillis();
-                diskIsDirectory = ((Boolean)attrs.get("isDirectory")).booleanValue();
+                Map<String, Object> attrs = Files.readAttributes(diskFile,
+                    "size,lastModifiedTime,isDirectory");
+                diskSize = ((Long) attrs.get("size")).longValue();
+                diskLastMod = ((FileTime) attrs.get("lastModifiedTime"))
+                    .toMillis();
+                diskIsDirectory = ((Boolean) attrs.get("isDirectory"))
+                    .booleanValue();
             } catch (Exception e) {
                 log.warning("Could not access file attributes of file "
                     + diskFile.toAbsolutePath().toString() + "\n"
@@ -299,8 +305,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                     || (isDiretory() && diskIsDirectory);
                 return existanceSync && dirFileSync;
             }
-            boolean lastModificationSync = DateUtil.equalsFileDateCrossPlattform(
-                diskLastMod, lastModifiedDate.getTime());
+            boolean lastModificationSync = DateUtil
+                .equalsFileDateCrossPlattform(diskLastMod,
+                    lastModifiedDate.getTime());
             if (!lastModificationSync) {
                 return false;
             }
@@ -362,7 +369,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Gets the filename only, without the directory structure
-     *
+     * 
      * @return the filename only of this file.
      */
     public String getFilenameOnly() {
@@ -552,7 +559,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Also considers myself.
-     *
+     * 
      * @param repo
      *            the folder repository
      * @return if there is a newer version available of this file
@@ -564,7 +571,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Also considers myself
-     *
+     * 
      * @param repo
      * @return the newest available version of this file
      */
@@ -648,7 +655,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Resolves a file from local disk by folder repository, File MAY NOT Exist!
      * Returns null if folder was not found
-     *
+     * 
      * @param repo
      * @return the file.
      */
@@ -665,7 +672,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Resolves a FileInfo from local folder db by folder repository, File MAY
      * NOT Exist! Returns null if folder was not found
-     *
+     * 
      * @param repo
      * @return the FileInfo which is is in my own DB/knownfiles.
      */
@@ -768,7 +775,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * appends to buffer
-     *
+     * 
      * @param str
      *            the stringbuilder to add the detail info to.
      */
@@ -819,7 +826,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Validates the state of the FileInfo. This should actually not be public -
      * checks should be made while constructing this class (by
      * constructor/deserialization).
-     *
+     * 
      * @throws IllegalArgumentException
      *             if the state is corrupt
      */
@@ -869,16 +876,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // validate();
     }
 
-    private static final long extVersionUID = 100L;
+    private static final long extVersion100UID = 100L;
+    private static final long extVersionCurrentUID = 101L;
 
     void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != extVersionUID) {
+        if (extUID != extVersion100UID && extUID != extVersionCurrentUID) {
             throw new InvalidClassException(getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
-                    + ", expected: " + extVersionUID);
+                    + ", supported: " + extVersion100UID + ", "
+                    + extVersionCurrentUID);
         }
         fileName = in.readUTF();
         size = in.readLong();
@@ -893,11 +902,38 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         deleted = in.readBoolean();
         folderInfo = ExternalizableUtil.readFolderInfo(in);
         folderInfo = folderInfo != null ? folderInfo.intern() : null;
+
+        if (extUID == extVersion100UID) {
+            return;
+        }
+        // PFC-2352: Start
+        if (in.readBoolean()) {
+            oid = in.readUTF();
+        } else {
+            oid = null;
+        }
+        if (in.readBoolean()) {
+            hashes = in.readUTF();
+        } else {
+            hashes = null;
+        }
+        if (in.readBoolean()) {
+            tags = in.readUTF();
+        } else {
+            tags = null;
+        }
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
+        long extUID;
+        if (oid == null && hashes == null && tags == null) {
+            extUID = extVersion100UID;
+        } else {
+            extUID = extVersionCurrentUID;
+        }
+
         out.writeInt(isFile() ? 0 : 1);
-        out.writeLong(extVersionUID);
+        out.writeLong(extUID);
         out.writeUTF(fileName);
         out.writeLong(size);
         out.writeBoolean(modifiedBy != null);
@@ -908,6 +944,29 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         out.writeInt(version);
         out.writeBoolean(deleted);
         ExternalizableUtil.writeFolderInfo(out, folderInfo);
+        
+        if (extUID == extVersion100UID) {
+            return;
+        }
+        // PFC-2352: Start
+        if (oid != null) {
+            out.writeBoolean(true);
+            out.writeUTF(oid);
+        } else {
+            out.writeBoolean(false);
+        }
+        if (hashes != null) {
+            out.writeBoolean(true);
+            out.writeUTF(hashes);
+        } else {
+            out.writeBoolean(false);
+        }
+        if (tags != null) {
+            out.writeBoolean(true);
+            out.writeUTF(tags);
+        } else {
+            out.writeBoolean(false);
+        }
     }
 
     /**

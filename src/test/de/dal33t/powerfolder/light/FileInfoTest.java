@@ -23,6 +23,10 @@ import java.io.IOException;
 import java.util.Date;
 
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.message.StartUpload;
+import de.dal33t.powerfolder.message.StartUploadExt;
+import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.message.StopUploadExt;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.IdGenerator;
 
@@ -67,6 +71,30 @@ public class FileInfoTest extends TestCase {
 
         FileInfo copy = (FileInfo) ByteSerializer.deserializeStatic(buf, true);
 
+        testAssertEquals(fInfo, copy);
+
+        // Second test in EXT message
+        StartUploadExt stu = new StartUploadExt(fInfo);
+        buf = ByteSerializer.serializeStatic(stu, true);
+        StartUpload suCopy = (StartUpload) ByteSerializer.deserializeStatic(
+            buf, true);
+        copy = suCopy.getFile();
+        testAssertEquals(fInfo, copy);
+
+        // Partial files filled
+        fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
+            "subdir/Xyz/Filename2.xlsx", null, 6300404, mInfo, new Date(),
+            4711, "MD5:395395840958409584309;@dfslfjskfjdkfj", false, null);
+        StopUploadExt sou = new StopUploadExt(fInfo);
+        buf = ByteSerializer.serializeStatic(sou, true);
+        StopUpload soCopy = (StopUpload) ByteSerializer.deserializeStatic(buf,
+            true);
+        copy = soCopy.getFile();
+        testAssertEquals(fInfo, copy);
+
+    }
+
+    private void testAssertEquals(FileInfo fInfo, FileInfo copy) {
         // Test
         assertEquals(fInfo, copy);
         assertEquals(fInfo.getFolderInfo(), copy.getFolderInfo());
@@ -78,5 +106,8 @@ public class FileInfoTest extends TestCase {
         assertEquals(fInfo.getModifiedDate(), copy.getModifiedDate());
         assertEquals(fInfo.getVersion(), copy.getVersion());
 
+        assertEquals(fInfo.getOID(), copy.getOID());
+        assertEquals(fInfo.getHashes(), copy.getHashes());
+        assertEquals(fInfo.getTags(), copy.getTags());
     }
 }
