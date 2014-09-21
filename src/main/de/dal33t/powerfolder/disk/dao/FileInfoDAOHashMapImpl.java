@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 /**
  * A {@link FileInfoDAO} implementation based on fast, in-memory
  * {@link ConcurrentHashMap}s.
- *
+ * 
  * @author sprajc
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
@@ -149,84 +149,66 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     @Override
-    public FileInfo findbyOID(String oid, FileInfo hintFInfo, String... domains)
-    {
+    public FileInfo findNewestByOID(String oid, String... domains) {
         Reject.ifBlank(oid, "OID");
         FileInfo newestVersion = null;
         for (String domain : domains) {
             Domain d = getDomain(domain);
-            FileInfo candidateFile = null;
-
-            // Try a "quick" match.
-            if (hintFInfo != null) {
-                candidateFile = d.files.get(hintFInfo);
-                if (candidateFile == null) {
-                    candidateFile = d.directories.get(hintFInfo);
+            for (FileInfo candidateFile : d.files.values()) {
+                if (StringUtils.isBlank(candidateFile.getOID())) {
+                    continue;
                 }
-
-                if (candidateFile != null) {
-                    if (!candidateFile.isValid()
-                        || StringUtils.isBlank(candidateFile.getOID())
-                        || !candidateFile.getOID().equals(oid))
+                if (candidateFile.getOID().equals(oid)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
                     {
-                        // No "quick match"
-                        candidateFile = null;
+                        newestVersion = candidateFile;
                     }
                 }
             }
-
-            // Search for files
-            if (candidateFile == null) {
-                for (FileInfo domainFile : d.files.values()) {
-                    if (StringUtils.isBlank(domainFile.getOID())
-                        || !domainFile.isValid())
+            for (FileInfo candidateFile : d.directories.values()) {
+                if (StringUtils.isBlank(candidateFile.getOID())) {
+                    continue;
+                }
+                if (candidateFile.getOID().equals(oid)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
                     {
-                        continue;
-                    }
-                    if (domainFile.getOID().equals(oid)) {
-                        candidateFile = domainFile;
-                        // TODO: What about possible other files with same OID?
-                        break;
+                        newestVersion = candidateFile;
                     }
                 }
-            }
-
-            // Search for directories
-            if (candidateFile == null) {
-                for (FileInfo domainFile : d.directories.values()) {
-                    if (StringUtils.isBlank(domainFile.getOID())
-                        || !domainFile.isValid())
-                    {
-                        continue;
-                    }
-                    if (domainFile.getOID().equals(oid)) {
-                        candidateFile = domainFile;
-                        // TODO: What about possible other files with same OID?
-                        break;
-                    }
-                }
-            }
-            
-            if (candidateFile == null || !candidateFile.isValid()) {
-                continue;
-            }
-
-            // Check if remote file in newer
-            if (newestVersion == null
-                || candidateFile.isNewerThan(newestVersion))
-            {
-                newestVersion = candidateFile;
             }
         }
         return newestVersion;
     }
 
     @Override
-    public FileInfo findbyHash(String hash, FileInfo hintFInfo, String... domains) {
-        // TODO Auto-generated method stub
-        return null;
+    public FileInfo findNewestByHash(String hash, String... domains) {
+        Reject.ifBlank(hash, "Hash");
+        FileInfo newestVersion = null;
+        for (String domain : domains) {
+            Domain d = getDomain(domain);
+            for (FileInfo candidateFile : d.files.values()) {
+                if (candidateFile.isMatchingHash(hash)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
+                    {
+                        newestVersion = candidateFile;
+                    }
+                }
+            }
+            for (FileInfo candidateFile : d.directories.values()) {
+                if (candidateFile.isMatchingHash(hash)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
+                    {
+                        newestVersion = candidateFile;
+                    }
+                }
+            }
+        }
+        return newestVersion;
     }
-
 
     public Collection<FileInfo> findAllFiles(String domain) {
         return Collections.unmodifiableCollection(getDomain(domain).files
@@ -462,6 +444,5 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 + " dirs";
         }
     }
-
 
 }

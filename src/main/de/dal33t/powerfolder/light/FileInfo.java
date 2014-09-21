@@ -737,6 +737,20 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // All match!
         return true;
     }
+    
+    /**
+     * PFC-2352.
+     * 
+     * @param hash
+     * @return true if the hash matches any of the file hashes.
+     */
+    public boolean isMatchingHash(String hash) {
+        Reject.ifBlank(hash, "Hash");
+        if (StringUtils.isBlank(hashes)) {
+            return false;
+        }
+        return hashes.contains(hash);
+    }
 
     @Override
     public int hashCode() {

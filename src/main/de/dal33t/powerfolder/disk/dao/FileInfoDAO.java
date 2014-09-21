@@ -78,34 +78,34 @@ public interface FileInfoDAO {
 
     /**
      * Finds the {@link FileInfo} in the given domain
-     *
+     * 
      * @param fInfo
      * @param domain
      * @return the matching {@link FileInfo} or null if not found
      */
     FileInfo find(FileInfo fInfo, String domain);
-    
+
     /**
      * PFC-2352
+     * 
      * @param oid
-     * @param hintFInfo the possible matching FileInfo, may be null. Used for optimization
      * @param domains
-     * @return the newest FileInfo found with the OID
+     * @return the newest(highest version) FileInfo found with the OID
      */
-    FileInfo findbyOID(String oid, FileInfo hintFInfo, String... domains);
-    
+    FileInfo findNewestByOID(String oid, String... domains);
+
     /**
      * PFC-2352
+     * 
      * @param hash
-     * @param hintFInfo the possible matching FileInfo in database, may be null. Used for optimization
      * @param domains
-     * @return the newest FileInfo found with the hash.
+     * @return the newest(highest version) FileInfo found with the hash.
      */
-    FileInfo findbyHash(String hash, FileInfo hintFInfo, String... domains);
+    FileInfo findNewestByHash(String hash, String... domains);
 
     /**
      * Deletes the FileInfo from the DAO.
-     *
+     * 
      * @param fInfo
      * @param domain
      */
