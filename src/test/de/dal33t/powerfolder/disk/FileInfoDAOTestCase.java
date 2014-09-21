@@ -378,4 +378,21 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
             fInfo.getRelativeName(), fInfo.getOID(), fInfo.getSize(), fInfo.getModifiedBy(),
             modDate, version,fInfo.getHashes(), fInfo.isDiretory(), fInfo.getTags());
     }
+    
+    protected void testAssertEquals(FileInfo fInfo, FileInfo copy) {
+        // Test
+        assertEquals(fInfo, copy);
+        assertEquals(fInfo.getFolderInfo(), copy.getFolderInfo());
+        assertEquals(fInfo.getRelativeName(), copy.getRelativeName());
+        assertEquals(fInfo.getFilenameOnly(), copy.getFilenameOnly());
+        assertEquals(fInfo.getExtension(), copy.getExtension());
+        assertEquals(fInfo.getSize(), copy.getSize());
+        assertEquals(fInfo.getModifiedBy(), copy.getModifiedBy());
+        assertEquals(fInfo.getModifiedDate(), copy.getModifiedDate());
+        assertEquals(fInfo.getVersion(), copy.getVersion());
+
+        assertEquals(fInfo.getOID(), copy.getOID());
+        assertEquals(fInfo.getHashes(), copy.getHashes());
+        assertEquals(fInfo.getTags(), copy.getTags());
+    }
 }

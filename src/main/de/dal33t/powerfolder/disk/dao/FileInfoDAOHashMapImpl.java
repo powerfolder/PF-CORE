@@ -148,6 +148,86 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         return getDomain(domain).directories.get(info);
     }
 
+    @Override
+    public FileInfo findbyOID(String oid, FileInfo hintFInfo, String... domains)
+    {
+        Reject.ifBlank(oid, "OID");
+        FileInfo newestVersion = null;
+        for (String domain : domains) {
+            Domain d = getDomain(domain);
+            FileInfo candidateFile = null;
+
+            // Try a "quick" match.
+            if (hintFInfo != null) {
+                candidateFile = d.files.get(hintFInfo);
+                if (candidateFile == null) {
+                    candidateFile = d.directories.get(hintFInfo);
+                }
+
+                if (candidateFile != null) {
+                    if (!candidateFile.isValid()
+                        || StringUtils.isBlank(candidateFile.getOID())
+                        || !candidateFile.getOID().equals(oid))
+                    {
+                        // No "quick match"
+                        candidateFile = null;
+                    }
+                }
+            }
+
+            // Search for files
+            if (candidateFile == null) {
+                for (FileInfo domainFile : d.files.values()) {
+                    if (StringUtils.isBlank(domainFile.getOID())
+                        || !domainFile.isValid())
+                    {
+                        continue;
+                    }
+                    if (domainFile.getOID().equals(oid)) {
+                        candidateFile = domainFile;
+                        // TODO: What about possible other files with same OID?
+                        break;
+                    }
+                }
+            }
+
+            // Search for directories
+            if (candidateFile == null) {
+                for (FileInfo domainFile : d.directories.values()) {
+                    if (StringUtils.isBlank(domainFile.getOID())
+                        || !domainFile.isValid())
+                    {
+                        continue;
+                    }
+                    if (domainFile.getOID().equals(oid)) {
+                        candidateFile = domainFile;
+                        // TODO: What about possible other files with same OID?
+                        break;
+                    }
+                }
+            }
+            
+            if (candidateFile == null || !candidateFile.isValid()) {
+                continue;
+            }
+
+            // Check if remote file in newer
+            if (newestVersion == null
+                || candidateFile.isNewerThan(newestVersion))
+            {
+                newestVersion = candidateFile;
+            }
+        }
+        return newestVersion;
+    }
+
+    @Override
+    public FileInfo findbyHash(String hash, FileInfo hintFInfo, String... domains) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
     public Collection<FileInfo> findAllFiles(String domain) {
         return Collections.unmodifiableCollection(getDomain(domain).files
             .values());
@@ -382,5 +462,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 + " dirs";
         }
     }
+
 
 }
