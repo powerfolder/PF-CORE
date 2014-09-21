@@ -3931,7 +3931,7 @@ public class Folder extends PFComponent {
      *         {@link FileList} and {@link FolderFilesChanged}
      */
     public boolean supportExternalizable(Member member) {
-        return member.getProtocolVersion() >= 105;
+        return member.getProtocolVersion() >= 109;
     }
 
     /**

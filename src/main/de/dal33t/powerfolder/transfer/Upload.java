@@ -235,7 +235,7 @@ public class Upload extends Transfer {
                     }
                     debugState = "Sending StartUpload";
                     try {
-                        if (getPartner().getProtocolVersion() >= 102) {
+                        if (getPartner().getProtocolVersion() >= 109) {
                             getPartner().sendMessage(
                                 new StartUploadExt(getFile()));
                         } else {
@@ -467,7 +467,7 @@ public class Upload extends Transfer {
                 pos += read;
             }
             FileChunk chunk;
-            if (getPartner().getProtocolVersion() >= 104) {
+            if (getPartner().getProtocolVersion() >= 109) {
                 chunk = new FileChunkExt(pr.getFile(),
                     pr.getRange().getStart(), data);
             } else {
