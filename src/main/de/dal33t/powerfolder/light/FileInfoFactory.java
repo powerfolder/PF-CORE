@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -137,6 +138,30 @@ public final class FileInfoFactory {
                         + original.toDetailString());
             }
         }
+    }
+    
+    /**
+     * PFC-2352
+     * @param fInfo
+     * @param oid
+     * @return a new instance with the given OID.
+     */
+    public static FileInfo setOID(FileInfo fInfo, String oid) {
+        Reject.ifNull(fInfo, "FileInfo");
+        if (StringUtils.isNotBlank(fInfo.getOID())) {
+            LOG.warning("Overwriting existing OID: " + fInfo.getOID() + " of "
+                + fInfo.toDetailString());
+        }
+        if (fInfo instanceof DirectoryInfo) {
+            return new DirectoryInfo(fInfo.getRelativeName(), oid,
+                fInfo.getSize(), fInfo.getModifiedBy(),
+                fInfo.getModifiedDate(), fInfo.getVersion(), fInfo.getHashes(),
+                fInfo.isDeleted(), fInfo.getTags(), fInfo.getFolderInfo());
+        }
+        return new FileInfo(fInfo.getRelativeName(), oid, fInfo.getSize(),
+            fInfo.getModifiedBy(), fInfo.getModifiedDate(), fInfo.getVersion(),
+            fInfo.getHashes(), fInfo.isDeleted(), fInfo.getTags(),
+            fInfo.getFolderInfo());
     }
 
     public static FileInfo unmarshallExistingFile(FolderInfo fi,
