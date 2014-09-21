@@ -2120,8 +2120,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     logFine("Scheduling setup of folder: " + folderName);
                     CreateFolderOnServerTask task = new CreateFolderOnServerTask(
                         a.createInfo(), foInfo, null);
-                    task.setArchiveVersions(folderInfos.get(foInfo)
-                        .getVersions());
+                    task.setArchiveVersions(settings.getVersions());
                     getController().getTaskManager().scheduleTask(task);
                 }
 
