@@ -29,12 +29,9 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Range;
 
 public class RequestPartExt extends RequestPart implements Externalizable {
-
+    private static final long serialVersionUID = 2643953297593509510L;
+        
     public RequestPartExt() {
-    }
-
-    public RequestPartExt(FileInfo file, double progress) {
-        super(file, progress);
     }
 
     public RequestPartExt(FileInfo file, Range range, double progress) {

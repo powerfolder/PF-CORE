@@ -34,7 +34,8 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
  * @version $Revision: 1.6 $
  */
 public class FileChunkExt extends FileChunk implements Externalizable {
-
+    private static final long serialVersionUID = 2049565120457732271L;
+    
     public FileChunkExt() {
         super();
     }
@@ -62,5 +63,4 @@ public class FileChunkExt extends FileChunk implements Externalizable {
         out.writeInt(data.length);
         out.write(data);
     }
-
 }

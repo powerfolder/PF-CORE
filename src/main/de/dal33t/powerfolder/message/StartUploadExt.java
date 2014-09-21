@@ -35,6 +35,8 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
  * @version $Revision$
  */
 public class StartUploadExt extends StartUpload implements Externalizable {
+    private static final long serialVersionUID = 2241562195221726484L;
+    
     public StartUploadExt() {
         super();
     }

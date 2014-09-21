@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.util.ExternalizableUtil;
 public class FolderFilesChangedExt extends FolderFilesChanged implements
     Externalizable
 {
+    private static final long serialVersionUID = -2047091337743391978L;
     private static final long extVersionUID = 100L;
     private static final Logger LOG = Logger
         .getLogger(FolderFilesChangedExt.class.getName());

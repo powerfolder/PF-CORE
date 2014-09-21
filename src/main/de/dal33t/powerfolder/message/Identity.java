@@ -95,15 +95,20 @@ public class Identity extends Message {
      * <p>
      * 104: Added: {@link FileChunkExt}
      * <p>
-     * 105: Added: {@link FileListExt}
+     * 105: Added: {@link FileListExt} {@link FolderFilesChangedExt}
      * <p>
      * 106: Added: {@link FolderListExt}
      * <p>
      * 107: Added: {@link KnownNodesExt}
      * <p>
      * 108: Added: {@link RelayedMessageExt}
+     * <p>
+     * 109: PFC-2352: Changed all messages containing FileInfo
+     * {@link StopUploadExt} {@link StartUploadExt} {@link RequestPartExt}
+     * {@link RequestDownloadExt} {@link FileChunkExt} {@link FileListExt}
+     * {@link FolderFilesChanged}
      */
-    private int protocolVersion = 108;
+    private int protocolVersion = 109;
 
     private boolean requestFullFolderlist;
 

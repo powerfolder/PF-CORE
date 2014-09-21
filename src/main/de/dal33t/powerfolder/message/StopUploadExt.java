@@ -34,7 +34,8 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
  * @version $Revision$
  */
 public class StopUploadExt extends StopUpload implements Externalizable {
-
+    private static final long serialVersionUID = 1219775143068587381L;
+     
     public StopUploadExt() {
         super();
     }

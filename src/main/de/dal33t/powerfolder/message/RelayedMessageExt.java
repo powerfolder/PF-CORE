@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
  */
 public class RelayedMessageExt extends RelayedMessage implements Externalizable
 {
+    private static final long serialVersionUID = 7437181683027517530L;
     private static final long extVersionUID = 100L;
 
     // For serialization

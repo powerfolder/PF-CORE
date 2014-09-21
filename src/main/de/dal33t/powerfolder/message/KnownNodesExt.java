@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
  * {@link Externalizable} version of {@link KnownNodes}
  */
 public class KnownNodesExt extends KnownNodes implements Externalizable {
+    private static final long serialVersionUID = -5509020009008761039L;
     private static final long extVersionUID = 100L;
 
     public KnownNodesExt() {
