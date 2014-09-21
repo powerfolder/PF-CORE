@@ -244,7 +244,7 @@ public class ByteSerializer extends Loggable {
 
     /**
      * Deserialize a byte[] array into an Object.
-     *
+     * 
      * @param base
      *            The byte[] array
      * @param expectCompression
@@ -265,20 +265,24 @@ public class ByteSerializer extends Loggable {
             try {
                 result = deserialize0(base, !expectCompression);
             } catch (StreamCorruptedException e2) {
-                Level lvl = Level.WARNING;
-                if (e2.toString().toLowerCase()
-                    .contains("invalid stream header"))
+                LOG.log(Level.WARNING, "While deserializing "
+                    + (expectCompression ? "   compressed" : "uncompressed")
+                    + ": " + e, e);
+                if (!e2.toString().toLowerCase()
+                    .contains("invalid stream header: 1f8b0800"))
                 {
-                    lvl = Level.FINER;
+                    LOG.log(Level.WARNING, "While deserializing "
+                        + (!expectCompression
+                            ? "   compressed"
+                            : "uncompressed") + ": " + e2, e2);
                 }
-                LOG.log(lvl, "While deserializing: " + e2, e2);
                 throw e2;
             } catch (InvalidClassException e2) {
                 LOG.log(Level.WARNING, "While deserializing: " + e2, e2);
                 throw e2;
             }
             if (!(result instanceof Identity)) {
-                LOG
+   LOG
                     .warning("Stream was not as expected ("
                         + (expectCompression
                             ? "compression was expected, but received uncompressed data"
@@ -316,7 +320,6 @@ public class ByteSerializer extends Loggable {
             } else {
                 targetIn = bin;
             }
-
             in = new ObjectInputStream(targetIn);
             result = in.readUnshared();
             return result;

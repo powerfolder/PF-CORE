@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.Date;
 
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.RequestDownloadExt;
 import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StartUploadExt;
 import de.dal33t.powerfolder.message.StopUpload;
@@ -92,6 +94,15 @@ public class FileInfoTest extends TestCase {
         copy = soCopy.getFile();
         testAssertEquals(fInfo, copy);
 
+        fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
+            "subdir/Xyz/Filename2.xlsx", null, 6300404, mInfo, new Date(),
+            4711, "MD5:395395840958409584309;@dfslfjskfjdkfj", false, null);
+        RequestDownload dl = new RequestDownloadExt(fInfo, 0);
+        buf = ByteSerializer.serializeStatic(dl, true);
+        RequestDownload dlCopy = (RequestDownload) ByteSerializer
+            .deserializeStatic(buf, true);
+        copy = dlCopy.file;
+        testAssertEquals(fInfo, copy);
     }
 
     private void testAssertEquals(FileInfo fInfo, FileInfo copy) {
