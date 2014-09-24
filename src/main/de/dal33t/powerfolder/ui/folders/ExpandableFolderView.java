@@ -363,8 +363,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                 // Don't fetch again. It's simply not available.
                 ownerDisplayname = "";
             } else {
-                logWarning("Owner for " + folderInfo.getName() + ": "
-                    + ownerDisplayname);
+                if (isFine()) {
+                    logFine("Owner of " + folderInfo.getName() + ": "
+                        + ownerDisplayname);
+                }
                 updateNameLabel();
             }
         }
