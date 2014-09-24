@@ -234,6 +234,14 @@ public interface FolderService {
      * @return
      */
     String getWebDAVURL(FolderInfo foInfo);
+    
+    /**
+     * PFC-2284
+     * 
+     * @param foInfo
+     * @return the display name of the owner
+     */
+    String getOwnerDisplayname(FolderInfo foInfo);
 
     /**
      * Create a file link.

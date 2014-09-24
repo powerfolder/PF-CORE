@@ -51,6 +51,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -183,11 +184,12 @@ public class ExpandableFolderView extends PFUIComponent implements
     private DelayedUpdater folderDetailsUpdater;
 
     private String webDAVURL;
+    private String ownerDisplayname;
     private String removeLabel;
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      * @param folderInfo
      */
@@ -206,7 +208,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     /**
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
-     *
+     * 
      * @param folderModel
      */
     public void configure(ExpandableFolderModel folderModel) {
@@ -265,9 +267,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             && type == Type.Local)
         {
             expanded.set(true);
-            updateWebDAVURL();
-            if (PreferencesEntry.BEGINNER_MODE
-                .getValueBoolean(getController())
+            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
                 && !PreferencesEntry.EXPERT_MODE
                     .getValueBoolean(getController()))
             {
@@ -288,12 +288,11 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     public void collapse() {
         expanded.set(false);
-        updateWebDAVURL();
-        if (PreferencesEntry.BEGINNER_MODE
-            .getValueBoolean(getController())
+        if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
-            upperPanel.setToolTipText(Translation.getTranslation("exp_folder_view.create"));
+            upperPanel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.create"));
         } else {
             upperPanel.setToolTipText(Translation
                 .getTranslation("exp_folder_view.expand"));
@@ -319,19 +318,21 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    private void updateWebDAVURL() {
+    private void retrieveAdditionalInfosFromServer() {
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
                 createWebDAVURL();
+                retrieveOwnerDisplayname();
                 return null;
             }
         };
         worker.execute();
     }
 
-    private synchronized void createWebDAVURL() {
+    private synchronized String createWebDAVURL() {
+        logWarning("createWebDAVURL");
         if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
-            return;
+            return null;
         }
         if (webDAVURL == null) {
             webDAVURL = serverClient.getFolderService()
@@ -341,12 +342,38 @@ public class ExpandableFolderView extends PFUIComponent implements
                 webDAVURL = "";
             }
         }
+        return webDAVURL;
+    }
 
+    private String retrieveOwnerDisplayname() {
+        if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
+            return null;
+        }
+        if (serverClient.getAccount().hasOwnerPermission(folderInfo)) {
+            return null;
+        }
+        if (ownerDisplayname == null) {
+            try {
+                ownerDisplayname = serverClient.getFolderService()
+                    .getOwnerDisplayname(folderInfo);
+            } catch (RemoteCallException e) {
+                logFine("Unsupported/Old server. Not able to retrieve owner name of "
+                    + folderInfo.getName() + ". " + e);
+            }
+            if (ownerDisplayname == null) {
+                // Don't fetch again. It's simply not available.
+                ownerDisplayname = "";
+            } else {
+                logWarning("Owner for " + folderInfo.getName() + ": "
+                    + ownerDisplayname);
+            }
+        }
+        return ownerDisplayname;
     }
 
     /**
      * Gets the ui component, building if required.
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -474,8 +501,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
             }
 
-            if (PreferencesEntry.BEGINNER_MODE
-                .getValueBoolean(getController())
+            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
                 && !PreferencesEntry.EXPERT_MODE
                     .getValueBoolean(getController()))
             {
@@ -559,7 +585,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         // given.
         removeFolderLocalAction = new FolderRemoveAction(getController());
 
-        if(admin) {
+        if (admin) {
             removeLabel = "action_remove_online_folder_admin";
         } else {
             removeLabel = "action_remove_online_folder";
@@ -589,7 +615,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperSyncPercentageLabel = new ActionLabel(getController(),
             new MyOpenFilesUnsyncedAction(getController()));
-        if (!ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.FILES_ENABLED.getValueBoolean(getController()))
+        {
             upperSyncPercentageLabel.setNeverUnderline(true);
         }
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
@@ -798,7 +825,6 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Updates the statistics details of the folder.
      */
     private void updateStatsDetails() {
-
         String syncPercentText;
         String syncPercentTip = null;
         String syncDateText;
@@ -955,7 +981,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         totalSizeLabel.setText(Translation.getTranslation(
             "exp_folder_view.total", totalSizeString));
         // Maybe change visibility of upperSyncLink.
-        updateWebDAVURL();
+        retrieveAdditionalInfosFromServer();
     }
 
     /**
@@ -1003,7 +1029,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             transferMode = Translation.getTranslation(
                 "exp_folder_view.transfer_mode", folder.getSyncProfile()
                     .getName());
-            String path = folder.getCommitOrLocalDir().toAbsolutePath().toString();
+            String path = folder.getCommitOrLocalDir().toAbsolutePath()
+                .toString();
             if (path.length() >= 35) {
                 path = path.substring(0, 15) + "..."
                     + path.substring(path.length() - 15, path.length());
@@ -1057,9 +1084,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (type == Type.Local) {
 
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
-            if (folder != null
-                && folder.countProblems() > 0)
-            {
+            if (folder != null && folder.countProblems() > 0) {
                 // Got a problem.
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
                 primaryButton.setToolTipText(Translation
@@ -1093,8 +1118,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                     primaryButton.setToolTipText(Translation
                         .getTranslation("exp_folder_view.explore"));
                 } else {
-                    primaryButton.setToolTipText(Translation
-                        .getTranslation("exp_folder_view.folder_sync_complete"));
+                    primaryButton
+                        .setToolTipText(Translation
+                            .getTranslation("exp_folder_view.folder_sync_complete"));
                 }
             }
         } else if (type == Type.Typical) {
@@ -1137,7 +1163,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Is the view expanded?
-     *
+     * 
      * @return
      */
     public boolean isExpanded() {
@@ -1228,11 +1254,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (folder != null) {
             int newCount = getController().getTransferManager()
                 .countCompletedDownloads(folder);
-            //#PFC-2497 Do not show new Files in Beginnger mode
+            // #PFC-2497 Do not show new Files in Beginnger mode
             if (!PreferencesEntry.BEGINNER_MODE
                 .getValueBoolean(getController()))
             {
-                newFiles =  newCount > 0;
+                newFiles = newCount > 0;
             }
             if (newFiles) {
                 newCountString = " (" + newCount + ')';
@@ -1296,8 +1322,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             public Object construct() throws Throwable {
                 try {
-                    createWebDAVURL();
-                    return WebDAV.createConnection(serverClient, webDAVURL);
+                    return WebDAV.createConnection(serverClient,
+                        createWebDAVURL());
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
                     logSevere(e.getMessage(), e);
@@ -1612,20 +1638,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }, 2000);
                 }
             }
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateWebDAVURL();
-                }
-            });
         }
 
         public void mouseExited(MouseEvent e) {
             mouseOver.set(false);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateWebDAVURL();
-                }
-            });
         }
     }
 
@@ -1788,7 +1804,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         private FolderOnlineRemoveAction(Controller controller) {
             super(removeLabel, controller);
-   }
+        }
 
         public void actionPerformed(ActionEvent e) {
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
