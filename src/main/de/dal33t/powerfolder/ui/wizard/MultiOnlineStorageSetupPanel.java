@@ -409,7 +409,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                         MultiOnlineStorageSetupPanel.class.getName()).warning(
                         "Unsupported/Old server. Not able to retrieve owner name of "
                             + folderInfo.getName() + ". " + e);
-                    ownerDisplayname = "dummy";
+                    ownerDisplayname = null;
                 }
                 ownerDisplaynameModel.setValue(ownerDisplayname);
                 sem.release();
