@@ -330,7 +330,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private synchronized String createWebDAVURL() {
-        logWarning("createWebDAVURL");
         if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
             return null;
         }
@@ -366,6 +365,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 logWarning("Owner for " + folderInfo.getName() + ": "
                     + ownerDisplayname);
+                updateNameLabel();
             }
         }
         return ownerDisplayname;
@@ -1250,6 +1250,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         boolean newFiles = false;
         String newCountString = "";
+        String ownerAddition = "";
 
         if (folder != null) {
             int newCount = getController().getTransferManager()
@@ -1294,7 +1295,11 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         String folderName = folderInfo.getLocalizedName();
 
-        nameLabel.setText(folderName + newCountString);
+        if (StringUtils.isNotBlank(ownerDisplayname)) {
+            ownerAddition += " (" + ownerDisplayname + ")";
+        }
+
+        nameLabel.setText(folderName + newCountString + ownerAddition);
         nameLabel.setFont(new Font(nameLabel.getFont().getName(), newFiles
             ? Font.BOLD
             : Font.PLAIN, nameLabel.getFont().getSize()));
