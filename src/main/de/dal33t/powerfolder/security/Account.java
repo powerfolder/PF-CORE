@@ -926,6 +926,14 @@ public class Account implements Serializable {
             this.organizationOID = account.organizationOID;
         }
 
+        if (StringUtils.isBlank(ldapDN)) {
+            this.ldapDN = account.ldapDN;
+        }
+
+        if (StringUtils.isBlank(shibbolethPersistentID)) {
+            this.shibbolethPersistentID = account.shibbolethPersistentID;
+        }
+
         // Add permissions
         this.grant(account.permissions.toArray(new Permission[0]));
 
