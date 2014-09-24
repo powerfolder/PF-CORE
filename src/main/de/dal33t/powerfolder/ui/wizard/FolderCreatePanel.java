@@ -357,6 +357,13 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     + existingFolder);
                 return;
             }
+            
+            // PFC-2284:
+            if (folderSettings.getLocalBaseDir().startsWith(baseDir)) {
+                log.finer("Folder is an existing subdirectory in basedir: "
+                    + existingFolder);
+                return;
+            }
 
             Path shortcutFile = baseDir.resolve(folderInfo.getLocalizedName() + Constants.LINK_EXTENSION);
             String shortcutPath = shortcutFile.toAbsolutePath().toString();
