@@ -75,7 +75,7 @@ import de.dal33t.powerfolder.util.db.PermissionUserType;
 /**
  * A access to the system indentified by username & password.
  *
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
+ * @author Christian Sprajc
  * @version $Revision: 1.5 $
  */
 @TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
