@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * Refelects a entry setting in the configuration file. Provides basic method
  * for accessing and setting the configuration.
  *
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
+ * @author Christian Sprajc
  * @version $Revision: 1.5 $
  */
 public enum ConfigurationEntry {

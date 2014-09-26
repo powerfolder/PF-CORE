@@ -139,7 +139,7 @@ import de.dal33t.powerfolder.util.update.UpdateSetting;
  * to extend PFComponent so you always have a reference to the main
  * {@link Controller}.
  *
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
+ * @author Christian Sprajc
  * @version $Revision: 1.107 $
  */
 public class Controller extends PFComponent {

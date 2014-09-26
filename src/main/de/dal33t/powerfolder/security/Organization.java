@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.StringUtils;
  * user accounts per "admin domain"/Organization - Multitenancy -
  * Mandantenfähigkeit
  * 
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
+ * @author Christian Sprajc
  * @version $Revision: 1.5 $
  */
 @Entity
