@@ -3950,7 +3950,7 @@ public class Folder extends PFComponent {
     private void persist() {
         if (checkIfDeviceDisconnected()) {
             if (!currentInfo.isMetaFolder()) {
-                logWarning("Unable to persist database. Device is disconnected: "
+                logWarning("Unable to persist database. Storage/Device disconnected: "
                     + localBase);
             }
             return;
@@ -4163,10 +4163,10 @@ public class Folder extends PFComponent {
         }
         if (addProblem) {
             if (currentInfo.isMetaFolder()) {
-                logFine(toString() + " disconnected from storage "
+                logFine(toString() + " disconnected storage/device "
                     + getLocalBase() + ". Reconnecting...");
             } else {
-                logInfo(toString() + " disconnected from storage "
+                logInfo(toString() + " disconnected storage/device "
                     + getLocalBase() + ". Reconnecting...");
             }
             boolean remove = ConfigurationEntry.FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED
@@ -4198,7 +4198,7 @@ public class Folder extends PFComponent {
 
         if (wasDeviceDisconnected && !deviceDisconnected) {
             if (!currentInfo.isMetaFolder()) {
-                logInfo(toString() + " storage reconnected " + localBase);
+                logInfo(toString() + " storage/device reconnected " + localBase);
             }
             // Try to load db from connected device now.
             loadMetadata();
