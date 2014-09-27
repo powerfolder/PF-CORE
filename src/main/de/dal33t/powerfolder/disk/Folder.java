@@ -395,9 +395,15 @@ public class Folder extends PFComponent {
             logFine("Opened " + toString() + " at '"
                 + localBase.toAbsolutePath() + '\'');
         } catch (FolderException e) {
-            logWarning("Unable to open " + toString() + " at '"
-                + localBase.toAbsolutePath()
-                + "'. Local base directory is inaccessable. " + e);
+            if (currentInfo.isMetaFolder()) {
+                logFine("Unable to open " + toString() + " at '"
+                    + localBase.toAbsolutePath()
+                    + "'. Local base directory is inaccessable. " + e);
+            } else {
+                logWarning("Unable to open " + toString() + " at '"
+                    + localBase.toAbsolutePath()
+                    + "'. Local base directory is inaccessable. " + e);                
+            }
             deviceDisconnected = true;
         }
 
@@ -408,7 +414,7 @@ public class Folder extends PFComponent {
             }
         };
 
-        if (!schemaZyncro
+        if (!schemaZyncro && !deviceDisconnected
             && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
         {
             // Empty folder... no scan required for database
@@ -1835,8 +1841,11 @@ public class Folder extends PFComponent {
                         // NEVER Ever join any member into a folder which is
                         // actually
                         // connected already.
-                        logInfo("(I) Not joining connected server "
-                            + member.getNick() + " into folder " + getName());
+                        if (!members.containsKey(member)) {
+                            logInfo("(I) Not joining connected server "
+                                + member.getNick() + " into folder "
+                                + getName());
+                        }
                         continue;
                     }
                     join0(member, !getController().isStarted());
@@ -4153,8 +4162,13 @@ public class Folder extends PFComponent {
             }
         }
         if (addProblem) {
-            logInfo("Device disconnected. Folder disappeared from "
-                + getLocalBase());
+            if (currentInfo.isMetaFolder()) {
+                logFine(toString() + " disconnected from storage "
+                    + getLocalBase() + ". Reconnecting...");
+            } else {
+                logInfo(toString() + " disconnected from storage "
+                    + getLocalBase() + ". Reconnecting...");
+            }
             boolean remove = ConfigurationEntry.FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED
                 .getValueBoolean(getController());
             String bd = getController().getFolderRepository()
@@ -4184,7 +4198,7 @@ public class Folder extends PFComponent {
 
         if (wasDeviceDisconnected && !deviceDisconnected) {
             if (!currentInfo.isMetaFolder()) {
-                logInfo("Device reconnected @ " + localBase);
+                logInfo(toString() + " storage reconnected " + localBase);
             }
             // Try to load db from connected device now.
             loadMetadata();

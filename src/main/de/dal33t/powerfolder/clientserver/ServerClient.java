@@ -2060,8 +2060,8 @@ public class ServerClient extends PFComponent {
         public void settingsChanged(NodeManagerEvent e) {
             // Transition Member.setServer(true)
             if (e.getNode().isServer()) {
-                logInfo("Discovered a new server of " + countServers()
-                    + " in cluster: " + e.getNode().getNick() + " @ "
+                logInfo("Discovered new server of cluster(" + countServers()
+                    + "): " + e.getNode().getNick() + " @ "
                     + e.getNode().getReconnectAddress());
             } else if (getMySelf().isServer()) {
                 logInfo("Not longer member of cluster: "
