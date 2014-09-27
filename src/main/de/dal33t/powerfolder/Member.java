@@ -1038,7 +1038,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (isInfo()) {
-            logInfo(getNick() + " connected ("
+            logInfo(getNick() + " " + (isOnLAN() ? "(LAN)" : "(Internet)")
+                + " connected ("
                 + getController().getNodeManager().countConnectedNodes()
                 + " total)");
         }
