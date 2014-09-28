@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -104,6 +103,10 @@ public class FoldersTab extends PFUIComponent {
                 });
             }
         }, 0, 30, TimeUnit.SECONDS);
+    }
+
+    public FoldersList getFoldersList() {
+        return foldersList;
     }
 
     /**
@@ -295,10 +298,6 @@ public class FoldersTab extends PFUIComponent {
      */
     public void populate() {
         foldersList.populate();
-    }
-
-    public void folderCreated(FolderRepositoryEvent e) {
-        foldersList.folderCreated(e);
     }
 
     // ////////////////

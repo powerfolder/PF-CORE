@@ -361,37 +361,12 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
-    public void folderCreated(final FolderRepositoryEvent e) {
-
-        // New folder created; try to show it in the list.
-        Thread t = new Thread() {
-            public void run() {
-
-                // At this point, the newly created folder does not exist in the views,
-                // so do this later, when the folder has appeared.
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    // Don't care.
-                }
-
-                // Run this in the AWT thread later.
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        scrollToFolderInfo(e.getFolderInfo());
-                    }
-                });
-            }
-        };
-        t.start();
-    }
-
     /**
      * This tries to find a view for a FolderInfo and if found, scrolls to it in the list.
      *
      * @param folderInfo
      */
-    private void scrollToFolderInfo(FolderInfo folderInfo) {
+    public void scrollToFolderInfo(FolderInfo folderInfo) {
 
         // Sum view heights and calculate my position within that height.
         boolean found = false;

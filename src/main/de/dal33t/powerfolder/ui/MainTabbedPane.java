@@ -21,13 +21,13 @@ package de.dal33t.powerfolder.ui;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
@@ -148,6 +148,10 @@ public class MainTabbedPane extends PFUIComponent {
         }
     }
 
+    public FoldersTab getFoldersTab() {
+        return foldersTab;
+    }
+
     /**
      * Add a change listener to the main tabbed pane.
      * 
@@ -178,10 +182,6 @@ public class MainTabbedPane extends PFUIComponent {
         if (showDeviceTab) {
             tabbedPane.setSelectedIndex(tabIndex);
         }
-    }
-
-    public void folderCreated(FolderRepositoryEvent e) {
-        foldersTab.folderCreated(e);
     }
 
     /**
