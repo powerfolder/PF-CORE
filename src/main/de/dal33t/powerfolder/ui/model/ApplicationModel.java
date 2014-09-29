@@ -324,7 +324,7 @@ public class ApplicationModel extends PFUIComponent {
             status = SyncStatusEvent.NOT_LOGGED_IN;
         } else if (repository.getFoldersCount() == 0 && !noticeAvailable) {
             status = SyncStatusEvent.NO_FOLDERS;
-        } else if (folderRepositoryModel.isSyncing() && !noticeAvailable) {
+        } else if (folderRepositoryModel.isSyncing()) {
             status = SyncStatusEvent.SYNCING;
         } else if (repository.areAllFoldersInSync() && !noticeAvailable) {
             status = SyncStatusEvent.SYNCHRONIZED;
