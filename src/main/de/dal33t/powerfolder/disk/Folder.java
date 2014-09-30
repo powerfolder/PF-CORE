@@ -4235,6 +4235,10 @@ public class Folder extends PFComponent {
     public String getName() {
         return currentInfo.name;
     }
+    
+    public String getLocalizedName() {
+        return currentInfo.getLocalizedName();
+    }
 
     public String getConfigEntryId() {
         return configEntryId;
