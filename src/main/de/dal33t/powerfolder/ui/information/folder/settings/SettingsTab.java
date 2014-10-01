@@ -1170,7 +1170,9 @@ public class SettingsTab extends PFUIComponent {
                     folder.maintainFolderDB(System.currentTimeMillis());
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            setEnabled(true);
+                            setEnabled(true);                            
+                            //TODO: Add dialog
+                            DialogFactory.genericDialog(getController(), "Cleanup Database", Translation.getTranslation("database_cleanup_finished"), GenericDialogType.INFO);
                         }
                     });
                 }
