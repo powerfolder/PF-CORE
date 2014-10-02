@@ -96,6 +96,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.skin.Skin;
+import de.dal33t.powerfolder.ui.contextmenu.ContextMenu;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PauseDialog;
@@ -163,6 +164,7 @@ public class UIController extends PFComponent {
     private SystemMonitorFrame systemMonitorFrame;
     private final InformationFrame informationFrame;
     private WeakReference<JDialog> wizardDialogReference;
+    private ContextMenu contextMenu;
 
     // List of pending jobs, execute when ui is opened
     private final List<Runnable> pendingJobs;
@@ -337,6 +339,8 @@ public class UIController extends PFComponent {
             mainFrame.getUIComponent().setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE);
         }
+
+        contextMenu = new ContextMenu(getController());
 
         if (getController().isStartMinimized() || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
             logInfo("Starting minimized");
