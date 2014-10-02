@@ -1,0 +1,113 @@
+/*
+ * Copyright 2004 - 2014 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
+package de.dal33t.powerfolder.ui.contextmenu;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.liferay.nativity.modules.contextmenu.ContextMenuControlCallback;
+import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
+import com.liferay.nativity.modules.contextmenu.model.ContextMenuItem;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.Translation;
+
+/**
+ * Builds the Context Menu Items and applies the the correct {@link ContextMenuAction}.
+ * 
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
+ */
+class ContextMenuHandler extends PFComponent implements ContextMenuControlCallback {
+
+    private ContextMenuItem shareLinkItem;
+    private ContextMenuItem shareFolderItem;
+    private ContextMenuItem openColabItem;
+
+    private ContextMenuItem pfMainItem;
+    private ContextMenuItem openWebItem;
+    private ContextMenuItem stopSyncItem;
+    private ContextMenuItem lockUnlockItem;
+    private ContextMenuItem versionHistoryItem;
+
+    ContextMenuHandler(Controller controller) {
+        super(controller);
+
+        pfMainItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.main_item"));
+
+        openWebItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.open_web"));
+        stopSyncItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.stop_sync"));
+        // TODO: should be named dynamically in #getContextMenuItems();
+        lockUnlockItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.lock_unlock"));
+        versionHistoryItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.version_history"));
+    }
+
+    @Override
+    public List<ContextMenuItem> getContextMenuItems(String[] pathNames) {
+        if (pathNames.length != 1) {
+            logInfo("More than one directory selected");
+            return null;
+        }
+
+        for (ContextMenuItem cmi : pfMainItem.getAllContextMenuItems()) {
+            pfMainItem.removeContextMenuItem(cmi);
+        }
+
+        String pathName = pathNames[0];
+        Path path = Paths.get(pathName);
+
+        FolderRepository fr = getController().getFolderRepository();
+        Path foldersBaseDir = fr.getFoldersBasedir();
+
+        boolean isInBasedir = path.startsWith(foldersBaseDir);
+
+        Path folderLocalBase = foldersBaseDir.resolve(path
+            .getName(foldersBaseDir.getNameCount()));
+        Folder folder = fr.findExistingFolder(folderLocalBase);
+
+        if (isInBasedir) {
+            FileInfo fInfo = FileInfoFactory.lookupInstance(folder, path);
+            openWebItem.setContextMenuAction(new OpenWebAction(getController(), fInfo));
+            lockUnlockItem.setContextMenuAction(new LockUnlockAction(getController(), fInfo));
+
+            pfMainItem.addContextMenuItem(openWebItem);
+            pfMainItem.addContextMenuItem(lockUnlockItem);
+        }
+
+        if (folder != null) {
+            stopSyncItem.setContextMenuAction(new StopSyncAction(folder));
+            pfMainItem.addContextMenuItem(stopSyncItem);
+        }
+
+        List<ContextMenuItem> items = new ArrayList<>(1);
+        items.add(pfMainItem);
+
+        return items;
+    }
+}
