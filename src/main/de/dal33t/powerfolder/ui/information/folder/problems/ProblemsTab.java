@@ -58,7 +58,6 @@ public class ProblemsTab extends PFUIComponent {
     private JScrollPane scrollPane;
 
     private MyOpenProblemAction openProblemAction;
-    private MyClearProblemAction clearProblemAction;
     private MyResolveProblemAction resolveProblemAction;
 
     private FolderInfo folderInfo;
@@ -93,7 +92,6 @@ public class ProblemsTab extends PFUIComponent {
 
     private void initialize() {
         openProblemAction = new MyOpenProblemAction(getController());
-        clearProblemAction = new MyClearProblemAction(getController());
         resolveProblemAction = new MyResolveProblemAction(getController());
 
         scrollPane = new JScrollPane(problemsTable);
@@ -126,10 +124,6 @@ public class ProblemsTab extends PFUIComponent {
             JButton openBtn = new JButton(openProblemAction);
             openBtn.setIcon(null);
             bar.addGridded(openBtn);
-            bar.addRelatedGap();
-            JButton clearBtn = new JButton(clearProblemAction);
-            clearBtn.setIcon(null);
-            bar.addGridded(clearBtn);
             bar.addRelatedGap();
         }
 
