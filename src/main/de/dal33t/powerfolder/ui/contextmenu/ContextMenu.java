@@ -25,6 +25,7 @@ import com.liferay.nativity.control.NativityControlUtil;
 import com.liferay.nativity.modules.contextmenu.ContextMenuControlUtil;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Initialize the Context Menu and load the libraries needed.
@@ -37,6 +38,7 @@ public class ContextMenu {
 
     public ContextMenu(Controller controller) {
         nc = NativityControlUtil.getNativityControl();
+        OSUtil.loadLibrary(ContextMenu.class, "LiferayNativityUtil");
 
         ContextMenuControlUtil.getContextMenuControl(nc,
             new ContextMenuHandler(controller));
