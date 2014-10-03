@@ -74,6 +74,11 @@ public class Organization implements Serializable {
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
 
+    /**
+     * PFS-1411
+     */
+    private String skin;
+
     public Organization() {
         // Generate unique id
         this(IdGenerator.makeId());
@@ -120,7 +125,15 @@ public class Organization implements Serializable {
     public OnlineStorageSubscription getOSSubscription() {
         return osSubscription;
     }
-    
+
+    public String getSkin() {
+        return skin;
+    }
+
+    public void setSkin(String skin) {
+        this.skin = skin;
+    }
+
     /**
      * Adds a line of info with the current date to the notes of that account.
      * 
@@ -139,7 +152,6 @@ public class Organization implements Serializable {
             setNotes(notes + "\n" + infoLine);
         }
     }
-
 
     @Override
     public String toString() {
