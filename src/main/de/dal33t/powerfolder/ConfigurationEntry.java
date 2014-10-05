@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1121,7 +1122,17 @@ public enum ConfigurationEntry {
      */
     public String getValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        String value = controller.getConfig().getProperty(configKey);
+        return getValue(controller.getConfig());
+    }
+
+    /**
+     * @param config
+     *            the config to read the value from
+     * @return The current value from the configuration for this entry. or
+     */
+    public String getValue(Properties config) {
+        Reject.ifNull(config, "Config is null");
+        String value = config.getProperty(configKey);
         if (value == null) {
             value = getDefaultValue();
         }
@@ -1130,7 +1141,7 @@ public enum ConfigurationEntry {
 
     /**
      * Parses the configuration entry into a Integer.
-     *
+     * 
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
