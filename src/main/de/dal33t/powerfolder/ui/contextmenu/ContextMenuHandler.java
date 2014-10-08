@@ -20,12 +20,14 @@ package de.dal33t.powerfolder.ui.contextmenu;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.liferay.nativity.modules.contextmenu.ContextMenuControlCallback;
 import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
 import com.liferay.nativity.modules.contextmenu.model.ContextMenuItem;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -100,10 +102,17 @@ class ContextMenuHandler extends PFComponent implements
         for (Folder folder : fr.getFolders()) {
             for (String pathName : pathNames) {
                 Path path = Paths.get(pathName);
+
+                if (fr.findExistingFolder(path) != null
+                    || !path.startsWith(folder.getLocalBase()))
+                {
+                    break;
+                }
+
                 FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
 
                 if (folder.getDAO().find(lookup, null) != null) {
-                        containsFileInfoPath = true;
+                    containsFileInfoPath = true;
                 }
                 if (containsFileInfoPath) {
                     break;
@@ -114,10 +123,19 @@ class ContextMenuHandler extends PFComponent implements
             }
         }
 
-        // Build the context menu
+        if (!containsFolderPath && !containsFileInfoPath) {
+            return new ArrayList<ContextMenuItem>(0);
+        }
 
-        openWebItem.setContextMenuAction(new OpenWebAction(getController()));
-        pfMainItem.addContextMenuItem(openWebItem);
+        // Build the context menu - the order is from bottom to top
+
+        if (containsFolderPath || containsFileInfoPath) {
+            unlockItem.setContextMenuAction(new UnlockAction(getController()));
+            lockItem.setContextMenuAction(new LockAction(getController()));
+
+            pfMainItem.addContextMenuItem(unlockItem);
+            pfMainItem.addContextMenuItem(lockItem);
+        }
 
         if (containsFolderPath && !containsFileInfoPath) {
             stopSyncItem.setContextMenuAction(new StopSyncAction(
@@ -125,13 +143,12 @@ class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
-        if (!containsFolderPath && containsFileInfoPath) {
-            lockItem.setContextMenuAction(new LockAction(
-                getController()));
-            unlockItem.setContextMenuAction(new UnlockAction(getController()));
-
-            pfMainItem.addContextMenuItem(lockItem);
-            pfMainItem.addContextMenuItem(unlockItem);
+        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
+            .getValueBoolean(getController()))
+        {
+            openWebItem
+                .setContextMenuAction(new OpenWebAction(getController()));
+            pfMainItem.addContextMenuItem(openWebItem);
         }
 
         List<ContextMenuItem> items = new ArrayList<>(1);
