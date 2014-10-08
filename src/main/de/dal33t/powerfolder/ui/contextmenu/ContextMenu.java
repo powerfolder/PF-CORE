@@ -19,6 +19,7 @@ package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 import com.liferay.nativity.control.NativityControl;
 import com.liferay.nativity.control.NativityControlUtil;
@@ -34,10 +35,11 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class ContextMenu {
 
-    private NativityControl nc;
+    private static final Logger log = Logger.getLogger(ContextMenu.class
+        .getName());
 
     public ContextMenu(Controller controller) {
-        nc = NativityControlUtil.getNativityControl();
+        NativityControl nc = NativityControlUtil.getNativityControl();
         ContextMenuControlUtil.getContextMenuControl(nc,
             new ContextMenuHandler(controller));
 
@@ -49,7 +51,11 @@ public class ContextMenu {
         sb.deleteCharAt(sb.length() - 1);
 
         nc.setFilterFolders(sb.toString().split(","));
-        nc.connect();
+        if (!nc.connect()) {
+            log.fine("Could not initialize for context menu!");
+            nc.disconnect();
+            return;
+        }
 
         String libNameUtil = "LiferayNativityUtil";
         String libNameContextMenu = "LiferayNativityContextMenus";

@@ -20,7 +20,6 @@ package de.dal33t.powerfolder.ui.contextmenu;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.liferay.nativity.modules.contextmenu.ContextMenuControlCallback;
@@ -67,7 +66,6 @@ class ContextMenuHandler extends PFComponent implements
             Translation.getTranslation("context_menu.open_web"));
         stopSyncItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.stop_sync"));
-        // TODO: should be named dynamically in #getContextMenuItems();
         lockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.lock"));
         unlockItem = new ContextMenuItem(
@@ -123,11 +121,12 @@ class ContextMenuHandler extends PFComponent implements
             }
         }
 
+        // If no Folder or synced file is selected, don't show the context menu
         if (!containsFolderPath && !containsFileInfoPath) {
             return new ArrayList<ContextMenuItem>(0);
         }
 
-        // Build the context menu - the order is from bottom to top
+        // Build the context menu - the order is from BOTTOM to TOP
 
         if (containsFolderPath || containsFileInfoPath) {
             unlockItem.setContextMenuAction(new UnlockAction(getController()));
