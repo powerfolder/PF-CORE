@@ -61,7 +61,7 @@ public class ContextMenu {
         String libNameContextMenu = "LiferayNativityContextMenus";
 
         if (OSUtil.isWindowsSystem()) {
-            if (System.getenv("ProgramFiles(x86)") != null) {
+            if (OSUtil.is64BitPlatform()) {
                 libNameUtil += "_x64";
                 libNameContextMenu += "_x64";
             } else {
