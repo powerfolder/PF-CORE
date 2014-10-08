@@ -145,7 +145,7 @@ public class BrowserLauncher {
         }
     }
 
-    private static boolean java6impl(String url) throws IOException {
+    private static boolean java6impl(String url) {
         log.fine("Launching " + url);
         try {
             if (Desktop.isDesktopSupported()) {
@@ -155,9 +155,8 @@ public class BrowserLauncher {
             }
         } catch (LinkageError err) {
             log.log(Level.FINER, "LinkageError", err);
-        } catch (URISyntaxException e) {
-            throw (IOException) new IOException("Error:" + e.toString())
-                .initCause(e);
+        } catch (URISyntaxException | IOException e) {
+            log.fine("Cannot open URL using Desktop. Trying fallback. " + e.toString());
         }
         return false;
     }
