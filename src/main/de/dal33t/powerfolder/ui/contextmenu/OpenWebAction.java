@@ -17,7 +17,10 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -31,6 +34,8 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
  */
 class OpenWebAction extends PFContextMenuAction {
 
+    private static final Logger log = Logger.getLogger(OpenWebAction.class.getName());
+
     OpenWebAction(Controller controller) {
         super(controller);
     }
@@ -40,16 +45,22 @@ class OpenWebAction extends PFContextMenuAction {
         List<FileInfo> fileInfos = getFileInfos(paths);
 
         for (FileInfo fileInfo : fileInfos) {
-            String folderURL = getController().getOSClient().getFolderURL(fileInfo.getFolderInfo());
-            String fileURL = folderURL + "/" + fileInfo.getRelativeName();
+            try {
+                String folderURL = getController().getOSClient()
+                    .getFolderURLWithCredentials(fileInfo.getFolderInfo());
+                String fileURL = folderURL + "/" + URLEncoder.encode(fileInfo.getRelativeName(), "UTF-8");
 
-            BrowserLauncher.openURL(getController(), fileURL);
+                BrowserLauncher.openURL(getController(), fileURL);
+            } catch (UnsupportedEncodingException uee) {
+                log.warning("Failed to generate URL. " + uee);
+            }
         }
 
         List<Folder> folders = getFolders(paths);
 
         for (Folder folder : folders) {
-            String folderURL = getController().getOSClient().getFolderURL(folder.getInfo());
+            String folderURL = getController().getOSClient()
+                .getFolderURLWithCredentials(folder.getInfo());
 
             BrowserLauncher.openURL(getController(), folderURL);
         }
