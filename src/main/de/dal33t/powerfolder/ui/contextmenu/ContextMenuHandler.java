@@ -35,11 +35,14 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * Builds the Context Menu Items and applies the the correct {@link ContextMenuAction}.
+ * Builds the Context Menu Items and applies the the correct
+ * {@link ContextMenuAction}.
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-class ContextMenuHandler extends PFComponent implements ContextMenuControlCallback {
+class ContextMenuHandler extends PFComponent implements
+    ContextMenuControlCallback
+{
 
     private ContextMenuItem shareLinkItem;
     private ContextMenuItem shareFolderItem;
@@ -48,7 +51,8 @@ class ContextMenuHandler extends PFComponent implements ContextMenuControlCallba
     private ContextMenuItem pfMainItem;
     private ContextMenuItem openWebItem;
     private ContextMenuItem stopSyncItem;
-    private ContextMenuItem lockUnlockItem;
+    private ContextMenuItem lockItem;
+    private ContextMenuItem unlockItem;
     private ContextMenuItem versionHistoryItem;
 
     ContextMenuHandler(Controller controller) {
@@ -62,47 +66,72 @@ class ContextMenuHandler extends PFComponent implements ContextMenuControlCallba
         stopSyncItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.stop_sync"));
         // TODO: should be named dynamically in #getContextMenuItems();
-        lockUnlockItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.lock_unlock"));
+        lockItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.lock"));
+        unlockItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.unlock"));
         versionHistoryItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.version_history"));
     }
 
     @Override
     public List<ContextMenuItem> getContextMenuItems(String[] pathNames) {
-        if (pathNames.length != 1) {
-            logInfo("More than one directory selected");
-            return null;
-        }
-
+        // Clear the context menu
         for (ContextMenuItem cmi : pfMainItem.getAllContextMenuItems()) {
             pfMainItem.removeContextMenuItem(cmi);
         }
 
-        String pathName = pathNames[0];
-        Path path = Paths.get(pathName);
+        // Gather some information to decide which context menu items to show
+        boolean containsFolderPath = false;
+        boolean containsFileInfoPath = false;
 
+        // Check for folder base paths
         FolderRepository fr = getController().getFolderRepository();
-        Path foldersBaseDir = fr.getFoldersBasedir();
+        for (String pathName : pathNames) {
+            Path path = Paths.get(pathName);
 
-        boolean isInBasedir = path.startsWith(foldersBaseDir);
-
-        Path folderLocalBase = foldersBaseDir.resolve(path
-            .getName(foldersBaseDir.getNameCount()));
-        Folder folder = fr.findExistingFolder(folderLocalBase);
-
-        if (isInBasedir) {
-            FileInfo fInfo = FileInfoFactory.lookupInstance(folder, path);
-            openWebItem.setContextMenuAction(new OpenWebAction(getController(), fInfo));
-            lockUnlockItem.setContextMenuAction(new LockUnlockAction(getController(), fInfo));
-
-            pfMainItem.addContextMenuItem(openWebItem);
-            pfMainItem.addContextMenuItem(lockUnlockItem);
+            if (fr.findExistingFolder(path) != null) {
+                containsFolderPath = true;
+                break;
+            }
         }
 
-        if (folder != null) {
-            stopSyncItem.setContextMenuAction(new StopSyncAction(folder));
+        // Check for FileInfos or DirectoryInfos, that are managed by a Folder
+        for (Folder folder : fr.getFolders()) {
+            for (String pathName : pathNames) {
+                Path path = Paths.get(pathName);
+                FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
+
+                if (folder.getDAO().find(lookup, null) != null) {
+                        containsFileInfoPath = true;
+                }
+                if (containsFileInfoPath) {
+                    break;
+                }
+            }
+            if (containsFileInfoPath) {
+                break;
+            }
+        }
+
+        // Build the context menu
+
+        openWebItem.setContextMenuAction(new OpenWebAction(getController()));
+        pfMainItem.addContextMenuItem(openWebItem);
+
+        if (containsFolderPath && !containsFileInfoPath) {
+            stopSyncItem.setContextMenuAction(new StopSyncAction(
+                getController()));
             pfMainItem.addContextMenuItem(stopSyncItem);
+        }
+
+        if (!containsFolderPath && containsFileInfoPath) {
+            lockItem.setContextMenuAction(new LockAction(
+                getController()));
+            unlockItem.setContextMenuAction(new UnlockAction(getController()));
+
+            pfMainItem.addContextMenuItem(lockItem);
+            pfMainItem.addContextMenuItem(unlockItem);
         }
 
         List<ContextMenuItem> items = new ArrayList<>(1);
