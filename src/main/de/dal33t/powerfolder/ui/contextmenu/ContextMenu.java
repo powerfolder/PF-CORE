@@ -38,8 +38,6 @@ public class ContextMenu {
 
     public ContextMenu(Controller controller) {
         nc = NativityControlUtil.getNativityControl();
-        OSUtil.loadLibrary(ContextMenu.class, "LiferayNativityUtil");
-
         ContextMenuControlUtil.getContextMenuControl(nc,
             new ContextMenuHandler(controller));
 
@@ -52,5 +50,21 @@ public class ContextMenu {
 
         nc.setFilterFolders(sb.toString().split(","));
         nc.connect();
+
+        String libNameUtil = "LiferayNativityUtil";
+        String libNameContextMenu = "LiferayNativityContextMenu";
+
+        if (OSUtil.isWindowsSystem()) {
+            if (System.getenv("ProgramFiles(x86)") != null) {
+                libNameUtil += "_x64";
+                libNameContextMenu += "_x64";
+            } else {
+                libNameUtil += "_x86";
+                libNameContextMenu += "_x86";
+            }
+        }
+
+        OSUtil.loadLibrary(ContextMenu.class, libNameUtil);
+        OSUtil.loadLibrary(ContextMenu.class, libNameContextMenu);
     }
 }
