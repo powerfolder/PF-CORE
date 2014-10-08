@@ -69,7 +69,9 @@ abstract class PFContextMenuAction extends ContextMenuAction {
 
                 for (Folder fo : controller.getFolderRepository().getFolders())
                 {
-                    if (targetDir.startsWith(fo.getLocalBase())) {
+                    if (targetDir.equals(fo.getLocalBase())) {
+                        fileInfos.add(fo.getBaseDirectoryInfo());
+                    } else if (targetDir.startsWith(fo.getLocalBase())) {
                         FileInfo lookup = FileInfoFactory.lookupInstance(fo,
                             targetDir);
                         FileInfo found = fo.getDAO().find(lookup, null);
