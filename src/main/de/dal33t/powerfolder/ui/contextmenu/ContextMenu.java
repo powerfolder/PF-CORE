@@ -52,7 +52,7 @@ public class ContextMenu {
         nc.connect();
 
         String libNameUtil = "LiferayNativityUtil";
-        String libNameContextMenu = "LiferayNativityContextMenu";
+        String libNameContextMenu = "LiferayNativityContextMenus";
 
         if (OSUtil.isWindowsSystem()) {
             if (System.getenv("ProgramFiles(x86)") != null) {
