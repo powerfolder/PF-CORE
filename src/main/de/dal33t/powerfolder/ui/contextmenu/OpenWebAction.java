@@ -17,11 +17,10 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.util.logging.Logger;
-
-import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
+import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 
@@ -30,27 +29,29 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-class OpenWebAction extends ContextMenuAction {
+class OpenWebAction extends PFContextMenuAction {
 
-    private static final Logger log = Logger.getLogger(OpenWebAction.class.getName());
-    private Controller controller;
-    private FileInfo fInfo;
-
-    OpenWebAction(final Controller controller, final FileInfo fInfo) {
-        this.controller = controller;
-        this.fInfo = fInfo;
+    OpenWebAction(Controller controller) {
+        super(controller);
     }
 
     @Override
     public void onSelection(String[] paths) {
-        if (paths.length != 1) {
-            log.info("More than one file selected");
-            return;
+        List<FileInfo> fileInfos = getFileInfos(paths);
+
+        for (FileInfo fileInfo : fileInfos) {
+            String folderURL = getController().getOSClient().getFolderURL(fileInfo.getFolderInfo());
+            String fileURL = folderURL + "/" + fileInfo.getRelativeName();
+
+            BrowserLauncher.openURL(getController(), fileURL);
         }
 
-        String folderURL = controller.getOSClient().getFolderURL(fInfo.getFolderInfo());
-        String fileURL = folderURL + fInfo.getRelativeName();
+        List<Folder> folders = getFolders(paths);
 
-        BrowserLauncher.openURL(controller, fileURL);
+        for (Folder folder : folders) {
+            String folderURL = getController().getOSClient().getFolderURL(folder.getInfo());
+
+            BrowserLauncher.openURL(getController(), folderURL);
+        }
     }
 }

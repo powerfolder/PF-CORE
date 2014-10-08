@@ -17,12 +17,10 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 import java.util.logging.Logger;
 
-import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
-
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 
 /**
@@ -30,31 +28,23 @@ import de.dal33t.powerfolder.disk.Folder;
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-class StopSyncAction extends ContextMenuAction {
+class StopSyncAction extends PFContextMenuAction {
 
     private static final Logger log = Logger.getLogger(StopSyncAction.class
         .getName());
-    private Folder folder;
 
-    StopSyncAction(Folder folder) {
-        this.folder = folder;
+    StopSyncAction(Controller controller) {
+        super(controller);
     }
 
     @Override
     public void onSelection(String[] paths) {
-        if (paths.length != 1) {
-            log.info("More than one path for Folder");
-            return;
+        List<Folder> folders = getFolders(paths);
+
+        for (Folder folder : folders) {
+            log.fine("Stopping sync of local folder " + folder);
+            getController().getFolderRepository()
+                .removeFolder(folder, true);
         }
-
-        String pathName = paths[0];
-        Path path = Paths.get(pathName);
-
-        if (!folder.getLocalBase().equals(path)) {
-            log.info("Path is not equal to the Folder's local base");
-        }
-
-        folder.getController().getFolderRepository()
-            .removeFolder(folder, true);
     }
 }
