@@ -340,7 +340,11 @@ public class UIController extends PFComponent {
                 JFrame.EXIT_ON_CLOSE);
         }
 
-        contextMenu = new ContextMenu(getController());
+        if (PreferencesEntry.ENABLE_CONTEXT_MENU
+            .getValueBoolean(getController()))
+        {
+            contextMenu = new ContextMenu(getController());
+        }
 
         if (getController().isStartMinimized() || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
             logInfo("Starting minimized");

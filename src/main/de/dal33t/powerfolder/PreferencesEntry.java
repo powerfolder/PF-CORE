@@ -140,7 +140,12 @@ public enum PreferencesEntry {
      * Enable the UI-Mode selector.
      * PFC-2385
      */
-    MODE_SELECT("mode.select.enabled", true);
+    MODE_SELECT("mode.select.enabled", true),
+    
+    /**
+     * PFC-2395
+     */
+    ENABLE_CONTEXT_MENU("context_menu.enabled", true);
 
     /** String, Boolean, Integer */
     private Class<?> type;
