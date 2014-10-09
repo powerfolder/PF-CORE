@@ -57,6 +57,10 @@ public class ContextMenu {
             return;
         }
 
+        loadLibs();
+    }
+
+    private void loadLibs() {
         String libNameUtil = "LiferayNativityUtil";
         String libNameContextMenu = "LiferayNativityContextMenus";
 
