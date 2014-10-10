@@ -38,12 +38,16 @@ public enum SyncStatus {
     public static SyncStatus of(Controller controller, FileInfo fInfo) {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(fInfo, "FileInfo");
-        if (fInfo.isDiretory()) {
-            return SYNC_OK;
+
+        if (fInfo.isDiretory() && !fInfo.isLocked(controller)) {
+            return NONE;
         }
         Folder folder = fInfo.getFolder(controller.getFolderRepository());
         if (folder == null) {
             return NONE;
+        }
+        if (fInfo.isLookupInstance()) {
+            fInfo = folder.getDAO().find(fInfo, null);
         }
         if (folder.getConnectedMembersCount() == 0) {
             return NONE;

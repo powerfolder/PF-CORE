@@ -65,6 +65,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.liferay.nativity.control.NativityControl;
+import com.liferay.nativity.control.NativityControlUtil;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -101,6 +103,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PauseDialog;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
+import de.dal33t.powerfolder.ui.iconoverlay.IconOverlay;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
@@ -165,6 +168,7 @@ public class UIController extends PFComponent {
     private final InformationFrame informationFrame;
     private WeakReference<JDialog> wizardDialogReference;
     private ContextMenu contextMenu;
+    private IconOverlay iconOverlay;
 
     // List of pending jobs, execute when ui is opened
     private final List<Runnable> pendingJobs;
@@ -340,11 +344,21 @@ public class UIController extends PFComponent {
                 JFrame.EXIT_ON_CLOSE);
         }
 
-        if (PreferencesEntry.ENABLE_CONTEXT_MENU
-            .getValueBoolean(getController()))
-        {
-            contextMenu = new ContextMenu(getController());
+        // PFC-2395: Start
+        NativityControl nc = NativityControlUtil.getNativityControl();
+        if (!nc.connect()) {
+            logFine("Could not initialize for context menu!");
+            nc.disconnect();
+        } else {
+            if (PreferencesEntry.ENABLE_CONTEXT_MENU
+                .getValueBoolean(getController()))
+            {
+                contextMenu = new ContextMenu(getController(), nc);
+            }
+    
+            iconOverlay = new IconOverlay(getController(), nc);
         }
+        // PFC-2395: End
 
         if (getController().isStartMinimized() || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
             logInfo("Starting minimized");
