@@ -1502,7 +1502,10 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (!getController().getNodeManager().isStarted()) {
+            if (!getController().getNodeManager().isStarted()
+                && getApplicationModel().getLicenseModel()
+                    .getActivationAction() != null)
+            {
                 getApplicationModel().getLicenseModel().getActivationAction()
                     .actionPerformed(e);
             } else if (getController().getFolderRepository().getFoldersCount() == 0)
@@ -1588,7 +1591,10 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (getController().getNodeManager().isStarted()) {
+            if (getController().getNodeManager().isStarted()
+                || getApplicationModel().getLicenseModel()
+                    .getActivationAction() == null)
+            {
                 PFWizard.openLoginWizard(getController(), client);
             } else {
                 // Activate if not running

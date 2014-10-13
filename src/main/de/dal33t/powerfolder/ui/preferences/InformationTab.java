@@ -123,6 +123,13 @@ public class InformationTab extends PFComponent implements PreferenceTab {
             return null;
         }
 
+        // PFC-2580
+        boolean isLicenseCheckEnabled = getController().getUIController()
+            .getApplicationModel().getLicenseModel().getActivationAction() != null;
+        if (!isLicenseCheckEnabled) {
+            return null;
+        }
+
         JButton activateButton = new JButton(
             Translation.getTranslation("preferences.information.activate_text"));
         activateButton.setToolTipText(Translation
