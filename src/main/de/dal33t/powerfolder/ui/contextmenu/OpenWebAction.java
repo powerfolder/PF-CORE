@@ -34,7 +34,8 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
  */
 class OpenWebAction extends PFContextMenuAction {
 
-    private static final Logger log = Logger.getLogger(OpenWebAction.class.getName());
+    private static final Logger log = Logger.getLogger(OpenWebAction.class
+        .getName());
 
     OpenWebAction(Controller controller) {
         super(controller);
@@ -48,7 +49,8 @@ class OpenWebAction extends PFContextMenuAction {
             try {
                 String folderURL = getController().getOSClient()
                     .getFolderURLWithCredentials(fileInfo.getFolderInfo());
-                String fileURL = folderURL + "/" + URLEncoder.encode(fileInfo.getRelativeName(), "UTF-8");
+                String fileURL = folderURL + "/"
+                    + URLEncoder.encode(fileInfo.getRelativeName(), "UTF-8");
 
                 BrowserLauncher.openURL(getController(), fileURL);
             } catch (UnsupportedEncodingException uee) {
