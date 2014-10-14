@@ -35,10 +35,10 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-class IconOverlayHandler extends PFComponent implements FileIconControlCallback
+public class IconOverlayHandler extends PFComponent implements FileIconControlCallback
 {
 
-    IconOverlayHandler(Controller controller) {
+    public IconOverlayHandler(Controller controller) {
         super(controller);
     }
 

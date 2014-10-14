@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.util.Translation;
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-class ContextMenuHandler extends PFComponent implements
+public class ContextMenuHandler extends PFComponent implements
     ContextMenuControlCallback
 {
 
@@ -56,22 +56,33 @@ class ContextMenuHandler extends PFComponent implements
     private ContextMenuItem unlockItem;
     private ContextMenuItem versionHistoryItem;
 
-    ContextMenuHandler(Controller controller) {
+    public ContextMenuHandler(Controller controller) {
         super(controller);
+
+        shareLinkItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.share_link"));
+        shareLinkItem
+            .setContextMenuAction(new ShareLinkAction(getController()));
+        shareFolderItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.share_folder"));
+        shareFolderItem.setContextMenuAction(new ShareFolderAction(
+            getController()));
 
         pfMainItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.main_item"));
 
         openWebItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.open_web"));
+        openWebItem.setContextMenuAction(new OpenWebAction(getController()));
         stopSyncItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.stop_sync"));
+        stopSyncItem.setContextMenuAction(new StopSyncAction(getController()));
         lockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.lock"));
+        lockItem.setContextMenuAction(new LockAction(getController()));
         unlockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.unlock"));
-        versionHistoryItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.version_history"));
+        unlockItem.setContextMenuAction(new UnlockAction(getController()));
     }
 
     @Override
@@ -129,29 +140,29 @@ class ContextMenuHandler extends PFComponent implements
         // Build the context menu - the order is from BOTTOM to TOP
 
         if (containsFolderPath || containsFileInfoPath) {
-            unlockItem.setContextMenuAction(new UnlockAction(getController()));
-            lockItem.setContextMenuAction(new LockAction(getController()));
-
             pfMainItem.addContextMenuItem(unlockItem);
             pfMainItem.addContextMenuItem(lockItem);
         }
 
         if (containsFolderPath && !containsFileInfoPath) {
-            stopSyncItem.setContextMenuAction(new StopSyncAction(
-                getController()));
             pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
             .getValueBoolean(getController()))
         {
-            openWebItem
-                .setContextMenuAction(new OpenWebAction(getController()));
             pfMainItem.addContextMenuItem(openWebItem);
         }
 
-        List<ContextMenuItem> items = new ArrayList<>(1);
+        List<ContextMenuItem> items = new ArrayList<>(3);
         items.add(pfMainItem);
+        items.add(shareLinkItem);
+
+        if ((containsFolderPath && !containsFileInfoPath)
+            || getController().getOSClient().isAllowedToCreateFolders())
+        {
+            items.add(shareFolderItem);
+        }
 
         return items;
     }

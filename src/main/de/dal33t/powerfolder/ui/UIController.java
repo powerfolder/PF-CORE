@@ -67,6 +67,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.liferay.nativity.control.NativityControl;
 import com.liferay.nativity.control.NativityControlUtil;
+import com.liferay.nativity.modules.contextmenu.ContextMenuControlUtil;
+import com.liferay.nativity.modules.fileicon.FileIconControlUtil;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -98,12 +100,12 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.skin.Skin;
-import de.dal33t.powerfolder.ui.contextmenu.ContextMenu;
+import de.dal33t.powerfolder.ui.contextmenu.ContextMenuHandler;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PauseDialog;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
-import de.dal33t.powerfolder.ui.iconoverlay.IconOverlay;
+import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayHandler;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
@@ -167,8 +169,6 @@ public class UIController extends PFComponent {
     private SystemMonitorFrame systemMonitorFrame;
     private final InformationFrame informationFrame;
     private WeakReference<JDialog> wizardDialogReference;
-    private ContextMenu contextMenu;
-    private IconOverlay iconOverlay;
 
     // List of pending jobs, execute when ui is opened
     private final List<Runnable> pendingJobs;
@@ -353,10 +353,13 @@ public class UIController extends PFComponent {
             if (PreferencesEntry.ENABLE_CONTEXT_MENU
                 .getValueBoolean(getController()))
             {
-                contextMenu = new ContextMenu(getController(), nc);
+                ContextMenuControlUtil.getContextMenuControl(nc,
+                    new ContextMenuHandler(getController()));
             }
-    
-            iconOverlay = new IconOverlay(getController(), nc);
+
+            FileIconControlUtil.getFileIconControl(nc,
+                new IconOverlayHandler(getController())).enableFileIcons();;
+
         }
         // PFC-2395: End
 
