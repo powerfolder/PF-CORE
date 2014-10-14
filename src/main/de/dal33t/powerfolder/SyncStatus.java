@@ -49,6 +49,9 @@ public enum SyncStatus {
         if (fInfo.isLookupInstance()) {
             fInfo = folder.getDAO().find(fInfo, null);
         }
+        if (fInfo == null) {
+            return NONE;
+        }
         if (folder.getConnectedMembersCount() == 0) {
             return NONE;
         }
