@@ -132,11 +132,6 @@ public class ContextMenuHandler extends PFComponent implements
             }
         }
 
-        // If no Folder or synced file is selected, don't show the context menu
-        if (!containsFolderPath && !containsFileInfoPath) {
-            return new ArrayList<ContextMenuItem>(0);
-        }
-
         // Build the context menu - the order is from BOTTOM to TOP
 
         if (containsFolderPath || containsFileInfoPath) {
@@ -148,20 +143,26 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
-        if (ConfigurationEntry.WEB_LOGIN_ALLOWED
-            .getValueBoolean(getController()))
+        if ((containsFileInfoPath
+            || containsFolderPath)
+            && ConfigurationEntry.WEB_LOGIN_ALLOWED
+                .getValueBoolean(getController()))
         {
             pfMainItem.addContextMenuItem(openWebItem);
         }
 
         List<ContextMenuItem> items = new ArrayList<>(3);
-        items.add(pfMainItem);
+
         items.add(shareLinkItem);
 
         if ((containsFolderPath && !containsFileInfoPath)
             || getController().getOSClient().isAllowedToCreateFolders())
         {
-            items.add(shareFolderItem);
+            pfMainItem.addContextMenuItem(shareFolderItem);
+        }
+
+        if (pfMainItem.getContextMenuItems().size() > 0) {
+            items.add(pfMainItem);
         }
 
         return items;
