@@ -45,6 +45,23 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
+ * This action is called, when the "share folder" context menu item was clicked.<br />
+ * <br />
+ * <ul>
+ * <li>If the UI is disabled, it just creates a new {@link Folder} and starts to
+ * synchronize it.</li>
+ * <li>If the UI is enabled, but Beginner Mode is configured, the Folder is
+ * created and the {@link ShareFolderNotificationHandler} is called.</li>
+ * <li>If the UI is enabled, and Advanced or Expert Mode is configured:
+ * <ol>
+ * <li>When the directory was not yet a Folder, the
+ * {@link ChooseDiskLocationPanel} is opened</li>
+ * <li>When the directory was already a Folder, the
+ * {@link PFWizard#openSendInvitationWizard(Controller, FolderInfo)} is opened</li>
+ * </ol>
+ * </li>
+ * </ul>
+ * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 class ShareFolderAction extends ContextMenuAction {
@@ -85,6 +102,8 @@ class ShareFolderAction extends ContextMenuAction {
                             public void run() {
                                 PFWizard.openSendInvitationWizard(controller,
                                     foInfo);
+                                controller.getUIController().getMainFrame()
+                                    .toFront();
                             }
                         });
                     } else {
@@ -160,24 +179,14 @@ class ShareFolderAction extends ContextMenuAction {
                 ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
                     controller, path.toAbsolutePath().toString(), nextPanel);
                 wizard.open(panel);
+                controller.getUIController().getMainFrame().toFront();
             }
         });
     }
 
     private void showNotification(FolderInfo foInfo) {
-        ContextMenuNotificationHandler notification = new ContextMenuNotificationHandler(
-            controller,
-            foInfo,
-            Translation
-                .getTranslation("context_menu.share_folder.notification.title"),
-            Translation.getTranslation(
-                "context_menu.share_folder.notification.message",
-                foInfo.getLocalizedName(), foInfo.getFolder(controller)
-                    .getLocalBase().toString()),
-            Translation
-                .getTranslation("context_menu.share_folder.notification.accept_label"),
-            Translation
-                .getTranslation("context_menu.share_folder.notification.cancel_label"));
+        ShareFolderNotificationHandler notification = new ShareFolderNotificationHandler(
+            controller, foInfo);
         notification.show();
     }
 }

@@ -252,6 +252,14 @@ public interface FolderService {
     String getFileLink(FileInfo fInfo);
 
     /**
+     * Remove a file link.
+     * 
+     * @param fInfo
+     * @return
+     */
+    void removeFileLink(FileInfo fInfo);
+
+    /**
      * Create a download link.
      *
      * @param fInfo

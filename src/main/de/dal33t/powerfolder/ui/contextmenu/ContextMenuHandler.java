@@ -143,6 +143,16 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
+        if (containsFileInfoPath) {
+            pfMainItem.addContextMenuItem(shareLinkItem);
+        }
+
+        if ((containsFolderPath && !containsFileInfoPath)
+            || getController().getOSClient().isAllowedToCreateFolders())
+        {
+            pfMainItem.addContextMenuItem(shareFolderItem);
+        }
+
         if ((containsFileInfoPath
             || containsFolderPath)
             && ConfigurationEntry.WEB_LOGIN_ALLOWED
@@ -151,16 +161,7 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(openWebItem);
         }
 
-        List<ContextMenuItem> items = new ArrayList<>(3);
-
-        items.add(shareLinkItem);
-
-        if ((containsFolderPath && !containsFileInfoPath)
-            || getController().getOSClient().isAllowedToCreateFolders())
-        {
-            pfMainItem.addContextMenuItem(shareFolderItem);
-        }
-
+        List<ContextMenuItem> items = new ArrayList<>(1);
         if (pfMainItem.getContextMenuItems().size() > 0) {
             items.add(pfMainItem);
         }
