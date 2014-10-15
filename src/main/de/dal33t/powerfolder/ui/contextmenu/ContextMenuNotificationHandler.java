@@ -24,6 +24,7 @@ import javax.swing.AbstractAction;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 
@@ -68,7 +69,7 @@ class ContextMenuNotificationHandler extends NotificationHandlerBase {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                controller.getIOProvider().startIO(new Runnable() {
+                UIUtil.invokeLaterInEDT(new Runnable() {
                     @Override
                     public void run() {
                         sliderClose();

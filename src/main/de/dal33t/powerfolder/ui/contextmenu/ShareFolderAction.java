@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -79,10 +80,11 @@ class ShareFolderAction extends ContextMenuAction {
                     showNotification(foInfo);
                 } else {
                     if (folder != null) {
-                        controller.getIOProvider().startIO(new Runnable() {
+                        UIUtil.invokeLaterInEDT(new Runnable() {
                             @Override
                             public void run() {
-                                PFWizard.openSendInvitationWizard(controller, foInfo);
+                                PFWizard.openSendInvitationWizard(controller,
+                                    foInfo);
                             }
                         });
                     } else {
@@ -126,23 +128,28 @@ class ShareFolderAction extends ContextMenuAction {
         }
     }
 
-    private void showFolderSetupWizard(final Path path, final FolderInfo foInfo,
-        final SyncProfile syncProfile, final boolean backupByServer)
+    private void showFolderSetupWizard(final Path path,
+        final FolderInfo foInfo, final SyncProfile syncProfile,
+        final boolean backupByServer)
     {
-        controller.getIOProvider().startIO(new Runnable() {
+        UIUtil.invokeLaterInEDT(new Runnable() {
             @Override
             public void run() {
-                PFWizard wizard = new PFWizard(controller,
-                    Translation.getTranslation("wizard.pfwizard.folder_title"));
+                PFWizard wizard = new PFWizard(controller, Translation
+                    .getTranslation("wizard.pfwizard.folder_title"));
                 wizard.getWizardContext().setAttribute(
-                    WizardContextAttributes.INITIAL_FOLDER_NAME, foInfo.getName());
+                    WizardContextAttributes.INITIAL_FOLDER_NAME,
+                    foInfo.getName());
+                wizard.getWizardContext()
+                    .setAttribute(
+                        WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE,
+                        syncProfile);
                 wizard.getWizardContext().setAttribute(
-                    WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE, syncProfile);
-                wizard.getWizardContext().setAttribute(
-                    WizardContextAttributes.BACKUP_ONLINE_STOARGE, backupByServer);
+                    WizardContextAttributes.BACKUP_ONLINE_STOARGE,
+                    backupByServer);
                 wizard.getWizardContext().setAttribute(
                     WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
-                
+
                 WizardPanel nextPanel = new FolderCreatePanel(controller);
                 // Setup success panel of this wizard path
                 TextPanelPanel successPanel = new TextPanelPanel(controller,
@@ -150,8 +157,8 @@ class ShareFolderAction extends ContextMenuAction {
                     Translation.getTranslation("wizard.success_join"));
                 wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                     successPanel);
-                ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(controller,
-                    path.toAbsolutePath().toString(), nextPanel);
+                ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
+                    controller, path.toAbsolutePath().toString(), nextPanel);
                 wizard.open(panel);
             }
         });
