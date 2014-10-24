@@ -345,21 +345,25 @@ public class UIController extends PFComponent {
         }
 
         // PFC-2395: Start
-        NativityControl nc = NativityControlUtil.getNativityControl();
-        if (!nc.connect()) {
-            logFine("Could not initialize for context menu!");
-            nc.disconnect();
-        } else {
-            if (PreferencesEntry.ENABLE_CONTEXT_MENU
-                .getValueBoolean(getController()))
-            {
-                ContextMenuControlUtil.getContextMenuControl(nc,
-                    new ContextMenuHandler(getController()));
+        try {
+            NativityControl nc = NativityControlUtil.getNativityControl();
+            if (!nc.connect()) {
+                logFine("Could not initialize for context menu!");
+                nc.disconnect();
+            } else {
+                if (PreferencesEntry.ENABLE_CONTEXT_MENU
+                    .getValueBoolean(getController()))
+                {
+                    ContextMenuControlUtil.getContextMenuControl(nc,
+                        new ContextMenuHandler(getController()));
+                }
+    
+                FileIconControlUtil.getFileIconControl(nc,
+                    new IconOverlayHandler(getController())).enableFileIcons();;
+    
             }
-
-            FileIconControlUtil.getFileIconControl(nc,
-                new IconOverlayHandler(getController())).enableFileIcons();;
-
+        } catch (RuntimeException re) {
+            logWarning("Context or file icons could not be loaded. " + re);
         }
         // PFC-2395: End
 
