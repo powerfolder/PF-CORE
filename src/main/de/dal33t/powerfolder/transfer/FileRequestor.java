@@ -193,9 +193,16 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (!folder.hasOwnDatabase()) {
-            if (isWarning()) {
-                logWarning("Not requesting files. No own database for "
-                    + folder);
+            if (folder.isScanning()) {
+                if (isFine()) {
+                    logFine("Not requesting files. No own database for "
+                        + folder);
+                }
+            } else {
+                if (isWarning()) {
+                    logWarning("Not requesting files. No own database for "
+                        + folder);
+                }
             }
             return;
         }
