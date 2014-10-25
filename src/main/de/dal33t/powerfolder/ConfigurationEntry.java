@@ -244,6 +244,11 @@ public enum ConfigurationEntry {
     // Server settings ********************************************************
 
     /**
+     * PFC-2580: No connection to powerfolder.com / Licensing and Cloud Replication options
+     */
+    SERVER_CONNECT("server.connect.enabled", true),
+    
+    /**
      * The optional name of the sever to connect to.
      */
     SERVER_NAME("server.name", "PowerFolder Cloud"),
