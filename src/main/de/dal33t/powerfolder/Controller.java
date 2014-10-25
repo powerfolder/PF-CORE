@@ -677,12 +677,13 @@ public class Controller extends PFComponent {
                 + "Config auto.connect set to false");
         }
         // Start connecting to OS client.
-        if (Feature.OS_CLIENT.isEnabled()) {
+        if (Feature.OS_CLIENT.isEnabled()
+            && ConfigurationEntry.SERVER_CONNECT.getValueBoolean(this))
+        {
             osClient.start();
         } else {
-            logWarning("Not starting client connection to server ("
-                + osClient.getServerString()
-                + "). Auto-reconnection disabled.");
+            logInfo("Not connecting to server ("
+                + osClient.getServerString() + "): Disabled");
         }
 
         // Setup our background working tasks
