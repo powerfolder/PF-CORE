@@ -58,7 +58,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.distribution.AbstractDistribution;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
@@ -252,8 +252,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         try {
             boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
                 .getValueBoolean(getController());
-            boolean isPF = AbstractDistribution
-                .isPowerFolderServer(getController());
+            boolean isPF = ServerClient.isPowerFolderCloud(getController());
             boolean branded = getController().getDistribution()
                 .isBrandedClient();
             neverAskAgainBox.setVisible(prompt && isPF && !branded);

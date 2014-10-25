@@ -322,7 +322,7 @@ public class ServerClient extends PFComponent {
     /**
      * Answers if the node is a temporary node info for a server. It does not
      * contains a valid id, but a hostname/port.
-     *
+     * 
      * @param node
      * @return true if the node is a temporary node info.
      */
@@ -335,14 +335,18 @@ public class ServerClient extends PFComponent {
      *         (my.powerfolder.com). false if custom own inhouse server host is
      *         set or not set at all (non inhouse server).
      */
-    public boolean isServerPowerFolderCloud() {
-        String nodeId = ConfigurationEntry.SERVER_NODEID
-            .getValue(getController());
-        String host = ConfigurationEntry.SERVER_HOST.getValue(getController());
-        return isPowerFolderCloud(nodeId, host);
+    public boolean isPowerFolderCloud() {
+        return isPowerFolderCloud(getController());
     }
 
-    public static boolean isPowerFolderCloud(String nodeId, String host) {
+    /**
+     * @return true if the set server is part of the public PowerFolder cloud
+     *         (my.powerfolder.com). false if custom own inhouse server host is
+     *         set or not set at all (non inhouse server).
+     */
+    public static boolean isPowerFolderCloud(Controller contoller) {
+        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(contoller);
+        String host = ConfigurationEntry.SERVER_HOST.getValue(contoller);
         return StringUtils.isNotBlank(nodeId)
             && nodeId.toUpperCase().contains("WEBSERVICE")
             && StringUtils.isNotBlank(host)
@@ -1958,7 +1962,7 @@ public class ServerClient extends PFComponent {
         if (getController().getDistribution().isBrandedClient()) {
             return false;
         }
-        boolean pfCom = isServerPowerFolderCloud();
+        boolean pfCom = isPowerFolderCloud();
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
             .getValueBoolean(getController());
         return prompt || !pfCom;
