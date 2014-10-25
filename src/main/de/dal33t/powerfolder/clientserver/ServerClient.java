@@ -64,7 +64,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.distribution.AbstractDistribution;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -329,6 +328,25 @@ public class ServerClient extends PFComponent {
      */
     public static boolean isTempServerNode(MemberInfo node) {
         return node.id.startsWith(MEMBER_ID_TEMP_PREFIX);
+    }
+
+    /**
+     * @return true if the set server is part of the public PowerFolder cloud
+     *         (my.powerfolder.com). false if custom own inhouse server host is
+     *         set or not set at all (non inhouse server).
+     */
+    public boolean isServerPowerFolderCloud() {
+        String nodeId = ConfigurationEntry.SERVER_NODEID
+            .getValue(getController());
+        String host = ConfigurationEntry.SERVER_HOST.getValue(getController());
+        return isPowerFolderCloud(nodeId, host);
+    }
+
+    public static boolean isPowerFolderCloud(String nodeId, String host) {
+        return StringUtils.isNotBlank(nodeId)
+            && nodeId.toUpperCase().contains("WEBSERVICE")
+            && StringUtils.isNotBlank(host)
+            && host.toLowerCase().contains("powerfolder.com");
     }
 
     /**
@@ -1940,8 +1958,7 @@ public class ServerClient extends PFComponent {
         if (getController().getDistribution().isBrandedClient()) {
             return false;
         }
-        boolean pfCom = AbstractDistribution
-            .isPowerFolderServer(getController());
+        boolean pfCom = isServerPowerFolderCloud();
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
             .getValueBoolean(getController());
         return prompt || !pfCom;
