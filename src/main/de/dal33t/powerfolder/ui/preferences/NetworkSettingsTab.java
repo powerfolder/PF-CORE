@@ -29,7 +29,12 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -48,8 +53,8 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.panel.LineSpeedSelectionPanel;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
@@ -64,7 +69,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
     private JButton httpProxyButton;
-    private JComboBox serverDisconnectBehaviorCombo;
     private JCheckBox randomPortCB;
     private JTextField advPortTF;
     private JCheckBox openPortCB;
@@ -190,18 +194,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.network.server_disconnect_sync"),
             Translation
                 .getTranslation("preferences.network.server_disconnect_no_sync")};
-        serverDisconnectBehaviorCombo = new JComboBox(options);
-        int selected = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-            .getValueBoolean(getController()) ? 0 : 1;
-        serverDisconnectBehaviorCombo.setSelectedIndex(selected);
-        serverDisconnectBehaviorCombo.setToolTipText(String
-            .valueOf(serverDisconnectBehaviorCombo.getSelectedItem()));
-        serverDisconnectBehaviorCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                serverDisconnectBehaviorCombo.setToolTipText(String
-                    .valueOf(serverDisconnectBehaviorCombo.getSelectedItem()));
-            }
-        });
 
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());
@@ -258,12 +250,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             if (getController().isBackupOnly()) {
                 layout = new FormLayout(
                         "right:pref, 3dlu, 140dlu, pref:grow",
-                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             } else {
                 // Extra pref for useOnlineStorageCB.
                 layout = new FormLayout(
                         "right:pref, 3dlu, 140dlu, pref:grow",
-                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                        "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             }
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -297,11 +289,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(Translation.getTranslation("preferences.network.lan_line_settings"),
                     cc.xywh(1, row, 1, 1, "default, top"));
             builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.addLabel(Translation.getTranslation("preferences.network.server_disconnect"),
-                    cc.xy(1, row));
-            builder.add(serverDisconnectBehaviorCombo, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation.getTranslation("preferences.network.adv_port"),
@@ -425,9 +412,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             getController(), String.valueOf(relayedConnectionCB.isSelected()));
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
             String.valueOf(udtConnectionCB.isSelected()));
-        boolean syncAnyways = serverDisconnectBehaviorCombo.getSelectedIndex() == 0;
-        ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
-            getController(), String.valueOf(syncAnyways));
 
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());
         Object bindObj = bindAddressCombo.getSelectedItem();

@@ -280,7 +280,12 @@ public enum ConfigurationEntry {
     /**
      * #1687: How this computer should behave when the server is not connected.
      */
-    SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false),
+    SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
+        @Override
+        public String getValue(Controller controller) {
+            return Boolean.FALSE.toString();
+        }
+    },
 
     /**
      * If the config should be update when connection to the server was
