@@ -213,7 +213,9 @@ public class PathUtils {
         if (f == null) {
             return null;
         }
-        if (StringUtils.isNotBlank(f.getFileName().toString())) {
+        if (f.getFileName() != null
+            && StringUtils.isNotBlank(f.getFileName().toString()))
+        {
             return f.getFileName().toString();
         }
         return f.toAbsolutePath().toString();
