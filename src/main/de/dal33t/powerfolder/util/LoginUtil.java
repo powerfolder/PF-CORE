@@ -180,6 +180,9 @@ public class LoginUtil {
     }
 
     public static boolean matches(char[] pwCandidate, String hashedPW) {
+        if (StringUtils.isBlank(hashedPW)) {
+            return false;
+        }
         String[] parts = hashedPW.split(":");
         if (parts.length != 3) {
             // Legacy for clear text passwords
