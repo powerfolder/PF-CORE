@@ -999,8 +999,13 @@ public enum ConfigurationEntry {
     FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", true),
 
     /**
-     * PFC-2226: Option to restrict new folder creation to the default storage path
-     * PFC-2424: If "Beginner mode" is switched on, set to "true"
+     * PFC-2572: Possibility to disallow networked drives or UNC shares
+     */
+    FOLDER_CREATE_ALLOW_NETWORK("create.folder.allow.network", true),
+
+    /**
+     * PFC-2226: Option to restrict new folder creation to the default storage
+     * path PFC-2424: If "Beginner mode" is switched on, set to "true"
      */
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false) {
         @Override
@@ -1009,7 +1014,8 @@ public enum ConfigurationEntry {
 
             if (value == null) {
                 if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
-                    && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
+                    && !PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(controller))
                 {
                     return Boolean.TRUE;
                 }

@@ -973,6 +973,21 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
+        // PFC-2572
+        if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK
+            .getValueBoolean(getController()))
+        {
+            if (PathUtils.isNetworkPath(folderSettings.getLocalBaseDir())) {
+                logSevere("Not allowed to create " + folderInfo.getName()
+                    + " at " + folderSettings.getLocalBaseDirString()
+                    + ". Network shares not allowed");
+                throw new IllegalStateException("Not allowed to create "
+                    + folderInfo.getName() + " at "
+                    + folderSettings.getLocalBaseDirString()
+                    + ". Network shares not allowed");
+            }
+        }
+
         if (Feature.FOLDER_ATOMIC_COMMIT.isEnabled()
             && folderSettings.getCommitDir() == null)
         {
