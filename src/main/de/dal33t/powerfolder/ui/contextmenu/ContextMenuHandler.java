@@ -59,30 +59,39 @@ public class ContextMenuHandler extends PFComponent implements
     public ContextMenuHandler(Controller controller) {
         super(controller);
 
+        pfMainItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.main_item"));
+
         shareLinkItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.share_link"));
         shareLinkItem
             .setContextMenuAction(new ShareLinkAction(getController()));
+
         shareFolderItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.share_folder"));
         shareFolderItem.setContextMenuAction(new ShareFolderAction(
             getController()));
 
-        pfMainItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.main_item"));
-
         openWebItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.open_web"));
         openWebItem.setContextMenuAction(new OpenWebAction(getController()));
+
         stopSyncItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.stop_sync"));
         stopSyncItem.setContextMenuAction(new StopSyncAction(getController()));
+
         lockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.lock"));
         lockItem.setContextMenuAction(new LockAction(getController()));
+
         unlockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.unlock"));
         unlockItem.setContextMenuAction(new UnlockAction(getController()));
+
+        versionHistoryItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.version_history"));
+        versionHistoryItem.setContextMenuAction(new VersionHistoryAction(
+            getController()));
     }
 
     @Override
@@ -138,12 +147,16 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(unlockItem);
             pfMainItem.addContextMenuItem(lockItem);
         }
+        
+        if (!containsFolderPath && containsFileInfoPath) {
+            pfMainItem.addContextMenuItem(versionHistoryItem);
+        }
 
         if (containsFolderPath && !containsFileInfoPath) {
             pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
-        if (containsFileInfoPath) {
+        if (containsFileInfoPath && pathNames.length == 1) {
             pfMainItem.addContextMenuItem(shareLinkItem);
         }
 
@@ -153,8 +166,7 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(shareFolderItem);
         }
 
-        if ((containsFileInfoPath
-            || containsFolderPath)
+        if ((containsFileInfoPath || containsFolderPath)
             && ConfigurationEntry.WEB_LOGIN_ALLOWED
                 .getValueBoolean(getController()))
         {

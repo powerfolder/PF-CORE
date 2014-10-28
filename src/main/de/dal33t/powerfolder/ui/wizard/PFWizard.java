@@ -416,14 +416,17 @@ public class PFWizard extends PFUIComponent {
         }
     }
 
-    public static void openMultiFileRestoreWizard(Controller controller, Folder folder,
-                                                  List<FileInfo> fileInfosToRestore) {
+    public static void openMultiFileRestoreWizard(Controller controller,
+        List<FileInfo> fileInfosToRestore)
+    {
         PFWizard wizard = new PFWizard(controller, Translation.getTranslation("wizard.pfwizard.restore_title"));
         if (fileInfosToRestore.size() == 1) {
             // Just one file? Process it singley.
-            wizard.open(new SingleFileRestorePanel(controller, folder, fileInfosToRestore.get(0)));
+            FileInfo fInfo = fileInfosToRestore.get(0);
+            Folder folder = fInfo.getFolder(controller.getFolderRepository());
+            wizard.open(new SingleFileRestorePanel(controller, folder, fInfo));
         } else {
-            wizard.open(new MultiFileRestorePanel(controller, folder, fileInfosToRestore));
+            wizard.open(new MultiFileRestorePanel(controller, fileInfosToRestore));
         }
     }
 

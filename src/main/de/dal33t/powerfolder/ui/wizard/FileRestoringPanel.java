@@ -19,34 +19,36 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.clientserver.FolderService;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FileArchiver;
-
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
+
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Translation;
 
 public class FileRestoringPanel extends PFWizardPanel {
 
     private static final Logger log = Logger.getLogger(MultiFileRestorePanel.class.getName());
 
-    private final Folder folder;
     private final List<FileInfo> fileInfosToRestore;
     private final JLabel statusLabel;
     private final JProgressBar bar;
@@ -55,9 +57,8 @@ public class FileRestoringPanel extends PFWizardPanel {
     private Path alternateLocation;
     private String alternateName;
 
-    public FileRestoringPanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
+    public FileRestoringPanel(Controller controller, List<FileInfo> fileInfosToRestore) {
         super(controller);
-        this.folder = folder;
         this.fileInfosToRestore = fileInfosToRestore;
         bar = new JProgressBar(0, 100);
         statusLabel = new JLabel();
@@ -71,9 +72,9 @@ public class FileRestoringPanel extends PFWizardPanel {
      * @param alternateLocation
      * @param alternateName
      */
-    private FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, Path alternateLocation,
+    private FileRestoringPanel(Controller controller, FileInfo fileInfo, Path alternateLocation,
                               String alternateName) {
-        this(controller, folder, Collections.singletonList(fileInfo));
+        this(controller, Collections.singletonList(fileInfo));
         if (alternateLocation != null && alternateName != null) {
             throw new IllegalArgumentException("Can't have both alternates.");
         }
@@ -82,15 +83,15 @@ public class FileRestoringPanel extends PFWizardPanel {
     }
 
     public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo) {
-        this(controller, folder, fileInfo, null, null);
+        this(controller, fileInfo, null, null);
     }
 
     public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, Path alternateFile) {
-        this(controller, folder, fileInfo, alternateFile, null);
+        this(controller, fileInfo, alternateFile, null);
     }
 
     public FileRestoringPanel(Controller controller, Folder folder, FileInfo fileInfo, String alternateName) {
-        this(controller, folder, fileInfo, null, alternateName);
+        this(controller, fileInfo, null, alternateName);
     }
 
     protected JComponent buildContent() {
@@ -171,7 +172,12 @@ public class FileRestoringPanel extends PFWizardPanel {
                 // If there is an alternateName, restore from the server with the new name.
                 boolean restoreServerToAlternateName = alternateName != null;
 
-                FileArchiver fileArchiver = folder.getFileArchiver();
+                Folder fo = fileInfo.getFolder(getController().getFolderRepository());
+                if (fo == null) {
+                    log.fine("Could not find folder for file " + fileInfo + " to restore.");
+                    return;
+                }
+                FileArchiver fileArchiver = fo.getFileArchiver();
                 boolean restored = false;
 
                 // Try local restore first.
@@ -186,8 +192,8 @@ public class FileRestoringPanel extends PFWizardPanel {
                     }
                     restored = fileArchiver.restore(fileInfo, restoreTo);
                     if (restored) {
-                        folder.scanChangedFile(fileInfo);
-                        folder.scanAllParentDirectories(fileInfo);
+                        fo.scanChangedFile(fileInfo);
+                        fo.scanAllParentDirectories(fileInfo);
                         log.info("Restored " + fileInfo.getFilenameOnly() + " from local archive");
                         filesProcessedSuccessfully++;
                     }
@@ -195,7 +201,7 @@ public class FileRestoringPanel extends PFWizardPanel {
 
                 // Try server restore if no local restore done.
                 if (!restored && !restoreLocalToAlternateLocation) {
-                    if (folder.hasMember(getController().getOSClient().getServer())) {
+                    if (fo.hasMember(getController().getOSClient().getServer())) {
                         ServerClient client = getController().getOSClient();
                         if (client.isConnected() && client.isLoggedIn()) {
                             FolderService service = client.getFolderService();
