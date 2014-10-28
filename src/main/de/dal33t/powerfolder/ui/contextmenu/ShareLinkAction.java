@@ -19,10 +19,12 @@ package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.SyncStatus;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -39,6 +41,8 @@ import de.dal33t.powerfolder.util.Util;
  */
 class ShareLinkAction extends ContextMenuAction {
 
+    private static final Logger log = Logger.getLogger(ShareLinkAction.class
+        .getName());
     private Controller controller;
 
     ShareLinkAction(Controller controller) {
@@ -59,6 +63,11 @@ class ShareLinkAction extends ContextMenuAction {
                 final ServerClient client = controller.getOSClient();
                 final FileInfo fInfo = FileInfoFactory.lookupInstance(folder,
                     path);
+                if (SyncStatus.of(controller, fInfo) == SyncStatus.IGNORED) {
+                    log.fine("File " + fInfo
+                        + " is ignored. Not trying to create link");
+                    continue;
+                }
 
                 controller.getIOProvider().startIO(new Runnable() {
                     @Override

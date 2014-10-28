@@ -44,45 +44,63 @@ import de.dal33t.powerfolder.util.Translation;
 public class ContextMenuHandler extends PFComponent implements
     ContextMenuControlCallback
 {
+    private ContextMenuItem pfMainItem;
+    private ContextMenuItem openColabItem;
 
     private ContextMenuItem shareLinkItem;
     private ContextMenuItem shareFolderItem;
-    private ContextMenuItem openColabItem;
-
-    private ContextMenuItem pfMainItem;
     private ContextMenuItem openWebItem;
     private ContextMenuItem stopSyncItem;
     private ContextMenuItem lockItem;
     private ContextMenuItem unlockItem;
     private ContextMenuItem versionHistoryItem;
+    private ContextMenuItem lockInfoItem;
 
     public ContextMenuHandler(Controller controller) {
         super(controller);
 
-        shareLinkItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.share_link"));
-        shareLinkItem
-            .setContextMenuAction(new ShareLinkAction(getController()));
-        shareFolderItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.share_folder"));
-        shareFolderItem.setContextMenuAction(new ShareFolderAction(
+        openColabItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.open_and_colaborate"));
+        openColabItem.setContextMenuAction(new OpenColaborateAction(
             getController()));
 
         pfMainItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.main_item"));
 
+        shareLinkItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.share_link"));
+        shareLinkItem
+            .setContextMenuAction(new ShareLinkAction(getController()));
+
+        shareFolderItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.share_folder"));
+        shareFolderItem.setContextMenuAction(new ShareFolderAction(
+            getController()));
+
         openWebItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.open_web"));
         openWebItem.setContextMenuAction(new OpenWebAction(getController()));
+
         stopSyncItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.stop_sync"));
         stopSyncItem.setContextMenuAction(new StopSyncAction(getController()));
+
+        lockInfoItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.lock_information"));
+        lockInfoItem.setContextMenuAction(new LockInfoAction(getController()));
+
         lockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.lock"));
         lockItem.setContextMenuAction(new LockAction(getController()));
+
         unlockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.unlock"));
         unlockItem.setContextMenuAction(new UnlockAction(getController()));
+
+        versionHistoryItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.version_history"));
+        versionHistoryItem.setContextMenuAction(new VersionHistoryAction(
+            getController()));
     }
 
     @Override
@@ -95,6 +113,7 @@ public class ContextMenuHandler extends PFComponent implements
         // Gather some information to decide which context menu items to show
         boolean containsFolderPath = false;
         boolean containsFileInfoPath = false;
+        FileInfo found = null;
 
         // Check for folder base paths
         FolderRepository fr = getController().getFolderRepository();
@@ -119,8 +138,7 @@ public class ContextMenuHandler extends PFComponent implements
                 }
 
                 FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-
-                if (folder.getDAO().find(lookup, null) != null) {
+                if ((found = folder.getDAO().find(lookup, null)) != null) {
                     containsFileInfoPath = true;
                 }
                 if (containsFileInfoPath) {
@@ -137,13 +155,20 @@ public class ContextMenuHandler extends PFComponent implements
         if (containsFolderPath || containsFileInfoPath) {
             pfMainItem.addContextMenuItem(unlockItem);
             pfMainItem.addContextMenuItem(lockItem);
+            if (containsFileInfoPath && pathNames.length == 1 && found.isLocked(getController())) {
+                pfMainItem.addContextMenuItem(lockInfoItem);
+            }
+        }
+
+        if (!containsFolderPath && containsFileInfoPath) {
+            pfMainItem.addContextMenuItem(versionHistoryItem);
         }
 
         if (containsFolderPath && !containsFileInfoPath) {
             pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
-        if (containsFileInfoPath) {
+        if (containsFileInfoPath && pathNames.length == 1) {
             pfMainItem.addContextMenuItem(shareLinkItem);
         }
 
@@ -153,18 +178,18 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(shareFolderItem);
         }
 
-        if ((containsFileInfoPath
-            || containsFolderPath)
+        if ((containsFileInfoPath || containsFolderPath)
             && ConfigurationEntry.WEB_LOGIN_ALLOWED
                 .getValueBoolean(getController()))
         {
             pfMainItem.addContextMenuItem(openWebItem);
         }
 
-        List<ContextMenuItem> items = new ArrayList<>(1);
+        List<ContextMenuItem> items = new ArrayList<>(2);
         if (pfMainItem.getContextMenuItems().size() > 0) {
             items.add(pfMainItem);
         }
+        items.add(openColabItem);
 
         return items;
     }

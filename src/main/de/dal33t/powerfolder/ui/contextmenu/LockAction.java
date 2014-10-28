@@ -45,11 +45,11 @@ class LockAction extends PFContextMenuAction {
         List<FileInfo> fileInfos = getFileInfos(paths);
 
         for (FileInfo fileInfo : fileInfos) {
-            lockFileInfos(fileInfo);
+            lockFileInfo(fileInfo);
         }
     }
 
-    private void lockFileInfos(FileInfo fileInfo) {
+    private void lockFileInfo(FileInfo fileInfo) {
         if (fileInfo.isDiretory()) {
             DirectoryInfo dInfo = (DirectoryInfo) fileInfo;
 
@@ -64,7 +64,7 @@ class LockAction extends PFContextMenuAction {
                 .findFiles(criteria);
 
             for (FileInfo info : infos) {
-                lock(info);
+                lockFileInfo(info);
             }
         }
 

@@ -363,7 +363,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 }
             }
 
-            PFWizard.openMultiFileRestoreWizard(getController(),folder, fileInfosToRestore);
+            PFWizard.openMultiFileRestoreWizard(getController(), fileInfosToRestore);
         }
     }
 
