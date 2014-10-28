@@ -44,17 +44,17 @@ import de.dal33t.powerfolder.util.Translation;
 public class ContextMenuHandler extends PFComponent implements
     ContextMenuControlCallback
 {
+    private ContextMenuItem pfMainItem;
+    private ContextMenuItem openColabItem;
 
     private ContextMenuItem shareLinkItem;
     private ContextMenuItem shareFolderItem;
-    private ContextMenuItem openColabItem;
-
-    private ContextMenuItem pfMainItem;
     private ContextMenuItem openWebItem;
     private ContextMenuItem stopSyncItem;
     private ContextMenuItem lockItem;
     private ContextMenuItem unlockItem;
     private ContextMenuItem versionHistoryItem;
+    private ContextMenuItem lockInfoItem;
 
     public ContextMenuHandler(Controller controller) {
         super(controller);
@@ -85,6 +85,10 @@ public class ContextMenuHandler extends PFComponent implements
             Translation.getTranslation("context_menu.stop_sync"));
         stopSyncItem.setContextMenuAction(new StopSyncAction(getController()));
 
+        lockInfoItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.lock_information"));
+        lockInfoItem.setContextMenuAction(new LockInfoAction(getController()));
+
         lockItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.lock"));
         lockItem.setContextMenuAction(new LockAction(getController()));
@@ -109,6 +113,7 @@ public class ContextMenuHandler extends PFComponent implements
         // Gather some information to decide which context menu items to show
         boolean containsFolderPath = false;
         boolean containsFileInfoPath = false;
+        FileInfo found = null;
 
         // Check for folder base paths
         FolderRepository fr = getController().getFolderRepository();
@@ -133,8 +138,7 @@ public class ContextMenuHandler extends PFComponent implements
                 }
 
                 FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-
-                if (folder.getDAO().find(lookup, null) != null) {
+                if ((found = folder.getDAO().find(lookup, null)) != null) {
                     containsFileInfoPath = true;
                 }
                 if (containsFileInfoPath) {
@@ -151,6 +155,9 @@ public class ContextMenuHandler extends PFComponent implements
         if (containsFolderPath || containsFileInfoPath) {
             pfMainItem.addContextMenuItem(unlockItem);
             pfMainItem.addContextMenuItem(lockItem);
+            if (containsFileInfoPath && pathNames.length == 1 && found.isLocked(getController())) {
+                pfMainItem.addContextMenuItem(lockInfoItem);
+            }
         }
 
         if (!containsFolderPath && containsFileInfoPath) {
