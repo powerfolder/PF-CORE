@@ -17,14 +17,21 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Set file to be "NOT in use for edit" to display a message to the user.
@@ -33,7 +40,8 @@ import de.dal33t.powerfolder.light.FileInfo;
  */
 class UnlockAction extends PFContextMenuAction {
 
-    private static final Logger log = Logger.getLogger(UnlockAction.class.getName());
+    private static final Logger log = Logger.getLogger(UnlockAction.class
+        .getName());
 
     UnlockAction(Controller controller) {
         super(controller);
@@ -72,8 +80,67 @@ class UnlockAction extends PFContextMenuAction {
 
     private void unlock(FileInfo fileInfo) {
         if (fileInfo.isLocked(getController())) {
-            if (!fileInfo.unlock(getController())) {
-                log.warning("File " + fileInfo + " could not be unlocked!");
+            Lock lock = fileInfo.getLock(getController());
+            boolean bySameDevice = lock.getMemberInfo().equals(getController()
+                .getMySelf().getInfo());
+            boolean bySameAccount = lock.getAccountInfo().equals(getController()
+                .getOSClient().getAccountInfo());
+
+            if (bySameDevice && bySameAccount) {
+                unlock0(fileInfo);
+            } else {
+                UIUtil.invokeLaterInEDT(new UnlockForeignTask(getController(),
+                    fileInfo, lock));
+            }
+        }
+    }
+
+    private void unlock0(FileInfo fileInfo) {
+        if (!fileInfo.unlock(getController())) {
+            log.warning("File " + fileInfo + " could not be unlocked!");
+        }
+    }
+
+    private class UnlockForeignTask implements Runnable {
+
+        private final Controller controller;
+        private final FileInfo fileInfo;
+        private final Lock lock;
+
+        UnlockForeignTask(Controller controller, FileInfo fileInfo, Lock lock) {
+            this.controller = controller;
+            this.fileInfo = fileInfo;
+            this.lock = lock;
+        }
+
+        @Override
+        public void run() {
+            String name = fileInfo.getFilenameOnly();
+            String displayName = lock.getAccountInfo().getDisplayName();
+            String date = new SimpleDateFormat("dd MMM yyyy HH:mm").format(lock
+                .getCreated());
+            String memberName = Translation
+                .getTranslation("context_menu.unlock.message.web");
+            MemberInfo member = lock.getMemberInfo();
+            if (member != null) {
+                memberName = member.getNick();
+            }
+
+            int res = DialogFactory
+                .genericDialog(
+                    controller,
+                    Translation.getTranslation("context_menu.unlock.title"),
+                    Translation.getTranslation("context_menu.unlock.message",
+                        name, displayName, date, memberName),
+                    new String[]{
+                        Translation
+                            .getTranslation("context_menu.unlock.unlock"),
+                        Translation
+                            .getTranslation("context_menu.unlock.keep_lock")},
+                    1, GenericDialogType.QUESTION);
+
+            if (res == 0) {
+                unlock0(fileInfo);
             }
         }
     }

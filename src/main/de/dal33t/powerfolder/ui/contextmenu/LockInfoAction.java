@@ -77,9 +77,9 @@ class LockInfoAction extends PFContextMenuAction {
                 DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("context_menu.lock_information.title"),
                     Translation.getTranslation(
-                        "context_menu.lock_information.message", name, date,
-                        displayName, memberName), new String[]{Translation
-                        .getTranslation("general.ok")}, 0,
+                        "context_menu.lock_information.message", name,
+                        displayName, date, memberName),
+                    new String[]{Translation.getTranslation("general.ok")}, 0,
                     GenericDialogType.INFO);
             }
         });
