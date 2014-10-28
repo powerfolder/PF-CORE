@@ -44,11 +44,11 @@ class UnlockAction extends PFContextMenuAction {
         List<FileInfo> fileInfos = getFileInfos(paths);
 
         for (FileInfo fileInfo : fileInfos) {
-            unlockFileInfos(fileInfo);
+            unlockFileInfo(fileInfo);
         }
     }
 
-    private void unlockFileInfos(FileInfo fileInfo) {
+    private void unlockFileInfo(FileInfo fileInfo) {
         if (fileInfo.isDiretory()) {
             DirectoryInfo dInfo = (DirectoryInfo) fileInfo;
 
@@ -63,7 +63,7 @@ class UnlockAction extends PFContextMenuAction {
                 .findFiles(criteria);
 
             for (FileInfo info : infos) {
-                unlock(info);
+                unlockFileInfo(info);
             }
         }
 
