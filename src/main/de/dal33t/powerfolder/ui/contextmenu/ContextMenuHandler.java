@@ -59,6 +59,11 @@ public class ContextMenuHandler extends PFComponent implements
     public ContextMenuHandler(Controller controller) {
         super(controller);
 
+        openColabItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.open_and_colaborate"));
+        openColabItem.setContextMenuAction(new OpenColaborateAction(
+            getController()));
+
         pfMainItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.main_item"));
 
@@ -147,7 +152,7 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(unlockItem);
             pfMainItem.addContextMenuItem(lockItem);
         }
-        
+
         if (!containsFolderPath && containsFileInfoPath) {
             pfMainItem.addContextMenuItem(versionHistoryItem);
         }
@@ -173,10 +178,11 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(openWebItem);
         }
 
-        List<ContextMenuItem> items = new ArrayList<>(1);
+        List<ContextMenuItem> items = new ArrayList<>(2);
         if (pfMainItem.getContextMenuItems().size() > 0) {
             items.add(pfMainItem);
         }
+        items.add(openColabItem);
 
         return items;
     }
