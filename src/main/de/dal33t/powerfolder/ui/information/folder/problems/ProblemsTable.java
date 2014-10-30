@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -50,11 +51,11 @@ public class ProblemsTable extends JTable {
         setShowGrid(false);
 
         setupColumns();
+        setRowHeight(Icons.getIconById(Icons.PROBLEMS).getIconHeight() + 4);
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
-        ProblemTableCellRenderer problemTableCellRenderer =
-                new ProblemTableCellRenderer();
+        ProblemTableCellRenderer problemTableCellRenderer = new ProblemTableCellRenderer();
         setDefaultRenderer(Problem.class, problemTableCellRenderer);
 
         // Associate a header renderer with all columns.
@@ -69,11 +70,13 @@ public class ProblemsTable extends JTable {
         // Otherwise the table header is not visible.
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
-        TableColumn column = getColumn(getColumnName(0));
+        TableColumn column = getColumn(getColumnName(ProblemsTableModel.COL_ICON));
+        column.setPreferredWidth(Icons.getIconById(Icons.PROBLEMS).getIconWidth() + 4);
+        column = getColumn(getColumnName(ProblemsTableModel.COL_DESCRIPTION));
         column.setPreferredWidth(350);
-        column = getColumn(getColumnName(1));
+        column = getColumn(getColumnName(ProblemsTableModel.COL_SOLUTION));
         column.setPreferredWidth(300);
-        column = getColumn(getColumnName(2));
+        column = getColumn(getColumnName(ProblemsTableModel.COL_DATE));
         column.setPreferredWidth(100);
     }
 
@@ -90,17 +93,22 @@ public class ProblemsTable extends JTable {
 
             if (value instanceof Problem) {
                 Problem problem = (Problem) value;
-                if (column == 0) {
+                if (column == ProblemsTableModel.COL_ICON) {
+                    setIcon(Icons.getIconById(Icons.WARNING));
+                    setText("");
+                } else if (column == ProblemsTableModel.COL_DESCRIPTION) {
+                    setIcon(null);
                     setText(problem.getDescription());
-                } else if (column == 1) {
+                } else if (column == ProblemsTableModel.COL_SOLUTION) {
                     if (problem instanceof ResolvableProblem) {
                         ResolvableProblem solvableProblem = (ResolvableProblem) problem;
                         setText(solvableProblem.getResolutionDescription());
                     } else {
-                        setText(Translation.getTranslation(
+                        setText(Translation
+                            .getTranslation(
                             "folder_problem.table_model.not_available"));
                     }
-                } else if (column == 2) {
+                } else if (column ==  ProblemsTableModel.COL_DATE) {
                     setText(Format.formatDateShort(problem.getDate()));
                 }
             }

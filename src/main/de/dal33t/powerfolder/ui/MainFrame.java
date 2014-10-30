@@ -249,7 +249,7 @@ public class MainFrame extends PFUIComponent {
 
         // LOWER PART
         FormLayout layoutLower = new FormLayout("pref, 100dlu",
-                "pref, pref, pref");
+            "pref, pref, pref");
         DefaultFormBuilder builderLower = new DefaultFormBuilder(layoutLower);
         // Include a spacer icon that lines up the pair with builderUpper
         // when allInSyncLabel has null icon.
@@ -369,8 +369,8 @@ public class MainFrame extends PFUIComponent {
         } else {
             noticesActionLabel.setVisible(true);
             noticesActionLabel.setText(Translation.getTranslation(
-                    "main_frame.unread_notices.plural.text",
-                    String.valueOf(unreadCount)));
+                "main_frame.unread_notices.plural.text",
+                String.valueOf(unreadCount)));
         }
     }
 
@@ -461,11 +461,11 @@ public class MainFrame extends PFUIComponent {
         noticeInfoButton.setText(null);
 
         upperMainTextActionLabel = new ActionLabel(getController(),
-                new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                handleSyncTextClick();
-            }
-        });
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    handleSyncTextClick();
+                }
+            });
 
         lowerMainTextActionLabel = new ActionLabel(getController(),
             new AbstractAction() {
@@ -536,11 +536,11 @@ public class MainFrame extends PFUIComponent {
         openWebInterfaceActionLabel = new ActionLabel(getController(),
             new MyOpenWebInterfaceAction(getController()));
         openFoldersBaseActionLabel = new ActionLabel(getController(),
-                myOpenFoldersBaseAction);
+            myOpenFoldersBaseAction);
         pauseResumeActionLabel = new ActionLabel(getController(),
             new MyPauseResumeAction(getController()));
         configurationActionLabel = new ActionLabel(getController(),
-                new MyOpenPreferencesAction(getController()));
+            new MyOpenPreferencesAction(getController()));
         openDebugActionLabel = new ActionLabel(getController(),
             new MyOpenDebugAction(getController()));
         openTransfersActionLabel = new ActionLabel(getController(),
@@ -638,18 +638,18 @@ public class MainFrame extends PFUIComponent {
             });
 
         getController().getUIController().getApplicationModel().addSyncStatusListener(new SyncStatusListener() {
-            public void syncStatusChanged(final SyncStatusEvent event) {
-                mainStatusUpdater.schedule(new Runnable() {
-                    public void run() {
-                        updateMainStatus(event);
-                    }
-                });
-            }
+                public void syncStatusChanged(final SyncStatusEvent event) {
+                    mainStatusUpdater.schedule(new Runnable() {
+                        public void run() {
+                            updateMainStatus(event);
+                        }
+                    });
+                }
 
-            public boolean fireInEventDispatchThread() {
-                return true;
-            }
-        });
+                public boolean fireInEventDispatchThread() {
+                    return true;
+                }
+            });
 
         getController().addPausedModeListener(new MyPausedModeListener());
     }
@@ -680,13 +680,13 @@ public class MainFrame extends PFUIComponent {
                 }
             }
         }
-        //        setLinkTooltips();
+        // setLinkTooltips();
     }
 
     private void updateMainStatus(SyncStatusEvent event) {
 
         FolderRepositoryModel folderRepositoryModel = getUIController()
-                .getApplicationModel().getFolderRepositoryModel();
+            .getApplicationModel().getFolderRepositoryModel();
         boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
             || event.equals(SyncStatusEvent.NO_FOLDERS);
         boolean showSetupLabel = getController().getOSClient()
@@ -696,8 +696,12 @@ public class MainFrame extends PFUIComponent {
         pauseButton.setVisible(event.equals(SyncStatusEvent.PAUSED));
         if (showSetupLabel) {
             setupLabel.setVisible(notStartedOrNoFolders);
+
         }
-        setupButton.setVisible(notStartedOrNoFolders || !client.isLoginExecuted());
+        setupButton.setVisible(notStartedOrNoFolders
+            || !client.isLoginExecuted());
+        setupButton.setEnabled(getController().getOSClient()
+            .isAllowedToCreateFolders());
         allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
         syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
         syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
@@ -733,7 +737,7 @@ public class MainFrame extends PFUIComponent {
         } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
             if(getController().getOSClient().getAccount().getFolders().isEmpty()){
                 upperText = Translation.getTranslation("folders_tab.no_folders_found");
-            }else {
+            } else {
                 upperText = Translation.getTranslation("main_frame.no_folders");
             }
             setupText = getApplicationModel().getActionModel()
@@ -765,10 +769,10 @@ public class MainFrame extends PFUIComponent {
         } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
             upperText = Translation.getTranslation("main_frame.log_in_failed.text");
             upperMainTextActionLabel.setNeverUnderline(true);
-        } else if (event.equals(SyncStatusEvent.WARNING)){
+        } else if (event.equals(SyncStatusEvent.WARNING)) {
             upperText = Translation.getTranslation("main_frame.warning_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
-        } else if (event.equals(SyncStatusEvent.INFORMATION)){
+        } else if (event.equals(SyncStatusEvent.INFORMATION)) {
             upperText = Translation.getTranslation("main_frame.info_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
         } else {
@@ -789,7 +793,7 @@ public class MainFrame extends PFUIComponent {
         // Lower text - sync date stuff.
         String lowerText = " ";
         if (syncDate != null) {
-            //If ETA sync > 3 days: no text.
+            // If ETA sync > 3 days: no text.
             if (!DateUtil.isDateMoreThanNDaysInFuture(syncDate, 3)) {
                 String date = Format.formatDateShort(syncDate);
                 boolean inFuture = syncDate.after(new Date());
@@ -825,8 +829,8 @@ public class MainFrame extends PFUIComponent {
                                 "main_frame.sync_eta_one_minute");
                         } else {
                             lowerText = Translation.getTranslation(
-                                    "main_frame.sync_eta_minutes",
-                                    String.valueOf(minutes));
+                                "main_frame.sync_eta_minutes",
+                                String.valueOf(minutes));
                         }
                     }
                 } else {
@@ -1058,20 +1062,20 @@ public class MainFrame extends PFUIComponent {
 
     private void doMinusOperation() {
 //        if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
-//            // To COMPACT mode.
-//            setFrameMode(FrameMode.COMPACT);
-//        } else {
-            setFrameMode(FrameMode.MINIMIZED);
-//        }
+        // // To COMPACT mode.
+        // setFrameMode(FrameMode.COMPACT);
+        // } else {
+        setFrameMode(FrameMode.MINIMIZED);
+        // }
     }
 
     private void doPlusOperation() {
         if (frameMode == FrameMode.MAXIMIZED) {
             // To NORMAL mode.
             setFrameMode(FrameMode.COMPACT);
-//        } else if (frameMode == FrameMode.NORMAL) {
-//            // To MAXIMIZED mode.
-//            setFrameMode(FrameMode.MAXIMIZED);
+            // } else if (frameMode == FrameMode.NORMAL) {
+            // // To MAXIMIZED mode.
+            // setFrameMode(FrameMode.MAXIMIZED);
         } else {
             // To NORMAL mode.
             setFrameMode(FrameMode.MAXIMIZED);
@@ -1140,8 +1144,6 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
-            // Let the MainTabbedPane know so it can scroll the Folders tab to the new folder.
-            mainTabbedPane.folderCreated(e);
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
@@ -1199,7 +1201,7 @@ public class MainFrame extends PFUIComponent {
                 AccountDetails ad = client.getAccountDetails();
                 if (storageSubscription.isDisabled()) {
                     loginActionLabel.setText(Translation
-                        .getTranslation("main_frame.storage_subscription_disabled.text"));
+                            .getTranslation("main_frame.storage_subscription_disabled.text"));
                 } else {
                     totalStorage = storageSubscription.getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
@@ -1208,7 +1210,7 @@ public class MainFrame extends PFUIComponent {
                             / (double) totalStorage;
                     } else {
                         loginActionLabel.setText(Translation
-                            .getTranslation("main_frame.storage_subscription_disabled.text"));
+                                .getTranslation("main_frame.storage_subscription_disabled.text"));
                         percentageUsed = 100.0d;
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
@@ -1220,7 +1222,7 @@ public class MainFrame extends PFUIComponent {
                 }
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
-//                    .getTranslation("main_frame.logging_in.text"));
+                // .getTranslation("main_frame.logging_in.text"));
                 loginActionLabel.setText("");
             } else {
                 // Not logged in and not logging in? Looks like it has failed.
@@ -1231,8 +1233,8 @@ public class MainFrame extends PFUIComponent {
                 }
             }
         } else {
-//            loginActionLabel.setText(Translation
-//                .getTranslation("main_frame.connecting.text"));
+            // loginActionLabel.setText(Translation
+            // .getTranslation("main_frame.connecting.text"));
             loginActionLabel.setText("");
         }
         usagePB.setValue((int) percentageUsed);
@@ -1259,15 +1261,15 @@ public class MainFrame extends PFUIComponent {
                 if (uiComponent.getRootPane().getUI() instanceof SyntheticaRootPaneUI)
                 {
                     ((SyntheticaRootPaneUI) uiComponent.getRootPane().getUI())
-                            .setMaximizedBounds(uiComponent);
+                        .setMaximizedBounds(uiComponent);
                 }
                 uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
                 plusButton.setToolTipText(Translation
-                        .getTranslation("main_frame.compact.tips"));
+                    .getTranslation("main_frame.compact.tips"));
                 plusButton.setIcons(
-                        Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
-                        Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
-                        Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
+                    Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
+                    Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
+                    Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
                 minusButton.setToolTipText(
                         Translation.getTranslation("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
@@ -1276,9 +1278,10 @@ public class MainFrame extends PFUIComponent {
                         PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 checkSplitMinWidth();
                 break;
-            case NORMAL:
+            case NORMAL :
                 uiComponent.setExtendedState(Frame.NORMAL);
                 uiComponent.setResizable(true);
+
                 plusButton.setToolTipText(
                         Translation.getTranslation("main_frame.maximize.tips"));
                 plusButton.setIcons(Icons.getIconById(
@@ -1287,6 +1290,7 @@ public class MainFrame extends PFUIComponent {
                         Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
                 minusButton.setToolTipText(
                         Translation.getTranslation("main_frame.minimize.tips"));
+
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
                 minusButton.setVisible(!OSUtil.isSystraySupported() ||
@@ -1298,7 +1302,7 @@ public class MainFrame extends PFUIComponent {
                     }
                 });
                 break;
-            case COMPACT:
+            case COMPACT :
                 uiComponent.setExtendedState(Frame.NORMAL);
                 // Need to hide the child windows when minimizing.
                 if (!init) {
@@ -1306,10 +1310,12 @@ public class MainFrame extends PFUIComponent {
                 }
                 uiComponent.setSize(uiComponent.getMinimumSize());
                 uiComponent.setResizable(false);
+                
                 plusButton.setToolTipText(
                         Translation.getTranslation("main_frame.maximize.tips"));
                 plusButton.setIcons(Icons.getIconById(
                     Icons.WINDOW_MAXIMIZE_NORMAL),
+                    
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
                 minusButton.setToolTipText(
@@ -1330,12 +1336,12 @@ public class MainFrame extends PFUIComponent {
                     centralPanel.setVisible(false);
                 }
                 break;
-            case MINIMIZED:
+            case MINIMIZED :
                 uiComponent.setExtendedState(Frame.ICONIFIED);
                 break;
         }
 
-//        setLinkTooltips();
+        // setLinkTooltips();
     }
 
     public void hideInlineInfoPanel() {
@@ -1488,7 +1494,10 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (!getController().getNodeManager().isStarted()) {
+            if (!getController().getNodeManager().isStarted()
+                && getApplicationModel().getLicenseModel()
+                    .getActivationAction() != null)
+            {
                 getApplicationModel().getLicenseModel().getActivationAction()
                     .actionPerformed(e);
             } else if (getController().getFolderRepository().getFoldersCount() == 0)
@@ -1507,7 +1516,7 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             getUIController().askToPauseResume();
-//            setLinkTooltips();
+            // setLinkTooltips();
         }
     }
 
@@ -1574,7 +1583,10 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (getController().getNodeManager().isStarted()) {
+            if (getController().getNodeManager().isStarted()
+                || getApplicationModel().getLicenseModel()
+                    .getActivationAction() == null)
+            {
                 PFWizard.openLoginWizard(getController(), client);
             } else {
                 // Activate if not running
@@ -1595,13 +1607,22 @@ public class MainFrame extends PFUIComponent {
                 setFrameMode(FrameMode.NORMAL);
             }
             if (getController().getUIController().getApplicationModel()
-                .getNoticesModel().getAllNotices().size() > 0)
+                .getNoticesModel().getUnreadNoticesCount() > 0)
             {
                 getController().getUIController().openNoticesCard();
-            } else if (getController().getFolderRepository().getFolderProblemsCount() > 0) {
-                for (Folder fo : getController().getFolderRepository().getFolders()) {
+            } else if (getController().getFolderRepository()
+                .getFolderProblemsCount() > 0)
+            {
+                for (Folder fo : getController().getFolderRepository()
+                    .getFolders())
+                {
                     if (fo.getProblems().size() > 0) {
-                        getController().getUIController().openProblemsInformation(fo.getInfo());
+                        getController().getUIController()
+                            .openProblemsInformation(fo.getInfo());
+                        mainTabbedPane.getFoldersTab().getFoldersList()
+                            .scrollToFolderInfo(fo.getInfo());
+                        getController().getUIController()
+                            .openProblemsInformation(fo.getInfo());
                         break;
                     }
                 }

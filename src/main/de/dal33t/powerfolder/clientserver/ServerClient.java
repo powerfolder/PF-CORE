@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  *
@@ -64,7 +65,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.distribution.AbstractDistribution;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -323,12 +323,35 @@ public class ServerClient extends PFComponent {
     /**
      * Answers if the node is a temporary node info for a server. It does not
      * contains a valid id, but a hostname/port.
-     *
+     * 
      * @param node
      * @return true if the node is a temporary node info.
      */
     public static boolean isTempServerNode(MemberInfo node) {
         return node.id.startsWith(MEMBER_ID_TEMP_PREFIX);
+    }
+
+    /**
+     * @return true if the set server is part of the public PowerFolder cloud
+     *         (my.powerfolder.com). false if custom own inhouse server host is
+     *         set or not set at all (non inhouse server).
+     */
+    public boolean isPowerFolderCloud() {
+        return isPowerFolderCloud(getController());
+    }
+
+    /**
+     * @return true if the set server is part of the public PowerFolder cloud
+     *         (my.powerfolder.com). false if custom own inhouse server host is
+     *         set or not set at all (non inhouse server).
+     */
+    public static boolean isPowerFolderCloud(Controller contoller) {
+        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(contoller);
+        String host = ConfigurationEntry.SERVER_HOST.getValue(contoller);
+        return StringUtils.isNotBlank(nodeId)
+            && nodeId.toUpperCase().contains("WEBSERVICE")
+            && StringUtils.isNotBlank(host)
+            && host.toLowerCase().contains("powerfolder.com");
     }
 
     /**
@@ -1061,7 +1084,6 @@ public class ServerClient extends PFComponent {
         }
     }
 
-
     private boolean isKerberosLogin() {
         return ConfigurationEntry.KERBEROS_SSO_ENABLED
             .getValueBoolean(getController())
@@ -1357,7 +1379,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * Are we currently logging in?
-     * 
+     *
      * @return
      */
     public boolean isLoggingIn() {
@@ -1939,8 +1961,7 @@ public class ServerClient extends PFComponent {
         if (getController().getDistribution().isBrandedClient()) {
             return false;
         }
-        boolean pfCom = AbstractDistribution
-            .isPowerFolderServer(getController());
+        boolean pfCom = isPowerFolderCloud();
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
             .getValueBoolean(getController());
         return prompt || !pfCom;
@@ -2059,8 +2080,8 @@ public class ServerClient extends PFComponent {
         public void settingsChanged(NodeManagerEvent e) {
             // Transition Member.setServer(true)
             if (e.getNode().isServer()) {
-                logInfo("Discovered a new server of " + countServers()
-                    + " in cluster: " + e.getNode().getNick() + " @ "
+                logInfo("Discovered new server of cluster(" + countServers()
+                    + "): " + e.getNode().getNick() + " @ "
                     + e.getNode().getReconnectAddress());
             } else if (getMySelf().isServer()) {
                 logInfo("Not longer member of cluster: "

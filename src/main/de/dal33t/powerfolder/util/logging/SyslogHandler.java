@@ -29,11 +29,14 @@ import java.util.logging.ErrorManager;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
+import de.dal33t.powerfolder.util.StringUtils;
+
 /**
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public class SyslogHandler extends Handler {
 
+    private String prefix;
     private DatagramSocket socket;
     private SocketAddress address;
     private static ThreadLocal<LoggingFormatter> formatterThreadLocal = new ThreadLocal<LoggingFormatter>()
@@ -43,10 +46,13 @@ public class SyslogHandler extends Handler {
         }
     };
 
-    public void init(String host, int port) throws SocketException {
+    public void init(String prefix, String host, int port)
+        throws SocketException
+    {
         socket = new DatagramSocket();
         address = new InetSocketAddress(host, port);
         socket.connect(address);
+        this.prefix = prefix;
     }
 
     @Override
@@ -59,6 +65,9 @@ public class SyslogHandler extends Handler {
         }
         try {
             String formattedMessage = formatterThreadLocal.get().format(record);
+            if (StringUtils.isNotBlank(prefix)) {
+                formattedMessage = prefix + " " + formattedMessage;
+            }
             byte[] data = formattedMessage.getBytes();
             DatagramPacket packet = new DatagramPacket(data, data.length,
                 address);

@@ -295,6 +295,10 @@ public class NoticesModel extends PFUIComponent {
         unreadNoticesCountVM.setValue(count);
     }
 
+    public int getUnreadNoticesCount() {
+        return (Integer) unreadNoticesCountVM.getValue();
+    }
+
     private class DeclineInvitationTask implements Runnable {
         Invitation invitation;
 

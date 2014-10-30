@@ -37,8 +37,8 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RelayedMessage;
-import de.dal33t.powerfolder.message.RelayedMessageExt;
 import de.dal33t.powerfolder.message.RelayedMessage.Type;
+import de.dal33t.powerfolder.message.RelayedMessageExt;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -48,7 +48,7 @@ import de.dal33t.powerfolder.util.Reject;
  * The base super class for connection which get relayed through a third node.
  * <p>
  * TRAC #597
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -124,7 +124,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      * Builds a new anonymous connection manager using the given relay.
      * <p>
      * Should be called from <code>ConnectionHandlerFactory</code> only.
-     *
+     * 
      * @see ConnectionHandlerFactory
      * @param controller
      *            the controller.
@@ -151,7 +151,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     /**
      * Called before the message gets actally written into the
      * <code>RelayedMessage</code>
-     *
+     * 
      * @param message
      *            the message to serialize
      * @return the serialized message
@@ -162,7 +162,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     /**
      * Called when the data got read from the <code>RelayedMessage</code>.
      * Should re-construct the serialized object from the data.
-     *
+     * 
      * @param data
      *            the serialized data
      * @param len
@@ -174,7 +174,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     /**
      * (Optional) Handles the received object.
-     *
+     * 
      * @param obj
      *            the obj that was received
      * @return true if this object/message was handled.
@@ -206,7 +206,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     /**
      * Initializes the connection handler.
-     *
+     * 
      * @throws ConnectionException
      */
     public void init() throws ConnectionException {
@@ -461,7 +461,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     /**
      * A message to be send later. code execution does not wait util message was
      * sent successfully
-     *
+     * 
      * @param message
      *            the message to be sent
      * @param errorMessage
@@ -481,6 +481,16 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             }
             logWarning(msg);
         }
+        // PFC-2591: Start
+        if (messagesToSendQueue.size() > 5000) {
+            String msg = "Disconnecting " + getIdentity()
+                + ": Too many messages in send queue: "
+                + messagesToSendQueue.size();
+            logWarning(msg);
+            shutdownWithMember();
+            return;
+        }
+        // PFC-2591: End
         if (sender == null) {
             sender = new Sender();
             getController().getIOProvider().startIO(sender);
@@ -654,7 +664,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     /**
      * Receives and processes the relayed message.
-     *
+     * 
      * @param message
      *            the message received from a relay.
      */
@@ -686,7 +696,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     /**
      * Receives and processes the relayed message.
-     *
+     * 
      * @param message
      *            the message received from a relay.
      */
@@ -836,7 +846,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     /**
      * Logs a connection closed event
-     *
+     * 
      * @param e
      */
     private void logConnectionClose(Exception e) {
@@ -860,7 +870,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     /**
      * The sender class, handles all asynchron messages
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.72 $
      */
@@ -933,5 +943,4 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             // logWarning("Sender finished after sending " + i + " messages");
         }
     }
-
 }

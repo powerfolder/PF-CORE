@@ -87,7 +87,8 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     private final Map<MemberInfo, Long> sizesInSync = new HashMap<MemberInfo, Long>();
 
     /** Map of bytes received for a file for a member. */
-    private Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = Util
+    // PFS-1354: Transient: Not required to be stored. Otherwise causes long loading times. 
+    private transient Map<MemberInfo, Map<FileInfo, Long>> partialSyncStatMap = Util
         .createConcurrentHashMap();
 
     public FolderStatisticInfo(FolderInfo folder) {

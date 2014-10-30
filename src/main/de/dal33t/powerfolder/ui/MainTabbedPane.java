@@ -21,13 +21,13 @@ package de.dal33t.powerfolder.ui;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
@@ -49,7 +49,7 @@ public class MainTabbedPane extends PFUIComponent {
     private JTabbedPane tabbedPane;
 
     private final boolean showComputersTab;
-    private final boolean expertMode;
+    private final boolean showDeviceTab;
     private final AtomicBoolean initialized;
 
     /**
@@ -61,8 +61,9 @@ public class MainTabbedPane extends PFUIComponent {
         super(controller);
         initialized = new AtomicBoolean();
         showComputersTab = !getController().isBackupOnly();
-        expertMode = PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController());
+        showDeviceTab = PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController())
+            && PreferencesEntry.SHOW_DEVICES.getValueBoolean(getController());
     }
 
     /**
@@ -74,7 +75,7 @@ public class MainTabbedPane extends PFUIComponent {
             // Initalize components
             initComponents();
 
-            if (expertMode) {
+            if (showDeviceTab) {
 
                 tabbedPane.add(Translation.getTranslation(
                         "main_tabbed_pane.folders.name"),
@@ -118,7 +119,7 @@ public class MainTabbedPane extends PFUIComponent {
             foldersTab.populate();
         }
 
-        if (expertMode) {
+        if (showDeviceTab) {
             return tabbedPane;
         } else {
             return foldersTab.getUIComponent();
@@ -126,12 +127,12 @@ public class MainTabbedPane extends PFUIComponent {
     }
 
     public int getSelectedTabIndex() {
-        if (expertMode) {
+        if (showDeviceTab) {
             return tabbedPane.getSelectedIndex();
         } else {
             // Why is someone asking for the tab index,
             // when only the folder tab is showing?
-            throw new IllegalStateException("Expert mode == " + expertMode);
+            throw new IllegalStateException("Expert mode == " + showDeviceTab);
         }
     }
 
@@ -140,11 +141,15 @@ public class MainTabbedPane extends PFUIComponent {
      */
     private void initComponents() {
         foldersTab = new FoldersTab(getController());
-        if (expertMode) {
+        if (showDeviceTab) {
             tabbedPane = new JTabbedPane();
             tabbedPane.setOpaque(false);
             computersTab = new ComputersTab(getController());
         }
+    }
+
+    public FoldersTab getFoldersTab() {
+        return foldersTab;
     }
 
     /**
@@ -153,7 +158,7 @@ public class MainTabbedPane extends PFUIComponent {
      * @param l
      */
     public void addTabbedPaneChangeListener(ChangeListener l) {
-        if (expertMode) {
+        if (showDeviceTab) {
             tabbedPane.addChangeListener(l);
         }
     }
@@ -164,7 +169,7 @@ public class MainTabbedPane extends PFUIComponent {
      * @param l
      */
     public void removeTabbedPaneChangeListener(ChangeListener l) {
-        if (expertMode) {
+        if (showDeviceTab) {
             tabbedPane.removeChangeListener(l);
         }
     }
@@ -174,13 +179,9 @@ public class MainTabbedPane extends PFUIComponent {
      *            the select tab index
      */
     public void setActiveTab(int tabIndex) {
-        if (expertMode) {
+        if (showDeviceTab) {
             tabbedPane.setSelectedIndex(tabIndex);
         }
-    }
-
-    public void folderCreated(FolderRepositoryEvent e) {
-        foldersTab.folderCreated(e);
     }
 
     /**
