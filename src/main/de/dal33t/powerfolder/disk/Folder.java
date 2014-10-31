@@ -3168,6 +3168,17 @@ public class Folder extends PFComponent {
             return;
         }
 
+        if (schemaZyncro) {
+            AccountInfo aInfo = remoteFile.getModifiedBy()
+                .getNode(getController(), true).getAccountInfo();
+            if (aInfo == null) {
+                logSevere("Ignoring illegal delete request for file "
+                    + localFile + ". Missing deleting user: "
+                    + remoteFile.toDetailString());
+                return;
+            }
+        }
+
         if (isInfo()) {
             // PFC-2434
             String by = "n/a";
