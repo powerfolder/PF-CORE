@@ -17,7 +17,6 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import java.util.logging.Logger;
 
 import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -54,7 +54,8 @@ abstract class PFContextMenuAction extends ContextMenuAction {
     /**
      * Retrieve FileInfos for the passed paths, if they exist.<br />
      * <br />
-     * If a path is not found as FileInfo, it is ignored.
+     * If a path is not found as FileInfo, it is ignored.<br />
+     * Also if a path contains the meta folder name, it is ignored.
      * 
      * @param paths
      *            A list of Strings representing paths.
@@ -64,27 +65,24 @@ abstract class PFContextMenuAction extends ContextMenuAction {
         List<FileInfo> fileInfos = new ArrayList<>();
 
         for (String path : paths) {
-            try {
-                Path targetDir = Paths.get(path).toRealPath();
+            Path targetDir = Paths.get(path);
 
-                for (Folder fo : controller.getFolderRepository().getFolders())
-                {
-                    if (targetDir.equals(fo.getLocalBase())) {
-                        fileInfos.add(fo.getBaseDirectoryInfo());
-                    } else if (targetDir.startsWith(fo.getLocalBase())) {
-                        FileInfo lookup = FileInfoFactory.lookupInstance(fo,
-                            targetDir);
-                        FileInfo found = fo.getDAO().find(lookup, null);
+            for (Folder fo : controller.getFolderRepository().getFolders()) {
+                if (targetDir.equals(fo.getLocalBase())) {
+                    fileInfos.add(fo.getBaseDirectoryInfo());
+                } else if (path.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                    continue;
+                } else if (targetDir.startsWith(fo.getLocalBase())) {
+                    FileInfo lookup = FileInfoFactory.lookupInstance(fo,
+                        targetDir);
+                    FileInfo found = fo.getDAO().find(lookup, null);
 
-                        if (found != null) {
-                            fileInfos.add(found);
-                        } else {
-                            log.fine("No info found for " + targetDir);
-                        }
+                    if (found != null) {
+                        fileInfos.add(found);
+                    } else {
+                        log.fine("No info found for " + targetDir);
                     }
                 }
-            } catch (IOException ioe) {
-                log.fine("Could not check for file at: " + path + ". " + ioe);
             }
         }
 
@@ -103,22 +101,19 @@ abstract class PFContextMenuAction extends ContextMenuAction {
     protected List<Folder> getFolders(String[] paths) {
         List<Folder> folders = new ArrayList<>();
 
-        for (String path : paths) {
-            try {
-                Path targetDir = Paths.get(path).toRealPath();
-                Folder folder = null;
-                if ((folder = controller.getFolderRepository()
-                    .findExistingFolder(targetDir)) != null)
-                {
-                    folders.add(folder);
-                }
-            } catch (IOException ioe) {
-                log.fine("Could not check for folder at: " + path + ". " + ioe);
+        for (String pathName : paths) {
+            Folder folder = null;
+            if ((folder = controller.getFolderRepository()
+                .findContainingFolder(pathName)) != null)
+            {
+                folders.add(folder);
             }
         }
 
         return folders;
     }
+
+
 
     protected Controller getController() {
         return controller;

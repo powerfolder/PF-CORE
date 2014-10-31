@@ -819,7 +819,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     return folder;
                 }
             } catch (IOException e) {
-                logWarning(e);
+                logWarning("Could not get directory for folder " + folder
+                    + ". Probably due to disconnected network share. " + e);
             }
         }
         return null;
@@ -835,6 +836,23 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (folder.getName().equalsIgnoreCase(folderName)) {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the folder that contains the file sprecified by {@code pathName}.
+     * 
+     * @param pathName
+     * @return The folder containing the file
+     */
+    public Folder findContainingFolder(String pathName) {
+        for (Folder folder : folders.values()) {
+            if (pathName.startsWith(folder.getLocalBase().toAbsolutePath()
+                .toString()))
+            {
                 return folder;
             }
         }

@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 
 import com.liferay.nativity.modules.fileicon.FileIconControlCallback;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.SyncStatus;
@@ -35,7 +36,8 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-public class IconOverlayHandler extends PFComponent implements FileIconControlCallback
+public class IconOverlayHandler extends PFComponent implements
+    FileIconControlCallback
 {
 
     public IconOverlayHandler(Controller controller) {
@@ -44,44 +46,38 @@ public class IconOverlayHandler extends PFComponent implements FileIconControlCa
 
     @Override
     public int getIconForFile(String pathName) {
-        // Check for folder base paths
+        // First check, if the path is associated with any folder ...
         FolderRepository fr = getController().getFolderRepository();
+        Folder folder = fr.findContainingFolder(pathName);
+        if (folder == null) {
+            return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+
+        // ... then see, if it is part of a meta-folder.
+        if (pathName.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+            return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+
+        // We know, it is a file in a Folder, so create a lookup instance ...
         Path path = Paths.get(pathName);
+        FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
+        SyncStatus status = SyncStatus.of(getController(), lookup);
 
-        if (fr.findExistingFolder(path) != null) {
-            return IconOverlayIndex.NO_OVERLAY.ordinal();
+        // Pick the apropriate icon overlay
+        switch (status) {
+            case SYNC_OK :
+                return IconOverlayIndex.OK_OVERLAY.getIndex();
+            case SYNCING :
+                return IconOverlayIndex.SYNCING_OVERLAY.getIndex();
+            case IGNORED :
+                return IconOverlayIndex.IGNORED_OVERLAY.getIndex();
+            case LOCKED :
+                return IconOverlayIndex.LOCKED_OVERLAY.getIndex();
+            case WARNING :
+                return IconOverlayIndex.WARNING_OVERLAY.getIndex();
+            case NONE :
+            default :
+                return IconOverlayIndex.NO_OVERLAY.getIndex();
         }
-
-        for (Folder folder : fr.getFolders()) {
-            path = Paths.get(pathName);
-
-            if (fr.findExistingFolder(path) != null
-                || !path.startsWith(folder.getLocalBase()))
-            {
-                continue;
-            }
-
-            FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-            SyncStatus status = SyncStatus.of(getController(), lookup);
-
-            switch (status) {
-                case SYNC_OK :
-                    return IconOverlayIndex.OK_OVERLAY.getIndex();
-                case SYNCING :
-                    return IconOverlayIndex.SYNCING_OVERLAY.getIndex();
-                case IGNORED :
-                    return IconOverlayIndex.IGNORED_OVERLAY.getIndex();
-                case LOCKED :
-                    return IconOverlayIndex.LOCKED_OVERLAY.getIndex();
-                case WARNING :
-                    return IconOverlayIndex.WARNING_OVERLAY.getIndex();
-                case NONE :
-                    return IconOverlayIndex.NO_OVERLAY.getIndex();
-                default :
-                    return IconOverlayIndex.NO_OVERLAY.getIndex();
-            }
-        }
-
-        return IconOverlayIndex.NO_OVERLAY.ordinal();
     }
 }

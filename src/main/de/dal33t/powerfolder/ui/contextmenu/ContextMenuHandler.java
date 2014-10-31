@@ -17,6 +17,7 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
 import com.liferay.nativity.modules.contextmenu.model.ContextMenuItem;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -118,36 +120,28 @@ public class ContextMenuHandler extends PFComponent implements
         // Check for folder base paths
         FolderRepository fr = getController().getFolderRepository();
         for (String pathName : pathNames) {
-            Path path = Paths.get(pathName);
-
-            if (fr.findExistingFolder(path) != null) {
+            Folder folder = fr.findContainingFolder(pathName);
+            if (!containsFolderPath && folder != null)
+            {
                 containsFolderPath = true;
+                break;
+            }
+
+            Path path = Paths.get(pathName);
+            FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
+            if ((found = folder.getDAO().find(lookup, null)) != null) {
+                containsFileInfoPath = true;
+            }
+
+            if (containsFolderPath && containsFileInfoPath) {
                 break;
             }
         }
 
-        // Check for FileInfos or DirectoryInfos, that are managed by a Folder
-        for (Folder folder : fr.getFolders()) {
-            for (String pathName : pathNames) {
-                Path path = Paths.get(pathName);
-
-                if (fr.findExistingFolder(path) != null
-                    || !path.startsWith(folder.getLocalBase()))
-                {
-                    break;
-                }
-
-                FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-                if ((found = folder.getDAO().find(lookup, null)) != null) {
-                    containsFileInfoPath = true;
-                }
-                if (containsFileInfoPath) {
-                    break;
-                }
-            }
-            if (containsFileInfoPath) {
-                break;
-            }
+        if (containsFolderPath && pathNames.length == 1
+            && pathNames[0].contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
+        {
+            return new ArrayList<>(0);
         }
 
         // Build the context menu - the order is from BOTTOM to TOP
@@ -155,7 +149,9 @@ public class ContextMenuHandler extends PFComponent implements
         if (containsFolderPath || containsFileInfoPath) {
             pfMainItem.addContextMenuItem(unlockItem);
             pfMainItem.addContextMenuItem(lockItem);
-            if (containsFileInfoPath && pathNames.length == 1 && found.isLocked(getController())) {
+            if (containsFileInfoPath && pathNames.length == 1
+                && found.isLocked(getController()))
+            {
                 pfMainItem.addContextMenuItem(lockInfoItem);
             }
         }
@@ -172,8 +168,9 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(shareLinkItem);
         }
 
-        if ((containsFolderPath && !containsFileInfoPath)
-            || getController().getOSClient().isAllowedToCreateFolders())
+        if ((containsFolderPath && pathNames.length == 1)
+            || Files.isDirectory(Paths.get(pathNames[0]))
+            && getController().getOSClient().isAllowedToCreateFolders())
         {
             pfMainItem.addContextMenuItem(shareFolderItem);
         }
@@ -189,7 +186,10 @@ public class ContextMenuHandler extends PFComponent implements
         if (pfMainItem.getContextMenuItems().size() > 0) {
             items.add(pfMainItem);
         }
-        items.add(openColabItem);
+
+        if (containsFileInfoPath) {
+            items.add(openColabItem);
+        }
 
         return items;
     }
