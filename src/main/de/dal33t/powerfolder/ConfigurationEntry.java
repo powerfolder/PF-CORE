@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +36,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
+import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -45,7 +47,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * Refelects a entry setting in the configuration file. Provides basic method
  * for accessing and setting the configuration.
  *
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
+ * @author Christian Sprajc
  * @version $Revision: 1.5 $
  */
 public enum ConfigurationEntry {
@@ -112,6 +114,16 @@ public enum ConfigurationEntry {
      */
     SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN(
         "security.permissions.show_folder_admin", true),
+
+    /**
+     * Required permission to access/use the archive of a folder.
+     * <p>
+     * PFS-1336
+     * <p>
+     * http://www.powerfolder.com/wiki/Security_Permissions
+     */
+    SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
+        AccessMode.READ_WRITE.name()),
 
     // Node setup *************************************************************
 
@@ -232,6 +244,11 @@ public enum ConfigurationEntry {
     // Server settings ********************************************************
 
     /**
+     * PFC-2580: No connection to powerfolder.com / Licensing and Cloud Replication options
+     */
+    SERVER_CONNECT("server.connect.enabled", true),
+    
+    /**
      * The optional name of the sever to connect to.
      */
     SERVER_NAME("server.name", "PowerFolder Cloud"),
@@ -263,7 +280,12 @@ public enum ConfigurationEntry {
     /**
      * #1687: How this computer should behave when the server is not connected.
      */
-    SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false),
+    SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
+        @Override
+        public String getValue(Controller controller) {
+            return Boolean.FALSE.toString();
+        }
+    },
 
     /**
      * If the config should be update when connection to the server was
@@ -977,8 +999,13 @@ public enum ConfigurationEntry {
     FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", true),
 
     /**
-     * PFC-2226: Option to restrict new folder creation to the default storage path
-     * PFC-2424: If "Beginner mode" is switched on, set to "true"
+     * PFC-2572: Possibility to disallow networked drives or UNC shares
+     */
+    FOLDER_CREATE_ALLOW_NETWORK("create.folder.allow.network", true),
+
+    /**
+     * PFC-2226: Option to restrict new folder creation to the default storage
+     * path PFC-2424: If "Beginner mode" is switched on, set to "true"
      */
     FOLDER_CREATE_IN_BASEDIR_ONLY("create.folder.basedir.only", false) {
         @Override
@@ -987,7 +1014,8 @@ public enum ConfigurationEntry {
 
             if (value == null) {
                 if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
-                    && !PreferencesEntry.EXPERT_MODE.getValueBoolean(controller))
+                    && !PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(controller))
                 {
                     return Boolean.TRUE;
                 }
@@ -1025,6 +1053,13 @@ public enum ConfigurationEntry {
      */
     DEFAULT_TRANSFER_MODE("default.transfer.mode",
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
+
+    /**
+     * PFC-2545: Special transfer mode if UNC path is encountered (used for
+     * "Passive" client/Virtual Desktop/O4IT/CFN).
+     * https://wiki.powerfolder.com/display/PFD/Passive+Client
+     */
+    UNC_TRANSFER_MODE("unc.transfer.mode"),
 
     /**
      * The number of maximum activate
@@ -1103,7 +1138,17 @@ public enum ConfigurationEntry {
      */
     public String getValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        String value = controller.getConfig().getProperty(configKey);
+        return getValue(controller.getConfig());
+    }
+
+    /**
+     * @param config
+     *            the config to read the value from
+     * @return The current value from the configuration for this entry. or
+     */
+    public String getValue(Properties config) {
+        Reject.ifNull(config, "Config is null");
+        String value = config.getProperty(configKey);
         if (value == null) {
             value = getDefaultValue();
         }
@@ -1112,7 +1157,7 @@ public enum ConfigurationEntry {
 
     /**
      * Parses the configuration entry into a Integer.
-     *
+     * 
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the

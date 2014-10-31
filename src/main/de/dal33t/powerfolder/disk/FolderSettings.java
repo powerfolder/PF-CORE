@@ -295,6 +295,15 @@ public class FolderSettings {
             .getValueInt(c);
         String defSyncProfile = ConfigurationEntry.DEFAULT_TRANSFER_MODE
             .getValue(c);
+        String folderDirStr = c.getConfig().getProperty(
+            PREFIX_V4 + entryId + DIR);
+        if (ConfigurationEntry.UNC_TRANSFER_MODE.hasValue(c)
+            && folderDirStr != null && folderDirStr.startsWith("\\\\"))
+        {
+            defSyncProfile = ConfigurationEntry.UNC_TRANSFER_MODE.getValue(c);
+            LOG.info("Took UNC transfer mode for path " + folderDirStr + ": "
+                + defSyncProfile);
+        }
         return load(c.getConfig(), entryId, defaultVersions, defSyncProfile,
             true);
     }

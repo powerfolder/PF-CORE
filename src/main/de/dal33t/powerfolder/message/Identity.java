@@ -30,8 +30,9 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message which contains information about me.
- *
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
+ * 
+ * @author Christian Sprajc
+ * 
  * @version $Revision: 1.6 $
  */
 public class Identity extends Message {

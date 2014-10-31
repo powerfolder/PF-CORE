@@ -347,7 +347,7 @@ public class UIController extends PFComponent {
         // PFC-2395: Start
         NativityControl nc = NativityControlUtil.getNativityControl();
         if (!nc.connect()) {
-            logFine("Could not initialize for context menu!");
+            logWarning("Could not initialize for context menu!");
             nc.disconnect();
         } else {
             if (PreferencesEntry.ENABLE_CONTEXT_MENU

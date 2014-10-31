@@ -712,4 +712,19 @@ public class PathUtilsTest extends TestCase {
         PathUtils.rawCopy(s, t);
         assertEquals(Files.size(s), Files.size(t));
     }
+
+    public void testNetworkDrive() {
+        assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\")));
+        assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\subdir\\subdir2")));
+
+        assertFalse(PathUtils.isNetworkPath(Paths
+            .get("/home/user/PowerFolders/123")));
+
+        assertTrue(PathUtils.isNetworkPath(Paths.get("N:\\")));
+        assertTrue(PathUtils.isNetworkPath(Paths.get("N:\\subdir\\subdir2")));
+
+        assertTrue(PathUtils.isNetworkPath(Paths.get("\\\\server\\share")));
+        assertTrue(PathUtils.isNetworkPath(Paths
+            .get("\\\\server\\share\\subdir")));
+    }
 }

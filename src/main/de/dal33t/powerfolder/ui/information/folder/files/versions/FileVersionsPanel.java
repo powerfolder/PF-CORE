@@ -20,8 +20,11 @@
 package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
 import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.security.AccessMode;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.FolderService;
@@ -35,6 +38,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
@@ -194,9 +198,19 @@ public class FileVersionsPanel extends PFUIComponent {
             return;
         }
 
+        // PFS-1336
+        AccessMode mode = AccessMode.fromString(
+            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                .getValue(getController()),
+            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                .getDefaultValue());
+        restoreAction.allowWith(FolderPermission.get(fileInfo.getFolderInfo(),
+            mode));
+        // PFS-1336: End
+
         currentVersionLabel.setText(Translation.getTranslation(
-            "file_version_tab.current_version", String.valueOf(fileInfo
-                .getVersion())));
+            "file_version_tab.current_version",
+            String.valueOf(fileInfo.getVersion())));
         currentSizeLabel.setText(Translation.getTranslation(
             "file_version_tab.size", Format
                 .formatBytesShort(fileInfo.getSize())));

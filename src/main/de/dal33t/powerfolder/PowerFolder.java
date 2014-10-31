@@ -195,7 +195,7 @@ public class PowerFolder {
                 RemoteCommandManager.sendCommand(rconPort,
                     RemoteCommandManager.QUIT);
             } else {
-                System.err.println("PowerFolder not running");
+                System.err.println("Process not running");
             }
 
             // stop

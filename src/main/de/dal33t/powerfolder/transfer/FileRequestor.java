@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  *
@@ -45,7 +46,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.18 $
  */
@@ -77,7 +78,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Triggers the worker to request new files on the given folder.
-     *
+     * 
      * @param foInfo
      *            the folder to request files on
      */
@@ -100,7 +101,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Triggers to request missing files on all folders.
-     *
+     * 
      * @see #triggerFileRequesting(FolderInfo) for single folder file requesting
      *      (=lower CPU usage)
      */
@@ -138,7 +139,7 @@ public class FileRequestor extends PFComponent {
      * files, force the settings.
      * <p>
      * FIXME: Does requestFromFriends work?
-     *
+     * 
      * @param folder
      * @param autoDownload
      */
@@ -156,7 +157,7 @@ public class FileRequestor extends PFComponent {
      * Requests missing files for autodownload. May not request any files if
      * folder is not in auto download sync profile. Checks the syncprofile for
      * each file. Sysncprofile may change in the meantime.
-     *
+     * 
      * @param folder
      *            the folder to request missing files on.
      */
@@ -193,9 +194,16 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (!folder.hasOwnDatabase()) {
-            if (isWarning()) {
-                logWarning("Not requesting files. No own database for "
-                    + folder);
+            if (folder.isScanning()) {
+                if (isFine()) {
+                    logFine("Not requesting files. No own database for "
+                        + folder);
+                }
+            } else {
+                if (isWarning()) {
+                    logWarning("Not requesting files. No own database for "
+                        + folder);
+                }
             }
             return;
         }
@@ -228,7 +236,7 @@ public class FileRequestor extends PFComponent {
     /**
      * Utility method that will retrieve (download or make directory) the newest
      * version of all given files provided that the given filter accepts a file.
-     *
+     * 
      * @param folder
      * @param fInfos
      * @param autoDownload
@@ -309,7 +317,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Called if a FileHistory was received.
-     *
+     * 
      * @param fhReply
      */
     public void receivedFileHistory(final FileHistoryReply fhReply) {
@@ -365,7 +373,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Requests periodically new files from the folders
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.18 $
      */

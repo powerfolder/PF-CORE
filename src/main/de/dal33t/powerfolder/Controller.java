@@ -139,7 +139,7 @@ import de.dal33t.powerfolder.util.update.UpdateSetting;
  * to extend PFComponent so you always have a reference to the main
  * {@link Controller}.
  *
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
+ * @author Christian Sprajc
  * @version $Revision: 1.107 $
  */
 public class Controller extends PFComponent {
@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 16;
+    private static final int REVISION_VERSION = 20;
 
     /**
      * Program version.
@@ -677,18 +677,22 @@ public class Controller extends PFComponent {
                 + "Config auto.connect set to false");
         }
         // Start connecting to OS client.
-        if (Feature.OS_CLIENT.isEnabled()) {
+        if (Feature.OS_CLIENT.isEnabled()
+            && ConfigurationEntry.SERVER_CONNECT.getValueBoolean(this))
+        {
             osClient.start();
         } else {
-            logWarning("Not starting client connection to server ("
-                + osClient.getServerString()
-                + "). Auto-reconnection disabled.");
+            logInfo("Not connecting to server ("
+                + osClient.getServerString() + "): Disabled");
         }
 
         // Setup our background working tasks
         setupPeriodicalTasks();
 
         if (MacUtils.isSupported()) {
+            if (isFirstStart()) {
+                MacUtils.getInstance().setPFStartup(true, this);
+            }
             MacUtils.getInstance().setAppReOpenedListener(this);
         }
 
@@ -1557,9 +1561,18 @@ public class Controller extends PFComponent {
             }
 
             if (!config.getFolders().isEmpty()) {
-                PropertiesUtil.saveConfig(tempFolderFile, config.getFolders(),
-                    distName + " folders config file (v" + PROGRAM_VERSION
-                        + ')');
+                Properties prevFolders = new Properties();
+                if (Files.exists(folderFile)) {
+                    try (BufferedInputStream in = new BufferedInputStream(
+                        Files.newInputStream(folderFile))) {
+                        prevFolders.load(in);
+                    }
+                }
+                if (!prevFolders.equals(config.getFolders())) {
+                    PropertiesUtil
+                        .saveConfig(tempFolderFile, config.getFolders(),
+                            distName + " folders config file (v"
+                                + PROGRAM_VERSION + ')');
                 Files.deleteIfExists(folderFile);
                 try {
                     Files.move(tempFolderFile, folderFile);
@@ -1567,6 +1580,7 @@ public class Controller extends PFComponent {
                     Files.copy(tempFolderFile, folderFile);
                     Files.delete(tempFolderFile);
                 }
+            }
             }
         } catch (IOException e) {
             // FATAL

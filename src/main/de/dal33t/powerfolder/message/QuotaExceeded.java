@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 /**
  * PFS-1244: Notify a client, that a file could not be uploaded because it would exceed the quota
  * 
- * @author <a href="mailto:sprajc@powerfolder.com>Christian Sprajc</a>
+ * @author Christian Sprajc
  */
 public class QuotaExceeded extends FolderRelatedMessage {
 
