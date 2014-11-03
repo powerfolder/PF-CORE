@@ -1527,12 +1527,56 @@ public class Folder extends PFComponent {
                 logWarning("Scanning file took " + (took / 1000) + "s: "
                     + fInfo.toDetailString());
             }
+
+            try {
+                autoLockMSOfficeFiles(fInfo);
+            } catch (RuntimeException e) {
+                logWarning(
+                    "Unable to lock MS office file: " + fInfo.toDetailString()
+                        + ". " + e, e);
+            }
+        }
+    }
+
+    /**
+     * PFC-1962
+     * 
+     * @param fInfo
+     */
+    private void autoLockMSOfficeFiles(FileInfo fInfo) {
+        FileInfo localFInfo = getFile(fInfo);
+        if (localFInfo == null) {
+            return;
+        }
+        // QUICK;
+        int i = localFInfo.getRelativeName().indexOf(
+            Constants.MS_OFFICE_FILENAME_PREFIX);
+        if (i < 0) {
+            return;
+        }
+        // Details:
+        String fn = localFInfo.getFilenameOnly();
+        if (!fn.startsWith(Constants.MS_OFFICE_FILENAME_PREFIX)) {
+            return;
+        }
+        String editFileName = localFInfo.getRelativeName().replace(
+            Constants.MS_OFFICE_FILENAME_PREFIX, "");
+        FileInfo editFInfo = FileInfoFactory.lookupInstance(currentInfo,
+            editFileName);
+        editFInfo = getFile(editFInfo);
+        if (editFInfo == null) {
+            return;
+        }
+        if (localFInfo.isDeleted()) {
+            editFInfo.unlock(getController());
+        } else {
+            editFInfo.lock(getController());
         }
     }
 
     /**
      * Creates/Deletes and scans one directory.
-     *
+     * 
      * @param dirInfo
      *            the dir to be scanned.
      * @param dir

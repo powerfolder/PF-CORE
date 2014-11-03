@@ -398,6 +398,10 @@ public class Constants {
     public static final String ZYNCRO_COMPANY_TOKEN = "$company ";
     public static final String FOLDER_PERSONAL_FILES = "$personal_files";
     public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
+    
+    // Locking ****************************************************************
+    
+    public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
 
     private Constants() {
         // No instance allowed
