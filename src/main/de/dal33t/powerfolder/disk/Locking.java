@@ -240,13 +240,12 @@ public class Locking extends PFComponent {
         editFInfo = editFInfo.getLocalFileInfo(getController()
             .getFolderRepository());
         if (editFInfo == null) {
-            logWarning("Not found: " + localFInfo);
+            // Try harder...
             Folder folder = localFInfo.getFolder(getController().getFolderRepository());
             int slashIndex = editFileName.indexOf("/");
             if (slashIndex >= 0) {
                 editFileName = editFileName.substring(slashIndex + 1);
             }
-            logWarning("Try harder: " + editFileName);
             for (FileInfo cFInfo : folder.getKnownFiles()) {
                 if (cFInfo.isDeleted()) {
                     continue;
@@ -258,12 +257,9 @@ public class Locking extends PFComponent {
                         continue;
                     }
                     editFInfo = cFInfo;
-                    logWarning("Found: " + editFInfo);
                     break;
                 }
             }
-            
-
             if (editFInfo == null) {
                 return;                
             }
