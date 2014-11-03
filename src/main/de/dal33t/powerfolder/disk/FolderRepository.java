@@ -182,9 +182,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (String s : parts) {
             try {
                 Path p = Paths.get(s);
-                if (Files.exists(p) && Files.isDirectory(p)) {
-                    removedFolderDirectories.add(p);
-                }
+                removedFolderDirectories.add(p);
             } catch (Exception e) {
                 logFine("Unable to check removed dir: " + s + ". " + e);
             }
@@ -2123,11 +2121,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     logFine("Scheduling setup of folder: " + folderName);
                     CreateFolderOnServerTask task = new CreateFolderOnServerTask(
                         a.createInfo(), foInfo, null);
-                    task.setArchiveVersions(folderInfos.get(foInfo)
-                        .getVersions());
+                    task.setArchiveVersions(settings.getVersions());
                     getController().getTaskManager().scheduleTask(task);
                 }
-                
+
                 // Remove from pending entries.
                 it.remove();
                 folderInfos.put(foInfo, settings);
