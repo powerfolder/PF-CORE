@@ -402,6 +402,7 @@ public class Constants {
     // Locking ****************************************************************
     
     public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
+    public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
 
     private Constants() {
         // No instance allowed

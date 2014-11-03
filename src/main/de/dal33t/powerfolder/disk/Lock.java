@@ -74,8 +74,8 @@ public class Lock implements Serializable {
 
     @Override
     public String toString() {
-        return "Lock [fileInfo=" + fileInfo + ", created=" + created
-            + ", accountInfo=" + accountInfo + ", memberInfo=" + memberInfo
-            + "]";
+        return "Lock [fileInfo=" + fileInfo.toDetailString() + ", created="
+            + created + ", accountInfo=" + accountInfo + ", memberInfo="
+            + memberInfo + "]";
     }
 }

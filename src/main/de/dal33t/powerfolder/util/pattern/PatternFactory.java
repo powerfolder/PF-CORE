@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.util.pattern;
 
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -61,7 +62,7 @@ public class PatternFactory {
         {
             // This is a heuristisc but much quicker implementation for ignoring
             // officex temp files.
-            return new OfficeTempFilesMatchPattern("~$", "*");
+            return new OfficeTempFilesMatchPattern(Constants.MS_OFFICE_FILENAME_PREFIX, "*");
         } else {
             // Fallback solution: Works for all, but is not optimized.
             LOG.fine("Using fallback for pattern '" + patternText + "'");

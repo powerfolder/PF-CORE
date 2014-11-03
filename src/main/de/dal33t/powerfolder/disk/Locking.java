@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -70,8 +71,9 @@ public class Locking extends PFComponent {
         if (lockFile == null) {
             return false;
         }
-        if (Files.exists(lockFile)) {
-            logWarning("Overwriting existing lock for " + fInfo);
+        if (Files.exists(lockFile) && isWarning()) {
+            Lock existingLock = getLock(fInfo);
+            logWarning("Overwriting existing lock " + existingLock);
         }
         try {
             byte[] buf = ByteSerializer.serializeStatic(lock, false);
@@ -191,6 +193,123 @@ public class Locking extends PFComponent {
             fireLocked(fInfo);
         }
     }
+
+    // PFC-1962 ***************************************************************
+
+    /**
+     * PFC-1962
+     * 
+     * @param fInfo
+     *            potential lock file for office suite.
+     */
+    public void handlePotentialLockfile(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "FileInfo");
+        boolean msOffice = fInfo.getRelativeName().contains(
+            Constants.MS_OFFICE_FILENAME_PREFIX);
+        if (msOffice) {
+            autoLockMSOfficeFiles(fInfo);
+        }
+        boolean libreOffice = fInfo.getRelativeName().contains(
+            Constants.LIBRE_OFFICE_FILENAME_PREFIX);
+        if (libreOffice) {
+            autoLockLibreOfficeFiles(fInfo);
+        }
+    }
+
+    public void autoLockMSOfficeFiles(FileInfo fInfo) {
+        FileInfo localFInfo = fInfo.getLocalFileInfo(getController()
+            .getFolderRepository());
+        if (localFInfo == null) {
+            return;
+        }
+        // QUICK;
+        int i = localFInfo.getRelativeName().indexOf(
+            Constants.MS_OFFICE_FILENAME_PREFIX);
+        if (i < 0) {
+            return;
+        }
+        // Details:
+        String fn = localFInfo.getFilenameOnly();
+        if (!fn.startsWith(Constants.MS_OFFICE_FILENAME_PREFIX)) {
+            return;
+        }
+        String editFileName = localFInfo.getRelativeName().replace(
+            Constants.MS_OFFICE_FILENAME_PREFIX, "");
+        FileInfo editFInfo = FileInfoFactory.lookupInstance(
+            localFInfo.getFolderInfo(), editFileName);
+        editFInfo = editFInfo.getLocalFileInfo(getController()
+            .getFolderRepository());
+        if (editFInfo == null) {
+            logWarning("Not found: " + localFInfo);
+            Folder folder = localFInfo.getFolder(getController().getFolderRepository());
+            int slashIndex = editFileName.indexOf("/");
+            if (slashIndex >= 0) {
+                editFileName = editFileName.substring(slashIndex + 1);
+            }
+            logWarning("Try harder: " + editFileName);
+            for (FileInfo cFInfo : folder.getKnownFiles()) {
+                if (cFInfo.isDeleted()) {
+                    continue;
+                }
+                if (cFInfo.getRelativeName().endsWith(editFileName)) {
+                    if (cFInfo.getRelativeName().contains(
+                        Constants.MS_OFFICE_FILENAME_PREFIX))
+                    {
+                        continue;
+                    }
+                    editFInfo = cFInfo;
+                    logWarning("Found: " + editFInfo);
+                    break;
+                }
+            }
+            
+
+            if (editFInfo == null) {
+                return;                
+            }
+        }
+        if (localFInfo.isDeleted()) {
+            editFInfo.unlock(getController());
+        } else {
+            editFInfo.lock(getController());
+        }
+    }
+
+    private void autoLockLibreOfficeFiles(FileInfo fInfo) {
+        FileInfo localFInfo = fInfo.getLocalFileInfo(getController()
+            .getFolderRepository());
+        if (localFInfo == null) {
+            return;
+        }
+        // QUICK;
+        int i = localFInfo.getRelativeName().indexOf(
+            Constants.LIBRE_OFFICE_FILENAME_PREFIX);
+        if (i < 0) {
+            return;
+        }
+        // Details:
+        String fn = localFInfo.getFilenameOnly();
+        if (!fn.startsWith(Constants.LIBRE_OFFICE_FILENAME_PREFIX)) {
+            return;
+        }
+        String editFileName = localFInfo.getRelativeName().replace(
+            Constants.LIBRE_OFFICE_FILENAME_PREFIX, "");
+        editFileName = editFileName.replace("#", "");
+        FileInfo editFInfo = FileInfoFactory.lookupInstance(
+            localFInfo.getFolderInfo(), editFileName);
+        editFInfo = editFInfo.getLocalFileInfo(getController()
+            .getFolderRepository());
+        if (editFInfo == null) {
+            return;
+        }
+        if (localFInfo.isDeleted()) {
+            editFInfo.unlock(getController());
+        } else {
+            editFInfo.lock(getController());
+        }
+    }
+
+    // PFC-1962 ***************************************************************
 
     public void addListener(LockingListener listener) {
         ListenerSupportFactory.addListener(listenerSupport, listener);

@@ -1529,48 +1529,14 @@ public class Folder extends PFComponent {
             }
 
             try {
-                autoLockMSOfficeFiles(fInfo);
+                if (!currentInfo.isMetaFolder()) {
+                    getController().getFolderRepository().getLocking()
+                        .handlePotentialLockfile(fInfo);
+                }
             } catch (RuntimeException e) {
-                logWarning(
-                    "Unable to lock MS office file: " + fInfo.toDetailString()
-                        + ". " + e, e);
+                logWarning("Unable to automatically lock/unlock office file: "
+                    + fInfo.toDetailString() + ". " + e, e);
             }
-        }
-    }
-
-    /**
-     * PFC-1962
-     * 
-     * @param fInfo
-     */
-    private void autoLockMSOfficeFiles(FileInfo fInfo) {
-        FileInfo localFInfo = getFile(fInfo);
-        if (localFInfo == null) {
-            return;
-        }
-        // QUICK;
-        int i = localFInfo.getRelativeName().indexOf(
-            Constants.MS_OFFICE_FILENAME_PREFIX);
-        if (i < 0) {
-            return;
-        }
-        // Details:
-        String fn = localFInfo.getFilenameOnly();
-        if (!fn.startsWith(Constants.MS_OFFICE_FILENAME_PREFIX)) {
-            return;
-        }
-        String editFileName = localFInfo.getRelativeName().replace(
-            Constants.MS_OFFICE_FILENAME_PREFIX, "");
-        FileInfo editFInfo = FileInfoFactory.lookupInstance(currentInfo,
-            editFileName);
-        editFInfo = getFile(editFInfo);
-        if (editFInfo == null) {
-            return;
-        }
-        if (localFInfo.isDeleted()) {
-            editFInfo.unlock(getController());
-        } else {
-            editFInfo.lock(getController());
         }
     }
 
