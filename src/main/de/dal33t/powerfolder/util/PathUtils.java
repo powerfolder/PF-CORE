@@ -1286,6 +1286,32 @@ public class PathUtils {
             // No actual change.
             return true;
         }
+        boolean useFallback = false;
+        
+        if (hidden != null) {
+            try {
+                Files.setAttribute(file, "dos:hidden", hidden);
+            } catch (IOException e) {
+                log.warning("Unable to set/unset hidden attribute for " + file
+                    + ". " + e);
+                useFallback = true;
+            }
+        }
+
+        if (system != null) {
+            try {
+                Files.setAttribute(file, "dos:system", system);
+            } catch (IOException e) {
+                log.warning("Unable to set/unset system attribute for " + file
+                    + ". " + e);
+                useFallback = true;
+            }
+        }
+        
+        if (!useFallback) {
+            return true;
+        }
+     
         try {
             String s = "attrib ";
             if (hidden != null) {
