@@ -2216,17 +2216,28 @@ public class ServerClient extends PFComponent {
                     if (isLoggingIn()) {
                         return;
                     }
-                    // PFC-2368: Verify login by server too.
-                    if (isLoggedIn() && securityService.isLoggedIn()) {
+                    try {
+                        // PFC-2368: Verify login by server too.
+                        if (isLoggedIn() && securityService.isLoggedIn()) {
+                            return;
+                        }
+                    } catch (RemoteCallException e) {
+                        logFine("Problems with the connection to: "
+                            + getServerString() + ". " + e);
                         return;
                     }
-                    if (username != null
-                        && (StringUtils.isNotBlank(passwordObf) || (StringUtils
-                            .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
-                            .getValueBoolean(getController()))))
-                    {
-                        logInfo("Auto-Login: Logging in " + username);
-                        login(username, passwordObf, true);
+                    try {
+                        if (username != null
+                            && (StringUtils.isNotBlank(passwordObf) || (StringUtils
+                                .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
+                                .getValueBoolean(getController()))))
+                        {
+                            logInfo("Auto-Login: Logging in " + username);
+                            login(username, passwordObf, true);
+                        }
+                    } catch (RemoteCallException e) {
+                        logWarning("Unable to automatically login at: "
+                            + username + " @ " + getServerString() + ". " + e);
                     }
                 }
             };
