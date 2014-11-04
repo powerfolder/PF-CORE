@@ -30,13 +30,12 @@ import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.net.RelayedConnectionManager.ServerIsRelayFinder;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Offer various helper methods for branding
- *
+ * 
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -60,20 +59,6 @@ public abstract class AbstractDistribution extends Loggable implements
 
     public RelayFinder createRelayFinder() {
         return new ServerIsRelayFinder();
-    }
-
-    /**
-     * @param c
-     * @return true if the set server is part of the public PowerFolder network
-     *         (non inhouse server).
-     */
-    public static boolean isPowerFolderServer(Controller c) {
-        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(c);
-        String host = ConfigurationEntry.SERVER_HOST.getValue(c);
-        return StringUtils.isNotBlank(nodeId)
-            && nodeId.toUpperCase().contains("WEBSERVICE")
-            && StringUtils.isNotBlank(host)
-            && host.toLowerCase().contains("powerfolder.com");
     }
 
     protected Controller getController() {
@@ -112,7 +97,7 @@ public abstract class AbstractDistribution extends Loggable implements
     /**
      * Loads and merges the default config file (Default.config) from classpath
      * and merges it with the existing config and preferences.
-     *
+     * 
      * @param controller
      * @param replaceExisting
      *            true to replace all values, false to preserve all values of
@@ -193,7 +178,7 @@ public abstract class AbstractDistribution extends Loggable implements
     /**
      * Sets the folder basedir subdir name if not already set in config. e.g.
      * C:\Users\sprajc\myDir.
-     *
+     * 
      * @param c
      * @param myDir
      *            e.g. "MySierraCloud"
@@ -205,6 +190,8 @@ public abstract class AbstractDistribution extends Loggable implements
                 .getDefaultValue().replace(
                     Constants.FOLDERS_BASE_DIR_SUBDIR_NAME, myDir);
             ConfigurationEntry.FOLDER_BASEDIR.setValue(c, folderBaseDir);
+        } else {
+            Constants.FOLDERS_BASE_DIR_SUBDIR_NAME = myDir;
         }
     }
 }

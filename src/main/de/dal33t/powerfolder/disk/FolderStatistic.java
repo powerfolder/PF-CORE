@@ -665,6 +665,10 @@ public class FolderStatistic extends PFComponent {
         }
         folder.notifyStatisticsCalculated();
     }
+    
+    public void removePartialSyncStats(Member member) {
+        current.getPartialSyncStatMap().remove(member.getInfo());
+    }
 
     // Inner classes *********************************************************
 
@@ -782,6 +786,8 @@ public class FolderStatistic extends PFComponent {
         }
 
         private void calculateIfRequired(NodeManagerEvent e) {
+            // Reset partial stats
+            folder.getStatistic().removePartialSyncStats(e.getNode());
             if (!folder.hasMember(e.getNode())) {
                 // Member not on folder
                 return;

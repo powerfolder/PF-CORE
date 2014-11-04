@@ -51,7 +51,6 @@ import javax.swing.WindowConstants;
 
 import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -59,7 +58,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.distribution.AbstractDistribution;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
@@ -93,7 +92,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         super(controller);
         this.initialText = initialText;
     }
-
+    
     public ConfigurationLoaderDialog(Controller controller) {
         super(controller);
     }
@@ -219,13 +218,13 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
         addressBox = new JComboBox<>(serviceProviderUrls);
         addressBox.setEditable(true);
-
+        
         try {
             JTextField editorField = (JTextField) addressBox.getEditor()
                 .getEditorComponent();
             if (StringUtils.isNotBlank(initialText)) {
                 editorField.setText(initialText);
-            } else {
+            } else {                
                 editorField.setText("http://");
             }
             editorField.setCaretPosition(editorField.getText().length());
@@ -253,8 +252,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         try {
             boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
                 .getValueBoolean(getController());
-            boolean isPF = AbstractDistribution
-                .isPowerFolderServer(getController());
+            boolean isPF = ServerClient.isPowerFolderCloud(getController());
             boolean branded = getController().getDistribution()
                 .isBrandedClient();
             neverAskAgainBox.setVisible(prompt && isPF && !branded);
@@ -317,7 +315,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
     /**
      * Creates an internationalized ok button
-     *
+     * 
      * @param listener
      *            the listener to be put on the button
      * @return

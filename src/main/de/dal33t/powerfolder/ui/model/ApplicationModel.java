@@ -76,7 +76,6 @@ public class ApplicationModel extends PFUIComponent {
     private Date lastMouseAction;
     private Point lastMouseLocation;
     private final List<SyncStatusListener> syncStatusListeners;
-    private volatile SyncStatusEvent syncStatus;
 
     /**
      * Constructs a non-initialized application model. Before the model can be
@@ -197,7 +196,9 @@ public class ApplicationModel extends PFUIComponent {
                 long storageSize = client.getAccount().getOSSubscription()
                     .getStorageSize();
                 long used = client.getAccountDetails().getSpaceUsed();
-                if ((storageSize + used) > 0 && used >= storageSize * 9 / 10) {
+                if ((storageSize + used) > 0 && used >= storageSize * 9 / 10
+                    && used < storageSize)
+                {
                     // More than 90% used. Notify.
                     WarningNotice notice = new WarningNotice(
                         Translation.getTranslation("warning_notice.title"),
@@ -323,7 +324,7 @@ public class ApplicationModel extends PFUIComponent {
             status = SyncStatusEvent.NOT_LOGGED_IN;
         } else if (repository.getFoldersCount() == 0 && !noticeAvailable) {
             status = SyncStatusEvent.NO_FOLDERS;
-        } else if (folderRepositoryModel.isSyncing() && !noticeAvailable) {
+        } else if (folderRepositoryModel.isSyncing()) {
             status = SyncStatusEvent.SYNCING;
         } else if (repository.areAllFoldersInSync() && !noticeAvailable) {
             status = SyncStatusEvent.SYNCHRONIZED;

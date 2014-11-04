@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.distribution;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.skin.Origin;
@@ -49,7 +50,7 @@ public class PowerFolderPro extends AbstractDistribution {
 
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
             .getValueBoolean(getController());
-        if (prompt && isPowerFolderServer(controller)
+        if (prompt && ServerClient.isPowerFolderCloud(getController())
             && controller.isUIEnabled())
         {
             try {

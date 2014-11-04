@@ -45,15 +45,16 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     SortedTableModel
 {
 
-    private static final int COL_DESCRIPTION = 0;
-    private static final int COL_DATE = 3;
-    private static final int COL_WIKI = 2;
-    private static final int COL_SOLUTION = 1;
+    public static final int COL_ICON = 0;
+    public static final int COL_DESCRIPTION = 1;
+    public static final int COL_SOLUTION = 2;
+    public static final int COL_DATE = 3;
 
     private String[] columnHeaders = {
-        Translation.getTranslation("folder_problem.table_model.description"), // 0
-        Translation.getTranslation("folder_problem.table_model.solution"), // 2
-        Translation.getTranslation("folder_problem.table_model.date") // 1
+        "", // 0 Icon
+        Translation.getTranslation("folder_problem.table_model.description"), // 1
+        Translation.getTranslation("folder_problem.table_model.solution"), // 3
+        Translation.getTranslation("folder_problem.table_model.date") // 2
         };
 
     private final List<Problem> problems;
@@ -123,9 +124,6 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
                 break;
             case COL_DATE :
                 sortMe(FolderProblemComparator.BY_DATE, newSortColumn);
-                break;
-            case COL_WIKI :
-                sortMe(FolderProblemComparator.BY_WIKI, newSortColumn);
                 break;
             case COL_SOLUTION :
                 sortMe(FolderProblemComparator.BY_SOLUTION, newSortColumn);

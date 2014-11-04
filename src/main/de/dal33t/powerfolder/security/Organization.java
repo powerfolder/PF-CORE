@@ -42,8 +42,8 @@ import de.dal33t.powerfolder.util.StringUtils;
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
  * user accounts per "admin domain"/Organization - Multitenancy -
  * Mandantenfähigkeit
- *
- * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
+ * 
+ * @author Christian Sprajc
  * @version $Revision: 1.5 $
  */
 @Entity
@@ -78,6 +78,11 @@ public class Organization implements Serializable {
     @Embedded
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
+
+    /**
+     * PFS-1411
+     */
+    private String skin;
 
     public Organization() {
         // Generate unique id
@@ -138,6 +143,14 @@ public class Organization implements Serializable {
         return osSubscription;
     }
 
+    public String getSkin() {
+        return skin;
+    }
+
+    public void setSkin(String skin) {
+        this.skin = skin;
+    }
+
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
@@ -156,7 +169,6 @@ public class Organization implements Serializable {
             setNotes(notes + "\n" + infoLine);
         }
     }
-
 
     @Override
     public String toString() {

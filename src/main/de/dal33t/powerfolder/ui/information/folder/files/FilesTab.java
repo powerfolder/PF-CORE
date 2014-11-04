@@ -40,6 +40,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
@@ -50,6 +51,8 @@ import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.AccessMode;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.folder.files.breadcrumb.FilesBreadcrumbPanel;
@@ -73,6 +76,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private Folder folder;
     private JCheckBox flatViewCB;
     private FilesBreadcrumbPanel breadcrumbPanel;
+    private MyFileArchiveAction fileArchiveAction;
 
     /**
      * Constructor
@@ -143,7 +147,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         breadcrumbPanel.setRoot(folderInfo);
         statsPanel.setDirectory(folderInfo.getFolder(getController())
                 .getBaseDirectoryInfo());
-
+        setupArchive(folderInfo);
     }
 
     /**
@@ -164,6 +168,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
         filterTextField.reset();
+        setupArchive(folderInfo);
     }
 
     public void setFolderInfoDeleted(FolderInfo folderInfo) {
@@ -177,6 +182,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
         filterTextField.reset();
+        setupArchive(folderInfo);
     }
 
     public void setFolderInfoUnsynced(FolderInfo folderInfo) {
@@ -191,6 +197,17 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         setFilterComboBox(DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED);
         filterTextField.reset();
+        setupArchive(folderInfo);
+    }
+
+    private void setupArchive(FolderInfo foInfo) {
+        // PFS-1336
+        AccessMode mode = AccessMode.fromString(
+            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                .getValue(getController()),
+            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
+                .getDefaultValue());
+        fileArchiveAction.allowWith(FolderPermission.get(foInfo, mode));
     }
 
     /**
@@ -260,8 +277,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         JToggleButton detailsButton = new JToggleButton(detailsAction);
         detailsButton.setIcon(null);
 
-        JButton fileArchiveButton = new JButton(new MyFileArchiveAction(
-            getController()));
+        fileArchiveAction = new MyFileArchiveAction(getController());
+        JButton fileArchiveButton = new JButton(fileArchiveAction);
         fileArchiveButton.setIcon(null);
 
         flatViewCB = new JCheckBox(

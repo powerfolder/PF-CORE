@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 
 public class PowerFolderBasic extends AbstractDistribution {
 
@@ -45,8 +46,7 @@ public class PowerFolderBasic extends AbstractDistribution {
         resetProviderURLs(controller);
 
         // Reset primary server if not PowerFolder server
-        if (!isPowerFolderServer(controller))
-        {
+        if (!ServerClient.isPowerFolderCloud(controller)) {
             resetServer(controller);
         }
     }

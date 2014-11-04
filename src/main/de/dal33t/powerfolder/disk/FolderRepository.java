@@ -99,7 +99,7 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 /**
  * Repository of all known power folders. Local and unjoined.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */
@@ -126,7 +126,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** The disk scanner */
     private final FolderScanner folderScanner;
-    
+
     /**
      * PFC-1962: For locking files
      */
@@ -155,7 +155,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public FolderRepository(Controller controller) {
@@ -222,7 +222,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public FolderScanner getFolderScanner() {
         return folderScanner;
     }
-    
+
     public Locking getLocking() {
         return locking;
     }
@@ -373,7 +373,34 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getValue(getController());
         }
 
+        // PFC-2544: Start
+        try {
+            if (StringUtils.isNotBlank(baseDir)) {
+                // Fallback: Take system username. OS Client is not initialized
+                // when this method is called.
+                String username = System.getProperty("user.name");
+                if (StringUtils.isNotBlank(getController().getOSClient()
+                    .getUsername()))
+                {
+                    username = getController().getOSClient().getUsername();
+                }
+                if (baseDir.contains("%username%")) {
+                    baseDir = baseDir.replace("%username%", username);
+                    logWarning("New basedir: " + baseDir);
+                }
+                if (baseDir.contains("$username")) {
+                    baseDir = baseDir.replace("$username", username);
+                    logWarning("New basedir: " + baseDir);
+                }
+            }
+        } catch (Exception e) {
+            logWarning("Unable to resolve 'username' placeholder in basepath: "
+                + baseDir + ". " + e);
+        }
+        // PFC-2544: End
+
         // Check if this a windows network drive.
+        // TODO: Check: Does this really work?
         boolean winNetworkDrive = baseDir != null && baseDir.contains(":\\")
             && baseDir.charAt(1) == ':';
 
@@ -677,7 +704,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Sets the new base path
-     *
+     * 
      * @param path
      */
     public void setFoldersBasedir(String path) {
@@ -741,7 +768,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * All real-folders WITHOUT Meta-folders (#1548). Returns the indirect
      * reference to the internal {@link ConcurrentMap}. Contents may changed
      * after get.
-     *
+     * 
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFolders() {
@@ -752,7 +779,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * All real-folders WITH or WITHOUT Meta-folders (#1548). Returns the
      * indirect reference to the internal {@link ConcurrentMap}. Contents may
      * changed after get.
-     *
+     * 
      * @param includeMetaFolders
      * @return the folders as unmodifiable collection
      */
@@ -798,7 +825,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Finds an folder on the give target directory.
-     *
+     * 
      * @param targetDir
      * @return the folder with the targetDir as local base or null if not found
      */
@@ -806,7 +833,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!targetDir.isAbsolute()) {
             targetDir = foldersBasedir
                 .resolve(targetDir);
-            logWarning("Original path: " + targetDir
+            logInfo("Original path: " + targetDir
                 + ". Choosen relative path: " + targetDir);
         }
         for (Folder folder : getController().getFolderRepository().getFolders())
@@ -827,7 +854,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Finds an folder with the give folder name. Search is non-case sensitive!
-     *
+     * 
      * @param folderName
      * @return the folder with the given name or null if not found
      */
@@ -842,11 +869,28 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * Find the folder that contains the file sprecified by {@code pathName}.
+     * 
+     * @param pathName
+     * @return The folder containing the file
+     */
+    public Folder findContainingFolder(String pathName) {
+        for (Folder folder : folders.values()) {
+            if (pathName.startsWith(folder.getLocalBase().toAbsolutePath()
+                .toString()))
+            {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     *
+     * 
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -892,7 +936,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Used when creating a preview folder. FolderSettings should be as required
      * for the preview folder. Note that settings are not stored and the caller
      * is responsible for setting the preview config.
-     *
+     * 
      * @param folderInfo
      * @param folderSettings
      * @return the preview folder.
@@ -908,7 +952,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores an invitation file for the folder in the local directory if
      * wanted.
-     *
+     * 
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -976,6 +1020,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + folderSettings.getLocalBaseDirString()
                         + ". Must be in base directory: " + getFoldersBasedir());
                 }
+            }
+        }
+
+        // PFC-2572
+        if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK
+            .getValueBoolean(getController()))
+        {
+            if (PathUtils.isNetworkPath(folderSettings.getLocalBaseDir())) {
+                logSevere("Not allowed to create " + folderInfo.getName()
+                    + " at " + folderSettings.getLocalBaseDirString()
+                    + ". Network shares not allowed");
+                throw new IllegalStateException("Not allowed to create "
+                    + folderInfo.getName() + " at "
+                    + folderSettings.getLocalBaseDirString()
+                    + ". Network shares not allowed");
             }
         }
 
@@ -1087,7 +1146,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Saves settings and info details to the config.
-     *
+     * 
      * @param folderInfo
      * @param folderSettings
      * @param saveConfig
@@ -1107,7 +1166,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
-     *
+     * 
      * @param folder
      * @param deleteSystemSubDir
      */
@@ -1117,7 +1176,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
-     *
+     * 
      * @param folder
      * @param deleteSystemSubDir
      * @param saveConfig
@@ -1229,7 +1288,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Remove the link to the folder if it exists.
-     *
+     * 
      * @param folder
      */
     private void removeLink(Folder folder) {
@@ -1282,7 +1341,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a member from all Folders.
-     *
+     * 
      * @param member
      */
     public void removeFromAllFolders(Member member) {
@@ -1466,7 +1525,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * set by the UI when we are creating folders so that lookForNewFolders does
      * not jump in while the user is setting up a new folder in a Wizard or
      * something. Don't forget to set this back to false when finished.
-     *
+     * 
      * @param activity
      */
     public void setSuspendNewFolderSearch(boolean activity) {
@@ -1645,6 +1704,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     };
 
+                    
+
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
                 }
@@ -1817,7 +1878,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * In sync = all folders are 100% synced and all syncing actions have
      * stopped.
-     *
+     * 
      * @return true if all folders are 100% in sync
      */
     public boolean isInSync() {
@@ -1836,7 +1897,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Gets a metaFolder for a FolderInfo. NOTE: the folderInfo is the parent
      * Folder's FolderInfo, NOT the FolderInfo of the metaFolder. BUT the
      * metaFolders Map key holds the parent FolderInfo
-     *
+     * 
      * @param parentFolderInfo
      *            parent Folder's FolderInfo
      * @return the meta folder.
@@ -1859,7 +1920,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Automatically accept an invitation. If not able to, silently return
      * false.
-     *
+     * 
      * @param invitation
      * @return true if the invitation was accepted.
      */
@@ -2123,7 +2184,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     task.setArchiveVersions(settings.getVersions());
                     getController().getTaskManager().scheduleTask(task);
                 }
-
+                
                 // Remove from pending entries.
                 it.remove();
                 folderInfos.put(foInfo, settings);
@@ -2167,7 +2228,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     suggestedLocalBase = getController().getFolderRepository()
                         .getFoldersBasedir().resolve(folderName);
                     if (Files.exists(suggestedLocalBase)) {
-                        logWarning("Using existing directory "
+                        logInfo("Using existing directory "
                             + suggestedLocalBase + " for " + folderInfo);
                     }
                 } else {
@@ -2267,7 +2328,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Do we already have a folder that has this file as its base?
-     *
+     * 
      * @param file
      */
     public boolean doesFolderAlreadyExist(Path path) {

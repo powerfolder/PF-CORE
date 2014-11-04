@@ -82,7 +82,6 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
@@ -1789,7 +1788,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }
                 });
             } else {
-                new SyncFolderDialog(getController(), folder).open();
+                getApplicationModel().syncFolder(folder);
             }
         }
     }

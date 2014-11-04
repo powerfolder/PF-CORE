@@ -2,9 +2,11 @@ package de.dal33t.powerfolder.util;
 
 import java.awt.Desktop;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
@@ -87,6 +89,70 @@ public class PathUtils {
     public static boolean isZyncroPath(Path path) {
         return path.getFileSystem().provider().getScheme()
             .equals(Constants.ZYNCRO_SCHEME);
+    }
+
+    /**
+     * PFC-2572
+     * 
+     * @param path
+     * @return true if the given input path is or is located on a networked
+     *         drive or is a UNC path share.
+     */
+    public static boolean isNetworkPath(Path path) {
+        Reject.ifNull(path, "Path");
+
+        if (!OSUtil.isWindowsSystem()) {
+            // Unable to detect
+            return false;
+        }
+
+        // C:\normal\path\to
+        // N:\
+        // N:\path\on\network
+        // \\server\path\
+
+        boolean isDrive = path.toString().contains(":");
+        if (!isDrive) {
+            return path.toString().startsWith("\\\\");
+        }
+
+        String drive = path.toString().substring(0,
+            path.toString().indexOf(":") + 1);
+
+        String command = "cmd /c net use " + drive;
+        // System.out.println("command = " + command);
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+            InputStream stderr = p.getErrorStream();
+            InputStream stdout = p.getInputStream();
+
+            StringBuffer consoleErrors = new StringBuffer();
+            StringBuffer consoleOutput = new StringBuffer();
+
+            String line;
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(stdout));
+            while ((line = in.readLine()) != null) {
+                // System.out.println(line);
+                consoleOutput.append(line);
+            }
+            in.close();
+
+            in = new BufferedReader(new InputStreamReader(stderr));
+            while ((line = in.readLine()) != null) {
+                // System.out.println(line);
+                consoleErrors.append(line);
+            }
+            in.close();
+
+            String mark = "The network connection could not be found.";
+            return !consoleErrors.toString().contains(mark);
+
+        } catch (Exception e) {
+            log.warning("Unable to check if path is network drive: " + path
+                + ". " + e);
+            return false;
+        }
     }
 
     /**
@@ -213,7 +279,9 @@ public class PathUtils {
         if (f == null) {
             return null;
         }
-        if (StringUtils.isNotBlank(f.getFileName().toString())) {
+        if (f.getFileName() != null
+            && StringUtils.isNotBlank(f.getFileName().toString()))
+        {
             return f.getFileName().toString();
         }
         return f.toAbsolutePath().toString();
@@ -255,7 +323,11 @@ public class PathUtils {
         if (from.equals(to)) {
             throw new IOException("cannot copy onto itself");
         }
-        copyFromStreamToFile(Files.newInputStream(from), to);
+        try {
+            copyFromStreamToFile(Files.newInputStream(from), to);
+        } catch (IOException e) {
+            throw new IOException(from + " -> " + to + ":" + e.getMessage(), e);
+        }
     }
 
     /**

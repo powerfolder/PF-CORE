@@ -82,7 +82,7 @@ public class Constants {
      *
      * @see ConfigurationEntry#FOLDER_BASEDIR
      */
-    public static final String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
+    public static String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
     
     /**
      * PFC-2538
@@ -398,6 +398,11 @@ public class Constants {
     public static final String ZYNCRO_COMPANY_TOKEN = "$company ";
     public static final String FOLDER_PERSONAL_FILES = "$personal_files";
     public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
+    
+    // Locking ****************************************************************
+    
+    public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
+    public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
 
     private Constants() {
         // No instance allowed
