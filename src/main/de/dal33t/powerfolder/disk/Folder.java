@@ -2289,6 +2289,12 @@ public class Folder extends PFComponent {
             // Ok in sync
             return false;
         }
+        // http://jira.zyncro.com/browse/SYNC-459
+        if (diskItemFilter.getPatterns().isEmpty()) {
+            // Workaround for race condition during setup and default excludes
+            // have not yet been added.
+            return false;
+        }
         if (diskItemFilter.isExcluded(fileInfo)) {
             // Is excluded from sync. Don't delete. Might be meta-data.
             return false;
