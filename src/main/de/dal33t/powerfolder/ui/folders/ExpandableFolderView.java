@@ -1110,7 +1110,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getTranslation("exp_folder_view.folder_sync_incomplete"));
             } else {
                 // We are in sync.
-                primaryButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
+                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 if (PreferencesEntry.BEGINNER_MODE
                     .getValueBoolean(getController())
                     && !PreferencesEntry.EXPERT_MODE
