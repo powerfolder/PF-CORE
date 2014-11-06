@@ -55,7 +55,7 @@ public class MemberInfoInternalizer implements Internalizer<MemberInfo> {
         }
     }
     
-    public MemberInfo sudoIntern(MemberInfo item) {
+    public MemberInfo rename(MemberInfo item) {
         return intern(item);
     }
 }

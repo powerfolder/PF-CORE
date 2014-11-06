@@ -216,7 +216,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public FolderInfo intern(boolean force) {
         if (force) {
-            return INTERNALIZER.sudoIntern(this);
+            return INTERNALIZER.rename(this);
         } else {
             return intern();
         }
