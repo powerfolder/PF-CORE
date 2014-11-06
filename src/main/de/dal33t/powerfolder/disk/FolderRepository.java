@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -68,6 +69,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
@@ -1722,12 +1724,27 @@ public class FolderRepository extends PFComponent implements Runnable {
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
         if (client.isConnected() && client.isLoggedIn()) {
+            fi = isFolderAlready(file);
+            FolderInfo knownFolderWithSameName = null;
+
             for (FolderInfo folderInfo : client.getAccountFolders()) {
                 if (folderInfo.getLocalizedName().equals(
                     file.getFileName().toString()))
                 {
-                    fi = folderInfo;
+                    knownFolderWithSameName = folderInfo;
                     break;
+                }
+            }
+
+            if (fi != null && knownFolderWithSameName == null) {
+                FolderService foServ = client.getFolderService();
+                foServ.renameFolder(fi, file.getFileName().toString());
+
+                fi = new FolderInfo(file.getFileName().toString(), fi.getId());
+                fi.intern(true);
+            } else {
+                if (fi == null) {
+                    fi = knownFolderWithSameName;
                 }
             }
         }
@@ -1738,7 +1755,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION,
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(controller));
-        Folder folder = createFolder(fi, fs);
+        Folder folder = createFolder0(fi, fs, true);
         folder.addDefaultExcludes();
 
         if (client.isBackupByDefault()) {
@@ -1756,6 +1773,29 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         folderAutoCreateListener
             .folderAutoCreated(new FolderAutoCreateEvent(fi));
+    }
+
+    /**
+     * Checks for the meta directory in the {@code file} to determine if this
+     * file points to a directory, that is already a {@link Folder}.<br />
+     * <br />
+     * This method takes a look at the {@link FolderStatisticInfo} stored in the
+     * meta direcoty of the Folder to get the {@link FolderInfo}.
+     * 
+     * @param file
+     * @return The {@link FolderInfo} of the Folder the file points to, or
+     *         {@code null}, if the file does not point to a Folder.
+     */
+    private FolderInfo isFolderAlready(Path file) {
+        Path meta = file.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve(
+            Folder.FOLDER_STATISTIC);
+        FolderStatisticInfo info = FolderStatisticInfo.load(meta);
+
+        if (info == null) {
+            return null;
+        }
+
+        return info.getFolder();
     }
 
     /**
@@ -2065,7 +2105,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+    public void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
         Path originalDirectory = folder.getLocalBase().toRealPath();
         FolderSettings fs = FolderSettings.load(getController(),
             folder.getConfigEntryId());
