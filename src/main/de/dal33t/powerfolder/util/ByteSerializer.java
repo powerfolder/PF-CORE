@@ -282,12 +282,11 @@ public class ByteSerializer extends Loggable {
                 throw e2;
             }
             if (!(result instanceof Identity)) {
-   LOG
-                    .warning("Stream was not as expected ("
-                        + (expectCompression
-                            ? "compression was expected, but received uncompressed data"
-                            : "no compression was expected, but received compressed data")
-                        + ") on " + result);
+                LOG.warning("Stream was not as expected ("
+                    + (expectCompression
+                        ? "compression was expected, but received uncompressed data"
+                        : "no compression was expected, but received compressed data")
+                    + ") on " + result);
             }
 
         }
