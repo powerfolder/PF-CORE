@@ -880,7 +880,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             Collection<FolderInfo> folders2node = getFilteredFolderList(
                 remoteFolderList, identity.isRequestFullFolderlist());
             FolderList folderList;
-            if (getProtocolVersion() >= 106) {
+            if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
                 folderList = new FolderListExt(folders2node,
                     peer.getRemoteMagicId());
             } else {
@@ -1448,7 +1448,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 Collection<FolderInfo> folders2node = getFilteredFolderList(
                                     fList, fullList);
                                 FolderList myFolderList;
-                                if (getProtocolVersion() >= 106) {
+                                if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
                                     myFolderList = new FolderListExt(
                                         folders2node, remoteMagicId);
                                 } else {
@@ -2095,7 +2095,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             Collection<FolderInfo> folders2node = getFilteredFolderList(
                 folderList, fullList);
             FolderList myFolderList;
-            if (getProtocolVersion() >= 106) {
+            if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
                 myFolderList = new FolderList(folders2node, remoteMagicId);
