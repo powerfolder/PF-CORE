@@ -83,6 +83,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.AuthenticationFailedException;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
@@ -134,6 +135,10 @@ public class ServerClient extends PFComponent {
     private final MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
     private final AtomicBoolean loginExecuted = new AtomicBoolean(false);
+    /**
+     * PFC-2589: Don't auto login, if the last login was unsuccessfull
+     */
+    private final AtomicBoolean lastLoginSuccessful = new AtomicBoolean(true);
 
     /**
      * ONLY FOR TESTS: If this client should connect to the server where it is
@@ -999,11 +1004,12 @@ public class ServerClient extends PFComponent {
                         }
 
                         byte[] serviceTicket = prepareKerberosLogin();
-                        loginOk = securityService
-                            .login(uName, serviceTicket);
+                        loginOk = securityService.login(uName, serviceTicket);
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
+
+                    lastLoginSuccessful.set(loginOk);
 
                     loginExecuted.set(true);
                 } catch (RemoteCallException e) {
@@ -1065,6 +1071,7 @@ public class ServerClient extends PFComponent {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                 }
+
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
@@ -2215,6 +2222,9 @@ public class ServerClient extends PFComponent {
                     if (isLoggingIn()) {
                         return;
                     }
+                    if (!lastLoginSuccessful.get()) {
+                        return;
+                    }
                     // PFC-2368: Verify login by server too.
                     if (isLoggedIn() && securityService.isLoggedIn()) {
                         return;
@@ -2250,6 +2260,8 @@ public class ServerClient extends PFComponent {
         public void handle(Throwable t) {
             if (t instanceof NotLoggedInException) {
                 autoLogin(t);
+            } else if (t instanceof AuthenticationFailedException) {
+                // NOP - PFC-2589
             } else if (t instanceof SecurityException) {
                 if (t.getMessage() != null
                     && t.getMessage().toLowerCase().contains("not logged"))
