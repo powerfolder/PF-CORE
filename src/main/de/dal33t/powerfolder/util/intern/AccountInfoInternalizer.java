@@ -62,7 +62,7 @@ public class AccountInfoInternalizer implements Internalizer<AccountInfo> {
     }
 
     @Override
-    public AccountInfo sudoIntern(AccountInfo accountInfo) {
+    public AccountInfo rename(AccountInfo accountInfo) {
         if (accountInfo == null) {
             return null;
         }

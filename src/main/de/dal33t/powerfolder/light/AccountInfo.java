@@ -115,7 +115,7 @@ public class AccountInfo implements Serializable {
     
     public AccountInfo intern(boolean force) {
         if (force) {
-            return INTERNALIZER.sudoIntern(this);
+            return INTERNALIZER.rename(this);
         } else {
             return intern();
         }
