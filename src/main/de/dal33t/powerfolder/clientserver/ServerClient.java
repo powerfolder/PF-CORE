@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  *
@@ -82,8 +83,8 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.AuthenticationFailedException;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
-import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
@@ -134,6 +135,10 @@ public class ServerClient extends PFComponent {
     private final MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
     private final AtomicBoolean loginExecuted = new AtomicBoolean(false);
+    /**
+     * PFC-2589: Don't auto login, if the last login was unsuccessfull
+     */
+    private final AtomicBoolean lastLoginSuccessful = new AtomicBoolean(true);
 
     /**
      * ONLY FOR TESTS: If this client should connect to the server where it is
@@ -992,11 +997,20 @@ public class ServerClient extends PFComponent {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
                     } else if (isKerberosLogin()) {
+                        String uName = username;
+                        int atIndex = username.indexOf('@');
+                        if (atIndex != -1) {
+                            uName = username.substring(0, atIndex);
+                        }
+
                         byte[] serviceTicket = prepareKerberosLogin();
-                        loginOk = securityService
-                            .login(username, serviceTicket);
+                        loginOk = securityService.login(uName, serviceTicket);
                     } else {
                         loginOk = securityService.login(username, pw);
+                    }
+
+                    if (loginOk) {
+                        lastLoginSuccessful.set(true);
                     }
 
                     loginExecuted.set(true);
@@ -1059,6 +1073,13 @@ public class ServerClient extends PFComponent {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                 }
+
+                return accountDetails.getAccount();
+            } catch (AuthenticationFailedException afe) {
+                lastLoginSuccessful.set(false);
+
+                setAnonAccount();
+                fireLogin(accountDetails, false);
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
@@ -1126,12 +1147,6 @@ public class ServerClient extends PFComponent {
     private boolean isShibbolethLogin() {
         return ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
             .hasValue(getController());
-    }
-
-    public boolean isAllowedToRemoveFolders() {
-        return !ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
-            || getAccount().hasPermission(FolderRemovePermission.INSTANCE);
     }
 
     public boolean isAllowedToCreateFolders() {
@@ -1384,6 +1399,14 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLoggingIn() {
         return loggingIn.get();
+    }
+
+    /**
+     * Blocks until the current login attempt has finished.
+     */
+    public void waitForLoginComplete() {
+        synchronized (loginLock) {
+        }
     }
 
     /**
@@ -1690,14 +1713,7 @@ public class ServerClient extends PFComponent {
                 getController().getNodeManager().loadServerNodes(this);
             }
 
-            if (!isConnected()) {
-                return;
-            }
-
-            if (!isLoggedIn()
-                && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                    .getValueBoolean(getController()))
-            {
+            if (!isConnected() || !isLoggedIn()) {
                 return;
             }
 
@@ -1710,15 +1726,6 @@ public class ServerClient extends PFComponent {
                 logFine("Got " + hostingServers.size() + " servers for our "
                     + folders.length + " folders: " + hostingServers);
             }
-            // if (hostingServers.isEmpty()) {
-            // for (Member node : getController().getNodeManager()
-            // .getNodesAsCollection())
-            // {
-            // if (node.isServer()) {
-            // node.markForImmediateConnect();
-            // }
-            // }
-            // }
             for (MemberInfo hostingServerInfo : hostingServers) {
                 Member hostingServer = hostingServerInfo.getNode(
                     getController(), true);
@@ -2223,28 +2230,20 @@ public class ServerClient extends PFComponent {
                     if (isLoggingIn()) {
                         return;
                     }
-                    try {
-                        // PFC-2368: Verify login by server too.
-                        if (isLoggedIn() && securityService.isLoggedIn()) {
-                            return;
-                        }
-                    } catch (RemoteCallException e) {
-                        logFine("Problems with the connection to: "
-                            + getServerString() + ". " + e);
+                    if (!lastLoginSuccessful.get()) {
                         return;
                     }
-                    try {
-                        if (username != null
-                            && (StringUtils.isNotBlank(passwordObf) || (StringUtils
-                                .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
-                                .getValueBoolean(getController()))))
-                        {
-                            logInfo("Auto-Login: Logging in " + username);
-                            login(username, passwordObf, true);
-                        }
-                    } catch (RemoteCallException e) {
-                        logWarning("Unable to automatically login at: "
-                            + username + " @ " + getServerString() + ". " + e);
+                    // PFC-2368: Verify login by server too.
+                    if (isLoggedIn() && securityService.isLoggedIn()) {
+                        return;
+                    }
+                    if (username != null
+                        && (StringUtils.isNotBlank(passwordObf) || (StringUtils
+                            .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
+                            .getValueBoolean(getController()))))
+                    {
+                        logInfo("Auto-Login: Logging in " + username);
+                        login(username, passwordObf, true);
                     }
                 }
             };
@@ -2269,6 +2268,8 @@ public class ServerClient extends PFComponent {
         public void handle(Throwable t) {
             if (t instanceof NotLoggedInException) {
                 autoLogin(t);
+            } else if (t instanceof AuthenticationFailedException) {
+                // NOP - PFC-2589
             } else if (t instanceof SecurityException) {
                 if (t.getMessage() != null
                     && t.getMessage().toLowerCase().contains("not logged"))
