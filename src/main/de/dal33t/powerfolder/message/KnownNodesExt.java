@@ -14,8 +14,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id: KnownNodes.java 7109 2009-03-06 05:48:35Z tot $
  */
 package de.dal33t.powerfolder.message;
 
