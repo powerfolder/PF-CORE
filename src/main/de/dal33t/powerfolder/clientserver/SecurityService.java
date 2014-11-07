@@ -62,7 +62,10 @@ public interface SecurityService {
      * @param username
      * @param password
      *            the password
-     * @return if login succeeded
+     * @throws SecurityException
+     *             if the log in failed, but credentials were right.
+     * @return {@code True} if login succeeded, {@code false} if the credentials
+     *         were wrong
      */
     boolean login(String username, char[] password);
 
@@ -72,7 +75,10 @@ public interface SecurityService {
      * @param username
      * @param credentials
      *            the credentials
-     * @return if login succeeded
+     * @throws SecurityException
+     *             if the log in failed, but credentials were right.
+     * @return {@code True} if login succeeded, {@code false} if the credentials
+     *         were wrong
      */
     boolean login(String username, Serializable credentials);
 
