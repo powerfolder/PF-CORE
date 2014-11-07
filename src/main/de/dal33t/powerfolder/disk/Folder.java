@@ -95,6 +95,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FileRequestCommand;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageProducer;
@@ -3976,7 +3977,7 @@ public class Folder extends PFComponent {
      *         {@link FileList} and {@link FolderFilesChanged}
      */
     public boolean supportExternalizable(Member member) {
-        return member.getProtocolVersion() >= 109;
+        return member.getProtocolVersion() >= Identity.PROTOCOL_VERSION_110;
     }
 
     /**

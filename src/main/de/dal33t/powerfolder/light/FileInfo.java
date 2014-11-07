@@ -100,6 +100,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * MemberInfo.intern();
      */
     private MemberInfo modifiedBy;
+    /**
+     * PFC-2571
+     */
+    private AccountInfo modifiedByAccount;
     /** modified in folder on date */
     private Date lastModifiedDate;
 
@@ -461,10 +465,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
-     * @return the modificator of this file.
+     * @return the device this file was lasted changed on.
      */
     public MemberInfo getModifiedBy() {
         return modifiedBy;
+    }
+
+    /**
+     * @return the account info this file was lasted changed on.
+     */
+    public AccountInfo getModifiedByAccount() {
+        return modifiedByAccount;
     }
 
     /**
@@ -880,6 +891,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         folderInfo = folderInfo != null ? folderInfo.intern() : null;
         modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
+        // PFC-2571
+        modifiedByAccount = modifiedByAccount != null ? modifiedByAccount.intern() : null;
 
         // #2159: Remove / in front and end of filename
         if (fileName.endsWith("/")) {
@@ -938,6 +951,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             tags = null;
         }
+        // PFC-2352: End
+        // PFC-2571: Start
+        if (in.readBoolean()) {
+            modifiedByAccount = AccountInfo.readExt(in);
+            modifiedByAccount = modifiedByAccount != null ? modifiedByAccount
+                .intern() : null;
+        }
+        // PFC-2571: End
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -947,7 +968,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             extUID = extVersionCurrentUID;
         }
-
         out.writeInt(isFile() ? 0 : 1);
         out.writeLong(extUID);
         out.writeUTF(fileName);
@@ -964,6 +984,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (extUID == extVersion100UID) {
             return;
         }
+        
         // PFC-2352: Start
         if (oid != null) {
             out.writeBoolean(true);
@@ -983,6 +1004,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             out.writeBoolean(false);
         }
+        // PFC-2352: End
+        // PFC-2571: Start
+        if (modifiedByAccount != null) {
+            out.writeBoolean(true);
+            modifiedByAccount.writeExternal(out);
+        } else {
+            out.writeBoolean(false);
+        }
+        // PFC-2571: End
     }
 
     /**

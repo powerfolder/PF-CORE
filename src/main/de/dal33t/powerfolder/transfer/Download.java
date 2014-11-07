@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestDownloadExt;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
@@ -211,7 +212,7 @@ public class Download extends Transfer {
             logFiner("X requestPart: " + range);
         }
         try {
-            if (getPartner().getProtocolVersion() >= 109) {
+            if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
                 rp = new RequestPartExt(getFile(), range, Math.max(0,
                     state.getProgress()));
             } else {
@@ -301,7 +302,7 @@ public class Download extends Transfer {
             logFiner("request(" + startOffset + "): "
                 + getFile().toDetailString());
         }
-        if (getPartner().getProtocolVersion() >= 109) {
+        if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
             getPartner().sendMessagesAsynchron(
                 new RequestDownloadExt(getFile(), startOffset));
         } else {
@@ -357,7 +358,7 @@ public class Download extends Transfer {
     @Override
     void setCompleted() {
         super.setCompleted();
-        if (getPartner().getProtocolVersion() >= 109) {
+        if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
             getPartner().sendMessagesAsynchron(new StopUploadExt(getFile()));
         } else {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));

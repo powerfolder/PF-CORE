@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.RelayedMessage;
 import de.dal33t.powerfolder.message.RelayedMessageExt;
 import de.dal33t.powerfolder.message.RelayedMessage.Type;
@@ -138,7 +139,7 @@ public class RelayedConnectionManager extends PFComponent {
                 + pendingConHans);
         }
 
-        RelayedMessage synMsg = relay.getProtocolVersion() >= 108
+        RelayedMessage synMsg = relay.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
             ? new RelayedMessageExt(Type.SYN, getController().getMySelf()
                 .getInfo(), destination, connectionId, null)
             : new RelayedMessage(Type.SYN, getController().getMySelf()
@@ -243,7 +244,7 @@ public class RelayedConnectionManager extends PFComponent {
             Type type = message.getType().equals(Type.SYN)
                 ? Type.NACK
                 : Type.EOF;
-            RelayedMessage msg = receivedFrom.getProtocolVersion() >= 108
+            RelayedMessage msg = receivedFrom.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                 ? new RelayedMessageExt(type, message.getDestination(), message
                     .getSource(), message.getConnectionId(), null)
                 : new RelayedMessage(type, message.getDestination(), message
@@ -277,7 +278,7 @@ public class RelayedConnectionManager extends PFComponent {
         RelayedMessage msg4Destination = message;
 
         // Poor destination. Does not support Ext version of RelayedMessage
-        if (destinationMember.getProtocolVersion() < 108
+        if (destinationMember.getProtocolVersion() < Identity.PROTOCOL_VERSION_108
             && message instanceof RelayedMessageExt)
         {
             msg4Destination = new RelayedMessage(message.getType(), message
@@ -293,7 +294,7 @@ public class RelayedConnectionManager extends PFComponent {
                     "Connection broken while relaying message to "
                         + destinationMember.getNick() + ". " + e);
                 log.log(Level.FINER, e.toString(), e);
-                RelayedMessage eofMsg = receivedFrom.getProtocolVersion() >= 108
+                RelayedMessage eofMsg = receivedFrom.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                     ? new RelayedMessageExt(Type.EOF, message.getDestination(),
                         message.getSource(), message.getConnectionId(), null)
                     : new RelayedMessage(Type.EOF, message.getDestination(),
@@ -319,7 +320,7 @@ public class RelayedConnectionManager extends PFComponent {
                 if (!getController().getIOProvider()
                     .getConnectionHandlerFactory().useRelayedConnections())
                 {
-                    RelayedMessage nackMsg = receivedFrom.getProtocolVersion() >= 108
+                    RelayedMessage nackMsg = receivedFrom.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                         ? new RelayedMessageExt(Type.NACK, getController()
                             .getMySelf().getInfo(), message.getSource(),
                             message.getConnectionId(), null)
@@ -392,7 +393,7 @@ public class RelayedConnectionManager extends PFComponent {
                 logFiner("Got unknown peer, while processing relayed message from "
                     + message.getSource().nick);
             }
-            RelayedMessage eofMsg = receivedFrom.getProtocolVersion() >= 108
+            RelayedMessage eofMsg = receivedFrom.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                 ? new RelayedMessageExt(Type.EOF, message.getDestination(),
                     message.getSource(), message.getConnectionId(), null)
                 : new RelayedMessage(Type.EOF, getController().getMySelf()
@@ -507,7 +508,7 @@ public class RelayedConnectionManager extends PFComponent {
                 if (isFiner()) {
                     logFiner("Sending ACK to " + message.getSource().nick);
                 }
-                RelayedMessage ackMsg = receivedFrom.getProtocolVersion() >= 108
+                RelayedMessage ackMsg = receivedFrom.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                     ? new RelayedMessageExt(Type.ACK, getController()
                         .getMySelf().getInfo(), message.getSource(), relHan
                         .getConnectionId(), null)
@@ -522,7 +523,7 @@ public class RelayedConnectionManager extends PFComponent {
                 logFine("Unable to accept connection: " + relHan + ". "
                     + e.toString());
                 logFiner("ConnectionException", e);
-                RelayedMessage nackMsg = receivedFrom.getProtocolVersion() >= 108
+                RelayedMessage nackMsg = receivedFrom.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                     ? new RelayedMessageExt(Type.NACK, getController()
                         .getMySelf().getInfo(), message.getSource(), message
                         .getConnectionId(), null)

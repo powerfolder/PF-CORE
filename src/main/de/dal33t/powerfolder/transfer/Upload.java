@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FileChunkExt;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestDownload;
@@ -235,7 +236,7 @@ public class Upload extends Transfer {
                     }
                     debugState = "Sending StartUpload";
                     try {
-                        if (getPartner().getProtocolVersion() >= 109) {
+                        if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
                             getPartner().sendMessage(
                                 new StartUploadExt(getFile()));
                         } else {
@@ -467,7 +468,7 @@ public class Upload extends Transfer {
                 pos += read;
             }
             FileChunk chunk;
-            if (getPartner().getProtocolVersion() >= 109) {
+            if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
                 chunk = new FileChunkExt(pr.getFile(),
                     pr.getRange().getStart(), data);
             } else {

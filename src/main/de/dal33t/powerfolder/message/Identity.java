@@ -82,7 +82,6 @@ public class Identity extends Message {
     private boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
-
     /**
      * #2072: {@link Externalizable} protocol history:
      * <p>
@@ -108,8 +107,19 @@ public class Identity extends Message {
      * {@link StopUploadExt} {@link StartUploadExt} {@link RequestPartExt}
      * {@link RequestDownloadExt} {@link FileChunkExt} {@link FileListExt}
      * {@link FolderFilesChanged}
+     * <p>
+     * 110: PFC-2571: Changed all messages containing FileInfo
+     * {@link StopUploadExt} {@link StartUploadExt} {@link RequestPartExt}
+     * {@link RequestDownloadExt} {@link FileChunkExt} {@link FileListExt}
+     * {@link FolderFilesChanged}
      */
-    private int protocolVersion = 109;
+    public static final int PROTOCOL_VERSION_106 = 106;
+    public static final int PROTOCOL_VERSION_107 = 107;
+    public static final int PROTOCOL_VERSION_108 = 108;
+    public static final int PROTOCOL_VERSION_109 = 109;
+    public static final int PROTOCOL_VERSION_110 = 110;
+    
+    private int protocolVersion = PROTOCOL_VERSION_110;
 
     private boolean requestFullFolderlist;
 

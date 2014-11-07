@@ -1180,7 +1180,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + " minutes) while waiting for filelist");
         }
         if (!isConnected()) {
-            logWarning("Disconnected while waiting for filelist");
+            logWarning(getNick() + ": Disconnected while waiting for filelist");
         }
         return fileListsCompleted;
     }

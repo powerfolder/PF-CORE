@@ -428,8 +428,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 }
                 byte[] data = serialize(message);
                 RelayedMessage dataMsg = identity != null
-                    && identity.getProtocolVersion() >= 108
-                    && relay.getProtocolVersion() >= 108
+                    && identity.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
+                    && relay.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                     ? new RelayedMessageExt(Type.DATA_ZIPPED, getController()
                         .getMySelf().getInfo(), remote, connectionId, data)
                     : new RelayedMessage(Type.DATA_ZIPPED, getController()
