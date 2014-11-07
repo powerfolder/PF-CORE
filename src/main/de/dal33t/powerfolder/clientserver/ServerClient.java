@@ -1009,9 +1009,7 @@ public class ServerClient extends PFComponent {
                         loginOk = securityService.login(username, pw);
                     }
 
-                    if (loginOk) {
-                        lastLoginSuccessful.set(true);
-                    }
+                    lastLoginSuccessful.set(loginOk);
 
                     loginExecuted.set(true);
                 } catch (RemoteCallException e) {
@@ -1074,12 +1072,6 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                 }
 
-                return accountDetails.getAccount();
-            } catch (AuthenticationFailedException afe) {
-                lastLoginSuccessful.set(false);
-
-                setAnonAccount();
-                fireLogin(accountDetails, false);
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
