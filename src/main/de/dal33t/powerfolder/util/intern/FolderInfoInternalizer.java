@@ -62,7 +62,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         return internInstance;
     }
 
-    public FolderInfo sudoIntern(FolderInfo foInfo) {
+    public FolderInfo rename(FolderInfo foInfo) {
         if (foInfo == null) {
             return null;
         }

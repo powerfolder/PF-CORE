@@ -36,5 +36,5 @@ public interface Internalizer<T> {
      */
     T intern(T item);
     
-    T sudoIntern(T item);
+    T rename(T item);
 }

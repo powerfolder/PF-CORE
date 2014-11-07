@@ -83,15 +83,15 @@ public interface FolderService {
         boolean removePermission);
 
     /**
-     * #854
+     * #854 - PFS-486
      *
      * @param foInfo
      *            the folder to change the name for!
      * @param newName
      *            the new name of the folder.
-     * @return the new folder info object.
+     * @return {@code True} if the folder was moved, {@code false} otherwise.
      */
-    FolderInfo renameFolder(FolderInfo foInfo, String newName);
+    boolean renameFolder(FolderInfo foInfo, String newName);
 
     /**
      * Invites a user to a folder. The invited user gains read/write

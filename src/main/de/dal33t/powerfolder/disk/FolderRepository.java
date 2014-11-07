@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -68,6 +69,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
@@ -79,6 +81,7 @@ import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -1704,8 +1707,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     };
 
-                    
-
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
                 }
@@ -1719,15 +1720,69 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Only doing this if logged in.
     private void handleNewFolder(Path file) {
         FolderInfo fi = null;
+        boolean renamed = false;
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
+
         if (client.isConnected() && client.isLoggedIn()) {
+            fi = isFolderAlready(file);
+            FolderInfo knownFolderWithSameName = null;
+
             for (FolderInfo folderInfo : client.getAccountFolders()) {
                 if (folderInfo.getLocalizedName().equals(
                     file.getFileName().toString()))
                 {
-                    fi = folderInfo;
+                    knownFolderWithSameName = folderInfo;
                     break;
+                }
+            }
+
+            if (fi != null && knownFolderWithSameName == null) {
+                final String oldName = fi.getName();
+
+                /*
+                 * Change the name locally before the server is called. The
+                 * server will notify all clients to update their folder names.
+                 * Renaming the folder first prevents that the client which
+                 * renamed the folder changes it via the servers update.
+                 */
+                fi = new FolderInfo(file.getFileName().toString(), fi.getId());
+                fi.intern(true);
+
+                FolderService foServ = client.getFolderService();
+                if (!foServ.renameFolder(fi, file.getFileName().toString())) {
+                    logWarning("Could not rename the Folder " + oldName
+                        + " on the server to " + fi.getName());
+                    final FolderInfo copy = fi;
+
+                    if (getController().getUIController().isStarted()) {
+                        UIUtil.invokeLaterInEDT(new Runnable() {
+                            @Override
+                            public void run() {
+                                DialogFactory.genericDialog(
+                                    getController(),
+                                    Translation
+                                        .getTranslation("notice.rename_folder_failed.title"),
+                                    Translation.getTranslation(
+                                        "notice.rename_folder_failed.summary",
+                                        copy.getLocalizedName(), oldName),
+                                    GenericDialogType.WARN);
+                            }
+                        });
+                    }
+
+                    // change the name back to the old name
+                    fi = new FolderInfo(oldName, fi.getId());
+                    fi.intern(true);
+
+                    return;
+                }
+
+                renamed = true;
+                removeFolder(fi.getFolder(getController()), false, false);
+            } else {
+                if (fi == null) {
+                    fi = knownFolderWithSameName;
                 }
             }
         }
@@ -1738,7 +1793,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION,
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(controller));
-        Folder folder = createFolder(fi, fs);
+        Folder folder = createFolder0(fi, fs, true);
         folder.addDefaultExcludes();
 
         if (client.isBackupByDefault()) {
@@ -1754,8 +1809,33 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo("Auto-created new folder: " + folder + " @ "
             + folder.getLocalBase());
 
-        folderAutoCreateListener
-            .folderAutoCreated(new FolderAutoCreateEvent(fi));
+        if (!renamed) {
+            folderAutoCreateListener
+                .folderAutoCreated(new FolderAutoCreateEvent(fi));
+        }
+    }
+
+    /**
+     * Checks for the meta directory in the {@code file} to determine if this
+     * file points to a directory, that is already a {@link Folder}.<br />
+     * <br />
+     * This method takes a look at the {@link FolderStatisticInfo} stored in the
+     * meta direcoty of the Folder to get the {@link FolderInfo}.
+     * 
+     * @param file
+     * @return The {@link FolderInfo} of the Folder the file points to, or
+     *         {@code null}, if the file does not point to a Folder.
+     */
+    private FolderInfo isFolderAlready(Path file) {
+        Path meta = file.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve(
+            Folder.FOLDER_STATISTIC);
+        FolderStatisticInfo info = FolderStatisticInfo.load(meta);
+
+        if (info == null) {
+            return null;
+        }
+
+        return info.getFolder();
     }
 
     /**
@@ -1996,28 +2076,30 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         accountSyncLock.lock();
 
-        if (ProUtil.isZyncro(getController())) {
-            for (FolderInfo foInfo : a.getFolders()) {
-                FolderInfo old = foInfo.intern();
+        for (FolderInfo foInfo : a.getFolders()) {
+            FolderInfo localFolder = foInfo.intern();
 
-                if (!old.getName().equals(foInfo.getName())) {
-                    logInfo("Renaming Folder " + old.getName() + " to "
-                        + foInfo.getName());
-                    foInfo = foInfo.intern(true);
+            if (!localFolder.getName().equals(foInfo.getName())) {
+                logInfo("Renaming Folder " + localFolder.getName() + " to "
+                    + foInfo.getName());
+                foInfo = foInfo.intern(true);
 
-                    try {
-                        Folder folder = folders.get(foInfo);
-                        if (folder == null) {
-                            continue;
-                        }
-
-                        Path newDirectory = folder.getLocalBase().getParent()
-                            .resolve(foInfo.getLocalizedName());
-
-                        moveLocalFolder(folder, newDirectory);
-                    } catch (IOException ioe) {
-                        logWarning("Could not move Folder " + foInfo);
+                try {
+                    Folder folder = folders.get(foInfo);
+                    if (folder == null) {
+                        continue;
                     }
+
+                    Path newDirectory = folder
+                        .getLocalBase()
+                        .getParent()
+                        .resolve(
+                            PathUtils.removeInvalidFilenameChars(foInfo
+                                .getLocalizedName()));
+
+                    moveLocalFolder(folder, newDirectory);
+                } catch (IOException ioe) {
+                    logWarning("Could not move Folder " + foInfo);
                 }
             }
         }
@@ -2065,7 +2147,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+    public void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+        if (Files.exists(newDirectory)) {
+            logSevere("Not moving folder " + folder + " to new directory "
+                + newDirectory.toString()
+                + ". The new directory already exists!");
+
+            return;
+        }
+
         Path originalDirectory = folder.getLocalBase().toRealPath();
         FolderSettings fs = FolderSettings.load(getController(),
             folder.getConfigEntryId());
