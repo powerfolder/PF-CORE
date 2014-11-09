@@ -57,13 +57,16 @@ public abstract class AbstractPattern implements Pattern {
         }
 
         AbstractPattern that = (AbstractPattern) obj;
-
-        return  patternText == null
-                ? that.patternText == null
-                : patternText.equals(that.patternText);
+        String thisPatternText = getPatternText();
+        String thatPatternText = that.getPatternText();
+        
+        return  thisPatternText == null
+                ? thatPatternText == null
+                : thisPatternText.equals(thatPatternText);
     }
 
     public final int hashCode() {
+        String patternText = getPatternText();
         return patternText == null ? 0 : patternText.hashCode();
     }
 

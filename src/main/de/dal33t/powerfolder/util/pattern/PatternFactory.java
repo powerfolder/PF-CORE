@@ -63,6 +63,12 @@ public class PatternFactory {
             // This is a heuristisc but much quicker implementation for ignoring
             // officex temp files.
             return new OfficeTempFilesMatchPattern(Constants.MS_OFFICE_FILENAME_PREFIX, "*");
+        } else if (patternText.toLowerCase().equalsIgnoreCase(
+            DefaultExcludes.LIBRE_TEMP.getPattern()))
+        {
+            // This is a heuristisc but much quicker implementation for ignoring
+            // officex temp files.
+            return new OfficeTempFilesMatchPattern(Constants.LIBRE_OFFICE_FILENAME_PREFIX, "*");
         } else {
             // Fallback solution: Works for all, but is not optimized.
             LOG.fine("Using fallback for pattern '" + patternText + "'");
