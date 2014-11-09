@@ -12,6 +12,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class PathUtilsTest extends TestCase {
@@ -130,14 +131,14 @@ public class PathUtilsTest extends TestCase {
         assertEquals(0, PathUtils.getNumberOfSiblings(actual3));
         assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3
             .getFileName().toString());
-        
+
         assertEquals("", PathUtils.removeInvalidFilenameChars("....."));
     }
 
     /**
      * Move of ... build/test/a build/test/dir/b build/test/dir/c
      * build/test/dir/sub/d ... to ... build/move/
-     *
+     * 
      * @throws IOException
      */
     public void testFileMove() throws IOException {
@@ -216,7 +217,7 @@ public class PathUtilsTest extends TestCase {
     /**
      * Copy of ... build/test/a build/test/dir/b build/test/dir/c
      * build/test/dir/sub/d ... to ... build/copy/
-     *
+     * 
      * @throws IOException
      */
     public void testFileCopy() throws IOException {
@@ -305,7 +306,7 @@ public class PathUtilsTest extends TestCase {
 
     /**
      * Copy build/test/a to build/test/a Should not be permitted.
-     *
+     * 
      * @throws IOException
      */
     public void testRecursiveCopy() throws IOException {
@@ -353,7 +354,7 @@ public class PathUtilsTest extends TestCase {
 
     /**
      * Move build/test to build/test Should not be permitted.
-     *
+     * 
      * @throws IOException
      */
     public void testRecursiveMove() throws IOException {
@@ -714,6 +715,9 @@ public class PathUtilsTest extends TestCase {
     }
 
     public void testNetworkDrive() {
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
         assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\")));
         assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\subdir\\subdir2")));
 
