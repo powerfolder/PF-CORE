@@ -279,11 +279,14 @@ public enum ConfigurationEntry {
 
     /**
      * #1687: How this computer should behave when the server is not connected.
+     * 
+     * @deprecated for testing use {@link Feature#P2P_REQUIRES_LOGIN_AT_SERVER}
      */
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
         @Override
         public String getValue(Controller controller) {
-            return Boolean.FALSE.toString();
+            return Boolean.toString(Feature.P2P_REQUIRES_LOGIN_AT_SERVER
+                .isDisabled());
         }
     },
 

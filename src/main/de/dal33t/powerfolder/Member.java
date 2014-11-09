@@ -1031,8 +1031,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getNodeManager().connectStateChanged(this);
 
             // Inform security manager to update account state.
-            boolean syncFolderMemberships = !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController());
+            boolean syncFolderMemberships = Feature.P2P_REQUIRES_LOGIN_AT_SERVER
+                .isEnabled();
             getController().getSecurityManager().nodeAccountStateChanged(this,
                 syncFolderMemberships);
         }
