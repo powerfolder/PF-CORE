@@ -152,7 +152,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     protected FileInfo(String relativeName, String oid, long size,
-        MemberInfo modifiedBy, Date lastModifiedDate, int version,
+        MemberInfo modifiedByDevice, AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
         String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
         Reject.ifNull(folderInfo, "folder is null!");
@@ -167,7 +167,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         this.hashes = hashes;
         this.tags = tags;
         this.size = size;
-        this.modifiedBy = modifiedBy;
+        this.modifiedBy = modifiedByDevice;
+        this.modifiedByAccount = modifiedByAccount;
         this.lastModifiedDate = lastModifiedDate;
         this.version = version;
         this.deleted = deleted;
@@ -244,13 +245,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         if (!inSyncWithDisk(diskFile)) {
             MemberInfo mySelf = folder.getController().getMySelf().getInfo();
+            AccountInfo myAccount = folder.getController().getMySelf()
+                .getAccountInfo();
             if (Files.exists(diskFile)) {
                 // PFC-2352: TODO: Calc new hashes
                 String newHashes = null;
                 return FileInfoFactory.modifiedFile(this, folder, diskFile,
-                    mySelf, newHashes);
+                    mySelf, myAccount, newHashes);
             } else {
-                return FileInfoFactory.deletedFile(this, mySelf, new Date());
+                return FileInfoFactory.deletedFile(this, mySelf, myAccount,
+                    new Date());
             }
         }
 
