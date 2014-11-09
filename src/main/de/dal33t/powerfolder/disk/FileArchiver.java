@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -504,9 +505,11 @@ public class FileArchiver {
                 String oid = null;
                 String hashes = null;
                 String tags = null;
+                // PFC-2571: TODO: Add/Read modifier from meta-db
+                AccountInfo modAccount = null;
                 FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo,
-                    name, oid, Files.size(file), mySelf, modDate, version,
-                    hashes, tags);
+                    name, oid, Files.size(file), mySelf, modAccount, modDate,
+                    version, hashes, tags);
                 list.add(archiveFile);
             } catch (IOException ioe) {
                 log.warning(ioe.getMessage());

@@ -1427,11 +1427,18 @@ public class Folder extends PFComponent {
                             logFiner("Scan new file: " + fInfo.toDetailString());
                         }
                         // Update last - modified data
-                        MemberInfo modifiedBy = fInfo.getModifiedBy();
-                        if (modifiedBy == null) {
-                            modifiedBy = getMySelf().getInfo();
+                        MemberInfo modByDevice = fInfo.getModifiedBy();
+                        if (modByDevice == null) {
+                            modByDevice = getMySelf().getInfo();
                         }
-                        Member from = modifiedBy.getNode(getController(), true);
+                        Member fromDevice = modByDevice.getNode(
+                            getController(), false);
+                        AccountInfo modByAccount = fromDevice != null
+                            ? fromDevice.getAccountInfo()
+                            : null;
+                        if (modByAccount == null) {
+                            modByAccount = getMySelf().getAccountInfo();
+                        }
                         Date modDate;
                         long size;
                         boolean deleted;
@@ -1446,8 +1453,8 @@ public class Folder extends PFComponent {
                             deleted = fInfo.isDeleted();
                         }
 
-                        if (from != null) {
-                            modifiedBy = from.getInfo();
+                        if (fromDevice != null) {
+                            modByDevice = fromDevice.getInfo();
                         }
 
                         if (Files.exists(file)) {
@@ -1470,12 +1477,12 @@ public class Folder extends PFComponent {
                         if (deleted) {
                             fInfo = FileInfoFactory.unmarshallDeletedFile(
                                 currentInfo, fInfo.getRelativeName(), oid,
-                                modifiedBy, modDate, fInfo.getVersion(),
+                                modByDevice, modByAccount, modDate, fInfo.getVersion(),
                                 hashes, Files.isDirectory(file), tags);
                         } else {
                             fInfo = FileInfoFactory.unmarshallExistingFile(
                                 currentInfo, fInfo.getRelativeName(), oid,
-                                size, modifiedBy, modDate, fInfo.getVersion(),
+                                size, modByDevice, modByAccount, modDate, fInfo.getVersion(),
                                 hashes, Files.isDirectory(file), tags);
                         }
 
@@ -2211,6 +2218,7 @@ public class Folder extends PFComponent {
                 FileInfo newFileInfo = FileInfoFactory.unmarshallExistingFile(
                     currentInfo, fileInfo.getRelativeName(), fileInfo.getOID(),
                     fileInfo.getSize(), fileInfo.getModifiedBy(),
+                    fileInfo.getModifiedByAccount(),
                     fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
                     fileInfo.getHashes(), fileInfo.isDiretory(),
                     fileInfo.getTags());
@@ -3318,7 +3326,8 @@ public class Folder extends PFComponent {
                             String newHashes = null;
                             final FileInfo revertedFileInfo = FileInfoFactory
                                 .modifiedFile(remoteFile, this, localCopy,
-                                    remoteFile.getModifiedBy(), newHashes);
+                                    remoteFile.getModifiedBy(),
+                                    member.getAccountInfo(), newHashes);
                             store(getMySelf(), revertedFileInfo);
                             broadcastMessages(new MessageProducer() {
                                 @Override
