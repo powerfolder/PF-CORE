@@ -354,6 +354,10 @@ public class SecurityManagerClient extends PFComponent implements
                 Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                     .getAccountInfos(Collections.singleton(node.getInfo()));
                 aInfo = res.get(node.getInfo());
+                // PFC-2571:
+                if (aInfo != null) {
+                    aInfo.intern(true);
+                }
                 if (isFiner()) {
                     logFiner("Retrieved account " + aInfo + " for " + node);
                 }
@@ -431,6 +435,10 @@ public class SecurityManagerClient extends PFComponent implements
                     continue;
                 }
                 AccountInfo aInfo = res.get(node.getInfo());
+                // PFC-2571:
+                if (aInfo != null) {
+                    aInfo.intern(true);
+                }
                 if (CACHE_ENABLED) {
                     sessions.put(node, new Session(aInfo));
                 }
