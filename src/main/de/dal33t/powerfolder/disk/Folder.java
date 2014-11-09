@@ -353,13 +353,12 @@ public class Folder extends PFComponent {
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
                 .resolve(folderSettings.getLocalBaseDir());
-            logWarning("Original path: " + folderSettings.getLocalBaseDir()
+            logFine("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
             if (Files.notExists(localBase)) {
                 try {
                     Files.createDirectories(localBase);
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     // Ignore.
                 }
             }
@@ -1854,7 +1853,7 @@ public class Folder extends PFComponent {
                         // actually
                         // connected already.
                         if (!members.containsKey(member)) {
-                            logInfo("(I) Not joining connected server "
+                            logFine("(I) Not joining connected server "
                                 + member.getNick() + " into folder "
                                 + getName());
                         }
@@ -2775,7 +2774,7 @@ public class Folder extends PFComponent {
                 // PFS-1144: May not actually member anymore in cluster setup.
                 // NEVER Ever join any member into a folder which is actually
                 // connected already.
-                logInfo("(U) Not joining connected server "
+                logFine("(U) Not joining connected server "
                     + memberCanidate.getNick() + " into folder " + getName());
                 continue;
             }

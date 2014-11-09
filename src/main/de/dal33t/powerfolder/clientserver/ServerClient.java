@@ -997,14 +997,9 @@ public class ServerClient extends PFComponent {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
                     } else if (isKerberosLogin()) {
-                        String uName = username;
-                        int atIndex = username.indexOf('@');
-                        if (atIndex != -1) {
-                            uName = username.substring(0, atIndex);
-                        }
-
                         byte[] serviceTicket = prepareKerberosLogin();
-                        loginOk = securityService.login(uName, serviceTicket);
+                        loginOk = securityService
+                            .login(username, serviceTicket);
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
@@ -2222,20 +2217,28 @@ public class ServerClient extends PFComponent {
                     if (isLoggingIn()) {
                         return;
                     }
-                    if (!lastLoginSuccessful.get()) {
+                    try {
+                        // PFC-2368: Verify login by server too.
+                        if (isLoggedIn() && securityService.isLoggedIn()) {
+                            return;
+                        }
+                    } catch (RemoteCallException e) {
+                        logFine("Problems with the connection to: "
+                            + getServerString() + ". " + e);
                         return;
                     }
-                    // PFC-2368: Verify login by server too.
-                    if (isLoggedIn() && securityService.isLoggedIn()) {
-                        return;
-                    }
-                    if (username != null
-                        && (StringUtils.isNotBlank(passwordObf) || (StringUtils
-                            .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
-                            .getValueBoolean(getController()))))
-                    {
-                        logInfo("Auto-Login: Logging in " + username);
-                        login(username, passwordObf, true);
+                    try {
+                        if (username != null
+                            && (StringUtils.isNotBlank(passwordObf) || (StringUtils
+                                .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
+                                .getValueBoolean(getController()))))
+                        {
+                            logInfo("Auto-Login: Logging in " + username);
+                            login(username, passwordObf, true);
+                        }
+                    } catch (RemoteCallException e) {
+                        logWarning("Unable to automatically login at: "
+                            + username + " @ " + getServerString() + ". " + e);
                     }
                 }
             };

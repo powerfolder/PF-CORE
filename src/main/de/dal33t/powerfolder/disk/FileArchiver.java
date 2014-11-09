@@ -158,13 +158,13 @@ public class FileArchiver {
             if (!tryCopy) {
                 try {
                     Files.move(source, target);
+                    if (size != null && Files.exists(target)) {
+                        size += Files.size(target);
+                    }
                 } catch (IOException ioe) {
                     log.warning("Failed to rename " + source
                         + ", falling back to copying: " + ioe);
                     tryCopy = true;
-                }
-                if (size != null) {
-                    size += Files.size(target);
                 }
             }
             if (tryCopy) {
@@ -174,7 +174,7 @@ public class FileArchiver {
                 // Preserve last modification date.
                 Files.setLastModifiedTime(target,
                     FileTime.fromMillis(lastModified));
-                if (size != null) {
+                if (size != null && Files.exists(target)) {
                     size += Files.size(target);
                 }
             }
