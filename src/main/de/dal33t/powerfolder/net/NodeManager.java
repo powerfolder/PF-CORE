@@ -1085,8 +1085,7 @@ public class NodeManager extends PFComponent {
         }
 
         if (!mySelf.isServer()
-            && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController()))
+            && Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isEnabled())
         {
             ServerClient client = getController().getOSClient();
             // Only actually connect to other clients if logged into server.

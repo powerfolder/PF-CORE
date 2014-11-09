@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
@@ -272,11 +273,19 @@ public class SecurityManagerClient extends PFComponent implements
         if (noConnectPossible) {
             // Server is not on LAN, but running in LAN only mode. Allow all
             // since we will never connect at all
-            return Boolean.TRUE;
+            logWarning("Unable to connect to server at all. Server "
+                + client.getServerString()
+                + " on LAN? "
+                + client.getServer().isOnLAN()
+                + ". Client LAN only mode? "
+                + getController().isLanOnly()
+                + ". Client allows connect from LAN 2 Internet? "
+                + ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
+                    .getValueBoolean(getController()));
+            return Boolean.FALSE;
         }
         if (permission instanceof FolderPermission) {
-            return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController());
+            return Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled();
         } else {
             return !ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController());
@@ -288,12 +297,15 @@ public class SecurityManagerClient extends PFComponent implements
     /**
      * Gets the {@link AccountInfo} for the given node. Retrieves it from server
      * if necessary. NEVER refreshes from server when running in EDT thread.
-     *
+     * 
      * @see de.dal33t.powerfolder.security.SecurityManager#getAccountInfo(de.dal33t.powerfolder.Member)
      */
     public AccountInfo getAccountInfo(Member node) {
         if (client.isPrimaryServer(node)) {
             return NULL_ACCOUNT;
+        }
+        if (node.isMySelf() && client.isLoggedIn()) {
+            return client.getAccountInfo();
         }
         Session session = sessions.get(node);
         // Cache hit
