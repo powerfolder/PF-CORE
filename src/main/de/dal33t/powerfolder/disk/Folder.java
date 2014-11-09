@@ -636,6 +636,7 @@ public class Folder extends PFComponent {
                     logFiner("Adding " + scanResult.getNewFiles().size()
                         + " to directory");
                 }
+                
                 // New files
                 store(getMySelf(), scanResult.newFiles);
                 // deleted files
@@ -678,6 +679,24 @@ public class Folder extends PFComponent {
             setDBDirty();
             // broadcast changes on folder
             broadcastFolderChanges(scanResult);
+            
+            // PFC-1962: Start
+            if (!currentInfo.isMetaFolder()) {
+                Locking locking = getController().getFolderRepository().getLocking();
+                for (FileInfo fInfo : scanResult.newFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+                for (FileInfo fInfo : scanResult.deletedFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+                for (FileInfo fInfo : scanResult.restoredFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+                for (FileInfo fInfo : scanResult.changedFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+            }
+            // PFC-1962: End
         }
 
         if (isFiner()) {
