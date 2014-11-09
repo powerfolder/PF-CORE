@@ -40,7 +40,6 @@ public class Lock implements Serializable {
     private FileInfo fileInfo;
     private MemberInfo memberInfo;
     private AccountInfo accountInfo;
-    private Date expires;
 
     public Lock(FileInfo fileInfo, MemberInfo memberInfo,
         AccountInfo accountInfo)

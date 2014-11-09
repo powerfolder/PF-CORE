@@ -531,6 +531,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return controller.getFolderRepository().getLocking().lock(this);
     }
 
+    public boolean lock(Controller controller, AccountInfo by) {
+        return controller.getFolderRepository().getLocking().lock(this, by);
+    }
+
     public boolean unlock(Controller controller) {
         return controller.getFolderRepository().getLocking().unlock(this);
     }

@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.LockingEvent;
 import de.dal33t.powerfolder.event.LockingListener;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -64,9 +65,20 @@ public class Locking extends PFComponent {
      *         occurred while locking
      */
     public boolean lock(FileInfo fInfo) {
+        return lock(fInfo, getMySelf().getAccountInfo());
+    }
+
+    /**
+     * @param fInfo
+     *            the file to lock
+     * @param by
+     *            the account who locked
+     * @return true if the file is now successfully locked. false if problem
+     *         occurred while locking
+     */
+    public boolean lock(FileInfo fInfo, AccountInfo by) {
         Reject.ifNull(fInfo, "FileInfo");
-        Lock lock = new Lock(fInfo, getMySelf().getInfo(), getController()
-            .getOSClient().getAccountInfo());
+        Lock lock = new Lock(fInfo, getMySelf().getInfo(), by);
         Path lockFile = getLockFile(fInfo);
         if (lockFile == null) {
             return false;
@@ -158,17 +170,6 @@ public class Locking extends PFComponent {
                 + e);
             return null;
         }
-    }
-
-    /**
-     * Auto-unlock after X minutes inactivity
-     * 
-     * @return the number removed locks
-     */
-    int maintain() {
-        // TODO: Implement, Called to often from FolderRepo
-        // logWarning("Maintaining locks");
-        return 0;
     }
 
     /**

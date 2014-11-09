@@ -1487,9 +1487,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
                 
-                // Maintain locks
-                locking.maintain();
-                
                 if (isFiner()) {
                     logFiner("Maintained " + scanningFolders.size()
                         + " folder(s)");
