@@ -829,12 +829,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             str.append("-n/a-");
         }
         str.append(") by '");
-        if (modifiedBy == null) {
-            str.append("-n/a-");
+        if (modifiedByAccount == null) {
+            if (modifiedBy != null) {
+                str.append(modifiedBy.nick);
+            }
         } else {
-            str.append(modifiedBy.nick);
+            str.append(modifiedByAccount.getUsername());
         }
         str.append('\'');
+        if (modifiedBy != null) {
+            str.append(" on " + modifiedBy.nick);
+        } else {
+        }
     }
 
     public String toDetailString() {
