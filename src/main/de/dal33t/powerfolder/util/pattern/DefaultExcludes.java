@@ -26,6 +26,7 @@ public enum DefaultExcludes {
     THUMBS_DB("*thumbs.db"),
     OFFICE_TEMP("*~*.tmp"),
     OFFICEX_TEMP("*" + Constants.MS_OFFICE_FILENAME_PREFIX + "*"),
+    LIBRE_TEMP("*" + Constants.LIBRE_OFFICE_FILENAME_PREFIX + "*"),
     DS_STORE("*.DS_Store"),
     TEMPORARY_ITEMS("*.Temporary Items"),
     TRASHES("*.Trashes"),

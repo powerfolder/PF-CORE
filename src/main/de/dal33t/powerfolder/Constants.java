@@ -14,8 +14,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id: Constants.java 21097 2013-03-15 16:12:22Z sprajc $
  */
 package de.dal33t.powerfolder;
 

@@ -95,6 +95,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FileRequestCommand;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageProducer;
@@ -352,13 +353,12 @@ public class Folder extends PFComponent {
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
                 .resolve(folderSettings.getLocalBaseDir());
-            logWarning("Original path: " + folderSettings.getLocalBaseDir()
+            logFine("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
             if (Files.notExists(localBase)) {
                 try {
                     Files.createDirectories(localBase);
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     // Ignore.
                 }
             }
@@ -636,6 +636,7 @@ public class Folder extends PFComponent {
                     logFiner("Adding " + scanResult.getNewFiles().size()
                         + " to directory");
                 }
+                
                 // New files
                 store(getMySelf(), scanResult.newFiles);
                 // deleted files
@@ -678,6 +679,24 @@ public class Folder extends PFComponent {
             setDBDirty();
             // broadcast changes on folder
             broadcastFolderChanges(scanResult);
+            
+            // PFC-1962: Start
+            if (!currentInfo.isMetaFolder()) {
+                Locking locking = getController().getFolderRepository().getLocking();
+                for (FileInfo fInfo : scanResult.newFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+                for (FileInfo fInfo : scanResult.deletedFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+                for (FileInfo fInfo : scanResult.restoredFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+                for (FileInfo fInfo : scanResult.changedFiles) {
+                    locking.handlePotentialLockfile(fInfo);                    
+                }
+            }
+            // PFC-1962: End
         }
 
         if (isFiner()) {
@@ -1427,11 +1446,18 @@ public class Folder extends PFComponent {
                             logFiner("Scan new file: " + fInfo.toDetailString());
                         }
                         // Update last - modified data
-                        MemberInfo modifiedBy = fInfo.getModifiedBy();
-                        if (modifiedBy == null) {
-                            modifiedBy = getMySelf().getInfo();
+                        MemberInfo modByDevice = fInfo.getModifiedBy();
+                        if (modByDevice == null) {
+                            modByDevice = getMySelf().getInfo();
                         }
-                        Member from = modifiedBy.getNode(getController(), true);
+                        Member fromDevice = modByDevice.getNode(
+                            getController(), false);
+                        AccountInfo modByAccount = fromDevice != null
+                            ? fromDevice.getAccountInfo()
+                            : null;
+                        if (modByAccount == null) {
+                            modByAccount = getMySelf().getAccountInfo();
+                        }
                         Date modDate;
                         long size;
                         boolean deleted;
@@ -1446,8 +1472,8 @@ public class Folder extends PFComponent {
                             deleted = fInfo.isDeleted();
                         }
 
-                        if (from != null) {
-                            modifiedBy = from.getInfo();
+                        if (fromDevice != null) {
+                            modByDevice = fromDevice.getInfo();
                         }
 
                         if (Files.exists(file)) {
@@ -1470,12 +1496,12 @@ public class Folder extends PFComponent {
                         if (deleted) {
                             fInfo = FileInfoFactory.unmarshallDeletedFile(
                                 currentInfo, fInfo.getRelativeName(), oid,
-                                modifiedBy, modDate, fInfo.getVersion(),
+                                modByDevice, modByAccount, modDate, fInfo.getVersion(),
                                 hashes, Files.isDirectory(file), tags);
                         } else {
                             fInfo = FileInfoFactory.unmarshallExistingFile(
                                 currentInfo, fInfo.getRelativeName(), oid,
-                                size, modifiedBy, modDate, fInfo.getVersion(),
+                                size, modByDevice, modByAccount, modDate, fInfo.getVersion(),
                                 hashes, Files.isDirectory(file), tags);
                         }
 
@@ -1853,7 +1879,7 @@ public class Folder extends PFComponent {
                         // actually
                         // connected already.
                         if (!members.containsKey(member)) {
-                            logInfo("(I) Not joining connected server "
+                            logFine("(I) Not joining connected server "
                                 + member.getNick() + " into folder "
                                 + getName());
                         }
@@ -2211,6 +2237,7 @@ public class Folder extends PFComponent {
                 FileInfo newFileInfo = FileInfoFactory.unmarshallExistingFile(
                     currentInfo, fileInfo.getRelativeName(), fileInfo.getOID(),
                     fileInfo.getSize(), fileInfo.getModifiedBy(),
+                    fileInfo.getModifiedByAccount(),
                     fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
                     fileInfo.getHashes(), fileInfo.isDiretory(),
                     fileInfo.getTags());
@@ -2287,6 +2314,12 @@ public class Folder extends PFComponent {
             .getFolderRepository());
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
             // Ok in sync
+            return false;
+        }
+        // http://jira.zyncro.com/browse/SYNC-459
+        if (diskItemFilter.getPatterns().isEmpty()) {
+            // Workaround for race condition during setup and default excludes
+            // have not yet been added.
             return false;
         }
         if (diskItemFilter.isExcluded(fileInfo)) {
@@ -2768,7 +2801,7 @@ public class Folder extends PFComponent {
                 // PFS-1144: May not actually member anymore in cluster setup.
                 // NEVER Ever join any member into a folder which is actually
                 // connected already.
-                logInfo("(U) Not joining connected server "
+                logFine("(U) Not joining connected server "
                     + memberCanidate.getNick() + " into folder " + getName());
                 continue;
             }
@@ -3312,7 +3345,8 @@ public class Folder extends PFComponent {
                             String newHashes = null;
                             final FileInfo revertedFileInfo = FileInfoFactory
                                 .modifiedFile(remoteFile, this, localCopy,
-                                    remoteFile.getModifiedBy(), newHashes);
+                                    remoteFile.getModifiedBy(),
+                                    member.getAccountInfo(), newHashes);
                             store(getMySelf(), revertedFileInfo);
                             broadcastMessages(new MessageProducer() {
                                 @Override
@@ -3970,7 +4004,7 @@ public class Folder extends PFComponent {
      *         {@link FileList} and {@link FolderFilesChanged}
      */
     public boolean supportExternalizable(Member member) {
-        return member.getProtocolVersion() >= 109;
+        return member.getProtocolVersion() >= Identity.PROTOCOL_VERSION_110;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2010 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2014 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -22,61 +22,69 @@ package de.dal33t.powerfolder.util.intern;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /**
- * To internalize {@link FolderInfo}s into a weak hash map.
+ * To internalize {@link AccountInfo}s into a weak hash map.
  *
  * @author sprajc
  */
-public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
-    private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
-
-    public FolderInfo intern(FolderInfo folderInfo) {
-        if (folderInfo == null) {
+public class AccountInfoInternalizer implements Internalizer<AccountInfo> {
+    private final Map<AccountInfo, AccountInfo> INSTANCES = new WeakHashMap<>();
+    
+    @Override
+    public AccountInfo intern(AccountInfo accountInfo) {
+        if (accountInfo == null) {
             return null;
         }
-        FolderInfo internInstance = INSTANCES.get(folderInfo);
+        AccountInfo internInstance = INSTANCES.get(accountInfo);
         if (internInstance != null) {
             return internInstance;
         }
 
         // New Intern
         synchronized (INSTANCES) {
-            internInstance = INSTANCES.get(folderInfo);
+            internInstance = INSTANCES.get(accountInfo);
             if (internInstance == null) {
-                if (StringUtils.isBlank(folderInfo.getName())) {
+                if (StringUtils.isBlank(accountInfo.getUsername())) {
                     // Not interned folder info without name.
                     // System.err.println("INTERN FAILED: " + folderInfo + " / "
                     // + folderInfo.getId());
                     // new RuntimeException().printStackTrace();
-                    return folderInfo;
+                    return accountInfo;
                 }
-                INSTANCES.put(folderInfo, folderInfo);
-                internInstance = folderInfo;
-            } else {
-
+                INSTANCES.put(accountInfo, accountInfo);
+                internInstance = accountInfo;
             }
         }
         return internInstance;
     }
 
-    public FolderInfo rename(FolderInfo foInfo) {
-        if (foInfo == null) {
+    @Override
+    public AccountInfo rename(AccountInfo accountInfo) {
+        if (accountInfo == null) {
             return null;
         }
 
-        FolderInfo oldInstance = INSTANCES.get(foInfo);
+        AccountInfo oldInstance = INSTANCES.get(accountInfo);
 
         if (oldInstance != null
-            && oldInstance.getName().equals(foInfo.getName()))
+            && oldInstance.getUsername().equals(accountInfo.getUsername()))
+        {
+            return oldInstance;
+        }
+        if (oldInstance != null
+            && oldInstance.getDisplayName() != null
+            && oldInstance.getDisplayName()
+                .equals(accountInfo.getDisplayName()))
         {
             return oldInstance;
         }
 
-        INSTANCES.put(foInfo, foInfo);
+        INSTANCES.put(accountInfo, accountInfo);
 
-        return foInfo;
+        return accountInfo;
     }
+
 }

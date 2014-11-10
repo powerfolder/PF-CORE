@@ -286,11 +286,9 @@ public abstract class TwoControllerTestCase extends TestCase {
      * Connects both controllers and optionally logs in lisa at bart.
      */
     protected void connectBartAndLisa(boolean loginLisa) {
-        boolean sync = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-            .getValueBoolean(getContollerLisa());
+        boolean reqLogin = Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isEnabled();
         if (loginLisa) {
-            ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
-                getContollerLisa(), true);
+            Feature.P2P_REQUIRES_LOGIN_AT_SERVER.disable();
         }
         if (!connect(controllerLisa, controllerBart)) {
             fail("Unable to connect Bart and Lisa");
@@ -322,8 +320,11 @@ public abstract class TwoControllerTestCase extends TestCase {
         }
 
         if (loginLisa) {
-            ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
-                getContollerLisa(), sync);
+            if (reqLogin) {
+                Feature.P2P_REQUIRES_LOGIN_AT_SERVER.enable();
+            } else {
+                Feature.P2P_REQUIRES_LOGIN_AT_SERVER.disable();
+            }
         }
 
         // Bart should NOT be supernode. Not necessary on LAN

@@ -880,7 +880,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             Collection<FolderInfo> folders2node = getFilteredFolderList(
                 remoteFolderList, identity.isRequestFullFolderlist());
             FolderList folderList;
-            if (getProtocolVersion() >= 106) {
+            if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
                 folderList = new FolderListExt(folders2node,
                     peer.getRemoteMagicId());
             } else {
@@ -1031,8 +1031,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getNodeManager().connectStateChanged(this);
 
             // Inform security manager to update account state.
-            boolean syncFolderMemberships = !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController());
+            boolean syncFolderMemberships = Feature.P2P_REQUIRES_LOGIN_AT_SERVER
+                .isEnabled();
             getController().getSecurityManager().nodeAccountStateChanged(this,
                 syncFolderMemberships);
         }
@@ -1180,7 +1180,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + " minutes) while waiting for filelist");
         }
         if (!isConnected()) {
-            logWarning("Disconnected while waiting for filelist");
+            logWarning(getNick() + ": Disconnected while waiting for filelist");
         }
         return fileListsCompleted;
     }
@@ -1448,7 +1448,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 Collection<FolderInfo> folders2node = getFilteredFolderList(
                                     fList, fullList);
                                 FolderList myFolderList;
-                                if (getProtocolVersion() >= 106) {
+                                if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
                                     myFolderList = new FolderListExt(
                                         folders2node, remoteMagicId);
                                 } else {
@@ -2095,7 +2095,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             Collection<FolderInfo> folders2node = getFilteredFolderList(
                 folderList, fullList);
             FolderList myFolderList;
-            if (getProtocolVersion() >= 106) {
+            if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
                 myFolderList = new FolderList(folders2node, remoteMagicId);

@@ -65,9 +65,11 @@ public class FileInfoTest extends TestCase {
             + IdGenerator.makeFolderId(), IdGenerator.makeFolderId());
         MemberInfo mInfo = new MemberInfo("Nickname", IdGenerator.makeId(),
             IdGenerator.makeId());
+        AccountInfo aInfo = new AccountInfo("Nickname", IdGenerator.makeId(),
+            "Nick name hans");
         FileInfo fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
             "subdir/Xyz/Filename.xlsx", IdGenerator.makeFileId(), 6300404,
-            mInfo, new Date(), 4711, "MD5:XYZ", false, "sync,share,xx");
+            mInfo, aInfo, new Date(), 4711, "MD5:XYZ", false, "sync,share,xx");
 
         byte[] buf = ByteSerializer.serializeStatic(fInfo, true);
 
@@ -85,8 +87,9 @@ public class FileInfoTest extends TestCase {
 
         // Partial files filled
         fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
-            "subdir/Xyz/Filename2.xlsx", null, 6300404, mInfo, new Date(),
-            4711, "MD5:395395840958409584309;@dfslfjskfjdkfj", false, null);
+            "subdir/Xyz/Filename2.xlsx", null, 6300404, mInfo, aInfo,
+            new Date(), 4711, "MD5:395395840958409584309;@dfslfjskfjdkfj",
+            false, null);
         StopUploadExt sou = new StopUploadExt(fInfo);
         buf = ByteSerializer.serializeStatic(sou, true);
         StopUpload soCopy = (StopUpload) ByteSerializer.deserializeStatic(buf,
@@ -95,8 +98,9 @@ public class FileInfoTest extends TestCase {
         testAssertEquals(fInfo, copy);
 
         fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
-            "subdir/Xyz/Filename2.xlsx", null, 6300404, mInfo, new Date(),
-            4711, "MD5:395395840958409584309;@dfslfjskfjdkfj", false, null);
+            "subdir/Xyz/Filename2.xlsx", null, 6300404, mInfo, aInfo,
+            new Date(), 4711, "MD5:395395840958409584309;@dfslfjskfjdkfj",
+            false, null);
         RequestDownload dl = new RequestDownloadExt(fInfo, 0);
         buf = ByteSerializer.serializeStatic(dl, true);
         RequestDownload dlCopy = (RequestDownload) ByteSerializer

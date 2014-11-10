@@ -28,6 +28,7 @@ import java.util.UUID;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -334,8 +335,10 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         FolderInfo foInfo = createRandomFolderInfo();
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(),
             IdGenerator.makeId(), IdGenerator.makeId());
+        AccountInfo aInfo = new AccountInfo(IdGenerator.makeId(),
+            IdGenerator.makeId());
         return FileInfoFactory.unmarshallExistingFile(foInfo, name, null, 100,
-            mInfo, new Date(), version, null, directory, null);
+            mInfo, aInfo, new Date(), version, null, directory, null);
     }
 
     protected static FileInfo createRandomFileInfo(int n, String name,
@@ -351,8 +354,10 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         String fn = "subdir1/SUBDIR2/" + name + "-" + n;
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(),
             IdGenerator.makeId(), IdGenerator.makeId());
-        return FileInfoFactory.unmarshallExistingFile(foInfo, fn, null, n, mInfo,
-            new Date(), version, null, directory, null);
+        AccountInfo aInfo = new AccountInfo(IdGenerator.makeId(),
+            IdGenerator.makeId());
+        return FileInfoFactory.unmarshallExistingFile(foInfo, fn, null, n,
+            mInfo, aInfo, new Date(), version, null, directory, null);
     }
 
     protected static FileInfo createRandomFileInfo(int n, String name) {
@@ -368,15 +373,17 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
     protected static FileInfo version(FileInfo fInfo, int version) {
         return FileInfoFactory.unmarshallExistingFile(fInfo.getFolderInfo(),
             fInfo.getRelativeName(), fInfo.getOID(), fInfo.getSize(),
-            fInfo.getModifiedBy(), fInfo.getModifiedDate(), version,
-            fInfo.getHashes(), fInfo.isDiretory(), fInfo.getTags());
+            fInfo.getModifiedBy(), fInfo.getModifiedByAccount(),
+            fInfo.getModifiedDate(), version, fInfo.getHashes(),
+            fInfo.isDiretory(), fInfo.getTags());
     }
 
     protected static FileInfo version(FileInfo fInfo, int version, Date modDate)
     {
         return FileInfoFactory.unmarshallExistingFile(fInfo.getFolderInfo(),
-            fInfo.getRelativeName(), fInfo.getOID(), fInfo.getSize(), fInfo.getModifiedBy(),
-            modDate, version,fInfo.getHashes(), fInfo.isDiretory(), fInfo.getTags());
+            fInfo.getRelativeName(), fInfo.getOID(), fInfo.getSize(),
+            fInfo.getModifiedBy(), fInfo.getModifiedByAccount(), modDate,
+            version, fInfo.getHashes(), fInfo.isDiretory(), fInfo.getTags());
     }
     
     protected void testAssertEquals(FileInfo fInfo, FileInfo copy) {

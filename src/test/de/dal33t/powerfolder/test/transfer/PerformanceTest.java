@@ -53,7 +53,8 @@ public class PerformanceTest extends TwoControllerTestCase {
         FileInfo fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
             "subdir/SUBDIR2withAlongName/Another_deep/Spreadsheet-" + i
                 + ".xls", IdGenerator.makeFileId(), i, getContollerBart()
-                .getMySelf().getInfo(), new Date(), i, null, false, null);
+                .getMySelf().getInfo(), getContollerBart().getMySelf()
+                .getAccountInfo(), new Date(), i, null, false, null);
         return fInfo;
     }
 }

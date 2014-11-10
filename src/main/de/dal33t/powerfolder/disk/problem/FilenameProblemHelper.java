@@ -217,8 +217,9 @@ public class FilenameProblemHelper {
         try {
             Files.move(file, newFile);
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
-                fileInfo.getOID(), controller.getMySelf().getInfo(),
-                fileInfo.getHashes(), false, fileInfo.getTags());
+                fileInfo.getOID(), controller.getMySelf().getInfo(), controller
+                    .getMySelf().getAccountInfo(), fileInfo.getHashes(), false,
+                fileInfo.getTags());
             if (folder.isKnown(fileInfo)) {
                 folder.removeFilesLocal(fileInfo);
             }
