@@ -100,6 +100,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * MemberInfo.intern();
      */
     private MemberInfo modifiedBy;
+    /**
+     * PFC-2571
+     */
+    private AccountInfo modifiedByAccount;
     /** modified in folder on date */
     private Date lastModifiedDate;
 
@@ -148,7 +152,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     protected FileInfo(String relativeName, String oid, long size,
-        MemberInfo modifiedBy, Date lastModifiedDate, int version,
+        MemberInfo modifiedByDevice, AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
         String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
         Reject.ifNull(folderInfo, "folder is null!");
@@ -163,7 +167,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         this.hashes = hashes;
         this.tags = tags;
         this.size = size;
-        this.modifiedBy = modifiedBy;
+        this.modifiedBy = modifiedByDevice;
+        this.modifiedByAccount = modifiedByAccount;
         this.lastModifiedDate = lastModifiedDate;
         this.version = version;
         this.deleted = deleted;
@@ -240,13 +245,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         if (!inSyncWithDisk(diskFile)) {
             MemberInfo mySelf = folder.getController().getMySelf().getInfo();
+            AccountInfo myAccount = folder.getController().getMySelf()
+                .getAccountInfo();
             if (Files.exists(diskFile)) {
                 // PFC-2352: TODO: Calc new hashes
                 String newHashes = null;
                 return FileInfoFactory.modifiedFile(this, folder, diskFile,
-                    mySelf, newHashes);
+                    mySelf, myAccount, newHashes);
             } else {
-                return FileInfoFactory.deletedFile(this, mySelf, new Date());
+                return FileInfoFactory.deletedFile(this, mySelf, myAccount,
+                    new Date());
             }
         }
 
@@ -461,10 +469,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
-     * @return the modificator of this file.
+     * @return the device this file was lasted changed on.
      */
     public MemberInfo getModifiedBy() {
         return modifiedBy;
+    }
+
+    /**
+     * @return the account info this file was lasted changed on.
+     */
+    public AccountInfo getModifiedByAccount() {
+        return modifiedByAccount;
     }
 
     /**
@@ -514,6 +529,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     public boolean lock(Controller controller) {
         return controller.getFolderRepository().getLocking().lock(this);
+    }
+
+    public boolean lock(Controller controller, AccountInfo by) {
+        return controller.getFolderRepository().getLocking().lock(this, by);
     }
 
     public boolean unlock(Controller controller) {
@@ -810,12 +829,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             str.append("-n/a-");
         }
         str.append(") by '");
-        if (modifiedBy == null) {
-            str.append("-n/a-");
+        if (modifiedByAccount == null) {
+            if (modifiedBy != null) {
+                str.append(modifiedBy.nick);
+            }
         } else {
-            str.append(modifiedBy.nick);
+            str.append(modifiedByAccount.getUsername());
         }
         str.append('\'');
+        if (modifiedBy != null) {
+            str.append(" on " + modifiedBy.nick);
+        } else {
+        }
     }
 
     public String toDetailString() {
@@ -880,6 +905,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         folderInfo = folderInfo != null ? folderInfo.intern() : null;
         modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
+        // PFC-2571
+        modifiedByAccount = modifiedByAccount != null ? modifiedByAccount.intern() : null;
 
         // #2159: Remove / in front and end of filename
         if (fileName.endsWith("/")) {
@@ -938,6 +965,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             tags = null;
         }
+        // PFC-2352: End
+        // PFC-2571: Start
+        if (in.readBoolean()) {
+            modifiedByAccount = AccountInfo.readExt(in);
+            modifiedByAccount = modifiedByAccount != null ? modifiedByAccount
+                .intern() : null;
+        }
+        // PFC-2571: End
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -947,7 +982,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             extUID = extVersionCurrentUID;
         }
-
         out.writeInt(isFile() ? 0 : 1);
         out.writeLong(extUID);
         out.writeUTF(fileName);
@@ -964,6 +998,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (extUID == extVersion100UID) {
             return;
         }
+        
         // PFC-2352: Start
         if (oid != null) {
             out.writeBoolean(true);
@@ -983,6 +1018,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             out.writeBoolean(false);
         }
+        // PFC-2352: End
+        // PFC-2571: Start
+        if (modifiedByAccount != null) {
+            out.writeBoolean(true);
+            modifiedByAccount.writeExternal(out);
+        } else {
+            out.writeBoolean(false);
+        }
+        // PFC-2571: End
     }
 
     /**

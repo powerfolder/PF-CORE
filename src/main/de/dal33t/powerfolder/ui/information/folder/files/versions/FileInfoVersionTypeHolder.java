@@ -14,8 +14,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id: FileInfoVersionTypeHolder.java 10600 2009-11-26 00:19:53Z tot $
  */
 package de.dal33t.powerfolder.ui.information.folder.files.versions;
 

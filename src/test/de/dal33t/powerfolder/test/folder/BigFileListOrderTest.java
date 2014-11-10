@@ -28,6 +28,7 @@ import java.util.UUID;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -116,9 +117,10 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
 
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {
         MemberInfo m = new MemberInfo("test", "ID", null);
+        AccountInfo a = new AccountInfo("test", "ID", null);
         return FileInfoFactory.unmarshallExistingFile(foInfo, UUID.randomUUID()
-            .toString().intern(), IdGenerator.makeFileId(), 0, m, new Date(),
-            0, null, false, null);
+            .toString().intern(), IdGenerator.makeFileId(), 0, m, a,
+            new Date(), 0, null, false, null);
     }
 
     private final class MyMessageListener implements MessageListener {

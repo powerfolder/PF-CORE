@@ -83,6 +83,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.AuthenticationFailedException;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
@@ -134,6 +135,10 @@ public class ServerClient extends PFComponent {
     private final MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
     private final AtomicBoolean loginExecuted = new AtomicBoolean(false);
+    /**
+     * PFC-2589: Don't auto login, if the last login was unsuccessfull
+     */
+    private final AtomicBoolean lastLoginSuccessful = new AtomicBoolean(true);
 
     /**
      * ONLY FOR TESTS: If this client should connect to the server where it is
@@ -992,18 +997,14 @@ public class ServerClient extends PFComponent {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
                     } else if (isKerberosLogin()) {
-                        String uName = username;
-                        int atIndex = username.indexOf('@');
-                        if (atIndex != -1) {
-                            uName = username.substring(0, atIndex);
-                        }
-
                         byte[] serviceTicket = prepareKerberosLogin();
                         loginOk = securityService
-                            .login(uName, serviceTicket);
+                            .login(username, serviceTicket);
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
+
+                    lastLoginSuccessful.set(loginOk);
 
                     loginExecuted.set(true);
                 } catch (RemoteCallException e) {
@@ -1065,6 +1066,7 @@ public class ServerClient extends PFComponent {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                 }
+
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
@@ -2215,17 +2217,28 @@ public class ServerClient extends PFComponent {
                     if (isLoggingIn()) {
                         return;
                     }
-                    // PFC-2368: Verify login by server too.
-                    if (isLoggedIn() && securityService.isLoggedIn()) {
+                    try {
+                        // PFC-2368: Verify login by server too.
+                        if (isLoggedIn() && securityService.isLoggedIn()) {
+                            return;
+                        }
+                    } catch (RemoteCallException e) {
+                        logFine("Problems with the connection to: "
+                            + getServerString() + ". " + e);
                         return;
                     }
-                    if (username != null
-                        && (StringUtils.isNotBlank(passwordObf) || (StringUtils
-                            .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
-                            .getValueBoolean(getController()))))
-                    {
-                        logInfo("Auto-Login: Logging in " + username);
-                        login(username, passwordObf, true);
+                    try {
+                        if (username != null
+                            && (StringUtils.isNotBlank(passwordObf) || (StringUtils
+                                .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
+                                .getValueBoolean(getController()))))
+                        {
+                            logInfo("Auto-Login: Logging in " + username);
+                            login(username, passwordObf, true);
+                        }
+                    } catch (RemoteCallException e) {
+                        logWarning("Unable to automatically login at: "
+                            + username + " @ " + getServerString() + ". " + e);
                     }
                 }
             };
@@ -2250,6 +2263,8 @@ public class ServerClient extends PFComponent {
         public void handle(Throwable t) {
             if (t instanceof NotLoggedInException) {
                 autoLogin(t);
+            } else if (t instanceof AuthenticationFailedException) {
+                // NOP - PFC-2589
             } else if (t instanceof SecurityException) {
                 if (t.getMessage() != null
                     && t.getMessage().toLowerCase().contains("not logged"))

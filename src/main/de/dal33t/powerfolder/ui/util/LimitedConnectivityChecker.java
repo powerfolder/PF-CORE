@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NetworkingModeListener;
 import de.dal33t.powerfolder.event.NetworkingModeEvent;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.KnownNodesExt;
 import de.dal33t.powerfolder.message.Message;
@@ -187,7 +188,7 @@ public class LimitedConnectivityChecker {
                 .fine("Acting as supernode on address "
                     + me.getConnectAddress());
             // Broadcast our new status, we want stats ;)
-            controller.getNodeManager().broadcastMessage(107,
+            controller.getNodeManager().broadcastMessage(Identity.PROTOCOL_VERSION_107,
                 new SingleMessageProducer() {
                     @Override
                     public Message getMessage(boolean useExt) {

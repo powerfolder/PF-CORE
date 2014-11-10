@@ -283,9 +283,9 @@ public class FolderScanner extends PFComponent {
                 // Do not perform FileInfo.syncFromDiskIfRequired
                 // This would leave to extra I/O for all files that had been
                 // deleted in the past on every scan.
-                FileInfo deletedFileInfo = FileInfoFactory
-                    .deletedFile(fileInfo, getController().getMySelf()
-                        .getInfo(), new Date());
+                FileInfo deletedFileInfo = FileInfoFactory.deletedFile(
+                    fileInfo, getController().getMySelf().getInfo(),
+                    getController().getMySelf().getAccountInfo(), new Date());
                 currentScanResult.deletedFiles.add(deletedFileInfo);
             }
 
@@ -642,7 +642,8 @@ public class FolderScanner extends PFComponent {
                 // PFC-2352: TODO Generate ID / Hashes
                 FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
                     fileToScan, null, getController().getMySelf().getInfo(),
-                    null, directory, null);
+                    getController().getMySelf().getAccountInfo(), null,
+                    directory, null);
                 currentScanResult.newFiles.add(info);
                 if (isFiner()) {
                     logFiner("New found: " + info.toDetailString());

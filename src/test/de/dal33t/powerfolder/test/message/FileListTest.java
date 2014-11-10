@@ -215,8 +215,8 @@ public class FileListTest extends TestCase {
         FolderInfo foInfo = createRandomFolderInfo();
         boolean dir = Math.random() > 0.70f;
         FileInfo fInfo = FileInfoFactory.unmarshallDeletedFile(foInfo, "F # "
-            + n + " / " + UUID.randomUUID().toString(), null, null, new Date(),
-            n, null, dir, null);
+            + n + " / " + UUID.randomUUID().toString(), null, null, null,
+            new Date(), n, null, dir, null);
         return fInfo;
     }
 

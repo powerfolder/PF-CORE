@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.KnownNodesExt;
 import de.dal33t.powerfolder.message.Message;
@@ -431,7 +432,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     me.isSupernode = true;
                     me.setConnectAddress(getAddress());
                     // Broadcast our new status, we want stats ;)
-                    getController().getNodeManager().broadcastMessage(107,
+                    getController().getNodeManager().broadcastMessage(Identity.PROTOCOL_VERSION_107,
                         new SingleMessageProducer() {
                             @Override
                             public Message getMessage(boolean useExt) {

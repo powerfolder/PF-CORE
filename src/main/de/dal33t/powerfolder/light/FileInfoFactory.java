@@ -119,9 +119,10 @@ public final class FileInfoFactory {
                 }
                 return new FileInfo(original.getRelativeName(),
                     original.getOID(), original.getSize(),
-                    original.getModifiedBy(), original.getModifiedDate(),
-                    original.getVersion(), original.getHashes(),
-                    original.isDeleted(), original.getTags(), fi.intern());
+                    original.getModifiedBy(), original.getModifiedByAccount(),
+                    original.getModifiedDate(), original.getVersion(),
+                    original.getHashes(), original.isDeleted(),
+                    original.getTags(), fi.intern());
             } else if (original.isDiretory()) {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Corrected DirectoryInfo on "
@@ -129,9 +130,10 @@ public final class FileInfoFactory {
                 }
                 return new DirectoryInfo(original.getRelativeName(),
                     original.getOID(), original.getSize(),
-                    original.getModifiedBy(), original.getModifiedDate(),
-                    original.getVersion(), original.getHashes(),
-                    original.isDeleted(), original.getTags(), fi.intern());
+                    original.getModifiedBy(), original.getModifiedByAccount(),
+                    original.getModifiedDate(), original.getVersion(),
+                    original.getHashes(), original.isDeleted(),
+                    original.getTags(), fi.intern());
             } else {
                 throw new IllegalArgumentException(
                     "Illegal original FileInfo: " + original.getClass() + ": "
@@ -155,51 +157,55 @@ public final class FileInfoFactory {
         if (fInfo instanceof DirectoryInfo) {
             return new DirectoryInfo(fInfo.getRelativeName(), oid,
                 fInfo.getSize(), fInfo.getModifiedBy(),
-                fInfo.getModifiedDate(), fInfo.getVersion(), fInfo.getHashes(),
-                fInfo.isDeleted(), fInfo.getTags(), fInfo.getFolderInfo());
+                fInfo.getModifiedByAccount(), fInfo.getModifiedDate(),
+                fInfo.getVersion(), fInfo.getHashes(), fInfo.isDeleted(),
+                fInfo.getTags(), fInfo.getFolderInfo());
         }
         return new FileInfo(fInfo.getRelativeName(), oid, fInfo.getSize(),
-            fInfo.getModifiedBy(), fInfo.getModifiedDate(), fInfo.getVersion(),
-            fInfo.getHashes(), fInfo.isDeleted(), fInfo.getTags(),
-            fInfo.getFolderInfo());
+            fInfo.getModifiedBy(), fInfo.getModifiedByAccount(),
+            fInfo.getModifiedDate(), fInfo.getVersion(), fInfo.getHashes(),
+            fInfo.isDeleted(), fInfo.getTags(), fInfo.getFolderInfo());
     }
 
     public static FileInfo unmarshallExistingFile(FolderInfo fi,
-        String fileName, String oid, long size, MemberInfo modby, Date modDate,
-        int version, String hashes, boolean dir, String tags)
+        String fileName, String oid, long size, MemberInfo modByDevice,
+        AccountInfo modByAccount, Date modDate, int version, String hashes,
+        boolean dir, String tags)
     {
         if (dir) {
-            return new DirectoryInfo(fileName, oid, size, modby, modDate,
-                version, hashes, false, tags, fi);
+            return new DirectoryInfo(fileName, oid, size, modByDevice,
+                modByAccount, modDate, version, hashes, false, tags, fi);
         }
-        return new FileInfo(fileName, oid, size, modby, modDate, version,
-            hashes, false, tags, fi);
+        return new FileInfo(fileName, oid, size, modByDevice, modByAccount,
+            modDate, version, hashes, false, tags, fi);
     }
 
     public static FileInfo unmarshallDeletedFile(FolderInfo fi,
-        String fileName, String oid, MemberInfo modby, Date modDate,
-        int version, String hashes, boolean dir, String tags)
+        String fileName, String oid, MemberInfo modByDevice,
+        AccountInfo modByAccount, Date modDate, int version, String hashes,
+        boolean dir, String tags)
     {
         if (dir) {
-            return new DirectoryInfo(fileName, oid, 0, modby, modDate, version,
-                hashes, true, tags, fi);
+            return new DirectoryInfo(fileName, oid, 0, modByDevice,
+                modByAccount, modDate, version, hashes, true, tags, fi);
         }
-        return new FileInfo(fileName, oid, 0, modby, modDate, version, hashes,
-            true, tags, fi);
+        return new FileInfo(fileName, oid, 0, modByDevice, modByAccount,
+            modDate, version, hashes, true, tags, fi);
     }
 
     /**
-     * Initalize within a folder
+     * Initialize within a folder
      * 
      * @param folder
      * @param localFile
-     * @param creator
+     * @param creatorDevice
      * @param directory
      *            if the given file is a directory.
      * @return the new file
      */
     public static FileInfo newFile(Folder folder, Path localFile, String oid,
-        MemberInfo creator, String hashes, boolean directory, String tags)
+        MemberInfo creatorDevice, AccountInfo creatorAccount, String hashes,
+        boolean directory, String tags)
     {
         long date = new Date().getTime();
         long size = 0;
@@ -212,8 +218,8 @@ public final class FileInfoFactory {
 
         if (directory) {
             return new DirectoryInfo(buildFileName(folder.getLocalBase(),
-                localFile), oid, creator, new Date(date), 0, hashes, false,
-                tags, folder.getInfo());
+                localFile), oid, creatorDevice, creatorAccount, new Date(date),
+                0, hashes, false, tags, folder.getInfo());
         } else {
             try {
                 size = Files.size(localFile);
@@ -222,12 +228,14 @@ public final class FileInfoFactory {
             }
             return new FileInfo(
                 buildFileName(folder.getLocalBase(), localFile), oid, size,
-                creator, new Date(date), 0, hashes, false, tags, folder.getInfo());
+                creatorDevice, creatorAccount, new Date(date), 0, hashes,
+                false, tags, folder.getInfo());
         }
     }
 
     public static FileInfo modifiedFile(FileInfo original, Folder folder,
-        Path localFile, MemberInfo modby, String newHashes)
+        Path localFile, MemberInfo modByDevice, AccountInfo modByAccount,
+        String newHashes)
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
@@ -243,27 +251,27 @@ public final class FileInfoFactory {
             if (original.isFile()) {
                 if (isDir) {
                     return new DirectoryInfo(fn, original.getOID(),
-                        Files.size(localFile), modby, new Date(Files
-                            .getLastModifiedTime(localFile).toMillis()),
-                        original.getVersion() + 1, newHashes, false,
-                        original.getTags(), original.getFolderInfo());
+                        Files.size(localFile), modByDevice, modByAccount,
+                        new Date(Files.getLastModifiedTime(localFile)
+                            .toMillis()), original.getVersion() + 1, newHashes,
+                        false, original.getTags(), original.getFolderInfo());
                 }
                 return new FileInfo(fn, original.getOID(),
-                    Files.size(localFile), modby, new Date(Files
-                        .getLastModifiedTime(localFile).toMillis()),
+                    Files.size(localFile), modByDevice, modByAccount, new Date(
+                        Files.getLastModifiedTime(localFile).toMillis()),
                     original.getVersion() + 1, newHashes, false,
                     original.getTags(), original.getFolderInfo());
             } else if (original.isDiretory()) {
                 if (!isDir) {
                     return new FileInfo(fn, original.getOID(),
-                        Files.size(localFile), modby, new Date(Files
-                            .getLastModifiedTime(localFile).toMillis()),
-                        original.getVersion() + 1, newHashes, false,
-                        original.getTags(), original.getFolderInfo());
+                        Files.size(localFile), modByDevice, modByAccount,
+                        new Date(Files.getLastModifiedTime(localFile)
+                            .toMillis()), original.getVersion() + 1, newHashes,
+                        false, original.getTags(), original.getFolderInfo());
                 }
                 return new DirectoryInfo(fn, original.getOID(),
-                    Files.size(localFile), modby, new Date(Files
-                        .getLastModifiedTime(localFile).toMillis()),
+                    Files.size(localFile), modByDevice, modByAccount, new Date(
+                        Files.getLastModifiedTime(localFile).toMillis()),
                     original.getVersion() + 1, newHashes, false,
                     original.getTags(), original.getFolderInfo());
             } else {
@@ -277,8 +285,8 @@ public final class FileInfoFactory {
         }
     }
 
-    public static FileInfo deletedFile(FileInfo original, MemberInfo delby,
-        Date delDate)
+    public static FileInfo deletedFile(FileInfo original,
+        MemberInfo delbyDevice, AccountInfo delByAccount, Date delDate)
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
@@ -286,12 +294,12 @@ public final class FileInfoFactory {
         // PFC-2352: TODO Think about hashes!
         if (original.isFile()) {
             return new FileInfo(original.getRelativeName(), original.getOID(),
-                original.getSize(), delby, delDate, original.getVersion() + 1,
-                original.getHashes(), true, original.getTags(),
-                original.getFolderInfo());
+                original.getSize(), delbyDevice, delByAccount, delDate,
+                original.getVersion() + 1, original.getHashes(), true,
+                original.getTags(), original.getFolderInfo());
         } else if (original.isDiretory()) {
             return new DirectoryInfo(original.getRelativeName(),
-                original.getOID(), 0L, delby, delDate,
+                original.getOID(), 0L, delbyDevice, delByAccount, delDate,
                 original.getVersion() + 1, original.getHashes(), true,
                 original.getTags(), original.getFolderInfo());
         } else {
@@ -301,11 +309,11 @@ public final class FileInfoFactory {
     }
 
     public static FileInfo archivedFile(FolderInfo foInfo, String name,
-        String oid, long size, MemberInfo modby, Date modDate, int version,
-        String hashes, String tags)
+        String oid, long size, MemberInfo modby, AccountInfo modByAccount,
+        Date modDate, int version, String hashes, String tags)
     {
-        return new FileInfo(name, oid, size, modby, modDate, version, hashes,
-            false, tags, foInfo);
+        return new FileInfo(name, oid, size, modby, modByAccount, modDate,
+            version, hashes, false, tags, foInfo);
     }
 
     public static DirectoryInfo createBaseDirectoryInfo(FolderInfo foInfo) {

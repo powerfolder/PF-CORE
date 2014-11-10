@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
@@ -345,9 +346,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 if (getController().isStarted()
                     && !getController().getMySelf().isServer())
                 {
-                    if (ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().isLoggedIn())
+                    if (getController().getOSClient().isLoggedIn()
+                        || Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled())
                     {
                         // found another new node!!!
                         node = getController().connect(address);

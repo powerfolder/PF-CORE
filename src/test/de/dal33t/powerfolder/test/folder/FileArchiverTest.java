@@ -278,10 +278,10 @@ public class FileArchiverTest extends TwoControllerTestCase {
             .getFolderRepository());
         LoggingManager.setConsoleLogging(Level.FINER);
 
-        FileInfo archiveFileInfo = FileInfoFactory.archivedFile(
-            fInfo.getFolderInfo(), fInfo.getRelativeName(), null,
-            fInfo.getSize(), fInfo.getModifiedBy(),
-            new Date(System.currentTimeMillis() - 10000), 0, null, null);
+        FileInfo archiveFileInfo = FileInfoFactory.archivedFile(fInfo
+            .getFolderInfo(), fInfo.getRelativeName(), null, fInfo.getSize(),
+            fInfo.getModifiedBy(), fInfo.getModifiedByAccount(), new Date(
+                System.currentTimeMillis() - 10000), 0, null, null);
 
         assertTrue(getFolderAtLisa().getFileArchiver().restore(archiveFileInfo,
             fileAtLisa));

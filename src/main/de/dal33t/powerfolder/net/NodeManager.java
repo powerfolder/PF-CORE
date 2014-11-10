@@ -813,7 +813,7 @@ public class NodeManager extends PFComponent {
         List<MemberInfo> list;
         list = request.filter(knownNodes.values());
         from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list,
-            from.getProtocolVersion() >= 107));
+            from.getProtocolVersion() >= Identity.PROTOCOL_VERSION_107));
     }
 
     public void receivedSearchNodeRequest(final SearchNodeRequest request,
@@ -834,7 +834,7 @@ public class NodeManager extends PFComponent {
                 }
 
                 if (!reply.isEmpty()) {
-                    if (from.getProtocolVersion() >= 107) {
+                    if (from.getProtocolVersion() >= Identity.PROTOCOL_VERSION_107) {
                         from.sendMessageAsynchron(new KnownNodesExt(reply
                             .toArray(new MemberInfo[reply.size()])));
                     } else {
@@ -1085,8 +1085,7 @@ public class NodeManager extends PFComponent {
         }
 
         if (!mySelf.isServer()
-            && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController()))
+            && Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isEnabled())
         {
             ServerClient client = getController().getOSClient();
             // Only actually connect to other clients if logged into server.
@@ -1776,7 +1775,7 @@ public class NodeManager extends PFComponent {
                 nodesWentOnline.toArray(nodes);
                 nodesWentOnline.clear();
             }
-            broadcastMessage(107, new SingleMessageProducer() {
+            broadcastMessage(Identity.PROTOCOL_VERSION_107, new SingleMessageProducer() {
                 @Override
                 public Message getMessage(boolean useExt) {
                     return useExt ? new KnownNodesExt(nodes) : new KnownNodes(

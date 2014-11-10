@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -83,7 +84,8 @@ public class TestSerialize {
             files[i] = generateFileInfo();
         }
         FileList list = (FileList) FileList.create4Test(
-            generateFolderInfo(), Arrays.asList(files), new DiskItemFilter())[0];
+generateFolderInfo(),
+            Arrays.asList(files), new DiskItemFilter())[0];
         return list;
     }
 
@@ -93,11 +95,16 @@ public class TestSerialize {
 
         return FileInfoFactory.unmarshallExistingFile(generateFolderInfo(), fn,
             IdGenerator.makeFileId(), (long) (Math.random() * 100000),
-            generateMemberInfo(), new Date(), 0, null, false, null);
+            generateMemberInfo(), generateAccountInfo(), new Date(), 0, null,
+            false, null);
     }
 
     private static MemberInfo generateMemberInfo() {
         return new MemberInfo("noob", IdGenerator.makeId(), null);
+    }
+
+    private static AccountInfo generateAccountInfo() {
+        return new AccountInfo("noob", IdGenerator.makeId(), null);
     }
 
     private static FolderInfo generateFolderInfo() {
