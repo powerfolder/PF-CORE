@@ -17,9 +17,11 @@
  */
 package de.dal33t.powerfolder.ui.iconoverlay;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.liferay.nativity.control.win.WindowsNativityUtil;
 import com.liferay.nativity.modules.fileicon.FileIconControlCallback;
 
 import de.dal33t.powerfolder.Constants;
@@ -28,8 +30,14 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.SyncStatus;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.LockingEvent;
+import de.dal33t.powerfolder.event.LockingListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Decide which Overlay to add to which Icon on Windows Explorer.
@@ -39,15 +47,25 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 public class IconOverlayHandler extends PFComponent implements
     FileIconControlCallback
 {
+    private MyIconOverlayListener updateListener;
 
     public IconOverlayHandler(Controller controller) {
         super(controller);
+        updateListener = new MyIconOverlayListener();
     }
 
     @Override
     public int getIconForFile(String pathName) {
         // First check, if the path is associated with any folder ...
         FolderRepository fr = getController().getFolderRepository();
+
+        Path basepath = fr.getFoldersBasedir();
+        Path path = Paths.get(pathName);
+
+        if (path.getParent().equals(basepath) && Files.isRegularFile(path)) {
+            return IconOverlayIndex.WARNING_OVERLAY.getIndex();
+        }
+
         Folder folder = fr.findContainingFolder(pathName);
         if (folder == null) {
             return IconOverlayIndex.NO_OVERLAY.getIndex();
@@ -59,7 +77,6 @@ public class IconOverlayHandler extends PFComponent implements
         }
 
         // We know, it is a file in a Folder, so create a lookup instance ...
-        Path path = Paths.get(pathName);
         FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
         SyncStatus status = SyncStatus.of(getController(), lookup);
 
@@ -78,6 +95,125 @@ public class IconOverlayHandler extends PFComponent implements
             case NONE :
             default :
                 return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+    }
+
+    public void start() {
+        getController().getFolderRepository().getLocking()
+            .addListener(updateListener);
+        getController().getTransferManager().addListener(updateListener);
+    }
+
+    public void stop() {
+        getController().getFolderRepository().getLocking()
+            .removeListener(updateListener);
+        getController().getTransferManager().removeListener(updateListener);
+    }
+
+    private class MyIconOverlayListener implements LockingListener,
+        TransferManagerListener
+    {
+
+        @Override
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        @Override
+        public void downloadRequested(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void downloadQueued(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void downloadStarted(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void downloadAborted(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void downloadBroken(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void downloadCompleted(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void pendingDownloadEnqueued(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void uploadRequested(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void uploadStarted(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void uploadAborted(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void uploadBroken(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void uploadCompleted(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            update(event.getFile());
+        }
+
+        @Override
+        public void locked(LockingEvent event) {
+            update(event.getFileInfo());
+        }
+
+        @Override
+        public void unlocked(LockingEvent event) {
+            update(event.getFileInfo());
+        }
+
+        private void update(FileInfo fInfo) {
+            if (OSUtil.isWindowsSystem()) {
+                final Path file = fInfo.getDiskFile(getController()
+                    .getFolderRepository());
+                if (Files.notExists(file)) {
+                    return;
+                }
+
+                UIUtil.invokeLaterInEDT(new Runnable() {
+                    @Override
+                    public void run() {
+                        WindowsNativityUtil.updateExplorer(file.toString());
+                    }
+                });
+            }
         }
     }
 }

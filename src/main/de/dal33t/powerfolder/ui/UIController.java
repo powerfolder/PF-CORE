@@ -165,6 +165,7 @@ public class UIController extends PFComponent {
     private boolean started;
     private SplashScreen splash;
     private TrayIconManager trayIconManager;
+    private IconOverlayHandler iconOverlayHandler;
     private MainFrame mainFrame;
     private SystemMonitorFrame systemMonitorFrame;
     private final InformationFrame informationFrame;
@@ -358,9 +359,10 @@ public class UIController extends PFComponent {
                         new ContextMenuHandler(getController()));
                 }
     
-                FileIconControlUtil.getFileIconControl(nc,
-                    new IconOverlayHandler(getController())).enableFileIcons();;
-    
+                iconOverlayHandler = new IconOverlayHandler(getController());
+                FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
+                    .enableFileIcons();
+                iconOverlayHandler.start();
             }
         } catch (RuntimeException re) {
             logWarning("Context or file icons could not be loaded. " + re);
@@ -1070,6 +1072,10 @@ public class UIController extends PFComponent {
             if (OSUtil.isSystraySupported() && trayIconManager != null) {
                 SystemTray.getSystemTray()
                     .remove(trayIconManager.getTrayIcon());
+            }
+
+            if (iconOverlayHandler != null) {
+                iconOverlayHandler.stop();
             }
         }
 
