@@ -243,21 +243,21 @@ public class LoggingManager {
                 try {
                     name = InetAddress.getLocalHost().getHostName();
                 } catch (UnknownHostException e) {
-                    name = null;
+                    name = ConfigurationEntry.HOSTNAME.getValue(controller);
                 }
                 syslogHandler.init(name,
                     ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller),
                     ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller));
 
                 getRootLogger().addHandler(syslogHandler);
-                syslogLoggingLevel = level;
-                syslogHandler.setLevel(level);
-
-                setMinimumBaseLoggingLevel();
             } catch (SocketException e) {
                 e.printStackTrace();
             }
         }
+        syslogLoggingLevel = level;
+        syslogHandler.setLevel(level);
+
+        setMinimumBaseLoggingLevel();
     }
 
     public static void clearBuffer() {

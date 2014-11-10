@@ -862,7 +862,7 @@ public class Controller extends PFComponent {
                 str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
                 Level syslogLevel = LoggingManager.levelForName(str);
                 LoggingManager.setSyslogLogging(syslogLevel != null
-                    ? consoleLevel
+                    ? syslogLevel
                         : Level.WARNING, this);
             }
         }
