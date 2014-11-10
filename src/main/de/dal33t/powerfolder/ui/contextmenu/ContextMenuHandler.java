@@ -121,13 +121,17 @@ public class ContextMenuHandler extends PFComponent implements
         FolderRepository fr = getController().getFolderRepository();
         for (String pathName : pathNames) {
             Folder folder = fr.findContainingFolder(pathName);
-            if (!containsFolderPath && folder != null)
-            {
-                containsFolderPath = true;
-                break;
+
+            if (folder == null) {
+                continue;
             }
 
             Path path = Paths.get(pathName);
+            if (!containsFolderPath && folder.getLocalBase().equals(path)) {
+                containsFolderPath = true;
+                continue;
+            }
+
             FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
             if ((found = folder.getDAO().find(lookup, null)) != null) {
                 containsFileInfoPath = true;
@@ -160,12 +164,12 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(versionHistoryItem);
         }
 
-        if (containsFolderPath && !containsFileInfoPath) {
-            pfMainItem.addContextMenuItem(stopSyncItem);
-        }
-
         if (containsFileInfoPath && pathNames.length == 1) {
             pfMainItem.addContextMenuItem(shareLinkItem);
+        }
+
+        if (containsFolderPath && !containsFileInfoPath) {
+            pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
         if ((containsFolderPath && pathNames.length == 1)
@@ -187,7 +191,10 @@ public class ContextMenuHandler extends PFComponent implements
             items.add(pfMainItem);
         }
 
-        if (containsFileInfoPath) {
+        if (containsFileInfoPath
+            && !(pathNames.length == 1 && Files.isDirectory(Paths
+                .get(pathNames[0]))))
+        {
             items.add(openColabItem);
         }
 
