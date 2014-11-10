@@ -2033,9 +2033,14 @@ public class Folder extends PFComponent {
             // Prepare temp file
             try {
                 Files.deleteIfExists(dbTempFile);
+            } catch (IOException ioe) {
+                logWarning("Failed to delete temp database file: " + dbTempFile
+                    + ". " + ioe);
+            }
+            try {
                 Files.createFile(dbTempFile);
             } catch (IOException ioe) {
-                logSevere("Failed to prepare temp database file: " + dbTempFile
+                logSevere("Failed to create temp database file: " + dbTempFile
                     + ". " + ioe);
                 return false;
             }
