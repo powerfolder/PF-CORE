@@ -116,34 +116,12 @@ public class SyslogHandler extends Handler {
         return 7;
     }
 
-    private String getLevelName(LogRecord record) {
-        String levelDescription;
-        if (record.getLevel().equals(Level.OFF)) {
-            levelDescription = "OFF   ";
-        } else if (record.getLevel().equals(Level.WARNING)) {
-            levelDescription = "WARN  ";
-        } else if (record.getLevel().equals(Level.SEVERE)) {
-            levelDescription = "SEVERE";
-        } else if (record.getLevel().equals(Level.FINE)) {
-            levelDescription = "FINE  ";
-        } else if (record.getLevel().equals(Level.FINER)) {
-            levelDescription = "FINER ";
-        } else if (record.getLevel().equals(Level.INFO)) {
-            levelDescription = "INFO  ";
-        } else {
-            levelDescription = record.getLevel().getName();
-        }
-        return levelDescription;
-    }
-
     private void send(String headerString, LogRecord record) throws IOException
     {
         StringBuilder message = new StringBuilder();
-        message.append(" ");
-        message.append(getLevelName(record));
-        message.append(" [");
+        message.append("[");
         message.append(getLoggerName(record));
-        message.append(" ");
+        message.append("] ");
         message.append(record.getMessage());
 
         byte[] headerData = headerString.getBytes(Charset.forName("ASCII"));
