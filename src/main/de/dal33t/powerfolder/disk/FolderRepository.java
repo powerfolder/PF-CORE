@@ -474,7 +474,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             && Files.isDirectory(foldersBasedir);
 
         if (ok) {
-            logInfo("Using base path for folders: " + foldersBasedir);
+            logFine("Using base path for folders: " + foldersBasedir);
             if (OSUtil.isMacOS()) {
                 try {
                     Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>(3);
