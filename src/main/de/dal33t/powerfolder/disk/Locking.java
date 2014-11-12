@@ -217,7 +217,7 @@ public class Locking extends PFComponent {
         }
     }
 
-    public void autoLockMSOfficeFiles(FileInfo fInfo) {
+    private void autoLockMSOfficeFiles(FileInfo fInfo) {
         FileInfo localFInfo = fInfo.getLocalFileInfo(getController()
             .getFolderRepository());
         if (localFInfo == null) {
