@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * PFC-1962: The main class for locking and unlocking files.
@@ -85,7 +86,12 @@ public class Locking extends PFComponent {
         }
         if (Files.exists(lockFile) && isWarning()) {
             Lock existingLock = getLock(fInfo);
-            logWarning("Overwriting existing lock " + existingLock);
+            if (existingLock != null
+                && !Util.equals(existingLock.getAccountInfo(), by))
+            {
+                logWarning("Overwriting existing lock of file " + fInfo
+                    + " by " + existingLock.getAccountInfo());
+            }
         }
         try {
             byte[] buf = ByteSerializer.serializeStatic(lock, false);
