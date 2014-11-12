@@ -2038,7 +2038,7 @@ public class Folder extends PFComponent {
     /**
      * Stores the current file-database to disk
      */
-    private boolean storeFolderDB() {
+    private synchronized boolean storeFolderDB() {
         Path dbTempFile = getSystemSubDir().resolve(
             Constants.DB_FILENAME
                 + PathUtils.removeInvalidFilenameChars(getController()
