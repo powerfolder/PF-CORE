@@ -349,7 +349,7 @@ public class UIController extends PFComponent {
         try {
             NativityControl nc = NativityControlUtil.getNativityControl();
             if (!nc.connect()) {
-                logFine("Could not initialize for context menu!");
+                logWarning("Could not initialize shell extensions!");
                 nc.disconnect();
             } else {
                 if (PreferencesEntry.ENABLE_CONTEXT_MENU
