@@ -220,14 +220,23 @@ public class IconOverlayHandler extends PFComponent implements
             if (OSUtil.isWindowsSystem()) {
                 final Path file = fInfo.getDiskFile(getController()
                     .getFolderRepository());
-                if (Files.notExists(file)) {
-                    return;
-                }
+                Folder folder = fInfo.getFolder(getController()
+                    .getFolderRepository());
+                final Path folderBaseDir = folder != null ? folder
+                    .getLocalBase() : null;
 
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     @Override
                     public void run() {
-                        WindowsNativityUtil.updateExplorer(file.toString());
+                        if (Files.exists(file)) {
+                            WindowsNativityUtil.updateExplorer(file.toString());
+                        }
+                        if (folderBaseDir != null
+                            && Files.exists(folderBaseDir))
+                        {
+                            WindowsNativityUtil.updateExplorer(folderBaseDir
+                                .toString());
+                        }
                     }
                 });
             }
