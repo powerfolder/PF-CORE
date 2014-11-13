@@ -39,9 +39,6 @@ public enum SyncStatus {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(fInfo, "FileInfo");
 
-        if (fInfo.isDiretory() && !fInfo.isLocked(controller)) {
-            return NONE;
-        }
         Folder folder = fInfo.getFolder(controller.getFolderRepository());
         if (folder == null) {
             return NONE;
@@ -59,6 +56,9 @@ public enum SyncStatus {
             } else {
                 return SYNC_OK;                
             }
+        }
+        if (fInfo.isDiretory() && !fInfo.isLocked(controller)) {
+            return NONE;
         }
         if (fInfo.isLookupInstance()) {
             fInfo = folder.getDAO().find(fInfo, null);
