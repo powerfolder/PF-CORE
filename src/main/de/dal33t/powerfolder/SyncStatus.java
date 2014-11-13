@@ -46,6 +46,20 @@ public enum SyncStatus {
         if (folder == null) {
             return NONE;
         }
+        if (fInfo.equals(folder.getBaseDirectoryInfo())) {
+            double sync= folder.getStatistic().getHarmonizedSyncPercentage(); 
+            if (folder.isSyncing()) {
+                return SYNCING;
+            } else if (folder.isDeviceDisconnected()) {
+                return WARNING;
+            } else if (folder.getConnectedMembersCount() == 0 || sync < 0) {
+                return NONE;
+            } else if (sync > 0 && sync < 100.0d) {
+                return SYNCING;    
+            } else {
+                return SYNC_OK;                
+            }
+        }
         if (fInfo.isLookupInstance()) {
             fInfo = folder.getDAO().find(fInfo, null);
         }
