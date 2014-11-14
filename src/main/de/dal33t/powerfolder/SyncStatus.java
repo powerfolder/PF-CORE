@@ -39,11 +39,28 @@ public enum SyncStatus {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(fInfo, "FileInfo");
 
-        if (fInfo.isDiretory() && !fInfo.isLocked(controller)) {
+        if (!controller.isStarted() || controller.isShuttingDown()) {
             return NONE;
         }
         Folder folder = fInfo.getFolder(controller.getFolderRepository());
         if (folder == null) {
+            return NONE;
+        }
+        if (fInfo.equals(folder.getBaseDirectoryInfo())) {
+            double sync = folder.getStatistic().getHarmonizedSyncPercentage();
+            if (folder.isSyncing()) {
+                return SYNCING;
+            } else if (folder.isDeviceDisconnected()) {
+                return WARNING;
+            } else if (folder.getConnectedMembersCount() == 0 || sync < 0) {
+                return NONE;
+            } else if (sync > 0 && sync < 100.0d) {
+                return SYNCING;    
+            } else {
+                return SYNC_OK;                
+            }
+        }
+        if (fInfo.isDiretory() && !fInfo.isLocked(controller)) {
             return NONE;
         }
         if (fInfo.isLookupInstance()) {

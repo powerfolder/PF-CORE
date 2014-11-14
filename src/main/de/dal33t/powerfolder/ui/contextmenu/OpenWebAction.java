@@ -45,17 +45,31 @@ class OpenWebAction extends PFContextMenuAction {
     public void onSelection(String[] paths) {
         List<FileInfo> fileInfos = getFileInfos(paths);
 
+        boolean opened = false;
+
         for (FileInfo fileInfo : fileInfos) {
             try {
+                String name = fileInfo.getRelativeName();
+
+                if (fileInfo.isFile()) {
+                    name = fileInfo.getRelativeName().replace(
+                        fileInfo.getFilenameOnly(), "");
+                }
+
                 String folderURL = getController().getOSClient()
                     .getFolderURLWithCredentials(fileInfo.getFolderInfo());
                 String fileURL = folderURL + "/"
-                    + URLEncoder.encode(fileInfo.getRelativeName(), "UTF-8");
+                    + URLEncoder.encode(name, "UTF-8");
 
                 BrowserLauncher.openURL(getController(), fileURL);
+                opened = true;
             } catch (UnsupportedEncodingException uee) {
                 log.warning("Failed to generate URL. " + uee);
             }
+        }
+
+        if (opened) {
+            return;
         }
 
         List<Folder> folders = getFolders(paths);

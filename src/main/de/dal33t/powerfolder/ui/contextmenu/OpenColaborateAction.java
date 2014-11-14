@@ -17,25 +17,16 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.awt.Desktop;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.SyncStatus;
-import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
- * Open the selected file with the standard application of the OS and lock it.
+ * Open the file to colaborate in a web colaboration tool.
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
@@ -50,80 +41,15 @@ class OpenColaborateAction extends PFContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        if (!Desktop.isDesktopSupported()) {
-            log.info("Won't be able to open file. Unsupported operation required.");
-            return;
-        }
+        List<FileInfo> fileInfos = getFileInfos(paths);
 
-        List<FileInfo> files = getFileInfos(paths);
-
-        for (final FileInfo file : files) {
-            if (SyncStatus.of(getController(), file) == SyncStatus.IGNORED) {
+        for (FileInfo fileInfo : fileInfos) {
+            String fileURL = getController().getOSClient().getOpenURL(fileInfo);
+            if (StringUtils.isBlank(fileURL)) {
+                log.fine("Could not get URL for file " + fileInfo);
                 continue;
             }
-
-            Lock lock = file.getLock(getController());
-            boolean bySameDevice = lock.getMemberInfo().equals(getController()
-                .getMySelf().getInfo());
-            boolean bySameAccount = lock.getAccountInfo().equals(getController()
-                .getOSClient().getAccountInfo());
-
-            if (!(bySameDevice && bySameAccount)) {
-                UIUtil.invokeLaterInEDT(new UnlockForeignTask(getController(),
-                    file, lock));
-            } else {
-                open(file);
-            }
-        }
-    }
-
-    private void open(final FileInfo file) {
-        UIUtil.invokeLaterInEDT(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Path path = file.getDiskFile(getController()
-                        .getFolderRepository());
-                    Desktop.getDesktop().open(path.toFile());
-                    file.lock(getController());
-                } catch (IOException ioe) {
-                    log.warning("Could not open file " + file
-                        + " for editing. " + ioe);
-                }
-            }
-        });
-    }
-
-    private class UnlockForeignTask implements Runnable {
-
-        private final Controller controller;
-        private final FileInfo fileInfo;
-        private final Lock lock;
-
-        UnlockForeignTask(Controller controller, FileInfo fileInfo, Lock lock) {
-            this.controller = controller;
-            this.fileInfo = fileInfo;
-            this.lock = lock;
-        }
-
-        @Override
-        public void run() {
-            String name = fileInfo.getFilenameOnly();
-            String displayName = lock.getAccountInfo().getDisplayName();
-            String date = new SimpleDateFormat("dd MMM yyyy HH:mm").format(lock
-                .getCreated());
-            String memberName = Translation
-                .getTranslation("context_menu.unlock.message.web");
-            MemberInfo member = lock.getMemberInfo();
-            if (member != null) {
-                memberName = member.getNick();
-            }
-
-            DialogFactory.genericDialog(controller, Translation
-                .getTranslation("context_menu.open_and_colaborate.title"),
-                Translation.getTranslation("context_menu.open_and_colaborate.message", name,
-                    displayName, date, memberName), new String[]{Translation
-                    .getTranslation("general.ok")}, 0, GenericDialogType.INFO);
+            BrowserLauncher.openURL(getController(), fileURL);
         }
     }
 }

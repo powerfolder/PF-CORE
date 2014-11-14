@@ -50,8 +50,13 @@ import de.dal33t.powerfolder.util.Translation;
  * <ul>
  * <li>If the UI is disabled, it just creates a new {@link Folder} and starts to
  * synchronize it.</li>
- * <li>If the UI is enabled, but Beginner Mode is configured, the Folder is
+ * <li>If the UI is enabled, but Beginner Mode is configured:
+ * <ol>
+ * <li>When the Folder does not exist yet, it is
  * created and the {@link ShareFolderNotificationHandler} is called.</li>
+ * <li>When the Folder already exists, the Send Invitation Wizard is opened.</li>
+ * </ol>
+ * </li>
  * <li>If the UI is enabled, and Advanced or Expert Mode is configured:
  * <ol>
  * <li>When the directory was not yet a Folder, the
@@ -93,8 +98,20 @@ class ShareFolderAction extends ContextMenuAction {
             if (controller.isUIEnabled()) {
                 if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller))
                 {
-                    createFolder(path, foInfo, syncProfile, backupByServer);
-                    showNotification(foInfo);
+                    if (folder != null) {
+                        UIUtil.invokeLaterInEDT(new Runnable() {
+                            @Override
+                            public void run() {
+                                PFWizard.openSendInvitationWizard(controller,
+                                    foInfo);
+                                controller.getUIController().getMainFrame()
+                                    .toFront();
+                            }
+                        });
+                    } else {
+                        createFolder(path, foInfo, syncProfile, backupByServer);
+                        showNotification(foInfo);
+                    }
                 } else {
                     if (folder != null) {
                         UIUtil.invokeLaterInEDT(new Runnable() {

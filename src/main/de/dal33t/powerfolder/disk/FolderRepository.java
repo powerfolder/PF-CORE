@@ -847,7 +847,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     return folder;
                 }
             } catch (IOException e) {
-                logWarning(e);
+                logWarning("Unable to access: " + folder.getLocalBase() + ". "
+                    + e);
             }
         }
         return null;
@@ -1683,24 +1684,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             try (DirectoryStream<Path> files = Files.newDirectoryStream(
                 baseDir, filter)) {
                 for (Path file : files) {
-                    WarningNotice notice = new WarningNotice(
-                        Translation
-                            .getTranslation("notice.file_in_base_path.title"),
-                        Translation
-                            .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()),
-                        Translation
-                            .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString())) {
-                        @Override
-                        public Runnable getPayload(final Controller controller) {
-                            return new Runnable() {
-                                public void run() {
-                                    PathUtils.openFile(controller.getFolderRepository().getFoldersBasedir());
-                                    DialogFactory.genericDialog(controller, getTitle(), getMessage(),
-                                        GenericDialogType.WARN);
-                                }
-                            };
-                        }
-                    };
+                    WarningNotice notice = new FileInBasePathWarning(Translation
+                        .getTranslation("notice.file_in_base_path.title"), Translation
+                        .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()), Translation
+                        .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()));
 
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
@@ -1732,54 +1719,68 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
 
-            if (fi != null && knownFolderWithSameName == null) {
-                final String oldName = fi.getName();
-
+            final String oldName = fi.getName();
+            String newName = file.getFileName().toString();
+            if (fi != null && knownFolderWithSameName == null
+                && !oldName.equals(newName))
+            {
                 /*
                  * Change the name locally before the server is called. The
                  * server will notify all clients to update their folder names.
                  * Renaming the folder first prevents that the client which
                  * renamed the folder changes it via the servers update.
                  */
-                fi = new FolderInfo(file.getFileName().toString(), fi.getId());
+                logWarning("Renaming folder " + oldName + " to " + newName);
+
+                fi = new FolderInfo(newName, fi.getId());
                 fi.intern(true);
 
                 FolderService foServ = client.getFolderService();
-                if (!foServ.renameFolder(fi, file.getFileName().toString())) {
-                    logWarning("Could not rename the Folder " + oldName
-                        + " on the server to " + fi.getName());
-                    final FolderInfo copy = fi;
+                try {
 
-                    if (getController().getUIController().isStarted()) {
-                        UIUtil.invokeLaterInEDT(new Runnable() {
-                            @Override
-                            public void run() {
-                                DialogFactory.genericDialog(
-                                    getController(),
-                                    Translation
-                                        .getTranslation("notice.rename_folder_failed.title"),
-                                    Translation.getTranslation(
-                                        "notice.rename_folder_failed.summary",
-                                        copy.getLocalizedName(), oldName),
-                                    GenericDialogType.WARN);
-                            }
-                        });
+                    if (!foServ.renameFolder(fi, newName)) {
+                        logWarning("Could not rename the Folder " + oldName
+                            + " on the server to " + fi.getName());
+                        final FolderInfo copy = fi;
+
+                        if (getController().getUIController().isStarted()) {
+                            UIUtil.invokeLaterInEDT(new Runnable() {
+                                @Override
+                                public void run() {
+                                    DialogFactory.genericDialog(
+                                        getController(),
+                                        Translation
+                                            .getTranslation("notice.rename_folder_failed.title"),
+                                        Translation
+                                            .getTranslation(
+                                                "notice.rename_folder_failed.summary",
+                                                copy.getLocalizedName(),
+                                                oldName),
+                                        GenericDialogType.WARN);
+                                }
+                            });
+                        }
+
+                        // change the name back to the old name
+                        fi = new FolderInfo(oldName, fi.getId());
+                        fi.intern(true);
+
+                        return;
                     }
 
-                    // change the name back to the old name
-                    fi = new FolderInfo(oldName, fi.getId());
-                    fi.intern(true);
+                    renamed = true;
+                    removeFolder(fi.getFolder(getController()), false, false);
 
+                } catch (RuntimeException e) {
+                    logWarning("Unable to rename folder: " + oldName + ": " + e);
                     return;
                 }
-
-                renamed = true;
-                removeFolder(fi.getFolder(getController()), false, false);
             } else {
                 if (fi == null) {
                     fi = knownFolderWithSameName;
                 }
             }
+
         }
         if (fi == null) {
             fi = new FolderInfo(file.getFileName().toString(),

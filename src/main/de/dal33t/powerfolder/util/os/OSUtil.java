@@ -221,9 +221,9 @@ public class OSUtil {
     public static boolean hasPFStartup(Controller controller)
         throws UnsupportedOperationException
     {
-        if (OSUtil.isWindowsSystem()) {
+        if (OSUtil.isWindowsSystem() && WinUtils.isSupported()) {
             return WinUtils.getInstance().hasPFStartup(controller);
-        } else if (OSUtil.isMacOS()) {
+        } else if (OSUtil.isMacOS() && MacUtils.isSupported()) {
             return MacUtils.getInstance().hasPFStartup(controller);
         }
 
@@ -233,7 +233,7 @@ public class OSUtil {
 
     /**
      * @param setup
-     *            @code True to set the start up item, @code false to remove it.
+     * @code True to set the start up item, @code false to remove it.
      * @param controller
      *            The controller
      * @throws IOException
