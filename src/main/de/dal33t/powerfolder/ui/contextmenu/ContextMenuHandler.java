@@ -115,6 +115,7 @@ public class ContextMenuHandler extends PFComponent implements
         // Gather some information to decide which context menu items to show
         boolean containsFolderPath = false;
         boolean containsFileInfoPath = false;
+        boolean containsDirectoryInfoPath = false;
         FileInfo found = null;
 
         // Check for folder base paths
@@ -134,10 +135,16 @@ public class ContextMenuHandler extends PFComponent implements
 
             FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
             if ((found = folder.getDAO().find(lookup, null)) != null) {
-                containsFileInfoPath = true;
+                if (found.isFile()) {
+                    containsFileInfoPath = true;
+                } else if (found.isDiretory()) {
+                    containsDirectoryInfoPath = true;
+                }
             }
 
-            if (containsFolderPath && containsFileInfoPath) {
+            if (containsFolderPath && containsFileInfoPath
+                && containsDirectoryInfoPath)
+            {
                 break;
             }
         }
@@ -150,7 +157,9 @@ public class ContextMenuHandler extends PFComponent implements
 
         // Build the context menu - the order is from BOTTOM to TOP
 
-        if (containsFolderPath || containsFileInfoPath) {
+        if (containsFileInfoPath
+            && !(containsFolderPath || containsDirectoryInfoPath))
+        {
             pfMainItem.addContextMenuItem(unlockItem);
             pfMainItem.addContextMenuItem(lockItem);
             if (containsFileInfoPath && pathNames.length == 1
@@ -164,22 +173,27 @@ public class ContextMenuHandler extends PFComponent implements
             pfMainItem.addContextMenuItem(versionHistoryItem);
         }
 
-        if (containsFileInfoPath && pathNames.length == 1) {
+        if ((containsDirectoryInfoPath || containsFileInfoPath)
+            && pathNames.length == 1)
+        {
             pfMainItem.addContextMenuItem(shareLinkItem);
         }
 
-        if (containsFolderPath && !containsFileInfoPath) {
+        if (containsFolderPath
+            && !(containsFileInfoPath || containsDirectoryInfoPath))
+        {
             pfMainItem.addContextMenuItem(stopSyncItem);
         }
 
         if ((containsFolderPath && pathNames.length == 1)
-            || Files.isDirectory(Paths.get(pathNames[0]))
-            && getController().getOSClient().isAllowedToCreateFolders())
+            || (Files.isDirectory(Paths.get(pathNames[0]))
+                && getController().getOSClient().isAllowedToCreateFolders() && !containsDirectoryInfoPath))
         {
             pfMainItem.addContextMenuItem(shareFolderItem);
         }
 
-        if ((containsFileInfoPath || containsFolderPath)
+        if (pathNames.length == 1
+            && (containsFileInfoPath || containsDirectoryInfoPath || containsFolderPath)
             && ConfigurationEntry.WEB_LOGIN_ALLOWED
                 .getValueBoolean(getController()))
         {
@@ -191,10 +205,7 @@ public class ContextMenuHandler extends PFComponent implements
             items.add(pfMainItem);
         }
 
-        if (containsFileInfoPath
-            && !(pathNames.length == 1 && Files.isDirectory(Paths
-                .get(pathNames[0]))))
-        {
+        if (containsFileInfoPath && pathNames.length == 1) {
             String pathName = pathNames[0];
             Path targetDir = Paths.get(pathName);
             Folder fo = getController().getFolderRepository()
