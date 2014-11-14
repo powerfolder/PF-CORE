@@ -138,8 +138,10 @@ public class Account implements Serializable {
     private boolean proUser;
 
     @Column(length = 256)
+    @Index(name = "IDX_ACC_FIRSTNAME")
     private String firstname;
     @Column(length = 255)
+    @Index(name = "IDX_ACC_SURNAME")
     private String surname;
     @Column(length = 255)
     private String telephone;
