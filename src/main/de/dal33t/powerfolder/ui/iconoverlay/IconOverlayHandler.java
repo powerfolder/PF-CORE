@@ -30,6 +30,10 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.SyncStatus;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.LockingEvent;
 import de.dal33t.powerfolder.event.LockingListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -116,19 +120,29 @@ public class IconOverlayHandler extends PFComponent implements
     }
 
     public void start() {
-        getController().getFolderRepository().getLocking()
-            .addListener(updateListener);
+        FolderRepository repo = getController().getFolderRepository();
+        for (Folder folder : repo.getFolders()) {
+            folder.addFolderListener(updateListener);
+        }
+        repo.addFolderRepositoryListener(updateListener);
+        repo.getLocking().addListener(updateListener);
         getController().getTransferManager().addListener(updateListener);
     }
 
     public void stop() {
         getController().getFolderRepository().getLocking()
             .removeListener(updateListener);
+        getController().getFolderRepository().removeFolderRepositoryListener(
+            updateListener);
         getController().getTransferManager().removeListener(updateListener);
+        FolderRepository repo = getController().getFolderRepository();
+        for (Folder folder : repo.getFolders()) {
+            folder.removeFolderListener(updateListener);
+        }
     }
 
     private class MyIconOverlayListener implements LockingListener,
-        TransferManagerListener
+        TransferManagerListener, FolderListener, FolderRepositoryListener
     {
 
         @Override
@@ -220,10 +234,6 @@ public class IconOverlayHandler extends PFComponent implements
             if (OSUtil.isWindowsSystem()) {
                 final Path file = fInfo.getDiskFile(getController()
                     .getFolderRepository());
-                Folder folder = fInfo.getFolder(getController()
-                    .getFolderRepository());
-                final Path folderBaseDir = folder != null ? folder
-                    .getLocalBase() : null;
 
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     @Override
@@ -231,15 +241,76 @@ public class IconOverlayHandler extends PFComponent implements
                         if (Files.exists(file)) {
                             WindowsNativityUtil.updateExplorer(file.toString());
                         }
-                        if (folderBaseDir != null
-                            && Files.exists(folderBaseDir))
-                        {
-                            WindowsNativityUtil.updateExplorer(folderBaseDir
-                                .toString());
-                        }
                     }
                 });
             }
+        }
+
+        private void updateFolder(final Folder folder) {
+            if (OSUtil.isWindowsSystem()) {
+                UIUtil.invokeLaterInEDT(new Runnable() {
+                    @Override
+                    public void run() {
+                        WindowsNativityUtil.updateExplorer(folder
+                            .getLocalBase().toString());
+
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void folderRemoved(FolderRepositoryEvent e) {
+            e.getFolder().removeFolderListener(updateListener);
+        }
+
+        @Override
+        public void folderCreated(FolderRepositoryEvent e) {
+            e.getFolder().addFolderListener(updateListener);
+        }
+
+        @Override
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            updateFolder(folderEvent.getFolder());
+        }
+
+        @Override
+        public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+
+        @Override
+        public void archiveSettingsChanged(FolderEvent folderEvent) {
+        }
+
+        @Override
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+        }
+
+        @Override
+        public void scanResultCommited(FolderEvent folderEvent) {
+            if (folderEvent.getScanResult().isChangeDetected()) {
+                updateFolder(folderEvent.getFolder());
+            }
+        }
+
+        @Override
+        public void fileChanged(FolderEvent folderEvent) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void filesDeleted(FolderEvent folderEvent) {
+            // TODO Auto-generated method stub
+            
         }
     }
 }
