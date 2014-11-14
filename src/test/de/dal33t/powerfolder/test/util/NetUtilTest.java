@@ -38,7 +38,7 @@ public class NetUtilTest extends TestCase {
 
     /**
      * #1403
-     * 
+     *
      * @throws UnknownHostException
      * @throws SocketException
      */

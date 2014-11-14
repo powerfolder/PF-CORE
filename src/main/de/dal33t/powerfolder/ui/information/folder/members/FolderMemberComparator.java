@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 
 /**
  * Comparator for members of a folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $
  */

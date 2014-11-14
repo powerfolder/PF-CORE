@@ -160,7 +160,7 @@ public class FileVersionsTable extends JTable {
             Component c = super.getTableCellRendererComponent(table, myValue,
                     isSelected, hasFocus, row, column);
             ((JLabel) c).setToolTipText(toolTip);
-            
+
             if (!isSelected) {
                 setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
                         : ColorUtil.ODD_TABLE_ROW_COLOR);

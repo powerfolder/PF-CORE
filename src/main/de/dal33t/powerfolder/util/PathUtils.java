@@ -82,7 +82,7 @@ public class PathUtils {
 
     /**
      * Check the path if it is a zyncro backend.
-     * 
+     *
      * @param path
      * @return true if path is a zyncro path, false otherwise.
      */
@@ -161,7 +161,7 @@ public class PathUtils {
      * on until it finds an non-existing sub directory. DOES NOT try to remove
      * ILLEGAL characters from
      * <p>
-     * 
+     *
      * @param baseDir
      * @param rawName
      *            the raw name of the directory. is it NOT guranteed that it
@@ -271,7 +271,7 @@ public class PathUtils {
 
     /**
      * #1882 Correct solution
-     * 
+     *
      * @param f
      * @return the suggested folder name
      */
@@ -290,7 +290,7 @@ public class PathUtils {
     /**
      * PFC-2374 & SYNC-180 Workaround for JNotify on Mac to get the "real" file
      * name.
-     * 
+     *
      * @param rootPath
      * @param name
      * @return
@@ -306,7 +306,7 @@ public class PathUtils {
 
     /**
      * Copies a file
-     * 
+     *
      * @param from
      * @param to
      *            if file exists it will be overwritten!
@@ -332,7 +332,7 @@ public class PathUtils {
 
     /**
      * Copies a file to disk from a stream. Overwrites the target file if exists
-     * 
+     *
      * @see #copyFromStreamToFile(InputStream, Path, StreamCallback, int)
      * @param in
      *            the input stream
@@ -349,7 +349,7 @@ public class PathUtils {
     /**
      * Copies a file to disk from a stream. Overwrites the target file if
      * exists. The processe may be observed with a stream callback
-     * 
+     *
      * @param in
      *            the input stream
      * @param to
@@ -393,8 +393,9 @@ public class PathUtils {
                 + to.toAbsolutePath().toString());
         }
 
-        try (OutputStream out = new BufferedOutputStream(
-            Files.newOutputStream(to))) {
+        OutputStream out = new BufferedOutputStream(
+            Files.newOutputStream(to));
+        try {
             byte[] buffer = new byte[BYTE_CHUNK_SIZE];
             int read;
             long position = 0;
@@ -420,6 +421,7 @@ public class PathUtils {
         } finally {
             // Close streams
             try {
+                out.close();
                 in.close();
             } catch (IOException e) {
             }
@@ -428,7 +430,7 @@ public class PathUtils {
 
     /**
      * Copy a file using raw file system access using input/output streams.
-     * 
+     *
      * @param from
      * @param to
      * @throws IOException
@@ -479,7 +481,7 @@ public class PathUtils {
 
     /**
      * A recursive delete of a directory.
-     * 
+     *
      * @param file
      *            directory to delete
      * @throws IOException
@@ -495,7 +497,7 @@ public class PathUtils {
 
     /**
      * A recursive delete of a directory.
-     * 
+     *
      * @param file
      *            directory to delete
      * @param filter
@@ -532,7 +534,7 @@ public class PathUtils {
 
     /**
      * A recursive move of one directory to another.
-     * 
+     *
      * @param sourceFile
      * @param targetFile
      * @throws IOException
@@ -588,7 +590,7 @@ public class PathUtils {
 
     /**
      * A recursive copy of one directory to another.
-     * 
+     *
      * @param sourceFile
      * @param targetFile
      * @throws IOException
@@ -605,7 +607,7 @@ public class PathUtils {
 
     /**
      * A recursive copy of one directory to another.
-     * 
+     *
      * @param sourceFile
      * @param targetFile
      * @param filter
@@ -660,7 +662,7 @@ public class PathUtils {
      * that do not exist in source will be deleted.
      * <p>
      * Does not mirror last modification dates.
-     * 
+     *
      * @param source
      * @param target
      * @throws IOException
@@ -681,7 +683,7 @@ public class PathUtils {
      * that do not exist in source will be deleted.
      * <p>
      * Does not mirror last modification dates.
-     * 
+     *
      * @param source
      * @param target
      * @param filter
@@ -756,7 +758,7 @@ public class PathUtils {
 
     /**
      * Helper method to perform hashing on a file.
-     * 
+     *
      * @param file
      * @param digest
      *            the MessageDigest to use, MUST be in initial state - aka
@@ -793,7 +795,7 @@ public class PathUtils {
 
     /**
      * See if 'child' is a subdirectory of 'parent', recursively.
-     * 
+     *
      * @param parent
      * @param targetChild
      * @return
@@ -815,7 +817,7 @@ public class PathUtils {
      * DiskItem relativeName. relativeNames are always unix separators ('/') so
      * this method ensures that the file is built using the correct underlying
      * OS separators.
-     * 
+     *
      * @param base
      *            a base directory File
      * @param relativeName
@@ -867,7 +869,7 @@ public class PathUtils {
 
     /**
      * Set / remove desktop ini in managed folders.
-     * 
+     *
      * @param controller
      * @param directory
      */
@@ -988,7 +990,7 @@ public class PathUtils {
 
     /**
      * Method to remove the desktop ini if it exists
-     * 
+     *
      * @param directory
      */
     public static void deleteDesktopIni(Path directory) {
@@ -1007,7 +1009,7 @@ public class PathUtils {
 
     /**
      * Scans a directory and gets full size of all files and count of files.
-     * 
+     *
      * @param directory
      * @return the size in byte of the directory [0] and count of files [1].
      */
@@ -1046,7 +1048,7 @@ public class PathUtils {
 
     /**
      * Zips the file
-     * 
+     *
      * @param file
      *            the file to zip
      * @param zipfile
@@ -1076,7 +1078,7 @@ public class PathUtils {
 
     /**
      * Removes invalid characters from the filename.
-     * 
+     *
      * @param filename
      * @return
      */
@@ -1131,7 +1133,7 @@ public class PathUtils {
 
     /**
      * #2467: Decode URL from filename by substituting chars back.
-     * 
+     *
      * @param filename
      * @return the url
      */
@@ -1158,7 +1160,7 @@ public class PathUtils {
 
     /**
      * Copies a given amount of data from one RandomAccessFile to another.
-     * 
+     *
      * @param in
      *            the file to read the data from
      * @param out
@@ -1185,7 +1187,7 @@ public class PathUtils {
 
     /**
      * Copies a given amount of data from one RandomAccessFile to another.
-     * 
+     *
      * @param in
      *            the inputstream to read the data from
      * @param out
@@ -1215,13 +1217,13 @@ public class PathUtils {
             log.fine("File to open does not exist: " + file.toAbsolutePath().toString());
             return false;
         }
-        
+
         return openFile(file);
     }
-    
+
     /**
      * Execute the file.
-     * 
+     *
      * @param file
      * @return true if suceeded. false if not.
      */
@@ -1261,7 +1263,7 @@ public class PathUtils {
 
     /**
      * Sets file attributes on windows system
-     * 
+     *
      * @param file
      *            the file to change
      * @param hidden
@@ -1284,6 +1286,32 @@ public class PathUtils {
             // No actual change.
             return true;
         }
+        boolean useFallback = false;
+        
+        if (hidden != null) {
+            try {
+                Files.setAttribute(file, "dos:hidden", hidden);
+            } catch (IOException e) {
+                log.warning("Unable to set/unset hidden attribute for " + file
+                    + ". " + e);
+                useFallback = true;
+            }
+        }
+
+        if (system != null) {
+            try {
+                Files.setAttribute(file, "dos:system", system);
+            } catch (IOException e) {
+                log.warning("Unable to set/unset system attribute for " + file
+                    + ". " + e);
+                useFallback = true;
+            }
+        }
+        
+        if (!useFallback) {
+            return true;
+        }
+     
         try {
             String s = "attrib ";
             if (hidden != null) {
@@ -1320,7 +1348,7 @@ public class PathUtils {
 
     /**
      * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
-     * 
+     *
      * @param file
      *            Guess what
      * @param folder
@@ -1333,7 +1361,7 @@ public class PathUtils {
 
     /**
      * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
-     * 
+     *
      * @param relOrAbsfilePath
      *            The relative OR absolute path.
      * @param folder
@@ -1432,7 +1460,7 @@ public class PathUtils {
     /**
      * Does a directory have any files, recursively? This ignores the
      * .PowerFolder dir.
-     * 
+     *
      * @param base
      * @return
      * @throws IllegalArgumentException

@@ -43,7 +43,7 @@ import java.beans.PropertyChangeListener;
  * an external value model. The internal vm tracks the text field changes. The
  * external one is what the public accessor sees. External value does not expose
  * 'hint' text.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilterTextField {
@@ -62,7 +62,7 @@ public class FilterTextField {
 
     /**
      * create a FilterTextField
-     * 
+     *
      * @param columns
      */
     public FilterTextField(int columns, String hint, String tooltip) {
@@ -165,7 +165,7 @@ public class FilterTextField {
 
     /**
      * Returns true if there is external text.
-     * 
+     *
      * @return
      */
     private boolean hasExternalText() {

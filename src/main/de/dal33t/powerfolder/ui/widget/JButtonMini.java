@@ -46,7 +46,7 @@ public class JButtonMini extends JButton {
 
     /**
      * Mini button that is bound to a an action
-     * 
+     *
      * @param action
      */
     public JButtonMini(final Action action) {

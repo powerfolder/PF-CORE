@@ -24,7 +24,7 @@ import java.net.URLEncoder;
 
 /**
  * #2072: Help class to share links on social networks.
- * 
+ *
  * @author sprajc
  */
 public enum SocialNetwork {
@@ -83,7 +83,7 @@ public enum SocialNetwork {
             if (replaceSpace) {
                 link = link.replace(" ", "%20");
             }
-            
+
             String appname = Translation.getTranslation("general.application.name");
             if (StringUtils.isNotBlank(appname)) {
                 link = link.replace("$APPNAME$",
@@ -91,7 +91,7 @@ public enum SocialNetwork {
             } else {
                 link = link.replace("$APPNAME$", "");
             }
-            
+
             return link;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);

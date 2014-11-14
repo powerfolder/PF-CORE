@@ -19,8 +19,8 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.Date;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
@@ -150,7 +150,7 @@ public class DateUtil {
         Calendar cal = new GregorianCalendar();
         Date now = cal.getTime();
         long diff = date.getTime() - now.getTime();
-        return (int) (diff / 1000 / 60);        
+        return (int) (diff / 1000 / 60);
     }
 
     /**
@@ -205,5 +205,19 @@ public class DateUtil {
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
-    
+
+    /**
+     * The LDAP timestamp is defined as the 100-nanosecond-intervals since
+     * January 1, 1601. Unix timestamps are defined as the seconds since January
+     * 1, 1970.
+     * 
+     * @param ldapTimestamp the time in LDAP format
+     * @return the time in unix format
+     */
+    public static long convertLdapToUnix(long ldapTimestamp) {
+        long nsToSec = 10000;
+        long diff1601Till1970 = 11644473600000l;
+
+        return (ldapTimestamp / nsToSec) - diff1601Till1970;
+    }
 }

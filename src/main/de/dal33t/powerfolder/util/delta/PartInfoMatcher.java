@@ -33,10 +33,10 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.RingBuffer;
 
 /**
- * Creates arrays of PartInfos given the algorithms to use and a data set. 
- * 
+ * Creates arrays of PartInfos given the algorithms to use and a data set.
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: 4280 $ 
+ * @version $Revision: 4280 $
  */
 public class PartInfoMatcher extends FilterInputStream {
 	private static final int BUFFER_SIZE = 16384;
@@ -49,13 +49,13 @@ public class PartInfoMatcher extends FilterInputStream {
     private final byte[] dbuf;
 
     private long pos;
-	
+
 	public PartInfoMatcher(InputStream in, RollingChecksum chksum, MessageDigest digester, PartInfo[] partInfos) {
 		super(in);
 		Reject.noNullElements(chksum, digester, partInfos);
 		this.chksum = chksum;
 		this.digester = digester;
-        
+
         rbuf = new RingBuffer(chksum.getFrameSize());
         dbuf = new byte[chksum.getFrameSize()];
         for (PartInfo info: partInfos) {
@@ -91,7 +91,7 @@ public class PartInfoMatcher extends FilterInputStream {
 	        if (lookup != null) {
                 rbuf.peek(dbuf, 0, chksum.getFrameSize());
                 byte[] digest = digester.digest(dbuf);
-                
+
                 for (PartInfo info: lookup) {
                     if (Arrays.equals(digest, info.getDigest())) {
                         MatchInfo retval = new MatchInfo(info, pos - chksum.getFrameSize());
@@ -113,22 +113,22 @@ public class PartInfoMatcher extends FilterInputStream {
         rem = (int) (pos % chksum.getFrameSize());
         if (rem > 0) {
             pos -= rem;
-            
+
             int av = rbuf.available();
             rbuf.peek(dbuf, 0, av);
             digester.update(dbuf, 0, av);
-            
-            
+
+
             rem = chksum.getFrameSize() - rem;
-            
+
             for (int i = 0; i < rem; i++) {
                 chksum.update(0);
                 digester.update((byte) 0);
             }
-            
+
             byte[] digest = digester.digest();
             List<PartInfo> mList = partCache.get(chksum.getValue());
-            
+
             if (mList != null) {
                 for (PartInfo info: mList) {
                     if (Arrays.equals(digest, info.getDigest())) {

@@ -93,7 +93,7 @@ public class TellFriendPanel extends PFWizardPanel {
             .getOSClient().getRegisterURLReferral(), null);
         linkedInLabel = new LinkLabel(getController(), "", linkedInLink);
         linkedInLabel.setIcon(Icons.getIconById(Icons.LINKEDIN_BUTTON));
-        
+
         // TODO Yammer
 
         emailLabel = new ActionLabel(getController(), new AbstractAction("") {
@@ -104,7 +104,7 @@ public class TellFriendPanel extends PFWizardPanel {
         emailLabel.setIcon(Icons.getIconById(Icons.EMAIL_BUTTON));
 
         infoLabel = new LinkLabel(getController(), Translation
-            .getTranslation("pro.wizard.activation.learn_more"), Help
+            .getTranslation("wizard.activation.learn_more"), Help
             .getWikiArticleURL(getController(),
                 WikiLinks.REFERRAL_REWARD_SYSTEM));
         infoLabel.convertToBigLabel();

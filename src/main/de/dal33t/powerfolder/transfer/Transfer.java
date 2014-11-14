@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 /**
  * Abstract version of a Transfer.<BR>
  * Serializable for remembering completed Downloads in DownLoadTableModel.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.14 $
  */
@@ -116,7 +116,7 @@ public abstract class Transfer extends Loggable implements Serializable {
         /**
          * Sets the progress of the current state (0 till 1). Values < 0
          * indicate that no measurement is possible
-         * 
+         *
          * @param progress
          */
         public synchronized void setProgress(double progress) {
@@ -130,7 +130,7 @@ public abstract class Transfer extends Loggable implements Serializable {
         /**
          * Gets the progress of the current state (0 till 1). Values < 0
          * indicate that no measurement is possible
-         * 
+         *
          * @return the progress in percentage or a value < 0 if that's not
          *         possible
          */
@@ -163,7 +163,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Initializes a new Transfer
-     * 
+     *
      * @param transferManager
      * @param file
      * @param partner
@@ -182,7 +182,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     /**
      * Re-initalized the Transfer with the TransferManager. Use this only if you
      * are know what you are doing.
-     * 
+     *
      * @param aTransferManager
      */
     void init(TransferManager aTransferManager) {
@@ -214,7 +214,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * maybe null if loaded from serialized file
-     * 
+     *
      * @return the partner
      */
     public final Member getPartner() {
@@ -226,7 +226,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Sets the parter for this download
-     * 
+     *
      * @param aPartner
      */
     protected final void setPartner(Member aPartner) {
@@ -256,7 +256,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Answers if this transfer has already started
-     * 
+     *
      * @return true if started
      */
     public boolean isStarted() {
@@ -295,7 +295,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Sets the startoffset for this transfer
-     * 
+     *
      * @param startOffset
      */
     protected void setStartOffset(long startOffset) {
@@ -402,7 +402,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Gets the latest transfer problem.
-     * 
+     *
      * @return the latest transfer problem
      */
     public TransferProblem getTransferProblem() {
@@ -411,7 +411,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Sets the latest transfer problem.
-     * 
+     *
      * @param transferProblem
      *            the transfer problem
      */
@@ -421,7 +421,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Gets additional information about the latest transfer problem.
-     * 
+     *
      * @return the latest transfer problem information
      */
     public String getProblemInformation() {
@@ -430,7 +430,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Sets additional information about the latest transfer problem.
-     * 
+     *
      * @param problemInformation
      *            the latest transfer problem information
      */

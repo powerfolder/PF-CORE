@@ -37,7 +37,7 @@ import java.util.Set;
  * is to wrap this map using {@link java.util.Collections#synchronizedMap(Map)}.
  * This class may throw exceptions when accessed by concurrent threads without
  * synchronization.
- * 
+ *
  * @since Commons Collections 3.0
  * @version $Revision: 647116 $ $Date: 2008-04-11 12:23:08 +0100 (Fri, 11 Apr
  *          2008) $
@@ -61,7 +61,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
     /**
      * Create a new CompositeMap which composites all of the Map instances in
      * the argument. It copies the argument array, it does not use it directly.
-     * 
+     *
      * @param composite
      *            the Maps to be composited
      * @throws IllegalArgumentException
@@ -74,7 +74,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
     /**
      * Create a new CompositeMap which composites all of the Map instances in
      * the argument. It copies the argument array, it does not use it directly.
-     * 
+     *
      * @param composite
      *            Maps to be composited
      * @param mutator
@@ -91,7 +91,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
     // -----------------------------------------------------------------------
     /**
      * Specify the MapMutator to be used by mutation operations.
-     * 
+     *
      * @param mutator
      *            the MapMutator to be used for mutation delegation
      */
@@ -101,7 +101,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
 
     /**
      * Add an additional Map to the composite.
-     * 
+     *
      * @param map
      *            the Map to be added to the composite
      * @throws IllegalArgumentException
@@ -137,7 +137,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * The cardinality of each element in the returned {@link Collection} will
      * be equal to the minimum of the cardinality of that element in the two
      * given {@link Collection}s.
-     * 
+     *
      * @param a
      *            the first collection, must not be null
      * @param b
@@ -182,7 +182,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * <p>
      * Only those elements present in the collection will appear as keys in the
      * map.
-     * 
+     *
      * @param coll
      *            the collection to get the cardinality map for, must not be
      *            null
@@ -204,7 +204,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
 
     /**
      * Remove a Map from the composite.
-     * 
+     *
      * @param map
      *            the Map to be removed from the composite
      * @return The removed Map or <code>null</code> if map is not in the
@@ -227,7 +227,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
     // -----------------------------------------------------------------------
     /**
      * Calls <code>clear()</code> on all composited Maps.
-     * 
+     *
      * @throws UnsupportedOperationException
      *             if any of the composited Maps do not support clear()
      */
@@ -243,7 +243,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * contains at a mapping for a key <tt>k</tt> such that
      * <tt>(key==null ? k==null : key.equals(k))</tt>. (There can be at most one
      * such mapping.)
-     * 
+     *
      * @param key
      *            key whose presence in this map is to be tested.
      * @return <tt>true</tt> if this map contains a mapping for the specified
@@ -271,7 +271,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * <tt>(value==null ? v==null : value.equals(v))</tt>. This operation will
      * probably require time linear in the map size for most implementations of
      * the <tt>Map</tt> interface.
-     * 
+     *
      * @param value
      *            value whose presence in this map is to be tested.
      * @return <tt>true</tt> if this map maps one or more keys to the specified
@@ -305,7 +305,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * <p>
      * This implementation returns a <code>CompositeSet</code> which composites
      * the entry sets from all of the composited maps.
-     * 
+     *
      * @see CompositeSet
      * @return a set view of the mappings contained in this map.
      */
@@ -329,7 +329,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * value <tt>v</tt> such that <tt>(key==null ? k==null :
      * key.equals(k))</tt>, then this method returns <tt>v</tt>; otherwise it
      * returns <tt>null</tt>. (There can be at most one such mapping.)
-     * 
+     *
      * @param key
      *            key whose associated value is to be returned.
      * @return the value to which this map maps the specified key, or
@@ -353,7 +353,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
 
     /**
      * Returns <tt>true</tt> if this map contains no key-value mappings.
-     * 
+     *
      * @return <tt>true</tt> if this map contains no key-value mappings.
      */
     public boolean isEmpty() {
@@ -377,7 +377,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * <p>
      * This implementation returns a <code>CompositeSet</code> which composites
      * the key sets from all of the composited maps.
-     * 
+     *
      * @return a set view of the keys contained in this map.
      */
     public Set keySet() {
@@ -395,7 +395,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * is said to contain a mapping for a key <tt>k</tt> if and only if
      * {@link #containsKey(Object) m.containsKey(k)} would return <tt>true</tt>
      * .))
-     * 
+     *
      * @param key
      *            key with which the specified value is to be associated.
      * @param value
@@ -431,7 +431,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * from key <tt>k</tt> to value <tt>v</tt> in the specified map. The
      * behavior of this operation is unspecified if the specified map is
      * modified while the operation is in progress.
-     * 
+     *
      * @param map
      *            Mappings to be stored in this map.
      * @throws UnsupportedOperationException
@@ -467,7 +467,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * <tt>null</tt> with the specified key if the implementation supports
      * <tt>null</tt> values.) The map will not contain a mapping for the
      * specified key once the call returns.
-     * 
+     *
      * @param key
      *            key whose mapping is to be removed from the map.
      * @return previous value associated with specified key, or <tt>null</tt> if
@@ -495,7 +495,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * Returns the number of key-value mappings in this map. If the map contains
      * more than <tt>Integer.MAX_VALUE</tt> elements, returns
      * <tt>Integer.MAX_VALUE</tt>.
-     * 
+     *
      * @return the number of key-value mappings in this map.
      */
     public int size() {
@@ -516,7 +516,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * <tt>Collection.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt> and
      * <tt>clear</tt> operations. It does not support the add or <tt>addAll</tt>
      * operations.
-     * 
+     *
      * @return a collection view of the values contained in this map.
      */
     public Collection values() {
@@ -529,7 +529,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
 
     /**
      * Checks if this Map equals another as per the Map specification.
-     * 
+     *
      * @param obj
      *            the object to compare to
      * @return true if the maps are equal
@@ -561,7 +561,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
     public static interface MapMutator {
         /**
          * Called when adding a new Composited Map results in a key collision.
-         * 
+         *
          * @param composite
          *            the CompositeMap with the collision
          * @param existing
@@ -578,7 +578,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
 
         /**
          * Called when the CompositeMap.put() method is invoked.
-         * 
+         *
          * @param map
          *            the CompositeMap which is being modified
          * @param composited
@@ -609,7 +609,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
 
         /**
          * Called when the CompositeMap.putAll() method is invoked.
-         * 
+         *
          * @param map
          *            the CompositeMap which is being modified
          * @param composited

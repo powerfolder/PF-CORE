@@ -41,7 +41,7 @@ import javax.imageio.stream.ImageInputStream;
 
 /**
  * Class with some convenience methods for image handeling.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.13 $
  */
@@ -68,7 +68,7 @@ public class ImageSupport {
         }
         supportedReadFileTypes.remove(""); // Seems to get added for some
         // reason...
-        
+
         Iterator<ImageWriterSpi> writers = IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
         while (writers.hasNext()) {
             ImageWriterSpi spi = writers.next();
@@ -78,7 +78,7 @@ public class ImageSupport {
 
     /**
      * is there a image reader available for a file with this extension?
-     * 
+     *
      * @param filename
      *            the file to determen if there is a imageReader for.
      * @return true if there is a ImageReader for this type of file.
@@ -94,7 +94,7 @@ public class ImageSupport {
         }
         return false;
     }
-    
+
     /** @param extension the extension to determen if there is an image writer for */
     public static boolean isWriteSupportedImage(String extension) {
         return supportedWriteFileTypes.contains(extension);
@@ -103,7 +103,7 @@ public class ImageSupport {
     /**
      * Get the resolution for an image, note: isReadSupportedImage must be true
      * for this file and file must exists.
-     * 
+     *
      * @param file
      * @return A Dimension holding the width and height of this image
      */
@@ -170,7 +170,7 @@ public class ImageSupport {
             .getImageReadersByFormatName(fileSuffix);
         return readers.next();
     }
-    
+
 
     public static void clearCache() {
         if (lastImage != null) {
@@ -203,7 +203,7 @@ public class ImageSupport {
         lastWidth = width;
         lastHeight = height;
         lastImage = src;
-        lastScalingType = scalingType;        
+        lastScalingType = scalingType;
         try {
             // Get the source Image dimensions
             int srcWidth = src.getWidth(null);

@@ -52,7 +52,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
 
     private JButton deleteButton;
 
-    private JComboBox syncProfilesCombo;
+    private JComboBox<String> syncProfilesCombo;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
     /**
@@ -74,7 +74,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
      * @return
      */
     public String getTitle() {
-        return Translation.getTranslation("dialog.delete_profile.title");
+        return Translation.getTranslation("exp.dialog.delete_profile.title");
     }
 
     /**
@@ -126,7 +126,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
         SyncProfile initialProfile = syncProfileSelectorPanel.getSyncProfile();
 
         // Combo
-        syncProfilesCombo = new JComboBox();
+        syncProfilesCombo = new JComboBox<>();
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
 
             // Don't add the profile being deleted.
@@ -191,7 +191,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
                 // Delete the profile from the SyncProfile cache.
                 SyncProfile.deleteProfile(oldProfile);
 
-                // Finally, update the selector panel combo to remove the 
+                // Finally, update the selector panel combo to remove the
                 // deleted profile from the list.
                 syncProfileSelectorPanel.configureCombo(newProfile);
 

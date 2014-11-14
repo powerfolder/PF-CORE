@@ -29,12 +29,13 @@ import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Ext version of {@link RelayedMessage}
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class RelayedMessageExt extends RelayedMessage implements Externalizable
 {
+    private static final long serialVersionUID = 7437181683027517530L;
     private static final long extVersionUID = 100L;
 
     // For serialization

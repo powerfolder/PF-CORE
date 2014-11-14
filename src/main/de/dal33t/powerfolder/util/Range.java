@@ -23,20 +23,20 @@ import java.io.Serializable;
 
 /**
  * This class represents an interval.
- * 
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision: $
  */
 public final class Range implements Serializable {
 	private static final long serialVersionUID = 100L;
     private final long start, length;
-    
-	
+
+
 	/**
 	 * Creates a range with the given parameters
 	 * @param start the beginning of the range
 	 * @param length the length of the range
-	 * @return a range 
+	 * @return a range
 	 */
 	public static Range getRangeByLength(long start, long length) {
 		return new Range(start, length);
@@ -60,7 +60,7 @@ public final class Range implements Serializable {
 		this.start = start;
 		this.length = length;
 	}
-	
+
 	/**
 	 * @param range
 	 * @return true if the given range is contained within this range
@@ -77,35 +77,35 @@ public final class Range implements Serializable {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * @return the last index contained in this range
 	 */
 	public long getEnd() {
 		return start + length - 1;
 	}
-	
+
 	/**
-	 * @return the length of this range 
+	 * @return the length of this range
 	 */
 	public long getLength() {
 		return length;
 	}
-	
+
 	/**
 	 * @return the first index contained in this range
 	 */
 	public long getStart() {
 		return start;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return (int) ((getStart() * 13) & (getEnd() * 137));
 	}
-	
+
 	/**
-	 * Creates a range which contains only the indices contained in the intersection of this range and the given range. 
+	 * Creates a range which contains only the indices contained in the intersection of this range and the given range.
 	 * @param range the range to intersect with
 	 * @return the intersected range or null if the ranges don't overlap
 	 */

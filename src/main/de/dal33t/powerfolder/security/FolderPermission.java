@@ -24,13 +24,13 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A generic subclass for all permissions that are related to a certain folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public abstract class FolderPermission implements Permission {
     private static final long serialVersionUID = 100L;
-    
+
     public static final String ID_SEPARATOR = "_FP_";
     public static final String PROPERTYNAME_FOLDER = "folder";
 

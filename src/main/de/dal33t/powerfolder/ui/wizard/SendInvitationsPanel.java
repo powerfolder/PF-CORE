@@ -87,13 +87,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JButtonMini removeButton;
     private JTextField viaPowerFolderText;
     private JLabel invalidEmail;
-    private JList inviteesList;
+    private JList<String> inviteesList;
     private JScrollPane inviteesListScrollPane;
-    private DefaultListModel inviteesListModel;
+    private DefaultListModel<String> inviteesListModel;
     private Invitation invitation;
     private JPanel removeButtonPanel;
-    private DefaultComboBoxModel permissionsComboModel;
-    private JComboBox permissionsCombo;
+    private DefaultComboBoxModel<String> permissionsComboModel;
+    private JComboBox<String> permissionsCombo;
 
     public SendInvitationsPanel(Controller controller) {
         super(controller);
@@ -101,7 +101,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     /**
      * Handles the invitation to nodes option.
-     * 
+     *
      * @return true if send otherwise false
      */
     private boolean sendInvitation() {
@@ -140,7 +140,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             } else {
                 invalidEmail.setVisible(true);
                 return false;
-            }            
+            }
             theResult = true;
         }
         for (Object o : inviteesListModel.toArray()) {
@@ -155,7 +155,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     /**
      * Send an invite to a friend. The invitee must be in the list of friends or
      * be a valid email.
-     * 
+     *
      * @param candidates
      * @param invitee
      */
@@ -197,7 +197,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        
+
         Runnable inviteTask = new Runnable() {
             public void run() {
                 if (!sendInvitation()) {
@@ -302,19 +302,20 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         viaPowerFolderText = new JTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
-        
+
         invalidEmail = new JLabel("<html><font color='red'>"+Translation.getTranslation("wizard.send_invitations.invalid_email", LoginUtil.getUsernameText(getController()))+"</font></html>");
         invalidEmail.setVisible(false);
 
-        inviteesListModel = new DefaultListModel();
-        inviteesList = new JList(inviteesListModel);
+        inviteesListModel = new DefaultListModel<>();
+        inviteesList = new JList<>(inviteesListModel);
         inviteesList.getSelectionModel().setSelectionMode(
             ListSelectionModel.SINGLE_SELECTION);
         inviteesList.getSelectionModel().addListSelectionListener(
             new MyListSelectionListener());
 
-        permissionsComboModel = new DefaultComboBoxModel();
-        permissionsCombo = new JComboBox(permissionsComboModel);
+        permissionsComboModel = new DefaultComboBoxModel<>();
+        permissionsCombo = new JComboBox<>(permissionsComboModel);
+
         permissionsComboModel.addElement(FolderPermission.readWrite(folderInfo).getName());
         permissionsComboModel.addElement(FolderPermission.read(folderInfo).getName());
         if (ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController()))

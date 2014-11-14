@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
 /**
  * A Table for displaying the downloads.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
@@ -42,7 +42,7 @@ public class DownloadManagersTable extends JTable {
 
     /**
      * Initalizes
-     * 
+     *
      * @param transferManagerModel
      */
     public DownloadManagersTable(TransferManagerModel transferManagerModel) {

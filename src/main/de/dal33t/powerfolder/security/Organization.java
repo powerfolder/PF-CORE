@@ -55,6 +55,7 @@ public class Organization implements Serializable {
     public static final String FILTER_MATCH_ALL = "/ALL/";
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_NAME = "name";
+    public static final String PROPERTYNAME_LDAPDN = "ldapDN";
     public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_OSS = "osSubscription";
     public static final String PROPERTYNAME_MAX_USERS = "maxUsers";
@@ -69,6 +70,10 @@ public class Organization implements Serializable {
     private String notes;
 
     private int maxUsers;
+
+    @Index(name = "IDX_ORGANIZATION_LDAPDN")
+    @Column(length = 512)
+    private String ldapDN;
 
     @Embedded
     @Fetch(FetchMode.JOIN)
@@ -118,8 +123,20 @@ public class Organization implements Serializable {
         this.maxUsers = maxUsers;
     }
 
+    public void setUnlimitedUsers() {
+        this.maxUsers = UNLIMITED_USERS;
+    }
+
     public boolean hasMaxUsers() {
         return this.maxUsers > 0 && this.maxUsers != UNLIMITED_USERS;
+    }
+
+    public void setLdapDN(String ldapDN) {
+        this.ldapDN = ldapDN;
+    }
+
+    public String getLdapDN() {
+        return ldapDN;
     }
 
     public OnlineStorageSubscription getOSSubscription() {
@@ -136,7 +153,7 @@ public class Organization implements Serializable {
 
     /**
      * Adds a line of info with the current date to the notes of that account.
-     * 
+     *
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {

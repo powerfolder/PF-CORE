@@ -30,11 +30,13 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 /**
  * Message to indicate that the upload can be started. This message is sent by
  * the uploader. The remote side should send PartRequests or PartinfoRequests.
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
 public class StartUploadExt extends StartUpload implements Externalizable {
+    private static final long serialVersionUID = 2241562195221726484L;
+    
     public StartUploadExt() {
         super();
     }

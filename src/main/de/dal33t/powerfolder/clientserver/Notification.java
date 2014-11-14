@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Generic notification to Account / User.
- * 
+ *
  * @author sprajc
  */
 @Entity
@@ -180,7 +180,7 @@ public class Notification implements Serializable {
 
     /**
      * Save get subject. Try i18ned version. Take plain subject if not found.
-     * 
+     *
      * @return the subject
      */
     public String getSubjectI15D() {
@@ -213,7 +213,7 @@ public class Notification implements Serializable {
 
     /**
      * Save get text. Try i18ned version. Take text if not found.
-     * 
+     *
      * @return the subject
      */
     public String getTextI15D() {

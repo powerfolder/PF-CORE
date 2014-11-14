@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -71,7 +72,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * <p>
  * Extracts the settings for the folder from the
  * <code>WizardContextAttributes</code>.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -150,7 +151,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 SEND_INVIATION_AFTER_ATTRIBUTE);
             sendInvitations = false;
             if (attribute != null && attribute instanceof Boolean) {
-                sendInvitations = (Boolean) attribute; 
+                sendInvitations = (Boolean) attribute;
             }
 
             // Either we have FOLDER_CREATE_ITEMS ...
@@ -240,8 +241,10 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                         // folder with the same name. Join instead of creating
                         // duplicates.
                         for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                            // PFC-2562
                             if (onlineFolderInfo.getName().equals(
-                                folderInfo.getName()))
+                                folderInfo.getName())
+                                && !ProUtil.isZyncro(getController()))
                             {
                                 if (!onlineFolderInfo.equals(folderInfo)) {
                                     log.info("Found online folder with same name: "
@@ -309,7 +312,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     if (client.joinedByCloud(folder)) {
                         // Already have this os folder.
                         log.log(Level.WARNING, "Already have os folder "
-                            + folderInfo.name);
+                            + folderInfo.getLocalizedName());
                         continue;
                     }
 
@@ -350,6 +353,13 @@ public class FolderCreatePanel extends SwingWorkerPanel {
 
             Path existingFolder = baseDir.resolve(folderInfo.getLocalizedName());
             if (Files.exists(existingFolder)) {
+                log.finer("Folder is an existing subdirectory in basedir: "
+                    + existingFolder);
+                return;
+            }
+            
+            // PFC-2284:
+            if (folderSettings.getLocalBaseDir().startsWith(baseDir)) {
                 log.finer("Folder is an existing subdirectory in basedir: "
                     + existingFolder);
                 return;

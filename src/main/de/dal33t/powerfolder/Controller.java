@@ -146,9 +146,9 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
 
-    private static final int MAJOR_VERSION = 9;
-    private static final int MINOR_VERSION = 5;
-    private static final int REVISION_VERSION = 189;
+    private static final int MAJOR_VERSION = 10;
+    private static final int MINOR_VERSION = 0;
+    private static final int REVISION_VERSION = 29;
 
     /**
      * Program version.
@@ -691,11 +691,7 @@ public class Controller extends PFComponent {
 
         if (MacUtils.isSupported()) {
             if (isFirstStart()) {
-                try {
-                    MacUtils.getInstance().setPFStartup(true, this);
-                } catch (IOException e) {
-                    logWarning("Unable to setup auto start: " + e);
-                }
+                MacUtils.getInstance().setPFStartup(true, this);
             }
             MacUtils.getInstance().setAppReOpenedListener(this);
         }
@@ -1577,14 +1573,14 @@ public class Controller extends PFComponent {
                         .saveConfig(tempFolderFile, config.getFolders(),
                             distName + " folders config file (v"
                                 + PROGRAM_VERSION + ')');
-                    Files.deleteIfExists(folderFile);
-                    try {
-                        Files.move(tempFolderFile, folderFile);
-                    } catch (IOException e) {
-                        Files.copy(tempFolderFile, folderFile);
-                        Files.delete(tempFolderFile);
-                    }
+                Files.deleteIfExists(folderFile);
+                try {
+                    Files.move(tempFolderFile, folderFile);
+                } catch (IOException e) {
+                    Files.copy(tempFolderFile, folderFile);
+                    Files.delete(tempFolderFile);
                 }
+            }
             }
         } catch (IOException e) {
             // FATAL

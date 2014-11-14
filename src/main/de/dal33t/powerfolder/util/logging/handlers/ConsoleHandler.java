@@ -47,7 +47,7 @@ public class ConsoleHandler extends Handler {
 
     /**
      * Publish a log record to System.out, or System.err if a warning or severe.
-     * 
+     *
      * @param record
      */
     public void publish(LogRecord record) {

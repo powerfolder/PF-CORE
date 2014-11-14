@@ -50,7 +50,7 @@ public class RemoteMassDeletionEvent {
      *              the safe profile switched to
      * @param percentage
      *              true if the deleteFigure is the percentege of files deleted
-     *              false if the deleteFigure is an absolute number 
+     *              false if the deleteFigure is an absolute number
      */
     public RemoteMassDeletionEvent(FolderInfo folderInfo,
         MemberInfo memberInfo, int deleteFigure, SyncProfile oldProfile,

@@ -82,7 +82,7 @@ public class NoticesInformationCard extends InformationCard {
 
     /**
      * Gets the ui component after initializing and building if necessary
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {

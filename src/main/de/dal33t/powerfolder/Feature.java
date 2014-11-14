@@ -43,6 +43,11 @@ public enum Feature {
      * Tries to use the APPDATA directory on Windows systems.
      */
     WINDOWS_MISC_DIR_USE_APP_DATA,
+    
+    /**
+     * PFC-2554: Only sync with other machines if authenticated at server.
+     */
+    P2P_REQUIRES_LOGIN_AT_SERVER,
 
     /**
      * If the nodes of a server clusters should automatically connect.
@@ -108,15 +113,6 @@ public enum Feature {
 
     ZYNCRO_DEBUG(false),
 
-    /**
-     * Organize users into groups
-     */
-    GROUPS(true),
-
-    /**
-     * Multitenancy
-     */
-    ORGANIZATIONS(true),
 
     UI_ENABLED(true),
 

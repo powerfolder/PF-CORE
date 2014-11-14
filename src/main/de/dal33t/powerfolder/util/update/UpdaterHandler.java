@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.util.update;
 
 /**
  * Lister to receive infos
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.27 $
  */
@@ -34,14 +34,14 @@ public interface UpdaterHandler {
 
     /**
      * Should handle a new available release
-     * 
+     *
      * @param event
      */
     void newReleaseAvailable(UpdaterEvent event);
 
     /**
      * If checked and no new release was available.
-     * 
+     *
      * @param event
      */
     void noNewReleaseAvailable(UpdaterEvent event);

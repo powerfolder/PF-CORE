@@ -30,10 +30,10 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 
@@ -126,7 +126,7 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
                 sortMe(FolderProblemComparator.BY_DATE, newSortColumn);
                 break;
             case COL_SOLUTION :
-                sortMe(FolderProblemComparator.BY_WIKI, newSortColumn);
+                sortMe(FolderProblemComparator.BY_SOLUTION, newSortColumn);
                 break;
         }
         return true;
@@ -144,7 +144,7 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
         if (sortAscending) {
             Collections.sort(problems, comparator);
         } else {
-            Collections.sort(problems, new ReverseComparator(comparator));
+            Collections.sort(problems, new ReverseComparator<Problem>(comparator));
         }
 
         modelChanged(new TableModelEvent(this, 0, problems.size() - 1));

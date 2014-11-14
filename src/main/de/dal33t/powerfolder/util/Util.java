@@ -65,7 +65,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Util helper class.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.64 $
  */
@@ -105,7 +105,7 @@ public class Util {
 
     /**
      * Answers if we have the AWT libs available
-     * 
+     *
      * @return
      */
     public static boolean isAwtAvailable() {
@@ -163,7 +163,7 @@ public class Util {
 
     /**
      * Safe-get for null char arrays to String conversion.
-     * 
+     *
      * @param chars
      * @return the chars as string. If the input is null output will be null
      */
@@ -176,7 +176,7 @@ public class Util {
 
     /**
      * Safe-get for null Strings to char array conversion.
-     * 
+     *
      * @param str
      * @return String as char array. If the input is null output will be null
      */
@@ -271,7 +271,7 @@ public class Util {
 
     /**
      * Retrieves the URL to an resource within PF.
-     * 
+     *
      * @param res
      *            the filename of the resource
      * @param altLocation
@@ -373,7 +373,7 @@ public class Util {
 
     /**
      * Creates a desktop shortcut. currently only available on windows systems
-     * 
+     *
      * @param shortcutName
      * @param shortcutTarget
      * @return true if succeeded
@@ -404,7 +404,7 @@ public class Util {
 
     /**
      * Removes a desktop shortcut. currently only available on windows systems
-     * 
+     *
      * @param shortcutName
      * @return true if succeeded
      */
@@ -427,7 +427,7 @@ public class Util {
 
     /**
      * Returns the plain url content as string
-     * 
+     *
      * @param url
      * @return
      */
@@ -435,6 +435,7 @@ public class Util {
         if (url == null) {
             throw new NullPointerException("URL is null");
         }
+        InputStream in = null;
         try {
             Object content = url.getContent();
             if (!(content instanceof InputStream)) {
@@ -442,7 +443,7 @@ public class Util {
                     + ". content is of type " + content.getClass().getName());
                 return null;
             }
-            InputStream in = (InputStream) content;
+            in = (InputStream) content;
 
             StringBuilder buf = new StringBuilder();
             while (in.available() > 0) {
@@ -452,13 +453,21 @@ public class Util {
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Unable to get content from " + url + ". "
                 + e.toString(), e);
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ioe) {
+                // ignore
+            }
         }
         return null;
     }
 
     /**
      * Place a String on the clipboard
-     * 
+     *
      * @param aString
      *            the string to place in the clipboard
      */
@@ -499,7 +508,7 @@ public class Util {
     /**
      * Encodes a url fragment, thus special characters are tranferred into a url
      * compatible style
-     * 
+     *
      * @param aURLFragment
      * @return the string encoded for URL usage.
      */
@@ -519,7 +528,7 @@ public class Util {
      * Removes the last '/' from an URI and trims the string. Example:
      * http://www.powerfolder.com/ gets converted into
      * http://www.powerfolder.com
-     * 
+     *
      * @param uri
      *            the URI to trim and remove last slash from
      * @return the new URI string
@@ -538,7 +547,7 @@ public class Util {
 
     /**
      * compares two ip addresses.
-     * 
+     *
      * @param ip1
      * @param ip2
      * @return true if different, false otherwise.
@@ -556,7 +565,7 @@ public class Util {
     /**
      * Splits an array into a list of smaller arrays with the maximum size of
      * <code>size</code>.
-     * 
+     *
      * @param src
      *            the source array
      * @param size
@@ -587,7 +596,7 @@ public class Util {
 
     /**
      * Merges a list of arrays into one big array.
-     * 
+     *
      * @param arrayList
      *            the list of byte[] arryas.
      * @return the resulting array.
@@ -615,7 +624,7 @@ public class Util {
      * hexidecimal values of each byte in order. The returned array will be
      * double the length of the passed array, as it takes two characters to
      * represent any given byte.
-     * 
+     *
      * @param data
      *            a byte[] to convert to Hex characters
      * @return A char[] containing hexidecimal characters
@@ -639,7 +648,7 @@ public class Util {
     /**
      * Calculates the MD5 digest and returns the value as a 16 element
      * <code>byte[]</code>.
-     * 
+     *
      * @param data
      *            Data to digest
      * @return MD5 digest
@@ -650,7 +659,7 @@ public class Util {
 
     /**
      * Returns a MessageDigest for the given <code>algorithm</code>.
-     * 
+     *
      * @param algorithm
      *            The MessageDigest algorithm name.
      * @return An MD5 digest instance.
@@ -668,7 +677,7 @@ public class Util {
 
     /**
      * Returns an MD5 MessageDigest.
-     * 
+     *
      * @return An MD5 digest instance.
      * @throws RuntimeException
      *             when a {@link java.security.NoSuchAlgorithmException} is
@@ -681,7 +690,7 @@ public class Util {
     /**
      * Checks if a program version is between (including border versions) two
      * versions
-     * 
+     *
      * @param lowVersion
      * @param compareVersion
      * @param highVersion
@@ -705,7 +714,7 @@ public class Util {
      * Comparse two version string which have the format "x.x.x aaa".
      * <p>
      * The last " aaa" is optional.
-     * 
+     *
      * @param higherVersion
      * @param compareVersion
      * @return true if higherVersion is greater than compareVersion
@@ -789,7 +798,7 @@ public class Util {
      * Interprets a string as connection string and returns the address. null is
      * returns if parse failed. Format is expeced as ' <connect ip>' or '
      * <connect ip>: <port>'
-     * 
+     *
      * @param connectStr
      *            The connectStr to parse
      * @return a InetSocketAddress created based on the connecStr
@@ -821,7 +830,7 @@ public class Util {
 
     /**
      * Replace every occurences of a string within a string
-     * 
+     *
      * @param target
      * @param from
      * @param to
@@ -852,7 +861,7 @@ public class Util {
      * <p>
      * 4 should be more suitable value for in-powerfolder us and procudes lesser
      * Segements.
-     * 
+     *
      * @param <K>
      * @param <V>
      * @return the concurrent hashmap
@@ -868,7 +877,7 @@ public class Util {
      * <p>
      * 4 should be more suitable value for in-powerfolder us and procudes lesser
      * Segements.
-     * 
+     *
      * @param <K>
      * @param <V>
      * @param intialSize

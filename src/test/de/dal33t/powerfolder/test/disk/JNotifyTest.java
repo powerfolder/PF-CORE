@@ -171,7 +171,7 @@ public class JNotifyTest extends TestCase {
 
     /**
      * A recursive delete of a directory.
-     * 
+     *
      * @param file
      *            directory to delete
      * @throws IOException

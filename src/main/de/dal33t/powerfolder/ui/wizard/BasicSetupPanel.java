@@ -41,20 +41,20 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.panel.LineSpeedSelectionPanel;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.panel.LineSpeedSelectionPanel;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.8 $
  */
@@ -64,7 +64,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     private ValueModel networkingModeModel;
     private LineSpeedSelectionPanel wanLineSpeed;
     private JTextField nameField;
-    private JComboBox languageChooser;
+    private JComboBox<Locale> languageChooser;
     private DefaultFolderWizardHelper defaultFolderHelper;
     private WizardPanel nextPanel;
 
@@ -87,7 +87,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(
-            Translation.getTranslation("wizard.basic_setup.computer_name"),
+            Translation.getTranslation("exp.wizard.basic_setup.computer_name"),
             cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
         builder.addLabel(
@@ -95,7 +95,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             cc.xywh(1, 3, 1, 1, "default, top"));
         builder.add(wanLineSpeed.getUiComponent(), cc.xy(3, 3));
         builder.addLabel(
-            Translation.getTranslation("wizard.basic_setup.language_restart"),
+            Translation.getTranslation("exp.wizard.basic_setup.language_restart"),
             cc.xy(1, 5));
         builder.add(languageChooser, cc.xy(3, 5));
         builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 7, 2));
@@ -200,7 +200,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.basic_setup.title");
+        return Translation.getTranslation("exp.wizard.basic_setup.title");
     }
 
     // Helper classes *********************************************************
@@ -219,12 +219,12 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     /**
      * Creates a language chooser, which contains the supported locales
-     * 
+     *
      * @return a language chooser, which contains the supported locales
      */
-    private static JComboBox createLanguageChooser() {
+    private static JComboBox<Locale> createLanguageChooser() {
         // Create combobox
-        JComboBox chooser = new JComboBox();
+        JComboBox<Locale> chooser = new JComboBox<>();
         for (Locale locale1 : Translation.getSupportedLocales()) {
             chooser.addItem(locale1);
         }

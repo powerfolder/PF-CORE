@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.util.PathUtils;
 
 /**
  * A Testclass for testing bug conditions on serveral machines
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.7 $
  */
@@ -52,7 +52,7 @@ public class Test {
     public static void main(String[] args) throws IOException {
         Test test = new Test();
         log.info("------------- Starting tests ----------------------------------");
-        
+
         test.testWebStartMime();
         log.info("---------------------------------------------------------------");
 

@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Simple mechanism to generate a unique id in space and time
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -37,7 +37,7 @@ public class IdGenerator {
      * Generates a randomly unique, base58 encoded id for a UUID. The UUID is
      * 128 bits (16 bytes) strong. String does NOT contain any special
      * characters NOR url incompatible chars.
-     * 
+     *
      * @see UUID
      * @return the base58 encoded uuid
      */
@@ -47,19 +47,32 @@ public class IdGenerator {
         return PathUtils.removeInvalidFilenameChars(
             id.substring(0, id.length() - 2)).replace("+", "");
     }
-    
+
 
     /**
      * Generates a randomly unique, base58 encoded id for a UUID. The UUID is
      * 128 bits (16 bytes) strong. String does NOT contain any special
      * characters NOR url incompatible chars.
-     * 
+     *
      * @see UUID
      * @return the base58 encoded uuid
      */
     public static String makeFolderId() {
         // Version 2 of folder IDs
         return "2" + makeId();
+    }
+    
+    /**
+     * Generates a randomly unique, base58 encoded id for a UUID. The UUID is
+     * 128 bits (16 bytes) strong. String does NOT contain any special
+     * characters NOR url incompatible chars.
+     *
+     * @see UUID
+     * @return the base58 encoded uuid
+     */
+    public static String makeFileId() {
+        // Version 2 of File IDs
+        return "1" + makeId();
     }
 
     /**
@@ -103,7 +116,7 @@ public class IdGenerator {
     /**
      * Calculates the MD5 digest and returns the value as a 16 element
      * <code>byte[]</code>.
-     * 
+     *
      * @param data
      *            Data to digest
      * @return MD5 digest
@@ -114,7 +127,7 @@ public class IdGenerator {
 
     /**
      * Returns a MessageDigest for the given <code>algorithm</code>.
-     * 
+     *
      * @param algorithm
      *            The MessageDigest algorithm name.
      * @return An MD5 digest instance.
@@ -132,7 +145,7 @@ public class IdGenerator {
 
     /**
      * Returns an MD5 MessageDigest.
-     * 
+     *
      * @return An MD5 digest instance.
      * @throws RuntimeException
      *             when a {@link java.security.NoSuchAlgorithmException} is

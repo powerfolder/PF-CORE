@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 /**
  * General Exception for folder
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
@@ -41,11 +41,11 @@ public class FolderException extends Exception implements Serializable {
 
     private static final Logger log = Logger.getLogger(FolderException.class.getName());
     private static final long serialVersionUID = 100L;
-    
+
     public FolderInfo fInfo;
 
     /**
-     * 
+     *
      */
     public FolderException() {
         super();
@@ -77,14 +77,14 @@ public class FolderException extends Exception implements Serializable {
     public String getMessage() {
         String prefix = "";
         if (fInfo != null) {
-            prefix = "Folder '" + fInfo.name + "': ";
+            prefix = "Folder '" + fInfo.getLocalizedName() + "': ";
         }
         return prefix + super.getMessage();
     }
 
     /**
      * Shows this error to the user if ui open
-     * 
+     *
      * @param controller
      */
     public void show(Controller controller) {
@@ -93,7 +93,7 @@ public class FolderException extends Exception implements Serializable {
 
     /**
      * Shows this error to the user if ui open
-     * 
+     *
      * @param controller
      * @param additonalText
      *            the additional text which is displayed
@@ -109,9 +109,9 @@ public class FolderException extends Exception implements Serializable {
                             + additonalText : "";
                     DialogFactory.genericDialog(controller,
                             Translation.getTranslation("folder_exception.dialog.title",
-                                    fInfo == null ? "null" : fInfo.name),
+                                    fInfo == null ? "null" : fInfo.getLocalizedName()),
                             Translation.getTranslation("folder_exception.dialog.text",
-                                    fInfo == null ? "null" : fInfo.name,
+                                    fInfo == null ? "null" : fInfo.getLocalizedName(),
                                     FolderException.super.getMessage()) + addText,
                             controller.isVerbose(), FolderException.this);
                 }

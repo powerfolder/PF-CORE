@@ -1,39 +1,39 @@
 /*******************************************************************************
  * JNotify - Allow java applications to register to File system events.
- * 
+ *
  * Copyright (C) 2005 - Content Objects
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  ******************************************************************************
- * 
+ *
  * You may also redistribute and/or modify this library under the terms of the
  * Eclipse Public License. See epl.html.
- * 
+ *
  ******************************************************************************
  *
  * Content Objects, Inc., hereby disclaims all copyright interest in the
  * library `JNotify' (a Java library for file system events).
- * 
+ *
  * Yahali Sherman, 21 November 2005
  *    Content Objects, VP R&D.
- * 
+ *
  ******************************************************************************
  * Author : Omry Yadan
  ******************************************************************************/
- 
+
 package net.contentobjects.jnotify.linux;
 
 import net.contentobjects.jnotify.JNotifyException;
@@ -43,7 +43,7 @@ public class JNotify_linux
 {
 	static final boolean DEBUG = false;
 	public static boolean WARN = true;
-	
+
 	static
 	{
 	    OSUtil.loadLibrary(JNotify_linux.class, "jnotify");
@@ -55,7 +55,7 @@ public class JNotify_linux
 		}
 		init();
 	}
-	
+
 	/* the following are legal, implemented events that user-space can watch for */
 	public final static int IN_ACCESS = 0x00000001; /* File was accessed */
 	public final static int IN_MODIFY = 0x00000002; /* File was modified */
@@ -93,21 +93,21 @@ public class JNotify_linux
 	 */
 	public final static int IN_ALL_EVENT = (IN_ACCESS | IN_MODIFY | IN_ATTRIB | IN_CLOSE_WRITE
 			| IN_CLOSE_NOWRITE | IN_OPEN | IN_MOVED_FROM | IN_MOVED_TO | IN_DELETE | IN_CREATE | IN_DELETE_SELF);
-	
-	
+
+
 	private static INotifyListener _notifyListener;
 
 	private static native int nativeInit();
-	
+
 	private static native int nativeAddWatch(String path, int mask);
 
 	private static native int nativeRemoveWatch(int wd);
-	
+
 	private native static int nativeNotifyLoop();
-	
+
 	private static native String getErrorDesc(long errorCode);
-	
-	
+
+
 	public static int addWatch(String path, int mask) throws JNotifyException
 	{
 		int wd = nativeAddWatch(path, mask);
@@ -115,9 +115,9 @@ public class JNotify_linux
 		{
 			throw new JNotifyException_linux("Error watching " + path + " : " + getErrorDesc(-wd), -wd);
 		}
-		
+
 		debug(wd + " = JNotify_linux.addWatch("+ path + "," + getMaskDesc(mask)+ ")");
-		
+
 		return wd;
 	}
 
@@ -130,7 +130,7 @@ public class JNotify_linux
 			throw new JNotifyException_linux("Error removing watch " + wd, ret);
 		}
 	}
-	
+
 	private static void init()
 	{
 		Thread thread = new Thread("INotify thread")
@@ -143,12 +143,12 @@ public class JNotify_linux
 		thread.setDaemon(true);
 		thread.start();
 	}
-	
-	
+
+
 	static void callbackProcessEvent(String name, int wd, int mask, int cookie)
 	{
 		debug("JNotify.event(name=" + name + ", wd="+ wd+", " + getMaskDesc(mask)+ (cookie != 0 ? ", cookie=" +cookie : "" )+ ")");
-		
+
 		if (_notifyListener != null)
 		{
 			_notifyListener.notify(name, wd, mask, cookie);
@@ -166,7 +166,7 @@ public class JNotify_linux
 			throw new RuntimeException("Notify listener is already set. multiple notify listeners are not supported.");
 		}
 	}
-	
+
 	private static String getMaskDesc(int linuxMask)
 	{
 		boolean lIN_ACCESS = (linuxMask & JNotify_linux.IN_ACCESS) != 0;
@@ -203,7 +203,7 @@ public class JNotify_linux
 		return s;
 	}
 
-	
+
 	static void debug(String msg)
 	{
 		if (DEBUG)
@@ -220,5 +220,5 @@ public class JNotify_linux
 		}
 	}
 
-	
+
 }

@@ -19,36 +19,40 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.SwingWorker;
+
+import jwf.WizardPanel;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.table.MultiFileRestoreTable;
 import de.dal33t.powerfolder.ui.wizard.table.MultiFileRestoreTableModel;
-import de.dal33t.powerfolder.light.FileInfo;
-
-import javax.swing.*;
-
-import jwf.WizardPanel;
-
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.awt.*;
-
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.PanelBuilder;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Call this class via PFWizard.
  */
 public class MultiFileRestorePanel extends PFWizardPanel {
 
-    private final Folder folder;
     private final List<FileInfo> fileInfosToRestore;
     private final JLabel infoLabel;
     private final JLabel warningLabel;
@@ -59,9 +63,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private SwingWorker<List<FileInfo>, FileInfo> worker;
     private MultiFileRestoreTableModel tableModel = new MultiFileRestoreTableModel(getController());
 
-    public MultiFileRestorePanel(Controller controller, Folder folder, List<FileInfo> fileInfosToRestore) {
+    public MultiFileRestorePanel(Controller controller, List<FileInfo> fileInfosToRestore) {
         super(controller);
-        this.folder = folder;
         this.fileInfosToRestore = fileInfosToRestore;
         infoLabel = new JLabel();
         warningLabel = new JLabel();
@@ -125,7 +128,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return new FileRestoringPanel(getController(), folder, tableModel.getFileInfos());
+        return new FileRestoringPanel(getController(), tableModel.getFileInfos());
     }
 
     // ////////////////
@@ -140,26 +143,30 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             bar.setIndeterminate(true);
             bar.setValue(0);
             warningLabel.setText("");
-            
+
             List<FileInfo> versions = new ArrayList<FileInfo>(fileInfosToRestore.size());
             try {
-
-                // Also try getting versions from OnlineStorage.
-                boolean online = folder.hasMember(getController().getOSClient().getServer());
-                FolderService folderService = null;
-                if (online) {
-                    ServerClient client = getController().getOSClient();
-                    if (client != null && client.isConnected() && client.isLoggedIn())
-                    {
-                        folderService = client.getFolderService();
-                    }
-                }
 
                 List<FileInfo> fileInfos = new ArrayList<FileInfo>();
                 fileInfos.addAll(fileInfosToRestore);
 
-                FileArchiver fileArchiver = folder.getFileArchiver();
                 for (FileInfo fileInfo : fileInfos) {
+                    Folder fo = fileInfo.getFolder(getController().getFolderRepository());
+                    if (fo == null) {
+                        continue;
+                    }
+                    // Also try getting versions from OnlineStorage.
+                    boolean online = fo.hasMember(getController().getOSClient().getServer());
+                    FolderService folderService = null;
+                    if (online) {
+                        ServerClient client = getController().getOSClient();
+                        if (client != null && client.isConnected() && client.isLoggedIn())
+                        {
+                            folderService = client.getFolderService();
+                        }
+                    }
+
+                    FileArchiver fileArchiver = fo.getFileArchiver();
 
                     if (isCancelled()) {
                         return Collections.emptyList();
@@ -216,7 +223,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             } else {
                 bar.setIndeterminate(false);
                 bar.setValue(100 * fileInfosProcessed / fileInfosToRestore.size());
-                infoLabel.setText(Translation.getTranslation("general.processed", String.valueOf(fileInfosProcessed), 
+                infoLabel.setText(Translation.getTranslation("general.processed", String.valueOf(fileInfosProcessed),
                         String.valueOf(fileInfosToRestore.size())));
             }
         }

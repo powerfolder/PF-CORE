@@ -10,17 +10,17 @@ public class NamespaceResolver implements NamespaceContext {
 
 	private Map<String, String> prefixMap;
 	private Map<String, String> uriMap;
-	
+
 	public NamespaceResolver() {
 		prefixMap = new HashMap<String, String>();
 		uriMap = new HashMap<String, String>();
 	}
-	
+
 	public void addNamespace(String prefix, String uri) {
 		prefixMap.put(prefix, uri);
 		uriMap.put(uri, prefix);
 	}
-	
+
 	@Override
 	public String getNamespaceURI(String prefix) {
 		return prefixMap.get(prefix);

@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Utility to get information about Pro stuff.
- * 
+ *
  * @author sprajc
  */
 public class ProUtil {
@@ -39,10 +39,10 @@ public class ProUtil {
 
     private ProUtil() {
     }
-    
+
     /**
      * Remove this hack.
-     * 
+     *
      * @param controller
      * @return
      */
@@ -55,7 +55,7 @@ public class ProUtil {
         return controller.getDistribution().getBinaryName().toLowerCase().trim().contains("switchdata")
             || controller.getDistribution().getName().toLowerCase().trim().contains("switchdata");
     }
-    
+
     public static final boolean isServerConfig(Controller controller) {
         return controller.getConfig().get("plugin.server.maintenancefolderid") != null;
     }
@@ -141,7 +141,7 @@ public class ProUtil {
 
     /**
      * Adds a key for a node to the keystore if the key is new.
-     * 
+     *
      * @param controller
      * @param node
      * @param key

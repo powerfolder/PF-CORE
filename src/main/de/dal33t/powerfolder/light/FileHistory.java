@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * Represents the history of a file. To prevent side effects, subclasses should
  * be immutable.
- * 
+ *
  * @author Dennis Waldherr
  * @author Christian Sprajc
  */
@@ -59,7 +59,7 @@ public class FileHistory implements Serializable {
 
         /**
          * Returns the most recent FileInfo of this FileHistory.
-         * 
+         *
          * @return
          */
         public FileInfo getLocalFileInfo() {
@@ -68,7 +68,7 @@ public class FileHistory implements Serializable {
 
         /**
          * Returns the most recent FileInfo of the other FileHistory.
-         * 
+         *
          * @return
          */
         public FileInfo getOtherFileInfo() {
@@ -78,7 +78,7 @@ public class FileHistory implements Serializable {
         /**
          * Returns the FileInfo ancestor common to both, the local and the
          * remote, FileInfos.
-         * 
+         *
          * @return a common ancestor FileInfo or null if there isn't one
          */
         public FileInfo getAncestorFileInfo() {
@@ -190,7 +190,7 @@ public class FileHistory implements Serializable {
      * conflict happens if both histories have a common VersionedFile which is
      * not the most recent version for any of the histories or if they do not
      * have a common ancestor.
-     * 
+     *
      * @param other
      *            another history
      * @return a {@link Conflict} or null if none was detected
@@ -219,7 +219,7 @@ public class FileHistory implements Serializable {
 
     /**
      * Adds a new version to the history and replaces the most recent file.
-     * 
+     *
      * @param newFileInfo
      *            the file version to add
      * @return a new FileHistory with the given fileInfo as the most recent
@@ -246,7 +246,7 @@ public class FileHistory implements Serializable {
     /**
      * Returns the most recent file version that is shared by this history and
      * the given one.
-     * 
+     *
      * @param other
      * @return null, if the given history has no common ancestor with this
      *         history
@@ -266,7 +266,7 @@ public class FileHistory implements Serializable {
 
     /**
      * Returns true, if the given FileHistory is same as this one.
-     * 
+     *
      * @param other
      * @return
      */

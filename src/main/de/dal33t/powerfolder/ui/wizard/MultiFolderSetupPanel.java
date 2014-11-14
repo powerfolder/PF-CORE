@@ -59,15 +59,15 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class to do folder creations for optional specified FolderCreateItems.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
 public class MultiFolderSetupPanel extends PFWizardPanel {
 
     private List<FolderCreateItem> folderCreateItems;
-    private JComboBox localBaseCombo;
-    private DefaultComboBoxModel localBaseComboModel;
+    private JComboBox<String> localBaseCombo;
+    private DefaultComboBoxModel<String> localBaseComboModel;
 
     private FolderCreateItem selectedItem;
     private ValueModel versionsModel;
@@ -79,7 +79,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public MultiFolderSetupPanel(Controller controller) {
@@ -98,8 +98,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         // Check that all folders have names.
         for (FolderCreateItem folderCreateItem : folderCreateItems) {
-            if (folderCreateItem.getFolderInfo().name == null
-                || folderCreateItem.getFolderInfo().name.length() == 0)
+            if (folderCreateItem.getFolderInfo().getName() == null
+                || folderCreateItem.getFolderInfo().getName().length() == 0)
             {
                 DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("wizard.multi_folder_setup.no_name.title"),
@@ -170,8 +170,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         folderCreateItems = new ArrayList<FolderCreateItem>();
 
-        localBaseComboModel = new DefaultComboBoxModel();
-        localBaseCombo = new JComboBox(localBaseComboModel);
+        localBaseComboModel = new DefaultComboBoxModel<>();
+        localBaseCombo = new JComboBox<>(localBaseComboModel);
 
         nameField = new JTextField();
         nameField.addKeyListener(myKeyListener);
@@ -225,7 +225,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
             if (item.getLocalBase().toAbsolutePath().toString().equals(dirName)) {
                 selectedItem = item;
                 FolderInfo folderInfo = item.getFolderInfo();
-                nameField.setText(folderInfo.name);
+                nameField.setText(folderInfo.getName());
                 SyncProfile profile = item.getSyncProfile();
                 if (profile == null) {
                     profile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
@@ -238,7 +238,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     /**
      * Create folder info now if none exists, and assign to item.
-     * 
+     *
      * @param item
      */
     private static void createFolderInfo(FolderCreateItem item) {

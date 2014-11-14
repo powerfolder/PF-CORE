@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests if both instance join the same folder by folder id
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -128,9 +128,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 testFolder = createRandomFolder("r-" + (i + 1));
             }
             Path folderDirBart = TESTFOLDER_BASEDIR_BART
-                .resolve(testFolder.name);
+                .resolve(testFolder.getName());
             Path folderDirLisa = TESTFOLDER_BASEDIR_LISA
-                .resolve(testFolder.name);
+                .resolve(testFolder.getName());
             System.err.println("Joining folder: " + testFolder);
             // joinFolder(testFolder, folderDirBart, folderDirLisa);
 
@@ -196,7 +196,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * Test the download starting after joined a folder with auto-download.
      * <p>
      * Trac #19
-     * 
+     *
      * @throws FolderException
      * @throws IOException
      */
@@ -240,7 +240,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * Test the download starting after joined a folder with auto-download.
      * <p>
      * Trac #19
-     * 
+     *
      * @throws FolderException
      * @throws IOException
      */

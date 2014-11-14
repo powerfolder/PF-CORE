@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Task to create a folder on the server.
- * 
+ *
  * @author sprajc
  */
 public class CreateFolderOnServerTask extends ServerRemoteCallTask {
@@ -52,7 +52,7 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
 
     /**
      * No issuer. Creates folder as soon as possible as any user.
-     * 
+     *
      * @param foInfo
      * @param syncProfile
      *            the syncprofile to use or null to take servers default.

@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.clientserver;
 
 /**
- * 
+ *
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public class RegisterFailedException extends Exception {

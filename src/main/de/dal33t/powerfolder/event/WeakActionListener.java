@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
  * For weak property change listeners. Unregisteres itself once a
  * actionPerformed is fired and the listener has been GCed. Make sure that
  * <code>source</code> implements the method #removeActionListener
- * 
+ *
  * @author sprajc
  */
 public class WeakActionListener implements ActionListener {

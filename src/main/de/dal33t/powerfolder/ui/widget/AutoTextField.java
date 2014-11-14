@@ -42,7 +42,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Constructor
-     * 
+     *
      * @param list
      */
     public AutoTextField(List<String> list) {
@@ -54,7 +54,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Try to match against an item in the list.
-     * 
+     *
      * @param text
      * @return
      */
@@ -72,7 +72,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Replace the items in the value list.
-     * 
+     *
      * @param list
      */
     public void setDataList(List<String> list) {
@@ -84,7 +84,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Replace a section in the text.
-     * 
+     *
      * @param content
      */
     public void replaceSelection(String content) {

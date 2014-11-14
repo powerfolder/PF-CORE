@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.util;
 
 /**
  * A pair class.
- * 
+ *
  * @author sprajc
  * @param <A>
  * @param <B>

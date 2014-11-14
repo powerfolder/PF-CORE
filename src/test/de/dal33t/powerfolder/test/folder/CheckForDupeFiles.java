@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Test for Trac-#232
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.1 $
  */

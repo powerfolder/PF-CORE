@@ -35,21 +35,21 @@ import com.jgoodies.binding.list.ObservableList;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * A table model which contains the search result.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
@@ -67,18 +67,18 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     private Comparator[] columComparators = new Comparator[COLUMN_NAMES.length];
     private boolean sortAscending;
     private int sortColumn;
-    private Comparator comparator;
+    private Comparator<Member> comparator;
 
     private static final String[] COLUMN_NAMES = {
-        Translation.getTranslation("friend_search.node_table.name"),
-        Translation.getTranslation("friend_search.node_table.account"),
-        Translation.getTranslation("friend_search.node_table.last_seen_online"),
-        Translation.getTranslation("friend_search.node_table.ip"),
-        Translation.getTranslation("friend_search.node_table.on_local_network")};
+        Translation.getTranslation("exp.friend_search.node_table.name"),
+        Translation.getTranslation("exp.friend_search.node_table.account"),
+        Translation.getTranslation("exp.friend_search.node_table.last_seen_online"),
+        Translation.getTranslation("exp.friend_search.node_table.ip"),
+        Translation.getTranslation("exp.friend_search.node_table.on_local_network")};
 
     /**
      * Initalizes the node table model which contains user/nodes
-     * 
+     *
      * @param controller
      */
     public SearchNodeTableModel(Controller controller) {
@@ -124,7 +124,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
                     Collections.sort(members, comparator);
                 } else {
                     Collections
-                        .sort(members, new ReverseComparator(comparator));
+                        .sort(members, new ReverseComparator<Member>(comparator));
                 }
             }
             fireModelChanged();
@@ -135,7 +135,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
 
     /**
      * Sorts the model by a column
-     * 
+     *
      * @param columnIndex
      * @return if the model was sorted freshly
      */
@@ -163,12 +163,12 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     /**
      * Re-sorts the folder list with the new comparator only if comparator
      * differs from old one
-     * 
+     *
      * @param newComparator
      * @return if the table was freshly sorted
      */
-    private boolean sortBy(Comparator newComparator) {
-        Comparator oldComparator = comparator;
+    private boolean sortBy(Comparator<Member> newComparator) {
+        Comparator<Member> oldComparator = comparator;
         comparator = newComparator;
         if (!Util.equals(oldComparator, newComparator)) {
             return sort();
@@ -202,7 +202,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     /**
      * Returns the listmodel containing the nodes of the tablemodel. Changes in
      * the model will be reflected in the list.
-     * 
+     *
      * @return the listmodel containing the nodes.
      */
     public ObservableList<Member> getListModel() {

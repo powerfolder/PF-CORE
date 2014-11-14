@@ -29,7 +29,7 @@ import java.util.TimerTask;
 
 /**
  * abstract class with commons for filtering, holds a searchField (ValueModel)
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */

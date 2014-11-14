@@ -65,6 +65,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.liferay.nativity.control.NativityControl;
+import com.liferay.nativity.control.NativityControlUtil;
+import com.liferay.nativity.modules.contextmenu.ContextMenuControlUtil;
+import com.liferay.nativity.modules.fileicon.FileIconControlUtil;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -96,10 +100,12 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.skin.Skin;
+import de.dal33t.powerfolder.ui.contextmenu.ContextMenuHandler;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.PauseDialog;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
+import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayHandler;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.BoundPermission;
@@ -159,6 +165,7 @@ public class UIController extends PFComponent {
     private boolean started;
     private SplashScreen splash;
     private TrayIconManager trayIconManager;
+    private IconOverlayHandler iconOverlayHandler;
     private MainFrame mainFrame;
     private SystemMonitorFrame systemMonitorFrame;
     private final InformationFrame informationFrame;
@@ -337,6 +344,30 @@ public class UIController extends PFComponent {
             mainFrame.getUIComponent().setDefaultCloseOperation(
                 JFrame.EXIT_ON_CLOSE);
         }
+
+        // PFC-2395: Start
+        try {
+            NativityControl nc = NativityControlUtil.getNativityControl();
+            if (!nc.connect()) {
+                logWarning("Could not initialize shell extensions!");
+                nc.disconnect();
+            } else {
+                if (PreferencesEntry.ENABLE_CONTEXT_MENU
+                    .getValueBoolean(getController()))
+                {
+                    ContextMenuControlUtil.getContextMenuControl(nc,
+                        new ContextMenuHandler(getController()));
+                }
+    
+                iconOverlayHandler = new IconOverlayHandler(getController());
+                FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
+                    .enableFileIcons();
+                iconOverlayHandler.start();
+            }
+        } catch (RuntimeException re) {
+            logWarning("Context or file icons could not be loaded. " + re);
+        }
+        // PFC-2395: End
 
         if (getController().isStartMinimized() || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
             logInfo("Starting minimized");
@@ -1041,6 +1072,10 @@ public class UIController extends PFComponent {
             if (OSUtil.isSystraySupported() && trayIconManager != null) {
                 SystemTray.getSystemTray()
                     .remove(trayIconManager.getTrayIcon());
+            }
+
+            if (iconOverlayHandler != null) {
+                iconOverlayHandler.stop();
             }
         }
 

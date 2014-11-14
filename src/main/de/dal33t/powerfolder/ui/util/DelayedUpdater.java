@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Many events:
  * <p>
  * -----E--E-E--E---U--E--E----E---U--
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -69,7 +69,7 @@ public class DelayedUpdater {
 
     /**
      * Constructs a delayed execution in 250ms. Uses shared timer from Controller.
-     * 
+     *
      * @param controller
      */
     public DelayedUpdater(Controller controller) {
@@ -78,7 +78,7 @@ public class DelayedUpdater {
 
     /**
      * Constructs a delayed execution. Uses shared timer from Controller.
-     * 
+     *
      * @param controller
      * @param delay
      *            the delay to use
@@ -100,7 +100,7 @@ public class DelayedUpdater {
     /**
      * Schedules a task to be performed in EDT thread after a given time. If a
      * former update has not been processed yet the old task gets canceled.
-     * 
+     *
      * @param task
      */
     public synchronized void schedule(Runnable task) {

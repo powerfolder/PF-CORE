@@ -138,8 +138,10 @@ public class Account implements Serializable {
     private boolean proUser;
 
     @Column(length = 256)
+    @Index(name = "IDX_ACC_FIRSTNAME")
     private String firstname;
     @Column(length = 255)
+    @Index(name = "IDX_ACC_SURNAME")
     private String surname;
     @Column(length = 255)
     private String telephone;
@@ -801,6 +803,21 @@ public class Account implements Serializable {
         return Collections.unmodifiableCollection(groups);
     }
 
+    /**
+     * @return all groups that were synchronized via LDAP/AD
+     */
+    public Collection<Group> getLdapGroups() {
+        Collection<Group> ldapGroups = new ArrayList<>();
+
+        for (Group g : groups) {
+            if (StringUtils.isNotBlank(g.getLdapDN())) {
+                ldapGroups.add(g);
+            }
+        }
+
+        return ldapGroups;
+    }
+
     public void addLicenseKeyFile(String filename) {
         if (licenseKeyFileList.contains(filename)) {
             return;
@@ -909,6 +926,14 @@ public class Account implements Serializable {
         // Set the Organization OID if this is account is not yet in an Organization
         if (StringUtils.isBlank(this.organizationOID)) {
             this.organizationOID = account.organizationOID;
+        }
+
+        if (StringUtils.isBlank(ldapDN)) {
+            this.ldapDN = account.ldapDN;
+        }
+
+        if (StringUtils.isBlank(shibbolethPersistentID)) {
+            this.shibbolethPersistentID = account.shibbolethPersistentID;
         }
 
         // Add permissions

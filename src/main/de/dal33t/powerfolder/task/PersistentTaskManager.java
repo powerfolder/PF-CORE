@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.PFComponent;
  * working properly. (In an older revision they actually are killed after a
  * certain amount of time. I removed it because those tasks represent real
  * "faulty" implementations which need to be fixed.)
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision$
  */
@@ -63,7 +63,7 @@ public class PersistentTaskManager extends PFComponent {
 
     /**
      * Returns the file which represents the persistent store of tasks.
-     * 
+     *
      * @return the tasklist-file
      */
     private Path getTaskFile() {
@@ -173,7 +173,7 @@ public class PersistentTaskManager extends PFComponent {
     /**
      * Schedules a new task. The given task will be started as soon as possible
      * by the shared ThreadPool of the Controller class.
-     * 
+     *
      * @param task
      *            the task to start
      */
@@ -206,7 +206,7 @@ public class PersistentTaskManager extends PFComponent {
     /**
      * Shuts down and removes a given task. This method will block until all
      * tasks are properly initialized before removing the given task.
-     * 
+     *
      * @param task
      *            the task to remove
      */
@@ -246,7 +246,7 @@ public class PersistentTaskManager extends PFComponent {
 
     /**
      * Returns if there are any pending tasks.
-     * 
+     *
      * @return true if there are 1 or more active tasks
      */
     public synchronized boolean hasTasks() {
@@ -255,7 +255,7 @@ public class PersistentTaskManager extends PFComponent {
 
     /**
      * Returns the number of active tasks
-     * 
+     *
      * @return the active task count
      */
     public synchronized int activeTaskCount() {
@@ -265,7 +265,7 @@ public class PersistentTaskManager extends PFComponent {
     /**
      * Required to solve TRAC #1124. Nicer API method would be:
      * hasPendingMessagesTo(MemberInfo);
-     * 
+     *
      * @return if there are pending messages to be sent.
      */
     public synchronized boolean hasSendMessageTask() {

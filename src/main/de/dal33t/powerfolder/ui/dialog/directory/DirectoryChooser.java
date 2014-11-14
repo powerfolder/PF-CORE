@@ -91,7 +91,7 @@ public class DirectoryChooser extends BaseDialog {
 
     /**
      * Constructor.
-     * 
+     *
      * @param controller
      *            for super class
      * @param initialValue
@@ -131,7 +131,7 @@ public class DirectoryChooser extends BaseDialog {
 
     /**
      * ok and cancel buttons.
-     * 
+     *
      * @return
      */
     protected Component getButtonBar() {
@@ -220,7 +220,7 @@ public class DirectoryChooser extends BaseDialog {
     /**
      * Main content area. Shows a tree of the local file system and currently
      * selected path and new directory button.
-     * 
+     *
      * @return
      */
     private JComponent getContent0() {
@@ -282,7 +282,7 @@ public class DirectoryChooser extends BaseDialog {
 
     /**
      * Return an icon for dialog.
-     * 
+     *
      * @return
      */
     protected Icon getIcon() {
@@ -291,7 +291,7 @@ public class DirectoryChooser extends BaseDialog {
 
     /**
      * The page title
-     * 
+     *
      * @return
      */
     public String getTitle() {
@@ -472,7 +472,7 @@ public class DirectoryChooser extends BaseDialog {
 
         /**
          * Just fire the newDirectoryAction().
-         * 
+         *
          * @param e
          */
         public void actionPerformed(ActionEvent e) {

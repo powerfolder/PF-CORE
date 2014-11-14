@@ -160,8 +160,9 @@ For creation of the installer:
 			<include name="synthetica/synthetica.jar" />
 			<include name="synthetica/syntheticaAddons.jar" />
 
-			<include name="bcprov-jdk15-1.44.jar" />
-			
+			<include name="bcprov-jdk15on-151.jar" />
+			<include name="bcpkix-jdk15on-151.jar" />
+
 			<!-- Shibboleth/ECP -->
             <include name="httpclient-4.3.5.jar" />
 			<include name="httpclient-cache-4.3.5.jar" />			
@@ -170,12 +171,15 @@ For creation of the installer:
             <include name="httpcore-4.3.2.jar" />
             <include name="commons-logging-1.1.3.jar" />
 			<include name="json-20090306.jar" />
+
+			<!-- ContextMenu and IconOverlay -->
+			<include name="liferay-nativity-1.0.2.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
 			<include name="jmock/cglib-nodep-2.1_3.jar" />
-			<include name="jmock/hamcrest-core-1.1.jar" />
-			<include name="jmock/hamcrest-library-1.1.jar" />
+			<include name="jmock/hamcrest-core-1.3.jar" />
+			<include name="jmock/hamcrest-library-1.3.jar" />
 			<include name="jmock/jmock-2.4.0.jar" />
 			<include name="jmock/jmock-junit3-2.4.0.jar" />
 			<include name="jmock/jmock-junit4-2.4.0.jar" />

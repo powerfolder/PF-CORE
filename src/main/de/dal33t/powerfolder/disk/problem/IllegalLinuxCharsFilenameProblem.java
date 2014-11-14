@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.Controller;
  */
 public class IllegalLinuxCharsFilenameProblem extends ResolvableProblem {
 
-    private final String description;    
+    private final String description;
     private final FileInfo fileInfo;
 
     public IllegalLinuxCharsFilenameProblem(FileInfo fileInfo) {

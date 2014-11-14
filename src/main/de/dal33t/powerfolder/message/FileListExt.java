@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.util.ExternalizableUtil;
  * #2072: {@link Externalizable} version of {@link FileList}
  */
 public class FileListExt extends FileList implements Externalizable {
+    private static final long serialVersionUID = -299244748325976914L;
     private static final long extVersionUID = 100L;
 
     public FileListExt() {

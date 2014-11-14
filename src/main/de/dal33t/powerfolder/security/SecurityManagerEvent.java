@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Event that get fired from security manager.
- * 
+ *
  * @author sprajc
  */
 public class SecurityManagerEvent extends EventObject {

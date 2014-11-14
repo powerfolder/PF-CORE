@@ -79,7 +79,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
     private String initialText;
     private JFrame frame;
-    private JComboBox addressBox;
+    private JComboBox<String> addressBox;
     private JComponent proxySettingsLabel;
     private JProgressBar progressBar;
     private JLabel infoLabel;
@@ -130,7 +130,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         if (frame == null) {
             initComponents();
 
-            FormLayout layout = new FormLayout("p:g, 3dlu, p",
+            FormLayout layout = new FormLayout("max(p;150dlu), 3dlu, p",
                 "p, 7dlu, p, 3dlu, p, 7dlu, p, 7dlu, 12dlu, 14dlu, p");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setDefaultDialogBorder();
@@ -216,7 +216,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         }
         // addServerURL(ConfigurationEntry.PROVIDER_URL.getDefaultValue());
 
-        addressBox = new JComboBox(serviceProviderUrls);
+        addressBox = new JComboBox<>(serviceProviderUrls);
         addressBox.setEditable(true);
         
         try {
@@ -373,7 +373,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                     } catch (IOException e2) {
                         // Try even harder to connect via TCP directly
                         if (!input.toLowerCase().startsWith("http")) {
-                            Socket socket = new Socket();
+                            Socket socket = null;
                             try {
                                 InetSocketAddress addr = Util
                                     .parseConnectionString(input);
@@ -403,7 +403,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                                     + input + ". " + e3);
                             } finally {
                                 try {
-                                    socket.close();
+                                    if (socket != null) {
+                                        socket.close();
+                                    }
                                 } catch (Exception e3) {
                                 }
                             }

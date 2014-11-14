@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * <p>
  * Listeners can also be added to trap when the wizard finishes and when the
  * wizard is cancelled.
- * 
+ *
  * @author Christopher Brind
  */
 public class Wizard extends JPanel implements ActionListener {
@@ -91,7 +91,7 @@ public class Wizard extends JPanel implements ActionListener {
         }
         init(tiny);
     }
-    
+
     public boolean isTiny() {
         return getPreferredSize().equals(WIZARD_TINY_WINDOW_SIZE);
     }
@@ -124,7 +124,7 @@ public class Wizard extends JPanel implements ActionListener {
             barBuilder.addRelatedGap();
             barBuilder.addGridded(finishButton);
         }
-        
+
         JComponent navButtons = barBuilder.getPanel();
         navButtons.setOpaque(false);
         JComponent helpButtons = ButtonBarFactory.buildCenteredBar(helpButton);
@@ -209,7 +209,7 @@ public class Wizard extends JPanel implements ActionListener {
 
     /**
      * Add a listener to this wizard.
-     * 
+     *
      * @param listener
      *            a WizardListener object
      */
@@ -219,7 +219,7 @@ public class Wizard extends JPanel implements ActionListener {
 
     /**
      * Remove a listener from this wizard.
-     * 
+     *
      * @param listener
      *            a WizardListener object
      */
@@ -306,9 +306,9 @@ public class Wizard extends JPanel implements ActionListener {
         enableButton(finishButton, current.canFinish());
 
         if (poweredByLabel != null) {
-            poweredByLabel.setVisible(!backEnabled && !current.hasHelp() && !current.hasNext());            
+            poweredByLabel.setVisible(!backEnabled && !current.hasHelp() && !current.hasNext());
         }
-        
+
         // If next has focus and is about to go disabled, loose focus.
         if (nextButton.hasFocus() && !current.hasNext()) {
             helpButton.requestFocus();

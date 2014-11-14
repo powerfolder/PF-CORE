@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.Controller;
 
 /**
- * Filenames like AUX (excludes the extension) are reserved system words. 
+ * Filenames like AUX (excludes the extension) are reserved system words.
  */
 public class ReservedWordFilenameProblem extends ResolvableProblem {
 

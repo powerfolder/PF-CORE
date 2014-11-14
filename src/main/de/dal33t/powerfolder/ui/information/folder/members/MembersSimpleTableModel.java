@@ -109,7 +109,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public MembersSimpleTableModel(Controller controller) {
@@ -174,7 +174,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Sets model for a new folder.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -206,7 +206,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Adds a listener to the list.
-     * 
+     *
      * @param l
      */
     public void addTableModelListener(TableModelListener l) {
@@ -215,7 +215,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Removes a listener from the list.
-     * 
+     *
      * @param l
      */
     public void removeTableModelListener(TableModelListener l) {
@@ -318,7 +318,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Not implemented - cannot set values in this model.
-     * 
+     *
      * @param aValue
      * @param rowIndex
      * @param columnIndex
@@ -405,7 +405,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Handle node add event.
-     * 
+     *
      * @param e
      */
     private void handleNodeChanged(Member eventMember) {
@@ -426,7 +426,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Checks that the folder and member are valid.
-     * 
+     *
      * @param e
      * @throws IllegalStateException
      */
@@ -450,7 +450,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
 
     /**
      * Sorts by this column.
-     * 
+     *
      * @param columnIndex
      * @return always tru.
      */
@@ -556,7 +556,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
     {
         // Step 1) All computers.
         members.clear();
-        
+
         // Step 2) All other users not joined with any computer.
         if (!permInfo.isEmpty()) {
             for (Entry<Serializable, FolderPermission> permissionInfo : permInfo

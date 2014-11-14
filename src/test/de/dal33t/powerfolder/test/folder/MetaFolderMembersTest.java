@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Test that members become known to nodes via the metafolder Members file
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  */
 public class MetaFolderMembersTest extends FiveControllerTestCase {

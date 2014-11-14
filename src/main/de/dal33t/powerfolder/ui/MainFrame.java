@@ -27,7 +27,6 @@ import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -113,15 +112,13 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
  * Powerfolder gui mainframe
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.44 $
  */
 public class MainFrame extends PFUIComponent {
 
-    private enum FrameMode {
-        MAXIMIZED, NORMAL, COMPACT, MINIMIZED
-    }
+    private enum FrameMode {MAXIMIZED, NORMAL, COMPACT, MINIMIZED}
 
     public static final int MIN_MAIN_TABBED_WIDTH = 300;
 
@@ -183,8 +180,7 @@ public class MainFrame extends PFUIComponent {
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
 
-        mainStatusUpdater = new DelayedUpdater(getController(),
-            DelayedUpdater.DEFAULT_DELAY * 2);
+        mainStatusUpdater = new DelayedUpdater(getController(), DelayedUpdater.DEFAULT_DELAY * 2);
         osStatusUpdater = new DelayedUpdater(getController());
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
@@ -233,8 +229,7 @@ public class MainFrame extends PFUIComponent {
         b.add(noticeWarningButton, cc.xy(1, 1));
         b.add(noticeInfoButton, cc.xy(1, 1));
         builderUpper.add(b.getPanel(), cc.xywh(1, 1, 1, 2));
-        builderUpper
-            .add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
+        builderUpper.add(upperMainTextActionLabel.getUIComponent(), cc.xy(3, 1));
         builderUpper
             .add(lowerMainTextActionLabel.getUIComponent(), cc.xy(3, 2));
         if (getController().getOSClient().isAllowedToCreateFolders()
@@ -363,14 +358,14 @@ public class MainFrame extends PFUIComponent {
      */
     private void updateNoticesLabel() {
         int unreadCount = (Integer) getController().getUIController()
-            .getApplicationModel().getNoticesModel().getUnreadNoticesCountVM()
-            .getValue();
+                .getApplicationModel().getNoticesModel()
+                .getUnreadNoticesCountVM().getValue();
         if (unreadCount == 0) {
             noticesActionLabel.setVisible(false);
         } else if (unreadCount == 1) {
             noticesActionLabel.setVisible(true);
-            noticesActionLabel.setText(Translation
-                .getTranslation("main_frame.unread_notices.single.text"));
+            noticesActionLabel.setText(Translation.getTranslation(
+                    "main_frame.unread_notices.single.text"));
         } else {
             noticesActionLabel.setVisible(true);
             noticesActionLabel.setText(Translation.getTranslation(
@@ -432,8 +427,8 @@ public class MainFrame extends PFUIComponent {
             mySetupAction.allowWith(FolderCreatePermission.INSTANCE);
         }
 
-        MyOpenFoldersBaseAction myOpenFoldersBaseAction = new MyOpenFoldersBaseAction(
-            getController());
+        MyOpenFoldersBaseAction myOpenFoldersBaseAction =
+                new MyOpenFoldersBaseAction(getController());
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);
@@ -456,8 +451,7 @@ public class MainFrame extends PFUIComponent {
 
         notConnectedLoggedInLabel = new JLabel(Icons.getIconById(Icons.WARNING));
 
-        MyShowNoticesAction myShowNoticesAction = new MyShowNoticesAction(
-            getController());
+        MyShowNoticesAction myShowNoticesAction = new MyShowNoticesAction(getController());
         noticeWarningButton = new JButtonMini(myShowNoticesAction);
         noticeWarningButton.setIcon(Icons.getIconById(Icons.WARNING));
         noticeWarningButton.setText(null);
@@ -491,7 +485,9 @@ public class MainFrame extends PFUIComponent {
             lowerMainTextActionLabel.setToolTipText("");
         }
 
-        if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.BEGINNER_MODE
+            .getValueBoolean(getController()))
+        {
             lowerMainTextActionLabel.setNeverUnderline(true);
         }
 
@@ -641,8 +637,7 @@ public class MainFrame extends PFUIComponent {
                 }
             });
 
-        getController().getUIController().getApplicationModel()
-            .addSyncStatusListener(new SyncStatusListener() {
+        getController().getUIController().getApplicationModel().addSyncStatusListener(new SyncStatusListener() {
                 public void syncStatusChanged(final SyncStatusEvent event) {
                     mainStatusUpdater.schedule(new Runnable() {
                         public void run() {
@@ -667,8 +662,8 @@ public class MainFrame extends PFUIComponent {
         if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
             setFrameMode(FrameMode.NORMAL);
 
-            int unreadNoticesCount = (Integer) getController()
-                .getUIController().getApplicationModel().getNoticesModel()
+            int unreadNoticesCount = (Integer) getController().getUIController()
+                .getApplicationModel().getNoticesModel()
                 .getUnreadNoticesCountVM().getValue();
 
             if (unreadNoticesCount > 0) {
@@ -887,7 +882,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Add a change listener to the main tabbed pane selection.
-     * 
+     *
      * @param l
      */
     public void addTabbedPaneChangeListener(ChangeListener l) {
@@ -896,7 +891,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Remove a change listener from the main tabbed pane.
-     * 
+     *
      * @param l
      */
     public void removeTabbedPaneChangeListener(ChangeListener l) {
@@ -934,7 +929,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * Determine if application is currently minimized or hidden (for example,
      * in the systray)
-     * 
+     *
      * @return true, if application is currently minimized or hidden
      */
     public boolean isIconifiedOrHidden() {
@@ -1125,7 +1120,7 @@ public class MainFrame extends PFUIComponent {
 
         /**
          * Hide other frames when main frame gets minimized.
-         * 
+         *
          * @param e
          */
         public void windowIconified(WindowEvent e) {
@@ -1205,8 +1200,7 @@ public class MainFrame extends PFUIComponent {
                     .getAccount().getOSSubscription();
                 AccountDetails ad = client.getAccountDetails();
                 if (storageSubscription.isDisabled()) {
-                    loginActionLabel
-                        .setText(Translation
+                    loginActionLabel.setText(Translation
                             .getTranslation("main_frame.storage_subscription_disabled.text"));
                 } else {
                     totalStorage = storageSubscription.getStorageSize();
@@ -1215,8 +1209,7 @@ public class MainFrame extends PFUIComponent {
                         percentageUsed = 100.0d * (double) spaceUsed
                             / (double) totalStorage;
                     } else {
-                        loginActionLabel
-                            .setText(Translation
+                        loginActionLabel.setText(Translation
                                 .getTranslation("main_frame.storage_subscription_disabled.text"));
                         percentageUsed = 100.0d;
                     }
@@ -1277,31 +1270,31 @@ public class MainFrame extends PFUIComponent {
                     Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
                     Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
                     Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
-                minusButton.setToolTipText(Translation
-                    .getTranslation("main_frame.minimize.tips"));
+                minusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(!OSUtil.isSystraySupported()
-                    || PreferencesEntry.QUIT_ON_X
-                        .getValueBoolean(getController()));
+                minusButton.setVisible(!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 checkSplitMinWidth();
                 break;
             case NORMAL :
                 uiComponent.setExtendedState(Frame.NORMAL);
                 uiComponent.setResizable(true);
-                plusButton.setToolTipText(Translation
-                    .getTranslation("main_frame.maximize.tips"));
-                plusButton.setIcons(
-                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_NORMAL),
-                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
-                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
-                minusButton.setToolTipText(Translation
-                    .getTranslation("main_frame.minimize.tips"));
+
+                plusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.maximize.tips"));
+                plusButton.setIcons(Icons.getIconById(
+                        Icons.WINDOW_MAXIMIZE_NORMAL),
+                        Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
+                        Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
+                minusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.minimize.tips"));
+
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(!OSUtil.isSystraySupported()
-                    || PreferencesEntry.QUIT_ON_X
-                        .getValueBoolean(getController()));
+                minusButton.setVisible(!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 configureNormalSize();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1317,19 +1310,20 @@ public class MainFrame extends PFUIComponent {
                 }
                 uiComponent.setSize(uiComponent.getMinimumSize());
                 uiComponent.setResizable(false);
-                plusButton.setToolTipText(Translation
-                    .getTranslation("main_frame.maximize.tips"));
-                plusButton.setIcons(
-                    Icons.getIconById(Icons.WINDOW_MAXIMIZE_NORMAL),
+                
+                plusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.maximize.tips"));
+                plusButton.setIcons(Icons.getIconById(
+                    Icons.WINDOW_MAXIMIZE_NORMAL),
+                    
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
-                minusButton.setToolTipText(Translation
-                    .getTranslation("main_frame.minimize.tips"));
+                minusButton.setToolTipText(
+                        Translation.getTranslation("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(!OSUtil.isSystraySupported()
-                    || PreferencesEntry.QUIT_ON_X
-                        .getValueBoolean(getController()));
+                minusButton.setVisible(!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 toFront();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1460,9 +1454,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (frameMode == FrameMode.MAXIMIZED
-                || frameMode == FrameMode.NORMAL)
-            {
+            if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
                 setFrameMode(FrameMode.COMPACT);
             } else {
                 setFrameMode(FrameMode.NORMAL);
@@ -1531,7 +1523,7 @@ public class MainFrame extends PFUIComponent {
     private class MyOpenTransfersAction extends BaseAction {
 
         private MyOpenTransfersAction(Controller controller) {
-            super("action_open_transfers_information", controller);
+            super("exp.action_open_transfers_information", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1641,9 +1633,9 @@ public class MainFrame extends PFUIComponent {
     }
 
     private class MyMouseWindowDragListener extends MouseAdapter {
-        private int startX;
-        private int startY;
+        private static final int UPDATE_INTERVAL = 30;
         private boolean inDrag;
+        private WindowDragManager dragManager;
 
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -1662,9 +1654,8 @@ public class MainFrame extends PFUIComponent {
                 // No drag allowed if maximized
                 return;
             }
-            Point p = e.getPoint();
-            startX = p.x;
-            startY = p.y;
+            dragManager = new WindowDragManager(uiComponent, UPDATE_INTERVAL);
+            dragManager.start(e);
             inDrag = true;
         }
 
@@ -1674,6 +1665,7 @@ public class MainFrame extends PFUIComponent {
                 // No drag allowed if maximized
                 return;
             }
+            dragManager.stop(e);
             inDrag = false;
         }
 
@@ -1683,12 +1675,8 @@ public class MainFrame extends PFUIComponent {
                 // No drag allowed if maximized
                 return;
             }
-            Point p = e.getPoint();
             if (inDrag) {
-                int dx = p.x - startX;
-                int dy = p.y - startY;
-                Point l = uiComponent.getLocation();
-                uiComponent.setLocation(l.x + dx, l.y + dy);
+                dragManager.update(e);
             }
         }
     }
@@ -1706,8 +1694,8 @@ public class MainFrame extends PFUIComponent {
         public boolean importData(TransferSupport support) {
             try {
                 Transferable t = support.getTransferable();
-                List<Path> fileList = (List<Path>) t
-                    .getTransferData(DataFlavor.javaFileListFlavor);
+                List<Path> fileList = (List<Path>)
+                        t.getTransferData(DataFlavor.javaFileListFlavor);
 
                 // One at a time!
                 if (fileList == null || fileList.size() != 1) {
@@ -1730,8 +1718,7 @@ public class MainFrame extends PFUIComponent {
 
                 // Make sure we do not already have this as a folder.
                 if (getController().getFolderRepository()
-                    .doesFolderAlreadyExist(file))
-                {
+                        .doesFolderAlreadyExist(file)) {
                     logInfo("Skipping importData (already have).");
                     return false;
                 }

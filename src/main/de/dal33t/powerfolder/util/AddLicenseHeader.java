@@ -44,7 +44,7 @@ public class AddLicenseHeader {
                 return entry.getFileName().toString().endsWith(".java");
             }
         };
-        
+
         try (DirectoryStream<Path> javas = Files.newDirectoryStream(dir, filter)) {
             for (Path file : javas) {
                 addLicInfo(file);
@@ -52,14 +52,14 @@ public class AddLicenseHeader {
         } catch (IOException ioe) {
             // TODO:
         }
-        
+
         filter = new Filter<Path>() {
             @Override
             public boolean accept(Path entry) {
                 return Files.isDirectory(entry);
             }
         };
-        
+
         try (DirectoryStream<Path> subDirs = Files.newDirectoryStream(dir, filter)) {
             for (Path subDir : subDirs) {
                 addLicInfoToDir(subDir);
@@ -94,7 +94,7 @@ public class AddLicenseHeader {
                 System.out.println("Onlyme: " + f.toRealPath() + ": " + i);
                 content = LIC_INFO + content.substring(i, content.length());
             }
-//           
+//
             // System.out.println(content);
             FileUtils.writeStringToFile(f.toFile(), content, "UTF-8");
             // throw new RuntimeException();
@@ -121,7 +121,7 @@ public class AddLicenseHeader {
         + "* You should have received a copy of the GNU General Public License\r\n"
         + "* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.\r\n"
         + "*\r\n" + "* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $\r\n" + "*/\r\n";
-    
+
     private static final String LIC_INFO_DENNIS = "/*\r\n"
         + "* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.\r\n"
         + "*\r\n"

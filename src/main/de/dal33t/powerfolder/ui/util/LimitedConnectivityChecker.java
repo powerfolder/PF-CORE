@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NetworkingModeListener;
 import de.dal33t.powerfolder.event.NetworkingModeEvent;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.KnownNodesExt;
 import de.dal33t.powerfolder.message.Message;
@@ -54,7 +55,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Checks the connectivity if run and opens a dialog when UI is open.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -75,7 +76,7 @@ public class LimitedConnectivityChecker {
     /**
      * Central method to check if the connectivity is limited. Method call may
      * take some time.
-     * 
+     *
      * @return true the connectivty is limited.
      */
     public boolean hasLimitedConnecvitiy() {
@@ -110,7 +111,7 @@ public class LimitedConnectivityChecker {
     /**
      * Installs a task to check the connectivity of this system once. or when
      * the networking mode changes.
-     * 
+     *
      * @param ctrl
      */
     public static void install(Controller ctrl) {
@@ -187,7 +188,7 @@ public class LimitedConnectivityChecker {
                 .fine("Acting as supernode on address "
                     + me.getConnectAddress());
             // Broadcast our new status, we want stats ;)
-            controller.getNodeManager().broadcastMessage(107,
+            controller.getNodeManager().broadcastMessage(Identity.PROTOCOL_VERSION_107,
                 new SingleMessageProducer() {
                     @Override
                     public Message getMessage(boolean useExt) {
@@ -283,12 +284,12 @@ public class LimitedConnectivityChecker {
                 }
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                         controllerArg, Translation
-                        .getTranslation("limited_connection.title"),
-                        Translation.getTranslation("limited_connection.text",
+                        .getTranslation("exp.limited_connection.title"),
+                        Translation.getTranslation("exp.limited_connection.text",
                                 wikiLink), new String[]{Translation
                         .getTranslation("general.ok")}, 0,
                         GenericDialogType.INFO, Translation
-                        .getTranslation("limited_connection.dont_autodetect"));
+                        .getTranslation("exp.limited_connection.dont_autodetect"));
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.WARN_ON_NO_DIRECT_CONNECTIVITY.setValue(controllerArg, false);
                     log.warning("store do not show this dialog again");

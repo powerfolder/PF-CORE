@@ -23,11 +23,11 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class RecycleDeleteImpl {
     public final static String LIBRARY = "delete";
-    
+
     public static boolean loadLibrary() {
         return OSUtil.loadLibrary(RecycleDeleteImpl.class, LIBRARY);
     }
-   
+
 
     /**
      * @param filename

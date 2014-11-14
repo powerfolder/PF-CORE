@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.Util;
  * Listenersupport implementaion will fire events to all registered listeners.
  * Just call the event method for the eventlistner interface on the
  * implementation returned by <code>createListenerSupport</code>
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
@@ -54,7 +54,7 @@ public class ListenerSupportFactory {
      * All calls to methods on that object will fire that event to its
      * registered listeners.
      * <p>
-     * 
+     *
      * @param <T>
      * @param listenerInterface
      * @return the event support
@@ -84,7 +84,7 @@ public class ListenerSupportFactory {
      * to be created via <code>createListenerSupport</code> before. Also the
      * listener needs to implement the listener event interface. Otherwise an
      * exception is thrown
-     * 
+     *
      * @param listenerSupport
      * @param suspended
      */
@@ -114,7 +114,7 @@ public class ListenerSupportFactory {
      * created via <code>createListenerSupport</code> factory method. Also the
      * listener needs to implement the listener event interface otherwise an
      * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
-     * 
+     *
      * @param listenerSupport
      *            The listenerSupport where the listener should be added to.
      * @param listener
@@ -131,7 +131,7 @@ public class ListenerSupportFactory {
      * created via <code>createListenerSupport</code> factory method. Also the
      * listener needs to implement the listener event interface otherwise an
      * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
-     * 
+     *
      * @param listenerSupport
      *            The listenerSupport where the listener should be added to.
      * @param listener
@@ -173,7 +173,7 @@ public class ListenerSupportFactory {
      * be created via <code>createListenerSupport</code> factory method. Also
      * the listener needs to implement the listener event interface otherwise an
      * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
-     * 
+     *
      * @param listenerSupport
      * @param listener
      */
@@ -204,7 +204,7 @@ public class ListenerSupportFactory {
      * Removes all listeners from a listener support. The listener support has
      * to be created via <code>createListenerSupport</code> before. Otherwise an
      * exception is thrown
-     * 
+     *
      * @param listenerSupport
      */
     @SuppressWarnings("rawtypes")

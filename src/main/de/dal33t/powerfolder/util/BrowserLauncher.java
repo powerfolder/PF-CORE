@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * BareBonesBrowserLaunch.openURL(url);
  * <p>
  * Public Domain Software -- Free to Use as You Like
- * 
+ *
  * @version $Revision: 1.5 $
  */
 public class BrowserLauncher {
@@ -56,7 +56,7 @@ public class BrowserLauncher {
     /**
      * Opens the browser in background thread. This method does not BLOCK. Can
      * safely be used from UI-EDT Thread.
-     * 
+     *
      * @param controller
      * @param url
      */
@@ -72,7 +72,7 @@ public class BrowserLauncher {
     /**
      * Opens the browser in background thread. This method does not BLOCK. Can
      * safely be used from UI-EDT Thread.
-     * 
+     *
      * @param controller
      * @param producer
      */
@@ -104,7 +104,7 @@ public class BrowserLauncher {
      * Opens the given URL in the system browser. Method does BLOCK. Never call
      * directly from User Interface code! Use
      * {@link #open(Controller, URLProducer)} instead
-     * 
+     *
      * @param url
      * @throws IOException
      * @Deprecated favor {@link #openURL(Controller, String)} or
@@ -120,7 +120,7 @@ public class BrowserLauncher {
         }
         try {
             if (OSUtil.isMacOS()) {
-                Class fileMgr = Class.forName("com.apple.eio.FileManager");
+                Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
                 Method openURL = fileMgr.getDeclaredMethod("openURL",
                     new Class[]{String.class});
                 openURL.invoke(null, url);
@@ -145,7 +145,7 @@ public class BrowserLauncher {
         }
     }
 
-    private static boolean java6impl(String url) throws IOException {
+    private static boolean java6impl(String url) {
         log.fine("Launching " + url);
         try {
             if (Desktop.isDesktopSupported()) {
@@ -155,13 +155,12 @@ public class BrowserLauncher {
             }
         } catch (LinkageError err) {
             log.log(Level.FINER, "LinkageError", err);
-        } catch (URISyntaxException e) {
-            throw (IOException) new IOException("Error:" + e.toString())
-                .initCause(e);
+        } catch (URISyntaxException | IOException e) {
+            log.fine("Cannot open URL using Desktop. Trying fallback. " + e.toString());
         }
         return false;
     }
-    
+
     public static interface URLProducer {
         String url();
     }

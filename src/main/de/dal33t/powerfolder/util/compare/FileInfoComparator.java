@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Comparator for FileInfo
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
@@ -75,7 +75,7 @@ public class FileInfoComparator extends Loggable implements
     /**
      * Compare by various types. If types are the same, sub-compare on file
      * name, for nice table display.
-     * 
+     *
      * @param o1
      * @param o2
      * @return the value
@@ -152,8 +152,8 @@ public class FileInfoComparator extends Loggable implements
                 } else if (o2.getFolderInfo() == null) {
                     return AFTER;
                 }
-                x = o1.getFolderInfo().name.compareToIgnoreCase(o2
-                    .getFolderInfo().name);
+                x = o1.getFolderInfo().getName().compareToIgnoreCase(o2
+                    .getFolderInfo().getName());
                 if (x == 0) {
                     return sortByFileName(o1, o2, false);
                 }

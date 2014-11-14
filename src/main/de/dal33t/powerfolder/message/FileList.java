@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Files of a folder.
  * <p>
  * TODO Improve splitting. Should act upon a List<FileInfo> instead of array
- * 
+ *
  * @see de.dal33t.powerfolder.message.FolderFilesChanged
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -54,7 +54,7 @@ public class FileList extends FolderRelatedMessage {
     public FileInfo[] files;
     /**
      * The number of following delta filelist to expect.
-     * 
+     *
      * @see FolderFilesChanged
      */
     public int nFollowingDeltas;
@@ -86,7 +86,7 @@ public class FileList extends FolderRelatedMessage {
     /**
      * Just to inform that we won't or can't send any information about the
      * files.
-     * 
+     *
      * @param foInfo
      * @param useExt
      *            if use {@link Externalizable}s
@@ -103,7 +103,7 @@ public class FileList extends FolderRelatedMessage {
     /**
      * Creates the message for the filelist. Filelist gets splitted into smaller
      * ones if required.
-     * 
+     *
      * @param folder
      * @param useExt
      *            if use {@link Externalizable}s
@@ -118,7 +118,7 @@ public class FileList extends FolderRelatedMessage {
      * Splits the filelist into smaller ones. Splits into one
      * <code>FileList</code> and (if required) multiple
      * <code>FolderFilesChanged</code> messages
-     * 
+     *
      * @param foInfo
      *            the folder for the message
      * @param files
@@ -139,7 +139,7 @@ public class FileList extends FolderRelatedMessage {
      * Splits the filelist into smaller ones. Always splits into one
      * <code>FileList</code> and (if required) multiple
      * <code>FolderFilesChanged</code> messages
-     * 
+     *
      * @param foInfo
      *            the folder for the message
      * @param files
@@ -278,7 +278,7 @@ public class FileList extends FolderRelatedMessage {
 
     /**
      * A filelist that does contains any information of the remote folder.
-     * 
+     *
      * @return if this filelist contains null / nothing / nada.
      */
     public boolean isNull() {

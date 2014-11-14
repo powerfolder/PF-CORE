@@ -1,39 +1,39 @@
 /*******************************************************************************
  * JNotify - Allow java applications to register to File system events.
- * 
+ *
  * Copyright (C) 2005 - Content Objects
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  ******************************************************************************
- * 
+ *
  * You may also redistribute and/or modify this library under the terms of the
  * Eclipse Public License. See epl.html.
- * 
+ *
  ******************************************************************************
  *
  * Content Objects, Inc., hereby disclaims all copyright interest in the
  * library `JNotify' (a Java library for file system events).
- * 
+ *
  * Yahali Sherman, 21 November 2005
  *    Content Objects, VP R&D.
- * 
+ *
  ******************************************************************************
  * Author : Omry Yadan
  ******************************************************************************/
- 
+
 
 package net.contentobjects.jnotify.linux;
 
@@ -54,7 +54,7 @@ public class JNotifyAdapterLinux implements IJNotify
 {
 	private Hashtable<Integer, Integer> _linuxWd2Wd;
 	private Hashtable<Integer, WatchData> _id2Data;
-	
+
 	/**
 	 * A set of files which was added by registerToSubTree (auto-watches)
 	 */
@@ -87,8 +87,8 @@ public class JNotifyAdapterLinux implements IJNotify
 		throws JNotifyException
 	{
 		JNotify_linux.debug("JNotifyAdapterLinux.addWatch(path="+path+",mask="+Util.getMaskDesc(mask)+", watchSubtree="+watchSubtree+")");
-		
-		
+
+
 		// map mask to linux inotify mask.
 		int linuxMask = 0;
 		if ((mask & JNotify.FILE_CREATED) != 0)
@@ -110,7 +110,7 @@ public class JNotifyAdapterLinux implements IJNotify
 			linuxMask |= JNotify_linux.IN_MOVED_FROM;
 			linuxMask |= JNotify_linux.IN_MOVED_TO;
 		}
-		
+
 		// if watching subdirs, listen on create anyway.
 		// to know when new sub directories are created.
 		// these events should not reach the client code.
@@ -137,7 +137,7 @@ public class JNotifyAdapterLinux implements IJNotify
 		}
 		return watchData._wd;
 	}
-	
+
 	private WatchData createWatch(WatchData parentWatchData, boolean user,File path, int mask, int linuxMask, boolean watchSubtree, JNotifyListener listener) throws JNotifyException
 	{
 		String absPath = path.getPath();
@@ -152,7 +152,7 @@ public class JNotifyAdapterLinux implements IJNotify
 		}
 		return watchData;
 	}
-	
+
 
 	private void registerToSubTree(boolean isRoot, WatchData parentWatch, File root, boolean fireCreatedEvents) throws JNotifyException
 	{
@@ -170,7 +170,7 @@ public class JNotifyAdapterLinux implements IJNotify
 			parentWatch.notifyFileCreated(name);
 		}
 
-		
+
 		if (root.isDirectory())
 		{
 			// root was already registered by the calling method.
@@ -190,7 +190,7 @@ public class JNotifyAdapterLinux implements IJNotify
 					// else, on any other error, try subtree anyway..
 				}
 			}
-			
+
 			String files[] = root.list();
 			if (files != null)
 			{
@@ -206,7 +206,7 @@ public class JNotifyAdapterLinux implements IJNotify
 	public boolean removeWatch(int wd) throws JNotifyException
 	{
 		JNotify_linux.debug("JNotifyAdapterLinux.removeWatch("+ wd+ ")");
-		
+
 		synchronized (_id2Data)
 		{
 			if (_id2Data.containsKey(Integer.valueOf(wd)))
@@ -222,8 +222,8 @@ public class JNotifyAdapterLinux implements IJNotify
 		}
 	}
 
-	
-	
+
+
 	private void unwatch(WatchData data) throws JNotifyException
 	{
 		JNotifyException ex = null;
@@ -238,12 +238,12 @@ public class JNotifyAdapterLinux implements IJNotify
 			ex = e;
 			ok = false;
 		}
-		
+
 		if (data._user)
 		{
 			for (int i = 0; i < data._subWd.size(); i++)
 			{
-				
+
 				int wd = data._subWd.get(i).intValue();
 				try
 				{
@@ -265,13 +265,13 @@ public class JNotifyAdapterLinux implements IJNotify
 
 	protected void notifyChangeEvent(String name, int linuxWd, int linuxMask, int cookie)
 	{
-		
+
 		if (JNotify_linux.DEBUG)
 		{
 			debugLinux(name, linuxWd, linuxMask, cookie);
 		}
-		
-		
+
+
 		synchronized (_id2Data)
 		{
 			Integer iwd = (Integer) _linuxWd2Wd.get(Integer.valueOf(linuxWd));
@@ -281,7 +281,7 @@ public class JNotifyAdapterLinux implements IJNotify
 				System.out.println("JNotifyAdapterLinux: warning, recieved event for an unregisted LinuxWD "+ linuxWd +" ignoring...");
 				return;
 			}
-			
+
 			WatchData watchData = _id2Data.get(iwd);
 			if (watchData != null)
 			{
@@ -304,7 +304,7 @@ public class JNotifyAdapterLinux implements IJNotify
 								JNotify_linux.warn("registerToSubTree : warning, failed to register " + newRootFile + " :" + e.getMessage() + " code = " + e.getErrorCode());
 						}
 					}
-					
+
 					// make sure user really requested to be notified on this event.
 					// (in case of recursive listening, this IN_CREATE flag is always on, even if
 					// the user is not interester in creation events).
@@ -433,7 +433,7 @@ public class JNotifyAdapterLinux implements IJNotify
          * be a problem because:
          *      i)   a cookie is deleted right after its retrival
          *      ii)  cookies are only used with rename actions
-         * 
+         *
          * BUG: discovered by Fabio Bernasconi
          */
         static Hashtable<Integer, String> _cookieToOldName = new Hashtable<Integer, String>();
@@ -456,13 +456,13 @@ public class JNotifyAdapterLinux implements IJNotify
 			_mask = mask;
 			_watchSubtree = watchSubtree;
 			_listener = listener;
-			
+
 			if (parentWatchData != null)
 			{
 				parentWatchData.addSubwatch(_linuxWd);
 			}
 		}
-		
+
 		public WatchData getParentWatch()
 		{
 			return _user ? this : _parentWatchData;
@@ -500,7 +500,7 @@ public class JNotifyAdapterLinux implements IJNotify
 			String outName = getOutName(name);
 			_listener.fileDeleted(getParentWatchID(), outRoot, outName);
 		}
-		
+
 
 		public void notifyFileCreated(String name)
 		{
@@ -521,12 +521,12 @@ public class JNotifyAdapterLinux implements IJNotify
 		{
 			_subWd.add(Integer.valueOf(linuxWd));
 		}
-		
+
 		public String toString()
 		{
 			return "WatchData " + _path + ", wd=" +  _wd + ", linuxWd=" + _linuxWd  + (_watchSubtree ? ", recursive" :"") + (_user ? ", user" : ", auto");
 		}
-		
+
 		private String getOutRoot()
 		{
 			String outRoot;
@@ -539,9 +539,9 @@ public class JNotifyAdapterLinux implements IJNotify
 				outRoot = getParentWatch()._path;
 			}
 			return outRoot;
-						
+
 		}
-		
+
 		private String getOutName(String name)
 		{
 			String outName;
@@ -559,7 +559,7 @@ public class JNotifyAdapterLinux implements IJNotify
 			}
 			return outName;
 		}
-		
+
 		public int getParentWatchID()
 		{
 			return _parentWatchData == null ? _wd : _parentWatchData._wd;
@@ -570,7 +570,7 @@ public class JNotifyAdapterLinux implements IJNotify
 	{
 		return _id2Data.size();
 	}
-	
-	
-	
+
+
+
 }

@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The permission to read files in the folder. Write
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -33,7 +33,7 @@ public class FolderReadPermission extends FolderPermission {
 
     /**
      * Construct externally with {@link FolderPermission#read(FolderInfo)}
-     * 
+     *
      * @param foInfo
      */
     FolderReadPermission(FolderInfo foInfo) {

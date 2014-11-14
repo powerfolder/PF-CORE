@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * Reads a folder database file and writes it to a debug file (human readable).
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -66,6 +66,7 @@ public class FolderDBDebug {
         FileInfo[] files = (FileInfo[]) in.readObject();
         System.err.println(in.readObject());
         System.err.println(in.readObject());
+        in.close();
 
         if (!checkForDupes(files)) {
             System.out.println("OK: DB contain NO dupes.");
@@ -74,7 +75,7 @@ public class FolderDBDebug {
         FolderInfo folderInfo = files.length > 0
             ? files[0].getFolderInfo()
             : null;
-        String fName = folderInfo != null ? folderInfo.name : "-unknown-";
+        String fName = folderInfo != null ? folderInfo.getLocalizedName() : "-unknown-";
 
         long totalSize = 0;
         for (FileInfo fileInfo : files) {

@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
@@ -47,7 +48,7 @@ import de.dal33t.powerfolder.util.Util;
 
 /**
  * The security manager for the client.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -110,7 +111,13 @@ public class SecurityManagerClient extends PFComponent implements
         if (client.isClusterServer(m)) {
             return true;
         }
-        if (!client.isConnected() || !client.isLoggedIn()) {
+        if (!client.isConnected()) {
+            return hasPermissionDisconnected(permission);
+        }
+        if (client.isLoggingIn()) {
+            client.waitForLoginComplete();
+        }
+        if (!client.isLoggedIn()) {
             return hasPermissionDisconnected(permission);
         }
         AccountInfo a = m.getAccountInfo();
@@ -266,11 +273,19 @@ public class SecurityManagerClient extends PFComponent implements
         if (noConnectPossible) {
             // Server is not on LAN, but running in LAN only mode. Allow all
             // since we will never connect at all
-            return Boolean.TRUE;
+            logWarning("Unable to connect to server at all. Server "
+                + client.getServerString()
+                + " on LAN? "
+                + client.getServer().isOnLAN()
+                + ". Client LAN only mode? "
+                + getController().isLanOnly()
+                + ". Client allows connect from LAN 2 Internet? "
+                + ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
+                    .getValueBoolean(getController()));
+            return Boolean.FALSE;
         }
         if (permission instanceof FolderPermission) {
-            return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController());
+            return Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled();
         } else {
             return !ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController());
@@ -288,6 +303,9 @@ public class SecurityManagerClient extends PFComponent implements
     public AccountInfo getAccountInfo(Member node) {
         if (client.isPrimaryServer(node)) {
             return NULL_ACCOUNT;
+        }
+        if (node.isMySelf() && client.isLoggedIn()) {
+            return client.getAccountInfo();
         }
         Session session = sessions.get(node);
         // Cache hit
@@ -336,6 +354,10 @@ public class SecurityManagerClient extends PFComponent implements
                 Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                     .getAccountInfos(Collections.singleton(node.getInfo()));
                 aInfo = res.get(node.getInfo());
+                // PFC-2571:
+                if (aInfo != null) {
+                    aInfo.intern(true);
+                }
                 if (isFiner()) {
                     logFiner("Retrieved account " + aInfo + " for " + node);
                 }
@@ -352,7 +374,7 @@ public class SecurityManagerClient extends PFComponent implements
     }
 
     private final Map<String, Member> refreshing = Util.createConcurrentHashMap();
-    
+
     public void nodeAccountStateChanged(final Member node,
         boolean refreshFolderMemberships)
     {
@@ -413,6 +435,10 @@ public class SecurityManagerClient extends PFComponent implements
                     continue;
                 }
                 AccountInfo aInfo = res.get(node.getInfo());
+                // PFC-2571:
+                if (aInfo != null) {
+                    aInfo.intern(true);
+                }
                 if (CACHE_ENABLED) {
                     sessions.put(node, new Session(aInfo));
                 }
@@ -463,7 +489,7 @@ public class SecurityManagerClient extends PFComponent implements
 
     /**
      * Refreshes a AccountInfo for the given node if it should be pre-fetched.
-     * 
+     *
      * @param node
      */
     private void refresh(Member node) {

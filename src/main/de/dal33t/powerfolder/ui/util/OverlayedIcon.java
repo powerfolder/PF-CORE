@@ -28,7 +28,7 @@ import javax.swing.SwingConstants;
 /**
  * Icon helper which makes it possible to decorate an icon with another one.
  * Overlay, like windows shortcut or shares hand
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
@@ -105,7 +105,7 @@ public class OverlayedIcon implements Icon {
 
     /**
      * Overlays an main icon with an overlay icon
-     * 
+     *
      * @param mainIcon
      * @param decorator
      * @return

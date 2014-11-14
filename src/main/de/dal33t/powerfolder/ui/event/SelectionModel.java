@@ -30,7 +30,7 @@ import java.util.List;
  * selection. Supports single and multiple selection. Register listeners using
  * the addSelectionChangeListener method to recieve events if the selection has
  * changed.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.5 $
  */
@@ -51,7 +51,7 @@ public class SelectionModel {
 
     /**
      * Create a Selection model
-     * 
+     *
      * @param selection
      *            the inital selection value
      */

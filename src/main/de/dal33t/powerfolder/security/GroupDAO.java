@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.db.GenericDAO;
 
 /**
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public interface GroupDAO extends GenericDAO<Group> {
 
@@ -16,14 +16,16 @@ public interface GroupDAO extends GenericDAO<Group> {
      * Find a group by its name.
      * 
      * @param groupname
-     * @return
+     *            The group's name
+     * @return the group referenced by {@code name}, or {@code null} if it was
+     *         not found.
      */
     Group findByGroupname(String groupname);
 
     /**
      * Get all Groups.
      * 
-     * @return
+     * @return a list of all groups.
      */
     List<Group> getGroups();
 
@@ -31,7 +33,8 @@ public interface GroupDAO extends GenericDAO<Group> {
      * Get a list of Groups that apply to the passed filter.
      * 
      * @param filterModel
-     * @return
+     *            The filters to apply
+     * @return a list of all groups that fit the filter.
      */
     List<Group> getGroups(GroupFilterModel filterModel);
 
@@ -39,7 +42,8 @@ public interface GroupDAO extends GenericDAO<Group> {
      * Get a list of all groups, that hold a permission to a folder.
      * 
      * @param folderInfo
-     * @return
+     *            The folder
+     * @return a list of all groups that have permission to {@code folderInfo}.
      */
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
 
@@ -47,14 +51,46 @@ public interface GroupDAO extends GenericDAO<Group> {
      * Store several groups.
      * 
      * @param groups
+     *            The groups to store
      */
     void store(Group... groups);
-    
+
     /**
      * Get the number of groups, that belong to an organization.
      * 
      * @param org
-     * @return
+     *            The organization
+     * @return the number of groups associated with {@code org}.
      */
     int countGroupsWithOrganization(Organization org);
+
+    /**
+     * @return The number of groups that were imported via LDAP/AD.
+     */
+    int countWithLdapDN();
+
+    /**
+     * Find a group with a certain LDAP distinguished name. PFS-420
+     * 
+     * @param ldapDN
+     *            The destinguished name
+     * @return the group that is referenced by the {@code ldapDN}, or
+     *         {@code null} if no group was found.
+     */
+    Group findByLdapDN(String ldapDN);
+
+    /**
+     * @param ldapDNSuffix
+     * @return A list of all groups where the LDAP DN end with {@code ldapDNSuffix}.
+     */
+    List<Group> findByLdapDNSuffix(String ldapDNSuffix);
+
+    /**
+     * Get all groups, that have an LDAP distinguished name set. PFS-420
+     * 
+     * @param groupSearchBase
+     *            The search context for groups
+     * @return a list of all groups that were imported from an LDAP/AD server.
+     */
+    List<Group> getLdapGroups(String groupSearchBase);
 }

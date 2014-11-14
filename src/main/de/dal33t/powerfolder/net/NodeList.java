@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Container for saving and loading nodes. This class is not Thread-safe.
  * <p>
  * TODO Bytekeeper Please add a NodeListTest!
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
@@ -56,7 +56,7 @@ public class NodeList {
 
     /**
      * Initalizes this nodelist with the given collection of nodes.
-     * 
+     *
      * @param nodes
      *            the nodes to include.
      * @param friends
@@ -76,7 +76,7 @@ public class NodeList {
 
     /**
      * Returns the Set containing the friends.
-     * 
+     *
      * @return
      */
     public Set<MemberInfo> getFriendsSet() {
@@ -89,7 +89,7 @@ public class NodeList {
 
     /**
      * Returns the Set containing the servers.
-     * 
+     *
      * @return
      */
     public Set<MemberInfo> getServersSet() {
@@ -102,7 +102,7 @@ public class NodeList {
 
     /**
      * Returns the List containing the supernodes.
-     * 
+     *
      * @return
      */
     public List<MemberInfo> getNodeList() {
@@ -115,7 +115,7 @@ public class NodeList {
 
     /**
      * Initializes this NodeList with the data from the given InputStream.
-     * 
+     *
      * @param in
      * @throws IOException
      */
@@ -154,7 +154,7 @@ public class NodeList {
 
     /**
      * Saves this NodeLists contents to the given OutputStream.
-     * 
+     *
      * @param out
      * @throws IOException
      */
@@ -170,7 +170,7 @@ public class NodeList {
 
     /**
      * Initializes this NodeList with the data from the given File.
-     * 
+     *
      * @param file
      * @throws IOException
      */
@@ -182,7 +182,7 @@ public class NodeList {
 
     /**
      * Loads the list from a url.
-     * 
+     *
      * @param url
      *            the url to load the nodefile from
      * @return if succeeded
@@ -203,7 +203,7 @@ public class NodeList {
 
     /**
      * Saves this NodeLists contents to the given File.
-     * 
+     *
      * @param file
      * @throws IOException
      */

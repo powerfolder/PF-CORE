@@ -148,6 +148,68 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         return getDomain(domain).directories.get(info);
     }
 
+    @Override
+    public FileInfo findNewestByOID(String oid, String... domains) {
+        Reject.ifBlank(oid, "OID");
+        FileInfo newestVersion = null;
+        for (String domain : domains) {
+            Domain d = getDomain(domain);
+            for (FileInfo candidateFile : d.files.values()) {
+                if (StringUtils.isBlank(candidateFile.getOID())) {
+                    continue;
+                }
+                if (candidateFile.getOID().equals(oid)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
+                    {
+                        newestVersion = candidateFile;
+                    }
+                }
+            }
+            for (FileInfo candidateFile : d.directories.values()) {
+                if (StringUtils.isBlank(candidateFile.getOID())) {
+                    continue;
+                }
+                if (candidateFile.getOID().equals(oid)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
+                    {
+                        newestVersion = candidateFile;
+                    }
+                }
+            }
+        }
+        return newestVersion;
+    }
+
+    @Override
+    public FileInfo findNewestByHash(String hash, String... domains) {
+        Reject.ifBlank(hash, "Hash");
+        FileInfo newestVersion = null;
+        for (String domain : domains) {
+            Domain d = getDomain(domain);
+            for (FileInfo candidateFile : d.files.values()) {
+                if (candidateFile.isMatchingHash(hash)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
+                    {
+                        newestVersion = candidateFile;
+                    }
+                }
+            }
+            for (FileInfo candidateFile : d.directories.values()) {
+                if (candidateFile.isMatchingHash(hash)) {
+                    if (newestVersion == null
+                        || candidateFile.isNewerThan(newestVersion))
+                    {
+                        newestVersion = candidateFile;
+                    }
+                }
+            }
+        }
+        return newestVersion;
+    }
+
     public Collection<FileInfo> findAllFiles(String domain) {
         return Collections.unmodifiableCollection(getDomain(domain).files
             .values());

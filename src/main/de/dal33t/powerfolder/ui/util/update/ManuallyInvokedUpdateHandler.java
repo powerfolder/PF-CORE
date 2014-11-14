@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.update.UpdaterEvent;
 
 /**
  * A Thread that can be manually invoked to check for updates to PowerFolder
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a> *
  * @version $Revision: 1.3 $
  */

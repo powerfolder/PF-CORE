@@ -104,7 +104,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      * @param node
      */
@@ -121,7 +121,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     public void expand() {
         expanded.set(true);
         upperPanel.setToolTipText(Translation
-            .getTranslation("exp_computer_view.collapse"));
+            .getTranslation("exp.exp_computer_view.collapse"));
         lowerOuterPanel.setVisible(true);
         updateBorderPanel();
         listenerSupport.resetAllButSource(new ExpansionEvent(this));
@@ -133,7 +133,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     public void collapse() {
         expanded.set(false);
         upperPanel.setToolTipText(Translation
-            .getTranslation("exp_computer_view.expand"));
+            .getTranslation("exp.exp_computer_view.expand"));
         lowerOuterPanel.setVisible(false);
         updateBorderPanel();
     }
@@ -157,7 +157,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Gets the ui component, building if required.
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -190,7 +190,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
         upperPanel.setToolTipText(Translation
-            .getTranslation("exp_computer_view.expand"));
+            .getTranslation("exp.exp_computer_view.expand"));
         MouseAdapter ma = new MyMouseAdapter();
         upperPanel.addMouseListener(ma);
         CursorUtils.setHandCursor(upperPanel);
@@ -263,7 +263,7 @@ public class ExpandableComputerView extends PFUIComponent implements
             ? aInfo.getScrabledDisplayName()
             : null);
         versionLabel = new JLabel(Translation.getTranslation(
-            "exp_computer_view.version", ""));
+            "exp.exp_computer_view.version", ""));
         reconnectAction = new MyReconnectAction(getController());
         reconnectButton = new JButtonMini(reconnectAction);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
@@ -296,7 +296,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Gets the name of the associated folder.
-     * 
+     *
      * @return
      */
     public Member getNode() {
@@ -305,7 +305,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Updates the displayed details if for this member.
-     * 
+     *
      * @param eventNode
      */
     private void updateDetailsIfRequired(Member eventNode) {
@@ -338,10 +338,10 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         if (node.isCompletelyConnected()) {
             lastSeenLabel.setText(Translation
-                .getTranslation("exp_computer_view.connected_text"));
+                .getTranslation("exp.exp_computer_view.connected_text"));
         } else if (node.isConnecting()) {
             lastSeenLabel.setText(Translation
-                .getTranslation("exp_computer_view.connecting_text"));
+                .getTranslation("exp.exp_computer_view.connecting_text"));
         } else {
             Date time = node.getLastConnectTime();
             String lastConnectedTime;
@@ -351,25 +351,25 @@ public class ExpandableComputerView extends PFUIComponent implements
                 lastConnectedTime = Format.formatDateShort(time);
             }
             lastSeenLabel.setText(Translation.getTranslation(
-                "exp_computer_view.last_seen_text", lastConnectedTime));
+                "exp.exp_computer_view.last_seen_text", lastConnectedTime));
         }
 
         AccountInfo aInfo = node.getAccountInfo();
         if (aInfo != null && !node.isServer()) {
             usernameLabel.setText(Translation.getTranslation(
-                "exp_computer_view.account", aInfo.getScrabledDisplayName()));
+                "exp.exp_computer_view.account", aInfo.getScrabledDisplayName()));
         } else if (node.isServer()) {
             usernameLabel.setText("");
         } else {
             usernameLabel.setText(Translation
-                .getTranslation("exp_computer_view.no_login"));
+                .getTranslation("exp.exp_computer_view.no_login"));
         }
 
         if (getController().isVerbose()) {
             Identity id = node.getIdentity();
             if (id != null) {
                 versionLabel.setText(Translation.getTranslation(
-                    "exp_computer_view.version", id.getProgramVersion()));
+                    "exp.exp_computer_view.version", id.getProgramVersion()));
             }
         }
 
@@ -379,10 +379,10 @@ public class ExpandableComputerView extends PFUIComponent implements
             ConnectionHandler peer = node.getPeer();
             iconName = Icons.NODE_CONNECTED;
             text = Translation
-                .getTranslation("exp_computer_view.node_friend_connected_text");
+                .getTranslation("exp.exp_computer_view.node_friend_connected_text");
             if (node.isOnLAN()) {
                 iconName = Icons.NODE_LAN;
-                text = Translation.getTranslation("connection_lan.text");
+                text = Translation.getTranslation("exp.connection_lan.text");
             } else if (peer != null) {
                 ConnectionQuality quality = peer.getConnectionQuality();
                 if (quality != null) {
@@ -390,17 +390,17 @@ public class ExpandableComputerView extends PFUIComponent implements
                         case GOOD :
                             iconName = Icons.NODE_CONNECTED;
                             text = Translation
-                                .getTranslation("connection_quality_good.text");
+                                .getTranslation("exp.connection_quality_good.text");
                             break;
                         case MEDIUM :
                             iconName = Icons.NODE_MEDIUM;
                             text = Translation
-                                .getTranslation("connection_quality_medium.text");
+                                .getTranslation("exp.connection_quality_medium.text");
                             break;
                         case POOR :
                             iconName = Icons.NODE_POOR;
                             text = Translation
-                                .getTranslation("connection_quality_poor.text");
+                                .getTranslation("exp.connection_quality_poor.text");
                             break;
                     }
                 }
@@ -408,11 +408,11 @@ public class ExpandableComputerView extends PFUIComponent implements
         } else if (node.isConnecting()) {
             iconName = Icons.NODE_CONNECTING;
             text = Translation
-                .getTranslation("exp_computer_view.node_connecting_text");
+                .getTranslation("exp.exp_computer_view.node_connecting_text");
         } else {
             iconName = Icons.NODE_DISCONNECTED;
             text = Translation
-                .getTranslation("exp_computer_view.node_friend_disconnected_text");
+                .getTranslation("exp.exp_computer_view.node_friend_disconnected_text");
         }
         pictoLabel.setIcon(Icons.getIconById(iconName));
         pictoLabel.setToolTipText(text);
@@ -438,7 +438,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Add an expansion listener.
-     * 
+     *
      * @param listener
      */
     public void addExpansionListener(ExpansionListener listener) {
@@ -447,7 +447,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
     /**
      * Remove an expansion listener.
-     * 
+     *
      * @param listener
      */
     public void removeExpansionListener(ExpansionListener listener) {
@@ -590,7 +590,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private class MyReconnectAction extends BaseAction {
 
         MyReconnectAction(Controller controller) {
-            super("action_reconnect", controller);
+            super("exp.action_reconnect", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -640,15 +640,15 @@ public class ExpandableComputerView extends PFUIComponent implements
         private boolean add = true;
 
         private MyAddRemoveFriendAction(Controller controller) {
-            super("action_add_friend", controller);
+            super("exp.action_add_friend", controller);
         }
 
         public void setAdd(boolean add) {
             this.add = add;
             if (add) {
-                configureFromActionId("action_add_friend");
+                configureFromActionId("exp.action_add_friend");
             } else {
-                configureFromActionId("action_remove_friend");
+                configureFromActionId("exp.action_remove_friend");
             }
         }
 
@@ -691,7 +691,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         /**
          * Get the directory to import. The transfer is a list of files; need to
          * check the list has one directory, else return null.
-         * 
+         *
          * @param support
          * @return
          */

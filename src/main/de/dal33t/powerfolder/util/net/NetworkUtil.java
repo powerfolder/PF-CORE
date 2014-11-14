@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Utility class for all low level networking stuff.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.4 $
  */
@@ -73,7 +73,7 @@ public class NetworkUtil {
 
     /**
      * Sets a socket up for use with PowerFolder
-     * 
+     *
      * @param socket
      *            the Socket to setup
      * @throws SocketException
@@ -94,12 +94,12 @@ public class NetworkUtil {
                 .getValueInt(controller);
             if (bufferSize > 0) {
                 socket.setReceiveBufferSize(bufferSize);
-                socket.setSendBufferSize(bufferSize);                
+                socket.setSendBufferSize(bufferSize);
             }
         } else {
             int bufferSize = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_SIZE
                 .getValueInt(controller);
-            if (bufferSize > 0) {                
+            if (bufferSize > 0) {
                 socket.setReceiveBufferSize(bufferSize);
                 socket.setSendBufferSize(bufferSize);
             }
@@ -116,7 +116,7 @@ public class NetworkUtil {
      * FIXME: Is broken. Does not consider LAN-IP list or computers discovered
      * by network broadcast. Recommended new API: setupSocket(UDTSocket socket,
      * boolean onLAN). Let the caller decide to setup with LAN optimized values.
-     * 
+     *
      * @param socket
      *            the Socket to setup
      * @param inetSocketAddress
@@ -139,28 +139,28 @@ public class NetworkUtil {
                 .getValueInt(controller);
             if (bufferSize > 0) {
                 socket.setSoUDPReceiverBufferSize(bufferSize);
-                socket.setSoUDPSenderBufferSize(bufferSize);                
+                socket.setSoUDPSenderBufferSize(bufferSize);
             }
 
             int bufferLimit = ConfigurationEntry.NET_SOCKET_LAN_BUFFER_LIMIT
                 .getValueInt(controller);
             if (bufferLimit > 0) {
                 socket.setSoSenderBufferLimit(bufferLimit);
-                socket.setSoReceiverBufferLimit(bufferLimit);                
+                socket.setSoReceiverBufferLimit(bufferLimit);
             }
         } else {
             int bufferSize = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_SIZE
                 .getValueInt(controller);
             if (bufferSize > 0) {
                 socket.setSoUDPReceiverBufferSize(bufferSize);
-                socket.setSoUDPSenderBufferSize(bufferSize);                
+                socket.setSoUDPSenderBufferSize(bufferSize);
             }
 
             int bufferLimit = ConfigurationEntry.NET_SOCKET_INTERNET_BUFFER_LIMIT
                 .getValueInt(controller);
             if (bufferLimit > 0) {
                 socket.setSoSenderBufferLimit(bufferLimit);
-                socket.setSoReceiverBufferLimit(bufferLimit);                
+                socket.setSoReceiverBufferLimit(bufferLimit);
             }
         }
 
@@ -205,7 +205,7 @@ public class NetworkUtil {
     /**
      * Returns a Map with all detected local IP-addresses as keys and the
      * associated NetworkInterface as values.
-     * 
+     *
      * @return all local network addresses
      * @throws SocketException
      */
@@ -339,7 +339,7 @@ public class NetworkUtil {
      * Returns a Map with all detected local IP-addresses as keys and the
      * associated NetworkInterface as values. Caches the result for a certain
      * amount of time.
-     * 
+     *
      * @return the cached list al all network addresses
      * @throws SocketException
      */
@@ -385,7 +385,7 @@ public class NetworkUtil {
     /**
      * Tries to retrieve the hostname of the address if available, but returns
      * the IP only if not available. Does NOT perform a reverse lookup.
-     * 
+     *
      * @param addr
      * @return the hostname or IP of the address.
      */

@@ -29,7 +29,7 @@ public class OfficeTempFilesMatchPattern extends EndMatchPattern {
 
     /**
      * Constructor.
-     * 
+     *
      * @param startChar
      *            e.g. "~"
      * @param endPattern

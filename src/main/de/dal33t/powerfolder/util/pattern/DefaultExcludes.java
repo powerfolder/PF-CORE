@@ -17,6 +17,7 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -24,14 +25,15 @@ public enum DefaultExcludes {
     DESKTOP_INI("*" + PathUtils.DESKTOP_INI_FILENAME),
     THUMBS_DB("*thumbs.db"),
     OFFICE_TEMP("*~*.tmp"),
-    OFFICEX_TEMP("*~$*"),
+    OFFICEX_TEMP("*" + Constants.MS_OFFICE_FILENAME_PREFIX + "*"),
+    LIBRE_TEMP("*" + Constants.LIBRE_OFFICE_FILENAME_PREFIX + "*"),
     DS_STORE("*.DS_Store"),
     TEMPORARY_ITEMS("*.Temporary Items"),
     TRASHES("*.Trashes"),
     FSEVENTD("*.fseventd"),
     APDISK("*.apdisk"),
     PARTS("*.part"),
-    
+
     /**
      * Apples iPod thumb files. http://dotwhat.net/ithmb/9058/
      */

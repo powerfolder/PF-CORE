@@ -53,7 +53,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(Files.exists(expected));
         assertEquals(Files.getLastModifiedTime(expected).toMillis(), fib
             .getModifiedDate().getTime());
-        
+
         FileInfo fia = fa.getArchivedFilesInfos(fib).get(0);
         assertEquals(fib.getRelativeName(), fia.getRelativeName());
     }
@@ -277,10 +277,14 @@ public class FileArchiverTest extends TwoControllerTestCase {
         Path fileAtLisa = fInfo.getDiskFile(getContollerLisa()
             .getFolderRepository());
         LoggingManager.setConsoleLogging(Level.FINER);
-        assertTrue(getFolderAtLisa().getFileArchiver().restore(
-            FileInfoFactory.archivedFile(fInfo.getFolderInfo(), fInfo
-                .getRelativeName(), fInfo.getSize(), fInfo.getModifiedBy(),
-                new Date(System.currentTimeMillis() - 10000), 0), fileAtLisa));
+
+        FileInfo archiveFileInfo = FileInfoFactory.archivedFile(fInfo
+            .getFolderInfo(), fInfo.getRelativeName(), null, fInfo.getSize(),
+            fInfo.getModifiedBy(), fInfo.getModifiedByAccount(), new Date(
+                System.currentTimeMillis() - 10000), 0, null, null);
+
+        assertTrue(getFolderAtLisa().getFileArchiver().restore(archiveFileInfo,
+            fileAtLisa));
         getFolderAtLisa().scanChangedFile(fInfo);
 
         TestHelper.waitMilliSeconds(2500);

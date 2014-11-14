@@ -288,7 +288,7 @@ public class PatternMatchTest extends TestCase {
             assertFalse(pattern.isMatch("Programme\\test\\Thumbs.db"));
             assertTrue(pattern.isMatch("Users\\test\\~W8833453.tmp"));
         }
-        
+
         pe = Profiling.start("OfficeXTempMatchPatternThumbsDB");
         pattern = new OfficeTempFilesMatchPattern("~$", "*");
         for (int i = 0; i < nPatterns; i++) {

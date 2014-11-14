@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.security;
 /**
  * Permission that allows to change low level system settings of the
  * server/cloud.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

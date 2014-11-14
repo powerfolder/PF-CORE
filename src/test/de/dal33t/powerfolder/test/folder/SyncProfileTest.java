@@ -148,7 +148,7 @@ public class SyncProfileTest extends TestCase {
      * Thorough check of the SyncProfileConfig equals method
      */
     public void testConfigEquals() {
-        
+
         SyncProfileConfiguration base = new SyncProfileConfiguration(
                 false, false, false, false, 0, false, 0, 0, "m", false);
         SyncProfileConfiguration delta1 = new SyncProfileConfiguration(

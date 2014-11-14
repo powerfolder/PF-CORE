@@ -41,7 +41,7 @@ public class PluginManager extends PFComponent {
         .getName());
     private static final String OLD_WEBINTERFACE_PLUGIN_CLASS_NAME = "de.dal33t.powerfolder.AB";
     private static final String PLUGIN_PACKAGE_PREFIX = "de.dal33t.powerfolder.";
-    
+
     private List<Plugin> plugins;
     private List<Plugin> disabledPlugins;
     private PluginManagerListener listeners;
@@ -155,7 +155,7 @@ public class PluginManager extends PFComponent {
 
     /**
      * Initalized a plugin by classname
-     * 
+     *
      * @param pluginClassName
      *            the classname of the plugin
      */
@@ -227,7 +227,7 @@ public class PluginManager extends PFComponent {
 
     /**
      * is this plugin enabled ?
-     * 
+     *
      * @param plugin
      * @return true if yes
      */
@@ -324,7 +324,7 @@ public class PluginManager extends PFComponent {
 
     /**
      * returns all installed plugins
-     * 
+     *
      * @return the list of all plugins
      */
     public List<Plugin> getPlugins() {
@@ -336,7 +336,7 @@ public class PluginManager extends PFComponent {
 
     /**
      * the total number of installed plugins
-     * 
+     *
      * @return the number of plugins
      */
     public int countPlugins() {

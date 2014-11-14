@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.IOException;
+import java.io.InvalidClassException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import javax.persistence.Embeddable;
@@ -28,10 +32,12 @@ import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.intern.AccountInfoInternalizer;
+import de.dal33t.powerfolder.util.intern.Internalizer;
 
 /**
  * Leightweight reference/info object to an {@link Account}
- * 
+ *
  * @author sprajc
  */
 @Embeddable
@@ -39,14 +45,14 @@ public class AccountInfo implements Serializable {
     public static final String PROPERTYNAME_USERNAME = "username";
 
     private static final long serialVersionUID = 100L;
-
+    private static final Internalizer<AccountInfo> INTERNALIZER = new AccountInfoInternalizer();
+    
     @Index(name = "IDX_ACCOUNT_OID")
     private String oid;
     private String username;
     @Transient
     private String displayName;
 
-    @SuppressWarnings("unused")
     private AccountInfo() {
         // For hibernate.
     }
@@ -79,7 +85,7 @@ public class AccountInfo implements Serializable {
 
     /**
      * TODO Don't actually transfer unscrambled emails to any client.
-     * 
+     *
      * @return a scrabled version of the username in case its a email.
      */
     public String getScrabledUsername() {
@@ -88,7 +94,7 @@ public class AccountInfo implements Serializable {
 
     /**
      * TODO Don't actually transfer unscrambled emails to any client.
-     * 
+     *
      * @return a scrabled version of the username in case its a email.
      */
     private String getScrabledName(String val) {
@@ -105,6 +111,18 @@ public class AccountInfo implements Serializable {
 
     public String getUsername() {
         return username;
+    }
+    
+    public AccountInfo intern(boolean force) {
+        if (force) {
+            return INTERNALIZER.rename(this);
+        } else {
+            return intern();
+        }
+    }
+
+    public AccountInfo intern() {
+        return INTERNALIZER.intern(this);
     }
 
     @Override
@@ -135,5 +153,45 @@ public class AccountInfo implements Serializable {
     @Override
     public String toString() {
         return "AccountInfo '" + getScrabledDisplayName() + "' (" + oid + ')';
+    }
+    
+    // Serializing ************************************************************
+    
+    private static final long extVersionUID = 100L;
+
+    public static AccountInfo readExt(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        AccountInfo accountInfo = new AccountInfo();
+        accountInfo.readExternal(in);
+        return accountInfo;
+    }
+
+    public void readExternal(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        long extUID = in.readLong();
+        if (extUID != extVersionUID) {
+            throw new InvalidClassException(this.getClass().getName(),
+                "Unable to read. extVersionUID(steam): " + extUID
+                    + ", expected: " + extVersionUID);
+        }
+        oid = in.readUTF();
+        username = in.readUTF();
+        if (in.readBoolean()) {
+            displayName = in.readUTF();
+        }
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(extVersionUID);
+        out.writeUTF(oid);
+        out.writeUTF(username);
+        if (displayName != null) {
+            out.writeBoolean(true);
+            out.writeUTF(displayName);
+        } else {
+            out.writeBoolean(false);
+        }
     }
 }

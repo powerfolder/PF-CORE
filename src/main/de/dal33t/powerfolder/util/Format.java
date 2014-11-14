@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.PFComponent;
-
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -32,10 +30,10 @@ import java.util.Locale;
 
 /**
  * Helper class for all formatting
- * 
+ *
  * @version $Revision: 1.6 $
  */
-public class Format extends PFComponent {
+public class Format {
 
     private static final CanonicalDateFormat CANONICAL_DATE_FORMAT = new CanonicalDateFormat();
     private static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
@@ -51,7 +49,7 @@ public class Format extends PFComponent {
 
     /**
      * Returns a count of bytes in a string
-     * 
+     *
      * @param bytes
      * @return
      */
@@ -100,7 +98,7 @@ public class Format extends PFComponent {
             number /= 1024;
             suffix = "TB";
         }
-        
+
         String str = formatDecimal(number);
         if (number < 0) {
             str = "??";
@@ -110,7 +108,7 @@ public class Format extends PFComponent {
 
     /**
      * Long time format. Something like 15:45:46 PM
-     * 
+     *
      * @param date
      * @return
      */
@@ -123,7 +121,7 @@ public class Format extends PFComponent {
 
     /**
      * Short time format. Something like 15:45 PM
-     * 
+     *
      * @param date
      * @return
      */
@@ -139,7 +137,7 @@ public class Format extends PFComponent {
      * (English).
      * <p>
      * Examples: 10 JAN 2010, 30 DEC 2009.
-     * 
+     *
      * @param date
      * @return a date as universal canonical string.
      */
@@ -152,7 +150,7 @@ public class Format extends PFComponent {
      * (English).
      * <p>
      * Examples: 10 JAN 2010, 30 DEC 2009.
-     * 
+     *
      * @param str
      *            the string to parse
      * @return the date.
@@ -164,7 +162,7 @@ public class Format extends PFComponent {
 
     /**
      * Short date format.
-     * 
+     *
      * @param date
      * @return Something like 10/10/09 12:12
      */
@@ -174,7 +172,7 @@ public class Format extends PFComponent {
 
     /**
      * Short date format.
-     * 
+     *
      * @param date
      * @param renderTodayYesterday
      *            if not today, tomorrow or yesterday rendered as actual date
@@ -212,7 +210,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats decimal numbers
-     * 
+     *
      * @param n
      * @return
      */
@@ -222,7 +220,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats long numbers
-     * 
+     *
      * @param n
      * @return
      */
@@ -232,7 +230,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats numbers as percentage. 100.0 --> 100%
-     * 
+     *
      * @param n
      * @return
      */
@@ -259,7 +257,7 @@ public class Format extends PFComponent {
 
     /**
      * Translates a "how much time remaining" value into a string.
-     * 
+     *
      * @param dt
      *            The time in milliseconds
      * @return the formatted string.
@@ -267,27 +265,31 @@ public class Format extends PFComponent {
      */
     public static String formatDeltaTime(long dt) {
         Formatter f = new Formatter();
-        long days = dt / 24 / 3600 / 1000;
-        if (days >= 2) {
-            return f.format(Translation.getTranslation("format.n.days",
-                    String.valueOf(days))).out().toString();
-        }
-        long hours = dt / 3600 / 1000;
-        if (hours >= 2) {
-            return f.format(Translation.getTranslation("format.n.hours",
-                    String.valueOf(hours))).out().toString();
-        }
-        long minutes = dt / 60 / 1000;
-        if (minutes >= 1) {
-            return f.format(Translation.getTranslation("format.n.minutes",
-                    String.valueOf(minutes))).out().toString();
-        } else if (minutes == 1) {
-            return f.format(Translation.getTranslation(
-                    "format.one_minute")).out().toString();
-        } else {
-            return f.format(
-                    Translation.getTranslation("format.less_than_one_minute"))
-                    .out().toString();
+        try {
+            long days = dt / 24 / 3600 / 1000;
+            if (days >= 2) {
+                return f.format(Translation.getTranslation("format.n.days",
+                        String.valueOf(days))).out().toString();
+            }
+            long hours = dt / 3600 / 1000;
+            if (hours >= 2) {
+                return f.format(Translation.getTranslation("format.n.hours",
+                        String.valueOf(hours))).out().toString();
+            }
+            long minutes = dt / 60 / 1000;
+            if (minutes >= 1) {
+                return f.format(Translation.getTranslation("format.n.minutes",
+                        String.valueOf(minutes))).out().toString();
+            } else if (minutes == 1) {
+                return f.format(Translation.getTranslation(
+                        "format.one_minute")).out().toString();
+            } else {
+                return f.format(
+                        Translation.getTranslation("format.less_than_one_minute"))
+                        .out().toString();
+            }
+        } finally {
+            f.close();
         }
     }
 

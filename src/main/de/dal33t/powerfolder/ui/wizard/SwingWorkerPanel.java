@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * A panel that actually starts a swingworker process on display. Automatically
  * switches to the next panel when succeeded otherwise prints error.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

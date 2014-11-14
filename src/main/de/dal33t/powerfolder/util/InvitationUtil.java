@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.task.SendMessageTask;
 
 /**
  * methods for loading and saving powerfolder invitations
- * 
+ *
  * @see Invitation
  */
 public class InvitationUtil {
@@ -66,7 +66,7 @@ public class InvitationUtil {
     /**
      * Loads an invitation from a file. Return the invitation or null if not
      * possible to load the file
-     * 
+     *
      * @param file
      *            The file to load the invitation from
      * @return the invitation, null if file not found or on other error.
@@ -90,7 +90,7 @@ public class InvitationUtil {
     /**
      * Loads an invitation from a file. Return the invitation or null if not
      * possible to load the file
-     * 
+     *
      * @param in
      *            the stream to read from
      * @return the Invitation
@@ -133,7 +133,7 @@ public class InvitationUtil {
 
     /**
      * Save an Invitation to a File
-     * 
+     *
      * @param invitation
      *            the invitation to save
      * @param file
@@ -155,7 +155,7 @@ public class InvitationUtil {
 
     /**
      * Save an Invitation to an Outputstream.
-     * 
+     *
      * @param invitation
      *            the invitation to save
      * @param out
@@ -178,7 +178,7 @@ public class InvitationUtil {
 
     /**
      * Creates a file filter for powerfolder invitations
-     * 
+     *
      * @return a filter accepting .invitation files only.
      */
     public static FileFilter createInvitationsFilefilter() {
@@ -189,14 +189,14 @@ public class InvitationUtil {
 
             public String getDescription() {
                 return Translation
-                    .getTranslation("invitation_files.description");
+                    .getTranslation("exp.invitation_files.description");
             }
         };
     }
 
     /**
      * Handles the invitation to mail option
-     * 
+     *
      * @param controller
      *            the controller
      * @param invitation
@@ -216,7 +216,7 @@ public class InvitationUtil {
 
     /**
      * Handles the invitation to disk option.
-     * 
+     *
      * @param controller
      *            the controller
      * @param invitation
@@ -258,9 +258,9 @@ public class InvitationUtil {
 //        log.info("Writing invitation to " + file);
 //        if (!save(invitation, file)) {
 //            DialogFactory.genericDialog(controller, Translation
-//                .getTranslation("invitation.utils.unable.write.title"),
+//                .getTranslation("exp.invitation.utils.unable.write.title"),
 //                Translation
-//                    .getTranslation("invitation.utils.unable.write.text"),
+//                    .getTranslation("exp.invitation.utils.unable.write.text"),
 //                GenericDialogType.ERROR);
 //            return false;
 //        }
@@ -270,7 +270,7 @@ public class InvitationUtil {
 
     /**
      * Sends an invitation to a connected node.
-     * 
+     *
      * @param controller
      * @param invitation
      * @param node

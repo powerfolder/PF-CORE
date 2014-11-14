@@ -168,12 +168,12 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     /**
      * Re-sorts the folder list with the new comparator only if comparator
      * differs from old one
-     * 
+     *
      * @param newComparator
      * @return if the table was freshly sorted
      */
     private boolean sortBy(NoticeComparator newComparator) {
-        Comparator oldComparator = comparator;
+        Comparator<Notice> oldComparator = comparator;
         comparator = newComparator;
         if (!Util.equals(oldComparator, newComparator)) {
             return sort();
@@ -191,7 +191,7 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
                     Collections.sort(notices, comparator);
                 } else {
                     Collections
-                        .sort(notices, new ReverseComparator(comparator));
+                        .sort(notices, new ReverseComparator<Notice>(comparator));
                 }
             }
             fireModelChanged();

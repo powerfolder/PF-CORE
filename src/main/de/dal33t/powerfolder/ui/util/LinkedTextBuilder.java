@@ -31,14 +31,14 @@ import de.dal33t.powerfolder.Controller;
 
 /**
  * helper class to create a text with links.
- * 
+ *
  * @version $Revision: 1.1 $
  */
 public class LinkedTextBuilder {
 
     /**
      * All lines starting with http:// are transformed into linkLabels.
-     * 
+     *
      * @return PanelBuilder containing the generated JPanel
      */
     public static PanelBuilder build(Controller controller, String text) {

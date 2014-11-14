@@ -29,7 +29,7 @@ import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 /**
  * Class which offers several helper methods for handling with LookAndFeels.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
@@ -45,7 +45,7 @@ public class LookAndFeelSupport {
     /**
      * Sets the look and feel, and sets font so that Asian fonts display okay.
      * See http://www.javasoft.de/jsf/public/products/synthetica/faq#q12
-     * 
+     *
      * @param laf
      * @throws UnsupportedLookAndFeelException
      */

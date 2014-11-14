@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.light.FileHistory.Conflict;
 
 /**
  * Small utility class that packs some problem resolving code together.
- * 
+ *
  * @author "Dennis Waldherr"
  */
 public final class ProblemUtil {
@@ -34,7 +34,7 @@ public final class ProblemUtil {
     /**
      * Resolves the problem that only old clients have a new file, and thus no
      * conflict detection is possible.
-     * 
+     *
      * @param info
      * @param oldSource
      * @return true, if the interrupted action should continue
@@ -48,7 +48,7 @@ public final class ProblemUtil {
 
     /**
      * Resolves the problem that a conflict was detected.
-     * 
+     *
      * @param conflict
      * @return true, if the interrupted action should continue
      */

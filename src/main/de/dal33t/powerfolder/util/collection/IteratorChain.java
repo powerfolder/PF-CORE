@@ -40,7 +40,7 @@ import java.util.List;
  * <p>
  * NOTE: As from version 3.0, the IteratorChain may contain no iterators. In
  * this case the class will function as an empty iterator.
- * 
+ *
  * @since Commons Collections 2.1
  * @version $Revision: 647116 $ $Date: 2008-04-11 12:23:08 +0100 (Fri, 11 Apr
  *          2008) $
@@ -79,7 +79,7 @@ public class IteratorChain implements Iterator {
 
     /**
      * Construct an IteratorChain with a single Iterator.
-     * 
+     *
      * @param iterator
      *            first Iterator in the IteratorChain
      * @throws NullPointerException
@@ -92,7 +92,7 @@ public class IteratorChain implements Iterator {
 
     /**
      * Constructs a new <code>IteratorChain</code> over the two given iterators.
-     * 
+     *
      * @param a
      *            the first child iterator
      * @param b
@@ -108,7 +108,7 @@ public class IteratorChain implements Iterator {
 
     /**
      * Constructs a new <code>IteratorChain</code> over the array of iterators.
-     * 
+     *
      * @param iterators
      *            the array of iterators
      * @throws NullPointerException
@@ -124,7 +124,7 @@ public class IteratorChain implements Iterator {
     /**
      * Constructs a new <code>IteratorChain</code> over the collection of
      * iterators.
-     * 
+     *
      * @param iterators
      *            the collection of iterators
      * @throws NullPointerException
@@ -143,7 +143,7 @@ public class IteratorChain implements Iterator {
     // -----------------------------------------------------------------------
     /**
      * Add an Iterator to the end of the chain
-     * 
+     *
      * @param iterator
      *            Iterator to add
      * @throws IllegalStateException
@@ -161,7 +161,7 @@ public class IteratorChain implements Iterator {
 
     /**
      * Set the Iterator at the given index
-     * 
+     *
      * @param index
      *            index of the Iterator to replace
      * @param iterator
@@ -195,7 +195,7 @@ public class IteratorChain implements Iterator {
 
     /**
      * Number of Iterators in the current IteratorChain.
-     * 
+     *
      * @return Iterator count
      */
     public int size() {
@@ -206,7 +206,7 @@ public class IteratorChain implements Iterator {
      * Determine if modifications can still be made to the IteratorChain.
      * IteratorChains cannot be modified once they have executed a method from
      * the Iterator interface.
-     * 
+     *
      * @return true if IteratorChain cannot be modified, false if it can
      */
     public boolean isLocked() {
@@ -261,7 +261,7 @@ public class IteratorChain implements Iterator {
     // -----------------------------------------------------------------------
     /**
      * Return true if any Iterator in the IteratorChain has a remaining element.
-     * 
+     *
      * @return true if elements remain
      */
     public boolean hasNext() {
@@ -274,7 +274,7 @@ public class IteratorChain implements Iterator {
 
     /**
      * Returns the next Object of the current Iterator
-     * 
+     *
      * @return Object from the current Iterator
      * @throws java.util.NoSuchElementException
      *             if all the Iterators are exhausted
@@ -293,7 +293,7 @@ public class IteratorChain implements Iterator {
      * underlying Iterator. Therefore, this method may throw an
      * UnsupportedOperationException if the underlying Iterator does not support
      * this method.
-     * 
+     *
      * @throws UnsupportedOperationException
      *             if the remove operator is not supported by the underlying
      *             Iterator

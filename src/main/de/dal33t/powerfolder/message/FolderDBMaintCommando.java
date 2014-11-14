@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Commando to trigger the db maintenance on a specified folder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

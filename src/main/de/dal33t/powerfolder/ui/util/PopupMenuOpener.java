@@ -26,7 +26,7 @@ import javax.swing.JPopupMenu;
 
 /**
  * Helper class which opens a popmenu when requested (right-mouseclick)
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */

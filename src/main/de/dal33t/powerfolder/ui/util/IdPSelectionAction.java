@@ -61,11 +61,9 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
                     + URLEncoder.encode(entity, Convert.UTF8.toString());
 
                 HttpGet getBindingURL = new HttpGet(idpLookupURL);
-                DefaultHttpClient client = new DefaultHttpClient();
-                HttpResponse httpResponse;
 
-                try {
-                    httpResponse = client.execute(getBindingURL);
+                try (DefaultHttpClient client = new DefaultHttpClient()) {
+                    HttpResponse httpResponse = client.execute(getBindingURL);
                     String ecpURL = EntityUtils.toString(httpResponse
                         .getEntity());
 

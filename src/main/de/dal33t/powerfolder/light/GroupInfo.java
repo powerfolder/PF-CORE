@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.security.Group;
 
 /**
  * Leightweight reference/info object to an {@link Group}
- * 
+ *
  * @author sprajc
  */
 public class GroupInfo implements Serializable {
@@ -24,15 +24,15 @@ public class GroupInfo implements Serializable {
         this.oid = oid;
         this.displayName = displayName;
     }
-    
+
     public String getOID() {
         return oid;
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;

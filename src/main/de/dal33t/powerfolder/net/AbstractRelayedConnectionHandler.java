@@ -37,8 +37,8 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RelayedMessage;
-import de.dal33t.powerfolder.message.RelayedMessageExt;
 import de.dal33t.powerfolder.message.RelayedMessage.Type;
+import de.dal33t.powerfolder.message.RelayedMessageExt;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -428,8 +428,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 }
                 byte[] data = serialize(message);
                 RelayedMessage dataMsg = identity != null
-                    && identity.getProtocolVersion() >= 108
-                    && relay.getProtocolVersion() >= 108
+                    && identity.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
+                    && relay.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
                     ? new RelayedMessageExt(Type.DATA_ZIPPED, getController()
                         .getMySelf().getInfo(), remote, connectionId, data)
                     : new RelayedMessage(Type.DATA_ZIPPED, getController()
@@ -943,5 +943,4 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             // logWarning("Sender finished after sending " + i + " messages");
         }
     }
-
 }

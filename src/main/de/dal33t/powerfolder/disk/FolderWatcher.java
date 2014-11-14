@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * TRAC #711: Automatic change detection by watching the filesystem.
  * <p>
  * Does NOT watch Meta Folders.
- * 
+ *
  * @author sprajc
  */
 public class FolderWatcher extends PFComponent {
@@ -76,7 +76,7 @@ public class FolderWatcher extends PFComponent {
     /**
      * Adds a file to the ingore list. Files won't get scanned by FolderWatcher
      * until they get removed.
-     * 
+     *
      * @param fInfo
      */
     void addIgnoreFile(FileInfo fInfo) {
@@ -93,7 +93,7 @@ public class FolderWatcher extends PFComponent {
     /**
      * Removes a file from the ignore list. Files afterwards get automatically
      * scanned if a file system change event occurs.
-     * 
+     *
      * @param fInfo
      */
     void removeIgnoreFile(final FileInfo fInfo) {
@@ -225,7 +225,7 @@ public class FolderWatcher extends PFComponent {
             }
             FileInfo dirtyFile = null;
             try {
-                
+
                 List<FileInfo> fileInfos = new LinkedList<FileInfo>();
                 if (folder.checkIfDeviceDisconnected()) {
                     logFine("Device disconnected while scanning " + folder
@@ -315,7 +315,7 @@ public class FolderWatcher extends PFComponent {
             if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
             }
-            
+
             name = PathUtils.getDiskFileName(rootPath, name);
             name = FileInfoFactory.decodeIllegalChars(name);
             if (dirtyFiles.containsKey(name)) {

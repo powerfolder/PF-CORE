@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Reject;
  * A lightweight object representing an actual directory in the PowerFolder.
  * <p>
  * Related ticket: #378
- * 
+ *
  * @author sprajc
  */
 public class DirectoryInfo extends FileInfo {
@@ -38,20 +38,21 @@ public class DirectoryInfo extends FileInfo {
         super();
     }
 
-    DirectoryInfo(String fileName, MemberInfo modifiedBy,
-        Date lastModifiedDate, int version, boolean deleted,
-        FolderInfo folderInfo)
+    DirectoryInfo(String fileName, String oid, MemberInfo modifiedBy,
+        AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
+        String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
-        super(fileName, 0, modifiedBy, lastModifiedDate, version, deleted,
-            folderInfo);
+        super(fileName, oid, 0, modifiedBy, modifiedByAccount,
+            lastModifiedDate, version, hashes, deleted, tags, folderInfo);
     }
 
-    DirectoryInfo(String fileName, long size, MemberInfo modifiedBy,
-        Date lastModifiedDate, int version, boolean deleted,
-        FolderInfo folderInfo)
+    DirectoryInfo(String fileName, String oid, long size,
+        MemberInfo modifiedBy, AccountInfo modifiedByAccount,
+        Date lastModifiedDate, int version, String hashes, boolean deleted,
+        String tags, FolderInfo folderInfo)
     {
-        super(fileName, size, modifiedBy, lastModifiedDate, version, deleted,
-            folderInfo);
+        super(fileName, oid, size, modifiedBy, modifiedByAccount,
+            lastModifiedDate, version, hashes, deleted, tags, folderInfo);
     }
 
     DirectoryInfo(FolderInfo folder, String name) {
@@ -72,13 +73,13 @@ public class DirectoryInfo extends FileInfo {
 
     @Override
     public String toString() {
-        return '[' + getFolderInfo().name + "]:"
+        return '[' + getFolderInfo().getLocalizedName() + "]:"
             + (isDeleted() ? "(del) /" : "/") + getRelativeName() + " (D)";
     }
 
     /**
      * appends to buffer
-     * 
+     *
      * @param str
      *            the stringbuilder to add the detail info to.
      */

@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
  * Your plugin should take care of its own settings, the best way to do that is
  * access the configfile like this:
  * <code>Properties config = getController().getConfig();</code>
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public interface Plugin {
@@ -70,14 +70,14 @@ public interface Plugin {
 
     /**
      * does this plugin has an options dialog?
-     * 
+     *
      * @return true if options are available
      */
     boolean hasOptionsDialog();
 
     /**
      * should show an options dialog
-     * 
+     *
      * @param prefDialog
      *            the preferences dialog
      */

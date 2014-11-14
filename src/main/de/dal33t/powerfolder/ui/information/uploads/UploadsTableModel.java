@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
@@ -50,7 +51,7 @@ import de.dal33t.powerfolder.util.compare.TransferComparator;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.5.2.1 $
  */
@@ -77,7 +78,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Constructs a new table model for uploads.
-     * 
+     *
      * @param model
      *            the transfermanager model
      */
@@ -114,7 +115,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     /**
      * UI does not care about metaFolder events.
-     * 
+     *
      * @param upload
      * @return
      */
@@ -175,7 +176,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     * 
+     *
      * @param newComparatorType
      * @return if the table was freshly sorted
      */
@@ -202,7 +203,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
                     Collections.sort(uploads, comparator);
                 } else {
                     Collections
-                        .sort(uploads, new ReverseComparator(comparator));
+                        .sort(uploads, new ReverseComparator<Transfer>(comparator));
                 }
             }
             return true;
@@ -260,7 +261,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Searches downloads for a download with identical FileInfo.
-     * 
+     *
      * @param downloadArg
      *            download to search for identical copy
      * @return index of the download with identical FileInfo, -1 if not found
@@ -281,7 +282,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     /**
      * Removes one upload from the model an returns its previous index
-     * 
+     *
      * @param upload
      * @return the index where this upload was removed from.
      */
@@ -404,7 +405,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         return sortAscending;
     }
 
-    public Class getColumnClass(int columnIndex) {
+    public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case COLTYPE :
             case COLFILE :
@@ -472,7 +473,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     /**
      * Listener on Transfer manager with new event system. TODO: Consolidate
      * removing uploads on abort/complete/broken
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class UploadTransferManagerListener extends TransferManagerAdapter {

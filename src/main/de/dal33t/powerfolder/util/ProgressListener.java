@@ -21,14 +21,14 @@ package de.dal33t.powerfolder.util;
 
 /**
  * A general listener for task the can inform about a progress.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
 public interface ProgressListener {
     /**
      * ATTENTION: Is NOT ensured to be called in Event-dispatching thread.
-     * 
+     *
      * @param percentageReached
      *            the percentage reached of the progress.
      */

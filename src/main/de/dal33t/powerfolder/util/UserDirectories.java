@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Utility class to find common user directories.
- * 
+ *
  * @author sprajc
  */
 public class UserDirectories {
@@ -341,7 +341,7 @@ public class UserDirectories {
 
     /**
      * Adds a generic user directory if if exists for this os.
-     * 
+     *
      * @param root
      * @param subdir
      * @param translationId
@@ -361,7 +361,7 @@ public class UserDirectories {
 
     /**
      * Adds a generic user directory if if exists for this os.
-     * 
+     *
      * @param translationId
      * @param allowHidden
      *            allow display of hidden dirs
@@ -390,7 +390,7 @@ public class UserDirectories {
                 return true;
             }
         } catch (IOException ioe) {
-            // TODO: 
+            // TODO:
         }
         return false;
     }

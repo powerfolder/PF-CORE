@@ -8,14 +8,14 @@ public interface MembersTab {
 
     /**
      * Set the tab with details for a folder.
-     * 
+     *
      * @param folderInfo
      */
     public abstract void setFolderInfo(FolderInfo folderInfo);
 
     /**
      * Gets the ui component
-     * 
+     *
      * @return
      */
     public abstract JPanel getUIComponent();

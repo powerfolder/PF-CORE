@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 /**
  * Abstract {@link FileRecordProvider} which can compute {@link FilePartsRecord}
  * s based on {@link FileInfo}s.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public abstract class AbstractFileRecordProvider implements FileRecordProvider {

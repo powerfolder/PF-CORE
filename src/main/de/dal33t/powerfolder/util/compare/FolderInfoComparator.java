@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Comparator which sorts folder infos.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */

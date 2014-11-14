@@ -32,11 +32,11 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class DetectHardwareFailure extends ControllerTestCase {
 
     public void setUp() throws Exception {
-        
-        super.setUp();     
+
+        super.setUp();
 
         setupTestFolder(SyncProfile.HOST_FILES);
-        
+
         Path localbase = getFolder().getLocalBase();
         // create 100 random files
         for (int i = 0; i < 100; i++) {
@@ -56,7 +56,7 @@ public class DetectHardwareFailure extends ControllerTestCase {
         assertEquals(200, getFolder().getKnownFiles().size());
         // now delete the folder :-D
         PathUtils.recursiveDelete(getFolder().getLocalBase());
-        
+
         scanFolder(getFolder());
         assertEquals(200, getFolder().getKnownFiles().size());
         // on hardware failure of deletion of folder of disk we don't want to

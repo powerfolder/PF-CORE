@@ -23,20 +23,20 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Representation of a windows shell link file.
- * 
+ *
  * @author <A HREF="mailto:bytekeeper@powerfolder.com">Dennis Waldherr</A>
  * @version $Revision$
  *
  */
 public class ShellLink {
     /*
-     * WARNING: Don't change the names of these variables, they're accessed directly by native code! 
+     * WARNING: Don't change the names of these variables, they're accessed directly by native code!
      */
 	private final String arguments;
 	private final String description;
 	private final String path;
 	private final String workdir;
-    
+
 	/**
 	 * Creates a wrapper for IShellLink in windows.
 	 * @param arguments contains the arguments, may be null
@@ -53,7 +53,7 @@ public class ShellLink {
         this.path = path;
         this.workdir = workdir;
     }
-	
+
 	public ShellLink(String arguments, String path, String workdir) {
 	    this(arguments, null, path, workdir);
 	}

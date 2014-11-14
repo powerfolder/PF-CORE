@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Helper class to handle message listener/firing
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
@@ -53,7 +53,7 @@ public class MessageListenerSupport extends Loggable {
     /**
      * Initializes the the message listener support with a logger from the
      * parent
-     * 
+     *
      * @param source
      *            the source
      */
@@ -70,7 +70,7 @@ public class MessageListenerSupport extends Loggable {
 
     /**
      * Adds a message listener, which is triggerd on all received message
-     * 
+     *
      * @param aListener
      */
     public void addMessageListener(MessageListener aListener) {
@@ -80,7 +80,7 @@ public class MessageListenerSupport extends Loggable {
     /**
      * Adds a message listener, which is only triggerd if a message of type
      * <code>messageType</code> is received.
-     * 
+     *
      * @param messageType
      * @param aListener
      */
@@ -110,7 +110,7 @@ public class MessageListenerSupport extends Loggable {
 
     /**
      * Removes a message listener completely from the message listener support
-     * 
+     *
      * @param aListener
      */
     public void removeMessageListener(MessageListener aListener) {
@@ -157,7 +157,7 @@ public class MessageListenerSupport extends Loggable {
 
     /**
      * Fires a message to all message listeners
-     * 
+     *
      * @param theSource
      *            the source member from the message
      * @param message

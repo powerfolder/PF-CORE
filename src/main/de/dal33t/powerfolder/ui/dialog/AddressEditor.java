@@ -71,7 +71,7 @@ public class AddressEditor extends BaseDialog {
         super(Senior.NONE, controller, true);
         result = EditorResult.CANCEL;
         validationResultModel = new DefaultValidationResultModel();
-        
+
         addressModel = new ValueHolder();
         // Trigger validation when the address model changes
         addressModel.addValueChangeListener(new PropertyChangeListener() {
@@ -83,7 +83,7 @@ public class AddressEditor extends BaseDialog {
             }
         });
         addressModel.setValue(string);
-        
+
         ActionListener okAction = new OKAction();
         okButton = createOKButton(okAction);
         cancelButton = createCancelButton(new ActionListener() {
@@ -91,7 +91,7 @@ public class AddressEditor extends BaseDialog {
                 close();
             }
         });
-        
+
         // Create a textfield that is bound to the address model
         inputLine = BasicComponentFactory.createTextField(addressModel, false);
         inputLine.setColumns(40);
@@ -115,7 +115,7 @@ public class AddressEditor extends BaseDialog {
         builder.add(inputLine, cc.xy(1, 1));
         builder.add(ValidationResultViewFactory
             .createReportList(validationResultModel), cc.xy(1, 3));
-        
+
         return builder.getPanel();
     }
 
@@ -143,7 +143,7 @@ public class AddressEditor extends BaseDialog {
             }
         }
     }
-    
+
     public String getAddressRange() {
         return (String) addressModel.getValue();
     }
@@ -157,7 +157,7 @@ public class AddressEditor extends BaseDialog {
      */
     private static class AddressRangeValidator implements Validator {
         private String input;
-        
+
         /**
          * @param input
          */

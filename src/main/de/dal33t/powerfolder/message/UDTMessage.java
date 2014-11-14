@@ -38,33 +38,33 @@ public class UDTMessage extends Message {
 		/**
 		 * Requests a UDT connection
 		 */
-		SYN, 
-		
+		SYN,
+
 		/**
 		 * Acknowledges a UDT connection attempt
 		 */
-		ACK, 
-		
+		ACK,
+
 		/**
 		 * Rejects a UDT connection attempt
 		 */
 		NACK;
 	};
-	
+
 	public UDTMessage(Type type, MemberInfo source, MemberInfo dest, int port) {
 		this.type = type;
 		this.source = source;
 		destination = dest;
 		this.port = port;
 	}
-	
+
 	public Type getType() {
 		return type;
 	}
-	
+
 	/**
-	 * The sender of this message will open a UDT socket on this port once the connection should be established. 
-	 * @return the port the receiver should try to connect to 
+	 * The sender of this message will open a UDT socket on this port once the connection should be established.
+	 * @return the port the receiver should try to connect to
 	 */
 	public int getPort() {
 		return port;
@@ -77,7 +77,7 @@ public class UDTMessage extends Message {
 	public MemberInfo getDestination() {
 		return destination;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "{UDTMessage from: " + getSource() + ", to: " + getDestination() + ", type: " + getType()

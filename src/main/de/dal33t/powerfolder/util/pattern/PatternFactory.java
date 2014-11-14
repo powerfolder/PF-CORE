@@ -21,12 +21,13 @@ package de.dal33t.powerfolder.util.pattern;
 
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Factory to retrieve the pattern match implementation which is most performant
  * for given pattern.
- * 
+ *
  * @author sprajc
  */
 public class PatternFactory {
@@ -38,7 +39,7 @@ public class PatternFactory {
 
     /**
      * Auto-chooses fastest implementation of pattern algo.
-     * 
+     *
      * @param patternText
      * @return a pattern implementation for the given pattern text.
      */
@@ -61,7 +62,13 @@ public class PatternFactory {
         {
             // This is a heuristisc but much quicker implementation for ignoring
             // officex temp files.
-            return new OfficeTempFilesMatchPattern("~$", "*");
+            return new OfficeTempFilesMatchPattern(Constants.MS_OFFICE_FILENAME_PREFIX, "*");
+        } else if (patternText.toLowerCase().equalsIgnoreCase(
+            DefaultExcludes.LIBRE_TEMP.getPattern()))
+        {
+            // This is a heuristisc but much quicker implementation for ignoring
+            // officex temp files.
+            return new OfficeTempFilesMatchPattern(Constants.LIBRE_OFFICE_FILENAME_PREFIX, "*");
         } else {
             // Fallback solution: Works for all, but is not optimized.
             LOG.fine("Using fallback for pattern '" + patternText + "'");

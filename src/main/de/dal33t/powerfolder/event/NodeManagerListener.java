@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.net.NodeManager;
 
 /**
  * Implement this class to receive events from the NodeManager.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom </A>
  * @version $Revision: 1.2 $
  */
@@ -32,7 +32,7 @@ public interface NodeManagerListener extends CoreListener {
     /**
      * Called if a node was added to the internal member node storage of
      * {@link NodeManager}
-     * 
+     *
      * @param e
      */
     public void nodeAdded(NodeManagerEvent e);
@@ -40,7 +40,7 @@ public interface NodeManagerListener extends CoreListener {
     /**
      * Called if a node was removef from the internal member node storage of
      * {@link NodeManager}
-     * 
+     *
      * @param e
      */
     public void nodeRemoved(NodeManagerEvent e);
@@ -49,21 +49,21 @@ public interface NodeManagerListener extends CoreListener {
      * When a node started connecting. Will be followed by
      * {@link #nodeConnected(NodeManagerEvent)} or
      * {@link #nodeDisconnected(NodeManagerEvent)}
-     * 
+     *
      * @param e
      */
     public void nodeConnecting(NodeManagerEvent e);
 
     /**
      * When the node actually connected to this computer.
-     * 
+     *
      * @param e
      */
     public void nodeConnected(NodeManagerEvent e);
 
     /**
      * If physically disconnects
-     * 
+     *
      * @param e
      */
     public void nodeDisconnected(NodeManagerEvent e);
@@ -71,14 +71,14 @@ public interface NodeManagerListener extends CoreListener {
     /**
      * Event when this node gets ONLINE in the network. This does NOT mean that
      * this node is directly connected!!
-     * 
+     *
      * @param e
      */
     public void nodeOnline(NodeManagerEvent e);
 
     /**
      * When the node leaves/shuts down from the online network.
-     * 
+     *
      * @param e
      */
     public void nodeOffline(NodeManagerEvent e);

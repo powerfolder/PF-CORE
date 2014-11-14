@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.PathUtils;
  * same restrictions!<BR>
  * Ref: <A HREF="http://en.wikipedia.org/wiki/Filename">Wikepedia/Filename</A>
  * <p/>
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilenameProblemHelper {
@@ -61,7 +61,7 @@ public class FilenameProblemHelper {
 
     /**
      * See if there are any problems.
-     * 
+     *
      * @param fInfo
      * @return
      */
@@ -70,7 +70,7 @@ public class FilenameProblemHelper {
     }
     /**
      * See if there are any problems.
-     * 
+     *
      * @param filename
      * @return
      */
@@ -84,7 +84,7 @@ public class FilenameProblemHelper {
 
     /**
      * Create problems for the file.
-     * 
+     *
      * @param controller
      * @param fileInfo
      * @return
@@ -212,12 +212,14 @@ public class FilenameProblemHelper {
             return;
         }
 
-        Path newFile = PathUtils.buildFileFromRelativeName(folder
-                .getLocalBase(), newFilename);
+        Path newFile = PathUtils.buildFileFromRelativeName(
+            folder.getLocalBase(), newFilename);
         try {
             Files.move(file, newFile);
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
-                controller.getMySelf().getInfo(), false);
+                fileInfo.getOID(), controller.getMySelf().getInfo(), controller
+                    .getMySelf().getAccountInfo(), fileInfo.getHashes(), false,
+                fileInfo.getTags());
             if (folder.isKnown(fileInfo)) {
                 folder.removeFilesLocal(fileInfo);
             }
@@ -244,7 +246,7 @@ public class FilenameProblemHelper {
 
     /**
      * Unique if a file with that name does not exist
-     * 
+     *
      * @param controller
      * @param newName
      *            the new name WITHOUT path!
@@ -275,7 +277,7 @@ public class FilenameProblemHelper {
     /**
      * Tries to find a shorter, unique filename in a folder for a file that has
      * a really long name.
-     * 
+     *
      * @see #isTooLong(String)
      * @see TooLongFilenameProblem
      * @param controller
@@ -304,7 +306,7 @@ public class FilenameProblemHelper {
 
     /**
      * Makes a unique filename in a folder.
-     * 
+     *
      * @param controller
      * @param fileInfo
      * @return

@@ -74,7 +74,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public DownloadsTablePanel(Controller controller,
@@ -90,7 +90,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns the ui component.
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {
@@ -126,7 +126,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Add a selection listener to the table.
-     * 
+     *
      * @param l
      */
     public void addListSelectionListener(ListSelectionListener l) {
@@ -136,7 +136,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Add a table model listener to the model.
-     * 
+     *
      * @param l
      */
     public void addTableModelListener(TableModelListener l) {
@@ -240,7 +240,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if the table has any rows.
-     * 
+     *
      * @return
      */
     public boolean isRowsExist() {
@@ -276,7 +276,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if a single completed download is selected.
-     * 
+     *
      * @return
      */
     public boolean isSingleCompleteSelected() {
@@ -399,7 +399,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class TableHeaderMouseListener extends MouseAdapter {

@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
  * Access/Control over folders of a server.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -43,7 +43,7 @@ public interface FolderService {
 
     /**
      * Creates a new folder to be mirrored by the server. Default Sync
-     * 
+     *
      * @param foInfo
      * @param profile
      *            the transfer mode to use on the server or null if default mode
@@ -51,14 +51,14 @@ public interface FolderService {
      * @see SyncProfile#getDefault(de.dal33t.powerfolder.Controller)
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile);
-    
+
     void createFolder(FolderInfo foInfo, SyncProfile profile,
         Path targetDir);
 
     /**
      * Removes a folder from the account. Required owner permission if
      * deletedFiles is true.
-     * 
+     *
      * @param foInfo
      * @param deleteFiles
      *            true to delete all file contained in the folder. Requires
@@ -66,12 +66,12 @@ public interface FolderService {
      * @deprecated legacy support. remove after major 4.0 distribution
      */
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
-    
+
 
     /**
      * Removes a folder from the account. Required owner permission if
      * deletedFiles is true.
-     * 
+     *
      * @param foInfo
      * @param deleteFiles
      *            true to delete all file contained in the folder. Requires
@@ -83,20 +83,20 @@ public interface FolderService {
         boolean removePermission);
 
     /**
-     * #854
-     * 
+     * #854 - PFS-486
+     *
      * @param foInfo
      *            the folder to change the name for!
      * @param newName
      *            the new name of the folder.
-     * @return the new folder info object.
+     * @return {@code True} if the folder was moved, {@code false} otherwise.
      */
-    FolderInfo renameFolder(FolderInfo foInfo, String newName);
+    boolean renameFolder(FolderInfo foInfo, String newName);
 
     /**
      * Invites a user to a folder. The invited user gains read/write
      * permissions.
-     * 
+     *
      * @param user
      *            the name of the user to be invited
      * @param invitation
@@ -119,7 +119,7 @@ public interface FolderService {
 
     /**
      * Changes the sync profile on the remote server for this folder.
-     * 
+     *
      * @param foInfo
      * @param profile
      */
@@ -130,7 +130,7 @@ public interface FolderService {
      * <p>
      * To get the default synchronized folder use
      * <code>Account.getDefaultSynchronizedFolder()</code>.
-     * 
+     *
      * @param foInfo
      *            the folder that should be used as default synchronized folder
      *            for the current account.
@@ -148,7 +148,7 @@ public interface FolderService {
 
     /**
      * Retrieves a List of existing FileInfos for an archived file.
-     * 
+     *
      * @param fileInfo
      *            fileInfo of the file to get archived versions for.
      * @return list of archived {@link FileInfo}.
@@ -159,7 +159,7 @@ public interface FolderService {
      * Restores/Copies a file version from the archive to a new File within the
      * folder. Does NOT deleted the file in the archive. Does scan the related
      * folder and returns the new FileInfo of the restored file.
-     * 
+     *
      * @param versionInfo
      *            the FileInfo of the archived file.
      * @param sameLocation
@@ -175,12 +175,12 @@ public interface FolderService {
     @Deprecated
     FileInfo restore(FileInfo versionInfo, boolean sameLocation)
         throws IOException;
-    
+
     /**
      * Restores/Copies a file version from the archive to a new File within the
      * folder. Does NOT deleted the file in the archive. Does scan the related
      * folder and returns the new FileInfo of the restored file.
-     * 
+     *
      * @param versionInfo
      *            the FileInfo of the archived file.
      * @param newRelativeName
@@ -196,15 +196,15 @@ public interface FolderService {
 
     /**
      * Controls the archive configuration on the server.
-     * 
+     *
      * @param foInfo
      * @param versionsPerFile
      */
     void setArchiveMode(FolderInfo foInfo, int versionsPerFile);
-    
+
     /**
      * Controls the archive configuration on the server.
-     * 
+     *
      * @param foInfo
      * @param mode
      * @param versionsPerFile
@@ -217,7 +217,7 @@ public interface FolderService {
 
     /**
      * To empty/purge the online stored archive.
-     * 
+     *
      * @param foInfo
      * @return if succeeded
      */
@@ -240,10 +240,18 @@ public interface FolderService {
      * @return
      */
     String getWebDAVURL(FolderInfo foInfo);
+    
+    /**
+     * PFC-2284
+     * 
+     * @param foInfo
+     * @return the display name of the owner
+     */
+    String getOwnerDisplayname(FolderInfo foInfo);
 
     /**
      * Create a file link.
-     * 
+     *
      * @param fInfo
      * @param folder
      * @return the URL to the file link
@@ -251,8 +259,16 @@ public interface FolderService {
     String getFileLink(FileInfo fInfo);
 
     /**
-     * Create a download link.
+     * Remove a file link.
      * 
+     * @param fInfo
+     * @return
+     */
+    void removeFileLink(FileInfo fInfo);
+
+    /**
+     * Create a download link.
+     *
      * @param fInfo
      * @param folder
      */
@@ -260,7 +276,7 @@ public interface FolderService {
 
     /**
      * Bulk get of archive and local folders size.
-     * 
+     *
      * @param foInfos
      * @return [0] = the local size occupied by the given folders.
      *         <p>
@@ -270,7 +286,7 @@ public interface FolderService {
 
     /**
      * Returns stats for all folders which are available in the cluster.
-     * 
+     *
      * @param foInfos
      * @return the {@link FolderStatisticInfo} for the given {@link FolderInfo}
      *         s.
@@ -280,14 +296,14 @@ public interface FolderService {
 
     /**
      * Returns stats only for the locally synced folders.
-     * 
+     *
      * @param foInfos
      * @return the {@link FolderStatisticInfo} for the given {@link FolderInfo}
      *         s.
      */
     Map<FolderInfo, FolderStatisticInfo> getLocalStatisticInfo(
         Collection<FolderInfo> foInfos);
-    
-    
+
+
 
 }

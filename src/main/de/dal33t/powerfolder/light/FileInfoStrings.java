@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.light;
 
 /**
  * A object, that holds some cost-intense strings about a fileinfo.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

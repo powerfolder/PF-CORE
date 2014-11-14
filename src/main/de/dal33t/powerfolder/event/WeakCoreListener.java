@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 /**
  * For weak core listeners. Unregisteres itself once a event is fired and the
  * referred listener has been GCed.
- * 
+ *
  * @author sprajc
  */
 class WeakCoreListener implements CoreListener, InvocationHandler {

@@ -26,7 +26,7 @@ import org.hibernate.HibernateException;
 
 /**
  * A Runnable that wraps an deligate and logs all exceptions and errors
- * 
+ *
  * @author sprajc
  */
 public class WrappedRunnable implements Runnable {

@@ -25,7 +25,7 @@ import java.util.EventListener;
 
 /**
  * To recieve events from the SelectionModel implement this interface.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */

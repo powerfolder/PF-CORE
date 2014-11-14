@@ -28,7 +28,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * Base class for all classes, which use the Controller (most classes in
  * PowerFolder do).
- * 
+ *
  * @see Controller
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
@@ -55,7 +55,7 @@ public abstract class PFComponent extends Loggable {
     /**
      * Returns the controller where this component belongs to, gives access to
      * all PowerFolder core components.
-     * 
+     *
      * @return the controller
      */
     public Controller getController() {
@@ -64,7 +64,7 @@ public abstract class PFComponent extends Loggable {
 
     /**
      * Convenience method for <code>getController().getMySelf()</code>
-     * 
+     *
      * @return myself
      */
     protected Member getMySelf() {
@@ -75,7 +75,7 @@ public abstract class PFComponent extends Loggable {
 
     /**
      * Fires a property change event on a property
-     * 
+     *
      * @param propName
      * @param oldValue
      * @param newValue
@@ -89,7 +89,7 @@ public abstract class PFComponent extends Loggable {
 
     /**
      * Fires a property change event on a property for <code>boolean</code>
-     * 
+     *
      * @param propName
      * @param oldValue
      * @param newValue
@@ -103,7 +103,7 @@ public abstract class PFComponent extends Loggable {
 
     /**
      * Fires a property change event on a property for <code>int</code>
-     * 
+     *
      * @param propName
      * @param oldValue
      * @param newValue
@@ -117,7 +117,7 @@ public abstract class PFComponent extends Loggable {
 
     /**
      * Adds a property change listener
-     * 
+     *
      * @param listener
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -126,7 +126,7 @@ public abstract class PFComponent extends Loggable {
 
     /**
      * Adds a property change listener on a property
-     * 
+     *
      * @param propertyName
      * @param listener
      */
@@ -139,7 +139,7 @@ public abstract class PFComponent extends Loggable {
 
     /**
      * removes a property change listener
-     * 
+     *
      * @param listener
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {

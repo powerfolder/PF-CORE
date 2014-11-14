@@ -29,7 +29,7 @@ import java.net.Inet4Address;
 public final class NetworkAddress {
 	private Inet4Address address;
 	private SubnetMask mask;
-	
+
 	public NetworkAddress(Inet4Address ip, Inet4Address subnet) {
 		this(ip, new SubnetMask(subnet));
 	}
@@ -61,13 +61,13 @@ public final class NetworkAddress {
 	}
     /**
      * Returns true if the address specified by this object is valid.
-     * If it's not valid it cannot be used to test subnets etc. with other addresses. 
+     * If it's not valid it cannot be used to test subnets etc. with other addresses.
      * @return
      */
     public boolean isValid() {
         return !address.getHostAddress().equals("0.0.0.0") &&
             !address.getHostAddress().equals("255.255.255.255");
     }
-	
-	
+
+
 }

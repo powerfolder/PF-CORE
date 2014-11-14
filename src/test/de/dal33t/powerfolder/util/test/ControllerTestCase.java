@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.Format;
  * running
  * <p>
  * You can access the controller and do manupulating/testing stuff on it
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -125,7 +125,7 @@ public abstract class ControllerTestCase extends TestCase {
     /**
      * Joins the controller into a testfolder. get these testfolder with
      * <code>getFolder()</code>.
-     * 
+     *
      * @see #getFolder()
      * @param syncprofile
      * @param useRecycleBin
@@ -140,7 +140,7 @@ public abstract class ControllerTestCase extends TestCase {
 
     /**
      * Let the controller join the specified folder.
-     * 
+     *
      * @param foInfo
      *            the folder to join
      * @param baseDir
@@ -172,7 +172,7 @@ public abstract class ControllerTestCase extends TestCase {
 
     /**
      * Waits for the controller to startup
-     * 
+     *
      * @param aController
      * @throws InterruptedException
      */
@@ -192,7 +192,7 @@ public abstract class ControllerTestCase extends TestCase {
     /**
      * Tests if the diskfile matches the fileinfo. Checks name, lenght/size,
      * modification date and the deletion status.
-     * 
+     *
      * @param diskFile
      *            the diskfile to compare
      * @param fInfo

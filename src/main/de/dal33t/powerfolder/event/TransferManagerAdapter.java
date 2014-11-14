@@ -24,7 +24,7 @@ public abstract class TransferManagerAdapter implements TransferManagerListener 
 
     public void downloadRequested(TransferManagerEvent event) {
     }
-    
+
     public void downloadQueued(TransferManagerEvent event) {
     }
 
@@ -39,10 +39,10 @@ public abstract class TransferManagerAdapter implements TransferManagerListener 
 
     public void downloadCompleted(TransferManagerEvent event) {
     }
-    
+
     public void completedDownloadRemoved(TransferManagerEvent event) {
     }
-    
+
     public void pendingDownloadEnqueued(TransferManagerEvent event) {
     }
 

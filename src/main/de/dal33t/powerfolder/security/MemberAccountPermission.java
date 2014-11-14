@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 /**
  * Model that holds extended information about a folder {@link Member} and/or
  * {@link AccountInfo} and it's {@link Permission}
- * 
+ *
  * @author sprajc
  */
 public class MemberAccountPermission {

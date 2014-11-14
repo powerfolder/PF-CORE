@@ -24,7 +24,7 @@ public class FilesBreadcrumbPanel extends PFUIComponent {
 
     /**
      * Returns the breadcrumb panel.
-     * 
+     *
      * @return
      */
     public JPanel getUiComponent() {

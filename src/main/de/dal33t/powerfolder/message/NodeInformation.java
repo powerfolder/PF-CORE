@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Node information
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
@@ -37,7 +37,7 @@ public class NodeInformation extends Message {
 
     /**
      * Constructs a node information
-     * 
+     *
      * @param c
      */
     public NodeInformation(Controller c) {

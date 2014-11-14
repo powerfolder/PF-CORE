@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * To internalize {@link FolderInfo}s into a weak hash map.
- * 
+ *
  * @author sprajc
  */
 public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
@@ -46,7 +46,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         synchronized (INSTANCES) {
             internInstance = INSTANCES.get(folderInfo);
             if (internInstance == null) {
-                if (StringUtils.isBlank(folderInfo.name)) {
+                if (StringUtils.isBlank(folderInfo.getName())) {
                     // Not interned folder info without name.
                     // System.err.println("INTERN FAILED: " + folderInfo + " / "
                     // + folderInfo.getId());
@@ -62,7 +62,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         return internInstance;
     }
 
-    public FolderInfo sudoIntern(FolderInfo foInfo) {
+    public FolderInfo rename(FolderInfo foInfo) {
         if (foInfo == null) {
             return null;
         }

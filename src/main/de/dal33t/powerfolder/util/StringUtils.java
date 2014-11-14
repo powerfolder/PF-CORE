@@ -1,5 +1,8 @@
 package de.dal33t.powerfolder.util;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
 public class StringUtils {
 	/**
      * <p>Checks if a String is empty ("") or null.</p>
@@ -94,7 +97,7 @@ public class StringUtils {
         }
         return false;
     }
-    
+
     /**
      * <p>Replaces all occurrences of a String within another String.</p>
      *
@@ -121,7 +124,7 @@ public class StringUtils {
     public static String   replace(String   text, String   repl, String   with) {
         return replace(text, repl, with, -1);
     }
-    
+
     /**
      * <p>Replaces a String with another String inside a larger String,
      * for the first <code>max</code> values of the search String.</p>
@@ -180,4 +183,71 @@ public class StringUtils {
         }
     }
 
+    /**
+     * Concatenates a list of Strings, using a given seperator.
+     *
+     * <pre>
+     * StringUtils.join(",", []) = ""
+     * StringUtils.join(",", ["a", "b"]) = "a,b"
+     * StringUtils.join("x", ["a", "b", "c", "d", "e"]) = "axbxcxdxe"
+     * </pre>
+     *
+     * @param separator
+     *            a String to separate the joined values. May be empty.
+     * @param strings
+     *            a list of Strings to be joined
+     * @return a single String containing all of the individual strings
+     */
+    public static String join(String separator, Iterable<String> strings) {
+        Iterator<String> it = strings.iterator();
+        if (!it.hasNext()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(it.next());
+        while (it.hasNext()) {
+            sb.append(separator);
+            sb.append(it.next());
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * Concatenates a list of Strings, using a given seperator.
+     *
+     * <pre>
+     * StringUtils.join(",") = ""
+     * StringUtils.join(",", "a", "b") = "a,b"
+     * StringUtils.join("x", "a", "b", "c", "d", "e") = "axbxcxdxe"
+     * </pre>
+     *
+     * @param separator
+     *            a String to separate the joined values. May be empty.
+     * @param strings
+     *            a list of Strings to be joined
+     * @return a single String containing all of the individual strings
+     */
+    public static String join(String separator, String... strings) {
+        return join(separator, Arrays.asList(strings));
+    }
+
+    /**
+     * Count the number of {@code c} chars in {@code input}.
+     * 
+     * @param input
+     * @param c
+     * @return
+     */
+    public static int countChar(String input, char c) {
+        Reject.ifBlank(input, "String is blank");
+
+        int count = 0;
+        int i = 0;
+
+        for (i = input.indexOf(c, i); i != -1; count++) {
+            i = input.indexOf(c, i + 1);
+        }
+
+        return count;
+    }
 }

@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 public class RequestDownloadExt extends RequestDownload implements
     Externalizable
 {
+    private static final long serialVersionUID = -6907422071162117250L;
 
     public RequestDownloadExt() {
         super();
@@ -43,10 +44,6 @@ public class RequestDownloadExt extends RequestDownload implements
 
     public RequestDownloadExt(FileInfo file, long startOffset) {
         super(file, startOffset);
-    }
-
-    public RequestDownloadExt(FileInfo file) {
-        super(file);
     }
 
     public void readExternal(ObjectInput in) throws IOException,

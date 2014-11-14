@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 /**
  * Node information request
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */

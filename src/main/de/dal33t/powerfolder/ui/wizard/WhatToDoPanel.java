@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The start panel of the "what to do" wizard line
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
@@ -145,7 +145,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
             Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.project_name.folder_project_success")
+                .getTranslation("exp.wizard.project_name.folder_project_success")
                 + Translation.getTranslation("wizard.what_to_do.pcs_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 

@@ -45,7 +45,6 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * A Label which executes the action when clicked.
- * 
  * @author Christian Sprajc
  * @version $Revision: 1.4 $
  */
@@ -107,7 +106,7 @@ public class ActionLabel extends PFComponent {
     /**
      * IMPORTANT - make component text changes here, not in the uiComponent.
      * Otherwise mouse-over activity will over-write the text.
-     * 
+     *
      * @param text
      */
     public void setText(String text) {
@@ -141,7 +140,7 @@ public class ActionLabel extends PFComponent {
         }
         displayText();
     }
-    
+
     public void setVisible(boolean visible) {
         uiComponent.setVisible(visible);
     }

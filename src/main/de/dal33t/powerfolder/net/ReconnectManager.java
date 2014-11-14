@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * Responsible for reconnecting to remote nodes.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -123,7 +123,7 @@ public class ReconnectManager extends PFComponent {
     /**
      * Marks a node for immediate reconnection. Actually puts it in front of
      * reconnection queue and ensures, that is gets reconnected immediately.
-     * 
+     *
      * @param node
      */
     public void markNodeForImmediateReconnection(Member node) {
@@ -182,7 +182,7 @@ public class ReconnectManager extends PFComponent {
 
     /**
      * Checks if a reconnection to this node would be useful.
-     * 
+     *
      * @param node
      *            the node to connect to
      * @return true if added to the reconnection queue, false if not.
@@ -427,7 +427,7 @@ public class ReconnectManager extends PFComponent {
      * Reconnector thread. Periodically tries to reconnect to nodes in the
      * reconnection queue. Automatically starts new child reconnector if work is
      * getting to hard (too much nodes)
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class Reconnector extends Thread {

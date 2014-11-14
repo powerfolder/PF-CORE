@@ -19,30 +19,33 @@
  */
 package de.dal33t.powerfolder.ui.panel;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
 import java.awt.Component;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.List;
-import java.util.Collections;
+
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel for displaying and selecting archive mode. Attached are a pair of
  * ValueModels that get notified of selection changes (One for mode, one for
  * version history).
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -67,14 +70,14 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
             .getTranslation("archive_mode_selector_panel.unlimited"), -1));
     }
 
-    private JComboBox archiveCombo;
+    private JComboBox<String> archiveCombo;
     private JPanel panel;
     private List<ValueModel> versionModels; // {Integer}
     private ActionListener purgeListener;
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      *            the necessary evil...
      * @param modeModels
@@ -120,7 +123,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
     /**
      * Set the archive mode and verions history for the panel. Value models are
      * not notified of changes during the set operation.
-     * 
+     *
      * @param versionHistory
      */
     public void setArchiveMode(int versionHistory) {
@@ -149,7 +152,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
 
     /**
      * Builds panel and returns the component.
-     * 
+     *
      * @return
      */
     public Component getUIComponent() {
@@ -168,7 +171,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
         for (NameValuePair pair : PAIRS) {
             names[i++] = pair.getName();
         }
-        archiveCombo = new JComboBox(names);
+        archiveCombo = new JComboBox<>(names);
         archiveCombo.addItemListener(new MyItemListener());
     }
 

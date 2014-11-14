@@ -30,11 +30,12 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
  * EXT version of: List of available folders
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
 public class FolderListExt extends FolderList implements Externalizable {
+    private static final long serialVersionUID = -3861676003458215175L;
     private static final long extVersionUID = 100L;
 
     public FolderListExt() {

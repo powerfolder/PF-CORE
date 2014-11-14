@@ -73,7 +73,7 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public DownloadsInformationCard(Controller controller) {
@@ -87,7 +87,7 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Gets the image for the card.
-     * 
+     *
      * @return
      */
     public Image getCardImage() {
@@ -96,16 +96,16 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Gets the title for the card.
-     * 
+     *
      * @return
      */
     public String getCardTitle() {
-        return Translation.getTranslation("downloads_information_card.title");
+        return Translation.getTranslation("exp.downloads_information_card.title");
     }
 
     /**
      * Gets the ui component after initializing and building if necessary
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {
@@ -122,7 +122,7 @@ public class DownloadsInformationCard extends InformationCard implements
     private void initialize() {
         cleanupLabel = new JLabel();
         cleanupLabel.setToolTipText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.frequency_tip"));
+                "exp.downloads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController(),
             openDownloadAction, abortDownloadsAction,
@@ -171,7 +171,7 @@ public class DownloadsInformationCard extends InformationCard implements
             getController());
         addIgnoreAction = new AddIgnoreAction(getController());
 
-        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES        
+        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES
         Integer x = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController());
         if (x > 4) {
@@ -189,7 +189,7 @@ public class DownloadsInformationCard extends InformationCard implements
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
         cleanupSlider.setToolTipText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.frequency_tip"));
+                "exp.downloads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
@@ -277,14 +277,14 @@ public class DownloadsInformationCard extends InformationCard implements
         getController().saveConfig();
         if (cleanupSlider.getValue() == 0) {
             cleanupLabel.setText(Translation.getTranslation(
-                    "downloads_information_card.auto_cleanup.immediate"));
+                    "exp.downloads_information_card.auto_cleanup.immediate"));
         } else if (cleanupSlider.getValue() >= 4) {
             cleanupLabel.setText(Translation.getTranslation(
-                    "downloads_information_card.auto_cleanup.never"));
+                    "exp.downloads_information_card.auto_cleanup.never"));
         } else {
             int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider.getValue()];
             cleanupLabel.setText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.days",
+                "exp.downloads_information_card.auto_cleanup.days",
                     String.valueOf(trueCleanupDays)));
         }
     }
@@ -324,14 +324,14 @@ public class DownloadsInformationCard extends InformationCard implements
 
     /**
      * Aborts the selected downloads
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
     private class AbortDownloadAction extends BaseAction {
 
         AbortDownloadAction() {
-            super("action_abort_download", DownloadsInformationCard.this
+            super("exp.action_abort_download", DownloadsInformationCard.this
                 .getController());
         }
 
@@ -385,7 +385,7 @@ public class DownloadsInformationCard extends InformationCard implements
      */
     private class ClearCompletedDownloadsAction extends BaseAction {
         ClearCompletedDownloadsAction(Controller controller) {
-            super("action_clear_completed_downloads", controller);
+            super("exp.action_clear_completed_downloads", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

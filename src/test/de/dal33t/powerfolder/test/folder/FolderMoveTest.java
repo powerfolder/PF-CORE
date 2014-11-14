@@ -44,7 +44,7 @@ public class FolderMoveTest extends ControllerTestCase {
 
     /**
      * Creates test.txt and sub/test2.txt file2 to move.
-     * 
+     *
      * @throws Exception
      */
     @Override

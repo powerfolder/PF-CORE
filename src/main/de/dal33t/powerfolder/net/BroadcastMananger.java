@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
@@ -48,7 +49,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Listener, which listens for incoming broadcast messages
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.19 $
  */
@@ -73,7 +74,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
     /**
      * Builds a new broadcast listener
-     * 
+     *
      * @param controller
      * @throws ConnectionException
      */
@@ -108,7 +109,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
     /**
      * Starts the manager
-     * 
+     *
      * @throws ConnectionException
      *             if the broadcast manager could not be initalized.
      */
@@ -240,7 +241,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
     /**
      * Sends a broadcast throu the broadcast sockets
-     * 
+     *
      * @param broadcast
      *            the packet to send
      */
@@ -266,7 +267,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
     /**
      * Answers if this packet is a powerfolder broadcast message
-     * 
+     *
      * @param packet
      * @return
      */
@@ -284,7 +285,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
     /**
      * Triies to connect to a node, parsed from a broadcast message
-     * 
+     *
      * @param packet
      * @return
      */
@@ -345,9 +346,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 if (getController().isStarted()
                     && !getController().getMySelf().isServer())
                 {
-                    if (ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                        .getValueBoolean(getController())
-                        || getController().getOSClient().isLoggedIn())
+                    if (getController().getOSClient().isLoggedIn()
+                        || Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled())
                     {
                         // found another new node!!!
                         node = getController().connect(address);
@@ -375,7 +375,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      * compares the two lists of inet addresses, the new and the previous one,
      * for differences. Note that they are treated as different if they are
      * equal modulo permutations.
-     * 
+     *
      * @param addrListNew
      * @param addrListOld
      * @return true if different, false otherwise.

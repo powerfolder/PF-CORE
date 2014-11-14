@@ -24,14 +24,14 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Container for time estimation information.
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.1 $
  */
 public class EstimatedTime {
     private long deltaTimeMillis;
     private boolean active;
-    
+
     public EstimatedTime(long deltaTimeMillis, boolean active) {
         this.deltaTimeMillis = deltaTimeMillis;
         this.active = active;
@@ -44,9 +44,9 @@ public class EstimatedTime {
     public boolean isActive() {
         return active;
     }
-    
+
     /**
-     * Returns the estimated time in milliseconds 
+     * Returns the estimated time in milliseconds
      * @return
      */
     public long getDeltaTimeMillis() {

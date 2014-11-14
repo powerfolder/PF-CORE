@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 /**
  * A security manager handles the access control to a powerfolder security
  * realm.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -36,7 +36,7 @@ public interface SecurityManager {
 
     /**
      * Authenticates the user.
-     * 
+     *
      * @param username
      *            the username of the login
      * @param credentials
@@ -48,7 +48,7 @@ public interface SecurityManager {
 
     /**
      * Authenticates the user.
-     * 
+     *
      * @param username
      *            the username of the login
      * @param passwordMD5
@@ -60,7 +60,7 @@ public interface SecurityManager {
      * @deprecated Use {@link #authenticate(String, char[])}
      */
     Account authenticate(String username, String passwordMD5, String salt);
-    
+
     /**
      * Logs out and clears the current session.
      */
@@ -71,7 +71,7 @@ public interface SecurityManager {
     /**
      * Called when the account status on the given node is changed. e.g.
      * disconnect.
-     * 
+     *
      * @param node
      * @param refreshFolderMemberships
      *            of memberships of the folders should be re-synced
@@ -86,14 +86,14 @@ public interface SecurityManager {
      * @return the account info for the given member.
      */
     AccountInfo getAccountInfo(Member node);
-    
+
     /**
      * Central method to check if a given computer/member has the permission.
      * <p>
      * This takes default permissions for folders into consideration. Also
      * accepts null {@link AccountInfo} as parameter - then applies default
      * permission of folder only.
-     * 
+     *
      * @param accountInfo
      * @param permission
      * @return true if the account has the permission. false if not
@@ -106,7 +106,7 @@ public interface SecurityManager {
      * This takes default permissions for folders into consideration. Also
      * accepts null {@link AccountInfo} as parameter - then applies default
      * permission of folder only.
-     * 
+     *
      * @param accountInfo
      * @param permission
      * @return true if the account has the permission. false if not
@@ -119,7 +119,7 @@ public interface SecurityManager {
      * This takes default permissions for folders into consideration. Also
      * accepts null {@link AccountInfo} as parameter - then applies default
      * permission of folder only.
-     * 
+     *
      * @param account
      * @param permission
      * @return true if the account has the permission. false if not

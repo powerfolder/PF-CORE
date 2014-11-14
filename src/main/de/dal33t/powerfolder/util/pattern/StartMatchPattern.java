@@ -31,7 +31,7 @@ public class StartMatchPattern extends AbstractPattern {
 
     /**
      * Constructor.
-     * 
+     *
      * @param patternStringArg
      */
     public StartMatchPattern(String patternStringArg) {

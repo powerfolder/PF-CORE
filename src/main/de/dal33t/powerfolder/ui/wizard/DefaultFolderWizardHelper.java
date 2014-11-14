@@ -62,7 +62,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Helper class to setup the default folder during wizard steps
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -97,7 +97,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
             .getFoldersBasedir()
             .resolve(
                 Translation
-                    .getTranslation("wizard.basic_setup.default_folder_name"));
+                    .getTranslation("exp.wizard.basic_setup.default_folder_name"));
 
         if (Files.exists(defaultSynchronizedFolder)) {
             // Hmmm. User has already created this???
@@ -195,7 +195,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
 
         public void serverDisconnected(ServerClientEvent event) {
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
 

@@ -50,7 +50,7 @@ public class RemoteServiceStubFactory {
     /**
      * Constructs a stub implementing the given service interface. All calls are
      * executed against the remote service repository of the remote site.
-     * 
+     *
      * @param <T>
      *            The interface class of the service
      * @param controller
@@ -68,7 +68,7 @@ public class RemoteServiceStubFactory {
     /**
      * Constructs a stub implementing the given service interface. All calls are
      * executed against the remote service repository of the remote site.
-     * 
+     *
      * @param <T>
      *            The interface class of the service
      * @param controller

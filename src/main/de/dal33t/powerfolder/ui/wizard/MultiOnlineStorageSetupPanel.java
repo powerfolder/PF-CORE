@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -45,6 +47,8 @@ import javax.swing.JTextField;
 
 import jwf.WizardPanel;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -54,6 +58,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -68,6 +73,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
@@ -84,9 +90,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     private Map<FolderInfo, SyncProfile> folderProfileMap;
     private Map<FolderInfo, Path> folderLocalBaseMap;
-    private JComboBox folderInfoCombo;
+    private JComboBox<String> folderInfoCombo;
     private JTextField folderInfoField;
-    private DefaultComboBoxModel folderInfoComboModel;
+    private DefaultComboBoxModel<String> folderInfoComboModel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JCheckBox manualSyncCB;
     private boolean changingSelection;
@@ -115,10 +121,10 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     public WizardPanel next() {
 
-        List<FolderCreateItem> folderCreateItems =
-                new ArrayList<FolderCreateItem>();
+        List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
-        for (Entry<FolderInfo, SyncProfile> entry : folderProfileMap.entrySet()) {
+        for (Entry<FolderInfo, SyncProfile> entry : folderProfileMap.entrySet())
+        {
             SyncProfile sp;
             if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
                 sp = entry.getValue();
@@ -162,11 +168,16 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.add(folderInfoCombo, cc.xy(3, 1));
         builder.add(folderInfoField, cc.xy(3, 1));
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.multi_online_storage_setup.local_folder_location")),
+        builder
+            .add(
+                new JLabel(
+                    Translation
+                        .getTranslation("wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
-        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+            .getValueBoolean(getController()))
+        {
             builder.add(localFolderButton, cc.xy(5, 3));
         }
 
@@ -197,7 +208,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      */
     protected void initComponents() {
         localFolderField = new JTextField();
-        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
+            .getValueBoolean(getController()))
+        {
             localFolderButton = new JButtonMini(
                 Icons.getIconById(Icons.DIRECTORY),
                 Translation
@@ -205,19 +218,20 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             MyActionListener myActionListener = new MyActionListener();
             localFolderButton.addActionListener(myActionListener);
         } else {
-           localFolderField.setEnabled(false);
+            localFolderField.setEnabled(false);
         }
 
         // For non-experts - just choose between auto sync and manual.
-        manualSyncCB = new JCheckBox(Translation.getTranslation(
-                "transfer_mode.manual_synchronization.name"));
+        manualSyncCB = new JCheckBox(
+            Translation
+                .getTranslation("transfer_mode.manual_synchronization.name"));
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel
             .addModelValueChangeListener(new MyPropertyValueChangeListener());
 
-        folderInfoComboModel = new DefaultComboBoxModel();
-        folderInfoCombo = new JComboBox(folderInfoComboModel);
+        folderInfoComboModel = new DefaultComboBoxModel<>();
+        folderInfoCombo = new JComboBox<>(folderInfoComboModel);
 
         folderInfoCombo.addItemListener(new MyItemListener());
         folderInfoField = new JTextField();
@@ -262,17 +276,25 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             // Suggest user dir.
             Path dirSuggestion;
             if (userDirs.get(folderInfo.getLocalizedName()) == null) {
+                String dirName = folderInfo.getLocalizedName();
+                String ownerDisplayname = getOwnerDisplayname(folderInfo);
+                if (StringUtils.isNotBlank(ownerDisplayname)) {
+                    dirName += " (";
+                    dirName += ownerDisplayname;
+                    dirName += ")";
+                }
                 dirSuggestion = Paths.get(folderBasedirString,
-                    PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName()));
+                    PathUtils.removeInvalidFilenameChars(dirName.trim()));
             } else {
-                dirSuggestion = userDirs.get(folderInfo.getLocalizedName()).getDirectory();
+                dirSuggestion = userDirs.get(folderInfo.getLocalizedName())
+                    .getDirectory();
             }
+
             folderLocalBaseMap.put(folderInfo, dirSuggestion);
             folderInfoComboModel.addElement(folderInfo.getLocalizedName());
         }
 
-        if (PFWizard.hideFolderJoinWizard(getController()))
-        {
+        if (PFWizard.hideFolderJoinWizard(getController())) {
             getWizard().next();
         }
     }
@@ -354,14 +376,52 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 }
             }
             if (fi != null) {
-                webDAVURL = serverClient.getFolderService()
-                    .getWebDAVURL(fi);
+                webDAVURL = serverClient.getFolderService().getWebDAVURL(fi);
             }
             lastFetch = new Date();
         }
     }
 
-    
+    /**
+     * PFC-2284: FIXME: Runs in EDT
+     * 
+     * @param folderInfo
+     * @return
+     */
+    private String getOwnerDisplayname(final FolderInfo folderInfo) {
+        if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
+            return null;
+        }
+        if (serverClient.getAccount().hasOwnerPermission(folderInfo)) {
+            return null;
+        }
+        final ValueModel ownerDisplaynameModel = new ValueHolder();
+        final Semaphore sem = new Semaphore(0);
+        Runnable retriever = new Runnable() {
+            @Override
+            public void run() {
+                String ownerDisplayname;
+                try {
+                    ownerDisplayname = serverClient.getFolderService()
+                        .getOwnerDisplayname(folderInfo);
+                } catch (RemoteCallException e) {
+                    Logger.getLogger(
+                        MultiOnlineStorageSetupPanel.class.getName()).warning(
+                        "Unsupported/Old server. Not able to retrieve owner name of "
+                            + folderInfo.getName() + ". " + e);
+                    ownerDisplayname = "";
+                }
+                ownerDisplaynameModel.setValue(ownerDisplayname);
+                sem.release();
+            }
+        };
+        getController().getIOProvider().startIO(retriever);
+        try {
+            sem.acquire();
+        } catch (InterruptedException e) {
+        }
+        return (String) ownerDisplaynameModel.getValue();
+    }
 
     private void closeWizard() {
         JDialog diag = getWizardDialog();
@@ -373,7 +433,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         return (JDialog) getWizardContext().getAttribute(
             WizardContextAttributes.DIALOG_ATTRIBUTE);
     }
-    
+
     /**
      * Create a WebDAV connection to this folder. Should be something like 'net
      * use * "https://my.powerfolder.com/webdav/afolder"
@@ -485,16 +545,18 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
         }
         if (selectedFolderInfo != null) {
-            List<Path> files = DialogFactory.chooseDirectory(getController().getUIController(),
-                    folderLocalBaseMap.get(selectedFolderInfo), false);
+            List<Path> files = DialogFactory.chooseDirectory(getController()
+                .getUIController(), folderLocalBaseMap.get(selectedFolderInfo),
+                false);
             if (!files.isEmpty()) {
                 Path file = files.get(0);
                 List<FolderInfo> folderInfoList = (List<FolderInfo>) getWizardContext()
-                        .getAttribute(WizardContextAttributes.FOLDER_INFOS);
+                    .getAttribute(WizardContextAttributes.FOLDER_INFOS);
                 if (folderInfoList != null && folderInfoList.size() == 1) {
                     String folderName = folderInfoList.get(0).getName();
                     if (!file.getFileName().toString().equals(folderName)) {
-                        // Help the user by appending the folder name to the path.
+                        // Help the user by appending the folder name to the
+                        // path.
                         file = file.resolve(folderName);
                     }
                 }

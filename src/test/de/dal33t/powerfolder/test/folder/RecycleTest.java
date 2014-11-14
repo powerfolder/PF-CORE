@@ -121,15 +121,15 @@ public class RecycleTest extends ControllerTestCase {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         int count = 0;
-        
+
         for (Path p : stream) {
             sb.append(p.toString());
             sb.append(", ");
             count++;
         }
-        
+
         sb.append("]");
-        
+
         // No file in there. "Size" meta info file shouldn't be in there aswell.
         assertTrue(sb.toString(), count == 0);
     }

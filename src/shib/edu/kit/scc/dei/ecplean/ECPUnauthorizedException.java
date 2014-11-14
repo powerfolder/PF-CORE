@@ -2,7 +2,7 @@ package edu.kit.scc.dei.ecplean;
 
 /**
  * Thrown when a user could not be authorized.
- * 
+ *
  * @author Sprajc
  */
 public class ECPUnauthorizedException extends ECPAuthenticationException {

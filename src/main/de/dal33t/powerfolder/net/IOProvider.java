@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.util.WrapperExecutorService;
 
 /**
  * Provides basic IO stuff.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -110,7 +110,7 @@ public class IOProvider extends PFComponent {
     /**
      * Sets the connection handler factory, which is responsible for creating
      * connection handler for basic io.
-     * 
+     *
      * @param conHanFactory
      *            the new factory.
      */
@@ -142,7 +142,7 @@ public class IOProvider extends PFComponent {
 
     /**
      * Starts a general connection handling working.
-     * 
+     *
      * @param ioWorker
      *            a io worker
      */
@@ -162,7 +162,7 @@ public class IOProvider extends PFComponent {
     /**
      * Adds this connection handler to get checked for keepalive. If the
      * connection handler times out is gets shut down.
-     * 
+     *
      * @param conHan
      *            the connection handler to check
      */
@@ -176,7 +176,7 @@ public class IOProvider extends PFComponent {
 
     /**
      * Removes this connection handler to get checked for keepalive.
-     * 
+     *
      * @param conHan
      *            the connection handler to remove
      */

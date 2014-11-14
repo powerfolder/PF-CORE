@@ -24,7 +24,7 @@ import java.util.WeakHashMap;
 /**
  * A general class that is able to internalize a given object to save memory
  * resources. The internalization is usually realized via {@link WeakHashMap}
- * 
+ *
  * @author sprajc
  * @param <T>
  */
@@ -36,5 +36,5 @@ public interface Internalizer<T> {
      */
     T intern(T item);
     
-    T sudoIntern(T item);
+    T rename(T item);
 }

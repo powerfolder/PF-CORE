@@ -29,7 +29,7 @@ package de.dal33t.powerfolder.transfer;
  */
 public interface LimitedStream {
     BandwidthLimiter getBandwidthLimiter();
-    
+
     /**
      * Sets a new limiter.
      * You should NOT change the BandwidthLimiter while any limited operation

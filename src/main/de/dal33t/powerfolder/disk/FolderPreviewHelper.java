@@ -45,7 +45,7 @@ public class FolderPreviewHelper {
      * This helper creates FolderSettings for creation of a preview folder. The
      * local base dir is in the system temp dir and there is no synchronization
      * for a preview folder.
-     * 
+     *
      * @param folderName
      * @return the settings for previewing the folder.
      */
@@ -66,7 +66,7 @@ public class FolderPreviewHelper {
 
     /**
      * Converts a normal folder to a preview folder.
-     * 
+     *
      * @param controller
      * @param folder
      * @return if succeeded
@@ -109,7 +109,7 @@ public class FolderPreviewHelper {
 
     /**
      * Converts a preview folder to a normal folder.
-     * 
+     *
      * @param controller
      * @param folder
      * @param newFolderSettings

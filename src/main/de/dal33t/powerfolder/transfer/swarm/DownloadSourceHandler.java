@@ -28,14 +28,14 @@ public interface DownloadSourceHandler {
      * Called if an uploader is ready for the downloader to send requests. This
      * is only the case if the uploader has enabled delta sync or part requests
      * - same for the local client.
-     * 
+     *
      * @param download
      */
     void readyForRequests(Download source);
 
     /**
      * Called when a download received a file chunk.
-     * 
+     *
      * @param download
      * @param chunk
      */
@@ -43,7 +43,7 @@ public interface DownloadSourceHandler {
 
     /**
      * Called when a download received a FilePartsRecord
-     * 
+     *
      * @param download
      * @param record
      */

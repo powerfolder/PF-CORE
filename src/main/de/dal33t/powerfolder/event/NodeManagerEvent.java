@@ -37,7 +37,7 @@ public class NodeManagerEvent extends EventObject {
     public Member getNode() {
         return node;
     }
-    
+
     public NodeManager getNodeManager() {
        return (NodeManager) getSource();
     }

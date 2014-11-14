@@ -19,9 +19,12 @@
 */
 package de.dal33t.powerfolder.test.util;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.DateUtil;
@@ -32,7 +35,7 @@ public class DateUtilTest extends TestCase {
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(1000), new Date(3000)));
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(11111111), new Date(11111000)));
         assertFalse(DateUtil.equalsFileDateCrossPlattform(new Date(222222222), new Date(222220000)));
-        
+
         // 2000 milliseconds we assume the same
         assertFalse(DateUtil.isNewerFileDateCrossPlattform(new Date(3000),new Date(1000)));
         // 2001 milliseconds we assume different
@@ -40,7 +43,7 @@ public class DateUtilTest extends TestCase {
         // other is newer
         assertFalse(DateUtil.isNewerFileDateCrossPlattform(new Date(1000),new Date(3001)));
     }
-    
+
     public void testSpecial() {
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(1146605870000L), new Date(1146605868805L)));
     }
@@ -130,6 +133,14 @@ public class DateUtilTest extends TestCase {
                 dateCal.get(Calendar.MINUTE) == resultCal.get(Calendar.MINUTE) &&
                         dateCal.get(Calendar.SECOND) == resultCal.get(Calendar.SECOND) &&
                         dateCal.get(Calendar.MILLISECOND) == resultCal.get(Calendar.MILLISECOND));
+    }
+
+    public void testConvertLdapToUnix() {
+        // 24. 6. 2007 5:57:54.2968750
+        assertEquals(1182664674296l, DateUtil.convertLdapToUnix(128271382742968750l));
+        DateFormat df = new SimpleDateFormat("dd. MM. yyyy HH:mm:ss");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("24. 06. 2007 05:57:54", df.format(new Date(1182664674296l)));
     }
 
 }

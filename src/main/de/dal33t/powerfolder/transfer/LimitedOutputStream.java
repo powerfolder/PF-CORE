@@ -30,7 +30,7 @@ import java.io.OutputStream;
  */
 public class LimitedOutputStream extends FilterOutputStream implements LimitedStream {
     protected BandwidthLimiter limiter;
-    
+
     public LimitedOutputStream(BandwidthLimiter limiter, OutputStream arg0) {
         super(arg0);
         this.limiter = limiter;
@@ -66,8 +66,8 @@ public class LimitedOutputStream extends FilterOutputStream implements LimitedSt
             len -= allowed;
         }
     }
-    
-    
+
+
     @Override
     public void write(int arg0) throws IOException {
         try {
@@ -77,12 +77,12 @@ public class LimitedOutputStream extends FilterOutputStream implements LimitedSt
         }
         out.write(arg0);
     }
-    
+
     public BandwidthLimiter getBandwidthLimiter() {
         return limiter;
     }
 
     public void setBandwidthLimiter(BandwidthLimiter limiter) {
-        this.limiter = limiter;        
+        this.limiter = limiter;
     }
 }

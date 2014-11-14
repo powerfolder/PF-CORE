@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Represents a request to send an invitation to another member by email.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class SendInvitationEmail implements Serializable {
@@ -38,7 +38,7 @@ public class SendInvitationEmail implements Serializable {
 
     /**
      * Creates a new request to send an email to the given recipient.
-     * 
+     *
      * @param invitation
      *            the invitation to send
      * @param recipient
@@ -54,7 +54,7 @@ public class SendInvitationEmail implements Serializable {
     /**
      * Creates a new request to send an email to the given recipient and the
      * given carbon copy recipient.
-     * 
+     *
      * @param invitation
      *            the invitation to send
      * @param recipient

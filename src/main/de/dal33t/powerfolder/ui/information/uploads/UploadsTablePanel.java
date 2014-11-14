@@ -65,7 +65,7 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Constructor.
-     * 
+     *
      * @param controller
      */
     public UploadsTablePanel(Controller controller,
@@ -78,7 +78,7 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Returns the ui component.
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {
@@ -114,7 +114,7 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Add a selection listener to the table.
-     * 
+     *
      * @param l
      */
     public void addListSelectionListener(ListSelectionListener l) {
@@ -124,7 +124,7 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Add a table model listener to the model.
-     * 
+     *
      * @param l
      */
     public void addTableModelListener(TableModelListener l) {
@@ -243,7 +243,7 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class TableHeaderMouseListener extends MouseAdapter {

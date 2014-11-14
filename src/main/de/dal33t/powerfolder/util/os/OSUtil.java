@@ -20,12 +20,15 @@
 package de.dal33t.powerfolder.util.os;
 
 import java.awt.SystemTray;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 public class OSUtil {
 
@@ -100,7 +103,7 @@ public class OSUtil {
 
     /**
      * Tested on Mac OS X 10.6.5 Build 10H574.
-     * 
+     *
      * @return if the operating system is mac os x 10.6 or newer.
      */
     public static boolean isMacOSSnowLeopardOrNewer() {
@@ -148,7 +151,7 @@ public class OSUtil {
      * <P>
      * http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-
      * jre-is-installed-32bit-vs-64bit
-     * 
+     *
      * @return true if this VM is running a 64 bit version. false if 32 bit.
      */
     public static boolean is64BitPlatform() {
@@ -162,7 +165,7 @@ public class OSUtil {
 
     /**
      * Determines if this is a web start via Java WebStart
-     * 
+     *
      * @return true if started via web
      */
     public static boolean isWebStart() {
@@ -179,7 +182,7 @@ public class OSUtil {
 
     /**
      * #2751: java.vm.name=Excelsior JET
-     * 
+     *
      * @return
      */
     public static boolean isJETRuntime() {
@@ -190,7 +193,7 @@ public class OSUtil {
     /**
      * Systray only on win2000 and newer. win 98/ME gives a "could not create
      * main-window error"
-     * 
+     *
      * @return if systray is supported on this platform
      */
     public static boolean isSystraySupported() {
@@ -198,6 +201,58 @@ public class OSUtil {
             sysTraySupport = SystemTray.isSupported();
         }
         return sysTraySupport;
+    }
+
+    /**
+     * @return @code True if start up items are supported on the current
+     *         platform, @code fals otherwise
+     */
+    public static boolean isStartupItemSupported() {
+        return OSUtil.isWindowsSystem() || OSUtil.isMacOS();
+    }
+
+    /**
+     * @param controller
+     * @return @code True if the system has a start up item implemented, @code
+     *         false otherwise.
+     * @throws UnsupportedOperationException
+     *             If the platform does not support start up items.
+     */
+    public static boolean hasPFStartup(Controller controller)
+        throws UnsupportedOperationException
+    {
+        if (OSUtil.isWindowsSystem() && WinUtils.isSupported()) {
+            return WinUtils.getInstance().hasPFStartup(controller);
+        } else if (OSUtil.isMacOS() && MacUtils.isSupported()) {
+            return MacUtils.getInstance().hasPFStartup(controller);
+        }
+
+        throw new UnsupportedOperationException(
+            "This platform does not support start up items");
+    }
+
+    /**
+     * @param setup
+     * @code True to set the start up item, @code false to remove it.
+     * @param controller
+     *            The controller
+     * @throws IOException
+     *             If the start up item could not be set.
+     * @throws UnsupportedOperationException
+     *             If this method was called on a platform that does not support
+     *             to set the start up item.
+     */
+    public static void setPFStartup(boolean setup, Controller controller)
+        throws IOException, UnsupportedOperationException
+    {
+        if (OSUtil.isWindowsSystem()) {
+            WinUtils.getInstance().setPFStartup(setup, controller);
+        } else if (OSUtil.isMacOS()) {
+            MacUtils.getInstance().setPFStartup(setup, controller);
+        }
+
+        throw new UnsupportedOperationException(
+            "This platform does not support start up items");
     }
 
     /**
@@ -231,7 +286,7 @@ public class OSUtil {
     /**
      * Tries to load a library of PowerFolder. It tries to load the lib from
      * several locations.
-     * 
+     *
      * @param clazz
      * @param lib
      * @return if succeeded

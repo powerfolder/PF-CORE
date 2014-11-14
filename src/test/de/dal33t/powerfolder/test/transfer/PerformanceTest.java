@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
@@ -49,10 +50,11 @@ public class PerformanceTest extends TwoControllerTestCase {
     }
 
     private FileInfo createTestFileInfo(FolderInfo foInfo, int i) {
-        FileInfo fInfo = FileInfoFactory.archivedFile(foInfo,
+        FileInfo fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
             "subdir/SUBDIR2withAlongName/Another_deep/Spreadsheet-" + i
-                + ".xls", i, getContollerBart().getMySelf().getInfo(),
-            new Date(), i);
+                + ".xls", IdGenerator.makeFileId(), i, getContollerBart()
+                .getMySelf().getInfo(), getContollerBart().getMySelf()
+                .getAccountInfo(), new Date(), i, null, false, null);
         return fInfo;
     }
 }

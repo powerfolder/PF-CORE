@@ -89,7 +89,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 /**
  * Managing class which takes care about all old and new nodes. reconnects those
  * who disconnected and connectes to new ones
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.123 $
  */
@@ -298,7 +298,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * for debug
-     * 
+     *
      * @param suspended
      */
     public void setSuspendFireEvents(boolean suspended) {
@@ -437,7 +437,7 @@ public class NodeManager extends PFComponent {
      * Returns true if the IP of the given member is within one of the
      * configured ranges Those are setup in advanced settings "LANlist". ONLY if
      * any of my own IP is on the LAN list aswell.
-     * 
+     *
      * @param adr
      *            the internet addedss
      * @return true if the member's ip is within one of the ranges
@@ -528,7 +528,7 @@ public class NodeManager extends PFComponent {
     /**
      * ATTENTION: May change after returned! Make copy if stable state if
      * required.
-     * 
+     *
      * @return a unmodifiable version of the internal list of connected nodes.
      */
     public Collection<Member> getConnectedNodes() {
@@ -585,7 +585,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Removes a member from the known list
-     * 
+     *
      * @param node
      */
     public void removeNode(Member node) {
@@ -609,7 +609,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Counts the number of friends that are online
-     * 
+     *
      * @return the number of friends that are online
      */
     public int countOnlineFriends() {
@@ -639,7 +639,7 @@ public class NodeManager extends PFComponent {
     /**
      * Called by member. Not getting this event from event handling because we
      * have to handle things definitively before other elements work on that.
-     * 
+     *
      * @param node
      * @param server
      */
@@ -661,7 +661,7 @@ public class NodeManager extends PFComponent {
     /**
      * Called by member. Not getting this event from event handling because we
      * have to handle things definitively before other elements work on that.
-     * 
+     *
      * @param node
      * @param friend
      * @param personalMessage
@@ -712,7 +712,7 @@ public class NodeManager extends PFComponent {
     /**
      * Callback method to inform that this node connected or disconnected from
      * the public network.
-     * 
+     *
      * @param node
      */
     public void networkConnectionStateChanged(Member node) {
@@ -726,7 +726,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Callback to inform nodemanager that this nodes connecting state changed.
-     * 
+     *
      * @param node
      */
     public void connectingStateChanged(Member node) {
@@ -736,7 +736,7 @@ public class NodeManager extends PFComponent {
     /**
      * Callback method from node to inform nodemanager about an online state
      * change
-     * 
+     *
      * @param node
      */
     public void connectStateChanged(Member node) {
@@ -793,7 +793,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Callback method from Member.
-     * 
+     *
      * @param from
      * @param message
      */
@@ -803,7 +803,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Processes a request for nodelist.
-     * 
+     *
      * @param request
      *            the request.
      * @param from
@@ -813,7 +813,7 @@ public class NodeManager extends PFComponent {
         List<MemberInfo> list;
         list = request.filter(knownNodes.values());
         from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list,
-            from.getProtocolVersion() >= 107));
+            from.getProtocolVersion() >= Identity.PROTOCOL_VERSION_107));
     }
 
     public void receivedSearchNodeRequest(final SearchNodeRequest request,
@@ -834,7 +834,7 @@ public class NodeManager extends PFComponent {
                 }
 
                 if (!reply.isEmpty()) {
-                    if (from.getProtocolVersion() >= 107) {
+                    if (from.getProtocolVersion() >= Identity.PROTOCOL_VERSION_107) {
                         from.sendMessageAsynchron(new KnownNodesExt(reply
                             .toArray(new MemberInfo[reply.size()])));
                     } else {
@@ -855,7 +855,7 @@ public class NodeManager extends PFComponent {
      * <p>
      * Attention: This method synchronizes on the internal friendlist. Avoid
      * holding a lock while calling this method.
-     * 
+     *
      * @return the message.
      */
     public RequestNodeList createDefaultNodeListRequestMessage() {
@@ -871,7 +871,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Processes new node informations. Reconnects if required.
-     * 
+     *
      * @param newNodes
      *            the new nodes to queue.
      */
@@ -985,7 +985,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Accept a node, method does not block.
-     * 
+     *
      * @param acceptor
      */
     public void acceptConnectionAsynchron(AbstractAcceptor acceptor) {
@@ -1028,7 +1028,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Internal method for accepting nodes on a connection handler
-     * 
+     *
      * @param handler
      * @throws ConnectionException
      * @return the connected node or null if problem occurred
@@ -1085,8 +1085,7 @@ public class NodeManager extends PFComponent {
         }
 
         if (!mySelf.isServer()
-            && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController()))
+            && Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isEnabled())
         {
             ServerClient client = getController().getOSClient();
             // Only actually connect to other clients if logged into server.
@@ -1192,7 +1191,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Adds a new node to the nodemanager. Initalize from memberinfo
-     * 
+     *
      * @param newNode
      * @return the new node
      */
@@ -1204,7 +1203,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Adds a new node to the nodemanger
-     * 
+     *
      * @param node
      *            the new node
      */
@@ -1238,7 +1237,7 @@ public class NodeManager extends PFComponent {
     /**
      * Broadcasts a message to all nodes, does not block. Message enqueued to be
      * sent asynchron
-     * 
+     *
      * @param message
      */
     public void broadcastMessage(final Message message) {
@@ -1248,7 +1247,7 @@ public class NodeManager extends PFComponent {
     /**
      * Broadcasts a message to all nodes, does not block. Message enqueued to be
      * sent asynchron
-     * 
+     *
      * @param message
      * @param filter
      *            to filter the members to send the messages to
@@ -1273,7 +1272,7 @@ public class NodeManager extends PFComponent {
     /**
      * Broadcasts a message to all nodes, does not block. Message enqueued to be
      * sent asynchron
-     * 
+     *
      * @param msgProd
      *            The producer of the message(s)
      * @param minProtocolVersion
@@ -1337,7 +1336,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Broadcasts a message along a number of supernodes
-     * 
+     *
      * @param message
      *            the message to broadcast
      * @param nSupernodes
@@ -1384,7 +1383,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Broadcasts a message along a number of nodes on lan
-     * 
+     *
      * @param message
      *            the message to broadcast
      * @param nBroadcasted
@@ -1430,7 +1429,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Also cleansweeps all servers except primary server.
-     * 
+     *
      * @return the number of total servers know now.
      */
     public void loadServerNodes(ServerClient client) {
@@ -1447,7 +1446,7 @@ public class NodeManager extends PFComponent {
     /**
      * Loads members from url and adds them. Also removes unsets all servers,
      * except primary server.
-     * 
+     *
      * @param url
      */
     private boolean loadNodesFrom(URL url) {
@@ -1476,7 +1475,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Loads members from disk and adds them
-     * 
+     *
      * @param nodeList
      */
     private boolean loadNodesFrom(String filename) {
@@ -1776,7 +1775,7 @@ public class NodeManager extends PFComponent {
                 nodesWentOnline.toArray(nodes);
                 nodesWentOnline.clear();
             }
-            broadcastMessage(107, new SingleMessageProducer() {
+            broadcastMessage(Identity.PROTOCOL_VERSION_107, new SingleMessageProducer() {
                 @Override
                 public Message getMessage(boolean useExt) {
                     return useExt ? new KnownNodesExt(nodes) : new KnownNodes(

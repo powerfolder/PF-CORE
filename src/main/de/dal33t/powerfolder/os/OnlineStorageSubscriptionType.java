@@ -22,14 +22,14 @@ package de.dal33t.powerfolder.os;
 
 /**
  * The subscription types possible.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 @Deprecated
 public enum OnlineStorageSubscriptionType {
     TRIAL("OS-T", 1, true, false),
-    TRIAL_PRO("OS-TP", 1, true, false), 
+    TRIAL_PRO("OS-TP", 1, true, false),
     STARTER("OS-1", 1, false, true),
     BASIC("OS-5", 5, false, true),
     ADVANCED("OS-10",  10, false, true),
@@ -46,7 +46,7 @@ public enum OnlineStorageSubscriptionType {
     GB100("OS-100", 100, false, true),
     GB250("OS-250", 250, false, true),
     TRIAL_5GB("OS-T-5", 5, true, false),
-    
+
     /**
      * For JUNIT testing only
      */
@@ -75,7 +75,7 @@ public enum OnlineStorageSubscriptionType {
         this.trial = trial;
         this.active = false;
     }
-    
+
     public static OnlineStorageSubscriptionType getByArticleNo(String articleNo)
     {
         for (OnlineStorageSubscriptionType type : values()) {

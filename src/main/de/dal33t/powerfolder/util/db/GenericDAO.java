@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.util.db;
 /**
  * Generic Data Access Object for any persistent class.
  *
- * @author <a href="krickl@powerfolder.com">Maximilian Krickl</a>
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @param <T>
  *            Type of the mapped class
  */
@@ -32,7 +32,7 @@ public interface GenericDAO<T> {
      *
      * @param id
      *            The id of the object to load
-     * @return The object associated with the id
+     * @return The object associated with the id or null if not found.
      */
     T findByID(String id);
 

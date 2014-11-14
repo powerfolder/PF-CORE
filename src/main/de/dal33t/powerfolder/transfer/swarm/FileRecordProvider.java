@@ -28,14 +28,14 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 /**
  * Implementations of this interface can be used to retrieve
  * {@link FilePartsRecord}s for {@link FileInfo}s.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public interface FileRecordProvider {
     /**
      * Called to request a {@link FilePartsRecord}. Waits for the record to
      * become available and returns it.
-     * 
+     *
      * @param fileInfo
      * @param progObs
      * @return the requested record

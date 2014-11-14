@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Helpers an utility methods for handling {@link Externalizable}
- * 
+ *
  * @author sprajc
  */
 public class ExternalizableUtil {
@@ -45,7 +45,7 @@ public class ExternalizableUtil {
      * values. Note: This method produces a slight more overhead than
      * {@link ObjectOutput#writeUTF(String)}. Use this only if the
      * {@link String} can become null
-     * 
+     *
      * @param out
      * @param value
      * @throws IOException
@@ -137,7 +137,7 @@ public class ExternalizableUtil {
 
     /**
      * Writes a {@link FolderInfo} handling possible null values.
-     * 
+     *
      * @param out
      * @param foInfo
      * @throws IOException

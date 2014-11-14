@@ -5,7 +5,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A message to re-request the file list from another member.
- * 
+ *
  * @author Sprajc
  */
 public class FileListRequest extends FolderRelatedMessage {
@@ -18,6 +18,6 @@ public class FileListRequest extends FolderRelatedMessage {
 
     @Override
     public String toString() {
-        return "FileListRequest [folder=" + folder.name + "/" + folder.id + "]";
+        return "FileListRequest [folder=" + folder.getLocalizedName() + "/" + folder.id + "]";
     }
 }

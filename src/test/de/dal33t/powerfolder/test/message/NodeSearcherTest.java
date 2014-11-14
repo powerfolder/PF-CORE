@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  * 'Bart' (localhost/127.0.0.1:52574) Member 'martin' (-disco.-, recon. at
  * wayhome.ath.cx/82.83.194.183:1337) Member 'Melissa Garth' (-disco.-, recon.
  * at c-24-125-41-64.hsd1.va.comcast.net/24.125.41.64:1337)
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

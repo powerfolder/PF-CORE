@@ -6,12 +6,12 @@ package de.dal33t.powerfolder.util;
  */
 
 public class TranslationWrapper {
-    
+
     /** TranslationWrapper.TranslationWrapper
      * Get translation of given string id
      * @param  id  Translation string id
      */
-    
+
     public String get(String id)
     {
         return Translation.getTranslation(id);

@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Message to indicate that the download was aborted. The remote side should stop the upload.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.2 $
  */

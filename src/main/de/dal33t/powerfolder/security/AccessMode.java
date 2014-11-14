@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Different access level for resources (Folders, Groups, Users, etc.pp)
- * 
+ *
  * @author sprajc
  */
 public enum AccessMode {

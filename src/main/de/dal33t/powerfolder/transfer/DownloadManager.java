@@ -35,7 +35,7 @@ public interface DownloadManager extends DownloadSourceHandler, DownloadControl
 {
     /**
      * Returns the TransferCounter.
-     * 
+     *
      * @return
      */
     TransferCounter getCounter();
@@ -47,42 +47,42 @@ public interface DownloadManager extends DownloadSourceHandler, DownloadControl
 
     /**
      * Returns the FileInfo that belongs to the file being downloaded.
-     * 
+     *
      * @return
      */
     FileInfo getFileInfo();
 
     /**
      * Returns the temporary file used.
-     * 
+     *
      * @return
      */
     Path getTempFile();
 
     /**
      * Returns true if there are sources left to download from.
-     * 
+     *
      * @return
      */
     boolean hasSources();
 
     /**
      * Returns true if the download has been completed.
-     * 
+     *
      * @return
      */
     boolean isCompleted();
 
     /**
      * Returns true if this download was requested automatically.
-     * 
+     *
      * @return
      */
     boolean isRequestedAutomatic();
 
     /**
      * Returns true if the download has started.
-     * 
+     *
      * @return
      */
     boolean isStarted();

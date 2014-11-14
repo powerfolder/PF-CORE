@@ -56,7 +56,7 @@ public class MembersExpertTable extends JTable {
 
     /**
      * Constructor
-     * 
+     *
      * @param model
      */
     public MembersExpertTable(MembersExpertTableModel model) {
@@ -121,7 +121,7 @@ public class MembersExpertTable extends JTable {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class TableHeaderMouseListener extends MouseAdapter {

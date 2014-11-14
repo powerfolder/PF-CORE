@@ -69,7 +69,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private JPanel uiComponent;
     private FilesTablePanel tablePanel;
     private FileFilterTextField filterTextField;
-    private JComboBox filterSelectionComboBox;
+    private JComboBox<String> filterSelectionComboBox;
     private FilesStatsPanel statsPanel;
     private DirectoryFilter directoryFilter;
     private ValueModel flatMode;
@@ -80,7 +80,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public FilesTab(Controller controller) {
@@ -105,7 +105,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
 
-        filterSelectionComboBox = new JComboBox();
+        filterSelectionComboBox = new JComboBox<>();
         filterSelectionComboBox.setToolTipText(Translation
             .getTranslation("files_tab.combo.tool_tip"));
         filterSelectionComboBox.addItem(Translation
@@ -130,7 +130,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Set the tab with details for a folder.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -153,7 +153,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     /**
      * Set the tab with details for a folder with new set and sort date
      * descending.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
@@ -212,7 +212,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Set the tab with details for a folder with incoming files.
-     * 
+     *
      * @param folderInfo
      */
     // public void setFolderInfoIncoming(FolderInfo folderInfo) {
@@ -230,7 +230,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     /**
      * Gets the ui component
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -380,7 +380,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 }
             }
 
-            PFWizard.openMultiFileRestoreWizard(getController(),folder, fileInfosToRestore);
+            PFWizard.openMultiFileRestoreWizard(getController(), fileInfosToRestore);
         }
     }
 

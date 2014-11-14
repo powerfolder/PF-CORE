@@ -88,7 +88,7 @@ public class UploadsInformationCard extends InformationCard implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public UploadsInformationCard(Controller controller) {
@@ -98,11 +98,11 @@ public class UploadsInformationCard extends InformationCard implements
 
     public InformationCardType getInformationCardType() {
         return InformationCardType.TRANSFERS;
-    }    
+    }
 
     /**
      * Gets the image for the card.
-     * 
+     *
      * @return
      */
     public Image getCardImage() {
@@ -111,16 +111,16 @@ public class UploadsInformationCard extends InformationCard implements
 
     /**
      * Gets the title for the card.
-     * 
+     *
      * @return
      */
     public String getCardTitle() {
-        return Translation.getTranslation("uploads_information_card.title");
+        return Translation.getTranslation("exp.uploads_information_card.title");
     }
 
     /**
      * Gets the ui component after initializing and building if necessary
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {
@@ -138,7 +138,7 @@ public class UploadsInformationCard extends InformationCard implements
         cleanupLabel = new JLabel();
         cleanupLabel
             .setToolTipText(Translation
-                .getTranslation("uploads_information_card.auto_cleanup.frequency_tip"));
+                .getTranslation("exp.uploads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(),
             clearCompletedUploadsAction, addIgnoreAction);
@@ -228,7 +228,7 @@ public class UploadsInformationCard extends InformationCard implements
         cleanupSlider.addChangeListener(new MyChangeListener());
         cleanupSlider
             .setToolTipText(Translation
-                .getTranslation("uploads_information_card.auto_cleanup.frequency_tip"));
+                .getTranslation("exp.uploads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
@@ -309,15 +309,15 @@ public class UploadsInformationCard extends InformationCard implements
         if (cleanupSlider.getValue() == 0) {
             cleanupLabel
                 .setText(Translation
-                    .getTranslation("uploads_information_card.auto_cleanup.immediate"));
+                    .getTranslation("exp.uploads_information_card.auto_cleanup.immediate"));
         } else if (cleanupSlider.getValue() >= 4) {
             cleanupLabel.setText(Translation
-                .getTranslation("uploads_information_card.auto_cleanup.never"));
+                .getTranslation("exp.uploads_information_card.auto_cleanup.never"));
         } else {
             int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider
                 .getValue()];
             cleanupLabel.setText(Translation.getTranslation(
-                "uploads_information_card.auto_cleanup.days",
+                "exp.uploads_information_card.auto_cleanup.days",
                 String.valueOf(trueCleanupDays)));
         }
     }
@@ -363,7 +363,7 @@ public class UploadsInformationCard extends InformationCard implements
      */
     private class ClearCompletedUploadsAction extends BaseAction {
         ClearCompletedUploadsAction(Controller controller) {
-            super("action_clear_completed_uploads", controller);
+            super("exp.action_clear_completed_uploads", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

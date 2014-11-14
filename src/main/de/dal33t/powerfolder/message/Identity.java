@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.util.Reject;
  * Message which contains information about me.
  * 
  * @author Christian Sprajc
+ * 
  * @version $Revision: 1.6 $
  */
 public class Identity extends Message {
@@ -57,7 +58,7 @@ public class Identity extends Message {
 
     /**
      * If to wait for handshake ack from remote side.
-     * 
+     *
      * @see HandshakeCompleted
      */
     private boolean acknowledgesHandshakeCompletion;
@@ -81,7 +82,6 @@ public class Identity extends Message {
     private boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
-
     /**
      * #2072: {@link Externalizable} protocol history:
      * <p>
@@ -95,15 +95,31 @@ public class Identity extends Message {
      * <p>
      * 104: Added: {@link FileChunkExt}
      * <p>
-     * 105: Added: {@link FileListExt}
+     * 105: Added: {@link FileListExt} {@link FolderFilesChangedExt}
      * <p>
      * 106: Added: {@link FolderListExt}
      * <p>
      * 107: Added: {@link KnownNodesExt}
      * <p>
      * 108: Added: {@link RelayedMessageExt}
+     * <p>
+     * 109: PFC-2352: Changed all messages containing FileInfo
+     * {@link StopUploadExt} {@link StartUploadExt} {@link RequestPartExt}
+     * {@link RequestDownloadExt} {@link FileChunkExt} {@link FileListExt}
+     * {@link FolderFilesChanged}
+     * <p>
+     * 110: PFC-2571: Changed all messages containing FileInfo
+     * {@link StopUploadExt} {@link StartUploadExt} {@link RequestPartExt}
+     * {@link RequestDownloadExt} {@link FileChunkExt} {@link FileListExt}
+     * {@link FolderFilesChanged}
      */
-    private int protocolVersion = 108;
+    public static final int PROTOCOL_VERSION_106 = 106;
+    public static final int PROTOCOL_VERSION_107 = 107;
+    public static final int PROTOCOL_VERSION_108 = 108;
+    public static final int PROTOCOL_VERSION_109 = 109;
+    public static final int PROTOCOL_VERSION_110 = 110;
+    
+    private int protocolVersion = PROTOCOL_VERSION_110;
 
     private boolean requestFullFolderlist;
 
@@ -203,7 +219,7 @@ public class Identity extends Message {
     /**
      * #2569: Connection improvement: Don't send full folderlist from server to
      * client.
-     * 
+     *
      * @return
      */
     public boolean isRequestFullFolderlist() {

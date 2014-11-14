@@ -50,7 +50,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 
 /**
  * A Panel to display version history about a file
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
  */
@@ -299,7 +299,7 @@ public class FileVersionsPanel extends PFUIComponent {
 
     /**
      * Display empty text or the actual results.
-     * 
+     *
      * @param state
      */
     private void setState(final int state) {
@@ -336,7 +336,7 @@ public class FileVersionsPanel extends PFUIComponent {
     private void restoreFile() {
         if (fileInfo != null) {
             FileInfoVersionTypeHolder selectedInfo = fileVersionsTable.getSelectedInfo();
-            PFWizard.openSingleFileRestoreWizard(getController(), 
+            PFWizard.openSingleFileRestoreWizard(getController(),
                     fileInfo.getFolder(getController().getFolderRepository()), fileInfo, selectedInfo.getFileInfo());
         }
     }

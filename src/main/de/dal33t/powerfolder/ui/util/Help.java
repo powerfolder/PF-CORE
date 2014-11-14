@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.Translation;
  * A general class to open help topics.
  * <p>
  * The general documentation strategy is to use online help in webbrowser.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -63,7 +63,7 @@ public class Help {
 
     /**
      * Opens the quickstart guides
-     * 
+     *
      * @param controller
      * @param article
      */
@@ -76,7 +76,7 @@ public class Help {
     /**
      * Creates a linklabel, which links to a help topic on the PowerFolder
      * homepage.
-     * 
+     *
      * @param labelText
      *            the text of the lable
      * @return a lable that is clickable
@@ -126,7 +126,7 @@ public class Help {
 
     /**
      * Creates a linklabel, which links to a article on the PowerFolder wiki.
-     * 
+     *
      * @param article
      *            The article url. e.g. LAN-IP-List for
      *            http://wiki.powerfolder.com/wiki/LAN-IP-List

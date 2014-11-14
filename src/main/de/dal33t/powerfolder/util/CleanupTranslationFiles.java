@@ -44,7 +44,7 @@ import java.util.Properties;
 
 /**
  * A Translation file cleaner
- * 
+ *
  * @version $Revision: 1.3 $
  */
 public class CleanupTranslationFiles {
@@ -88,7 +88,7 @@ public class CleanupTranslationFiles {
     private static final String outputName = "src/etc/Translation";
 
     private Properties originals;
-    private boolean deep = false;
+    private boolean deep = true;
 
     public void run() throws IOException {
         originals = loadTranslationFile(baseName + ".properties");
@@ -97,24 +97,18 @@ public class CleanupTranslationFiles {
         for (Object string : originals.keySet()) {
             String key = (String) string;
             keys.add(key);
-            if (key.startsWith("action_")) {
-                int i = key.lastIndexOf('.');
-                if (i > 0) {
-                    key = key.substring(0, i);
-                }
-            }
            if (!key.startsWith("transfer_mode.")) {
-               searchContents.add(key);               
+               searchContents.add(key);
            }
         }
         Collections.sort(keys);
         if (deep) {
             Collection<String> usedOriginals = new HashSet<String>();
             findContent(searchContents, Paths.get("src/main"), usedOriginals);
-            findContent(searchContents, Paths.get("../PowerFolder-Pro/src/pro"),
+            findContent(searchContents, Paths.get("../PF-PRO/src/pro"),
                 usedOriginals);
             findContent(searchContents, Paths.get(
-                "../PowerFolder-Pro/src/server"), usedOriginals);
+                "../PF-PRO/src/server"), usedOriginals);
             System.out.println("Found " + usedOriginals.size() + "/"
                 + keys.size() + ". " + (keys.size() - usedOriginals.size())
                 + " unused translations. Removing: ");
@@ -124,6 +118,7 @@ public class CleanupTranslationFiles {
 
             for (String key : unused) {
                 System.out.println(key);
+            
                 if (!keys.remove(key)) {
                     boolean r = keys.remove(key + ".key")
                         || keys.remove(key + ".label")
@@ -147,7 +142,7 @@ public class CleanupTranslationFiles {
                 + locale.getLanguage() + ".properties");
             writeTranslationFile(locale.getLanguage(), keys, foreignProperties);
         }
-        
+
         writeTranslationFile(null, keys, originals);
 
         System.out.println("Streamlined " + originals.size()
@@ -176,12 +171,13 @@ public class CleanupTranslationFiles {
             throw new RuntimeException(e);
         }
 
-        BufferedWriter out;
+        BufferedWriter out = null;
         try {
             out = new BufferedWriter(new OutputStreamWriter(
                 new BufferedOutputStream(fOut), "8859_1"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
+        } finally {
         }
 
         String lastPrefix = null;
@@ -271,6 +267,18 @@ public class CleanupTranslationFiles {
                     if (input.contains(content)) {
                         foundContents.add(content);
                     }
+                    if (content.endsWith(".key") || content.endsWith(".name")
+                        || content.endsWith(".description"))
+                    {
+                        int i = content.lastIndexOf(".");
+                        String altContent = content.substring(0, i);
+                        if (input.contains(altContent)) {
+//                            System.out.println("Found action key: "
+//                                + altContent + " ; Preserving translation key: "
+//                                + content);
+                            foundContents.add(content);
+                        }
+                    }
                 }
                 System.out.println(f.toAbsolutePath());
             } catch (Exception e) {
@@ -304,7 +312,7 @@ public class CleanupTranslationFiles {
 
     /**
      * Copied from SUN Properties
-     * 
+     *
      * @param theString
      * @param escapeSpace
      * @return
@@ -377,7 +385,7 @@ public class CleanupTranslationFiles {
 
     /**
      * Convert a nibble to a hex character
-     * 
+     *
      * @param nibble
      *            the nibble to convert.
      */

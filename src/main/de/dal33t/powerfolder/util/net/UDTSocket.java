@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * expect alot of memory usage from creating such a socket. <br>
  * Actually, the amount used should be around 22MB per socket (if one looks at
  * the default buffer sizes).
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class UDTSocket {
@@ -152,7 +152,7 @@ public class UDTSocket {
     /**
      * Accepts a connection. This socket must be bound and in listen state
      * before calling this method. Otherwise an IOException is thrown
-     * 
+     *
      * @return the accepted connection socket
      * @throws IOException
      */
@@ -164,7 +164,7 @@ public class UDTSocket {
 
     /**
      * Binds this socket to a local address.
-     * 
+     *
      * @param bindPoint
      * @throws IOException
      */
@@ -173,7 +173,7 @@ public class UDTSocket {
     /**
      * Closes the socket. Releases all native resources. Further reads and
      * writes on this socket will fail after calling this method.
-     * 
+     *
      * @throws IOException
      */
     public void close() throws IOException {
@@ -189,7 +189,7 @@ public class UDTSocket {
      * Tries to connect to the given address. There is no timeout option exposed
      * by the native API, but the connection attempt will fail after some
      * hardcoded internal value.
-     * 
+     *
      * @param endPoint
      * @throws IOException
      *             if the connection attempt failed.
@@ -203,7 +203,7 @@ public class UDTSocket {
 
     /**
      * Returns an InputStream for this socket.
-     * 
+     *
      * @return
      * @throws IOException
      */
@@ -216,14 +216,14 @@ public class UDTSocket {
 
     /**
      * Returns the address this socket was bound to.
-     * 
+     *
      * @return the address or null, if it hasn't been bound yet.
      */
     public native InetSocketAddress getLocalAddress();
 
     /**
      * Returns an OutputStream for this socket.
-     * 
+     *
      * @return
      * @throws IOException
      */
@@ -236,7 +236,7 @@ public class UDTSocket {
 
     /**
      * Returns the address of the remote peer.
-     * 
+     *
      * @return the address or null, if it's not connected
      */
     public InetSocketAddress getRemoteAddress() {
@@ -245,7 +245,7 @@ public class UDTSocket {
 
     /**
      * Returns true if the socket is closed
-     * 
+     *
      * @return
      */
     public boolean isClosed() {
@@ -254,7 +254,7 @@ public class UDTSocket {
 
     /**
      * Returns true if the socket is connected
-     * 
+     *
      * @return
      */
     public boolean isConnected() {
@@ -264,7 +264,7 @@ public class UDTSocket {
     /**
      * Sets this socket to listen state (ServerSocket). Bind() must be be called
      * before invoking this method.
-     * 
+     *
      * @param backlog
      *            the maximum number of pending incoming connections
      * @throws IOException
@@ -276,14 +276,14 @@ public class UDTSocket {
      * Sets the option value for UDT_RENDEZVOUS. In rendezvous mode, both peers
      * have to to connect to each other, instead of one peer listening and the
      * other connecting. This can be (and is) used to perform UDP hole punching.
-     * 
+     *
      * @param enabled
      */
     public native void setSoRendezvous(boolean enabled);
 
     /**
      * Returns the option value for UDT_RENDEZVOUS.
-     * 
+     *
      * @return
      */
     public native boolean getSoRendezvous();
@@ -291,7 +291,7 @@ public class UDTSocket {
     /**
      * Sets the SO_LINGER option. Sets the time close() will wait for
      * sending/receiving before closing the connection.
-     * 
+     *
      * @param true to linger on
      * @param seconds
      *            how long to linger, if on is true
@@ -300,7 +300,7 @@ public class UDTSocket {
 
     /**
      * Returns the time to linger in seconds.
-     * 
+     *
      * @return the linger setting, or -1 if it's not on
      */
     public native int getSoLinger();
@@ -308,7 +308,7 @@ public class UDTSocket {
     /**
      * The receiver buffer limit is used to limit the size of temporary storage
      * of receiving data. Recommended size: Bandwidth * RTT
-     * 
+     *
      * @param value
      */
     public native void setSoReceiverBufferLimit(int value) throws IOException;
@@ -316,7 +316,7 @@ public class UDTSocket {
     /**
      * The receiver buffer limit is used to limit the size of temporary storage
      * of receiving data. Recommended size: Bandwidth * RTT
-     * 
+     *
      * @return the currrent buffer limit
      */
     public native int getSoReceiverBufferLimit() throws IOException;
@@ -324,7 +324,7 @@ public class UDTSocket {
     /**
      * The sender buffer limit is used to limit the size of temporary storage of
      * sending data. Recommended size: Bandwidth * RTT
-     * 
+     *
      * @param value
      */
     public native void setSoSenderBufferLimit(int value) throws IOException;
@@ -332,35 +332,35 @@ public class UDTSocket {
     /**
      * The sender buffer limit is used to limit the size of temporary storage of
      * sending data. Recommended size: Bandwidth * RTT
-     * 
+     *
      * @return the current buffer limit
      */
     public native int getSoSenderBufferLimit() throws IOException;
 
     /**
      * The UDP buffer size used for receiving. This can be relatively small.
-     * 
+     *
      * @param value
      */
     public native void setSoUDPReceiverBufferSize(int value) throws IOException;
 
     /**
      * The UDP buffer size used for receiving. This can be relatively small.
-     * 
+     *
      * @return the current buffer size
      */
     public native int getSoUDPReceiverBufferSize() throws IOException;
 
     /**
      * The UDP buffer size used for sending. This can be relatively small.
-     * 
+     *
      * @param value
      */
     public native void setSoUDPSenderBufferSize(int value) throws IOException;
 
     /**
      * The UDP buffer size used for sending. This can be relatively small.
-     * 
+     *
      * @return the current buffer size
      */
     public native int getSoUDPSenderBufferSize() throws IOException;

@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.message.Message;
  * This task tries to send a message to another user. The task remains active
  * even when PF is closed and will try to perform it's work on the next PF
  * session.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision:$
  */

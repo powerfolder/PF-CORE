@@ -55,7 +55,7 @@ public class FolderExpireTest extends ControllerTestCase {
         if (Files.exists(deletedFile)) {
             Files.delete(deletedFile);
         }
-        
+
         Files.createFile(deletedFile);
 
         // Speed things up!

@@ -75,7 +75,7 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
  * #1784: For locking the user interface.
- * 
+ *
  * @author sprajc
  */
 public class UIUnLockDialog extends PFUIComponent {
@@ -127,7 +127,7 @@ public class UIUnLockDialog extends PFUIComponent {
             CellConstraints cc = new CellConstraints();
             int row = 1;
 
-            builder.addLabel(Translation.getTranslation("uilock.dialog.info"),
+            builder.addLabel(Translation.getTranslation("exp.uilock.dialog.info"),
                 cc.xyw(1, row, 3));
             row += 2;
 
@@ -224,7 +224,7 @@ public class UIUnLockDialog extends PFUIComponent {
     }
 
     private String getTitle() {
-        return Translation.getTranslation("uilock.dialog.title");
+        return Translation.getTranslation("exp.uilock.dialog.title");
     }
 
     private Component buildButtonBar() {
@@ -237,7 +237,7 @@ public class UIUnLockDialog extends PFUIComponent {
         });
 
         JButton helpButton = new JButton(
-            Translation.getTranslation("uilock.dialog.help"));
+            Translation.getTranslation("exp.uilock.dialog.help"));
         helpButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 BrowserLauncher.openURL(getController(),
@@ -245,7 +245,7 @@ public class UIUnLockDialog extends PFUIComponent {
             }
         });
         JButton exitButton = new JButton(
-            Translation.getTranslation("uilock.dialog.exit"));
+            Translation.getTranslation("exp.uilock.dialog.exit"));
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 exit();
@@ -270,7 +270,7 @@ public class UIUnLockDialog extends PFUIComponent {
 
     /**
      * Creates an internationalized ok button
-     * 
+     *
      * @param listener
      *            the listener to be put on the button
      * @return
@@ -363,7 +363,7 @@ public class UIUnLockDialog extends PFUIComponent {
                     return;
                 } else {
                     showInfo(Translation
-                        .getTranslation("uilock.dialog.error.wronglogin"));
+                        .getTranslation("exp.uilock.dialog.error.wronglogin"));
                 }
             } catch (InterruptedException e) {
                 logWarning(e);

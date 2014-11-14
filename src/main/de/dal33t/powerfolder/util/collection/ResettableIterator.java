@@ -18,14 +18,14 @@ package de.dal33t.powerfolder.util.collection;
 
 import java.util.Iterator;
 
-/** 
+/**
  * Defines an iterator that can be reset back to an initial state.
  * <p>
  * This interface allows an iterator to be repeatedly reused.
  *
  * @since Commons Collections 3.0
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr 2008) $
- * 
+ *
  * @author Stephen Colebourne
  */
 public interface ResettableIterator extends Iterator {

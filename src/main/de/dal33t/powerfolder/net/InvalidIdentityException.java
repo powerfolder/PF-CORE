@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.net;
 
 /**
  * Throws if a client did identify wrong, member should be invalidated
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
@@ -42,7 +42,7 @@ public class InvalidIdentityException extends ConnectionException {
 
     /**
      * Returns the connection handler from which the wrong identity was received
-     * 
+     *
      * @return
      */
     public ConnectionHandler getFrom() {

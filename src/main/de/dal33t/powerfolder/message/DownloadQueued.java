@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Tells the peer, that the download of file was enqueued
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
@@ -37,7 +37,7 @@ public class DownloadQueued extends Message {
     }
 
     /**
-     * 
+     *
      */
     public DownloadQueued(FileInfo file) {
         super();

@@ -28,10 +28,10 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Validate;
 
 /**
- * Creates arrays of PartInfos given the algorithms to use and a data set. 
- * 
+ * Creates arrays of PartInfos given the algorithms to use and a data set.
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: 4280 $ 
+ * @version $Revision: 4280 $
  */
 public final class FilePartsRecordBuilder {
 	private final Checksum chksum;
@@ -40,8 +40,8 @@ public final class FilePartsRecordBuilder {
     private List<PartInfo> parts = new LinkedList<PartInfo>();
     private long processed;
     private int partPos;
-    
-	
+
+
     public FilePartsRecordBuilder(Checksum chksumRoller, MessageDigest partDigester, MessageDigest fileDigester,
         int partSize) {
         super();
@@ -52,7 +52,7 @@ public final class FilePartsRecordBuilder {
         this.fileDigester = fileDigester;
         this.partSize = partSize;
     }
-	
+
 	/**
      * Updates the current record with the given data.
 	 * @param data
@@ -66,7 +66,7 @@ public final class FilePartsRecordBuilder {
 	    }
 	    processed += len;
 	    fileDigester.update(data, off, len);
-	    
+
 	    while (len > 0) {
 	        if (partPos + len >= partSize) {
 	            int rem = partSize - partPos;
@@ -87,7 +87,7 @@ public final class FilePartsRecordBuilder {
 	        }
 	    }
 	}
-	
+
 	/**
      * Updates the current record with the given data.
 	 * @param data
@@ -95,7 +95,7 @@ public final class FilePartsRecordBuilder {
 	public void update(int data) {
 	   update(new byte[] { (byte) (data & 0xFF) });
 	}
-	
+
 	/**
 	 * Updates the current record with the given data.
 	 * Same as calling update(data, 0, data.length).
@@ -104,11 +104,11 @@ public final class FilePartsRecordBuilder {
 	public void update(byte[] data) {
 	    update(data, 0, data.length);
 	}
-	
+
 	/**
 	 * Performs final operations, such as padding and returns the resulting set.
      * The builder is reset after this call is made.
-	 * @return a record containing {@link PartInfo}s and additional information. 
+	 * @return a record containing {@link PartInfo}s and additional information.
 	 */
 	public FilePartsRecord getRecord() {
 	    try {
@@ -126,9 +126,9 @@ public final class FilePartsRecordBuilder {
 	        reset();
 	    }
 	}
-	
+
 	/**
-	 * Resets the builder for further use. 
+	 * Resets the builder for further use.
 	 */
 	public void reset() {
         processed = 0;

@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 
 /**
  * Temporary UI object to display the member of a folder.
- * 
+ *
  * @author sprajc
  */
 public class FolderMember {
@@ -47,7 +47,7 @@ public class FolderMember {
     public GroupInfo getGroupInfo() {
         return groupInfo;
     }
-    
+
     public FolderPermission getPermission() {
         return permission;
     }

@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Comparator for members
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $
  */
@@ -202,7 +202,7 @@ public class MemberComparator implements Comparator<Member> {
 
     /**
      * Creates a COPY of the input list.
-     * 
+     *
      * @param input
      *            the initial collection that should get sorted.
      * @return a sorted copy of the collection that gets put inside.s
@@ -216,7 +216,7 @@ public class MemberComparator implements Comparator<Member> {
 
     /**
      * Compares two transfer stati
-     * 
+     *
      * @param t1
      * @param t2
      * @return
@@ -241,7 +241,7 @@ public class MemberComparator implements Comparator<Member> {
 
     /**
      * Compares two dates. They may also be null
-     * 
+     *
      * @param d1
      * @param d2
      * @return

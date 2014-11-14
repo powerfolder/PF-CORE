@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * To internalize MemberInfos against a {@link NodeManager}s database.
- * 
+ *
  * @author sprajc
  */
 public class MemberInfoInternalizer implements Internalizer<MemberInfo> {
@@ -55,7 +55,7 @@ public class MemberInfoInternalizer implements Internalizer<MemberInfo> {
         }
     }
     
-    public MemberInfo sudoIntern(MemberInfo item) {
+    public MemberInfo rename(MemberInfo item) {
         return intern(item);
     }
 }

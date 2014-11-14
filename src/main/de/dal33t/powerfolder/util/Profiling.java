@@ -55,7 +55,7 @@ public class Profiling {
 
     /**
      * Enables the profiler.
-     * 
+     *
      * @param enabled
      */
     public static void setEnabled(boolean enabled) {
@@ -71,7 +71,7 @@ public class Profiling {
 
     /**
      * Start profiling a method invocation.
-     * 
+     *
      * @return instance of ProfilingeEntry.
      */
     public static ProfilingEntry start() {
@@ -85,7 +85,7 @@ public class Profiling {
 
     /**
      * Start profiling a method invocation.
-     * 
+     *
      * @param operationName
      *            the name of the method being invoked.
      * @return instance of ProfilingeEntry.
@@ -99,7 +99,7 @@ public class Profiling {
 
     /**
      * Start profiling a method invocation.
-     * 
+     *
      * @param operationName
      *            the name of the method being invoked.
      * @param details
@@ -118,7 +118,7 @@ public class Profiling {
      * value returned by the coresponding startProfiling call. If the invocation
      * takes longer than the original profileMillis milli seconds, the profile
      * is logged.
-     * 
+     *
      * @param profilingEntry
      *            the profile entry instance.
      */
@@ -131,7 +131,7 @@ public class Profiling {
      * value returned by the coresponding startProfiling call. If the invocation
      * takes longer than the original profileMillis milli seconds, the profile
      * is logged.
-     * 
+     *
      * @param profilingEntry
      *            the profile entry instance.
      * @param profileMillis

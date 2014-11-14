@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * Helper class to construct a key for a {@link FileInfo} which can be used in
  * {@link Map}s using a additional fields to compare them.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */

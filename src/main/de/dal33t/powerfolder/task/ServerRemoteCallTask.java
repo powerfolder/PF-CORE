@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Task that get executed when the server is connected.
- * 
+ *
  * @author sprajc
  */
 public abstract class ServerRemoteCallTask extends PersistentTask {
@@ -61,7 +61,7 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
 
     /**
      * It does not matter what user/account executes this remote call.
-     * 
+     *
      * @param daysToExpire
      *            day to expire/remove if not successfully executed.
      */
@@ -105,7 +105,7 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
      * Execute a remote call to the service. When this method is called it is
      * guranteed that the server is connected. The call is responsible for
      * removing the task via {@link #remove()}.
-     * 
+     *
      * @param client
      * @throws Exception
      *             if something went wrong. Task will be KEPT for later
@@ -154,7 +154,7 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
         public void serverConnected(ServerClientEvent event) {
             checkAndExecute(event.getClient());
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
             checkAndExecute(event.getClient());
         }

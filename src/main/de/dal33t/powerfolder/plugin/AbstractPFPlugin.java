@@ -37,7 +37,7 @@ public abstract class AbstractPFPlugin extends PFComponent implements Plugin {
      * this contructor will be called always, even if disabled. disabled means
      * that start will not be called, so when overwiting this contructor make
      * sure not to do much in there move all code to start().
-     * 
+     *
      * @param controller
      */
     public AbstractPFPlugin(Controller controller) {

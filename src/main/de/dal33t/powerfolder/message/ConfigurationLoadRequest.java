@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.util.StringUtils;
  * Message to force the client to reload the config from a given URL.
  * <p>
  * TRAC #1799
- * 
+ *
  * @author sprajc
  */
 public class ConfigurationLoadRequest extends Message {

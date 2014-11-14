@@ -33,7 +33,7 @@ import java.util.Iterator;
  * {@link #iterator()}. Instead it simply returns the value from the wrapped
  * collection. This may be undesirable, for example if you are trying to write
  * an unmodifiable implementation it might provide a loophole.
- * 
+ *
  * @since Commons Collections 3.0
  * @version $Revision: 646777 $ $Date: 2008-04-10 13:33:15 +0100 (Thu, 10 Apr
  *          2008) $
@@ -47,7 +47,7 @@ public abstract class AbstractCollectionDecorator implements Collection {
 
     /**
      * Constructor only used in deserialization, do not use otherwise.
-     * 
+     *
      * @since Commons Collections 3.1
      */
     protected AbstractCollectionDecorator() {
@@ -56,7 +56,7 @@ public abstract class AbstractCollectionDecorator implements Collection {
 
     /**
      * Constructor that wraps (not copies).
-     * 
+     *
      * @param coll
      *            the collection to decorate, must not be null
      * @throws IllegalArgumentException
@@ -71,7 +71,7 @@ public abstract class AbstractCollectionDecorator implements Collection {
 
     /**
      * Gets the collection being decorated.
-     * 
+     *
      * @return the decorated collection
      */
     protected Collection getCollection() {

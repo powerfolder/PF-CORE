@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.Util;
 
 /**
  * A Thread that checks for updates on powerfolder
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.27 $
  */
@@ -76,7 +76,7 @@ public class Updater extends Thread {
     /**
      * Installs a periodical (usually once per hour) update check with the given
      * handler.
-     * 
+     *
      * @param controller
      * @param updateHandler
      */
@@ -122,7 +122,7 @@ public class Updater extends Thread {
     /**
      * Method that downloads and installs the version of PowerFolder from the
      * given URL.
-     * 
+     *
      * @param url
      * @param progressCallback
      * @param silentUpdate
@@ -140,7 +140,7 @@ public class Updater extends Thread {
 
     /**
      * Downloads a new powerfolder release file from a URL.
-     * 
+     *
      * @param url
      *            the url
      * @param progressCallback
@@ -185,7 +185,7 @@ public class Updater extends Thread {
             Files.deleteIfExists(targetFile);
             Files.move(tempFile, targetFile);
             Files.setLastModifiedTime(targetFile, FileTime.fromMillis(con.getLastModified()));
-    
+
             if (targetFile.getFileName().toString().toLowerCase().endsWith("jar")) {
                 // Additional jar check
                 if (!PathUtils.isValidZipFile(targetFile)) {
@@ -263,7 +263,7 @@ public class Updater extends Thread {
 
     /**
      * Returns the download URL for the latest program version
-     * 
+     *
      * @return
      */
     private URL getReleaseExeURL() {

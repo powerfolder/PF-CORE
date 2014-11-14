@@ -71,7 +71,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
     /**
      * Give user warning if stopping backing up.
-     * 
+     *
      * @param panelList
      * @return
      */
@@ -81,12 +81,12 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                 .genericDialog(
                     getController(),
                     Translation
-                        .getTranslation("wizard.folder_online_storage.warning_title"),
+                        .getTranslation("exp.wizard.folder_online_storage.warning_title"),
                     Translation
-                        .getTranslation("wizard.folder_online_storage.warning_message"),
+                        .getTranslation("exp.wizard.folder_online_storage.warning_message"),
                     new String[]{
                         Translation
-                            .getTranslation("wizard.folder_online_storage.warning_stop_backing"),
+                            .getTranslation("exp.wizard.folder_online_storage.warning_stop_backing"),
                         Translation.getTranslation("general.cancel")}, 0,
                     GenericDialogType.WARN);
             return result == 0; // Stop backing up
@@ -112,9 +112,9 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             next = new TextPanelPanel(
                 getController(),
                 Translation
-                    .getTranslation("wizard.folder_online_storage.remove_success_title"),
+                    .getTranslation("exp.wizard.folder_online_storage.remove_success_title"),
                 Translation.getTranslation(
-                    "wizard.folder_online_storage.remove_success_message",
+                    "exp.wizard.folder_online_storage.remove_success_message",
                     foInfo.getLocalizedName()), true);
         } else {
             task = new Runnable() {
@@ -127,15 +127,15 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             next = new TextPanelPanel(
                 getController(),
                 Translation
-                    .getTranslation("wizard.folder_online_storage.backup_success_title"),
+                    .getTranslation("exp.wizard.folder_online_storage.backup_success_title"),
                 Translation.getTranslation(
-                    "wizard.folder_online_storage.backup_success_message",
-                    foInfo.name));
+                    "exp.wizard.folder_online_storage.backup_success_message",
+                    foInfo.getLocalizedName()));
         }
         return new SwingWorkerPanel(getController(), task,
-            Translation.getTranslation("wizard.folder_online_storage.working"),
+            Translation.getTranslation("exp.wizard.folder_online_storage.working"),
             Translation
-                .getTranslation("wizard.folder_online_storage.working.text"),
+                .getTranslation("exp.wizard.folder_online_storage.working.text"),
             next);
     }
 
@@ -149,11 +149,11 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         if (removeFolder) {
             builder
                 .addLabel(Translation
-                    .getTranslation("wizard.webservice.unmirror_folder"), cc
+                    .getTranslation("exp.wizard.webservice.unmirror_folder"), cc
                     .xyw(1, 1, 4));
         } else {
             builder.addLabel(
-                Translation.getTranslation("wizard.webservice.mirror_folder"),
+                Translation.getTranslation("exp.wizard.webservice.mirror_folder"),
                 cc.xyw(1, 1, 4));
         }
 
@@ -162,7 +162,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         builder.add(folderLabel, cc.xy(3, 3));
 
         LinkLabel link = new LinkLabel(getController(),
-            Translation.getTranslation("wizard.webservice.learn_more"),
+            Translation.getTranslation("exp.wizard.webservice.learn_more"),
             ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
         builder.add(link.getUIComponent(), cc.xyw(1, 5, 3));
         return builder.getPanel();
@@ -176,16 +176,16 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         List<Folder> folders = new ArrayList<Folder>(getController()
             .getFolderRepository().getFolders());
         folders.removeAll(ws.getJoinedCloudFolders());
-        folderLabel = new JLabel(foInfo.name);
+        folderLabel = new JLabel(foInfo.getName());
         updateButtons();
     }
 
     protected String getTitle() {
         if (removeFolder) {
             return Translation
-                .getTranslation("wizard.webservice.unmirror_setup");
+                .getTranslation("exp.wizard.webservice.unmirror_setup");
         } else {
-            return Translation.getTranslation("wizard.webservice.mirror_setup");
+            return Translation.getTranslation("exp.wizard.webservice.mirror_setup");
         }
     }
 }

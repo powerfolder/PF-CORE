@@ -37,6 +37,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -93,6 +95,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FileRequestCommand;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageProducer;
@@ -100,6 +103,7 @@ import de.dal33t.powerfolder.message.RevertedFile;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
+import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -133,6 +137,7 @@ public class Folder extends PFComponent {
 
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
     public static final String METAFOLDER_MEMBERS = "Members";
+    public static final String METAFOLDER_LOCKS_DIR = "locks";
     public static final String FOLDER_STATISTIC = "FolderStatistic";
 
     private static final int FIVE_MINUTES = 60 * 5;
@@ -307,7 +312,7 @@ public class Folder extends PFComponent {
 
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
-        currentInfo = new FolderInfo(fInfo.name, fInfo.id).intern();
+        currentInfo = new FolderInfo(fInfo.getName(), fInfo.id).intern();
 
         // Create listener support
         folderListenerSupport = ListenerSupportFactory
@@ -341,12 +346,13 @@ public class Folder extends PFComponent {
 //                throw new IllegalStateException(
 //                    "Unable to open encrypted container for folder "
 //                        + getName() + " at " + localBase);
-            // }
+//            }
         } else if (folderSettings.getLocalBaseDir().isAbsolute()) {
             localBase = folderSettings.getLocalBaseDir();
         } else {
             localBase = getController().getFolderRepository()
-                .getFoldersBasedir().resolve(folderSettings.getLocalBaseDir());
+                .getFoldersBasedir()
+                .resolve(folderSettings.getLocalBaseDir());
             logFine("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
             if (Files.notExists(localBase)) {
@@ -630,6 +636,7 @@ public class Folder extends PFComponent {
                     logFiner("Adding " + scanResult.getNewFiles().size()
                         + " to directory");
                 }
+
                 // New files
                 store(getMySelf(), scanResult.newFiles);
                 // deleted files
@@ -672,6 +679,31 @@ public class Folder extends PFComponent {
             setDBDirty();
             // broadcast changes on folder
             broadcastFolderChanges(scanResult);
+
+            // PFC-1962: Start
+            if (!currentInfo.isMetaFolder()) {
+                try {
+                    Locking locking = getController().getFolderRepository()
+                        .getLocking();
+                    for (FileInfo fInfo : scanResult.newFiles) {
+                        locking.handlePotentialLockfile(fInfo);
+                    }
+                    for (FileInfo fInfo : scanResult.deletedFiles) {
+                        locking.handlePotentialLockfile(fInfo);
+                    }
+                    for (FileInfo fInfo : scanResult.restoredFiles) {
+                        locking.handlePotentialLockfile(fInfo);
+                    }
+                    for (FileInfo fInfo : scanResult.changedFiles) {
+                        locking.handlePotentialLockfile(fInfo);
+                    }
+                } catch (RuntimeException e) {
+                    logWarning(
+                        "Unable to automatically lock/unlock office files in: "
+                            + this + ". " + e, e);
+                }
+            }
+            // PFC-1962: End
         }
 
         if (isFiner()) {
@@ -1004,14 +1036,6 @@ public class Folder extends PFComponent {
             && DateUtil.isNewerFileDateCrossPlattform(
                 oldLocalFileInfo.getModifiedDate(), fInfo.getModifiedDate());
 
-        //
-        // [PowerFolder Temp]:/POWERFOLDER ERKLÄRVIDEO.mp4, size: 73418472
-        // bytes, version: 1, modified: Thu Jul 10 13:00:33 CEST 2014
-        // (1404990033000) by 'betag'
-        // [PowerFolder Temp]:/POWERFOLDER ERKLÄRVIDEO.mp4, size: 0 bytes,
-        // version: 0, modified: Fri Jul 18 18:00:01 CEST 2014 (1405699201450)
-        // by 'betag'
-        //
         // PFS-1329
         if (oldLocalFileInfo.getSize() == 0) {
             return null;
@@ -1429,11 +1453,18 @@ public class Folder extends PFComponent {
                             logFiner("Scan new file: " + fInfo.toDetailString());
                         }
                         // Update last - modified data
-                        MemberInfo modifiedBy = fInfo.getModifiedBy();
-                        if (modifiedBy == null) {
-                            modifiedBy = getMySelf().getInfo();
+                        MemberInfo modByDevice = fInfo.getModifiedBy();
+                        if (modByDevice == null) {
+                            modByDevice = getMySelf().getInfo();
                         }
-                        Member from = modifiedBy.getNode(getController(), true);
+                        Member fromDevice = modByDevice.getNode(
+                            getController(), false);
+                        AccountInfo modByAccount = fromDevice != null
+                            ? fromDevice.getAccountInfo()
+                            : null;
+                        if (modByAccount == null) {
+                            modByAccount = getMySelf().getAccountInfo();
+                        }
                         Date modDate;
                         long size;
                         boolean deleted;
@@ -1448,8 +1479,8 @@ public class Folder extends PFComponent {
                             deleted = fInfo.isDeleted();
                         }
 
-                        if (from != null) {
-                            modifiedBy = from.getInfo();
+                        if (fromDevice != null) {
+                            modByDevice = fromDevice.getInfo();
                         }
 
                         if (Files.exists(file)) {
@@ -1464,16 +1495,21 @@ public class Folder extends PFComponent {
                             }
                         }
 
+                        // PFC-2352: TODO: Recalc hashes:
+                        String oid = fInfo.getOID();
+                        String hashes = null;
+                        String tags = fInfo.getTags();
+
                         if (deleted) {
                             fInfo = FileInfoFactory.unmarshallDeletedFile(
-                                currentInfo, fInfo.getRelativeName(),
-                                modifiedBy, modDate, fInfo.getVersion(),
-                                Files.isDirectory(file));
+                                currentInfo, fInfo.getRelativeName(), oid,
+                                modByDevice, modByAccount, modDate, fInfo.getVersion(),
+                                hashes, Files.isDirectory(file), tags);
                         } else {
                             fInfo = FileInfoFactory.unmarshallExistingFile(
-                                currentInfo, fInfo.getRelativeName(), size,
-                                modifiedBy, modDate, fInfo.getVersion(),
-                                Files.isDirectory(file));
+                                currentInfo, fInfo.getRelativeName(), oid,
+                                size, modByDevice, modByAccount, modDate, fInfo.getVersion(),
+                                hashes, Files.isDirectory(file), tags);
                         }
 
                         store(getMySelf(), fInfo);
@@ -1523,6 +1559,16 @@ public class Folder extends PFComponent {
             if (isWarning() && took > 60 * 1000L) {
                 logWarning("Scanning file took " + (took / 1000) + "s: "
                     + fInfo.toDetailString());
+            }
+
+            try {
+                if (!currentInfo.isMetaFolder()) {
+                    getController().getFolderRepository().getLocking()
+                        .handlePotentialLockfile(fInfo);
+                }
+            } catch (RuntimeException e) {
+                logWarning("Unable to automatically lock/unlock office file: "
+                    + fInfo.toDetailString() + ". " + e, e);
             }
         }
     }
@@ -1999,14 +2045,16 @@ public class Folder extends PFComponent {
     /**
      * Stores the current file-database to disk
      */
-    private boolean storeFolderDB() {
-            Path dbTempFile = getSystemSubDir().resolve(Constants.DB_FILENAME
-                + PathUtils.removeInvalidFilenameChars(getController().getMySelf()
-                    .getId()) + ".writing");
+    private synchronized boolean storeFolderDB() {
+        Path dbTempFile = getSystemSubDir().resolve(
+            Constants.DB_FILENAME
+                + PathUtils.removeInvalidFilenameChars(getController()
+                    .getMySelf().getId()) + ".writing");
         Path dbFile = getSystemSubDir().resolve(Constants.DB_FILENAME);
 
         // Not longer needed:
-        Path dbFileBackup = getSystemSubDir().resolve(  Constants.DB_BACKUP_FILENAME);
+        Path dbFileBackup = getSystemSubDir().resolve(
+            Constants.DB_BACKUP_FILENAME);
         try {
             Files.deleteIfExists(dbFileBackup);
         } catch (Exception e) {
@@ -2201,10 +2249,12 @@ public class Folder extends PFComponent {
             for (int i = 0; i < brokenExisting.size(); i++) {
                 FileInfo fileInfo = brokenExisting.get(i);
                 FileInfo newFileInfo = FileInfoFactory.unmarshallExistingFile(
-                    currentInfo, fileInfo.getRelativeName(),
+                    currentInfo, fileInfo.getRelativeName(), fileInfo.getOID(),
                     fileInfo.getSize(), fileInfo.getModifiedBy(),
+                    fileInfo.getModifiedByAccount(),
                     fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
-                    fileInfo.isDiretory());
+                    fileInfo.getHashes(), fileInfo.isDiretory(),
+                    fileInfo.getTags());
                 brokenExisting.set(i, newFileInfo);
             }
             store(getMySelf(), brokenExisting);
@@ -2280,6 +2330,12 @@ public class Folder extends PFComponent {
             // Ok in sync
             return false;
         }
+        // http://jira.zyncro.com/browse/SYNC-459
+        if (diskItemFilter.getPatterns().isEmpty()) {
+            // Workaround for race condition during setup and default excludes
+            // have not yet been added.
+            return false;
+        }
         if (diskItemFilter.isExcluded(fileInfo)) {
             // Is excluded from sync. Don't delete. Might be meta-data.
             return false;
@@ -2288,7 +2344,7 @@ public class Folder extends PFComponent {
         try {
             if (newestVersion == null) {
                 boolean remoteFilesFound = false;
-                for (Member member: getConnectedMembers()) {
+                for (Member member : getConnectedMembers()) {
                     if (!hasWritePermission(member)) {
                         continue;
                     }
@@ -2323,21 +2379,24 @@ public class Folder extends PFComponent {
             }
             synchronized (scanLock) {
                 if (Files.exists(file)) {
-                    int version = archiver.getVersionsPerFile();
                     try {
-                        // SYNC-98 Start
-                        if (ProUtil.isZyncro(getController())) {
-                            archiver.setVersionsPerFile(1);
+                        Path problemPath = archiver.getArchiveDir().resolve(
+                            fileInfo.getRelativeName());
+                        // PFS-1361 Start
+                        if (ProUtil.isZyncro(getController())
+                            && !currentInfo.isMetaFolder())
+                        {
+                            createTimestampedCopy(file);
+                            problemPath = file;
                         }
-                        // SYNC-98 End
+                        // PFS-1361 End
                         watcher.addIgnoreFile(fileInfo);
                         archiver.archive(fileInfo, file, false);
 
                         Files.deleteIfExists(file);
                         if (!currentInfo.isMetaFolder()) {
-                            addProblem(new FolderReadOnlyProblem(this, archiver
-                                .getArchiveDir().resolve(
-                                    fileInfo.getRelativeName())));
+                            addProblem(new FolderReadOnlyProblem(this,
+                                problemPath));
                         }
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
@@ -2345,11 +2404,6 @@ public class Folder extends PFComponent {
                         return false;
                     } finally {
                         watcher.removeIgnoreFile(fileInfo);
-                        // SYNC-98 Start
-                        if (ProUtil.isZyncro(getController())) {
-                            archiver.setVersionsPerFile(version);
-                        }
-                        // SYNC-98 End
                     }
                 } else {
                     if (!currentInfo.isMetaFolder()) {
@@ -2367,9 +2421,30 @@ public class Folder extends PFComponent {
     }
 
     /**
+<<<<<<< HEAD
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
      *
+=======
+     * PFS-1361
+     */
+    private Path createTimestampedCopy(Path file) throws IOException {
+        DateFormat dateFormat = new SimpleDateFormat();
+        String targetFilename = PathUtils.removeInvalidFilenameChars(dateFormat
+            .format(new Date()).replace(":", "_"));
+        targetFilename += " ";
+        targetFilename += file.getFileName().toString();
+        Path target = file.getParent().resolve(targetFilename);
+        addPattern("*" + targetFilename);
+        Files.copy(file, target);
+        return target;
+    }
+
+    /**
+     * Set the needed folder/file attributes on windows systems, if we have a
+     * desktop.ini
+     * 
+>>>>>>> development
      * @param desktopIni
      */
     private void makeFolderIcon(Path desktopIni) {
@@ -3156,6 +3231,17 @@ public class Folder extends PFComponent {
             return;
         }
 
+        if (schemaZyncro) {
+            AccountInfo aInfo = remoteFile.getModifiedBy()
+                .getNode(getController(), true).getAccountInfo();
+            if (aInfo == null) {
+                logSevere("Ignoring illegal delete request for file "
+                    + localFile + ". Missing deleting user: "
+                    + remoteFile.toDetailString());
+                return;
+            }
+        }
+
         if (isInfo()) {
             // PFC-2434
             String by = "n/a";
@@ -3275,9 +3361,12 @@ public class Folder extends PFComponent {
                             // SPECIAL HANDLING FOR ZYNCRO
 
                             // Revert delete, increase version number.
+                            // PFC-2352: TODO: Calc new hashes?
+                            String newHashes = null;
                             final FileInfo revertedFileInfo = FileInfoFactory
                                 .modifiedFile(remoteFile, this, localCopy,
-                                    remoteFile.getModifiedBy());
+                                    remoteFile.getModifiedBy(),
+                                    member.getAccountInfo(), newHashes);
                             store(getMySelf(), revertedFileInfo);
                             broadcastMessages(new MessageProducer() {
                                 @Override
@@ -3300,6 +3389,12 @@ public class Folder extends PFComponent {
                             getController().getTaskManager().scheduleTask(smt);
                         }
                         return;
+                    } else {
+                        if (remoteFile.getFolderInfo().isMetaFolder()) {
+                            MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                                getController());
+                            mfdh.handleMetaFolderFileInfo(remoteFile);
+                        }
                     }
                 } else {
                     logSevere("Unable to apply remote deletion: "
@@ -3736,7 +3831,7 @@ public class Folder extends PFComponent {
     private void switchToSafe(Member from, int delsCount, boolean percentage) {
         logWarning("Received a FolderFilesChanged message from "
             + from.getInfo().nick + " which will delete " + delsCount
-            + " files in folder " + currentInfo.name
+            + " files in folder " + currentInfo.getLocalizedName()
             + ". The sync profile will now be switched from "
             + syncProfile.getName() + " to " + SyncProfile.HOST_FILES.getName()
             + " to protect the files.");
@@ -3929,7 +4024,7 @@ public class Folder extends PFComponent {
      *         {@link FileList} and {@link FolderFilesChanged}
      */
     public boolean supportExternalizable(Member member) {
-        return member.getProtocolVersion() >= 105;
+        return member.getProtocolVersion() >= Identity.PROTOCOL_VERSION_110;
     }
 
     /**
@@ -4236,7 +4331,7 @@ public class Folder extends PFComponent {
     }
 
     public String getName() {
-        return currentInfo.name;
+        return currentInfo.getName();
     }
     
     public String getLocalizedName() {

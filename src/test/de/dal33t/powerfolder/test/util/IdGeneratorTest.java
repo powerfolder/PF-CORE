@@ -24,7 +24,7 @@ import junit.framework.TestCase;
 
 /**
  * Tests the id generator.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

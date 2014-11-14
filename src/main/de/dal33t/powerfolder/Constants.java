@@ -14,8 +14,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id: Constants.java 21097 2013-03-15 16:12:22Z sprajc $
  */
 package de.dal33t.powerfolder;
 
@@ -24,7 +22,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Central constants holder for all important constants in PowerFolder.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.29 $
  */
@@ -70,7 +68,7 @@ public class Constants {
     public static final String METAFOLDER_SUBDIR = "meta";
 
     public static final String SYSTEM_SUBDIR = "foldermeta";
-    
+
     /**
      * The prefix for meta folder IDs.
      */
@@ -79,7 +77,7 @@ public class Constants {
     /**
      * The subdir name that will be used by default for the PowerFolders base
      * directory.
-     * 
+     *
      * @see ConfigurationEntry#FOLDER_BASEDIR
      */
     public static String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
@@ -124,7 +122,7 @@ public class Constants {
             new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
     // Network architecture constants ******************************************
-            
+
     /**
      * PFC-2455: Network ID to set to connect to clients with any network ID
      */
@@ -329,25 +327,25 @@ public class Constants {
 
     /**
      * Number of milliseconds in a standard second.
-     * 
+     *
      * @since 2.1
      */
     public static final long MILLIS_PER_SECOND = 1000;
     /**
      * Number of milliseconds in a standard minute.
-     * 
+     *
      * @since 2.1
      */
     public static final long MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
     /**
      * Number of milliseconds in a standard hour.
-     * 
+     *
      * @since 2.1
      */
     public static final long MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
     /**
      * Number of milliseconds in a standard day.
-     * 
+     *
      * @since 2.1
      */
     public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
@@ -355,13 +353,13 @@ public class Constants {
     // Pro related ************************************************************
 
     public static final String PACKAGE_PREFIX = "de.dal33t.powerfolder.";
-    
+
     public static final String PRO_LOADER_PLUGIN_CLASS = "CD";
 
     public static final String ENCRYPTION_PLUGIN_CLASS = "BC";
 
     public static final String SESSIONS_SUB_DIR = "database/sessions";
-    
+
     public static final String SHIBBOLETH_USERNAME_SEPARATOR = "!";
 
     // Web stuff **************************************************************
@@ -372,6 +370,7 @@ public class Constants {
     public static final String ACTIVATE_URI = "/activate";
     public static final String GET_LINK_URI = "/getlink";
     public static final String DL_LINK_URI = "/dl";
+    public static final String OPEN_LINK_URI = "/open";
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
     public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI
         + "/client";
@@ -389,7 +388,7 @@ public class Constants {
     public static final int DEFAULT_NORMAL_HEIGHT = 600;
 
     public static final String LINK_EXTENSION = ".lnk";
-    
+
     // Zyncro related *********************************************************
 
     public static final String ZYNCRO_SCHEME = "zyncro";
@@ -397,6 +396,12 @@ public class Constants {
     public static final String ZYNCRO_DEPARTMENT_TOKEN = "$department ";
     public static final String ZYNCRO_COMPANY_TOKEN = "$company ";
     public static final String FOLDER_PERSONAL_FILES = "$personal_files";
+    public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
+    
+    // Locking ****************************************************************
+    
+    public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
+    public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
 
     private Constants() {
         // No instance allowed

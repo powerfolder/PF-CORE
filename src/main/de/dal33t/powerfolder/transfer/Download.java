@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestDownloadExt;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
@@ -51,7 +52,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  * <P>
  * Attention: All synchronized method are only allowed to be called by
  * DownloadManager
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.30 $
  */
@@ -92,7 +93,7 @@ public class Download extends Transfer {
     /**
      * Re-initialized the Transfer with the TransferManager. Use this only if
      * you are know what you are doing .
-     * 
+     *
      * @param aTransferManager
      *            the transfermanager
      */
@@ -128,7 +129,7 @@ public class Download extends Transfer {
 
     /**
      * Called when the partner supports part-transfers and is ready to upload
-     * 
+     *
      * @param fileInfo
      *            the fileInfo the remote side uses.
      */
@@ -167,7 +168,7 @@ public class Download extends Transfer {
 
     /**
      * Invoked when a record for this download was received.
-     * 
+     *
      * @param fileInfo
      *            the fileInfo the remote side uses.
      * @param record
@@ -189,7 +190,7 @@ public class Download extends Transfer {
 
     /**
      * Requests a single part from the remote peer.
-     * 
+     *
      * @param range
      * @return
      * @throws BrokenDownloadException
@@ -211,7 +212,7 @@ public class Download extends Transfer {
             logFiner("X requestPart: " + range);
         }
         try {
-            if (getPartner().getProtocolVersion() >= 100) {
+            if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
                 rp = new RequestPartExt(getFile(), range, Math.max(0,
                     state.getProgress()));
             } else {
@@ -237,7 +238,7 @@ public class Download extends Transfer {
 
     /**
      * Adds a chunk to the download
-     * 
+     *
      * @param chunk
      * @return true if the chunk was successfully appended to the download file.
      */
@@ -289,7 +290,7 @@ public class Download extends Transfer {
 
     /**
      * Requests this download from the partner.
-     * 
+     *
      * @param startOffset
      */
     void request(long startOffset) {
@@ -301,7 +302,7 @@ public class Download extends Transfer {
             logFiner("request(" + startOffset + "): "
                 + getFile().toDetailString());
         }
-        if (getPartner().getProtocolVersion() >= 103) {
+        if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
             getPartner().sendMessagesAsynchron(
                 new RequestDownloadExt(getFile(), startOffset));
         } else {
@@ -340,7 +341,7 @@ public class Download extends Transfer {
 
     /**
      * This download is queued at the remote side
-     * 
+     *
      * @param fInfo
      *            the fileinfo
      */
@@ -357,7 +358,7 @@ public class Download extends Transfer {
     @Override
     void setCompleted() {
         super.setCompleted();
-        if (getPartner().getProtocolVersion() >= 101) {
+        if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
             getPartner().sendMessagesAsynchron(new StopUploadExt(getFile()));
         } else {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
@@ -375,7 +376,7 @@ public class Download extends Transfer {
 
     /**
      * Sets the download to a broken state.
-     * 
+     *
      * @param problem
      * @param message
      */
@@ -401,7 +402,7 @@ public class Download extends Transfer {
 
     private long lastBrokenCheck;
     private boolean brokenCache;
-    
+
     /**
      * @return if this download is broken. timed out or has no connection
      *         anymore or (on blacklist in folder and isRequestedAutomatic)

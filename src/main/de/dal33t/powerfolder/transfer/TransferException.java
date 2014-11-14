@@ -21,14 +21,14 @@ package de.dal33t.powerfolder.transfer;
 
 /**
  * General exception while handling uploads / downloads
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class TransferException extends Exception {
 
     /**
-     * 
+     *
      */
     public TransferException() {
         super();

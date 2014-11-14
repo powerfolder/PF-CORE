@@ -66,7 +66,7 @@ public class MembersSimpleTab extends PFUIComponent implements MembersTab {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public MembersSimpleTab(Controller controller) {

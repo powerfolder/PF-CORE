@@ -71,7 +71,7 @@ public class FilesTable extends JTable {
 
     /**
      * Constructor
-     * 
+     *
      * @param model
      */
     public FilesTable(FilesTableModel model) {
@@ -146,7 +146,7 @@ public class FilesTable extends JTable {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class TableHeaderMouseListener extends MouseAdapter {
@@ -404,7 +404,7 @@ public class FilesTable extends JTable {
         /**
          * Return true if there is a completed download manager for this file
          * info.
-         * 
+         *
          * @param fileInfo
          * @return
          */

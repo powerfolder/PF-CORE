@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
- * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public class InetSocketAddressUserType extends Loggable implements UserType {
     private static final int[] SQL_TYPES = {Types.VARCHAR};

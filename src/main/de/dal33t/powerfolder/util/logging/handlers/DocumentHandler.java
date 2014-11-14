@@ -86,7 +86,7 @@ public class DocumentHandler extends Handler {
 
     /**
      * Publish a log record to the log buffer.
-     * 
+     *
      * @param record
      */
     public void publish(final LogRecord record) {

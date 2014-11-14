@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 /**
  * Object that holds criterias to select {@link FileInfo}s from a
  * {@link FileInfoDAO}
- * 
+ *
  * @author sprajc
  */
 public class FileInfoCriteria {
@@ -73,7 +73,7 @@ public class FileInfoCriteria {
 
     /**
      * Adds myself
-     * 
+     *
      * @param folder
      */
     public void addMySelf(Folder folder) {
@@ -83,7 +83,7 @@ public class FileInfoCriteria {
     /**
      * Adds all fully connected {@link Member}s and myself to the selection
      * criteria.
-     * 
+     *
      * @param folder
      */
     public void addConnectedAndMyself(Folder folder) {
@@ -98,7 +98,7 @@ public class FileInfoCriteria {
     /**
      * Adds all fully connected {@link Member}s, that have right to write and
      * myself to the selection criteria.
-     * 
+     *
      * @param folder
      */
     public void addWriteMembersAndMyself(Folder folder) {

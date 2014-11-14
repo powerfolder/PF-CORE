@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 /**
  * Debug panel shows buttons to shutdown/start the FileRquestor, TransferManager
  * and the NodeManager.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.0 $
  */
@@ -66,7 +66,7 @@ public class DebugInformationCard extends InformationCard {
     private JButton openDebugDir;
     private JButton dumpThreads;
 
-    private JComboBox logLevelCombo;
+    private JComboBox<Level> logLevelCombo;
 
     private JCheckBox logToFileCheckBox;
 
@@ -102,7 +102,7 @@ public class DebugInformationCard extends InformationCard {
     private void initialize() {
         textPanel = new TextPanel();
         textPanel.setText(LoggingManager.getLogBuffer(), true);
-        logLevelCombo = new JComboBox();
+        logLevelCombo = new JComboBox<>();
         logLevelCombo.addItem(Level.OFF);
         logLevelCombo.addItem(Level.SEVERE);
         logLevelCombo.addItem(Level.WARNING);

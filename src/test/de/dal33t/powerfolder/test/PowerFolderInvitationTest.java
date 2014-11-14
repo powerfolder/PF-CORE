@@ -53,7 +53,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                     .getFoldersBasedir()
                     .resolve(
                         PathUtils
-                            .removeInvalidFilenameChars(invitation.folder.name));
+                            .removeInvalidFilenameChars(invitation.folder.getName()));
                 try {
                     FolderSettings folderSettings = new FolderSettings(dir,
                         SyncProfile.HOST_FILES, 0);

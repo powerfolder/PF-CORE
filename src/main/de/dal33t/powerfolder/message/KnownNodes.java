@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 /**
  * Contains information about nodes. This message is a answer message for
  * <code>RequestNodeList</code> and <code>SearchNodeRequest</code> messages.
- * 
+ *
  * @see de.dal33t.powerfolder.message.RequestNodeList
  * @see de.dal33t.powerfolder.message.SearchNodeRequest
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -51,7 +51,7 @@ public class KnownNodes extends Message {
 
     /**
      * Creates a nodelist with only one node
-     * 
+     *
      * @param node
      */
     public KnownNodes(MemberInfo node) {
@@ -63,7 +63,7 @@ public class KnownNodes extends Message {
 
     /**
      * Creates a nodelist with nodes
-     * 
+     *
      * @param nodes
      */
     public KnownNodes(MemberInfo[] nodes) {
@@ -77,7 +77,7 @@ public class KnownNodes extends Message {
 
     /**
      * Creats mutliple known nodes messages from the nodelist
-     * 
+     *
      * @param nodesList
      * @param useExt
      *            #2072: if use {@link Externalizable} versions of the messages.
@@ -134,7 +134,7 @@ public class KnownNodes extends Message {
 
     /**
      * Gets a slice from the nodelist in a array
-     * 
+     *
      * @param nodeslist
      * @param offset
      * @param lenght

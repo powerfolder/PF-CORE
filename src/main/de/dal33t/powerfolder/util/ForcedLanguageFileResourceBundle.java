@@ -32,7 +32,7 @@ import java.util.ResourceBundle;
 /*******************************************************************************
  * Class that loads a ResourceBundle from a file, used to force the translation
  * file in the commandline.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.2 $
  ******************************************************************************/

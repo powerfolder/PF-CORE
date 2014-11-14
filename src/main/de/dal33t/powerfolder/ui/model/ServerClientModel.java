@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * UI Model for the Online Storage client.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

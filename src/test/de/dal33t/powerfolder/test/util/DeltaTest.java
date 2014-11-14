@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
  * Testcase for "delta encoding".
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $
  */

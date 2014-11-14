@@ -19,7 +19,7 @@ public class GroupFilterModel extends Model {
         filterModel.maxResults = maxResults;
         return filterModel;
     }
-    
+
     // Getter and Setter
 
     public int getMaxResults() {

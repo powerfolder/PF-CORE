@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.ExternalizableUtil;
 
 /**
  * A message which contains only the deltas of the folders list
- * 
+ *
  * @see de.dal33t.powerfolder.message.FileList
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.2 $
@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.util.ExternalizableUtil;
 public class FolderFilesChangedExt extends FolderFilesChanged implements
     Externalizable
 {
+    private static final long serialVersionUID = -2047091337743391978L;
     private static final long extVersionUID = 100L;
     private static final Logger LOG = Logger
         .getLogger(FolderFilesChangedExt.class.getName());

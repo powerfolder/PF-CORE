@@ -23,7 +23,7 @@ package de.dal33t.powerfolder.security;
  * Empty/Null account to avoid NPEs on not logged in users.
  * <p>
  * Its the default account for every unauthenticated call.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

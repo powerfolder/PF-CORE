@@ -30,7 +30,7 @@ import java.io.InputStream;
  */
 public class LimitedInputStream extends FilterInputStream implements LimitedStream {
     protected BandwidthLimiter limiter;
-    
+
     public LimitedInputStream(BandwidthLimiter limiter, InputStream arg0) {
         super(arg0);
         this.limiter = limiter;
@@ -64,6 +64,6 @@ public class LimitedInputStream extends FilterInputStream implements LimitedStre
     }
 
     public void setBandwidthLimiter(BandwidthLimiter limiter) {
-        this.limiter = limiter;        
+        this.limiter = limiter;
     }
 }

@@ -25,19 +25,19 @@ import java.nio.BufferUnderflowException;
 /**
  * Implementation of a ringbuffer.
  * This class represents a ringbuffer of bytes. It's not using a generic type due to
- * performance reasons. 
- *  
+ * performance reasons.
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision: $
  */
 public final class RingBuffer {
 	private final byte[] data;
 	private int rpos, wlen;
-	
+
 	public RingBuffer(int size) {
 		data = new byte[size];
 	}
-	
+
 	/**
 	 * Writes the given byte to the buffer.
 	 * @param b the value (only the byte part will be used)
@@ -49,7 +49,7 @@ public final class RingBuffer {
 		data[(rpos + wlen) % data.length] = (byte) b;
 		wlen++;
 	}
-	
+
 	/**
 	 * Writes from the given array of bytes to the buffer.
 	 * @param b the array
@@ -69,7 +69,7 @@ public final class RingBuffer {
 			len -= rem;
 		}
 	}
-	
+
 	/**
 	 * Writes the values of the given array into the buffer.
 	 * Same as write(b, 0, b.length);
@@ -78,7 +78,7 @@ public final class RingBuffer {
 	public void write(byte[] b) {
 		write(b, 0, b.length);
 	}
-	
+
 	/**
 	 * Reads one byte from the buffer.
 	 * @return
@@ -92,7 +92,7 @@ public final class RingBuffer {
 		wlen--;
 		return val;
 	}
-	
+
 	/**
 	 * Skips the given amount of bytes
 	 * @param n
@@ -104,7 +104,7 @@ public final class RingBuffer {
 	    rpos = (rpos + n) % data.length;
 	    wlen -= n;
 	}
-	
+
 	/**
 	 * Reads one byte from the buffer without removing it.
 	 * @return
@@ -115,7 +115,7 @@ public final class RingBuffer {
 		}
 		return data[rpos] & 0xff;
 	}
-	
+
 	/**
 	 * Reads values from the buffer into an array.
 	 * @param target the array to store into
@@ -136,7 +136,7 @@ public final class RingBuffer {
 			len -= rem;
 		}
 	}
-	
+
 	/**
 	 * Reads values from the buffer into an array, without removing them from the buffer.
 	 * @param target
@@ -156,31 +156,31 @@ public final class RingBuffer {
 			wpos = (wpos + rem) % data.length;
 		}
 	}
-	
+
 	/**
 	 * @return the number of bytes stored in the buffer.
 	 */
 	public int available() {
 		return wlen;
 	}
-	
+
 	/**
 	 * @return the remaining space in number of bytes.
 	 */
 	public int remaining() {
 		return data.length - wlen;
 	}
-	
+
 	/**
 	 * @return the size of the buffer.
 	 */
 	public int size() {
 		return data.length;
 	}
-	
+
 	/**
 	 * Resets the buffer.
-	 * After this call, the buffer is empty and available() == 0. 
+	 * After this call, the buffer is empty and available() == 0.
 	 */
 	public void reset() {
 		rpos = 0;

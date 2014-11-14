@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.ProfilingEntry;
 
 /**
  * An acceptor is a task to fully handshake a new incoming connection.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -111,7 +111,7 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
 
     /**
      * Convenience method to accept the new Connection Handler.
-     * 
+     *
      * @param handler
      */
     protected void acceptConnection(ConnectionHandler handler) {

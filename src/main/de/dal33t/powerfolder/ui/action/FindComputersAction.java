@@ -32,7 +32,7 @@ import java.awt.event.ActionEvent;
  */
 public class FindComputersAction extends BaseAction {
     public FindComputersAction(Controller controller) {
-        super("action_find_computers", controller);
+        super("exp.action_find_computers", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

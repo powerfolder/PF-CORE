@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
  * <li>Constant time appending of elements with constant space requirements for
  * the resulting list
  * </ul>
- * 
+ *
  * @author Dennis Waldherr
  * @param <E>
  *            Type of the list

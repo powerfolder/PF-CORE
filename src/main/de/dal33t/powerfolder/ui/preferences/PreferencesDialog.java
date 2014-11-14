@@ -147,7 +147,7 @@ public class PreferencesDialog extends BaseDialog {
         preferenceTabs.add(informationTab);
         tabbedPane.addTab(informationTab.getTabName(),
             informationTab.getUIPanel());
-        
+
         Boolean expertMode = PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController());
         if (expertMode) {

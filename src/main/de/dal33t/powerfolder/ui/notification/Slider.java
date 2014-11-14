@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
  * Marinacci and Chris Adamson.<br>
  * If the Java version is high enough, it fades the window instead of sliding
  * it.
- * 
+ *
  * @author <a href="mailto:magapov@gmail.com">Maxim Agapov</a>
  * @version $Revision: 1.2 $
  */
@@ -65,7 +65,7 @@ public class Slider {
 
     /**
      * Constructor
-     * 
+     *
      * @param contents
      * @param displaySeconds
      * @param translucencyPercentage
@@ -80,7 +80,7 @@ public class Slider {
 
     /**
      * Constructor
-     * 
+     *
      * @param contents
      * @param displaySeconds
      * @param translucencyPercentage
@@ -196,7 +196,7 @@ public class Slider {
 
     /**
      * Show the correct percentage of the size.
-     * 
+     *
      * @param percentage
      */
     public void animate(long percentage) {

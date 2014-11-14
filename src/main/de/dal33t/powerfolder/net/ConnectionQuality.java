@@ -22,12 +22,12 @@ package de.dal33t.powerfolder.net;
 
 /**
  * #1202
- * 
+ *
  * @author sprajc
  */
 public enum ConnectionQuality {
-    GOOD(30), 
-    MEDIUM(20), 
+    GOOD(30),
+    MEDIUM(20),
     POOR(10);
 
     private int order;

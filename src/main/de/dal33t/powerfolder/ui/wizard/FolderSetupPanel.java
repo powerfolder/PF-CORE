@@ -49,7 +49,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class to do folder creation for an optional specified folderInfo.
- * 
+ *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
@@ -60,7 +60,7 @@ public class FolderSetupPanel extends PFWizardPanel {
 
     /**
      * Constuctor
-     * 
+     *
      * @param controller
      * @param folderName
      *            the recommended folder name.

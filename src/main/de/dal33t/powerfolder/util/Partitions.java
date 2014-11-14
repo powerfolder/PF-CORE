@@ -26,10 +26,10 @@ import java.util.logging.Logger;
  * Helper class representing a set of ranges containing values.
  * This class provides the functionality to store and find ranges containing the same data.
  * For example: It can (and does) manage the availability of data stored in a file. Ranges containing data or free ranges can
- * be searched for.  
- * 
+ * be searched for.
+ *
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision: $
  *
  */
 public class Partitions<T> implements Serializable {
@@ -53,7 +53,7 @@ public class Partitions<T> implements Serializable {
 		range = r;
 		content = base;
 	}
-	
+
 	private Partitions(Partitions<T> p, Range range, T val) {
 		parent = p;
 		this.range = range;
@@ -86,7 +86,7 @@ public class Partitions<T> implements Serializable {
 	public Range getPartionedRange() {
 		return range;
 	}
-	
+
 	/**
 	 * Inserts the value on the given range.
 	 * @param r
@@ -121,13 +121,13 @@ public class Partitions<T> implements Serializable {
 		// If b is null then a and b were succesfully merged
 		if (b != null) {
 			b.insert(r, value);
-		} 
+		}
 	}
 
 	/**
 	 * Searches for the given value in the given range r.
 	 * It searches for the first range with the given value which intersects with the given range.
-	 * The intersection between that range and the given one is returned. 
+	 * The intersection between that range and the given one is returned.
 	 * If no qualified range is found, this method returns null.
 	 * @param r
 	 * @param val
@@ -172,12 +172,12 @@ public class Partitions<T> implements Serializable {
 			}
 		}
 	}
-	
+
 	private boolean sameValue(T a, T b) {
 		return a == b || (a != null && a.equals(b));
 	}
 
-	public void logRanges(Class clazz) {
+	public void logRanges(Class<T> clazz) {
 		if (isLeaf()) {
 			log.info(clazz.getName() + ' ' + getPartionedRange() + " with value " + content);
 			return;

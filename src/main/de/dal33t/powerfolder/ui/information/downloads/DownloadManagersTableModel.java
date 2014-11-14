@@ -49,7 +49,7 @@ import de.dal33t.powerfolder.util.compare.TransferComparator;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11.2.1 $
  */
@@ -89,7 +89,7 @@ public class DownloadManagersTableModel extends PFComponent implements
 
     /**
      * Initalizes the model upon a transfer manager
-     * 
+     *
      * @param tm
      */
     public void initialize() {
@@ -112,7 +112,7 @@ public class DownloadManagersTableModel extends PFComponent implements
 
     /**
      * UI does not care about metaFolder events.
-     * 
+     *
      * @param downloadManager
      * @return
      */
@@ -184,7 +184,7 @@ public class DownloadManagersTableModel extends PFComponent implements
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     * 
+     *
      * @param newComparator
      * @return if the table was freshly sorted
      */
@@ -210,7 +210,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             if (sortAscending) {
                 Collections.sort(downloadManagers, comparator);
             } else {
-                Collections.sort(downloadManagers, new ReverseComparator(
+                Collections.sort(downloadManagers, new ReverseComparator<DownloadManager>(
                     comparator));
             }
             return true;
@@ -372,7 +372,7 @@ public class DownloadManagersTableModel extends PFComponent implements
      * Only some types of problem are relevant for display.
      * <p>
      * TODO COPIED to TransferTableCellRenderer
-     * 
+     *
      * @param problem
      *            the transfer problem
      * @return true if it should be displayed.
@@ -388,7 +388,7 @@ public class DownloadManagersTableModel extends PFComponent implements
 
     /**
      * Removes one download from the model and fires the tablemodel event
-     * 
+     *
      * @param download
      */
     private void removeDownload(Download download,
@@ -426,7 +426,7 @@ public class DownloadManagersTableModel extends PFComponent implements
 
     /**
      * Listener on Transfer manager with new event system
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener extends TransferManagerAdapter {
@@ -481,7 +481,7 @@ public class DownloadManagersTableModel extends PFComponent implements
 
         /**
          * Searches downloads for a download with identical FileInfo.
-         * 
+         *
          * @param dl
          *            download to search for identical copy
          * @return index of the download with identical FileInfo, -1 if not
@@ -538,7 +538,7 @@ public class DownloadManagersTableModel extends PFComponent implements
 
     /**
      * Continously updates the UI
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTimerTask extends TimerTask {

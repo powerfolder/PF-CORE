@@ -71,7 +71,7 @@ public class BandwidthStat implements Comparable<BandwidthStat> {
         if  (date.compareTo(o.date) == 0) {
             return info.compareTo(o.info);
         } else {
-            return date.compareTo(o.date); 
+            return date.compareTo(o.date);
         }
     }
 

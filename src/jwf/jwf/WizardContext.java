@@ -11,7 +11,7 @@ import java.util.HashMap;
  */
 public class WizardContext {
 
-    private final HashMap attributes = new HashMap();
+    private final HashMap<Object, Object> attributes = new HashMap<>();
 
     /** Sets an attribute.
      * @param key an Object that is the key for this attribute

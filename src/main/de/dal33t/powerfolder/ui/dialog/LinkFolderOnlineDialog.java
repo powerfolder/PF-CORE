@@ -64,8 +64,8 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     private JButton linkButton;
     private JButton clearButton;
     private JButton cancelButton;
-    private DefaultComboBoxModel folderListModel;
-    private JComboBox folderList;
+    private DefaultComboBoxModel<String> folderListModel;
+    private JComboBox<String> folderList;
     private final AtomicBoolean populated = new AtomicBoolean();
     private final Path file;
     private final String currentFolderName;
@@ -94,8 +94,8 @@ public class LinkFolderOnlineDialog extends BaseDialog {
      */
     private void initComponents() {
 
-        folderListModel = new DefaultComboBoxModel();
-        folderList = new JComboBox(folderListModel);
+        folderListModel = new DefaultComboBoxModel<>();
+        folderList = new JComboBox<>(folderListModel);
         folderListModel.addElement("-- " + Translation.getTranslation(
                 "dialog.link_folder_online.select_text") + " --");
         folderList.addItemListener(new MyItemListener());
@@ -264,7 +264,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
         public void serverDisconnected(ServerClientEvent event) {
             populateOnlineFolders();
         }
-        
+
         public void nodeServerStatusChanged(ServerClientEvent event) {
             populateOnlineFolders();
         }

@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * Test the filelist message.
  * <p>
  * TODO Test in combination with blacklist
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -215,8 +215,8 @@ public class FileListTest extends TestCase {
         FolderInfo foInfo = createRandomFolderInfo();
         boolean dir = Math.random() > 0.70f;
         FileInfo fInfo = FileInfoFactory.unmarshallDeletedFile(foInfo, "F # "
-            + n + " / " + UUID.randomUUID().toString(), null, new Date(), n,
-            dir);
+            + n + " / " + UUID.randomUUID().toString(), null, null, null,
+            new Date(), n, null, dir, null);
         return fInfo;
     }
 

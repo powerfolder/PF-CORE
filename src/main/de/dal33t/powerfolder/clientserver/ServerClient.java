@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  *
@@ -82,6 +83,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.AuthenticationFailedException;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
@@ -133,6 +135,10 @@ public class ServerClient extends PFComponent {
     private final MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
     private final AtomicBoolean loginExecuted = new AtomicBoolean(false);
+    /**
+     * PFC-2589: Don't auto login, if the last login was unsuccessfull
+     */
+    private final AtomicBoolean lastLoginSuccessful = new AtomicBoolean(true);
 
     /**
      * ONLY FOR TESTS: If this client should connect to the server where it is
@@ -668,6 +674,24 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * Generate a URL that directs to a web colaboration tool.
+     * 
+     * @param fInfo
+     *            The file to open
+     * @return The URL
+     */
+    public String getOpenURL(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "fileInfo");
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL(
+            Constants.OPEN_LINK_URI + '/'
+                + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
+                + Util.endcodeForURL(fInfo.getRelativeName()), true);
+    }
+
+    /**
      * @return if password recovery is supported
      */
     public boolean supportsRecoverPassword() {
@@ -998,6 +1022,8 @@ public class ServerClient extends PFComponent {
                         loginOk = securityService.login(username, pw);
                     }
 
+                    lastLoginSuccessful.set(loginOk);
+
                     loginExecuted.set(true);
                 } catch (RemoteCallException e) {
                     if (e.getCause() instanceof NoSuchMethodException) {
@@ -1058,6 +1084,7 @@ public class ServerClient extends PFComponent {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                 }
+
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
@@ -1380,6 +1407,14 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * Blocks until the current login attempt has finished.
+     */
+    public void waitForLoginComplete() {
+        synchronized (loginLock) {
+        }
+    }
+
+    /**
      * @return true if the last attempt to login to the online storage was ok.
      *         false if not or no login tried yet.
      */
@@ -1683,14 +1718,7 @@ public class ServerClient extends PFComponent {
                 getController().getNodeManager().loadServerNodes(this);
             }
 
-            if (!isConnected()) {
-                return;
-            }
-
-            if (!isLoggedIn()
-                && !ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                    .getValueBoolean(getController()))
-            {
+            if (!isConnected() || !isLoggedIn()) {
                 return;
             }
 
@@ -1703,15 +1731,6 @@ public class ServerClient extends PFComponent {
                 logFine("Got " + hostingServers.size() + " servers for our "
                     + folders.length + " folders: " + hostingServers);
             }
-            // if (hostingServers.isEmpty()) {
-            // for (Member node : getController().getNodeManager()
-            // .getNodesAsCollection())
-            // {
-            // if (node.isServer()) {
-            // node.markForImmediateConnect();
-            // }
-            // }
-            // }
             for (MemberInfo hostingServerInfo : hostingServers) {
                 Member hostingServer = hostingServerInfo.getNode(
                     getController(), true);
@@ -2262,6 +2281,8 @@ public class ServerClient extends PFComponent {
         public void handle(Throwable t) {
             if (t instanceof NotLoggedInException) {
                 autoLogin(t);
+            } else if (t instanceof AuthenticationFailedException) {
+                // NOP - PFC-2589
             } else if (t instanceof SecurityException) {
                 if (t.getMessage() != null
                     && t.getMessage().toLowerCase().contains("not logged"))

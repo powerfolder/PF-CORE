@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 /**
  * Notify a client, that a deleted file could not be deleted on the server and
  * was reverted.
- * 
+ *
  * @author <a href="mailto:krickl@powerfolder.com>Maximilian Krickl</a>
  */
 public class RevertedFile extends FolderRelatedMessage {

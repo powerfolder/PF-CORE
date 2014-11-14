@@ -53,7 +53,7 @@ public class Convert {
 
     /**
      * Converts an int to a 4 bytes arrays
-     * 
+     *
      * @param i
      * @return
      */
@@ -69,7 +69,7 @@ public class Convert {
 
     /**
      * Converts an arry of bytes to an int
-     * 
+     *
      * @param b
      * @return
      */
@@ -89,7 +89,7 @@ public class Convert {
     /**
      * Converts a array of members into a array of memberinfos calling the
      * getInfo method on each
-     * 
+     *
      * @param members
      * @return
      */
@@ -107,7 +107,7 @@ public class Convert {
     /**
      * Converts a list of members into a list of memberinfos calling the getInfo
      * method on each
-     * 
+     *
      * @param members
      * @return
      */
@@ -124,7 +124,7 @@ public class Convert {
 
     /**
      * Converts a date to the value in UTC
-     * 
+     *
      * @param date
      * @return
      */
@@ -139,7 +139,7 @@ public class Convert {
      * <p>
      * FIXME Sometime produces diffrent result like comparing with
      * <code>Util#equalsFileDateCrossPlattform(long, long)</code>.
-     * 
+     *
      * @see Util#equalsFileDateCrossPlattform(long, long)
      * @param date
      *            the date to convert
@@ -152,7 +152,7 @@ public class Convert {
     /**
      * Replaces duplicate instances of <code>FolderInfo</code>s with that from
      * nodemanager.
-     * 
+     *
      * @param list
      */
     @Deprecated
@@ -204,7 +204,7 @@ public class Convert {
 
     /**
      * Replaces duplicate instances of memberinfos with that from nodemanager.
-     * 
+     *
      * @param list
      */
     @Deprecated

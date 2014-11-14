@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Tests the node table model.
- * 
+ *
  * @see de.dal33t.powerfolder.ui.model.NodeTableModel
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -129,7 +129,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
      * Tests the mutation of the node table model via its listmodel.
      */
     public void testListModelChanges() {
-        ObservableList list = model.getListModel();
+        ObservableList<Member> list = model.getListModel();
         // Test = No users found
         assertEquals(1, model.getRowCount());
         assertTrue(model.getValueAt(0, 0) instanceof String);

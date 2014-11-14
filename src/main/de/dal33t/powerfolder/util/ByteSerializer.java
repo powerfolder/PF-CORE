@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Helper class which serializes and deserializes java objects into byte arrays
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.14 $
  */
@@ -76,7 +76,7 @@ public class ByteSerializer extends Loggable {
     /**
      * Serialize an object. This method is non-static an re-uses the internal
      * byteoutputstream
-     * 
+     *
      * @param target
      *            The object to be serialized
      * @param compress
@@ -167,7 +167,7 @@ public class ByteSerializer extends Loggable {
 
     /**
      * Re-uses internal received buffer for incoming readings.
-     * 
+     *
      * @param in
      *            the input stream to deserialize from
      * @param expectedSize
@@ -227,7 +227,7 @@ public class ByteSerializer extends Loggable {
 
     /**
      * Serialize an object
-     * 
+     *
      * @param target
      *            The object to be serialized
      * @param compress
@@ -265,25 +265,28 @@ public class ByteSerializer extends Loggable {
             try {
                 result = deserialize0(base, !expectCompression);
             } catch (StreamCorruptedException e2) {
-                Level lvl = Level.WARNING;
-                if (e2.toString().toLowerCase()
-                    .contains("invalid stream header"))
+                LOG.log(Level.WARNING, "While deserializing "
+                    + (expectCompression ? "   compressed" : "uncompressed")
+                    + ": " + e, e);
+                if (!e2.toString().toLowerCase()
+                    .contains("invalid stream header: 1f8b0800"))
                 {
-                    lvl = Level.FINER;
+                    LOG.log(Level.WARNING, "While deserializing "
+                        + (!expectCompression
+                            ? "   compressed"
+                            : "uncompressed") + ": " + e2, e2);
                 }
-                LOG.log(lvl, "While deserializing: " + e2, e2);
                 throw e2;
             } catch (InvalidClassException e2) {
                 LOG.log(Level.WARNING, "While deserializing: " + e2, e2);
                 throw e2;
             }
             if (!(result instanceof Identity)) {
-                LOG
-                    .warning("Stream was not as expected ("
-                        + (expectCompression
-                            ? "compression was expected, but received uncompressed data"
-                            : "no compression was expected, but received compressed data")
-                        + ") on " + result);
+                LOG.warning("Stream was not as expected ("
+                    + (expectCompression
+                        ? "compression was expected, but received uncompressed data"
+                        : "no compression was expected, but received compressed data")
+                    + ") on " + result);
             }
 
         }
@@ -293,7 +296,7 @@ public class ByteSerializer extends Loggable {
     /**
      * Deserializer method with flag indicating if the base array is zip
      * compressed
-     * 
+     *
      * @param base
      * @param compressed
      * @return the dezerialized object
@@ -316,7 +319,6 @@ public class ByteSerializer extends Loggable {
             } else {
                 targetIn = bin;
             }
-
             in = new ObjectInputStream(targetIn);
             result = in.readUnshared();
             return result;

@@ -46,10 +46,11 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
 
     public List<MatchInfo> call() throws Exception {
         CountedInputStream in = new CountedInputStream(Files.newInputStream(inFile));
+        PartInfoMatcher matcher = null;
         try {
             final long fsize = Files.size(inFile);
 
-            PartInfoMatcher matcher = new PartInfoMatcher(in,
+            matcher = new PartInfoMatcher(in,
                 new RollingAdler32(record.getPartLength()), MessageDigest
                     .getInstance("SHA-256"), record.getInfos());
 
@@ -66,6 +67,7 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
             return matches;
         } finally {
             in.close();
+            matcher.close();
         }
     }
 }

@@ -71,7 +71,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public MembersExpertTab(Controller controller) {
@@ -250,7 +250,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
     private class MyReconnectAction extends BaseAction {
 
         MyReconnectAction() {
-            super("action_reconnect", MembersExpertTab.this.getController());
+            super("exp.action_reconnect", MembersExpertTab.this.getController());
             setIcon(null);
         }
 

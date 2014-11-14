@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Format;
 
 /**
  * Capsulates a identity and adding additional information.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -64,7 +64,7 @@ public class AccountDetails implements Serializable {
     public long getArchiveSize() {
         return recycleBinSize;
     }
-    
+
     public boolean isUnknown() {
         return spaceUsed < 0;
     }

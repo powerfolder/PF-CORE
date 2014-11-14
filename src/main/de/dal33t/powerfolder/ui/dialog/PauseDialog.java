@@ -19,22 +19,28 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Dialog to let the user decide how long to pause for.
@@ -59,7 +65,7 @@ public class PauseDialog extends BaseDialog {
 
     private JButton pauseButton;
     private JCheckBox neverAskAgainCB;
-    private JComboBox pauseValuesCombo;
+    private JComboBox<String> pauseValuesCombo;
 
     public PauseDialog(Controller controller) {
         super(Senior.NONE, controller, true);
@@ -91,7 +97,7 @@ public class PauseDialog extends BaseDialog {
 
         int pauseResumeSeconds = ConfigurationEntry.PAUSE_RESUME_SECONDS
             .getValueInt(getController());
-        pauseValuesCombo = new JComboBox();
+        pauseValuesCombo = new JComboBox<>();
         int i = 0;
         for (Map.Entry<Integer, String> entry : PAUSE_RESUME_VALUES.entrySet())
         {

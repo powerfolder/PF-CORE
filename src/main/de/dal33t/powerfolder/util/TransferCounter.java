@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.message.FileChunk;
 /**
  * A helper class to determine process status of a transfer TODO: calculate
  * current CPS
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $
  */
@@ -50,7 +50,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Builds a new transfer counter with a expected transfer range.
-     * 
+     *
      * @param alreadyTransferred
      *            the bytes already transferred
      * @param bytesExcpected
@@ -81,7 +81,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Returns if a transfer is active on this counter.
-     * 
+     *
      * @return true if a transfer is in progress
      */
     public synchronized boolean isTransferring() {
@@ -90,7 +90,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Adds the count of bytes to the counter
-     * 
+     *
      * @param chunk
      *            the transferred chunk
      */
@@ -100,7 +100,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Adds the count of bytes to the counter
-     * 
+     *
      * @param count
      *            the transferred bytes count
      */
@@ -124,7 +124,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Returns the total transferred bytes till now
-     * 
+     *
      * @return
      */
     public long getBytesTransferred() {
@@ -133,7 +133,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Returns the total expected size in bytes
-     * 
+     *
      * @return
      */
     public long getBytesExpected() {
@@ -142,7 +142,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Calculates the average rate of the transfer in CPS (Bytes per second)
-     * 
+     *
      * @return
      */
     public double calculateAverageCPS() {
@@ -156,7 +156,7 @@ public class TransferCounter implements Serializable {
     /**
      * Calculates the average rate of the transfer in KB/s (KiloBytes per
      * second)
-     * 
+     *
      * @return
      */
     public double calculateAverageKBS() {
@@ -165,7 +165,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Calculates the current cps rate
-     * 
+     *
      * @return
      */
     public synchronized double calculateCurrentCPS() {
@@ -190,7 +190,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Calculates the current rate in KB/s
-     * 
+     *
      * @return
      */
     public double calculateCurrentKBS() {
@@ -200,7 +200,7 @@ public class TransferCounter implements Serializable {
     /**
      * Calculates the completion state, only available if initalized with
      * expected file size. Value between 0 and 100.
-     * 
+     *
      * @return
      */
     public double calculateCompletionPercentage() {
@@ -215,7 +215,7 @@ public class TransferCounter implements Serializable {
 
     /**
      * Calculates the estimated time to complete this counter in milliseconds.
-     * 
+     *
      * @return
      */
     public long calculateEstimatedMillisToCompletion() {

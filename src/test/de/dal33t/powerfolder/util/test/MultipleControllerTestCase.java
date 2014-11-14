@@ -59,7 +59,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * <code>{@link #setUp()}</code>.
  * <p>
  * You can access all controllers and do manupulating/testing stuff on them
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
@@ -116,7 +116,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     /**
      * After this method is invoked it is ensured, that the controller is
      * running. the controller gets added to the internal list of controllers.
-     * 
+     *
      * @param id
      *            the internal id of the controller.
      * @param config
@@ -216,7 +216,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
      * <p>
      * After the method is invoked, it is ensured that the controller joined the
      * folder.
-     * 
+     *
      * @param foInfo
      *            the folder to join
      * @param baseDir
@@ -331,7 +331,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     /**
      * Tests if the diskfile matches the fileinfo. Checks name, lenght/size,
      * modification date and the deletion status.
-     * 
+     *
      * @param diskFile
      *            the diskfile to compare
      * @param fInfo
@@ -373,7 +373,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     /**
      * Tests if the diskfile matches the fileinfo. Checks name and the deletion
      * status.
-     * 
+     *
      * @param diskFile
      *            the diskfile to compare
      * @param fInfo
@@ -423,7 +423,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     /**
      * Waits for the controller to startup
-     * 
+     *
      * @param controller
      */
     private static void waitForStart(final Controller controller) {

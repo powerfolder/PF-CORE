@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * prefered since it include the logical peer address (<code>MemberInfo</code>)
  * of the remote node. Fully relayed connections for exampled don't require a
  * physical TCP address, but require that logical peer address.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -65,7 +65,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * B) Relayed connection
      * <p>
      * C) PRO only: HTTP tunneled connection
-     * 
+     *
      * @param remoteNode
      *            the node to reconnect to.
      * @return a ready initializes connection handler.
@@ -121,7 +121,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * A) Socket connection
      * <p>
      * B) PRO only: HTTP tunneled connection
-     * 
+     *
      * @param remoteAddress
      *            the address to connect to
      * @return a ready initializes connection handler.
@@ -142,7 +142,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     /**
      * Creates a initialized connection handler for a socket based TCP/IP
      * connection.
-     * 
+     *
      * @param socket
      *            the tcp/ip socket
      * @return the connection handler for basic IO connection.
@@ -165,7 +165,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     /**
      * Constructs a new relayed connection handler with the given configuration.
      * ConnectionHandler must not been initialized - That is done later.
-     * 
+     *
      * @param destination
      *            the destination node
      * @param connectionId
@@ -184,7 +184,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     /**
      * Creates an initialized connection handler for a UDT socket based on UDP
      * connection.
-     * 
+     *
      * @param socket
      *            the UDT socket
      * @return the connection handler for basic IO connection.
@@ -208,7 +208,7 @@ public class ConnectionHandlerFactory extends PFComponent {
 
     /**
      * Tries establish a physical socket connection to that node.
-     * 
+     *
      * @param remoteAddress
      *            the address to connect to.
      * @return a ready initializes connection handler.
@@ -236,7 +236,7 @@ public class ConnectionHandlerFactory extends PFComponent {
 
     /**
      * Tries to establish a relayed connection to that remote node.
-     * 
+     *
      * @param remoteNode
      *            the node to connect to
      * @return the ready-initialized connection handler
@@ -255,7 +255,7 @@ public class ConnectionHandlerFactory extends PFComponent {
 
     /**
      * Tries to establish a UDT connection in rendezvous mode via relay.
-     * 
+     *
      * @param remoteNode
      *            the node to connect to
      * @return the ready-initialized connection handler

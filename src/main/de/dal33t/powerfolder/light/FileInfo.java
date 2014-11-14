@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -57,7 +58,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     public static final String UNIX_SEPARATOR = "/";
-    private static final Logger log = Logger.getLogger(FileInfo.class.getName());
+    private static final Logger log = Logger
+        .getLogger(FileInfo.class.getName());
 
     /**
      * #1531: If this system should ignore cases of files in
@@ -77,10 +79,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private static final long serialVersionUID = 100L;
 
     /**
-     * Unix-style separated path of the file relative to the folder base dir.
-     * So like 'myFile.txt' or 'directory/myFile.txt' or 'directory/subdirectory/myFile.txt'.
+     * Unix-style separated path of the file relative to the folder base dir. So
+     * like 'myFile.txt' or 'directory/myFile.txt' or
+     * 'directory/subdirectory/myFile.txt'.
      */
     private String fileName;
+
+    // PFC-2352
+    private String oid;
+    private String hashes;
+    private String tags;
 
     /** The size of the file */
     private Long size;
@@ -92,6 +100,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * MemberInfo.intern();
      */
     private MemberInfo modifiedBy;
+    /**
+     * PFC-2571
+     */
+    private AccountInfo modifiedByAccount;
     /** modified in folder on date */
     private Date lastModifiedDate;
 
@@ -109,6 +121,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      */
     private FolderInfo folderInfo;
 
+    // Caching -----------------------------------
+
     /**
      * The cached hash info.
      */
@@ -123,6 +137,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // ONLY for backward compatibility to MP3FileInfo
 
         fileName = null;
+        oid = null;
+        hashes = null;
+        tags = null;
         size = null;
         modifiedBy = null;
         lastModifiedDate = null;
@@ -134,9 +151,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // this.hash = hashCode0();
     }
 
-    protected FileInfo(String relativeName, long size, MemberInfo modifiedBy,
-        Date lastModifiedDate, int version, boolean deleted,
-        FolderInfo folderInfo)
+    protected FileInfo(String relativeName, String oid, long size,
+        MemberInfo modifiedByDevice, AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
+        String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
@@ -145,9 +162,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 "relativeName must not contain /../: " + relativeName);
         }
 
-        fileName = relativeName;
+        this.fileName = relativeName;
+        this.oid = oid;
+        this.hashes = hashes;
+        this.tags = tags;
         this.size = size;
-        this.modifiedBy = modifiedBy;
+        this.modifiedBy = modifiedByDevice;
+        this.modifiedByAccount = modifiedByAccount;
         this.lastModifiedDate = lastModifiedDate;
         this.version = version;
         this.deleted = deleted;
@@ -169,6 +190,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         fileName = relativeName;
         folderInfo = folder;
 
+        oid = null;
+        hashes = null;
+        tags = null;
         size = null;
         modifiedBy = null;
         lastModifiedDate = null;
@@ -211,7 +235,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo name '" + getFilenameOnly()
                     + "', details: " + toDetailString() + ", diskfile name '"
-                    + diskFile.getFileName().toString() + "', path: " + diskFile);
+                    + diskFile.getFileName().toString() + "', path: "
+                    + diskFile);
         }
 
         // if (!diskFile.exists()) {
@@ -220,11 +245,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         if (!inSyncWithDisk(diskFile)) {
             MemberInfo mySelf = folder.getController().getMySelf().getInfo();
+            AccountInfo myAccount = folder.getController().getMySelf()
+                .getAccountInfo();
             if (Files.exists(diskFile)) {
+                // PFC-2352: TODO: Calc new hashes
+                String newHashes = null;
                 return FileInfoFactory.modifiedFile(this, folder, diskFile,
-                    mySelf);
+                    mySelf, myAccount, newHashes);
             } else {
-                return FileInfoFactory.deletedFile(this, mySelf, new Date());
+                return FileInfoFactory.deletedFile(this, mySelf, myAccount,
+                    new Date());
             }
         }
 
@@ -266,10 +296,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         if (!diskFileDeleted) {
             try {
-                Map<String, Object> attrs = Files.readAttributes(diskFile, "size,lastModifiedTime,isDirectory");
-                diskSize = ((Long)attrs.get("size")).longValue();
-                diskLastMod = ((FileTime)attrs.get("lastModifiedTime")).toMillis();
-                diskIsDirectory = ((Boolean)attrs.get("isDirectory")).booleanValue();
+                Map<String, Object> attrs = Files.readAttributes(diskFile,
+                    "size,lastModifiedTime,isDirectory");
+                diskSize = ((Long) attrs.get("size")).longValue();
+                diskLastMod = ((FileTime) attrs.get("lastModifiedTime"))
+                    .toMillis();
+                diskIsDirectory = ((Boolean) attrs.get("isDirectory"))
+                    .booleanValue();
             } catch (Exception e) {
                 log.warning("Could not access file attributes of file "
                     + diskFile.toAbsolutePath().toString() + "\n"
@@ -282,8 +315,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                     || (isDiretory() && diskIsDirectory);
                 return existanceSync && dirFileSync;
             }
-            boolean lastModificationSync = DateUtil.equalsFileDateCrossPlattform(
-                diskLastMod, lastModifiedDate.getTime());
+            boolean lastModificationSync = DateUtil
+                .equalsFileDateCrossPlattform(diskLastMod,
+                    lastModifiedDate.getTime());
             if (!lastModificationSync) {
                 return false;
             }
@@ -368,6 +402,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
     }
 
+    public String getOID() {
+        return oid;
+    }
+
+    public String getHashes() {
+        return hashes;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
     /**
      * @return if this file was deleted.
      */
@@ -423,10 +469,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
-     * @return the modificator of this file.
+     * @return the device this file was lasted changed on.
      */
     public MemberInfo getModifiedBy() {
         return modifiedBy;
+    }
+
+    /**
+     * @return the account info this file was lasted changed on.
+     */
+    public AccountInfo getModifiedByAccount() {
+        return modifiedByAccount;
     }
 
     /**
@@ -454,7 +507,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     public boolean isFile() {
         return true;
     }
-    
+
     public boolean isBaseDirectory() {
         return StringUtils.isBlank(fileName);
     }
@@ -471,6 +524,30 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         String dirName = fileName.substring(0, i);
         return FileInfoFactory.lookupDirectory(folderInfo, dirName);
     }
+
+    // PFC-1962: Deligating methods.
+
+    public boolean lock(Controller controller) {
+        return controller.getFolderRepository().getLocking().lock(this);
+    }
+
+    public boolean lock(Controller controller, AccountInfo by) {
+        return controller.getFolderRepository().getLocking().lock(this, by);
+    }
+
+    public boolean unlock(Controller controller) {
+        return controller.getFolderRepository().getLocking().unlock(this);
+    }
+
+    public boolean isLocked(Controller controller) {
+        return controller.getFolderRepository().getLocking().isLocked(this);
+    }
+
+    public Lock getLock(Controller controller) {
+        return controller.getFolderRepository().getLocking().getLock(this);
+    }
+
+    // PFC-1962: End
 
     /**
      * @param ofInfo
@@ -679,6 +756,20 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // All match!
         return true;
     }
+    
+    /**
+     * PFC-2352.
+     * 
+     * @param hash
+     * @return true if the hash matches any of the file hashes.
+     */
+    public boolean isMatchingHash(String hash) {
+        Reject.ifBlank(hash, "Hash");
+        if (StringUtils.isBlank(hashes)) {
+            return false;
+        }
+        return hashes.contains(hash);
+    }
 
     @Override
     public int hashCode() {
@@ -713,7 +804,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     @Override
     public String toString() {
-        return '[' + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
+        return '[' + folderInfo.getName() + "]:" + (deleted ? "(del) /" : "/")
             + fileName;
     }
 
@@ -738,12 +829,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             str.append("-n/a-");
         }
         str.append(") by '");
-        if (modifiedBy == null) {
-            str.append("-n/a-");
+        if (modifiedByAccount == null) {
+            if (modifiedBy != null) {
+                str.append(modifiedBy.nick);
+            }
         } else {
-            str.append(modifiedBy.nick);
+            str.append(modifiedByAccount.getUsername());
         }
         str.append('\'');
+        if (modifiedBy != null) {
+            str.append(" on " + modifiedBy.nick);
+        } else {
+        }
     }
 
     public String toDetailString() {
@@ -808,6 +905,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         folderInfo = folderInfo != null ? folderInfo.intern() : null;
         modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
+        // PFC-2571
+        modifiedByAccount = modifiedByAccount != null ? modifiedByAccount.intern() : null;
 
         // #2159: Remove / in front and end of filename
         if (fileName.endsWith("/")) {
@@ -820,16 +919,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // validate();
     }
 
-    private static final long extVersionUID = 100L;
+    private static final long extVersion100UID = 100L;
+    private static final long extVersionCurrentUID = 101L;
 
     void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != extVersionUID) {
+        if (extUID != extVersion100UID && extUID != extVersionCurrentUID) {
             throw new InvalidClassException(getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
-                    + ", expected: " + extVersionUID);
+                    + ", supported: " + extVersion100UID + ", "
+                    + extVersionCurrentUID);
         }
         fileName = in.readUTF();
         size = in.readLong();
@@ -844,11 +945,45 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         deleted = in.readBoolean();
         folderInfo = ExternalizableUtil.readFolderInfo(in);
         folderInfo = folderInfo != null ? folderInfo.intern() : null;
+
+        if (extUID == extVersion100UID) {
+            return;
+        }
+        // PFC-2352: Start
+        if (in.readBoolean()) {
+            oid = in.readUTF();
+        } else {
+            oid = null;
+        }
+        if (in.readBoolean()) {
+            hashes = in.readUTF();
+        } else {
+            hashes = null;
+        }
+        if (in.readBoolean()) {
+            tags = in.readUTF();
+        } else {
+            tags = null;
+        }
+        // PFC-2352: End
+        // PFC-2571: Start
+        if (in.readBoolean()) {
+            modifiedByAccount = AccountInfo.readExt(in);
+            modifiedByAccount = modifiedByAccount != null ? modifiedByAccount
+                .intern() : null;
+        }
+        // PFC-2571: End
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
+        long extUID;
+        if (oid == null && hashes == null && tags == null) {
+            extUID = extVersion100UID;
+        } else {
+            extUID = extVersionCurrentUID;
+        }
         out.writeInt(isFile() ? 0 : 1);
-        out.writeLong(extVersionUID);
+        out.writeLong(extUID);
         out.writeUTF(fileName);
         out.writeLong(size);
         out.writeBoolean(modifiedBy != null);
@@ -859,30 +994,65 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         out.writeInt(version);
         out.writeBoolean(deleted);
         ExternalizableUtil.writeFolderInfo(out, folderInfo);
+        
+        if (extUID == extVersion100UID) {
+            return;
+        }
+        
+        // PFC-2352: Start
+        if (oid != null) {
+            out.writeBoolean(true);
+            out.writeUTF(oid);
+        } else {
+            out.writeBoolean(false);
+        }
+        if (hashes != null) {
+            out.writeBoolean(true);
+            out.writeUTF(hashes);
+        } else {
+            out.writeBoolean(false);
+        }
+        if (tags != null) {
+            out.writeBoolean(true);
+            out.writeUTF(tags);
+        } else {
+            out.writeBoolean(false);
+        }
+        // PFC-2352: End
+        // PFC-2571: Start
+        if (modifiedByAccount != null) {
+            out.writeBoolean(true);
+            modifiedByAccount.writeExternal(out);
+        } else {
+            out.writeBoolean(false);
+        }
+        // PFC-2571: End
     }
 
     /**
      * Utility method for changing the fileName part of a relative file path.
-     * Example renameRelativeFileName('directory/subdirectory/myFile.txt', 'newFile.txt') ==>
-     * 'directory/subdirectory/newFile.txt'
-     *
-     * NOTE: This is static, so does not affect a FileInfo.
-     *
+     * Example renameRelativeFileName('directory/subdirectory/myFile.txt',
+     * 'newFile.txt') ==> 'directory/subdirectory/newFile.txt' NOTE: This is
+     * static, so does not affect a FileInfo.
+     * 
      * @param relativeName
      * @param newFileName
      * @return
      */
-    public static String renameRelativeFileName(String relativeName, String newFileName) {
+    public static String renameRelativeFileName(String relativeName,
+        String newFileName)
+    {
         if (newFileName.contains(UNIX_SEPARATOR)) {
-            throw new IllegalArgumentException(
-                "newFileName must not contain " + UNIX_SEPARATOR + ": " + relativeName);
+            throw new IllegalArgumentException("newFileName must not contain "
+                + UNIX_SEPARATOR + ": " + relativeName);
         }
         if (relativeName.contains(UNIX_SEPARATOR)) {
-            String directoryPart = relativeName.substring(0, relativeName.lastIndexOf(UNIX_SEPARATOR));
+            String directoryPart = relativeName.substring(0,
+                relativeName.lastIndexOf(UNIX_SEPARATOR));
             return directoryPart + UNIX_SEPARATOR + newFileName;
         } else {
             // No path - just use the relative filename.
             return newFileName;
         }
-}
+    }
 }

@@ -60,7 +60,7 @@ public class FindComputersDialog extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("find_computers_dialog.title");
+        return Translation.getTranslation("exp.find_computers_dialog.title");
     }
 
     protected Icon getIcon() {

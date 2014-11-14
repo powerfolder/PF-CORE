@@ -133,7 +133,7 @@ public class TrayIconManager extends PFComponent {
     /**
      * Only use this to actually display the TrayIcon. Any modifiers should be
      * done through this.
-     * 
+     *
      * @return
      */
     public TrayIcon getTrayIcon() {
@@ -157,16 +157,16 @@ public class TrayIconManager extends PFComponent {
             // State changed, notify ui.
             String notificationText;
             String title = Translation
-                .getTranslation("tray_icon_manager.status_change.title");
+                .getTranslation("exp.tray_icon_manager.status_change.title");
             if (connected && loggedIn) {
                 notificationText = Translation
-                    .getTranslation("tray_icon_manager.status_change.connected");
+                    .getTranslation("exp.tray_icon_manager.status_change.connected");
             } else if (!getController().getNodeManager().isStarted()) {
                 notificationText = Translation
-                    .getTranslation("tray_icon_manager.status_change.disabled");
+                    .getTranslation("exp.tray_icon_manager.status_change.disabled");
             } else {
                 notificationText = Translation
-                    .getTranslation("tray_icon_manager.status_change.connecting");
+                    .getTranslation("exp.tray_icon_manager.status_change.connecting");
             }
             uiController
                 .getApplicationModel()
@@ -239,11 +239,11 @@ public class TrayIconManager extends PFComponent {
         } else if(event.equals(SyncStatusEvent.WARNING)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.warning_notice"));            
+                .getTranslation("systray.tooltip.warning_notice"));
         } else if(event.equals(SyncStatusEvent.INFORMATION)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.info_notice"));            
+                .getTranslation("systray.tooltip.info_notice"));
         } else {
             logSevere("Not handling all sync states: " + event);
             image = Icons.getImageById(Icons.QUESTION);
@@ -286,7 +286,7 @@ public class TrayIconManager extends PFComponent {
     /**
      * Display tray sync icon in hi resolution? Linux needs to be low
      * resolution, otherwise it looks rubbish.
-     * 
+     *
      * @return
      */
     public static boolean isHiRes() {

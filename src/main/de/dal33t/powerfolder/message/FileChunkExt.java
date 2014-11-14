@@ -29,12 +29,13 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
  * A file chunk, part of a upload / donwload
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
 public class FileChunkExt extends FileChunk implements Externalizable {
-
+    private static final long serialVersionUID = 2049565120457732271L;
+    
     public FileChunkExt() {
         super();
     }
@@ -62,5 +63,4 @@ public class FileChunkExt extends FileChunk implements Externalizable {
         out.writeInt(data.length);
         out.write(data);
     }
-
 }

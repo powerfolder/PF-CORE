@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  * #1538
  * <P>
  * http://www.powerfolder.com/wiki/Script_execution
- * 
+ *
  * @author sprajc
  */
 public class ScriptExecuteTest extends TwoControllerTestCase {

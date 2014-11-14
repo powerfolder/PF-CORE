@@ -89,7 +89,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Filter of a folder directory.
-     * 
+     *
      * @param controller
      */
     public DirectoryFilter(Controller controller, ValueModel searchFieldVM,
@@ -111,7 +111,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Add a DirectoryFilterListener to list of listeners.
-     * 
+     *
      * @param listener
      */
     public void addListener(DirectoryFilterListener listener) {
@@ -124,7 +124,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Remove a DirectoryFilterListener from list of listeners.
-     * 
+     *
      * @param listener
      */
     public void removeListener(DirectoryFilterListener listener) {
@@ -141,7 +141,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Sets the folder to filter the directory for.
-     * 
+     *
      * @param folder
      * @param currentDirectoryInfo
      */
@@ -170,7 +170,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Sets the mode of the filter. See the MODE constants.
-     * 
+     *
      * @param fileFilterMode
      */
     public void setFileFilterMode(int fileFilterMode) {
@@ -329,7 +329,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Recursive filter call.
-     * 
+     *
      * @param dao
      * @param directoryInfo
      * @param filteredDirectoryModel
@@ -367,7 +367,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Recursive filter call.
-     * 
+     *
      * @param dao
      * @param directoryInfo
      * @param filteredDirectoryModel
@@ -427,7 +427,7 @@ public class DirectoryFilter extends FilterModel {
 
         int searchMode = (Integer) searchModeVM.getValue();
         boolean isDeleted = fileInfo.isDeleted();
-        
+
         // Hidden file?
         if (!isDeleted) {
             try {
@@ -447,7 +447,7 @@ public class DirectoryFilter extends FilterModel {
             showFile = matches(fileInfo, keywords, searchMode);
         }
 
-        
+
         FileInfo newestVersion = null;
         if (fileInfo.getFolder(getController().getFolderRepository()) != null) {
             newestVersion = fileInfo.getNewestNotDeletedVersion(getController()
@@ -491,7 +491,7 @@ public class DirectoryFilter extends FilterModel {
         if (showFile) {
             if (addFiles) {
                 if (filteredDirectoryModel.addFileInfo(fileInfo)) {
-                    result.getFilteredCount().incrementAndGet();                    
+                    result.getFilteredCount().incrementAndGet();
                 }
             }
         }
@@ -529,7 +529,7 @@ public class DirectoryFilter extends FilterModel {
     /**
      * Answers if the file matches the searching keywords. Keywords have to be
      * in lowercase. A file must match all keywords. (AND)
-     * 
+     *
      * @param fileInfo
      *            the file
      * @param keywords
@@ -579,7 +579,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * keyword should be the member id if searchMode == SEARCH_MODE_COMPUTER.
-     * 
+     *
      * @param fileInfo
      * @param keyword
      * @param searchMode

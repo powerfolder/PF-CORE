@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * This message represents a notification of addition as a friend.
- * 
+ *
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision:$
  */

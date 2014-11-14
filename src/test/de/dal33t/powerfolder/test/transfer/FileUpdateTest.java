@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the correct updating of files.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */

@@ -34,6 +34,8 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Superclass for all actions used in pf
+ *
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc </a>
  * 
  * @author Christian Sprajc
  * @version $Revision: 1.6 $
@@ -46,7 +48,7 @@ public abstract class BaseAction extends AbstractAction {
     /**
      * Initalizes a action tranlated and loaded from the tranlastion/resource
      * file
-     * 
+     *
      * @param actionId
      * @param controller
      */
@@ -73,7 +75,7 @@ public abstract class BaseAction extends AbstractAction {
     /**
      * Initializes action settings translated. Action gets initialized by
      * actionId. settings are: name, mnemonic key, description and icon.
-     * 
+     *
      * @param actionId
      *            the action id
      */
@@ -108,7 +110,7 @@ public abstract class BaseAction extends AbstractAction {
      * Enables this action only if the user has a certain permission.
      * <p>
      * Does actively listen for account changes and re-logins.
-     * 
+     *
      * @param permission
      */
     public void allowWith(Permission permission) {
@@ -147,7 +149,7 @@ public abstract class BaseAction extends AbstractAction {
 
     /**
      * Convinience setter for the mnemonic key
-     * 
+     *
      * @param key
      */
     protected void setMnemonicKey(String key) {

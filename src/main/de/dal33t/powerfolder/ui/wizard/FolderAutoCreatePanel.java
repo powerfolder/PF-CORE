@@ -187,7 +187,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
 
         // Cloud space
         inviteCB = new JCheckBox(Translation.getTranslation(
-                "wizard.choose_disk_location.send_invitation"));
+                "exp.wizard.choose_disk_location.send_invitation"));
         inviteCB.setOpaque(false);
 
         // Undo link
@@ -205,7 +205,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
                 Translation.getTranslation("wizard.folder_auto_create.undo.title"),
                 Translation.getTranslation("wizard.folder_auto_create.undo.text"),
                 new String[]{
-                        Translation.getTranslation("wizard.folder_auto_create.undo.button"), 
+                        Translation.getTranslation("wizard.folder_auto_create.undo.button"),
                         Translation.getTranslation("general.cancel")}, 0,
                 GenericDialogType.QUESTION);
         if (i == 0) {

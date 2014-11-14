@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
 
 /**
  * A Folder hash info
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -59,7 +59,7 @@ public class FolderInfo implements Serializable, Cloneable {
     public static final String PROPERTYNAME_NAME = "name";
 
     @Index(name="IDX_FOLDER_NAME")
-    public String name;
+    private String name;
     @Id
     public String id;
 
@@ -83,10 +83,10 @@ public class FolderInfo implements Serializable, Cloneable {
         this.id = id;
         hash = hashCode0();
     }
-    
+
     /**
      * PFS-1129: Account relative backup folder. Name must be unique.
-     * 
+     *
      * @param name
      * @param aInfo
      */
@@ -150,7 +150,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Returns the joined folder, or null if folder is not joined
-     * 
+     *
      * @param controller
      * @return the folder
      */
@@ -162,7 +162,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Calculates the secure Id for this folder with magicid from remote
-     * 
+     *
      * @param magicId
      * @return the secure Id for this folder with magicid from remote
      */
@@ -216,7 +216,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public FolderInfo intern(boolean force) {
         if (force) {
-            return INTERNALIZER.sudoIntern(this);
+            return INTERNALIZER.rename(this);
         } else {
             return intern();
         }
@@ -275,7 +275,9 @@ public class FolderInfo implements Serializable, Cloneable {
                 Translation.getTranslation("general.department"))
             .replace(Constants.ZYNCRO_COMPANY_TOKEN.trim(),
                 Translation.getTranslation("general.company"))
-            .replace(Constants.FOLDER_PERSONAL_FILES.trim(),
+            .replace(Constants.FOLDER_PUBLIC_SHARED_FILES,
+                Translation.getTranslation("general.public_shared_files"))
+            .replace(Constants.FOLDER_PERSONAL_FILES,
                 Translation.getTranslation("general.personal_files"));
     }
 }

@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Primary because of #1399
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

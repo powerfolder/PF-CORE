@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Translation;
 public class FolderWizardAction extends BaseAction {
 
     public FolderWizardAction(Controller controller) {
-        super("action_folder_wizard", controller);
+        super("exp.action_folder_wizard", controller);
     }
 
     public void actionPerformed(ActionEvent e) {

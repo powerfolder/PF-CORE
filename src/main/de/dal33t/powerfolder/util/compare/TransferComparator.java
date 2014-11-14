@@ -25,7 +25,7 @@ import java.util.Comparator;
 
 /**
  * Comparator for FileInfo
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
@@ -59,7 +59,7 @@ public class TransferComparator implements Comparator<Transfer> {
                 if (comp == 0 && o1.getCompletedDate() != null
                     && o2.getCompletedDate() != null)
                 {
-                    
+
                     return -o1.getCompletedDate().compareTo(
                         o2.getCompletedDate());
                 }
@@ -73,8 +73,8 @@ public class TransferComparator implements Comparator<Transfer> {
                     return s1 - s2 > 0 ? 1 : -1;
                 }
             case BY_FOLDER :
-                return o1.getFile().getFolderInfo().name.compareTo(o2.getFile()
-                    .getFolderInfo().name);
+                return o1.getFile().getFolderInfo().getName().compareTo(o2.getFile()
+                    .getFolderInfo().getName());
             case BY_MEMBER :
                 return o1.getPartner().getNick().compareTo(
                     o2.getPartner().getNick());

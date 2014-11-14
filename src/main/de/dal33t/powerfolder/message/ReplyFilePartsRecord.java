@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
  * Reply to a RequestFilePartsRecord message.
- * 
+ *
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */

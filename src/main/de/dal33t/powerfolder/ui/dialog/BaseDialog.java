@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.Translation;
  * aligned is available at the developer documentation.
  * <p>
  * Link: http://download.powerfolder.com/development-docs/BaseDialogHelp.GIF
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
@@ -143,7 +143,7 @@ public abstract class BaseDialog extends PFUIComponent {
 
     /**
      * The title of this base dialog
-     * 
+     *
      * @return
      */
     public abstract String getTitle();
@@ -151,7 +151,7 @@ public abstract class BaseDialog extends PFUIComponent {
     /**
      * Returns the icon of this dialog Mehod may return null, no icon will be
      * displayed
-     * 
+     *
      * @return
      */
     protected abstract Icon getIcon();
@@ -159,7 +159,7 @@ public abstract class BaseDialog extends PFUIComponent {
     /**
      * Method should return the main content of this panel displayed on the
      * right side over the buttonbar.
-     * 
+     *
      * @return component
      */
     protected abstract JComponent getContent();
@@ -173,7 +173,7 @@ public abstract class BaseDialog extends PFUIComponent {
 
     /**
      * Method should return the button bar on the lower side of the dialog
-     * 
+     *
      * @return the component
      */
     protected abstract Component getButtonBar();
@@ -182,7 +182,7 @@ public abstract class BaseDialog extends PFUIComponent {
 
     /**
      * Creates an internationlaized ok button
-     * 
+     *
      * @param listener
      *            the listener to be put on the button
      * @return
@@ -197,7 +197,7 @@ public abstract class BaseDialog extends PFUIComponent {
 
     /**
      * Creates an internationlaized cancel button
-     * 
+     *
      * @param listener
      *            the listener to be put on the button
      * @return
@@ -213,7 +213,7 @@ public abstract class BaseDialog extends PFUIComponent {
 
     /**
      * Creates an internationlaized close button
-     * 
+     *
      * @param listener
      *            the listener to be put on the button
      * @return
@@ -268,7 +268,7 @@ public abstract class BaseDialog extends PFUIComponent {
 
     /**
      * Build
-     * 
+     *
      * @return
      */
     private void createUIComponent() {

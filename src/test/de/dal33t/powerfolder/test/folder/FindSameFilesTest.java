@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the finding of same files.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -45,7 +45,7 @@ public class FindSameFilesTest extends TwoControllerTestCase {
     /**
      * Tests the adapting of the filelist from remote. Should find the same file
      * from remote peer.
-     * 
+     *
      * @throws IOException
      */
     public void testFilelistAdapt() throws IOException {

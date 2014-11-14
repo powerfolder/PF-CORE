@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.event.CoreListener;
 public interface MessageListener extends CoreListener {
     /**
      * Handles the received message.
-     * 
+     *
      * @param source
      *            the node where it came from
      * @param message

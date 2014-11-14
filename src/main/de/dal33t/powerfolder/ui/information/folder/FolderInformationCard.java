@@ -64,7 +64,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public FolderInformationCard(Controller controller) {
@@ -113,7 +113,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Sets the folder in the tabs.
-     * 
+     *
      * @param folderInfo
      */
     private void setFolderInfo0(FolderInfo folderInfo) {
@@ -129,7 +129,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Sets the folder in the tabs.
-     * 
+     *
      * @param folderInfo
      */
     public void setFileInfo(FileInfo fileInfo) {
@@ -148,7 +148,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Sets the folder in the tabs.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -163,7 +163,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Sets the folder in the tabs with new set and sort date descending.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
@@ -258,7 +258,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Gets the image for the card.
-     * 
+     *
      * @return
      */
     public Image getCardImage() {
@@ -267,7 +267,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Gets the title for the card.
-     * 
+     *
      * @return
      */
     public String getCardTitle() {
@@ -276,7 +276,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Gets the ui component after initializing and building if necessary
-     * 
+     *
      * @return
      */
     public JComponent getUIComponent() {
@@ -368,7 +368,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Files tab is tab index zero.
-     * 
+     *
      * @return
      */
     private static int getFilesTabIndex() {
@@ -377,7 +377,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Members tab is tab index 1 - if tab enabled.
-     * 
+     *
      * @return
      */
     private static int getMembersTabIndex() {
@@ -386,7 +386,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Settings tab is tab index 2, or 1 if members tab not enabled.
-     * 
+     *
      * @return
      */
     private int getSettingsTabIndex() {
@@ -406,7 +406,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Problems tab is tab index 3, or 2 if members tab not enabled.
-     * 
+     *
      * @return
      */
     private int getProblemsTabIndex() {

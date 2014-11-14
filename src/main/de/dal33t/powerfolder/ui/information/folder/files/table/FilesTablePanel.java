@@ -130,7 +130,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     /**
      * Gets the ui component
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -254,7 +254,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     /**
      * Find the correct model in the tree to display when a change occurs.
-     * 
+     *
      * @param event
      */
     public void adviseOfChange(FilteredDirectoryEvent event) {
@@ -473,7 +473,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             .getTranslation("files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation
             .getTranslation("files_table_panel.file_versions_tab.tip"));
-        
+
         tabbedPane.setSelectedIndex(1);
 
         return builder.getPanel();
@@ -481,7 +481,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     /**
      * Try to download everything within this directory.
-     * 
+     *
      * @param directoryInfo
      */
     private void downloadDirectory(DirectoryInfo directoryInfo) {
@@ -725,7 +725,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private class AbortDownloadAction extends BaseAction {
 
         private AbortDownloadAction(Controller controller) {
-            super("action_abort_download", controller);
+            super("exp.action_abort_download", controller);
         }
 
         public void actionPerformed(ActionEvent e) {

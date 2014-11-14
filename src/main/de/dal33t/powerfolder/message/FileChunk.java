@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Validate;
 
 /**
  * A file chunk, part of a upload / donwload
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
@@ -65,7 +65,7 @@ public class FileChunk extends Message implements LimitBandwidth {
     }
 
     /**
-     * 
+     *
      */
     private void validate() {
         Reject.noNullElements(file, data);
