@@ -39,12 +39,15 @@ public enum SyncStatus {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(fInfo, "FileInfo");
 
+        if (!controller.isStarted() || controller.isShuttingDown()) {
+            return NONE;
+        }
         Folder folder = fInfo.getFolder(controller.getFolderRepository());
         if (folder == null) {
             return NONE;
         }
         if (fInfo.equals(folder.getBaseDirectoryInfo())) {
-            double sync= folder.getStatistic().getHarmonizedSyncPercentage(); 
+            double sync = folder.getStatistic().getHarmonizedSyncPercentage();
             if (folder.isSyncing()) {
                 return SYNCING;
             } else if (folder.isDeviceDisconnected()) {

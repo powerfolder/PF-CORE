@@ -302,15 +302,11 @@ public class IconOverlayHandler extends PFComponent implements
         }
 
         @Override
-        public void fileChanged(FolderEvent folderEvent) {
-            // TODO Auto-generated method stub
-            
+        public void fileChanged(FolderEvent folderEvent) { 
         }
 
         @Override
         public void filesDeleted(FolderEvent folderEvent) {
-            // TODO Auto-generated method stub
-            
         }
     }
 }
