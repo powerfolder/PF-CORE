@@ -847,7 +847,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     return folder;
                 }
             } catch (IOException e) {
-                logWarning(e);
+                logWarning("Unable to access: " + folder.getLocalBase() + ". "
+                    + e);
             }
         }
         return null;
