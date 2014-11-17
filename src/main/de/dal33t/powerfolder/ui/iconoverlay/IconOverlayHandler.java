@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -235,7 +234,7 @@ public class IconOverlayHandler extends PFComponent implements
                 final Path file = fInfo.getDiskFile(getController()
                     .getFolderRepository());
 
-                UIUtil.invokeLaterInEDT(new Runnable() {
+                getController().getIOProvider().startIO(new Runnable() {
                     @Override
                     public void run() {
                         if (Files.exists(file)) {
@@ -248,7 +247,7 @@ public class IconOverlayHandler extends PFComponent implements
 
         private void updateFolder(final Folder folder) {
             if (OSUtil.isWindowsSystem()) {
-                UIUtil.invokeLaterInEDT(new Runnable() {
+                getController().getIOProvider().startIO(new Runnable() {
                     @Override
                     public void run() {
                         WindowsNativityUtil.updateExplorer(folder

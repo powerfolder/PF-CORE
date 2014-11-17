@@ -34,7 +34,6 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -99,7 +98,7 @@ class ShareFolderAction extends ContextMenuAction {
                 if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller))
                 {
                     if (folder != null) {
-                        UIUtil.invokeLaterInEDT(new Runnable() {
+                        controller.getIOProvider().startIO(new Runnable() {
                             @Override
                             public void run() {
                                 PFWizard.openSendInvitationWizard(controller,
@@ -114,7 +113,7 @@ class ShareFolderAction extends ContextMenuAction {
                     }
                 } else {
                     if (folder != null) {
-                        UIUtil.invokeLaterInEDT(new Runnable() {
+                        controller.getIOProvider().startIO(new Runnable() {
                             @Override
                             public void run() {
                                 PFWizard.openSendInvitationWizard(controller,
@@ -168,7 +167,7 @@ class ShareFolderAction extends ContextMenuAction {
         final FolderInfo foInfo, final SyncProfile syncProfile,
         final boolean backupByServer)
     {
-        UIUtil.invokeLaterInEDT(new Runnable() {
+        controller.getIOProvider().startIO(new Runnable() {
             @Override
             public void run() {
                 PFWizard wizard = new PFWizard(controller, Translation

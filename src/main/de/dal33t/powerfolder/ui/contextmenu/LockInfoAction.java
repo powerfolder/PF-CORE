@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -54,7 +53,7 @@ class LockInfoAction extends PFContextMenuAction {
             return;
         }
 
-        UIUtil.invokeLaterInEDT(new Runnable() {
+        getController().getIOProvider().startIO(new Runnable() {
             @Override
             public void run() {
                 FileInfo file = files.get(0);
