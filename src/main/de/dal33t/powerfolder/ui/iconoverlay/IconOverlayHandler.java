@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.ui.iconoverlay;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.liferay.nativity.control.win.WindowsNativityUtil;
 import com.liferay.nativity.modules.fileicon.FileIconControlCallback;
@@ -143,6 +144,7 @@ public class IconOverlayHandler extends PFComponent implements
     private class MyIconOverlayListener implements LockingListener,
         TransferManagerListener, FolderListener, FolderRepositoryListener
     {
+        private AtomicInteger callCount = new AtomicInteger(0);
 
         @Override
         public boolean fireInEventDispatchThread() {
@@ -234,12 +236,20 @@ public class IconOverlayHandler extends PFComponent implements
                 final Path file = fInfo.getDiskFile(getController()
                     .getFolderRepository());
 
+                int current = callCount.get();
+                if (current >= 100) {
+                    logSevere("Creating very many threads to update the Windows Explorer. At the moment there are "
+                        + current + " threads running.");
+                }
+
+                callCount.incrementAndGet();
                 getController().getIOProvider().startIO(new Runnable() {
                     @Override
                     public void run() {
                         if (Files.exists(file)) {
                             WindowsNativityUtil.updateExplorer(file.toString());
                         }
+                        callCount.decrementAndGet();
                     }
                 });
             }
@@ -247,12 +257,20 @@ public class IconOverlayHandler extends PFComponent implements
 
         private void updateFolder(final Folder folder) {
             if (OSUtil.isWindowsSystem()) {
+
+                int current = callCount.get();
+                if (current >= 100) {
+                    logSevere("Creating very many threads to update the Windows Explorer. At the moment there are "
+                        + current + " threads running.");
+                }
+
+                callCount.incrementAndGet();
                 getController().getIOProvider().startIO(new Runnable() {
                     @Override
                     public void run() {
                         WindowsNativityUtil.updateExplorer(folder
                             .getLocalBase().toString());
-
+                        callCount.decrementAndGet();
                     }
                 });
             }
