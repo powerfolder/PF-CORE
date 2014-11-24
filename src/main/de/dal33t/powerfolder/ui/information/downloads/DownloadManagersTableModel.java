@@ -31,7 +31,9 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
@@ -411,8 +413,12 @@ public class DownloadManagersTableModel extends PFComponent implements
             }
             dirty = true;
         } else {
-            logSevere("Unable to remove download from tablemodel, not found: "
-                + download);
+            if (ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+                .getValueInt(getController()) > 0)
+            {
+                logSevere("Unable to remove download from tablemodel, not found: "
+                    + download);
+            }
         }
     }
 
