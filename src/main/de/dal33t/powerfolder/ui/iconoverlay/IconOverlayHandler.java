@@ -20,9 +20,7 @@ package de.dal33t.powerfolder.ui.iconoverlay;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import com.liferay.nativity.control.win.WindowsNativityUtil;
 import com.liferay.nativity.modules.fileicon.FileIconControlCallback;
 
 import de.dal33t.powerfolder.Constants;
@@ -31,18 +29,9 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.SyncStatus;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.LockingEvent;
-import de.dal33t.powerfolder.event.LockingListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Decide which Overlay to add to which Icon on Windows Explorer.
@@ -52,11 +41,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class IconOverlayHandler extends PFComponent implements
     FileIconControlCallback
 {
-    private MyIconOverlayListener updateListener;
-
     public IconOverlayHandler(Controller controller) {
         super(controller);
-        updateListener = new MyIconOverlayListener();
     }
 
     @Override
@@ -116,214 +102,6 @@ public class IconOverlayHandler extends PFComponent implements
                 + pathName + "'. " + re);
             re.printStackTrace();
             return IconOverlayIndex.NO_OVERLAY.getIndex();
-        }
-    }
-
-    public void start() {
-        FolderRepository repo = getController().getFolderRepository();
-        for (Folder folder : repo.getFolders()) {
-            folder.addFolderListener(updateListener);
-        }
-        repo.addFolderRepositoryListener(updateListener);
-        repo.getLocking().addListener(updateListener);
-        getController().getTransferManager().addListener(updateListener);
-    }
-
-    public void stop() {
-        getController().getFolderRepository().getLocking()
-            .removeListener(updateListener);
-        getController().getFolderRepository().removeFolderRepositoryListener(
-            updateListener);
-        getController().getTransferManager().removeListener(updateListener);
-        FolderRepository repo = getController().getFolderRepository();
-        for (Folder folder : repo.getFolders()) {
-            folder.removeFolderListener(updateListener);
-        }
-    }
-
-    private class MyIconOverlayListener implements LockingListener,
-        TransferManagerListener, FolderListener, FolderRepositoryListener
-    {
-        private AtomicInteger callCount = new AtomicInteger(0);
-
-        @Override
-        public boolean fireInEventDispatchThread() {
-            return false;
-        }
-
-        @Override
-        public void downloadRequested(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void downloadQueued(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void downloadStarted(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void downloadAborted(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void downloadBroken(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void downloadCompleted(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void completedDownloadRemoved(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void pendingDownloadEnqueued(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void uploadRequested(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void uploadStarted(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void uploadAborted(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void uploadBroken(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void uploadCompleted(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void completedUploadRemoved(TransferManagerEvent event) {
-            update(event.getFile());
-        }
-
-        @Override
-        public void locked(LockingEvent event) {
-            update(event.getFileInfo());
-        }
-
-        @Override
-        public void unlocked(LockingEvent event) {
-            update(event.getFileInfo());
-        }
-
-        private void update(FileInfo fInfo) {
-            if (OSUtil.isWindowsSystem()) {
-                final Path file = fInfo.getDiskFile(getController()
-                    .getFolderRepository());
-
-                int current = callCount.get();
-                if (current >= 100) {
-                    logSevere("Creating very many threads to update the Windows Explorer. At the moment there are "
-                        + current + " threads running.");
-                }
-
-                callCount.incrementAndGet();
-                getController().getIOProvider().startIO(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (Files.exists(file)) {
-                            WindowsNativityUtil.updateExplorer(file.toString());
-                        }
-                        callCount.decrementAndGet();
-                    }
-                });
-            }
-        }
-
-        private void updateFolder(final Folder folder) {
-            if (OSUtil.isWindowsSystem()) {
-
-                int current = callCount.get();
-                if (current >= 100) {
-                    logSevere("Creating very many threads to update the Windows Explorer. At the moment there are "
-                        + current + " threads running.");
-                }
-
-                callCount.incrementAndGet();
-                getController().getIOProvider().startIO(new Runnable() {
-                    @Override
-                    public void run() {
-                        WindowsNativityUtil.updateExplorer(folder
-                            .getLocalBase().toString());
-                        callCount.decrementAndGet();
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void folderRemoved(FolderRepositoryEvent e) {
-            e.getFolder().removeFolderListener(updateListener);
-        }
-
-        @Override
-        public void folderCreated(FolderRepositoryEvent e) {
-            e.getFolder().addFolderListener(updateListener);
-        }
-
-        @Override
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void statisticsCalculated(FolderEvent folderEvent) {
-            updateFolder(folderEvent.getFolder());
-        }
-
-        @Override
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
-        @Override
-        public void archiveSettingsChanged(FolderEvent folderEvent) {
-        }
-
-        @Override
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        @Override
-        public void scanResultCommited(FolderEvent folderEvent) {
-            if (folderEvent.getScanResult().isChangeDetected()) {
-                updateFolder(folderEvent.getFolder());
-            }
-        }
-
-        @Override
-        public void fileChanged(FolderEvent folderEvent) { 
-        }
-
-        @Override
-        public void filesDeleted(FolderEvent folderEvent) {
         }
     }
 }
