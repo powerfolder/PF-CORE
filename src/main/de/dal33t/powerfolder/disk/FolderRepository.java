@@ -1719,10 +1719,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
 
-            final String oldName = fi.getName();
+            String oldName = null;
+            if (fi != null) {
+                oldName = fi.getName();
+            }
             String newName = file.getFileName().toString();
             if (fi != null && knownFolderWithSameName == null
-                && !oldName.equals(newName))
+                && !newName.equals(oldName))
             {
                 /*
                  * Change the name locally before the server is called. The
@@ -1742,6 +1745,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         logWarning("Could not rename the Folder " + oldName
                             + " on the server to " + fi.getName());
                         final FolderInfo copy = fi;
+                        final String copyOldName = oldName;
 
                         if (getController().getUIController().isStarted()) {
                             UIUtil.invokeLaterInEDT(new Runnable() {
@@ -1755,7 +1759,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                             .getTranslation(
                                                 "notice.rename_folder_failed.summary",
                                                 copy.getLocalizedName(),
-                                                oldName),
+                                                copyOldName),
                                         GenericDialogType.WARN);
                                 }
                             });
