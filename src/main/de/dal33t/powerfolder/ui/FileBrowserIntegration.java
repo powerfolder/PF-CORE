@@ -27,16 +27,22 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.Locking;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.contextmenu.ContextMenuHandler;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayHandler;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayUpdateListener;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
+ * Enable Overlay Icons and context menu entries on the different platforms
+ * using the library of Liferay Nativity.
+ * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public class FileBrowserIntegration extends PFComponent {
 
+    private NativityControl nc;
     private IconOverlayHandler iconOverlayHandler;
     private IconOverlayUpdateListener updateListener;
 
@@ -46,13 +52,15 @@ public class FileBrowserIntegration extends PFComponent {
     }
 
     /**
-     * Start up the shell extensions according to the OS we are running on.
+     * Start up the shell extensions according to the OS we are running on. Adds
+     * different listeners and visitors to {@link Folder}s,
+     * {@link FolderRepository}, {@link Locking} and the {@link TransferManager}
      * 
      * @return {@code True} if the shell extensions could be loaded/started,
      *         {@code false} otherwise.
      */
     public boolean start() {
-        NativityControl nc = NativityControlUtil.getNativityControl();
+        nc = NativityControlUtil.getNativityControl();
         if (nc == null) {
             return false;
         }
@@ -80,6 +88,9 @@ public class FileBrowserIntegration extends PFComponent {
                 nc.load();
             }
 
+            iconOverlayHandler = new IconOverlayHandler(getController());
+            FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
+                .enableFileIcons();
         } catch (Exception e) {
             return false;
         }
@@ -121,17 +132,32 @@ public class FileBrowserIntegration extends PFComponent {
         }
     }
 
+    /**
+     * Lifecycle management. Removes the listeners and visitors.<br />
+     * Should be called, when shutting down the client.
+     */
     public void shutdown() {
-        if (iconOverlayHandler != null) {
-            getController().getFolderRepository().getLocking()
-                .removeListener(updateListener);
-            getController().getFolderRepository()
-                .removeFolderRepositoryListener(updateListener);
-            getController().getTransferManager().removeListener(updateListener);
-            FolderRepository repo = getController().getFolderRepository();
-            for (Folder folder : repo.getFolders()) {
-                folder.removeFolderListener(updateListener);
+        FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
+            .disableFileIcons();
+
+        if (OSUtil.isWindowsSystem()) {
+            nc.disconnect();
+        } else if (OSUtil.isMacOS()) {
+            try {
+                nc.unload();
+            } catch (Exception e) {
+                logWarning("Could not unload FileBrowswerIntegration: " + e);
             }
+        }
+
+        getController().getFolderRepository().getLocking()
+            .removeListener(updateListener);
+        getController().getFolderRepository().removeFolderRepositoryListener(
+            updateListener);
+        getController().getTransferManager().removeListener(updateListener);
+        FolderRepository repo = getController().getFolderRepository();
+        for (Folder folder : repo.getFolders()) {
+            folder.removeFolderListener(updateListener);
         }
     }
 }
