@@ -35,7 +35,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Builds the Context Menu Items and applies the the correct
@@ -108,6 +110,17 @@ public class ContextMenuHandler extends PFComponent implements
     @Override
     public List<ContextMenuItem> getContextMenuItems(String[] pathNames) {
         try {
+            String startMenu = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_START_MENU, false);
+
+            for (int i = 0; i < pathNames.length; i++) {
+                String pathName = pathNames[i];
+
+                if (pathName.equals(startMenu)) {
+                    pathNames[i] = "";
+                }
+            }
+
             // Clear the context menu
             for (ContextMenuItem cmi : pfMainItem.getAllContextMenuItems()) {
                 pfMainItem.removeContextMenuItem(cmi);
@@ -123,6 +136,10 @@ public class ContextMenuHandler extends PFComponent implements
             // Check for folder base paths
             FolderRepository fr = getController().getFolderRepository();
             for (String pathName : pathNames) {
+                if (StringUtils.isBlank(pathName)) {
+                    continue;
+                }
+
                 Folder folder = fr.findContainingFolder(pathName);
 
                 if (folder == null) {
@@ -149,6 +166,12 @@ public class ContextMenuHandler extends PFComponent implements
                 {
                     break;
                 }
+            }
+
+            if (!containsDirectoryInfoPath && !containsFileInfoPath
+                && !containsFolderPath)
+            {
+                return new ArrayList<>(0);
             }
 
             if (containsFolderPath && pathNames.length == 1
