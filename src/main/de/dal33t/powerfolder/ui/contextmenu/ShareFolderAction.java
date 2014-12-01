@@ -20,6 +20,8 @@ package de.dal33t.powerfolder.ui.contextmenu;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jwf.WizardPanel;
 
@@ -51,8 +53,8 @@ import de.dal33t.powerfolder.util.Translation;
  * synchronize it.</li>
  * <li>If the UI is enabled, but Beginner Mode is configured:
  * <ol>
- * <li>When the Folder does not exist yet, it is
- * created and the {@link ShareFolderNotificationHandler} is called.</li>
+ * <li>When the Folder does not exist yet, it is created and the
+ * {@link ShareFolderNotificationHandler} is called.</li>
  * <li>When the Folder already exists, the Send Invitation Wizard is opened.</li>
  * </ol>
  * </li>
@@ -70,6 +72,9 @@ import de.dal33t.powerfolder.util.Translation;
  */
 class ShareFolderAction extends ContextMenuAction {
 
+    private static final Logger log = Logger.getLogger(ShareFolderAction.class
+        .getName());
+
     private Controller controller;
     private FolderRepository repository;
 
@@ -80,56 +85,63 @@ class ShareFolderAction extends ContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        for (String pathName : paths) {
-            Path path = Paths.get(pathName);
+        try {
+            for (String pathName : paths) {
+                Path path = Paths.get(pathName);
 
-            if (!Files.isDirectory(path)) {
-                continue;
-            }
+                if (!Files.isDirectory(path)) {
+                    continue;
+                }
 
-            Folder folder = repository.findExistingFolder(path);
-            final FolderInfo foInfo = getFolderInfo(path, folder);
+                Folder folder = repository.findExistingFolder(path);
+                final FolderInfo foInfo = getFolderInfo(path, folder);
 
-            SyncProfile syncProfile = SyncProfile.getDefault(controller);
-            boolean backupByServer = controller.getOSClient()
-                .isBackupByDefault();
+                SyncProfile syncProfile = SyncProfile.getDefault(controller);
+                boolean backupByServer = controller.getOSClient()
+                    .isBackupByDefault();
 
-            if (controller.isUIEnabled()) {
-                if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller))
-                {
-                    if (folder != null) {
-                        controller.getIOProvider().startIO(new Runnable() {
-                            @Override
-                            public void run() {
-                                PFWizard.openSendInvitationWizard(controller,
-                                    foInfo);
-                                controller.getUIController().getMainFrame()
-                                    .toFront();
-                            }
-                        });
+                if (controller.isUIEnabled()) {
+                    if (PreferencesEntry.BEGINNER_MODE
+                        .getValueBoolean(controller))
+                    {
+                        if (folder != null) {
+                            controller.getIOProvider().startIO(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PFWizard.openSendInvitationWizard(
+                                        controller, foInfo);
+                                    controller.getUIController().getMainFrame()
+                                        .toFront();
+                                }
+                            });
+                        } else {
+                            createFolder(path, foInfo, syncProfile,
+                                backupByServer);
+                            showNotification(foInfo);
+                        }
                     } else {
-                        createFolder(path, foInfo, syncProfile, backupByServer);
-                        showNotification(foInfo);
+                        if (folder != null) {
+                            controller.getIOProvider().startIO(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PFWizard.openSendInvitationWizard(
+                                        controller, foInfo);
+                                    controller.getUIController().getMainFrame()
+                                        .toFront();
+                                }
+                            });
+                        } else {
+                            showFolderSetupWizard(path, foInfo, syncProfile,
+                                backupByServer);
+                        }
                     }
                 } else {
-                    if (folder != null) {
-                        controller.getIOProvider().startIO(new Runnable() {
-                            @Override
-                            public void run() {
-                                PFWizard.openSendInvitationWizard(controller,
-                                    foInfo);
-                                controller.getUIController().getMainFrame()
-                                    .toFront();
-                            }
-                        });
-                    } else {
-                        showFolderSetupWizard(path, foInfo, syncProfile,
-                            backupByServer);
-                    }
+                    createFolder(path, foInfo, syncProfile, backupByServer);
                 }
-            } else {
-                createFolder(path, foInfo, syncProfile, backupByServer);
             }
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING,
+                "Problem while trying to share folder " + re, re);
         }
     }
 

@@ -18,6 +18,7 @@
 package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -41,15 +42,21 @@ class OpenColaborateAction extends PFContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        List<FileInfo> fileInfos = getFileInfos(paths);
+        try {
+            List<FileInfo> fileInfos = getFileInfos(paths);
 
-        for (FileInfo fileInfo : fileInfos) {
-            String fileURL = getController().getOSClient().getOpenURL(fileInfo);
-            if (StringUtils.isBlank(fileURL)) {
-                log.fine("Could not get URL for file " + fileInfo);
-                continue;
+            for (FileInfo fileInfo : fileInfos) {
+                String fileURL = getController().getOSClient().getOpenURL(
+                    fileInfo);
+                if (StringUtils.isBlank(fileURL)) {
+                    log.fine("Could not get URL for file " + fileInfo);
+                    continue;
+                }
+                BrowserLauncher.openURL(getController(), fileURL);
             }
-            BrowserLauncher.openURL(getController(), fileURL);
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING,
+                "Problem while opening colaboration session. " + re, re);
         }
     }
 }

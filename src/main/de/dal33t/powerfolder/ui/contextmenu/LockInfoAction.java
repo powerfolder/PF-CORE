@@ -19,6 +19,7 @@ package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -46,41 +47,56 @@ class LockInfoAction extends PFContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        final List<FileInfo> files = getFileInfos(paths);
+        try {
+            final List<FileInfo> files = getFileInfos(paths);
 
-        if (files.size() != 1) {
-            log.warning("More than one file was selected for locking information. Not showing any info.");
-            return;
-        }
-
-        getController().getIOProvider().startIO(new Runnable() {
-            @Override
-            public void run() {
-                FileInfo file = files.get(0);
-                Lock fileLock = file.getLock(getController());
-
-                SimpleDateFormat format = new SimpleDateFormat(
-                    "dd MMM yyyy HH:mm");
-
-                String name = file.getFilenameOnly();
-                String date = format.format(fileLock.getCreated());;
-                String displayName = fileLock.getAccountInfo().getDisplayName();
-                String memberName = Translation
-                    .getTranslation("context_menu.lock_information.message.web");
-
-                MemberInfo member = fileLock.getMemberInfo();
-                if (member != null) {
-                    memberName = member.getNick();
-                }
-
-                DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("context_menu.lock_information.title"),
-                    Translation.getTranslation(
-                        "context_menu.lock_information.message", name,
-                        displayName, date, memberName),
-                    new String[]{Translation.getTranslation("general.ok")}, 0,
-                    GenericDialogType.INFO);
+            if (files.size() != 1) {
+                log.warning("More than one file was selected for locking information. Not showing any info.");
+                return;
             }
-        });
+
+            getController().getIOProvider().startIO(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        FileInfo file = files.get(0);
+                        Lock fileLock = file.getLock(getController());
+
+                        SimpleDateFormat format = new SimpleDateFormat(
+                            "dd MMM yyyy HH:mm");
+
+                        String name = file.getFilenameOnly();
+                        String date = format.format(fileLock.getCreated());;
+                        String displayName = fileLock.getAccountInfo()
+                            .getDisplayName();
+                        String memberName = Translation
+                            .getTranslation("context_menu.lock_information.message.web");
+
+                        MemberInfo member = fileLock.getMemberInfo();
+                        if (member != null) {
+                            memberName = member.getNick();
+                        }
+
+                        DialogFactory.genericDialog(
+                            getController(),
+                            Translation
+                                .getTranslation("context_menu.lock_information.title"),
+                            Translation.getTranslation(
+                                "context_menu.lock_information.message", name,
+                                displayName, date, memberName),
+                            new String[]{Translation
+                                .getTranslation("general.ok")}, 0,
+                            GenericDialogType.INFO);
+                    } catch (RuntimeException re) {
+                        log.log(Level.WARNING,
+                            "Problem while trying to view locking dialog. "
+                                + re, re);
+                    }
+                }
+            });
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING,
+                "Problem while trying to view locking information. " + re, re);
+        }
     }
 }

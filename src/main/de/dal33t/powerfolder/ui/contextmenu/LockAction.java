@@ -19,6 +19,7 @@ package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -42,10 +43,15 @@ class LockAction extends PFContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        List<FileInfo> fileInfos = getFileInfos(paths);
+        try {
+            List<FileInfo> fileInfos = getFileInfos(paths);
 
-        for (FileInfo fileInfo : fileInfos) {
-            lockFileInfo(fileInfo);
+            for (FileInfo fileInfo : fileInfos) {
+                lockFileInfo(fileInfo);
+            }
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING, "Problem while trying to lock files. " + re,
+                re);
         }
     }
 

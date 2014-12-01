@@ -19,6 +19,7 @@ package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
@@ -51,38 +52,45 @@ class ShareLinkAction extends ContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        for (String pathName : paths) {
-            Path path = Paths.get(pathName);
+        try {
+            for (String pathName : paths) {
+                Path path = Paths.get(pathName);
 
-            for (Folder folder : controller.getFolderRepository().getFolders())
-            {
-                if (!path.startsWith(folder.getLocalBase())) {
-                    continue;
-                }
-
-                final ServerClient client = controller.getOSClient();
-                final FileInfo fInfo = FileInfoFactory.lookupInstance(folder,
-                    path);
-                if (SyncStatus.of(controller, fInfo) == SyncStatus.IGNORED) {
-                    log.fine("File " + fInfo
-                        + " is ignored. Not trying to create link");
-                    continue;
-                }
-
-                controller.getIOProvider().startIO(new Runnable() {
-                    @Override
-                    public void run() {
-                        String previousEntry = Util.getClipboardContents();
-                        String url = client.getFolderService().getDownloadLink(
-                            fInfo);
-                        Util.setClipboardContents(url);
-
-                        ShareFileNotificationHandler handler = new ShareFileNotificationHandler(
-                            controller, fInfo, previousEntry);
-                        handler.show();
+                for (Folder folder : controller.getFolderRepository()
+                    .getFolders())
+                {
+                    if (!path.startsWith(folder.getLocalBase())) {
+                        continue;
                     }
-                });
+
+                    final ServerClient client = controller.getOSClient();
+                    final FileInfo fInfo = FileInfoFactory.lookupInstance(
+                        folder, path);
+                    if (SyncStatus.of(controller, fInfo) == SyncStatus.IGNORED)
+                    {
+                        log.fine("File " + fInfo
+                            + " is ignored. Not trying to create link");
+                        continue;
+                    }
+
+                    controller.getIOProvider().startIO(new Runnable() {
+                        @Override
+                        public void run() {
+                            String previousEntry = Util.getClipboardContents();
+                            String url = client.getFolderService()
+                                .getDownloadLink(fInfo);
+                            Util.setClipboardContents(url);
+
+                            ShareFileNotificationHandler handler = new ShareFileNotificationHandler(
+                                controller, fInfo, previousEntry);
+                            handler.show();
+                        }
+                    });
+                }
             }
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING, "Problem while trying to share link. " + re,
+                re);
         }
     }
 }

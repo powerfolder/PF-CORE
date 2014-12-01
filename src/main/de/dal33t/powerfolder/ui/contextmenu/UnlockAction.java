@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.ui.contextmenu;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -49,10 +50,14 @@ class UnlockAction extends PFContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        List<FileInfo> fileInfos = getFileInfos(paths);
+        try {
+            List<FileInfo> fileInfos = getFileInfos(paths);
 
-        for (FileInfo fileInfo : fileInfos) {
-            unlockFileInfo(fileInfo);
+            for (FileInfo fileInfo : fileInfos) {
+                unlockFileInfo(fileInfo);
+            }
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING, "Problem trying to unlock files. " + re, re);
         }
     }
 
@@ -81,10 +86,10 @@ class UnlockAction extends PFContextMenuAction {
     private void unlock(FileInfo fileInfo) {
         if (fileInfo.isLocked(getController())) {
             Lock lock = fileInfo.getLock(getController());
-            boolean bySameDevice = lock.getMemberInfo().equals(getController()
-                .getMySelf().getInfo());
-            boolean bySameAccount = lock.getAccountInfo().equals(getController()
-                .getOSClient().getAccountInfo());
+            boolean bySameDevice = lock.getMemberInfo().equals(
+                getController().getMySelf().getInfo());
+            boolean bySameAccount = lock.getAccountInfo().equals(
+                getController().getOSClient().getAccountInfo());
 
             if (bySameDevice && bySameAccount) {
                 unlock0(fileInfo);
