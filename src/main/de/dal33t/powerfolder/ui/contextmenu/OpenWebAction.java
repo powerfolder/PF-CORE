@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.ui.contextmenu;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -43,42 +44,47 @@ class OpenWebAction extends PFContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        List<FileInfo> fileInfos = getFileInfos(paths);
+        try {
+            List<FileInfo> fileInfos = getFileInfos(paths);
 
-        boolean opened = false;
+            boolean opened = false;
 
-        for (FileInfo fileInfo : fileInfos) {
-            try {
-                String name = fileInfo.getRelativeName();
+            for (FileInfo fileInfo : fileInfos) {
+                try {
+                    String name = fileInfo.getRelativeName();
 
-                if (fileInfo.isFile()) {
-                    name = fileInfo.getRelativeName().replace(
-                        fileInfo.getFilenameOnly(), "");
+                    if (fileInfo.isFile()) {
+                        name = fileInfo.getRelativeName().replace(
+                            fileInfo.getFilenameOnly(), "");
+                    }
+
+                    String folderURL = getController().getOSClient()
+                        .getFolderURLWithCredentials(fileInfo.getFolderInfo());
+                    String fileURL = folderURL + "/"
+                        + URLEncoder.encode(name, "UTF-8");
+
+                    BrowserLauncher.openURL(getController(), fileURL);
+                    opened = true;
+                } catch (UnsupportedEncodingException uee) {
+                    log.warning("Failed to generate URL. " + uee);
                 }
-
-                String folderURL = getController().getOSClient()
-                    .getFolderURLWithCredentials(fileInfo.getFolderInfo());
-                String fileURL = folderURL + "/"
-                    + URLEncoder.encode(name, "UTF-8");
-
-                BrowserLauncher.openURL(getController(), fileURL);
-                opened = true;
-            } catch (UnsupportedEncodingException uee) {
-                log.warning("Failed to generate URL. " + uee);
             }
-        }
 
-        if (opened) {
-            return;
-        }
+            if (opened) {
+                return;
+            }
 
-        List<Folder> folders = getFolders(paths);
+            List<Folder> folders = getFolders(paths);
 
-        for (Folder folder : folders) {
-            String folderURL = getController().getOSClient()
-                .getFolderURLWithCredentials(folder.getInfo());
+            for (Folder folder : folders) {
+                String folderURL = getController().getOSClient()
+                    .getFolderURLWithCredentials(folder.getInfo());
 
-            BrowserLauncher.openURL(getController(), folderURL);
+                BrowserLauncher.openURL(getController(), folderURL);
+            }
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING,
+                "Problem while trying to open web location. " + re, re);
         }
     }
 }
