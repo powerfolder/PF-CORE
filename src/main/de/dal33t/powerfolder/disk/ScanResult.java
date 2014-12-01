@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.disk.problem.Problem;
  */
 public class ScanResult {
     public enum ResultState {
-        SCANNED, USER_ABORT, HARDWARE_FAILURE, BUSY
+        SCANNED, USER_ABORT, FAILURE, BUSY
     }
 
     private ResultState resultState;
