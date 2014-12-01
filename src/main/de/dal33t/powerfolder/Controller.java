@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 36;
+    private static final int REVISION_VERSION = 37;
 
     /**
      * Program version.
@@ -1573,14 +1573,14 @@ public class Controller extends PFComponent {
                         .saveConfig(tempFolderFile, config.getFolders(),
                             distName + " folders config file (v"
                                 + PROGRAM_VERSION + ')');
-                Files.deleteIfExists(folderFile);
-                try {
-                    Files.move(tempFolderFile, folderFile);
-                } catch (IOException e) {
-                    Files.copy(tempFolderFile, folderFile);
-                    Files.delete(tempFolderFile);
+                    Files.deleteIfExists(folderFile);
+                    try {
+                        Files.move(tempFolderFile, folderFile);
+                    } catch (IOException e) {
+                        Files.copy(tempFolderFile, folderFile);
+                        Files.delete(tempFolderFile);
+                    }
                 }
-            }
             }
         } catch (IOException e) {
             // FATAL
