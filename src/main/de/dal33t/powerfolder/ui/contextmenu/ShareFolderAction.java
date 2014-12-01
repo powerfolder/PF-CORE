@@ -157,7 +157,8 @@ class ShareFolderAction extends ContextMenuAction {
             null,
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(controller),
             true);
-        repository.createFolder(foInfo, settings);
+        Folder folder = repository.createFolder(foInfo, settings);
+        folder.addDefaultExcludes();
         if (backupByServer) {
             new CreateFolderOnServerTask(foInfo, null).scheduleTask(controller);
         }
