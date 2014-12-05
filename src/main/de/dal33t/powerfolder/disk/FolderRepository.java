@@ -199,6 +199,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    public void clearRemovedFolderDirectories() {
+        ConfigurationEntry.REMOVED_FOLDER_FILES.removeValue(getController());
+        removedFolderDirectories.clear();
+    }
+
     public void addProblemListenerToAllFolders(ProblemListener listener) {
         ListenerSupportFactory.addListener(valveProblemListenerSupport,
             listener);
@@ -1611,10 +1616,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (!Files.isDirectory(entry)) {
                     return false;
                 }
-                if (removedFolderDirectories.contains(entry)) {
-                    return false;
-                }
-                return true;
+                return !containedInRemovedFolders(entry);
             }
         };
 
@@ -1696,6 +1698,31 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logWarning(ioe);
             }
         }
+    }
+
+    /**
+     * Check for the whole path, and for the file name only.
+     * 
+     * @param entry
+     *            The path to check
+     * @return {@code True} if the path or file name is in the removed
+     *         folders list, {@code false} otherwise.
+     */
+    private boolean containedInRemovedFolders(Path entry) {
+        boolean isMarkedAsRemoved = removedFolderDirectories
+            .contains(entry);
+
+        // return early, don't iterate the whole list again.
+        if (isMarkedAsRemoved) {
+            return true;
+        }
+
+        for (Path removed : removedFolderDirectories) {
+            if (removed.getFileName().equals(entry.getFileName())) {
+                isMarkedAsRemoved = true;
+            }
+        }
+        return isMarkedAsRemoved;
     }
 
     // Found a new directory in the folder base. Create a new folder.
@@ -2297,7 +2324,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()
                     .getFoldersBasedir().resolve(folderName);
-                if (removedFolderDirectories.contains(suggestedLocalBase)) {
+                if (containedInRemovedFolders(suggestedLocalBase)) {
                     continue;
                 }
 
@@ -2305,7 +2332,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .get(folderName);
 
                 if (userDir != null) {
-                    if (removedFolderDirectories.contains(userDir
+                    if (containedInRemovedFolders(userDir
                         .getDirectory()))
                     {
                         continue;
@@ -2566,5 +2593,4 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-
 }
