@@ -35,7 +35,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Builds the Context Menu Items and applies the the correct
@@ -120,9 +122,16 @@ public class ContextMenuHandler extends PFComponent implements
             boolean containsDirectoryInfoPath = false;
             FileInfo found = null;
 
+            String startMenu = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_START_MENU, false);
+
             // Check for folder base paths
             FolderRepository fr = getController().getFolderRepository();
             for (String pathName : pathNames) {
+                if (pathName.equals(startMenu)) {
+                    continue;
+                }
+
                 Folder folder = fr.findContainingFolder(pathName);
 
                 if (folder == null) {
