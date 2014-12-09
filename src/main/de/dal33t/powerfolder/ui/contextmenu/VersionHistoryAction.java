@@ -18,6 +18,8 @@
 package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -30,6 +32,9 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
  */
 class VersionHistoryAction extends PFContextMenuAction {
 
+    private static final Logger log = Logger
+        .getLogger(VersionHistoryAction.class.getName());
+
     VersionHistoryAction(Controller controller) {
         super(controller);
     }
@@ -41,7 +46,13 @@ class VersionHistoryAction extends PFContextMenuAction {
         getController().getIOProvider().startIO(new Runnable() {
             @Override
             public void run() {
-                PFWizard.openMultiFileRestoreWizard(getController(), fileInfos);
+                try {
+                    PFWizard.openMultiFileRestoreWizard(getController(),
+                        fileInfos);
+                } catch (RuntimeException re) {
+                    log.log(Level.WARNING,
+                        "Problem trying to view version history. " + re, re);
+                }
             }
         });
     }

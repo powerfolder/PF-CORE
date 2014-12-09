@@ -284,7 +284,10 @@ public class MainFrame extends PFUIComponent {
             builder.add(openWebInterfaceActionLabel.getUIComponent(),
                 cc.xy(1, 1));
         }
-        builder.add(openFoldersBaseActionLabel.getUIComponent(), cc.xy(1, 2));
+        if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
+            builder.add(openFoldersBaseActionLabel.getUIComponent(),
+                cc.xy(1, 2));
+        }
         builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
         builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4));
         if (getController().isVerbose()) {
