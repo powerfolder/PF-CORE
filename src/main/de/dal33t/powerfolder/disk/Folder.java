@@ -2617,8 +2617,8 @@ public class Folder extends PFComponent {
      * @return true if auto scanning files on-the-fly is allowed now.
      */
     public boolean scanAllowedNow() {
-        return !syncProfile.isManualSync() && !syncProfile.isDailySync()
-            && !getController().isPaused();
+        return (!syncProfile.isManualSync() && !syncProfile.isDailySync() && !getController()
+            .isPaused()) || schemaZyncro;
     }
 
     /**
