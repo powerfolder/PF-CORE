@@ -79,7 +79,7 @@ public class SyslogHandler extends Handler {
             header.append(smf.format(new Date(record.getMillis())));
             header.append(" ");
             header.append(prefix);
-            header.append(" PowerFodler ");
+            header.append(" PowerFolder ");
             header.append(getPID("-"));
             header.append(" - - "); // MSGID and STRUCTURED-DATA are NILVALUE i.
                                     // e. not used
