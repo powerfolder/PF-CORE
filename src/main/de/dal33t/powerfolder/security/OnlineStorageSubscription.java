@@ -23,12 +23,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Embeddable;
-import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Format;
 
 /**
@@ -59,13 +57,6 @@ public class OnlineStorageSubscription implements Serializable {
     private Date disabledUsageDate;
     private Date warnedExpirationDate;
     private Date disabledExpirationDate;
-
-    @Transient
-    private OnlineStorageSubscriptionType type;
-
-    public OnlineStorageSubscription() {
-        setType(OnlineStorageSubscriptionType.NONE);
-    }
 
     // Logic ******************************************************************
 
@@ -221,7 +212,6 @@ public class OnlineStorageSubscription implements Serializable {
         // this.storageSize);
         // firePropertyChange(PROPERTY_STORAGE_SIZE_GB, oldGB,
         // getStorageSizeGB());
-        setTypeLegacy();
     }
 
     public void setStorageSizeGB(int storageSizeGB) {
@@ -244,55 +234,6 @@ public class OnlineStorageSubscription implements Serializable {
             return "Unlimited";
         }
         return Format.formatBytesShort(getStorageSize());
-    }
-
-    @Deprecated
-    public OnlineStorageSubscriptionType getType() {
-        return type;
-    }
-
-    /**
-     * Legacy type for 3.1.X clients.
-     */
-    public void setTypeLegacy() {
-        Object oldValue = type;
-        this.type = findLegacyType();
-        // firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
-    }
-
-    /**
-     * #1595
-     */
-    public void migrateLegacyToNew() {
-        setType(type);
-    }
-
-    public void setType(OnlineStorageSubscriptionType type) {
-        if (type != null) {
-            setStorageSize(type.getStorageSize());
-        } else {
-            setStorageSize(0);
-        }
-        Object oldValue = type;
-        this.type = type;
-        // firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
-    }
-
-    private OnlineStorageSubscriptionType findLegacyType() {
-        OnlineStorageSubscriptionType best = OnlineStorageSubscriptionType.UNLIMITED;
-        for (OnlineStorageSubscriptionType legacyType : OnlineStorageSubscriptionType
-            .values())
-        {
-            if (!legacyType.isActive()) {
-                continue;
-            }
-            if (legacyType.getStorageSize() >= getStorageSize()
-                && legacyType.getStorageSize() < best.getStorageSize())
-            {
-                best = legacyType;
-            }
-        }
-        return best;
     }
 
     @Override
