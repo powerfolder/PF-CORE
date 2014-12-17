@@ -896,7 +896,9 @@ public class Account implements Serializable {
             this.addEmail(account.getUsername());
         }
 
-        this.emails.addAll(account.emails);
+        for (String email : account.emails){
+            this.addEmail(email);
+        }
 
         // Use the OSSubscription that has provides more space
         if (account.getOSSubscription().getStorageSizeGB() > this.osSubscription.getStorageSizeGB()) {
