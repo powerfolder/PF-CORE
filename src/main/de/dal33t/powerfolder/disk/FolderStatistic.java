@@ -787,6 +787,9 @@ public class FolderStatistic extends PFComponent {
 
         private void calculateIfRequired(NodeManagerEvent e) {
             // Reset partial stats
+            if (folder == null || folder.getStatistic() == null) {
+                return;
+            }
             folder.getStatistic().removePartialSyncStats(e.getNode());
             if (!folder.hasMember(e.getNode())) {
                 // Member not on folder
