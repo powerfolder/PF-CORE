@@ -83,6 +83,7 @@ import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
+import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
@@ -1125,6 +1126,12 @@ public class ServerClient extends PFComponent {
     private boolean isShibbolethLogin() {
         return ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
             .hasValue(getController());
+    }
+
+    public boolean isAllowedToRemoveFolders() {
+        return !ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            || getAccount().hasPermission(FolderRemovePermission.INSTANCE);
     }
 
     public boolean isAllowedToCreateFolders() {

@@ -1191,7 +1191,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             {
                 contextMenu.add(openSettingsInformationAction).setIcon(null);
             }
-            contextMenu.add(removeFolderLocalAction).setIcon(null);
+            if (getController().getOSClient().isAllowedToRemoveFolders()) {
+                contextMenu.add(removeFolderLocalAction).setIcon(null);
+            }
             if (expert && serverClient.isConnected()
                 && serverClient.isLoggedIn())
             {
