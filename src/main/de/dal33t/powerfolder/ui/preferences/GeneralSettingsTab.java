@@ -23,7 +23,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 
 import javax.swing.Action;
@@ -32,6 +36,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -49,12 +54,16 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -69,6 +78,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox runOnStartupBox;
     private JCheckBox updateCheck;
     private boolean originalQuitOnX;
+    private JComponent locationField;
+    private JTextField locationTF;
+    private ValueModel locationModel;
     private JComboBox<String> xBehaviorChooser;
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel versionModel;
@@ -76,7 +88,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private Action cleanupAction;
     private JComboBox<Locale> languageChooser;
     private JComboBox<String> modeChooser;
-
+    
     private boolean needsRestart;
 
     public GeneralSettingsTab(Controller controller) {
@@ -130,6 +142,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         archiveModeSelectorPanel.setArchiveMode(
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(getController()));
 
+        // Local base selection
+        locationModel = new ValueHolder(getController().getFolderRepository()
+            .getFoldersBasedirString());
+
+        // Behavior
+        locationModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateLocationComponents();
+            }
+        });
+        locationField = createLocationField();
+        
         archiveCleanupCombo = new JComboBox<String>();
         archiveCleanupCombo.addItem(Translation
             .getTranslation("preferences.general.archive_cleanup_day")); // 1
@@ -179,7 +203,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 163dlu, pref:grow",
-                "pref, 10dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 0dlu, pref, 0dlu, pref");
+                "pref, 10dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 0dlu, pref, 0dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -198,7 +222,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(modeChooser, cc.xy(3, row));
             }
             // End: PFC-2385
-
+            
+            // Start: PFC-2631
+            row += 2;
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("exp.preferences.expert.base_dir")), cc.xy(1,
+                    row));
+            builder.add(locationField, cc.xyw(3, row, 2));
+            // End: PFC-2631
+            
             row += 2;
             builder.add(
                 new JLabel(Translation
@@ -264,6 +297,40 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return panel;
     }
 
+    /**
+     * Creates a pair of location text field and button.
+     *
+     * @return
+     */
+    private JComponent createLocationField() {
+        FormLayout layout = new FormLayout("140dlu, 3dlu, pref", "pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        locationTF = new JTextField();
+        locationTF.setEditable(false);
+        locationTF.setText((String) locationModel.getValue());
+        builder.add(locationTF, cc.xy(1, 1));
+
+        JButton locationButton = new JButtonMini(
+            Icons.getIconById(Icons.DIRECTORY),
+            Translation
+                .getTranslation("exp.preferences.expert.select_directory_text"));
+        locationButton.addActionListener(new MyActionListener());
+        builder.add(locationButton, cc.xy(3, 1));
+        return builder.getPanel();
+    }
+    
+    /**
+     * Called when the location model changes value. Sets the location text
+     * field value and enables the location button.
+     */
+    private void updateLocationComponents() {
+        String value = (String) locationModel.getValue();
+        locationTF.setText(value);
+    }
+    
     private JPanel createUpdateCheckPanel() {
         FormLayout layout = new FormLayout("80dlu, 3dlu, pref", "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -469,6 +536,17 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         }
 
+        // Set folder base
+        FolderRepository repo = getController().getFolderRepository();
+        String oldFolderBaseString = repo.getFoldersBasedirString();
+        String oldBaseDirName = repo.getFoldersBasedir().getFileName().toString();
+        String newFolderBaseString = (String) locationModel.getValue();
+        repo.setFoldersBasedir(newFolderBaseString);
+        if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
+            repo.updateShortcuts(oldBaseDirName);
+        }
+
+        
         // Start: PFC-2385
         if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
             boolean expertModeActive = PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
@@ -570,6 +648,41 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
     }
 
+    /**
+     * Action listener for the location button. Opens a choose dir dialog and
+     * sets the location model with the result.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String initial = (String) locationModel.getValue();
+            List<Path> files = DialogFactory.chooseDirectory(getController()
+                .getUIController(), initial, false);
+            if (!files.isEmpty()) {
+               Path newLocation = files.get(0);
+                // Make sure that the user is not setting this to the base dir
+                // of an existing folder.
+                for (Folder folder : getController().getFolderRepository()
+                    .getFolders(true))
+                {
+                    if (folder.getLocalBase().equals(newLocation)) {
+                        DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("exp.preferences.expert.duplicate_local_base_title"),
+                                Translation
+                                    .getTranslation(
+                                        "exp.preferences.expert.duplicate_local_base_message",
+                                        folder.getName()),
+                                GenericDialogType.ERROR);
+                        return;
+                    }
+                }
+                locationModel.setValue(newLocation.toAbsolutePath().toString());
+            }
+        }
+    }
+    
     /**
      * Creates a X behavior chooser.
      * Option 0 is Exit program
