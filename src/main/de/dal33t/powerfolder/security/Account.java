@@ -962,12 +962,14 @@ public class Account implements Serializable {
                 sb.append(this.notes);
                 sb.append("\n");
             }
-            sb.append("Begin of notes of '" + account.getUsername() + "'\n");
-            sb.append(account.notes);
-            sb.append("\nEND of notes of '" + account.getUsername() + "'");
+            if (StringUtils.isNotBlank(account.notes)) {
+                sb.append("Begin of notes of " + account.getUsername() + "\n");
+                sb.append(account.notes);
+                sb.append("\nEND of notes of " + account.getUsername());
+            }
             this.notes = sb.toString();
-            this.addNotesWithDate("Merged with account '"
-                + account.getUsername() + "'");
+            this.addNotesWithDate("Merged with account "
+                + account.getUsername());
 
             int len = sb.length();
             if (len >= 1000) {
