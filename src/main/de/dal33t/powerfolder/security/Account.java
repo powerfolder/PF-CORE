@@ -951,20 +951,31 @@ public class Account implements Serializable {
         // Combine computers
         this.computers.addAll(account.computers);
 
+        boolean containsMergeNote = StringUtils.isNotBlank(account.notes)
+            && this.notes.contains("Merged with account '"
+                + account.getUsername() + "'");
+
         // Combine Notes
-        if (StringUtils.isNotBlank(account.notes)) {
+        if (!containsMergeNote) {
             StringBuilder sb = new StringBuilder();
             if (this.notes != null) {
                 sb.append(this.notes);
                 sb.append("\n");
             }
-            sb.append("Beginn of notes of '" + account.getUsername() + "'\n");
+            sb.append("Begin of notes of '" + account.getUsername() + "'\n");
             sb.append(account.notes);
             sb.append("\nEND of notes of '" + account.getUsername() + "'");
             this.notes = sb.toString();
-        }
+            this.addNotesWithDate("Merged with account '"
+                + account.getUsername() + "'");
 
-        this.addNotesWithDate("Merged with account '" + account.getUsername() + "'");
+            int len = sb.length();
+            if (len >= 1000) {
+                int cut = len - 1000;
+                sb.replace(0, cut, "");
+                this.notes = sb.toString().trim();
+            }
+        }
     }
 
     /**
