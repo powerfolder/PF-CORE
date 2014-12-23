@@ -80,7 +80,7 @@ public class WinUtils extends Loggable {
 
     // Start Menu / Start Menu (personal)
     public static final int CSIDL_START_MENU = 0x000B;
-    
+
     // Meine Musik / My Music
     public static final int CSIDL_MYMUSIC = 0x000d;
 

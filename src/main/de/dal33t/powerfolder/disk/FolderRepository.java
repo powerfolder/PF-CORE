@@ -1762,9 +1762,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                  */
                 logWarning("Renaming folder " + oldName + " to " + newName);
 
-                fi = new FolderInfo(newName, fi.getId());
-                fi.intern(true);
-
                 FolderService foServ = client.getFolderService();
                 try {
 
@@ -1798,6 +1795,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                         return;
                     }
+
+                    fi = new FolderInfo(newName, fi.getId());
+                    fi.intern(true);
 
                     renamed = true;
                     removeFolder(fi.getFolder(getController()), false, false);

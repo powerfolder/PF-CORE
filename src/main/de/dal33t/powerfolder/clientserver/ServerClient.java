@@ -83,7 +83,6 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
-import de.dal33t.powerfolder.security.AuthenticationFailedException;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
@@ -1095,6 +1094,7 @@ public class ServerClient extends PFComponent {
                     // PFC-2534: End
                     saveLastKnowLogin(username, passwordObf);
                 }
+                lastLoginSuccessful.set(false);
                 setAnonAccount();
                 fireLogin(accountDetails, false);
                 return accountDetails.getAccount();
@@ -2235,6 +2235,9 @@ public class ServerClient extends PFComponent {
                     if (isLoggingIn()) {
                         return;
                     }
+                    if (!lastLoginSuccessful.get()) {
+                        return;
+                    }
                     try {
                         // PFC-2368: Verify login by server too.
                         if (isLoggedIn() && securityService.isLoggedIn()) {
@@ -2281,8 +2284,6 @@ public class ServerClient extends PFComponent {
         public void handle(Throwable t) {
             if (t instanceof NotLoggedInException) {
                 autoLogin(t);
-            } else if (t instanceof AuthenticationFailedException) {
-                // NOP - PFC-2589
             } else if (t instanceof SecurityException) {
                 if (t.getMessage() != null
                     && t.getMessage().toLowerCase().contains("not logged"))

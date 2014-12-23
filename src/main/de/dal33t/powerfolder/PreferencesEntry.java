@@ -143,7 +143,13 @@ public enum PreferencesEntry {
      * PFC-2385
      */
     MODE_SELECT("mode.select.enabled", true),
-    
+
+    /**
+     * Show the "Browse" Button / Link in the main window and the tray icon's
+     * context menu. PFC-2624
+     */
+    SHOW_BROWSE("show.browse", true),
+
     /**
      * PFC-2395
      */
