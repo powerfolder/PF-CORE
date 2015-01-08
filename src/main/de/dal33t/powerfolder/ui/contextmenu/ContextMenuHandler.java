@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Builds the Context Menu Items and applies the the correct
@@ -107,123 +108,136 @@ public class ContextMenuHandler extends PFComponent implements
 
     @Override
     public List<ContextMenuItem> getContextMenuItems(String[] pathNames) {
-        // Clear the context menu
-        for (ContextMenuItem cmi : pfMainItem.getAllContextMenuItems()) {
-            pfMainItem.removeContextMenuItem(cmi);
-        }
-
-        // Gather some information to decide which context menu items to show
-        boolean containsFolderPath = false;
-        boolean containsFileInfoPath = false;
-        boolean containsDirectoryInfoPath = false;
-        FileInfo found = null;
-
-        // Check for folder base paths
-        FolderRepository fr = getController().getFolderRepository();
-        for (String pathName : pathNames) {
-            Folder folder = fr.findContainingFolder(pathName);
-
-            if (folder == null) {
-                continue;
+        try {
+            // Clear the context menu
+            for (ContextMenuItem cmi : pfMainItem.getAllContextMenuItems()) {
+                pfMainItem.removeContextMenuItem(cmi);
             }
 
-            Path path = Paths.get(pathName);
-            if (!containsFolderPath && folder.getLocalBase().equals(path)) {
-                containsFolderPath = true;
-                continue;
-            }
+            // Gather some information to decide which context menu items to
+            // show
+            boolean containsFolderPath = false;
+            boolean containsFileInfoPath = false;
+            boolean containsDirectoryInfoPath = false;
+            FileInfo found = null;
 
-            FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-            if ((found = folder.getDAO().find(lookup, null)) != null) {
-                if (found.isFile()) {
-                    containsFileInfoPath = true;
-                } else if (found.isDiretory()) {
-                    containsDirectoryInfoPath = true;
+            String startMenu = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_START_MENU, false);
+
+            // Check for folder base paths
+            FolderRepository fr = getController().getFolderRepository();
+            for (String pathName : pathNames) {
+                if (pathName.equals(startMenu)) {
+                    continue;
+                }
+
+                Folder folder = fr.findContainingFolder(pathName);
+
+                if (folder == null) {
+                    continue;
+                }
+
+                Path path = Paths.get(pathName);
+                if (!containsFolderPath && folder.getLocalBase().equals(path)) {
+                    containsFolderPath = true;
+                    continue;
+                }
+
+                FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
+                if ((found = folder.getDAO().find(lookup, null)) != null) {
+                    if (found.isFile()) {
+                        containsFileInfoPath = true;
+                    } else if (found.isDiretory()) {
+                        containsDirectoryInfoPath = true;
+                    }
+                }
+
+                if (containsFolderPath && containsFileInfoPath
+                    && containsDirectoryInfoPath)
+                {
+                    break;
                 }
             }
 
-            if (containsFolderPath && containsFileInfoPath
-                && containsDirectoryInfoPath)
+            if (containsFolderPath && pathNames.length == 1
+                && pathNames[0].contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
             {
-                break;
+                return new ArrayList<>(0);
             }
-        }
 
-        if (containsFolderPath && pathNames.length == 1
-            && pathNames[0].contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
-        {
-            return new ArrayList<>(0);
-        }
+            // Build the context menu - the order is from BOTTOM to TOP
 
-        // Build the context menu - the order is from BOTTOM to TOP
-
-        if (containsFileInfoPath
-            && !(containsFolderPath || containsDirectoryInfoPath))
-        {
-            pfMainItem.addContextMenuItem(unlockItem);
-            pfMainItem.addContextMenuItem(lockItem);
-            if (containsFileInfoPath && pathNames.length == 1
-                && found.isLocked(getController()))
+            if (containsFileInfoPath
+                && !(containsFolderPath || containsDirectoryInfoPath))
             {
-                pfMainItem.addContextMenuItem(lockInfoItem);
+                pfMainItem.addContextMenuItem(unlockItem);
+                pfMainItem.addContextMenuItem(lockItem);
+                if (containsFileInfoPath && pathNames.length == 1
+                    && found.isLocked(getController()))
+                {
+                    pfMainItem.addContextMenuItem(lockInfoItem);
+                }
             }
-        }
 
-        if (!containsFolderPath && containsFileInfoPath) {
-            pfMainItem.addContextMenuItem(versionHistoryItem);
-        }
-
-        if ((containsDirectoryInfoPath || containsFileInfoPath)
-            && pathNames.length == 1)
-        {
-            pfMainItem.addContextMenuItem(shareLinkItem);
-        }
-
-        if (containsFolderPath
-            && !(containsFileInfoPath || containsDirectoryInfoPath))
-        {
-            pfMainItem.addContextMenuItem(stopSyncItem);
-        }
-
-        if ((containsFolderPath && pathNames.length == 1)
-            || (Files.isDirectory(Paths.get(pathNames[0]))
-                && getController().getOSClient().isAllowedToCreateFolders() && !containsDirectoryInfoPath))
-        {
-            pfMainItem.addContextMenuItem(shareFolderItem);
-        }
-
-        if (pathNames.length == 1
-            && (containsFileInfoPath || containsDirectoryInfoPath || containsFolderPath)
-            && ConfigurationEntry.WEB_LOGIN_ALLOWED
-                .getValueBoolean(getController()))
-        {
-            pfMainItem.addContextMenuItem(openWebItem);
-        }
-
-        List<ContextMenuItem> items = new ArrayList<>(2);
-        if (pfMainItem.getContextMenuItems().size() > 0) {
-            items.add(pfMainItem);
-        }
-
-        if (containsFileInfoPath && pathNames.length == 1) {
-            String pathName = pathNames[0];
-            Path targetDir = Paths.get(pathName);
-            Folder fo = getController().getFolderRepository()
-                .findContainingFolder(pathName);
-            FileInfo lookup = FileInfoFactory.lookupInstance(fo, targetDir);
-            FileInfo file = fo.getDAO().find(lookup, null);
-
-            // file is locked and the lock is generated by a server
-            boolean isColabSessionPresent = file != null
-                && file.isLocked(getController())
-                && file.getLock(getController()).getMemberInfo()
-                    .getNode(getController(), true).isServer();
-
-            if (isColabSessionPresent) {
-                items.add(openColabItem);
+            if (!containsFolderPath && containsFileInfoPath) {
+                pfMainItem.addContextMenuItem(versionHistoryItem);
             }
-        }
 
-        return items;
+            if ((containsDirectoryInfoPath || containsFileInfoPath)
+                && pathNames.length == 1)
+            {
+                pfMainItem.addContextMenuItem(shareLinkItem);
+            }
+
+            if (containsFolderPath
+                && !(containsFileInfoPath || containsDirectoryInfoPath))
+            {
+                pfMainItem.addContextMenuItem(stopSyncItem);
+            }
+
+            if ((containsFolderPath && pathNames.length == 1)
+                || (Files.isDirectory(Paths.get(pathNames[0]))
+                    && getController().getOSClient().isAllowedToCreateFolders() && !containsDirectoryInfoPath))
+            {
+                pfMainItem.addContextMenuItem(shareFolderItem);
+            }
+
+            if (pathNames.length == 1
+                && (containsFileInfoPath || containsDirectoryInfoPath || containsFolderPath)
+                && ConfigurationEntry.WEB_LOGIN_ALLOWED
+                    .getValueBoolean(getController()))
+            {
+                pfMainItem.addContextMenuItem(openWebItem);
+            }
+
+            List<ContextMenuItem> items = new ArrayList<>(2);
+            if (pfMainItem.getContextMenuItems().size() > 0) {
+                items.add(pfMainItem);
+            }
+
+            if (containsFileInfoPath && pathNames.length == 1) {
+                String pathName = pathNames[0];
+                Path targetDir = Paths.get(pathName);
+                Folder fo = getController().getFolderRepository()
+                    .findContainingFolder(pathName);
+                FileInfo lookup = FileInfoFactory.lookupInstance(fo, targetDir);
+                FileInfo file = fo.getDAO().find(lookup, null);
+
+                // file is locked and the lock is generated by a server
+                boolean isColabSessionPresent = file != null
+                    && file.isLocked(getController())
+                    && file.getLock(getController()).getMemberInfo()
+                        .getNode(getController(), true).isServer();
+
+                if (isColabSessionPresent) {
+                    items.add(openColabItem);
+                }
+            }
+
+            return items;
+        } catch (RuntimeException re) {
+            logWarning("Error trying to compile context menu " + re, re);
+            return new ArrayList<ContextMenuItem>(0);
+        }
     }
 }

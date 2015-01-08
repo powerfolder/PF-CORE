@@ -1369,6 +1369,8 @@ public class PathUtils {
      * @return true if file scan is allowed
      */
     public static boolean isScannable(String relOrAbsfilePath, Folder folder) {
+        Reject.ifNull(folder, "Folder must not be null");
+        Reject.ifNull(relOrAbsfilePath, "File name must not be null");
         if (relOrAbsfilePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR))
         {
             return false;

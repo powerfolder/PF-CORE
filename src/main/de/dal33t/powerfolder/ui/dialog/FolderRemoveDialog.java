@@ -103,7 +103,6 @@ public class FolderRemoveDialog extends BaseDialog {
         boolean syncFlag = folder != null && folder.isTransferring();
         String folderLeaveText;
         String removeKey;
-        String folderNote;
         String folderLeaveMessage, folderLeaveMessageAdmin;
         if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController())){
             folderLeaveMessage = "folder_remove.dialog.strict.online_text";

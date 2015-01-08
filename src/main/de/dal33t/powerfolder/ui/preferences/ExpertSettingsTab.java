@@ -19,27 +19,16 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.List;
 
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -49,14 +38,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
@@ -70,9 +52,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useDeltaSyncOnInternetCB;
     private JCheckBox useSwarmingOnLanCB;
     private JCheckBox useSwarmingOnInternetCB;
-    private JTextField locationTF;
-    private ValueModel locationModel;
-    private JComponent locationField;
     private JCheckBox conflictDetectionCB;
     private JCheckBox massDeleteCB;
     private JSlider massDeleteSlider;
@@ -136,19 +115,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("exp.preferences.expert.use_conflict_handling"));
         conflictDetectionCB.setSelected(ConfigurationEntry.CONFLICT_DETECTION
             .getValueBoolean(getController()));
-
-        // Local base selection
-        locationModel = new ValueHolder(getController().getFolderRepository()
-            .getFoldersBasedirString());
-
-        // Behavior
-        locationModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateLocationComponents();
-            }
-        });
-
-        locationField = createLocationField();
 
         useZipOnLanCB = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("exp.preferences.expert.use_zip_on_lan"));
@@ -215,44 +181,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     /**
-     * Called when the location model changes value. Sets the location text
-     * field value and enables the location button.
-     */
-    private void updateLocationComponents() {
-        String value = (String) locationModel.getValue();
-        locationTF.setText(value);
-    }
-
-    /**
      * Enable the mass delete slider if the box is selected.
      */
     private void enableMassDeleteSlider() {
         massDeleteSlider.setEnabled(massDeleteCB.isSelected());
-    }
-
-    /**
-     * Creates a pair of location text field and button.
-     *
-     * @return
-     */
-    private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("140dlu, 3dlu, pref", "pref");
-
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        locationTF = new JTextField();
-        locationTF.setEditable(false);
-        locationTF.setText((String) locationModel.getValue());
-        builder.add(locationTF, cc.xy(1, 1));
-
-        JButton locationButton = new JButtonMini(
-            Icons.getIconById(Icons.DIRECTORY),
-            Translation
-                .getTranslation("exp.preferences.expert.select_directory_text"));
-        locationButton.addActionListener(new MyActionListener());
-        builder.add(locationButton, cc.xy(3, 1));
-        return builder.getPanel();
     }
 
     /**
@@ -262,7 +194,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
+            String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
@@ -276,13 +208,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            builder.add(
-                new JLabel(Translation
-                    .getTranslation("exp.preferences.expert.base_dir")), cc.xy(1,
-                    row));
-            builder.add(locationField, cc.xyw(3, row, 2));
 
-            row += 2;
             builder.add(autoDetectFoldersCB, cc.xyw(3, row, 2));
 
             row += 2;
@@ -360,16 +286,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             massDeleteCB.isSelected());
         ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
             massDeleteSlider.getValue());
-
-        // Set folder base
-        FolderRepository repo = getController().getFolderRepository();
-        String oldFolderBaseString = repo.getFoldersBasedirString();
-        String oldBaseDirName = repo.getFoldersBasedir().getFileName().toString();
-        String newFolderBaseString = (String) locationModel.getValue();
-        repo.setFoldersBasedir(newFolderBaseString);
-        if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
-            repo.updateShortcuts(oldBaseDirName);
-        }
 
         // zip on lan?
         boolean current = ConfigurationEntry.USE_ZIP_ON_LAN
@@ -450,41 +366,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     // ////////////////
     // Inner Classes //
     // ////////////////
-
-    /**
-     * Action listener for the location button. Opens a choose dir dialog and
-     * sets the location model with the result.
-     */
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            String initial = (String) locationModel.getValue();
-            List<Path> files = DialogFactory.chooseDirectory(getController()
-                .getUIController(), initial, false);
-            if (!files.isEmpty()) {
-               Path newLocation = files.get(0);
-                // Make sure that the user is not setting this to the base dir
-                // of an existing folder.
-                for (Folder folder : getController().getFolderRepository()
-                    .getFolders(true))
-                {
-                    if (folder.getLocalBase().equals(newLocation)) {
-                        DialogFactory
-                            .genericDialog(
-                                getController(),
-                                Translation
-                                    .getTranslation("exp.preferences.expert.duplicate_local_base_title"),
-                                Translation
-                                    .getTranslation(
-                                        "exp.preferences.expert.duplicate_local_base_message",
-                                        folder.getName()),
-                                GenericDialogType.ERROR);
-                        return;
-                    }
-                }
-                locationModel.setValue(newLocation.toAbsolutePath().toString());
-            }
-        }
-    }
 
     private class MassDeleteItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {

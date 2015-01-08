@@ -199,6 +199,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    public void clearRemovedFolderDirectories() {
+        ConfigurationEntry.REMOVED_FOLDER_FILES.removeValue(getController());
+        removedFolderDirectories.clear();
+    }
+
     public void addProblemListenerToAllFolders(ProblemListener listener) {
         ListenerSupportFactory.addListener(valveProblemListenerSupport,
             listener);
@@ -1611,10 +1616,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (!Files.isDirectory(entry)) {
                     return false;
                 }
-                if (removedFolderDirectories.contains(entry)) {
-                    return false;
-                }
-                return true;
+                return !containedInRemovedFolders(entry);
             }
         };
 
@@ -1698,6 +1700,31 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    /**
+     * Check for the whole path, and for the file name only.
+     * 
+     * @param entry
+     *            The path to check
+     * @return {@code True} if the path or file name is in the removed
+     *         folders list, {@code false} otherwise.
+     */
+    private boolean containedInRemovedFolders(Path entry) {
+        boolean isMarkedAsRemoved = removedFolderDirectories
+            .contains(entry);
+
+        // return early, don't iterate the whole list again.
+        if (isMarkedAsRemoved) {
+            return true;
+        }
+
+        for (Path removed : removedFolderDirectories) {
+            if (removed.getFileName().equals(entry.getFileName())) {
+                isMarkedAsRemoved = true;
+            }
+        }
+        return isMarkedAsRemoved;
+    }
+
     // Found a new directory in the folder base. Create a new folder.
     // Only doing this if logged in.
     private void handleNewFolder(Path file) {
@@ -1719,10 +1746,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
 
-            final String oldName = fi.getName();
+            String oldName = null;
+            if (fi != null) {
+                oldName = fi.getName();
+            }
             String newName = file.getFileName().toString();
             if (fi != null && knownFolderWithSameName == null
-                && !oldName.equals(newName))
+                && !newName.equals(oldName))
             {
                 /*
                  * Change the name locally before the server is called. The
@@ -1732,9 +1762,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                  */
                 logWarning("Renaming folder " + oldName + " to " + newName);
 
-                fi = new FolderInfo(newName, fi.getId());
-                fi.intern(true);
-
                 FolderService foServ = client.getFolderService();
                 try {
 
@@ -1742,6 +1769,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         logWarning("Could not rename the Folder " + oldName
                             + " on the server to " + fi.getName());
                         final FolderInfo copy = fi;
+                        final String copyOldName = oldName;
 
                         if (getController().getUIController().isStarted()) {
                             UIUtil.invokeLaterInEDT(new Runnable() {
@@ -1755,7 +1783,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                             .getTranslation(
                                                 "notice.rename_folder_failed.summary",
                                                 copy.getLocalizedName(),
-                                                oldName),
+                                                copyOldName),
                                         GenericDialogType.WARN);
                                 }
                             });
@@ -1767,6 +1795,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                         return;
                     }
+
+                    fi = new FolderInfo(newName, fi.getId());
+                    fi.intern(true);
 
                     renamed = true;
                     removeFolder(fi.getFolder(getController()), false, false);
@@ -2293,7 +2324,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()
                     .getFoldersBasedir().resolve(folderName);
-                if (removedFolderDirectories.contains(suggestedLocalBase)) {
+                if (containedInRemovedFolders(suggestedLocalBase)) {
                     continue;
                 }
 
@@ -2301,7 +2332,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .get(folderName);
 
                 if (userDir != null) {
-                    if (removedFolderDirectories.contains(userDir
+                    if (containedInRemovedFolders(userDir
                         .getDirectory()))
                     {
                         continue;
@@ -2562,5 +2593,4 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-
 }

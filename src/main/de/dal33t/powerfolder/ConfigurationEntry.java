@@ -1075,6 +1075,9 @@ public enum ConfigurationEntry {
      */
     AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", true),
 
+    /**
+     * List of paths to removed folders
+     */
     REMOVED_FOLDER_FILES("removed.folder.files", ""),
 
     /**

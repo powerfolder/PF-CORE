@@ -58,7 +58,6 @@ public class ProblemsTab extends PFUIComponent {
     private JScrollPane scrollPane;
 
     private MyOpenProblemAction openProblemAction;
-    private MyClearProblemAction clearProblemAction;
     private MyResolveProblemAction resolveProblemAction;
     private MyClearAllProblemsAction clearAllProblemsAction;
 
@@ -94,7 +93,6 @@ public class ProblemsTab extends PFUIComponent {
 
     private void initialize() {
         openProblemAction = new MyOpenProblemAction(getController());
-        clearProblemAction = new MyClearProblemAction(getController());
         resolveProblemAction = new MyResolveProblemAction(getController());
         clearAllProblemsAction = new MyClearAllProblemsAction(getController());
 
@@ -128,10 +126,6 @@ public class ProblemsTab extends PFUIComponent {
             JButton openBtn = new JButton(openProblemAction);
             openBtn.setIcon(null);
             bar.addGridded(openBtn);
-            bar.addRelatedGap();
-            JButton clearBtn = new JButton(clearProblemAction);
-            clearBtn.setIcon(null);
-            bar.addGridded(clearBtn);
             bar.addRelatedGap();
             bar.addGridded(new JButton(clearAllProblemsAction));
             bar.addRelatedGap();
@@ -210,25 +204,6 @@ public class ProblemsTab extends PFUIComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             ProblemsTab.this.resolveProblem();
-        }
-    }
-
-    private class MyClearProblemAction extends BaseAction {
-        MyClearProblemAction(Controller controller) {
-            super("action_clear_problem", controller);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Folder folder = getController().getFolderRepository().getFolder(
-                folderInfo);
-            if (folder != null) {
-                if (selectedProblem == null) {
-                    folder.removeAllProblems();
-                } else {
-                    folder.removeProblem(selectedProblem);
-                }
-            }
         }
     }
 

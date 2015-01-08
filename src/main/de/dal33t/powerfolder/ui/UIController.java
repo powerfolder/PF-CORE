@@ -552,10 +552,12 @@ public class UIController extends PFComponent {
         // /////////
         // Browse //
         // /////////
-        item = menu.add(new MenuItem(Translation
-            .getTranslation("action_open_folders_base.name")));
-        item.setActionCommand(COMMAND_BROWSE);
-        item.addActionListener(systrayActionHandler);
+        if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
+            item = menu.add(new MenuItem(Translation
+                .getTranslation("action_open_folders_base.name")));
+            item.setActionCommand(COMMAND_BROWSE);
+            item.addActionListener(systrayActionHandler);
+        }
 
         // /////////////////
         // Pause / Resume //

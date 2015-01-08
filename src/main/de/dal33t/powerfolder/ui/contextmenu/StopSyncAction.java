@@ -18,6 +18,7 @@
 package de.dal33t.powerfolder.ui.contextmenu;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -39,12 +40,17 @@ class StopSyncAction extends PFContextMenuAction {
 
     @Override
     public void onSelection(String[] paths) {
-        List<Folder> folders = getFolders(paths);
+        try {
+            List<Folder> folders = getFolders(paths);
 
-        for (Folder folder : folders) {
-            log.fine("Stopping sync of local folder " + folder);
-            getController().getFolderRepository()
-                .removeFolder(folder, true);
+            for (Folder folder : folders) {
+                log.fine("Stopping sync of local folder " + folder);
+                getController().getFolderRepository()
+                    .removeFolder(folder, true);
+            }
+        } catch (RuntimeException re) {
+            log.log(Level.WARNING, "Problem while trying to stop sync. " + re,
+                re);
         }
     }
 }

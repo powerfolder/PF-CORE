@@ -229,7 +229,7 @@ public class FolderScanner extends PFComponent {
             if (!scan(base) || failure) {
                 // if false there was an IOError
                 reset();
-                return new ScanResult(ScanResult.ResultState.HARDWARE_FAILURE);
+                return new ScanResult(ScanResult.ResultState.FAILURE);
             }
             if (abort) {
                 reset();
@@ -335,6 +335,11 @@ public class FolderScanner extends PFComponent {
                 }
             }
             return myResult;
+        } catch (RuntimeException re) {
+            logSevere("Folder scanner crashed at " + currentScanningFolder, re);
+            failure = true;
+            reset();
+            return new ScanResult(ScanResult.ResultState.FAILURE);
         } finally {
             // Not longer scanning
             currentScanningFolder = null;
@@ -783,8 +788,15 @@ public class FolderScanner extends PFComponent {
          *         directory or file removed in the meantime)
          */
         private boolean scanDir(Path dirToScan) {
-            Reject.ifNull(currentScanningFolder,
-                "current scanning folder must not be null");
+            if (failure) {
+                return false;
+            }
+            if (currentScanningFolder == null) {
+                failure = true;
+                logWarning("Current scanning folder must not be null. Scanning path "
+                    + dirToScan);
+                return false;
+            }
             String currentDirName = getCurrentDirName(currentScanningFolder,
                 dirToScan);
             try {
