@@ -1223,7 +1223,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 contextMenu.add(openSettingsInformationAction).setIcon(null);
             }
             if (getController().getOSClient().isAllowedToRemoveFolders()) {
-            contextMenu.add(removeFolderLocalAction).setIcon(null);
+                contextMenu.add(removeFolderLocalAction).setIcon(null);
             }
             if (expert && serverClient.isConnected()
                 && serverClient.isLoggedIn())
@@ -1697,11 +1697,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                             if (!ProUtil.isZyncro(getController())) {
                                 openExplorer();
                             } else {
-                            FolderRemoveDialog panel = new FolderRemoveDialog(
-                                getController(), folderInfo);
-                            panel.open();
+                                FolderRemoveDialog panel = new FolderRemoveDialog(
+                                    getController(), folderInfo);
+                                panel.open();
+                            }
                         }
-                    }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
                         PFWizard.openOnlineStorageJoinWizard(getController(),
@@ -1775,7 +1775,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 folderInfo);
         }
     }
-    
+
     @SuppressWarnings("serial")
     private class MyOpenMembersInformationAction extends BaseAction {
 
