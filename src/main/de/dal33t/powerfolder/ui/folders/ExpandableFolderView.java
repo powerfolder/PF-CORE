@@ -100,6 +100,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.WebDAV;
@@ -1665,13 +1666,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (type == Type.Local) {
                         boolean openedTab = getController().getUIController()
                             .openFilesInformation(folderInfo);
-                        if (!openedTab
-                            && PreferencesEntry.SHOW_BROWSE
-                                .getValueBoolean(getController()))
-                        {
-                            FolderRemoveDialog panel = new FolderRemoveDialog(
-                                getController(), folderInfo);
-                            panel.open();
+                        if (!openedTab) {
+                            if (!ProUtil.isZyncro(getController())) {
+                                openExplorer();
+                            } else {
+                                FolderRemoveDialog panel = new FolderRemoveDialog(
+                                    getController(), folderInfo);
+                                panel.open();
+                            }
                         }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
