@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Queue;
 import java.util.TimerTask;
@@ -52,6 +53,7 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class FileRequestor extends PFComponent {
     private Thread myThread;
+    private Date workerLastActivity = new Date();
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
 
@@ -74,6 +76,24 @@ public class FileRequestor extends PFComponent {
         long waitTime = Controller.getWaitTime() * 12;
         getController()
             .scheduleAndRepeat(new PeriodicalTriggerTask(), waitTime);
+    }
+
+    /**
+     * @return if the worker is busy/unavailable since 5 minutes.
+     */
+    private boolean isWorkerTimeout() {
+        long secondsSinceLastActivity = (System.currentTimeMillis() - workerLastActivity
+            .getTime()) / 1000;
+        return secondsSinceLastActivity > Controller.getWaitTime() * 12 * 5;
+    }
+
+    private void restartWorker() {
+        if (myThread != null) {
+            myThread.interrupt();
+        }
+        myThread = new Thread(new Worker(), "FileRequestor");
+        myThread.setPriority(Thread.MIN_PRIORITY);
+        myThread.start();
     }
 
     /**
@@ -390,6 +410,7 @@ public class FileRequestor extends PFComponent {
                     if (isFiner()) {
                         logFiner("Started requesting files");
                     }
+                    workerLastActivity = new Date();
                     long start = System.currentTimeMillis();
                     for (Folder folder : folderQueue) {
                         // if (i % 100 == 0) {
@@ -435,6 +456,10 @@ public class FileRequestor extends PFComponent {
         @Override
         public void run() {
             triggerFileRequesting();
+            if (isWorkerTimeout()) {
+                logWarning("Worker has timed out. Restarting...");
+                restartWorker();
+            }
         }
     }
 }

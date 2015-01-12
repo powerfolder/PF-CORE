@@ -432,6 +432,8 @@ public class MainFrame extends PFUIComponent {
 
         MyOpenFoldersBaseAction myOpenFoldersBaseAction =
                 new MyOpenFoldersBaseAction(getController());
+        myOpenFoldersBaseAction.setEnabled(PreferencesEntry.SHOW_BROWSE
+            .getValueBoolean(getController()));
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);

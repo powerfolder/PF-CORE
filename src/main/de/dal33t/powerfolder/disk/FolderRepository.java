@@ -2486,7 +2486,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 {
                     continue;
                 }
-                if (!getController().getOSClient().joinedByCloud(folder)) {
+                if (getController().getOSClient().isConnected()
+                    && !getController().getOSClient().joinedByCloud(folder))
+                {
                     if (isFine()) {
                         logFine("Re-sync memberships with server: "
                             + getController().getOSClient().getServerString()

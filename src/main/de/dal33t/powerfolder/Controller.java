@@ -328,7 +328,7 @@ public class Controller extends PFComponent {
     public Controller getController() {
         return this;
     }
-
+    
     /**
      * Creates a fresh Controller.
      *

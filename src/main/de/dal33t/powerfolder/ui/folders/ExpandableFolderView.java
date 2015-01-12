@@ -101,6 +101,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.WebDAV;
@@ -266,6 +267,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             && type == Type.Local)
         {
             expanded.set(true);
+            retrieveAdditionalInfosFromServer();
             if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
                 && !PreferencesEntry.EXPERT_MODE
                     .getValueBoolean(getController()))
@@ -287,6 +289,7 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     public void collapse() {
         expanded.set(false);
+        retrieveAdditionalInfosFromServer();
         if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
@@ -1219,7 +1222,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             {
                 contextMenu.add(openSettingsInformationAction).setIcon(null);
             }
+            if (getController().getOSClient().isAllowedToRemoveFolders()) {
             contextMenu.add(removeFolderLocalAction).setIcon(null);
+            }
             if (expert && serverClient.isConnected()
                 && serverClient.isLoggedIn())
             {
@@ -1328,8 +1333,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             public Object construct() throws Throwable {
                 try {
-                    return WebDAV.createConnection(serverClient,
-                        createWebDAVURL());
+                    createWebDAVURL();
+                    return WebDAV.createConnection(serverClient, webDAVURL);
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
                     logSevere(e.getMessage(), e);
@@ -1644,10 +1649,12 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }, 2000);
                 }
             }
+            retrieveAdditionalInfosFromServer();
         }
 
         public void mouseExited(MouseEvent e) {
             mouseOver.set(false);
+            retrieveAdditionalInfosFromServer();
         }
     }
 
@@ -1687,10 +1694,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                         boolean openedTab = getController().getUIController()
                             .openFilesInformation(folderInfo);
                         if (!openedTab) {
+                            if (!ProUtil.isZyncro(getController())) {
+                                openExplorer();
+                            } else {
                             FolderRemoveDialog panel = new FolderRemoveDialog(
                                 getController(), folderInfo);
                             panel.open();
                         }
+                    }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
                         PFWizard.openOnlineStorageJoinWizard(getController(),
@@ -1705,6 +1716,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     // Action to invite friend.
+    @SuppressWarnings("serial")
     private class MyInviteAction extends BaseAction {
 
         private MyInviteAction(Controller controller) {
@@ -1716,6 +1728,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyOpenSettingsInformationAction extends BaseAction {
         private MyOpenSettingsInformationAction(Controller controller) {
             super("action_open_settings_information", controller);
@@ -1727,6 +1740,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyMoveLocalFolderAction extends BaseAction {
         private MyMoveLocalFolderAction(Controller controller) {
             super("action_move_local_folder", controller);
@@ -1737,6 +1751,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyOpenFilesInformationAction extends BaseAction {
 
         MyOpenFilesInformationAction(Controller controller) {
@@ -1748,6 +1763,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyOpenFilesUnsyncedAction extends BaseAction {
 
         MyOpenFilesUnsyncedAction(Controller controller) {
@@ -1759,7 +1775,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 folderInfo);
         }
     }
-
+    
+    @SuppressWarnings("serial")
     private class MyOpenMembersInformationAction extends BaseAction {
 
         MyOpenMembersInformationAction(Controller controller) {
@@ -1772,6 +1789,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MySyncFolderAction extends BaseAction {
 
         private MySyncFolderAction(Controller controller) {
@@ -1793,6 +1811,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class FolderRemoveAction extends BaseAction {
 
         private FolderRemoveAction(Controller controller) {
@@ -1806,6 +1825,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class FolderOnlineRemoveAction extends BaseAction {
 
         private FolderOnlineRemoveAction(Controller controller) {
@@ -1831,6 +1851,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     // }
     // }
     //
+    @SuppressWarnings("serial")
     private class MyClearCompletedDownloadsAction extends BaseAction {
 
         private MyClearCompletedDownloadsAction(Controller controller) {
@@ -1852,6 +1873,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyMostRecentChangesAction extends BaseAction {
 
         private MyMostRecentChangesAction(Controller controller) {
@@ -1872,6 +1894,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     // }
     // }
 
+    @SuppressWarnings("serial")
     private class MyDeletedFilesAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
@@ -1880,6 +1903,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyOpenExplorerAction extends BaseAction {
 
         private MyOpenExplorerAction(Controller controller) {
