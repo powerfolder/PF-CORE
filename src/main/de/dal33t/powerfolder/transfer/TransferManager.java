@@ -1888,43 +1888,6 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns only sources which are connected and have "exactly" the given
-     * FileInfo version.
-     *
-     * @param fInfo
-     * @return
-     */
-    public Collection<Member> getSourcesForVersion(FileInfo fInfo) {
-        Reject.notNull(fInfo, "fInfo");
-
-        Folder folder = fInfo.getFolder(getController().getFolderRepository());
-        if (folder == null) {
-            throw new NullPointerException("Folder not joined of file: "
-                + fInfo);
-        }
-        List<Member> sources = null;
-        for (Member node : folder.getMembersAsCollection()) {
-            FileInfo rInfo = node.getFile(fInfo);
-            if (node.isCompletelyConnected() && !node.isMySelf()
-                && fInfo.isVersionDateAndSizeIdentical(rInfo))
-            {
-                // node is connected and has file
-                if (sources == null) {
-                    sources = new ArrayList<Member>();
-                }
-                sources.add(node);
-            }
-        }
-        if (sources == null) {
-            sources = Collections.emptyList();
-        }
-        return sources;
-    }
-
-    // TODO Does all this "sources" management really belong to the
-    // TransferManager?
-
-    /**
      * Finds the sources for the file. Returns only sources which are connected
      * The members are sorted in order of best source.
      * <p>

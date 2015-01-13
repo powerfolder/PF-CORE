@@ -60,6 +60,5 @@ class IconOverlayApplier extends PFComponent implements FolderScannerListener {
         }
 
         iconControl.setFileIcon(fileName, index);
-//        iconControl.refreshIcons();
     }
 }
