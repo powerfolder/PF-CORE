@@ -78,7 +78,6 @@ import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.contextmenu.MoveExistingFolderAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -1835,7 +1834,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            new MoveExistingFolderAction(getController())
+            getController().getUIController().getApplicationModel()
                 .moveLocalFolder(folder);
         }
     }
