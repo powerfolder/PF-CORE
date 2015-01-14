@@ -78,6 +78,7 @@ import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.contextmenu.MoveExistingFolderAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -171,6 +172,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyMostRecentChangesAction mostRecentChangesAction;
     private MyClearCompletedDownloadsAction clearCompletedDownloadsAction;
     private MyOpenExplorerAction openExplorerAction;
+    private MoveFolderAction moveFolderLocalAction;
     private FolderRemoveAction removeFolderLocalAction;
     private FolderOnlineRemoveAction removeFolderOnlineAction;
     private BackupOnlineStorageAction backupOnlineStorageAction;
@@ -585,6 +587,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
 
+        moveFolderLocalAction = new MoveFolderAction(getController());
         // Allow to stop local sync even if no folder remove permissions was
         // given.
         removeFolderLocalAction = new FolderRemoveAction(getController());
@@ -1222,6 +1225,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             {
                 contextMenu.add(openSettingsInformationAction).setIcon(null);
             }
+            contextMenu.add(moveFolderLocalAction).setIcon(null);
             if (getController().getOSClient().isAllowedToRemoveFolders()) {
                 contextMenu.add(removeFolderLocalAction).setIcon(null);
             }
@@ -1822,6 +1826,17 @@ public class ExpandableFolderView extends PFUIComponent implements
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
                 folderInfo);
             panel.open();
+        }
+    }
+
+    private class MoveFolderAction extends BaseAction {
+        private MoveFolderAction(Controller controller) {
+            super("action_move_folder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            new MoveExistingFolderAction(getController())
+                .moveLocalFolder(folder);
         }
     }
 
