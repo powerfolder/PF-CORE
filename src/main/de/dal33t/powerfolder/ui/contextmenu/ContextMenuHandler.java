@@ -52,6 +52,7 @@ public class ContextMenuHandler extends PFComponent implements
 
     private ContextMenuItem shareLinkItem;
     private ContextMenuItem shareFolderItem;
+    private ContextMenuItem moveFolderItem;
     private ContextMenuItem openWebItem;
     private ContextMenuItem stopSyncItem;
     private ContextMenuItem lockItem;
@@ -78,6 +79,11 @@ public class ContextMenuHandler extends PFComponent implements
         shareFolderItem = new ContextMenuItem(
             Translation.getTranslation("context_menu.share_folder"));
         shareFolderItem.setContextMenuAction(new ShareFolderAction(
+            getController()));
+
+        moveFolderItem = new ContextMenuItem(
+            Translation.getTranslation("context_menu.move_folder"));
+        moveFolderItem.setContextMenuAction(new MoveExistingFolderAction(
             getController()));
 
         openWebItem = new ContextMenuItem(
@@ -193,6 +199,7 @@ public class ContextMenuHandler extends PFComponent implements
                 && !(containsFileInfoPath || containsDirectoryInfoPath))
             {
                 pfMainItem.addContextMenuItem(stopSyncItem);
+                pfMainItem.addContextMenuItem(moveFolderItem);
             }
 
             if ((containsFolderPath && pathNames.length == 1)
