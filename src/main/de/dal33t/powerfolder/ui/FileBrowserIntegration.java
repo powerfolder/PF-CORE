@@ -116,6 +116,14 @@ public class FileBrowserIntegration extends PFComponent {
                 nc.disconnect();
                 return false;
             } else {
+                if (PreferencesEntry.ENABLE_CONTEXT_MENU
+                    .getValueBoolean(getController()))
+                {
+                    logFine("Initializing context menu");
+                    ContextMenuControlUtil.getContextMenuControl(nc,
+                        new ContextMenuHandler(getController()));
+                }
+
                 Path configDir = getController().getConfigFile().getParent();
 
                 logFine("Preparing icons");
@@ -197,6 +205,8 @@ public class FileBrowserIntegration extends PFComponent {
                 getController().getFolderRepository().getFolderScanner()
                     .addListener(iconOverlayApplier);
 
+                
+                
                 return true;
             }
         } catch (Exception re) {
