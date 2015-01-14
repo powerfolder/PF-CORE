@@ -46,24 +46,18 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
 
     private static final Logger log = Logger.getLogger(MoveExistingFolderAction.class.getName());
 
-    private Folder folder;
-
-    MoveExistingFolderAction(Controller controller) {
+    public MoveExistingFolderAction(Controller controller) {
         super(controller);
-    }
-
-    MoveExistingFolderAction(Controller controller, Folder folder) {
-        super(controller);
-        this.folder = folder;
     }
 
     @Override
     public void onSelection(String[] paths) {
-        if (paths.length != 1) {
-            
-        }
         try {
-            
+            List<Folder> folders = getFolders(paths);
+
+            for (Folder folder : folders) {
+                moveLocalFolder(folder);
+            }
         } catch (RuntimeException re) {
             
         }
@@ -72,7 +66,7 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
     /**
      * Controls the movement of a folder directory.
      */
-    public void moveLocalFolder() {
+    public void moveLocalFolder(Folder folder) {
 
         // Lock out the 'new folder' scanner.
         // Else it's _just_ possible the scanner might see the renamed folder
@@ -138,7 +132,7 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
                 }
 
                 moveDirectory(originalDirectory, newDirectory,
-                        moveContent == 0);
+                        moveContent == 0, folder);
             }
         } finally {
             try {
@@ -172,7 +166,7 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
      * Move the directory.
      */
     public void moveDirectory(Path originalDirectory, Path newDirectory,
-        boolean moveContent)
+        boolean moveContent, Folder folder)
     {
         if (!newDirectory.equals(originalDirectory)) {
 
@@ -180,11 +174,11 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
             if (checkNewLocalFolder(newDirectory)) {
 
                 // Confirm move.
-                if (shouldMoveLocal(newDirectory)) {
+                if (shouldMoveLocal(newDirectory, folder)) {
                     try {
                         // Move contentes selected
                         ActivityVisualizationWorker worker = new FolderMoveWorker(
-                            moveContent, originalDirectory, newDirectory);
+                            moveContent, originalDirectory, newDirectory, folder);
                         worker.start();
                     } catch (Exception e) {
                         // Probably failed to create temp directory.
@@ -208,7 +202,7 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
      * @param newDirectory
      * @return true if the user wishes to move.
      */
-    private boolean shouldMoveLocal(Path newDirectory) {
+    private boolean shouldMoveLocal(Path newDirectory, Folder folder) {
         String title = Translation
             .getTranslation("settings_tab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
@@ -276,7 +270,7 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
      * @return
      */
     private Object transferFolder(boolean moveContent, Path originalDirectory,
-        Path newDirectory)
+        Path newDirectory, Folder folder)
     {
         try {
             newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
@@ -343,19 +337,21 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
         private final boolean moveContent;
         private final Path originalDirectory;
         private final Path newDirectory;
+        private final Folder folder;
 
         FolderMoveWorker(boolean moveContent,
-            Path originalDirectory, Path newDirectory)
+            Path originalDirectory, Path newDirectory, Folder folder)
         {
             super(getController().getUIController());
             this.moveContent = moveContent;
             this.originalDirectory = originalDirectory;
             this.newDirectory = newDirectory;
+            this.folder = folder;
         }
 
         @Override
         public Object construct() {
-            return transferFolder(moveContent, originalDirectory, newDirectory);
+            return transferFolder(moveContent, originalDirectory, newDirectory, folder);
         }
 
         @Override

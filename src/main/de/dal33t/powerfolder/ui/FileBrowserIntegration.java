@@ -112,8 +112,6 @@ public class FileBrowserIntegration extends PFComponent {
 
             if (!nc.connect()) {
                 logWarning("Could not connect to finder integration.");
-
-                nc.disconnect();
                 return false;
             } else {
                 if (PreferencesEntry.ENABLE_CONTEXT_MENU
