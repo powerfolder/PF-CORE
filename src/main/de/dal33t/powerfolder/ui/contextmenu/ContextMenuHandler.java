@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
@@ -127,8 +128,12 @@ public class ContextMenuHandler extends PFComponent implements
             boolean containsDirectoryInfoPath = false;
             FileInfo found = null;
 
-            String startMenu = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_START_MENU, false);
+            String startMenu = "";
+
+            if (OSUtil.isWindowsSystem()) {
+                startMenu = WinUtils.getInstance().getSystemFolderPath(
+                    WinUtils.CSIDL_START_MENU, false);
+            }
 
             // Check for folder base paths
             FolderRepository fr = getController().getFolderRepository();

@@ -55,9 +55,9 @@ public enum SyncStatus {
             } else if (folder.getConnectedMembersCount() == 0 || sync < 0) {
                 return NONE;
             } else if (sync > 0 && sync < 100.0d) {
-                return SYNCING;    
+                return SYNCING;
             } else {
-                return SYNC_OK;                
+                return SYNC_OK;
             }
         }
         if (fInfo.isDiretory() && !fInfo.isLocked(controller)) {
@@ -83,6 +83,9 @@ public enum SyncStatus {
             return LOCKED;
         }
         if (fInfo.isNewerAvailable(controller.getFolderRepository())) {
+            return SYNCING;
+        }
+        if (tm.getSourcesFor(fInfo).isEmpty()) {
             return SYNCING;
         }
         return SYNC_OK;

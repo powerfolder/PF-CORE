@@ -101,6 +101,7 @@ import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.FileBrowserIntegration;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
@@ -228,6 +229,9 @@ public class Controller extends PFComponent {
 
     /** The basic io provider */
     private IOProvider ioProvider;
+
+    /** Icon overlays and context menus */
+    private FileBrowserIntegration fbIntegration;
 
     /**
      * besides the default listener we may have a list of connection listeners
@@ -661,6 +665,8 @@ public class Controller extends PFComponent {
             openUI();
         }
 
+        enableFileBrowserIntegration(this);
+
         // Load anything that was not handled last time.
         loadPersistentObjects();
 
@@ -700,6 +706,13 @@ public class Controller extends PFComponent {
             // Activate adaptive logic
             setPaused(paused);
         }
+    }
+
+    private void enableFileBrowserIntegration(Controller controller) {
+        // PFC-2395: Start
+        fbIntegration = new FileBrowserIntegration(getController());
+        fbIntegration.start();
+        // PFC-2395: End
     }
 
     private void clearPreferencesOnConfigSwitch() {
@@ -1921,6 +1934,10 @@ public class Controller extends PFComponent {
         if (threadPool != null) {
             logFine("Shutting down global threadpool");
             threadPool.shutdownNow();
+        }
+
+        if (fbIntegration != null) {
+            fbIntegration.shutdown();
         }
 
         if (isUIOpen()) {
