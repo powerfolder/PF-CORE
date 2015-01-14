@@ -355,7 +355,11 @@ public class FolderInformationCard extends InformationCard {
      * Fires the move local folder function on the settings tab.
      */
     public void moveLocalFolder() {
-        settingsTab.moveLocalFolder();
+        Folder folder = getController().getFolderRepository().getFolder(
+            folderInfo);
+        if (folder != null) {
+            getApplicationModel().moveLocalFolder(folder);
+        }
     }
 
     /**
