@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Decide which Overlay to add to which Icon on Windows Explorer.
@@ -48,6 +49,11 @@ public class IconOverlayHandler extends PFComponent implements
     @Override
     public int getIconForFile(String pathName) {
         try {
+            if (StringUtils.isBlank(pathName)) {
+                logFine("No path name passed");
+                return IconOverlayIndex.NO_OVERLAY.getIndex();
+            }
+
             // First check, if the path is associated with any folder ...
             FolderRepository fr = getController().getFolderRepository();
 
