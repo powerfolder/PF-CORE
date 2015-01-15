@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import sun.awt.image.ImageWatched.Link;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.HTTPProxySettings;
 import de.dal33t.powerfolder.util.Translation;
@@ -229,6 +230,62 @@ public class MacUtils extends Loggable {
     }
 
     /**
+     * Example: {@code "/Applications/PowerFolder.app/Contents/Resources"}
+     * 
+     * @return A string containing the path to the resources location within an app bundle without a
+     *         trailing path separator
+     * @throws UnsupportedOperationException
+     *             @{@link #getBundleLocation()}
+     */
+    public String getRecourcesLocation() {
+        String appLocation = getBundleLocationWithAppName();
+        return appLocation + "/Contents/Resources";
+    }
+
+    /**
+     * Example: {@code "/Applications/PowerFolder.app"}
+     * 
+     * @return A string containing the path to and name of the bundle.
+     * @throws UnsupportedOperationException @{@link #getBundleLocation()}
+     */
+    public String getBundleLocationWithAppName()
+        throws UnsupportedOperationException
+    {
+        String bundlePath = getBundleLocation();
+        return bundlePath + ".app";
+    }
+
+    /**
+     * Tries to retriev the location of the app bundle via
+     * {@link com.apple.eio.FileManager#getPathToApplicationBundle()}. This
+     * method is called using reflection.
+     * Example: {@code "/Applications/PowerFolder"}
+     * 
+     * @return The string representation of the path to the bundle
+     * @throws UnsupportedOperationException
+     *             If any exception occures during invocation of the
+     *             getPathToApplicationBundle() method.
+     */
+    public String getBundleLocation() throws UnsupportedOperationException {
+        try {
+            Class<?> c = Class.forName("com.apple.eio.FileManager");
+            Method getPathToAppBundle = c
+                .getMethod("getPathToApplicationBundle");
+            return (String) getPathToAppBundle.invoke(null);
+        } catch (ClassNotFoundException | NoSuchMethodException
+            | SecurityException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e)
+        {
+            String message = Translation
+                .getTranslation("exception.startup_item.unsupported_system.text",
+                    System.getProperty("os.name"),
+                    System.getProperty("os.version"));
+            logWarning(message);
+            throw new UnsupportedOperationException(message);
+        }
+    }
+
+    /**
      * @param setup @code True to set the start up item, @code false to remove it.
      * @param controller
      * @throws UnsupportedOperationException
@@ -242,26 +299,10 @@ public class MacUtils extends Loggable {
             logFine("JNI bindings not loaded");
             return;
         }
-        String bundleLocation = null;
 
-        try {
-            Class<?> c = Class.forName("com.apple.eio.FileManager");
-            Method getPathToAppBundle = c
-                .getMethod("getPathToApplicationBundle");
-            bundleLocation = (String) getPathToAppBundle.invoke(null);
-        } catch (ClassNotFoundException | NoSuchMethodException
-            | SecurityException | IllegalAccessException
-            | IllegalArgumentException | InvocationTargetException e)
-        {
-            String message = Translation
-                .getTranslation("exception.startup_item.unsupported_system.text",
-                    System.getProperty("os.name"),
-                    System.getProperty("os.version"));
-            logWarning(message);
-            throw new UnsupportedOperationException(message);
-        }
-
+        String bundleLocation = getBundleLocation();
         Path pfile = Paths.get(bundleLocation).toAbsolutePath();
+
         if (Files.notExists(pfile)) {
             logFine("Reset bundle path");
             pfile = Paths.get(
@@ -285,7 +326,6 @@ public class MacUtils extends Loggable {
 
     /**
      * @param controller
-     * @return @code True if the start up item is set, @code false otherwise.
      * @throws UnsupportedOperationException
      *             If requesting the status of a start up item is not supported
      *             on the platform, or the executable ".app" could not be located.
@@ -295,26 +335,10 @@ public class MacUtils extends Loggable {
             logFine("JNI bindings not loaded");
             return false;
         }
-        String bundleLocation = null;
 
-        try {
-            Class<?> c = Class.forName("com.apple.eio.FileManager");
-            Method getPathToAppBundle = c
-                .getMethod("getPathToApplicationBundle");
-            bundleLocation = (String) getPathToAppBundle.invoke(null);
-        } catch (ClassNotFoundException | NoSuchMethodException
-            | SecurityException | IllegalAccessException
-            | IllegalArgumentException | InvocationTargetException e)
-        {
-            String message = Translation
-                .getTranslation("exception.startup_item.unsupported_system.text",
-                    System.getProperty("os.name"),
-                    System.getProperty("os.version"));
-            logWarning(message);
-            throw new UnsupportedOperationException(message);
-        }
-
+        String bundleLocation = getBundleLocation();
         Path pfile = Paths.get(bundleLocation).toAbsolutePath();
+
         if (Files.notExists(pfile)) {
             logFine("Reset bundle path");
             pfile = Paths.get(
