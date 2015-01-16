@@ -543,6 +543,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return controller.getFolderRepository().getLocking().isLocked(this);
     }
 
+    /**
+     * @param controller
+     * @return The lock for this FileInfo or {@code null} if there is no lock
+     */
     public Lock getLock(Controller controller) {
         return controller.getFolderRepository().getLocking().getLock(this);
     }
