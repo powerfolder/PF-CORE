@@ -30,4 +30,6 @@ public interface LockingListener extends CoreListener {
     void locked(LockingEvent event);
 
     void unlocked(LockingEvent event);
+
+    void autoLockForbidden(LockingEvent event);
 }
