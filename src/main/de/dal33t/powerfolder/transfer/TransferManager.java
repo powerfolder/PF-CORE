@@ -1221,7 +1221,7 @@ public class TransferManager extends PFComponent {
         }
 
         if (dlManagers.containsKey(dl.file)) {
-            logWarning("Not queuing upload, active download of the file is in progress.");
+            logFine("Not queuing upload, active download of the file is in progress.");
             return null;
         }
 
