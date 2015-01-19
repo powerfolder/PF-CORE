@@ -1730,6 +1730,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void handleNewFolder(Path file) {
         FolderInfo fi = null;
         boolean renamed = false;
+        boolean stillPresent = false;
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
 
@@ -1750,9 +1751,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (fi != null) {
                 oldName = fi.getName();
             }
+            stillPresent = folderStillExists(fi);
             String newName = file.getFileName().toString();
             if (fi != null && knownFolderWithSameName == null
-                && !newName.equals(oldName))
+                && !newName.equals(oldName) && !stillPresent)
             {
                 /*
                  * Change the name locally before the server is called. The
@@ -1813,7 +1815,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
         }
-        if (fi == null) {
+        if (fi == null || stillPresent) {
             fi = new FolderInfo(file.getFileName().toString(),
                 IdGenerator.makeFolderId());
         }
@@ -1840,6 +1842,27 @@ public class FolderRepository extends PFComponent implements Runnable {
             folderAutoCreateListener
                 .folderAutoCreated(new FolderAutoCreateEvent(fi));
         }
+    }
+
+    private boolean folderStillExists(FolderInfo fi) {
+        if (fi == null) {
+            return false;
+        }
+
+        Folder fo = fi.getFolder(getController());
+        Path base = fo.getLocalBase();
+
+        if (Files.notExists(base)) {
+            return false;
+        }
+
+        Path systemSubDir = fo.getSystemSubDir().resolve("FolderStatistic");
+
+        if (Files.notExists(systemSubDir)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
