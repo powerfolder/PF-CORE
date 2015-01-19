@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.LockingEvent;
 import de.dal33t.powerfolder.event.LockingListener;
@@ -193,10 +194,10 @@ public class Locking extends PFComponent {
         FileInfo fInfo = FileInfoFactory.lookupInstance(origFoInfo,
             originalFileName);
         if (lockFileInfo.isDeleted()) {
-            logInfo("File locked by remote: " + fInfo);
+            logInfo("File un-locked by remote: " + fInfo);
             fireUnlocked(fInfo);
         } else {
-            logInfo("File un-locked by remote: " + fInfo);
+            logInfo("File locked by remote: " + fInfo);
             fireLocked(fInfo);
         }
     }
@@ -268,9 +269,17 @@ public class Locking extends PFComponent {
                 }
             }
             if (editFInfo == null) {
-                return;                
+                return;
             }
         }
+
+        if (!isAutoLockingAllowed(editFInfo)) {
+            if (!localFInfo.isDeleted()) {
+                fireAutoLockForbidden(editFInfo);
+            }
+            return;
+        }
+
         if (localFInfo.isDeleted()) {
             editFInfo.unlock(getController());
         } else {
@@ -305,11 +314,49 @@ public class Locking extends PFComponent {
         if (editFInfo == null) {
             return;
         }
+
+        if (!isAutoLockingAllowed(editFInfo)) {
+            if (!localFInfo.isDeleted()) {
+                fireAutoLockForbidden(editFInfo);
+            }
+            return;
+        }
+
         if (localFInfo.isDeleted()) {
             editFInfo.unlock(getController());
         } else {
             editFInfo.lock(getController());
         }
+    }
+
+    /**
+     * Check if the file was locked by the logged in user on the same device.
+     * 
+     * @param editFInfo
+     *            The file to check for a lock
+     * @return {@code True} if there is no lock or the file was locked by the
+     *         currently logged in user on this device, {@code false} otherwise.
+     */
+    private boolean isAutoLockingAllowed(FileInfo editFInfo) {
+        Lock currentLock = editFInfo.getLock(getController());
+
+        if (currentLock == null) {
+            return true;
+        }
+
+        boolean bySameDevice = currentLock.getMemberInfo().equals(
+            getController().getMySelf());
+        AccountInfo lockAccount = currentLock.getAccountInfo();
+        ServerClient sc = getController().getOSClient();
+        AccountInfo loggedInAccount = sc.getAccountInfo();
+
+        if (lockAccount == null || loggedInAccount == null) {
+            return false;
+        }
+
+        boolean bySameAccount = lockAccount.equals(loggedInAccount);
+
+        return bySameDevice && bySameAccount;
     }
 
     // PFC-1962 ***************************************************************
@@ -321,7 +368,7 @@ public class Locking extends PFComponent {
     public void removeListener(LockingListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
-
+    
     // Internal helper
 
     private void fireLocked(FileInfo fInfo) {
@@ -332,6 +379,11 @@ public class Locking extends PFComponent {
     private void fireUnlocked(FileInfo fInfo) {
         LockingEvent event = new LockingEvent(fInfo);
         listenerSupport.unlocked(event);
+    }
+
+    private void fireAutoLockForbidden(FileInfo fInfo) {
+        LockingEvent event = new LockingEvent(fInfo);
+        listenerSupport.autoLockForbidden(event);
     }
 
     private void scanLockFile(FolderInfo foInfo, Path lockFile) {
