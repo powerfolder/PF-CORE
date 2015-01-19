@@ -882,10 +882,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return The folder containing the file
      */
     public Folder findContainingFolder(String pathName) {
+        Path path = Paths.get(pathName);
         for (Folder folder : folders.values()) {
-            if (pathName.startsWith(folder.getLocalBase().toAbsolutePath()
-                .toString()))
-            {
+            if (path.startsWith(folder.getLocalBase().toAbsolutePath())) {
                 return folder;
             }
         }
