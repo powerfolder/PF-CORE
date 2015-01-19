@@ -1,9 +1,11 @@
 package de.dal33t.powerfolder.disk;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.event.LockingEvent;
 import de.dal33t.powerfolder.event.LockingListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -154,18 +156,165 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.locked.size());
     }
 
+    public void testAutoLockForbiddenMSOffice() {
+        lockingListenerLisa.locked.clear();
+        lockingListenerLisa.unlocked.clear();
+        lockingListenerLisa.forbidden.clear();
+        lockingListenerBart.locked.clear();
+        lockingListenerBart.unlocked.clear();
+        lockingListenerBart.forbidden.clear();
+
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1);
+        final FileInfo testFInfo = FileInfoFactory.lookupInstance(
+            getFolderAtBart(), testFile);
+
+        TestHelper.scanFolder(getFolderAtBart());
+
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return 1 == getFolderAtLisa().getIncomingFiles().size();
+            }
+
+            @Override
+            public String message() {
+                return "There are "
+                    + getFolderAtLisa().getIncomingFiles().size()
+                    + " incoming files. Should be 1";
+            }
+        });
+
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return 0 == getFolderAtLisa().getIncomingFiles().size();
+            }
+
+            @Override
+            public String message() {
+                return "There are "
+                    + getFolderAtLisa().getIncomingFiles().size()
+                    + " incoming files. Should be 0";
+            }
+        });
+
+        assertTrue(Files.exists(getFolderAtLisa().getLocalBase().resolve(
+            testFile.getFileName())));
+
+        lockingBart.lock(testFInfo);
+
+        TestHelper.waitMilliSeconds(500);
+
+        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(0, lockingListenerBart.forbidden.size());
+        assertEquals(0, lockingListenerLisa.unlocked.size());
+        assertEquals(1, lockingListenerLisa.locked.size());
+        assertEquals(0, lockingListenerLisa.forbidden.size());
+
+        TestHelper.createRandomFile(getFolderAtLisa().getLocalBase(),
+            Constants.MS_OFFICE_FILENAME_PREFIX
+                + testFile.getFileName().toString());
+
+        TestHelper.scanFolder(getFolderAtLisa());
+        TestHelper.waitMilliSeconds(500);
+
+        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(0, lockingListenerBart.forbidden.size());
+        assertEquals(0, lockingListenerLisa.unlocked.size());
+        assertEquals(1, lockingListenerLisa.locked.size());
+        assertEquals(1, lockingListenerLisa.forbidden.size());
+    }
+
+    public void testAutoLockForbiddenOpenOffice() {
+        lockingListenerLisa.locked.clear();
+        lockingListenerLisa.unlocked.clear();
+        lockingListenerLisa.forbidden.clear();
+        lockingListenerBart.locked.clear();
+        lockingListenerBart.unlocked.clear();
+        lockingListenerBart.forbidden.clear();
+
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1);
+        final FileInfo testFInfo = FileInfoFactory.lookupInstance(
+            getFolderAtBart(), testFile);
+
+        TestHelper.scanFolder(getFolderAtBart());
+
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return 1 == getFolderAtLisa().getIncomingFiles().size();
+            }
+
+            @Override
+            public String message() {
+                return "There are "
+                    + getFolderAtLisa().getIncomingFiles().size()
+                    + " incoming files. Should be 1";
+            }
+        });
+
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return 0 == getFolderAtLisa().getIncomingFiles().size();
+            }
+
+            @Override
+            public String message() {
+                return "There are "
+                    + getFolderAtLisa().getIncomingFiles().size()
+                    + " incoming files. Should be 0";
+            }
+        });
+
+        assertTrue(Files.exists(getFolderAtLisa().getLocalBase().resolve(
+            testFile.getFileName())));
+
+        lockingBart.lock(testFInfo);
+
+        TestHelper.waitMilliSeconds(500);
+
+        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(0, lockingListenerBart.forbidden.size());
+        assertEquals(0, lockingListenerLisa.unlocked.size());
+        assertEquals(1, lockingListenerLisa.locked.size());
+        assertEquals(0, lockingListenerLisa.forbidden.size());
+
+        TestHelper.createRandomFile(getFolderAtLisa().getLocalBase(),
+            Constants.LIBRE_OFFICE_FILENAME_PREFIX
+                + testFile.getFileName().toString());
+
+        TestHelper.scanFolder(getFolderAtLisa());
+        TestHelper.waitMilliSeconds(500);
+
+        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(0, lockingListenerBart.forbidden.size());
+        assertEquals(0, lockingListenerLisa.unlocked.size());
+        assertEquals(1, lockingListenerLisa.locked.size());
+        assertEquals(1, lockingListenerLisa.forbidden.size());
+    }
+
     public void testLockUnlockMultiple() {
         for (int i = 0; i < 100; i++) {
             lockingListenerBart.locked.clear();
             lockingListenerBart.unlocked.clear();
+            lockingListenerBart.forbidden.clear();
             testLockUnlockLocal();
 
             TestHelper.waitMilliSeconds(50);
-            
+
             lockingListenerBart.locked.clear();
             lockingListenerBart.unlocked.clear();
+            lockingListenerBart.forbidden.clear();
             lockingListenerLisa.locked.clear();
             lockingListenerLisa.unlocked.clear();
+            lockingListenerLisa.forbidden.clear();
             testLockUnlockRemote();
         }
     }
@@ -173,6 +322,7 @@ public class LockingTest extends TwoControllerTestCase {
     private class LoggingLockingListener implements LockingListener {
         List<LockingEvent> locked = new LinkedList<>();
         List<LockingEvent> unlocked = new LinkedList<>();
+        List<LockingEvent> forbidden = new LinkedList<>();
 
         @Override
         public boolean fireInEventDispatchThread() {
@@ -188,6 +338,11 @@ public class LockingTest extends TwoControllerTestCase {
         @Override
         public void unlocked(LockingEvent event) {
             unlocked.add(event);
+        }
+
+        @Override
+        public void autoLockForbidden(LockingEvent event) {
+            forbidden.add(event);
         }
     }
 }
