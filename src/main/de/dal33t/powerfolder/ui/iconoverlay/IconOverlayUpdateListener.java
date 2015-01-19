@@ -138,6 +138,11 @@ public class IconOverlayUpdateListener extends PFComponent implements
         update(event.getFileInfo());
     }
 
+    @Override
+    public void autoLockForbidden(LockingEvent event) {
+        update(event.getFileInfo());
+    }
+
     private void update(FileInfo fInfo) {
         if (OSUtil.isWindowsSystem()) {
             final Path file = fInfo.getDiskFile(getController()
