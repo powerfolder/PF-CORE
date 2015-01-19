@@ -21,14 +21,18 @@ package de.dal33t.powerfolder.ui.model;
 
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.AbstractAction;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -43,14 +47,18 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.LockingEvent;
+import de.dal33t.powerfolder.event.LockingListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.security.AdminPermission;
@@ -63,6 +71,7 @@ import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -131,6 +140,8 @@ public class ApplicationModel extends PFUIComponent {
         getController().addPausedModeListener(new MyPausedModeListener());
         getController().getFolderRepository().addFolderRepositoryListener(new MyFolderRepositoryListener());
         getController().getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
+        getController().getFolderRepository().getLocking()
+            .addListener(new MyLockingListener());
         getApplicationModel().getFolderRepositoryModel().addOverallFolderStatListener(
                 new MyOverallFolderStatListener());
         getNoticesModel().getUnreadNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
@@ -691,6 +702,68 @@ public class ApplicationModel extends PFUIComponent {
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
             // Don't care
+        }
+    }
+
+    private class MyLockingListener implements LockingListener {
+        @Override
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        @Override
+        public void locked(LockingEvent event) {
+            // Don't care
+        }
+
+        @Override
+        public void unlocked(LockingEvent event) {
+            // Don't care
+        }
+
+        @Override
+        public void autoLockForbidden(LockingEvent event) {
+            FileInfo fInfo = event.getFileInfo();
+            Lock lock = fInfo.getLock(getController());
+
+            final String displayName = lock.getAccountInfo().getDisplayName();
+            final String name = fInfo.getFilenameOnly();
+            final String date = new SimpleDateFormat("dd MMM yyyy HH:mm")
+                .format(lock.getCreated());
+
+            String memberTemp = Translation
+                .getTranslation("context_menu.unlock.message.web");
+            if (lock.getMemberInfo() != null) {
+                memberTemp = lock.getMemberInfo().getNick();
+            }
+            final String memberName = memberTemp;
+
+            new LockOverwriteNoticeHandler(getController(), name, displayName,
+                date, memberName).show();
+        }
+    }
+
+    private class LockOverwriteNoticeHandler extends NotificationHandlerBase {
+        LockOverwriteNoticeHandler(final Controller controller,
+            final String name, final String displayName, final String date,
+            final String memberName)
+        {
+            super(controller);
+
+            setTitle(Translation.getTranslation("context_menu.unlock.title"));
+            setMessageText(Translation.getTranslation(
+                "context_menu.unlock.notice", name, displayName, date,
+                memberName));
+
+            setCancelOptionLabel(Translation.getTranslation("general.ok"));
+            setCancelAction(new AbstractAction() {
+                private static final long serialVersionUID = 100L;
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    sliderClose();
+                }
+            });
         }
     }
 
