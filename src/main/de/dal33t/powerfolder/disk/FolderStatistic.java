@@ -120,25 +120,27 @@ public class FolderStatistic extends PFComponent {
     }
 
     // package protected called from Folder
-    public void scheduleCalculate() {
+    public long scheduleCalculate() {
         if (calculating != null) {
-            return;
+            return -1L;
         }
         if (!getController().getFolderRepository().hasJoinedFolder(
             folder.getInfo()))
         {
             logFine("Unable to calc stats. Folder not joined");
-            return;
+            return -1L;
         }
 
         // long millisPast = System.currentTimeMillis() - lastCalc;
         if (calculatorTask != null) {
-            return;
+            return -1L;
         }
         if (current.getAnalyzedFiles() < MAX_ITEMS) {
             setCalculateIn(2000);
+            return 2000L;
         } else {
             setCalculateIn(delay);
+            return delay;
         }
     }
 
