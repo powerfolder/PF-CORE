@@ -53,6 +53,8 @@ public class FileBrowserIntegration extends PFComponent {
     private IconOverlayUpdateListener updateListener;
     private IconOverlayApplier iconOverlayApplier;
 
+    private boolean connected;
+    
     public FileBrowserIntegration(Controller controller) {
         super(controller);
         updateListener = new IconOverlayUpdateListener(controller);
@@ -114,6 +116,8 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to finder integration.");
                 return false;
             } else {
+                connected = true;
+
                 if (PreferencesEntry.ENABLE_CONTEXT_MENU
                     .getValueBoolean(getController()))
                 {
@@ -228,6 +232,8 @@ public class FileBrowserIntegration extends PFComponent {
                 nc.disconnect();
                 return false;
             } else {
+                connected = true;
+
                 if (PreferencesEntry.ENABLE_CONTEXT_MENU
                     .getValueBoolean(getController()))
                 {
@@ -264,7 +270,11 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not unload FileBrowswerIntegration: " + e);
             }
         }
-        nc.disconnect();
+
+        if (connected) {
+            nc.disconnect();
+            connected = false;
+        }
 
         getController().getFolderRepository().getLocking()
             .removeListener(updateListener);
