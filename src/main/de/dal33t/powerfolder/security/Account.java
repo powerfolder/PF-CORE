@@ -952,6 +952,7 @@ public class Account implements Serializable {
         this.computers.addAll(account.computers);
 
         boolean containsMergeNote = StringUtils.isNotBlank(account.notes)
+            && StringUtils.isNotBlank(this.notes)
             && this.notes.contains("Merged with account '"
                 + account.getUsername() + "'");
 
