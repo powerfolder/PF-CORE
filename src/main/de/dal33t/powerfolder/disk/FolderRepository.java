@@ -1855,7 +1855,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             return false;
         }
 
-        Path systemSubDir = fo.getSystemSubDir().resolve("FolderStatistic");
+        Path systemSubDir = fo.getSystemSubDir().resolve(
+            Folder.FOLDER_STATISTIC);
 
         if (Files.notExists(systemSubDir)) {
             return false;
