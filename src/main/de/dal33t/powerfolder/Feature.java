@@ -74,6 +74,11 @@ public enum Feature {
      * Writes the debug filelist CSV into debug directory
      */
     DEBUG_WRITE_FILELIST_CSV(false),
+    
+    /**
+     * Write network statistics
+     */
+    DEBUG_WRITE_NETSTAT(false),
 
     /**
      * TRAC #1901 for internal use only.

@@ -1722,7 +1722,7 @@ public class NodeManager extends PFComponent {
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
 
         // Write statistics and other infos.
-        if (getController().isVerbose()) {
+        if (Feature.DEBUG_WRITE_NETSTAT.isEnabled()) {
             getController().scheduleAndRepeat(new StatisticsWriter(),
                 59 * 1000, 60 * 1000);
         }
