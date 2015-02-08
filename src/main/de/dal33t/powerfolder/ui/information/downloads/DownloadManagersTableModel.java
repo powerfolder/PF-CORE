@@ -416,7 +416,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             if (ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController()) > 0)
             {
-                logSevere("Unable to remove download from tablemodel, not found: "
+                logFine("Unable to remove download from tablemodel, not found: "
                     + download);
             }
         }
