@@ -29,7 +29,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -131,10 +133,10 @@ public class Debug {
         } catch (IOException ioe) {
             return null;
         }
-        Path logFile = filelistsDir.resolve(
-            PathUtils.removeInvalidFilenameChars(folderName) + "/"
-                + PathUtils.removeInvalidFilenameChars(memberName)
-                + ".list.txt");
+        Path logFile = filelistsDir.resolve(PathUtils
+            .removeInvalidFilenameChars(folderName)
+            + "/"
+            + PathUtils.removeInvalidFilenameChars(memberName) + ".list.txt");
         return writeFileListCSV(logFile, fileInfos, header);
     }
 
@@ -573,7 +575,8 @@ public class Debug {
             // Create dir
             Path dir = LoggingManager.getDebugDir().resolve("nodeinfos");
             Files.createDirectories(dir);
-            OutputStream fOut = new BufferedOutputStream(Files.newOutputStream(dir.resolve(fileName)));
+            OutputStream fOut = new BufferedOutputStream(
+                Files.newOutputStream(dir.resolve(fileName)));
             fOut.write(nodeInfo.debugReport.getBytes());
             fOut.close();
             return true;
@@ -594,9 +597,10 @@ public class Debug {
         Reject.ifNull(node, "Node is null");
         String fileName = "Node." + node.nick + ".report.txt";
         try {
-            Path file = LoggingManager.getDebugDir().resolve("nodeinfos/"
-                + fileName);
-            InputStream fIn = new BufferedInputStream(Files.newInputStream(file));
+            Path file = LoggingManager.getDebugDir().resolve(
+                "nodeinfos/" + fileName);
+            InputStream fIn = new BufferedInputStream(
+                Files.newInputStream(file));
 
             byte[] buffer = new byte[(int) Files.size(file)];
             fIn.read(buffer);
@@ -621,8 +625,7 @@ public class Debug {
     {
         Reject.ifNull(nodes, "Nodelist is null");
         try (OutputStream fOut = Files.newOutputStream(LoggingManager
-            .getDebugDir().resolve(fileName)))
-        {
+            .getDebugDir().resolve(fileName))) {
             for (Member node : nodes) {
                 fOut.write(toDetailInfo(node).getBytes());
                 fOut.write("\n".getBytes());
@@ -646,8 +649,7 @@ public class Debug {
     {
         Reject.ifNull(nodes, "Nodelist is null");
         try (OutputStream fOut = Files.newOutputStream(LoggingManager
-            .getDebugDir().resolve(fileName)))
-        {
+            .getDebugDir().resolve(fileName))) {
             fOut.write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
                 .getBytes());
             synchronized (nodes) {
@@ -674,7 +676,8 @@ public class Debug {
             Path file = LoggingManager.getDebugDir().resolve(
                 controller.getConfigName() + ".netstat.csv");
             Files.createDirectories(file.getParent());
-            fOut = new BufferedOutputStream(Files.newOutputStream(file));
+            fOut = new BufferedOutputStream(Files.newOutputStream(file,
+                StandardOpenOption.APPEND));
             Date now = new Date();
             String statLine = Format.formatDateShort(now) + ';' + now.getTime()
                 + ';' + controller.getNodeManager().countConnectedNodes() + ';'

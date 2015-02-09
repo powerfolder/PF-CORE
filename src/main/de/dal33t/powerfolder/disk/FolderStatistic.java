@@ -171,6 +171,9 @@ public class FolderStatistic extends PFComponent {
         if (isFiner()) {
             logFiner("-------------Recalculation statisitcs on " + folder);
         }
+        if (!folder.isStarted()) {
+            return;
+        }
         long startTime = System.currentTimeMillis();
         // clear statistics before
         calculating = new FolderStatisticInfo(folder.getInfo());
