@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.model;
 
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -188,7 +189,14 @@ public class ApplicationModel extends PFUIComponent {
     }
 
     public boolean isUserActive() {
-        Point nowMouseLocation = MouseInfo.getPointerInfo().getLocation();
+        PointerInfo pInfo = MouseInfo.getPointerInfo();
+        if (pInfo == null) {
+            return true;
+        }
+        Point nowMouseLocation = pInfo.getLocation();
+        if (nowMouseLocation == null) {
+            return true;
+        }
         if (lastMouseLocation == null) {
             // Init
             lastMouseLocation = nowMouseLocation;
