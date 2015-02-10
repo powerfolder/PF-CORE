@@ -8,7 +8,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -16,13 +16,13 @@ import org.xml.sax.SAXException;
 public class ECPIdPAuth extends ECPAuthenticatorBase {
 
     public ECPIdPAuth(String username, String password, URI idpEcpEndpoint) {
-        this(new DefaultHttpClient(), username, password, idpEcpEndpoint);
+        this(HttpClientBuilder.create(), username, password, idpEcpEndpoint);
     }
 
-    public ECPIdPAuth(DefaultHttpClient client, String username,
+    public ECPIdPAuth(HttpClientBuilder clientBuilder, String username,
         String password, URI idpEcpEndpoint)
     {
-        super(client);
+        super(clientBuilder);
 
         authInfo = new ECPAuthenticationInfo(username, password,
             idpEcpEndpoint, null);
@@ -56,8 +56,7 @@ public class ECPIdPAuth extends ECPAuthenticatorBase {
                 "/S:Envelope/S:Header/paos:Request/@responseConsumerURL",
                 XPathConstants.STRING);
         } catch (XPathException e) {
-            LOG
-                .fine("Could not find response consumer url in PAOS answer from SP");
+            LOG.fine("Could not find response consumer url in PAOS answer from SP");
             throw new ECPAuthenticationException(e);
         }
         LOG.info("Got responseConsumerUrl: " + responseConsumerUrl);

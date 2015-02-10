@@ -13,7 +13,7 @@ import org.apache.http.ParseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,20 +25,20 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 public class ECPAuthenticator extends ECPAuthenticatorBase {
 
-    public ECPAuthenticator(DefaultHttpClient client, String username,
+    public ECPAuthenticator(String username, String password,
+        URI idpEcpEndpoint, URI spUrl)
+    {
+        this(HttpClientBuilder.create(), username, password, idpEcpEndpoint,
+            spUrl);
+    }
+
+    public ECPAuthenticator(HttpClientBuilder clientBuilder, String username,
         String password, URI idpEcpEndpoint, URI spUrl)
     {
-        super(client);
-
+        super(clientBuilder);
         authInfo = new ECPAuthenticationInfo(username, password,
             idpEcpEndpoint, spUrl);
         authInfo.setAuthState(ECPAuthState.NOT_STARTED);
-    }
-
-    ECPAuthenticator(String username, String password,
-        URI idpEcpEndpoint, URI spUrl)
-    {
-        this(new DefaultHttpClient(), username, password, idpEcpEndpoint, spUrl);
     }
 
     /**
@@ -48,7 +48,7 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
      */
     public String[] authenticate() throws ECPAuthenticationException {
         if (isInfo()) {
-            LOG.info("Starting authentication. Contacting SP "
+            LOG.fine("Starting authentication. Contacting SP "
                 + authInfo.getSpUrl());
         }
 
@@ -69,7 +69,7 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         HttpResponse httpResponse;
         String responseBody;
         try {
-            httpResponse = client.execute(httpGet);
+            httpResponse = getHttpClient().execute(httpGet);
             responseBody = EntityUtils.toString(httpResponse.getEntity());
         } catch (IOException | ParseException e) {
             LOG.warning("Initial SP Request failed. " + e);
@@ -136,14 +136,6 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
                     + responseConsumerUrl + ", assertionConsumerUrl="
                     + assertionConsumerUrl);
         }
-        //
-        // try {
-        // System.out.println(documentToString(idpResponse));
-        // } catch (TransformerConfigurationException e) {
-        // e.printStackTrace();
-        // } catch (TransformerException e) {
-        // e.printStackTrace();
-        // }
 
         idpResponse.getDocumentElement().getFirstChild().getFirstChild()
             .setTextContent(relayState);
@@ -155,7 +147,7 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         httpPost.setHeader("Content-Type", "application/vnd.paos+xml");
         try {
             httpPost.setEntity(new StringEntity(documentToString(idpResponse)));
-            httpResponse = client.execute(httpPost);
+            httpResponse = getHttpClient().execute(httpPost);
             responseBody = EntityUtils.toString(httpResponse.getEntity());
         } catch (IOException | TransformerException | ParseException e) {
             LOG.warning("Could not post assertion back to SP. " + e);
@@ -163,11 +155,11 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         }
 
         if (isInfo()) {
-            LOG.info("Requesting original URL: " + authInfo.getSpUrl());
+            LOG.fine("Requesting original URL: " + authInfo.getSpUrl());
         }
         httpGet = new HttpGet(authInfo.getSpUrl().toString());
         try {
-            httpResponse = client.execute(httpGet);
+            httpResponse = getHttpClient().execute(httpGet);
             int statusCode = httpResponse.getStatusLine().getStatusCode();
 
             if (statusCode == 403 || statusCode == 401) {
@@ -199,11 +191,11 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
             String token = shibObj.getString("token");
 
             if (isInfo()) {
-                LOG.info("Shibboleth-Session-ID: " + sessionID);
-                LOG.info("Shibboleth-Persistent-ID: " + persistentID);
-                LOG.info("Shibboleth-EPPN: " + eppn);
-                LOG.info("Shibboleth-Email: " + email);
-                LOG.info("Shibboleth-Token: " + token);
+                LOG.fine("Shibboleth-Session-ID: " + sessionID);
+                LOG.fine("Shibboleth-Persistent-ID: " + persistentID);
+                LOG.fine("Shibboleth-EPPN: " + eppn);
+                LOG.fine("Shibboleth-Email: " + email);
+                LOG.fine("Shibboleth-Token: " + token);
             }
 
             if (StringUtils.isBlank(sessionID)) {

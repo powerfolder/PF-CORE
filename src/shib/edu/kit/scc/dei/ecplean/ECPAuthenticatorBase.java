@@ -27,9 +27,12 @@ import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -40,15 +43,16 @@ public abstract class ECPAuthenticatorBase extends Observable {
     protected static Logger LOG = Logger.getLogger(ECPAuthenticatorBase.class
         .getName());
     protected ECPAuthenticationInfo authInfo;
-    protected DefaultHttpClient client;
+    protected HttpClientBuilder clientBuilder;
+    private HttpClient client;
     protected DocumentBuilderFactory documentBuilderFactory;
     protected XPathFactory xpathFactory;
     protected NamespaceResolver namespaceResolver;
     protected TransformerFactory transformerFactory;
 
-    public ECPAuthenticatorBase(DefaultHttpClient client) {
-        this.client = client;
-
+    public ECPAuthenticatorBase(HttpClientBuilder clientBuilder) {
+        this.clientBuilder = clientBuilder;
+        
         documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
 
@@ -63,29 +67,21 @@ public abstract class ECPAuthenticatorBase extends Observable {
         transformerFactory = TransformerFactory.newInstance();
     }
 
-    public ECPAuthenticatorBase() {
-        this(new DefaultHttpClient());
-    }
-
     protected Document authenticateIdP(Document idpRequest)
         throws ECPAuthenticationException
     {
         if (isInfo()) {
-            LOG.info("Sending initial IdP Request to "
+            LOG.fine("Sending initial IdP Request to "
                 + authInfo.getIdpEcpEndpoint());
         }
-        client.getCredentialsProvider().setCredentials(
-            new AuthScope(authInfo.getIdpEcpEndpoint().getHost(), authInfo
-                .getIdpEcpEndpoint().getPort()),
-            new UsernamePasswordCredentials(authInfo.getUsername(), authInfo
-                .getPassword()));
+
         HttpPost httpPost = new HttpPost(authInfo.getIdpEcpEndpoint()
             .toString());
         HttpResponse httpResponse;
 
         try {
             httpPost.setEntity(new StringEntity(documentToString(idpRequest)));
-            httpResponse = client.execute(httpPost);
+            httpResponse = getHttpClient().execute(httpPost);
 
             if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
             {
@@ -136,7 +132,21 @@ public abstract class ECPAuthenticatorBase extends Observable {
         return result.getWriter().toString();
     }
 
-    public DefaultHttpClient getHttpClient() {
+    /**
+     * Gets and lazy initializes 
+     * @return the http client to use
+     */
+    protected synchronized HttpClient getHttpClient() {
+        if (client == null && authInfo != null) {
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(new AuthScope(authInfo
+                .getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint()
+                .getPort()),
+                new UsernamePasswordCredentials(authInfo.getUsername(),
+                    authInfo.getPassword()));
+            clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+            client = clientBuilder.build();
+        }
         return client;
     }
 
