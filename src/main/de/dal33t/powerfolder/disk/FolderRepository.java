@@ -1710,9 +1710,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean containedInRemovedFolders(Path entry) {
         boolean isMarkedAsRemoved = removedFolderDirectories
             .contains(entry);
+        boolean isRenamedFolder = isFolderAlready(entry) != null && isFolderRenamed(entry);
 
         // return early, don't iterate the whole list again.
         if (isMarkedAsRemoved) {
+            if (isRenamedFolder) {
+                removedFolderDirectories.remove(entry);
+                return false;
+            }
             return true;
         }
 
@@ -1722,6 +1727,30 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
         return isMarkedAsRemoved;
+    }
+
+    /**
+     * Check the file name of the {@code entry} to be different from the Folder
+     * name of the FolderStatisticInfo in the meta data of the folder.
+     * 
+     * @param entry
+     *            A path that might be a location of a folder.
+     * @return {@code True} if the name of {@code entry} is different from the
+     *         one in the statistics, {@code false} otherwise.
+     */
+    private boolean isFolderRenamed(Path entry) {
+        Path meta = entry.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve(
+            Folder.FOLDER_STATISTIC);
+        FolderStatisticInfo info = FolderStatisticInfo.load(meta);
+
+        if (info == null) {
+            return false;
+        }
+
+        String fileName = entry.getFileName().toString();
+        String folderName = info.getFolder().getLocalizedName();
+
+        return !fileName.equals(folderName);
     }
 
     // Found a new directory in the folder base. Create a new folder.
@@ -1769,7 +1798,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     if (!foServ.renameFolder(fi, newName)) {
                         logWarning("Could not rename the Folder " + oldName
                             + " on the server to " + fi.getName());
-                        final FolderInfo copy = fi;
+                        final String copyNewName = newName;
                         final String copyOldName = oldName;
 
                         if (getController().getUIController().isStarted()) {
@@ -1783,7 +1812,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                         Translation
                                             .getTranslation(
                                                 "notice.rename_folder_failed.summary",
-                                                copy.getLocalizedName(),
+                                                copyNewName,
                                                 copyOldName),
                                         GenericDialogType.WARN);
                                 }
@@ -1797,12 +1826,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                         return;
                     }
 
+                    Path oldPath = fi.getFolder(getController()).getLocalBase();
                     fi = new FolderInfo(newName, fi.getId());
                     fi.intern(true);
 
                     renamed = true;
                     removeFolder(fi.getFolder(getController()), false, false);
-
+                    removedFolderDirectories.remove(oldPath);
                 } catch (RuntimeException e) {
                     logWarning("Unable to rename folder: " + oldName + ": " + e);
                     return;
