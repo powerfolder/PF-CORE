@@ -1042,6 +1042,10 @@ public class Folder extends PFComponent {
         }
 
         if (conflict) {
+            // PFC-2666: Workaround
+            if ("eml".equalsIgnoreCase(fInfo.getExtension())) {
+                return null;
+            }
             logWarning("Conflict detected on file " + fInfo.toDetailString()
                 + ". old: " + oldLocalFileInfo.toDetailString());
             // Really basic raw conflict detection.
