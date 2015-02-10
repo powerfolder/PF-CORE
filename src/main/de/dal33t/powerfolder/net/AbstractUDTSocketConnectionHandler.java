@@ -1013,13 +1013,13 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                             // Simply break. Already disconnected
                             break;
                         } else {
-                            logSevere("Connection closed, message received, before peer identified itself: "
+                        	logWarning("Connection closed, message received, before peer identified itself: "
                                 + obj);
                             // connection closed
                             break;
                         }
                     } else {
-                        logSevere("Received unknown message from peer: " + obj);
+                        logWarning("Received unknown message from peer: " + obj);
                     }
                 } catch (SocketTimeoutException e) {
                     logWarning("Socket timeout on read, not disconnecting");

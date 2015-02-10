@@ -998,7 +998,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             break;
                         }
                     } else {
-                        logSevere("Received unknown message from peer: " + obj);
+                        logWarning("Received unknown message from peer: " + obj);
                     }
                 } catch (SocketTimeoutException e) {
                     logWarning("Socket timeout on read, not disconnecting");

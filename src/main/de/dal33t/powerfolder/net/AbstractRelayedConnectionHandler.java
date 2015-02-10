@@ -795,13 +795,13 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     // Simply break. Already disconnected
                     shutdownWithMember();
                 } else {
-                    logSevere("Connection closed, message received, before peer identified itself: "
+                    logWarning("Connection closed, message received, before peer identified itself: "
                         + obj);
                     // connection closed
                     shutdownWithMember();
                 }
             } else {
-                logSevere("Received unknown message from peer: " + obj);
+                logWarning("Received unknown message from peer: " + obj);
             }
 
         } catch (ConnectionException e) {
