@@ -42,14 +42,12 @@ import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSManager;
@@ -99,6 +97,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.net.NetworkUtil.AllTrustingSSLManager;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
@@ -1240,42 +1239,27 @@ public class ServerClient extends PFComponent {
                             .getValue(getController()) + ". " + e);
             }
 
-            // PFC-2496: Start
-            DefaultHttpClient dhc = new DefaultHttpClient();
+            HttpClientBuilder builder = HttpClientBuilder.create();
+            // PFC-2669: For HTTP Proxy
+            builder.useSystemProperties();
 
-            // Set Proxy credentials, if configured
-            if (ConfigurationEntry.HTTP_PROXY_HOST.hasValue(getController())) {
-                String proxyUsername = "";
-                String proxyPassword = "";
-
-                if (ConfigurationEntry.HTTP_PROXY_USERNAME.hasValue(getController())) {
-                    proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME.getValue(getController());
-
-                    if (ConfigurationEntry.HTTP_PROXY_PASSWORD.hasValue(getController())) {
-                        proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD.getValue(getController());
-                    }
+            if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY
+                .getValueBoolean(getController()))
+            {
+                try {
+                    TrustManager[] trustAllCerts = new TrustManager[]{new AllTrustingSSLManager()};
+                    SSLContext sc = SSLContext.getInstance("SSL");
+                    sc.init(null, trustAllCerts,
+                        new java.security.SecureRandom());
+                    builder.setSslcontext(sc);
+                } catch (Exception e) {
+                    logSevere("Unable to setup SSL to trust any certificate. "
+                        + e);
                 }
-
-                dhc.getCredentialsProvider().setCredentials(
-                    new AuthScope(ConfigurationEntry.HTTP_PROXY_HOST
-                        .getValue(getController()),
-                        ConfigurationEntry.HTTP_PROXY_PORT
-                            .getValueInt(getController())),
-                    new UsernamePasswordCredentials(
-                        proxyUsername,
-                        proxyPassword));
-
-                HttpHost proxy = new HttpHost(
-                    ConfigurationEntry.HTTP_PROXY_HOST
-                        .getValue(getController()),
-                    ConfigurationEntry.HTTP_PROXY_PORT
-                        .getValueInt(getController()));
-                dhc.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
             }
-            // PFC-2496: End
-
-            ECPAuthenticator auth = new ECPAuthenticator(dhc, username, new String(
-                thePassword), idpURI, spURI);
+            
+            ECPAuthenticator auth = new ECPAuthenticator(builder, username,
+                new String(thePassword), idpURI, spURI);
             String[] result;
             try {
                 result = auth.authenticate();

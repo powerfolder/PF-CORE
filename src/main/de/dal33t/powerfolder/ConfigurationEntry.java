@@ -124,6 +124,11 @@ public enum ConfigurationEntry {
      */
     SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
         AccessMode.READ_WRITE.name()),
+        
+    /**
+     * PFC-2670: Trust self-signed/any SSL certificate
+     */
+    SECURITY_SSL_TRUST_ANY("security.ssl.trust_any", false),
 
     // Node setup *************************************************************
 

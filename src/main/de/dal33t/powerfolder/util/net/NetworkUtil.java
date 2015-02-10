@@ -33,6 +33,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Reject;
@@ -403,5 +410,64 @@ public class NetworkUtil {
         }
         // Fallback
         return addr.getHostAddress();
+    }
+
+    /**
+     * PFC-2670: Installs a <code>TrustManager</code> which does not validate SSL
+     * certificates, thus also accepting self-signed certificates. ATTENTION:
+     * Potential security hole, use it only if you know what you are doing.
+     */
+    public static final void installAllTrustingSSLManager() {
+        try {
+            LOG.warning("Any certificate will be trusted for SSL connections");
+            // Create a trust manager that does not validate certificate chains
+            TrustManager[] trustAllCerts = new TrustManager[]{new AllTrustingSSLManager()};
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            // Install the all-trusting trust manager
+            HttpsURLConnection
+                .setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+            // Disables SNI. Fixes:
+            // javax.net.ssl.SSLProtocolException: handshake alert:
+            // unrecognized_name
+            // Source:
+            // http://stackoverflow.com/questions/7615645/ssl-handshake-alert-unrecognized-name-error-since-upgrade-to-java-1-7-0
+            System.setProperty("jsse.enableSNIExtension", "false");
+
+            // Fixes:
+            // "java.security.cert.CertificateException: No subject alternative
+            // DNS name matching <hostname> found.
+            // Source:
+            // http://stackoverflow.com/questions/19540289/how-to-fix-the-java-security-cert-certificateexception-no-subject-alternative
+
+            // Create all-trusting host name verifier
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            // Install the all-trusting host verifier
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        } catch (Exception e) {
+        }
+    }
+
+    public static final class AllTrustingSSLManager implements X509TrustManager
+    {
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        public void checkClientTrusted(
+            java.security.cert.X509Certificate[] certs, String authType)
+        {
+        }
+
+        public void checkServerTrusted(
+            java.security.cert.X509Certificate[] certs, String authType)
+        {
+        }
     }
 }

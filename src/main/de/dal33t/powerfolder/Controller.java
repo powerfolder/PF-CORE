@@ -128,6 +128,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
@@ -473,6 +474,16 @@ public class Controller extends PFComponent {
         // Load and set http proxy settings
         HTTPProxySettings.loadFromConfig(this);
 
+        // PFC-2670: Start
+        boolean localAllTrustCert = false;
+        if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY
+            .getValueBoolean(getController()))
+        {
+        	localAllTrustCert = true;
+            NetworkUtil.installAllTrustingSSLManager();
+        }
+        // PFC-2670: End
+
         // #2179: Load from server. How to handle timeouts?
         // Command line option -c http://are.de
         ConfigurationLoader.loadAndMergeCLI(this);
@@ -485,6 +496,20 @@ public class Controller extends PFComponent {
             verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
             initLogger();
         }
+
+        // PFC-2670: Start
+        // Setting might have changed.
+        if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY
+            .getValueBoolean(getController()))
+        {
+            NetworkUtil.installAllTrustingSSLManager();
+        } else if (localAllTrustCert) {
+            // Locally was set to trust, but remote profile forbids this.
+            // Exit->Restart
+            logWarning("Security break protection: Trust any SSL certificate was turned on, but is disallowed by server profile. Please restart the client");
+            exit(66);
+        }
+        // PFC-2670: End
 
         // Init paused only if user expects pause to be permanent or
         // "while I work"
