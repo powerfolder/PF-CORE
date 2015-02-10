@@ -2081,8 +2081,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 joinToLocalFolders(folderList, thisPeer);
             } else {
                 // Hopefully we receive this later.
-                logSevere("Unable to synchronize memberships, "
-                    + "did not received folderlist from remote");
+                logWarning("Unable to synchronize memberships, "
+                    + "did not received folderlist from " + getNick());
             }
 
             // Send node informations now
