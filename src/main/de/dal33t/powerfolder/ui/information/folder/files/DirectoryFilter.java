@@ -400,7 +400,7 @@ public class DirectoryFilter extends FilterModel {
                             return;
                         }
                     } catch (IOException ioe) {
-                        logInfo("Unable to access: " + ioe.toString());
+                        logFine("Unable to access: " + ioe.toString());
                         continue;
                     }
                 }
@@ -436,7 +436,7 @@ public class DirectoryFilter extends FilterModel {
                     return;
                 }
             } catch (IOException ioe) {
-                logInfo("Unable to access: " + ioe.toString());
+                logFine("Unable to access: " + ioe.toString());
             }
         }
 
