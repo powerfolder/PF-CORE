@@ -6,6 +6,9 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,9 +30,11 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -85,6 +90,16 @@ public class Wizard extends JPanel implements ActionListener {
         Icon poweredByIcon = Icons.getIconById(Icons.POWERED_BY);
         if (poweredByIcon != null) {
             poweredByLabel = new JLabel(poweredByIcon);
+            poweredByLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            poweredByLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        BrowserLauncher.openURL(Constants.POWERFOLDER_HOMEPAGE);
+                    } catch (IOException e1) {
+                        // Ignore.
+                    }
+                }});
             poweredByLabel.setVisible(false);
         } else {
             poweredByLabel = null;
