@@ -157,9 +157,9 @@ public class LoginPanel extends PFWizardPanel {
             || StringUtils.isBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                 .getValue(getController())))
         {
-            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
+            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
         } else {
-            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
+            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
         }
 
         FormLayout layout = new FormLayout("50dlu, 3dlu, 110dlu, 40dlu, pref",
@@ -205,17 +205,17 @@ public class LoginPanel extends PFWizardPanel {
         builder.add(passwordField, cc.xy(3, row));
         builder.add(workingBar, cc.xyw(1, row, 3));
 
+        row += 2;
+        builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
+        row += 2;
         if (client.supportsRecoverPassword()) {
             LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
                 Translation
                     .getTranslation("exp.wizard.webservice.recover_password"),
                 client.getRecoverPasswordURL());
-            recoverPasswordLabel.convertToBigLabel();
-            builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
+            builder.add(recoverPasswordLabel.getUIComponent(), cc.xyw(3, row, 2));
         }
 
-        row += 2;
-        builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
         row += 2;
         builder.add(serverLabel, cc.xy(1, row));
         builder.add(serverInfoLabel.getUIComponent(), cc.xyw(3, row, 2));
