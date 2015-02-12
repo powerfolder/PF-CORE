@@ -352,7 +352,11 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setLocation(x, y);
 
         configureInlineInfo();
-        updateMainStatus(SyncStatusEvent.NOT_STARTED);
+        if (!getController().getNodeManager().isStarted()) {
+            updateMainStatus(SyncStatusEvent.NOT_STARTED);            
+        } else {
+            updateMainStatus(SyncStatusEvent.NOT_CONNECTED);
+        }
         updateNoticesLabel();
     }
 
