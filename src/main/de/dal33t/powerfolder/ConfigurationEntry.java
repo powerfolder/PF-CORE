@@ -188,8 +188,7 @@ public enum ConfigurationEntry {
     /**
      * Quickstart guides to PowerFolder
      */
-    PROVIDER_QUICKSTART_URL("provider.url.quickstart",
-        "http://www.powerfolder.com/quickstart.html"),
+    PROVIDER_QUICKSTART_URL("provider.url.quickstart"),
 
     /**
      * URL of the PowerFolder Support
