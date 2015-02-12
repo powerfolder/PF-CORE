@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class Constants {
 
+    public static final String POWERFOLDER_HOMEPAGE = "https://www.powerfolder.com";
+    
     // General settings *******************************************************
     /**
      * The name of the subdirectory in every folder to store powerfolder
