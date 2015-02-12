@@ -92,6 +92,7 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -1296,7 +1297,8 @@ public class ServerClient extends PFComponent {
             logFine("findAlternativeServer: " + getServersInCluster());
         }
         for (Member server : getServersInCluster()) {
-            if (!server.isConnected()) {
+            boolean wasConnected = server.isConnected();
+            if (!wasConnected) {
                 server.markForImmediateConnect();
             }
             Waiter w = new Waiter(500);
@@ -1308,6 +1310,10 @@ public class ServerClient extends PFComponent {
                     logInfo("Switching to new server: " + server);
                     try {
                         setServer(server, allowServerChange);
+                        if (!wasConnected)  {
+                            // PFC-2676
+                            primaryServerConnected(server);                            
+                        }
                         break;
                     } catch (Exception e) {
                         logWarning("Unable to switch server to "
