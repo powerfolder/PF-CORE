@@ -1873,12 +1873,25 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+    /**
+     * Check if the Folder referenced by {@code fi} is still known, the base
+     * directory exists and it contains the folder statistic subdirectory.
+     * 
+     * @param fi
+     * @return {@code True} if the folder is known to PowerFolder, its base
+     *         directory exists and the statistic subdirectory exists.
+     *         {@code False} otherwise.
+     */
     private boolean folderStillExists(FolderInfo fi) {
         if (fi == null) {
             return false;
         }
 
         Folder fo = fi.getFolder(getController());
+        if (fo == null) {
+            return false;
+        }
+
         Path base = fo.getLocalBase();
 
         if (Files.notExists(base)) {
