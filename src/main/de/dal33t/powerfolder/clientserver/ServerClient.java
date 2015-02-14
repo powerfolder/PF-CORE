@@ -42,8 +42,6 @@ import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
@@ -92,13 +90,11 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
-import de.dal33t.powerfolder.util.net.NetworkUtil.AllTrustingSSLManager;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
@@ -1240,25 +1236,8 @@ public class ServerClient extends PFComponent {
                             .getValue(getController()) + ". " + e);
             }
 
-            HttpClientBuilder builder = HttpClientBuilder.create();
-            // PFC-2669: For HTTP Proxy
-            builder.useSystemProperties();
-
-            if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY
-                .getValueBoolean(getController()))
-            {
-                try {
-                    TrustManager[] trustAllCerts = new TrustManager[]{new AllTrustingSSLManager()};
-                    SSLContext sc = SSLContext.getInstance("SSL");
-                    sc.init(null, trustAllCerts,
-                        new java.security.SecureRandom());
-                    builder.setSslcontext(sc);
-                } catch (Exception e) {
-                    logSevere("Unable to setup SSL to trust any certificate. "
-                        + e);
-                }
-            }
-            
+            HttpClientBuilder builder = Util
+                .createHttpClientBuildder(getController());
             ECPAuthenticator auth = new ECPAuthenticator(builder, username,
                 new String(thePassword), idpURI, spURI);
             String[] result;

@@ -11,8 +11,9 @@ import javax.swing.JComboBox;
 import javax.swing.SwingWorker;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -20,6 +21,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 
 @SuppressWarnings("unchecked")
 public class IdPSelectionAction extends PFComponent implements ActionListener {
@@ -61,8 +63,12 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
                     + URLEncoder.encode(entity, Convert.UTF8.toString());
 
                 HttpGet getBindingURL = new HttpGet(idpLookupURL);
+                // PFC-2669:
+                HttpClientBuilder builder = Util
+                    .createHttpClientBuildder(getController());
+                HttpClient client = builder.build();
 
-                try (DefaultHttpClient client = new DefaultHttpClient()) {
+                try {
                     HttpResponse httpResponse = client.execute(getBindingURL);
                     String ecpURL = EntityUtils.toString(httpResponse
                         .getEntity());

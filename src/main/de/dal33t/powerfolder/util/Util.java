@@ -47,8 +47,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -59,6 +63,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.util.net.NetworkUtil.AllTrustingSSLManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -890,4 +895,33 @@ public class Util {
         return new ConcurrentHashMap<K, V>(intialSize, 0.75f, 4);
     }
 
+    /**
+     * PFC-2669
+     * 
+     * @param controller
+     * @return a prepared client builder with default HTTP proxy settings and
+     *         optional disabling of SSL cert validation.
+     */
+    public static final HttpClientBuilder createHttpClientBuildder(
+        Controller controller)
+    {
+        Reject.ifNull(controller, "Controller");
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        // PFC-2669: For HTTP Proxy
+        builder.useSystemProperties();
+
+        if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY
+            .getValueBoolean(controller))
+        {
+            try {
+                TrustManager[] trustAllCerts = new TrustManager[]{new AllTrustingSSLManager()};
+                SSLContext sc = SSLContext.getInstance("SSL");
+                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+                builder.setSslcontext(sc);
+            } catch (Exception e) {
+                LOG.severe("Unable to setup SSL to trust any certificate. " + e);
+            }
+        }
+        return builder;
+    }
 }
