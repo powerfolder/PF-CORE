@@ -45,11 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSManager;
@@ -674,6 +670,24 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * Generate a URL that directs to a web colaboration tool.
+     * 
+     * @param fInfo
+     *            The file to open
+     * @return The URL
+     */
+    public String getOpenURL(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "fileInfo");
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL(
+            Constants.OPEN_LINK_URI + '/'
+                + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
+                + Util.endcodeForURL(fInfo.getRelativeName()), true);
+    }
+
+    /**
      * @return if password recovery is supported
      */
     public boolean supportsRecoverPassword() {
@@ -1222,42 +1236,10 @@ public class ServerClient extends PFComponent {
                             .getValue(getController()) + ". " + e);
             }
 
-            // PFC-2496: Start
-            DefaultHttpClient dhc = new DefaultHttpClient();
-
-            // Set Proxy credentials, if configured
-            if (ConfigurationEntry.HTTP_PROXY_HOST.hasValue(getController())) {
-                String proxyUsername = "";
-                String proxyPassword = "";
-
-                if (ConfigurationEntry.HTTP_PROXY_USERNAME.hasValue(getController())) {
-                    proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME.getValue(getController());
-
-                    if (ConfigurationEntry.HTTP_PROXY_PASSWORD.hasValue(getController())) {
-                        proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD.getValue(getController());
-                    }
-                }
-
-                dhc.getCredentialsProvider().setCredentials(
-                    new AuthScope(ConfigurationEntry.HTTP_PROXY_HOST
-                        .getValue(getController()),
-                        ConfigurationEntry.HTTP_PROXY_PORT
-                            .getValueInt(getController())),
-                    new UsernamePasswordCredentials(
-                        proxyUsername,
-                        proxyPassword));
-
-                HttpHost proxy = new HttpHost(
-                    ConfigurationEntry.HTTP_PROXY_HOST
-                        .getValue(getController()),
-                    ConfigurationEntry.HTTP_PROXY_PORT
-                        .getValueInt(getController()));
-                dhc.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
-            }
-            // PFC-2496: End
-
-            ECPAuthenticator auth = new ECPAuthenticator(dhc, username, new String(
-                thePassword), idpURI, spURI);
+            HttpClientBuilder builder = Util
+                .createHttpClientBuildder(getController());
+            ECPAuthenticator auth = new ECPAuthenticator(builder, username,
+                new String(thePassword), idpURI, spURI);
             String[] result;
             try {
                 result = auth.authenticate();
@@ -1294,7 +1276,8 @@ public class ServerClient extends PFComponent {
             logFine("findAlternativeServer: " + getServersInCluster());
         }
         for (Member server : getServersInCluster()) {
-            if (!server.isConnected()) {
+            boolean wasConnected = server.isConnected();
+            if (!wasConnected) {
                 server.markForImmediateConnect();
             }
             Waiter w = new Waiter(500);
@@ -1306,6 +1289,10 @@ public class ServerClient extends PFComponent {
                     logInfo("Switching to new server: " + server);
                     try {
                         setServer(server, allowServerChange);
+                        if (!wasConnected)  {
+                            // PFC-2676
+                            primaryServerConnected(server);                            
+                        }
                         break;
                     } catch (Exception e) {
                         logWarning("Unable to switch server to "
