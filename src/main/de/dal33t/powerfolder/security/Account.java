@@ -1166,9 +1166,8 @@ public class Account implements Serializable {
     }
 
     public void migrate() {
-        if (licenseKeyFiles != null) {
-            licenseKeyFileList = new CopyOnWriteArrayList<String>(
-                licenseKeyFiles);
+        if (licenseKeyFileList == null) {
+            licenseKeyFileList = new CopyOnWriteArrayList<String>();
         }
         if (groups == null) {
             groups = new CopyOnWriteArrayList<Group>();
