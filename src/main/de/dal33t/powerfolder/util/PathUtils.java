@@ -144,10 +144,8 @@ public class PathUtils {
                 consoleErrors.append(line);
             }
             in.close();
-
-            String mark = "The network connection could not be found.";
-            return !consoleErrors.toString().contains(mark);
-
+            int xVal = p.waitFor();
+            return xVal == 0;
         } catch (Exception e) {
             log.warning("Unable to check if path is network drive: " + path
                 + ". " + e);
