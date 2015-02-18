@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.FileChunk;

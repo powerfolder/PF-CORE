@@ -44,7 +44,6 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;

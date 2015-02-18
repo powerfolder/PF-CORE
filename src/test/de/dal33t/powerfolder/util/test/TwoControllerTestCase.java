@@ -30,7 +30,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;

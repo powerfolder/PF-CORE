@@ -19,14 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -34,14 +40,13 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
-import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
-import de.dal33t.powerfolder.ui.widget.GradientPanel;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 

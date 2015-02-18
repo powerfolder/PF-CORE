@@ -21,10 +21,10 @@ package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalExclusionType;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
-import java.awt.Dialog.ModalExclusionType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -32,7 +32,6 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
@@ -59,19 +58,18 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
+import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
  * #1784: For locking the user interface.

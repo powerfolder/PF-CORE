@@ -39,7 +39,6 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 

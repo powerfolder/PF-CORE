@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.util;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;

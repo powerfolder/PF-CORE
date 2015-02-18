@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.Identity;

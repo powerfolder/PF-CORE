@@ -19,21 +19,26 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.model.NodeManagerModel;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.widget.GradientPanel;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.model.NodeManagerModel;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class to display a list of computers.

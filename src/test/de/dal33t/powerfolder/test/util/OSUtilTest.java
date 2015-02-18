@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.test.util;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -32,6 +31,6 @@ public class OSUtilTest extends TestCase {
             return;
         }
         boolean isMacOS = OSUtil.isMacOSSnowLeopardOrNewer();
-        Assert.assertEquals(true, isMacOS);
+        assertEquals(true, isMacOS);
     }
 }

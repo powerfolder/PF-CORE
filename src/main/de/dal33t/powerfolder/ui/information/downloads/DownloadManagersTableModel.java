@@ -33,7 +33,6 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;

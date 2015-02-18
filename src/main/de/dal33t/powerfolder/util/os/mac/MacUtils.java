@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import sun.awt.image.ImageWatched.Link;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.HTTPProxySettings;
 import de.dal33t.powerfolder.util.Translation;

@@ -17,25 +17,11 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Move an existing folder to another base dir.
@@ -56,6 +42,7 @@ public class MoveExistingFolderAction extends PFContextMenuAction {
             List<Folder> folders = getFolders(paths);
 
             for (Folder folder : folders) {
+                log.fine("Initiate moving folder " + folder.getName());
                 getController().getUIController().getApplicationModel()
                     .moveLocalFolder(folder);
             }
