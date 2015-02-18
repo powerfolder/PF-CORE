@@ -154,6 +154,12 @@ public class ContextMenuHandler extends PFComponent implements
                     continue;
                 }
 
+                if (path.getFileName() == null) {
+                    // path is a root node, this would lead to an NPE in the
+                    // following call
+                    continue;
+                }
+
                 FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
                 if ((found = folder.getDAO().find(lookup, null)) != null) {
                     if (found.isFile()) {
