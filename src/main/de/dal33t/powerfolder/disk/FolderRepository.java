@@ -1710,7 +1710,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean containedInRemovedFolders(Path entry) {
         boolean isMarkedAsRemoved = removedFolderDirectories
             .contains(entry);
-        boolean isRenamedFolder = isFolderAlready(entry) != null && isFolderRenamed(entry);
+        boolean isRenamedFolder = checkSystemSubdirForFolder(entry) != null && isFolderRenamed(entry);
 
         // return early, don't iterate the whole list again.
         if (isMarkedAsRemoved) {
@@ -1763,86 +1763,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         ServerClient client = controller.getOSClient();
 
         if (client.isConnected() && client.isLoggedIn()) {
-            fi = isFolderAlready(file);
-            FolderInfo knownFolderWithSameName = null;
-
-            for (FolderInfo folderInfo : client.getAccountFolders()) {
-                if (folderInfo.getLocalizedName().equals(
-                    file.getFileName().toString()))
-                {
-                    knownFolderWithSameName = folderInfo;
-                    break;
-                }
-            }
-
-            String oldName = null;
-            if (fi != null) {
-                oldName = fi.getName();
-            }
+            fi = checkSystemSubdirForFolder(file);
             stillPresent = folderStillExists(fi);
-            String newName = file.getFileName().toString();
-            if (fi != null && knownFolderWithSameName == null
-                && !newName.equals(oldName) && !stillPresent)
-            {
-                /*
-                 * Change the name locally before the server is called. The
-                 * server will notify all clients to update their folder names.
-                 * Renaming the folder first prevents that the client which
-                 * renamed the folder changes it via the servers update.
-                 */
-                logWarning("Renaming folder " + oldName + " to " + newName);
 
-                FolderService foServ = client.getFolderService();
-                try {
+            try {
+                FolderInfo renamedFI = tryRenaming(client, file, fi, stillPresent);
 
-                    if (!foServ.renameFolder(fi, newName)) {
-                        logWarning("Could not rename the Folder " + oldName
-                            + " on the server to " + fi.getName());
-                        final String copyNewName = newName;
-                        final String copyOldName = oldName;
-
-                        if (getController().getUIController().isStarted()) {
-                            UIUtil.invokeLaterInEDT(new Runnable() {
-                                @Override
-                                public void run() {
-                                    DialogFactory.genericDialog(
-                                        getController(),
-                                        Translation
-                                            .getTranslation("notice.rename_folder_failed.title"),
-                                        Translation
-                                            .getTranslation(
-                                                "notice.rename_folder_failed.summary",
-                                                copyNewName,
-                                                copyOldName),
-                                        GenericDialogType.WARN);
-                                }
-                            });
-                        }
-
-                        // change the name back to the old name
-                        fi = new FolderInfo(oldName, fi.getId());
-                        fi.intern(true);
-
-                        return;
-                    }
-
-                    Path oldPath = fi.getFolder(getController()).getLocalBase();
-                    fi = new FolderInfo(newName, fi.getId());
-                    fi.intern(true);
-
+                if (renamedFI != null && fi != null && renamedFI.equals(fi)
+                    && !renamedFI.getName().equals(fi.getName()))
+                {
+                    fi = renamedFI;
                     renamed = true;
-                    removeFolder(fi.getFolder(getController()), false, false);
-                    removedFolderDirectories.remove(oldPath);
-                } catch (RuntimeException e) {
-                    logWarning("Unable to rename folder: " + oldName + ": " + e);
-                    return;
                 }
-            } else {
-                if (fi == null) {
-                    fi = knownFolderWithSameName;
-                }
+            } catch (FolderRenameException fre) {
+                logInfo("Could not rename Folder " + fre, fre);
+                return;
             }
-
         }
         if (fi == null || stillPresent) {
             fi = new FolderInfo(file.getFileName().toString(),
@@ -1871,6 +1807,110 @@ public class FolderRepository extends PFComponent implements Runnable {
             folderAutoCreateListener
                 .folderAutoCreated(new FolderAutoCreateEvent(fi));
         }
+    }
+
+    /**
+     * First check, if there is a Folder with the name equal to the {@code file}
+     * 's name. Only if {@code fi} is not {@code null}, there is no known Folder
+     * with the same name, the new and old name are not equal and
+     * {@code stillPresent} is false, the Folder is renamed locally and on the
+     * remote server.
+     * 
+     * @param client
+     *            The client to check for the currently logged in users folders.
+     * @param file
+     *            The file that is to be handled as a new folder
+     * @param fi
+     *            A Folder that might be the one found at {@code file}
+     * @param stillPresent
+     *            Is the Folder {@code fi} still present?
+     * @return A FolderInfo containing renamed information, an already known
+     *         Folder at {@code file} or {@code null} if it is a new Folder.
+     * @throws FolderRenameException
+     *             If the server was not able to rename the folder or any other
+     *             exception occured during the renameing process
+     */
+    private FolderInfo tryRenaming(ServerClient client, Path file,
+        FolderInfo fi, boolean stillPresent) throws FolderRenameException
+    {
+        FolderInfo knownFolderWithSameName = null;
+
+        for (FolderInfo folderInfo : client.getAccountFolders()) {
+            if (folderInfo.getLocalizedName().equals(
+                file.getFileName().toString()))
+            {
+                knownFolderWithSameName = folderInfo;
+                break;
+            }
+        }
+
+        String oldName = null;
+        if (fi != null) {
+            oldName = fi.getName();
+        }
+        String newName = file.getFileName().toString();
+        if (fi != null && knownFolderWithSameName == null
+            && !newName.equals(oldName) && !stillPresent)
+        {
+            /*
+             * Change the name locally before the server is called. The
+             * server will notify all clients to update their folder names.
+             * Renaming the folder first prevents that the client which
+             * renamed the folder changes it via the servers update.
+             */
+            logWarning("Renaming folder " + oldName + " to " + newName);
+
+            FolderService foServ = client.getFolderService();
+            try {
+
+                if (!foServ.renameFolder(fi, newName)) {
+                    logWarning("Could not rename the Folder " + oldName
+                        + " on the server to " + fi.getName());
+                    final String copyNewName = newName;
+                    final String copyOldName = oldName;
+
+                    if (getController().getUIController().isStarted()) {
+                        UIUtil.invokeLaterInEDT(new Runnable() {
+                            @Override
+                            public void run() {
+                                DialogFactory.genericDialog(
+                                    getController(),
+                                    Translation
+                                        .getTranslation("notice.rename_folder_failed.title"),
+                                    Translation
+                                        .getTranslation(
+                                            "notice.rename_folder_failed.summary",
+                                            copyNewName,
+                                            copyOldName),
+                                    GenericDialogType.WARN);
+                            }
+                        });
+                    }
+
+                    // change the name back to the old name
+                    fi = new FolderInfo(oldName, fi.getId());
+                    fi.intern(true);
+
+                    throw new FolderRenameException(file, fi);
+                }
+
+                Path oldPath = fi.getFolder(getController()).getLocalBase();
+                fi = new FolderInfo(newName, fi.getId());
+                fi.intern(true);
+
+                removeFolder(fi.getFolder(getController()), false, false);
+                removedFolderDirectories.remove(oldPath);
+            } catch (RuntimeException e) {
+                logWarning("Unable to rename folder: " + oldName + ": " + e);
+                throw new FolderRenameException(file, fi, e);
+            }
+        } else {
+            if (fi == null) {
+                fi = knownFolderWithSameName;
+            }
+        }
+
+        return fi;
     }
 
     /**
@@ -1919,7 +1959,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return The {@link FolderInfo} of the Folder the file points to, or
      *         {@code null}, if the file does not point to a Folder.
      */
-    private FolderInfo isFolderAlready(Path file) {
+    private FolderInfo checkSystemSubdirForFolder(Path file) {
         Path meta = file.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve(
             Folder.FOLDER_STATISTIC);
         FolderStatisticInfo info = FolderStatisticInfo.load(meta);
