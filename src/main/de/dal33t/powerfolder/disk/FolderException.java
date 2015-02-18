@@ -102,18 +102,17 @@ public class FolderException extends Exception implements Serializable {
         if (controller.isUIEnabled()) {
             Runnable runner = new Runnable() {
                 public void run() {
-                    JFrame parent = null;
                     if (controller.isUIOpen()) {
+                        String addText = additonalText != null ? '\n'
+                                + additonalText : "";
+                        DialogFactory.genericDialog(controller,
+                                Translation.getTranslation("folder_exception.dialog.title",
+                                        fInfo == null ? "null" : fInfo.getLocalizedName()),
+                                Translation.getTranslation("folder_exception.dialog.text",
+                                        fInfo == null ? "null" : fInfo.getLocalizedName(),
+                                        FolderException.super.getMessage()) + addText,
+                                controller.isVerbose(), FolderException.this);
                     }
-                    String addText = additonalText != null ? '\n'
-                            + additonalText : "";
-                    DialogFactory.genericDialog(controller,
-                            Translation.getTranslation("folder_exception.dialog.title",
-                                    fInfo == null ? "null" : fInfo.getLocalizedName()),
-                            Translation.getTranslation("folder_exception.dialog.text",
-                                    fInfo == null ? "null" : fInfo.getLocalizedName(),
-                                    FolderException.super.getMessage()) + addText,
-                            controller.isVerbose(), FolderException.this);
                 }
             };
 
