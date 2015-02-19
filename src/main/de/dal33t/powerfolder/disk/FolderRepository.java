@@ -1034,6 +1034,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController()))
         {
             if (PathUtils.isNetworkPath(folderSettings.getLocalBaseDir())) {
+                addToRemovedFolderDirectories(folderSettings.getLocalBaseDir());
+                if (saveConfig) {
+                    getController().saveConfig();                    
+                }
                 logSevere("Not allowed to create " + folderInfo.getName()
                     + " at " + folderSettings.getLocalBaseDirString()
                     + ". Network shares not allowed");
@@ -1314,7 +1318,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private void addToRemovedFolderDirectories(Folder folder) {
-        if (removedFolderDirectories.add(folder.getLocalBase())) {
+        addToRemovedFolderDirectories(folder.getLocalBase());
+    }
+
+    private void addToRemovedFolderDirectories(Path path) {
+        if (removedFolderDirectories.add(path)) {
             StringBuilder sb = new StringBuilder();
             Iterator<Path> iterator = removedFolderDirectories.iterator();
             while (iterator.hasNext()) {
