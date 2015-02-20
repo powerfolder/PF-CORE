@@ -52,6 +52,11 @@ import javax.net.ssl.TrustManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -909,6 +914,35 @@ public class Util {
         HttpClientBuilder builder = HttpClientBuilder.create();
         // PFC-2669: For HTTP Proxy
         builder.useSystemProperties();
+
+        if (StringUtils.isNotBlank(ConfigurationEntry.HTTP_PROXY_HOST
+            .getValue(controller)))
+        {
+            String proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME
+                .getValue(controller);
+            if (proxyUsername == null) {
+                proxyUsername = "";
+            }
+            String proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD
+                .getValue(controller);
+            if (proxyPassword == null) {
+                proxyPassword = "";
+            }
+            String proxyHost = ConfigurationEntry.HTTP_PROXY_HOST
+                .getValue(controller);
+            if (proxyHost == null) {
+                proxyHost = "";
+            }
+            int proxyPost = ConfigurationEntry.HTTP_PROXY_PORT
+                .getValueInt(controller);
+
+            Credentials credentials = new UsernamePasswordCredentials(
+                proxyUsername, proxyPassword);
+            AuthScope authScope = new AuthScope(proxyHost, proxyPost);
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(authScope, credentials);
+            builder.setDefaultCredentialsProvider(credsProvider);
+        }
 
         if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY
             .getValueBoolean(controller))
