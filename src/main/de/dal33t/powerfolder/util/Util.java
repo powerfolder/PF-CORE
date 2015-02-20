@@ -52,6 +52,7 @@ import javax.net.ssl.TrustManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -915,33 +916,39 @@ public class Util {
         // PFC-2669: For HTTP Proxy
         builder.useSystemProperties();
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.HTTP_PROXY_HOST
-            .getValue(controller)))
+        if (StringUtils.isNotBlank(System.getProperty("http.proxyHost")))
         {
+            String proxyHost = System.getProperty("http.proxyHost");
+            if (proxyHost == null) {
+                proxyHost = "";
+            }
+            int proxyPost = Integer.parseInt(System
+                .getProperty("http.proxyPort"));
+
+            HttpHost proxy = new HttpHost(proxyHost, proxyPost);
+            builder.setProxy(proxy);
+
             String proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME
                 .getValue(controller);
             if (proxyUsername == null) {
                 proxyUsername = "";
             }
-            String proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD
-                .getValue(controller);
-            if (proxyPassword == null) {
-                proxyPassword = "";
-            }
-            String proxyHost = ConfigurationEntry.HTTP_PROXY_HOST
-                .getValue(controller);
-            if (proxyHost == null) {
-                proxyHost = "";
-            }
-            int proxyPost = ConfigurationEntry.HTTP_PROXY_PORT
-                .getValueInt(controller);
 
-            Credentials credentials = new UsernamePasswordCredentials(
-                proxyUsername, proxyPassword);
-            AuthScope authScope = new AuthScope(proxyHost, proxyPost);
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(authScope, credentials);
-            builder.setDefaultCredentialsProvider(credsProvider);
+            if (StringUtils.isNotBlank(proxyUsername)) {
+                String proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD
+                    .getValue(controller);
+                if (proxyPassword == null) {
+                    proxyPassword = "";
+                }
+
+                Credentials credentials = new UsernamePasswordCredentials(
+                    proxyUsername, proxyPassword);
+                AuthScope authScope = new AuthScope(proxyHost, proxyPost);
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(authScope, credentials);
+
+                builder.setDefaultCredentialsProvider(credsProvider);
+            }
         }
 
         if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY

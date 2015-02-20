@@ -29,15 +29,15 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         URI idpEcpEndpoint, URI spUrl)
     {
         this(HttpClientBuilder.create(), username, password, idpEcpEndpoint,
-            spUrl);
+            spUrl, null, null);
     }
 
     public ECPAuthenticator(HttpClientBuilder clientBuilder, String username,
-        String password, URI idpEcpEndpoint, URI spUrl)
+        String password, URI idpEcpEndpoint, URI spUrl, String proxyUsername, String proxyPassword)
     {
         super(clientBuilder);
         authInfo = new ECPAuthenticationInfo(username, password,
-            idpEcpEndpoint, spUrl);
+            idpEcpEndpoint, spUrl, proxyUsername, proxyPassword);
         authInfo.setAuthState(ECPAuthState.NOT_STARTED);
     }
 

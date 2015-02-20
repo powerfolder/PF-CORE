@@ -1220,8 +1220,13 @@ public class ServerClient extends PFComponent {
 
             HttpClientBuilder builder = Util
                 .createHttpClientBuilder(getController());
+            String proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME
+                .getValue(getController());
+            String proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD
+                .getValue(getController());
             ECPAuthenticator auth = new ECPAuthenticator(builder, username,
-                new String(thePassword), idpURI, spURI);
+                new String(thePassword), idpURI, spURI, proxyUsername,
+                proxyPassword);
             String[] result;
             try {
                 result = auth.authenticate();

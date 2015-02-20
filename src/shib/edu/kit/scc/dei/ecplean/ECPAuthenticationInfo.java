@@ -9,14 +9,18 @@ public class ECPAuthenticationInfo {
 	private URI idpEcpEndpoint;
 	private URI spUrl;
 	private ECPAuthState authState;
+	private String proxyUsername;
+	private String proxyPassword;
 	
 	public ECPAuthenticationInfo(String username, String password,
-			URI idpEcpEndpoint, URI spUrl) {
+			URI idpEcpEndpoint, URI spUrl, String proxyUsername, String proxyPassword) {
 		super();
 		this.username = username;
 		this.password = password;
 		this.idpEcpEndpoint = idpEcpEndpoint;
 		this.spUrl = spUrl;
+		this.proxyUsername = proxyUsername;
+		this.proxyPassword = proxyPassword;
 	}
 
 	public String getUsername() {
@@ -34,6 +38,14 @@ public class ECPAuthenticationInfo {
 	public URI getSpUrl() {
 		return spUrl;
 	}
+
+	public String getProxyUsername() {
+	    return proxyUsername;
+	}
+
+    public String getProxyPassword() {
+        return proxyPassword;
+    }
 
 	public ECPAuthState getAuthState() {
 		return authState;
