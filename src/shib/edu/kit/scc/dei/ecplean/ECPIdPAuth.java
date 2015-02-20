@@ -25,7 +25,7 @@ public class ECPIdPAuth extends ECPAuthenticatorBase {
         super(clientBuilder);
 
         authInfo = new ECPAuthenticationInfo(username, password,
-            idpEcpEndpoint, null);
+            idpEcpEndpoint, null, null, null);
         authInfo.setAuthState(ECPAuthState.NOT_STARTED);
     }
 

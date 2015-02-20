@@ -22,10 +22,12 @@ import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
@@ -138,12 +140,32 @@ public abstract class ECPAuthenticatorBase extends Observable {
      */
     protected synchronized HttpClient getHttpClient() {
         if (client == null && authInfo != null) {
+
             CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(new AuthScope(authInfo
                 .getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint()
                 .getPort()),
                 new UsernamePasswordCredentials(authInfo.getUsername(),
                     authInfo.getPassword()));
+
+            String proxyHost = System.getProperty("http.proxyHost");
+            if (proxyHost != null && !proxyHost.trim().isEmpty()) {
+                int proxyPort = Integer.parseInt(System.getProperty("http.proxyPort"));
+                
+                HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+                clientBuilder.setProxy(proxy);
+
+                if (authInfo.getProxyUsername() != null
+                    && !authInfo.getProxyUsername().isEmpty())
+                {
+                    Credentials credentials = new UsernamePasswordCredentials(
+                        authInfo.getProxyUsername(),
+                        authInfo.getProxyPassword());
+                    AuthScope authScope = new AuthScope(proxyHost, proxyPort);
+                    credentialsProvider.setCredentials(authScope, credentials);
+                }
+            }
+
             clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
             client = clientBuilder.build();
         }
