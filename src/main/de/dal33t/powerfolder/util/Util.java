@@ -919,9 +919,6 @@ public class Util {
         if (StringUtils.isNotBlank(System.getProperty("http.proxyHost")))
         {
             String proxyHost = System.getProperty("http.proxyHost");
-            if (proxyHost == null) {
-                proxyHost = "";
-            }
             int proxyPost = Integer.parseInt(System
                 .getProperty("http.proxyPort"));
 
