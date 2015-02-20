@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.net.ssl.X509TrustManager;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Reject;
@@ -403,5 +405,22 @@ public class NetworkUtil {
         }
         // Fallback
         return addr.getHostAddress();
+    }
+
+    public static final class AllTrustingSSLManager implements X509TrustManager
+    {
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        public void checkClientTrusted(
+            java.security.cert.X509Certificate[] certs, String authType)
+        {
+        }
+
+        public void checkServerTrusted(
+            java.security.cert.X509Certificate[] certs, String authType)
+        {
+        }
     }
 }

@@ -65,7 +65,7 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
                 HttpGet getBindingURL = new HttpGet(idpLookupURL);
                 // PFC-2669:
                 HttpClientBuilder builder = Util
-                    .createHttpClientBuildder(getController());
+                    .createHttpClientBuilder(getController());
                 HttpClient client = builder.build();
 
                 try {

@@ -670,24 +670,6 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * Generate a URL that directs to a web colaboration tool.
-     * 
-     * @param fInfo
-     *            The file to open
-     * @return The URL
-     */
-    public String getOpenURL(FileInfo fInfo) {
-        Reject.ifNull(fInfo, "fileInfo");
-        if (!hasWebURL()) {
-            return null;
-        }
-        return getWebURL(
-            Constants.OPEN_LINK_URI + '/'
-                + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
-                + Util.endcodeForURL(fInfo.getRelativeName()), true);
-    }
-
-    /**
      * @return if password recovery is supported
      */
     public boolean supportsRecoverPassword() {
@@ -1237,7 +1219,7 @@ public class ServerClient extends PFComponent {
             }
 
             HttpClientBuilder builder = Util
-                .createHttpClientBuildder(getController());
+                .createHttpClientBuilder(getController());
             ECPAuthenticator auth = new ECPAuthenticator(builder, username,
                 new String(thePassword), idpURI, spURI);
             String[] result;

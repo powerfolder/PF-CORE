@@ -907,7 +907,7 @@ public class Util {
      * @return a prepared client builder with default HTTP proxy settings and
      *         optional disabling of SSL cert validation.
      */
-    public static final HttpClientBuilder createHttpClientBuildder(
+    public static final HttpClientBuilder createHttpClientBuilder(
         Controller controller)
     {
         Reject.ifNull(controller, "Controller");
