@@ -67,6 +67,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.LoginUtil;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -86,6 +87,7 @@ public class LoginPanel extends PFWizardPanel {
     private boolean listLoaded;
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private LinkLabel recoverPasswordLabel;
     private JLabel connectingLabel;
     private JLabel serverLabel;
     private ActionLabel serverInfoLabel;
@@ -141,6 +143,10 @@ public class LoginPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
+        // PFC-2638: Desktop sync option
+        nextPanel = DesktopSyncSetupPanel.insertStepIfAvailable(
+            getController(), nextPanel);
+
         return new SwingWorkerPanel(getController(), new LoginTask(),
             Translation
                 .getTranslation("wizard.login_online_storage.logging_in"),
@@ -208,13 +214,7 @@ public class LoginPanel extends PFWizardPanel {
         row += 2;
         builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
         row += 2;
-        if (client.supportsRecoverPassword()) {
-            LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
-                Translation
-                    .getTranslation("exp.wizard.webservice.recover_password"),
-                client.getRecoverPasswordURL());
-            builder.add(recoverPasswordLabel.getUIComponent(), cc.xyw(3, row, 2));
-        }
+        builder.add(recoverPasswordLabel.getUIComponent(), cc.xyw(3, row, 2));
 
         row += 2;
         builder.add(serverLabel, cc.xy(1, row));
@@ -412,9 +412,14 @@ public class LoginPanel extends PFWizardPanel {
         rememberPasswordBox.setVisible(changeLoginAllowed
             && rememberPasswordAllowed);
 
+        recoverPasswordLabel = new LinkLabel(getController(),
+            Translation
+                .getTranslation("exp.wizard.webservice.recover_password"),
+            client.getRecoverPasswordURL());
+        recoverPasswordLabel.setVisible(client.supportsRecoverPassword());
+
         useOSBox = new JCheckBox(
             Translation.getTranslation("wizard.login_online_storage.no_os")); // @todo
-                                                                              // //
                                                                               // "Use online storage"?
         useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE
             .getValueBoolean(getController()));
@@ -465,6 +470,8 @@ public class LoginPanel extends PFWizardPanel {
         // loginButton.setVisible(enabled);
         rememberPasswordBox.setVisible(connected && changeLoginAllowed
             && rememberPasswordAllowed);
+        recoverPasswordLabel.setVisible(connected && client.supportsRecoverPassword());
+
         connectingLabel.setVisible(!connected);
         workingBar.setVisible(!connected);
 
@@ -481,6 +488,14 @@ public class LoginPanel extends PFWizardPanel {
             usernameLabel.requestFocus();
         }
         updateButtons();
+    }
+    
+    /**
+     * Open the basedir in file browser iff the main frame is minimized.
+     */
+    private void openBasedirIfMinimized() {
+        if (getController().getUIController().getMainFrame().isIconifiedOrHidden())
+            PathUtils.openFile(getController().getFolderRepository().getFoldersBasedir());
     }
 
     private class LoginTask implements Runnable {
@@ -502,6 +517,13 @@ public class LoginPanel extends PFWizardPanel {
                         Translation
                             .getTranslation("online_storage.account_data"));
                 }
+                
+                // PFC-2517: if the main frame is minimized after activation, show
+                // PowerFolders to the user to make clear that the software is now active
+                if (getController().isFirstStart()) {
+                    openBasedirIfMinimized();                    
+                }
+                
             } catch (SecurityException e) {
                 LOG.log(Level.SEVERE, "Problem logging in: " + e.getMessage());
                 throw e;
