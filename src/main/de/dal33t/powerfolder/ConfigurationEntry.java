@@ -1097,7 +1097,12 @@ public enum ConfigurationEntry {
     /**
      * PFC-2638: Desktop sync option
      */
-    SHOW_DESKTOP_SYNC_OPTION("show.desktop_sync", true),
+    SHOW_DESKTOP_SYNC_OPTION("show.desktop_sync", false),
+    
+    /**
+     * PFC-2638: Desktop sync option
+     */
+    SHOW_WALLPAPER_OPTION("show.wallpaper", false),
     
     COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
 
