@@ -40,6 +40,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
@@ -71,6 +72,31 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         Reject.ifNull(nextPanel, "Nextpanel is null");
         this.nextPanel = nextPanel;
         this.agreed = false;
+    }
+
+    /**
+     * PFC-2638: Start: Desktop sync option: Helper to insert step into wizard.
+     * 
+     * @param controller
+     * @param nextPanel
+     * @return
+     */
+    public static WizardPanel insertStepIfAvailable(Controller controller,
+        WizardPanel nextPanel)
+    {
+        // PFC-2638: Start: Desktop sync option
+        boolean showDesktopSync = ConfigurationEntry.SHOW_DESKTOP_SYNC_OPTION
+            .getValueBoolean(controller);
+        boolean folderCreateAllowed = controller.getOSClient()
+            .isAllowedToCreateFolders();
+        if (showDesktopSync && folderCreateAllowed) {
+            boolean desktopDirAvailable = UserDirectories.getDesktopDirectory() != null;
+            if (desktopDirAvailable) {
+                nextPanel = new DesktopSyncSetupPanel(controller, nextPanel);
+            }
+        }
+        // PFC-2638: End
+        return nextPanel;
     }
 
     @Override
@@ -132,7 +158,10 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
 
         wallpaperBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("wizard.desktop_sync.wallpaper"));
-        wallpaperBox.setSelected(true);
+        wallpaperBox.setSelected(ConfigurationEntry.SHOW_WALLPAPER_OPTION
+            .getValueBoolean(getController()));
+        wallpaperBox.setVisible(ConfigurationEntry.SHOW_WALLPAPER_OPTION
+            .getValueBoolean(getController()));
 
         skipLabel = new ActionLabel(getController(), new SkipAction(
             getController()));
