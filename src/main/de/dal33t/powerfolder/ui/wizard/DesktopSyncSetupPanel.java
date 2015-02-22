@@ -199,7 +199,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
     }
 
     private boolean setWallpaperAvailable() {
-        return OSUtil.isWindowsSystem()
+        return (OSUtil.isWindowsSystem() || OSUtil.isMacOS())
             && ConfigurationEntry.SHOW_WALLPAPER_OPTION
                 .getValueBoolean(getController());
     }
