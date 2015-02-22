@@ -87,15 +87,15 @@ public class BasicSetupPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(
-            Translation.getTranslation("exp.wizard.basic_setup.computer_name"),
+            Translation.get("exp.wizard.basic_setup.computer_name"),
             cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
         builder.addLabel(
-            Translation.getTranslation("preferences.network.line_settings"),
+            Translation.get("preferences.network.line_settings"),
             cc.xywh(1, 3, 1, 1, "default, top"));
         builder.add(wanLineSpeed.getUiComponent(), cc.xy(3, 3));
         builder.addLabel(
-            Translation.getTranslation("exp.wizard.basic_setup.language_restart"),
+            Translation.get("exp.wizard.basic_setup.language_restart"),
             cc.xy(1, 5));
         builder.add(languageChooser, cc.xy(3, 5));
         builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 7, 2));
@@ -200,20 +200,20 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("exp.wizard.basic_setup.title");
+        return Translation.get("exp.wizard.basic_setup.title");
     }
 
     // Helper classes *********************************************************
 
     private static class PrivateNetworking {
         public String toString() {
-            return Translation.getTranslation("general.network_mode.private");
+            return Translation.get("general.network_mode.private");
         }
     }
 
     private static class LanOnlyNetworking {
         public String toString() {
-            return Translation.getTranslation("general_network_mode.lan_only");
+            return Translation.get("general_network_mode.lan_only");
         }
     }
 

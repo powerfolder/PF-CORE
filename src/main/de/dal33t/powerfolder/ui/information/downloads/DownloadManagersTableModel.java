@@ -255,15 +255,15 @@ public class DownloadManagersTableModel extends PFComponent implements
             case COLTYPE :
                 return "";
             case COLFILE :
-                return Translation.getTranslation("general.file");
+                return Translation.get("general.file");
             case COLPROGRESS :
-                return Translation.getTranslation("transfers.progress");
+                return Translation.get("transfers.progress");
             case COLSIZE :
-                return Translation.getTranslation("general.size");
+                return Translation.get("general.size");
             case COLFOLDER :
-                return Translation.getTranslation("general.folder");
+                return Translation.get("general.folder");
             case COLFROM :
-                return Translation.getTranslation("transfers.from");
+                return Translation.get("transfers.from");
         }
         return null;
     }

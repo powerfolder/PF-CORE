@@ -74,7 +74,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
      * @return
      */
     public String getTitle() {
-        return Translation.getTranslation("exp.dialog.delete_profile.title");
+        return Translation.get("exp.dialog.delete_profile.title");
     }
 
     /**
@@ -104,14 +104,14 @@ public class DeleteSyncProfileDialog extends BaseDialog
         // Message
         builder
             .add(
-                new JLabel(Translation.getTranslation(
+                new JLabel(Translation.get(
                     "transfer_mode.delete.profile",
                     (syncProfile.getName() + '?'))), cc.xyw(1, 1, 3));
 
         // Substitute
         builder.add(
             new JLabel(Translation
-                .getTranslation("transfer_mode.substitute.profile")), cc.xy(1,
+                .get("transfer_mode.substitute.profile")), cc.xy(1,
                 3));
         builder.add(syncProfilesCombo, cc.xy(3, 3));
 
@@ -143,8 +143,8 @@ public class DeleteSyncProfileDialog extends BaseDialog
      */
     protected Component getButtonBar() {
 
-        deleteButton = new JButton(Translation.getTranslation("general.delete"));
-        deleteButton.setMnemonic(Translation.getTranslation("general.delete.key")
+        deleteButton = new JButton(Translation.get("general.delete"));
+        deleteButton.setMnemonic(Translation.get("general.delete.key")
             .trim().charAt(0));
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

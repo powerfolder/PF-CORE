@@ -199,7 +199,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         Runnable inviteTask = new Runnable() {
             public void run() {
                 if (!sendInvitation()) {
-                    throw new RuntimeException(Translation.getTranslation("wizard.send_invitations.no_invitees", LoginUtil.getUsernameText(getController())));
+                    throw new RuntimeException(Translation.get("wizard.send_invitations.no_invitees", LoginUtil.getUsernameText(getController())));
                 }
             }
 
@@ -210,9 +210,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
             getController(),
             inviteTask,
             Translation
-                .getTranslation("wizard.send_invitations.sending_invites"),
+                .get("wizard.send_invitations.sending_invites"),
             Translation
-                .getTranslation("wizard.send_invitations.sending_invites.text"),
+                .get("wizard.send_invitations.sending_invites.text"),
             successPanel);
     }
 
@@ -231,7 +231,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         FormLayout layout1 = new FormLayout("pref:grow, pref, 3dlu", "pref");
         PanelBuilder builder1 = new PanelBuilder(layout1);
-        builder1.addLabel(Translation.getTranslation("send_invitations.folder_label"), cc.xy(2, 1));
+        builder1.addLabel(Translation.get("send_invitations.folder_label"), cc.xy(2, 1));
         int row = 1;
         builder.addLabel(folderInfo.getName(), cc.xy(2, row));
         JPanel panel1 = builder1.getPanel();
@@ -275,7 +275,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         FormLayout layout4 = new FormLayout("pref:grow, pref, 3dlu", "pref");
         PanelBuilder builder4 = new PanelBuilder(layout4);
-        builder4.add(new JLabel(Translation.getTranslation("send_invitations.permissions_label")), cc.xy(1, 1));
+        builder4.add(new JLabel(Translation.get("send_invitations.permissions_label")), cc.xy(1, 1));
         builder.add(permissionsCombo, cc.xy(2, row));
         builder.add(builder4.getPanel(), cc.xy(1, row));
 
@@ -301,7 +301,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         viaPowerFolderText = new JTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
 
-        invalidEmail = new JLabel("<html><font color='red'>"+Translation.getTranslation("wizard.send_invitations.invalid_email", LoginUtil.getUsernameText(getController()))+"</font></html>");
+        invalidEmail = new JLabel("<html><font color='red'>"+Translation.get("wizard.send_invitations.invalid_email", LoginUtil.getUsernameText(getController()))+"</font></html>");
         invalidEmail.setVisible(false);
 
         inviteesListModel = new DefaultListModel<>();
@@ -344,7 +344,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.send_invitations.title");
+        return Translation.get("wizard.send_invitations.title");
     }
 
     private void enableAddButton() {

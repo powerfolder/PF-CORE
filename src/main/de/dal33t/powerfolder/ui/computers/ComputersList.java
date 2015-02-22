@@ -101,17 +101,17 @@ public class ComputersList extends PFUIComponent {
         previousMyComputers = new TreeSet<Member>(MemberComparator.NICK);
 
         myComputersLabel = new JLabel(
-            Translation.getTranslation("exp.computers_list.my_computers"));
+            Translation.get("exp.computers_list.my_computers"));
         myComputersIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         myComputersLabel.addMouseListener(new MyComputersListener());
         myComputersIcon.addMouseListener(new MyComputersListener());
         friendsLabel = new JLabel(
-            Translation.getTranslation("exp.computers_list.friends"));
+            Translation.get("exp.computers_list.friends"));
         friendsIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
         friendsLabel.addMouseListener(new FriendsListener());
         friendsIcon.addMouseListener(new FriendsListener());
         connectedLansLabel = new JLabel(
-            Translation.getTranslation("exp.computers_list.lan"));
+            Translation.get("exp.computers_list.lan"));
         connectedLansIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         connectedLansLabel.addMouseListener(new ConnectedLansListener());
         connectedLansIcon.addMouseListener(new ConnectedLansListener());
@@ -338,11 +338,11 @@ public class ComputersList extends PFUIComponent {
         icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND) : Icons
             .getIconById(Icons.COLLAPSE));
         icon.setToolTipText(collapsed ? Translation
-            .getTranslation("exp.computers_list.expand_hint") : Translation
-            .getTranslation("exp.computers_list.collapse_hint"));
+            .get("exp.computers_list.expand_hint") : Translation
+            .get("exp.computers_list.collapse_hint"));
         label.setToolTipText(collapsed ? Translation
-            .getTranslation("exp.computers_list.expand_hint") : Translation
-            .getTranslation("exp.computers_list.collapse_hint"));
+            .get("exp.computers_list.expand_hint") : Translation
+            .get("exp.computers_list.collapse_hint"));
         builder.add(icon, cc.xy(2, 1));
         builder.add(label, cc.xy(4, 1));
         builder.add(new JSeparator(), cc.xy(6, 1));

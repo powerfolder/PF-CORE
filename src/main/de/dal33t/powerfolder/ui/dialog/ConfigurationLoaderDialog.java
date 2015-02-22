@@ -137,7 +137,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             CellConstraints cc = new CellConstraints();
             int row = 1;
             builder.addLabel(
-                Translation.getTranslation("config.loader.dialog.info"),
+                Translation.get("config.loader.dialog.info"),
                 cc.xyw(1, row, 3));
             row += 2;
             builder.add(addressBox, cc.xy(1, row));
@@ -234,7 +234,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
 
         proxySettingsLabel = new ActionLabel(getController(),
             new AbstractAction(
-                Translation.getTranslation("general.proxy_settings"))
+                Translation.get("general.proxy_settings"))
             {
                 public void actionPerformed(ActionEvent e) {
                     new HTTPProxySettingsDialog(getController(), frame).open();
@@ -247,7 +247,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         infoLabel = SimpleComponentFactory.createLabel("X");
 
         neverAskAgainBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("general.neverAskAgain"));
+            .get("general.neverAskAgain"));
         neverAskAgainBox.setVisible(false);
         try {
             boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
@@ -263,7 +263,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
     }
 
     private String getTitle() {
-        return Translation.getTranslation("config.loader.dialog.title");
+        return Translation.get("config.loader.dialog.title");
     }
 
     private Component buildButtonBar() {
@@ -275,7 +275,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         });
 
         JButton skipButton = new JButton(
-            Translation.getTranslation("config.loader.dialog.skip"));
+            Translation.get("config.loader.dialog.skip"));
         skipButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.setVisible(false);
@@ -284,7 +284,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             }
         });
         JButton exitButton = new JButton(
-            Translation.getTranslation("config.loader.dialog.exit"));
+            Translation.get("config.loader.dialog.exit"));
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 exit();
@@ -292,7 +292,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         });
         JComponent bar;
         if (getController().isStarted()) {
-            skipButton.setText(Translation.getTranslation("general.cancel"));
+            skipButton.setText(Translation.get("general.cancel"));
             bar = ButtonBarFactory.buildCenteredBar(okButton, skipButton);
         } else {
             bar = ButtonBarFactory.buildCenteredBar(okButton, exitButton);
@@ -321,8 +321,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
      * @return
      */
     private static JButton createOKButton(ActionListener listener) {
-        JButton okButton = new JButton(Translation.getTranslation("general.ok"));
-        okButton.setMnemonic(Translation.getTranslation("general.ok.key")
+        JButton okButton = new JButton(Translation.get("general.ok"));
+        okButton.setMnemonic(Translation.get("general.ok.key")
             .trim().charAt(0));
         okButton.addActionListener(listener);
         return okButton;
@@ -450,39 +450,39 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             String errorMsg = null;
             if (preConfig == null) {
                 errorMsg = Translation
-                    .getTranslation("config.loader.dialog.error.generic");
+                    .get("config.loader.dialog.error.generic");
                 if (t != null) {
                     if (t instanceof FileNotFoundException) {
                         errorMsg = Translation
-                            .getTranslation("config.loader.dialog.error.config.notfound");
+                            .get("config.loader.dialog.error.config.notfound");
                     } else if (t instanceof MalformedURLException) {
                         errorMsg = Translation
-                            .getTranslation("config.loader.dialog.error.address.invalid");
+                            .get("config.loader.dialog.error.address.invalid");
                     } else if (t instanceof IllegalArgumentException) {
                         errorMsg = Translation
-                            .getTranslation("config.loader.dialog.error.address.invalid");
+                            .get("config.loader.dialog.error.address.invalid");
                     } else if (t instanceof UnknownHostException) {
                         errorMsg = Translation
-                            .getTranslation("config.loader.dialog.error.host.notfound");
+                            .get("config.loader.dialog.error.host.notfound");
                     } else {
                         errorMsg = t.getMessage();
                     }
                 }
             } else if (preConfig.size() == 0) {
                 errorMsg = Translation
-                    .getTranslation("config.loader.dialog.error.config.empty");
+                    .get("config.loader.dialog.error.config.empty");
             } else if (!containsServerHost(preConfig)) {
                 errorMsg = Translation
-                    .getTranslation("config.loader.dialog.error.server.missing");
+                    .get("config.loader.dialog.error.server.missing");
             }
             if (errorMsg != null) {
-                showInfo(Translation.getTranslation(
+                showInfo(Translation.get(
                     "config.loader.dialog.error", errorMsg));
                 return;
             }
 
             // Success
-            showInfo(Translation.getTranslation("config.loader.dialog.loaded",
+            showInfo(Translation.get("config.loader.dialog.loaded",
                 String.valueOf(preConfig.size())));
             frame.setVisible(false);
             frame.dispose();
@@ -521,12 +521,12 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         private void handleRestartRequest() {
             int result = DialogFactory.genericDialog(
                 getController(),
-                Translation.getTranslation("preferences.dialog.restart.title"),
-                Translation.getTranslation("preferences.dialog.restart.text"),
+                Translation.get("preferences.dialog.restart.title"),
+                Translation.get("preferences.dialog.restart.text"),
                 new String[]{
                     Translation
-                        .getTranslation("preferences.dialog.restart.restart"),
-                    Translation.getTranslation("general.cancel")}, 0,
+                        .get("preferences.dialog.restart.restart"),
+                    Translation.get("general.cancel")}, 0,
                 GenericDialogType.QUESTION); // Default is restart
 
             if (result == 0) { // Restart

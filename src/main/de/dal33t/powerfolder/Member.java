@@ -1825,10 +1825,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                 QuotaExceeded msg = (QuotaExceeded) message;
                 if (targetFolder != null && getController().isUIEnabled()) {
                     WarningNotice notice = new WarningNotice(
-                        Translation.getTranslation("warning_notice.title"),
+                        Translation.get("warning_notice.title"),
                         Translation
-                            .getTranslation("warning_notice.insufficient_quota_summary"),
-                        Translation.getTranslation(
+                            .get("warning_notice.insufficient_quota_summary"),
+                        Translation.get(
                             "warning_notice.insufficient_quota_message",
                             msg.account.getDisplayName(),
                             msg.file.getFilenameOnly()));

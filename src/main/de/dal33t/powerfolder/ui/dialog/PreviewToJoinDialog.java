@@ -99,9 +99,9 @@ public class PreviewToJoinDialog extends BaseDialog {
         });
 
         // Buttons
-        joinButton = new JButton(Translation.getTranslation("folder_join.join"));
+        joinButton = new JButton(Translation.get("folder_join.join"));
         joinButton.setMnemonic(Translation
-            .getTranslation("folder_join.join.key").trim().charAt(0));
+            .get("folder_join.join.key").trim().charAt(0));
 
         joinButton.addActionListener(new ActionListener() {
 
@@ -133,7 +133,7 @@ public class PreviewToJoinDialog extends BaseDialog {
 
     @Override
     public String getTitle() {
-        return Translation.getTranslation("folder_join.dialog.title",
+        return Translation.get("folder_join.dialog.title",
             folder.getName());
     }
 
@@ -153,13 +153,13 @@ public class PreviewToJoinDialog extends BaseDialog {
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation.getTranslation("general.synchonisation"),
+        builder.addLabel(Translation.get("general.synchonisation"),
             cc.xy(1, row));
         builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, row));
 
         row += 2;
 
-        builder.addLabel(Translation.getTranslation("general.local_copy_at"),
+        builder.addLabel(Translation.get("general.local_copy_at"),
             cc.xy(1, row));
         builder.add(createLocationField(), cc.xy(3, row));
 
@@ -195,7 +195,7 @@ public class PreviewToJoinDialog extends BaseDialog {
 
         JButtonMini locationButton = new JButtonMini(
             Icons.getIconById(Icons.DIRECTORY),
-            Translation.getTranslation("folder_join.location.tip"));
+            Translation.get("folder_join.location.tip"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();

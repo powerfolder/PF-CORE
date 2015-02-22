@@ -83,7 +83,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("exp.preferences.network.title");
+        return Translation.get("exp.preferences.network.title");
     }
 
     public boolean needsRestart() {
@@ -101,11 +101,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
         String[] options = new String[NetworkingMode.values().length];
         options[NetworkingMode.PRIVATEMODE.ordinal()] = Translation
-            .getTranslation("general.network_mode.private");
+            .get("general.network_mode.private");
         options[NetworkingMode.LANONLYMODE.ordinal()] = Translation
-            .getTranslation("general.network_mode.lan_only");
+            .get("general.network_mode.lan_only");
         options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
-            .getTranslation("general.network_mode.server_only");
+            .get("general.network_mode.server_only");
         networkingModeCombo = new JComboBox<>(options);
 
         NetworkingMode currentNetworkingMode = getController()
@@ -131,11 +131,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 return new NumberAndCommaDocument();
             }
         };
-        advPortTF.setToolTipText(Translation.getTranslation("exp.preferences.network.adv_port_tooltip"));
+        advPortTF.setToolTipText(Translation.get("exp.preferences.network.adv_port_tooltip"));
         randomPortCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.preferences.network.random_port"));
+            .get("exp.preferences.network.random_port"));
         randomPortCB.setToolTipText(Translation
-            .getTranslation("exp.preferences.network.random_port_tooltip"));
+            .get("exp.preferences.network.random_port_tooltip"));
         randomPortCB.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
             .getValueBoolean(getController()));
 
@@ -149,22 +149,22 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         if (FirewallUtil.isFirewallAccessible()) {
             openPortCB = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("exp.preferences.network.open_port"));
+                .get("exp.preferences.network.open_port"));
             openPortCB.setToolTipText(Translation
-                .getTranslation("exp.preferences.network.open_port_tooltip"));
+                .get("exp.preferences.network.open_port_tooltip"));
             openPortCB.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
                 .getValueBoolean(getController()));
         }
 
         relayedConnectionCB = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("exp.preferences.network.use_relayed_connections"));
+                .get("exp.preferences.network.use_relayed_connections"));
         relayedConnectionCB
             .setSelected(ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
                 .getValueBoolean(getController()));
 
         udtConnectionCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.preferences.network.use_relayed_connections"));
+            .get("exp.preferences.network.use_relayed_connections"));
         udtConnectionCB.setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
             .getValueBoolean(getController()));
 
@@ -193,7 +193,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getValue(getController());
         bindAddressCombo = new JComboBox();
         bindAddressCombo.addItem(Translation
-            .getTranslation("exp.preferences.network.bind_any"));
+            .get("exp.preferences.network.bind_any"));
         // Fill in all known InetAddresses of this machine
         try {
             Enumeration<NetworkInterface> e = NetworkInterface
@@ -258,7 +258,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
             builder.addLabel(Translation
-                .getTranslation("exp.preferences.network_mode_name"), cc.xy(
+                .get("exp.preferences.network_mode_name"), cc.xy(
                 1, row));
             builder.add(networkingModeCombo, cc.xy(3, row));
 
@@ -275,18 +275,18 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(
-                Translation.getTranslation("exp.preferences.network.line_settings"),
+                Translation.get("exp.preferences.network.line_settings"),
                 cc.xywh(1, row, 1, 1, "default, top"));
             builder.add(wanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("exp.preferences.network.lan_line_settings"),
+            builder.addLabel(Translation.get("exp.preferences.network.lan_line_settings"),
                     cc.xywh(1, row, 1, 1, "default, top"));
             builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("exp.preferences.network.adv_port"),
-                    cc.xy(1, row)).setToolTipText(Translation.getTranslation("exp.preferences.network.adv_port_tooltip"));
+            builder.addLabel(Translation.get("exp.preferences.network.adv_port"),
+                    cc.xy(1, row)).setToolTipText(Translation.get("exp.preferences.network.adv_port_tooltip"));
             builder.add(advPortTF, cc.xy(3, row));
 
             row += 2;
@@ -299,14 +299,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(
-                Translation.getTranslation("exp.preferences.network.bind"),
+                Translation.get("exp.preferences.network.bind"),
                 cc.xy(1, row)).setToolTipText(
-                Translation.getTranslation("exp.preferences.network.bind_tooltip"));
+                Translation.get("exp.preferences.network.bind_tooltip"));
             builder.add(bindAddressCombo, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("exp.preferences.network.ip_lan_list"), cc.xywh(1,
+                .get("exp.preferences.network.ip_lan_list"), cc.xywh(1,
                 row, 1, 1, "default, top"));
             builder.add(lanList.getUIPanel(), cc.xy(3, row));
 
@@ -430,13 +430,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private static String getTooltip(NetworkingMode nm) {
         if (nm == NetworkingMode.LANONLYMODE) {
             return Translation
-                .getTranslation("exp.preferences.network.lan_only_tooltip");
+                .get("exp.preferences.network.lan_only_tooltip");
         } else if (nm == NetworkingMode.PRIVATEMODE) {
             return Translation
-                .getTranslation("exp.preferences.network.private_tooltip");
+                .get("exp.preferences.network.private_tooltip");
         } else if (nm == NetworkingMode.SERVERONLYMODE) {
             return Translation
-                .getTranslation("exp.preferences.network.server_only_tooltip");
+                .get("exp.preferences.network.server_only_tooltip");
         }
         return null;
     }

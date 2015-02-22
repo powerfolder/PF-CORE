@@ -45,7 +45,7 @@ public class SyncIconButtonMini extends JButtonMini {
 
     public SyncIconButtonMini(Controller controller) {
         super(ICON_ZERO, Translation
-            .getTranslation("sync_icon_button_mini.tip"));
+            .get("sync_icon_button_mini.tip"));
         angle = 0;
         // TODO Possible memory leak
         controller.scheduleAndRepeat(new MyUpdateTask(this),

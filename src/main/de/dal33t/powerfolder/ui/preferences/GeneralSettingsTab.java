@@ -97,7 +97,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("preferences.general.title");
+        return Translation.get("preferences.general.title");
     }
 
     public boolean needsRestart() {
@@ -119,7 +119,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
-        updateCheck = new JCheckBox(Translation.getTranslation("preferences.general.check_for_program_updates"));
+        updateCheck = new JCheckBox(Translation.get("preferences.general.check_for_program_updates"));
         updateCheck.setSelected(PreferencesEntry.CHECK_UPDATE.getValueBoolean(getController()));
 
         xBehaviorChooser = createXBehaviorChooser();
@@ -127,7 +127,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (OSUtil.isStartupItemSupported()) {
             runOnStartupBox = new JCheckBox(
                 Translation
-                    .getTranslation("preferences.general.start_with_windows"));
+                    .get("preferences.general.start_with_windows"));
             try {
                 runOnStartupBox.setSelected(OSUtil.hasPFStartup(getController()));
             } catch (UnsupportedOperationException uoe) {
@@ -156,15 +156,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         
         archiveCleanupCombo = new JComboBox<String>();
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.general.archive_cleanup_day")); // 1
+            .get("preferences.general.archive_cleanup_day")); // 1
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.general.archive_cleanup_week")); // 7
+            .get("preferences.general.archive_cleanup_week")); // 7
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.general.archive_cleanup_month")); // 31
+            .get("preferences.general.archive_cleanup_month")); // 31
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.general.archive_cleanup_year")); // 365
+            .get("preferences.general.archive_cleanup_year")); // 365
         archiveCleanupCombo.addItem(Translation
-            .getTranslation("preferences.general.archive_cleanup_never")); // 2147483647
+            .get("preferences.general.archive_cleanup_never")); // 2147483647
         int cleanup = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
         switch (cleanup) {
@@ -217,7 +217,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(
                     new JLabel(Translation
-                        .getTranslation("preferences.general.mode.title")), cc.xy(
+                        .get("preferences.general.mode.title")), cc.xy(
                         1, row));
                 builder.add(modeChooser, cc.xy(3, row));
             }
@@ -227,7 +227,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(
                 new JLabel(Translation
-                    .getTranslation("exp.preferences.expert.base_dir")), cc.xy(1,
+                    .get("exp.preferences.expert.base_dir")), cc.xy(1,
                     row));
             builder.add(locationField, cc.xyw(3, row, 2));
             // End: PFC-2631
@@ -235,19 +235,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(
                 new JLabel(Translation
-                    .getTranslation("preferences.general.account_label")), cc
+                    .get("preferences.general.account_label")), cc
                     .xy(1, row));
             builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(
                 new JLabel(Translation
-                    .getTranslation("preferences.general.nickname")), cc.xy(1,
+                    .get("preferences.general.nickname")), cc.xy(1,
                     row));
             builder.add(nickField, cc.xy(3, row));
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation("preferences.general.language")), cc.xy(1, row));
+            builder.add(new JLabel(Translation.get("preferences.general.language")), cc.xy(1, row));
             builder.add(languageChooser, cc.xy(3, row));
 
             if (PreferencesEntry.VIEW_ACHIVE.getValueBoolean(getController())) {
@@ -256,7 +256,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .add(
                         new JLabel(
                             Translation
-                                .getTranslation("preferences.general.default_archive_mode_text")),
+                                .get("preferences.general.default_archive_mode_text")),
                         cc.xy(1, row, CellConstraints.RIGHT, CellConstraints.TOP));
                 builder.add(
                     threePanel(archiveModeSelectorPanel.getUIComponent(),
@@ -270,7 +270,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(
                     new JLabel(Translation
-                        .getTranslation("preferences.general.start_behavior")),
+                        .get("preferences.general.start_behavior")),
                     cc.xy(1, row));
                 builder.add(runOnStartupBox, cc.xyw(3, row, 2));
             }
@@ -278,14 +278,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(
                 new JLabel(Translation
-                    .getTranslation("preferences.general.exit_behavior")), cc
+                    .get("preferences.general.exit_behavior")), cc
                     .xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
             // PFC-2461: Completely disable updates via preferences
             if (ConfigurationEntry.ENABLE_UPDATE.getValueBoolean(getController())) {
                 row += 2;
-                builder.add(new JLabel(Translation.getTranslation("preferences.general.check_for_updates_text")), cc.xy(1, row));
+                builder.add(new JLabel(Translation.get("preferences.general.check_for_updates_text")), cc.xy(1, row));
                 builder.add(updateCheck, cc.xy(3, row));
 
                 row +=2;
@@ -316,7 +316,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         JButton locationButton = new JButtonMini(
             Icons.getIconById(Icons.DIRECTORY),
             Translation
-                .getTranslation("exp.preferences.expert.select_directory_text"));
+                .get("exp.preferences.expert.select_directory_text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -336,7 +336,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         //builder.add(updateCheck, cc.xy(3, 1));
-        builder.add(new JLabel(Translation.getTranslation("exp.preferences.information.power_folder_text",
+        builder.add(new JLabel(Translation.get("exp.preferences.information.power_folder_text",
             Controller.PROGRAM_VERSION)), cc.xy(1,1));
         builder.add(createCheckForUpdatesButton(), cc.xy(1, 3));
         return builder.getPanel();
@@ -347,10 +347,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      * invoke the manual update checker.
      */
     private JButton createCheckForUpdatesButton() {
-        JButton checkForUpdatesButton = new JButton(Translation.getTranslation("preferences.general.check_for_updates_text"));
-        checkForUpdatesButton.setToolTipText(Translation.getTranslation("preferences.general.check_for_updates_tips"));
+        JButton checkForUpdatesButton = new JButton(Translation.get("preferences.general.check_for_updates_text"));
+        checkForUpdatesButton.setToolTipText(Translation.get("preferences.general.check_for_updates_tips"));
         checkForUpdatesButton.setMnemonic(
-                Translation.getTranslation("preferences.general.check_for_updates_key").trim().charAt(0));
+                Translation.get("preferences.general.check_for_updates_key").trim().charAt(0));
         checkForUpdatesButton.addActionListener(new UpdateAction());
         checkForUpdatesButton.setBackground(Color.WHITE);
         return checkForUpdatesButton;
@@ -366,9 +366,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     private JButton createChangeAccountButton() {
-        JButton changeAccountButton = new JButton(Translation.getTranslation("preferences.general.change_account_text"));
-        changeAccountButton.setToolTipText(Translation.getTranslation("preferences.general.change_account_tips"));
-        changeAccountButton.setMnemonic(Translation.getTranslation("preferences.general.change_account_key").trim().charAt(0));
+        JButton changeAccountButton = new JButton(Translation.get("preferences.general.change_account_text"));
+        changeAccountButton.setToolTipText(Translation.get("preferences.general.change_account_tips"));
+        changeAccountButton.setMnemonic(Translation.get("preferences.general.change_account_key").trim().charAt(0));
         changeAccountButton.addActionListener(new ChangeAccountAction());
         changeAccountButton.setBackground(Color.WHITE);
         return changeAccountButton;
@@ -376,11 +376,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JButton createLogoutButton() {
         JButton logoutButton = new JButton(
-            Translation.getTranslation("preferences.general.logout_text"));
+            Translation.get("preferences.general.logout_text"));
         logoutButton.setToolTipText(Translation
-            .getTranslation("preferences.general.logout_tips"));
+            .get("preferences.general.logout_tips"));
         logoutButton.setMnemonic(Translation
-            .getTranslation("preferences.general.logout_key").trim().charAt(0));
+            .get("preferences.general.logout_key").trim().charAt(0));
         logoutButton.addActionListener(new LogoutAction());
         logoutButton.setBackground(Color.WHITE);
         return logoutButton;
@@ -422,11 +422,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox<String> createModeChooser() {
         JComboBox<String> box = new JComboBox<>();
         box.addItem(Translation
-            .getTranslation("preferences.general.mode.beginner"));
+            .get("preferences.general.mode.beginner"));
         box.addItem(Translation
-            .getTranslation("preferences.general.mode.advanced"));
+            .get("preferences.general.mode.advanced"));
         box.addItem(Translation
-            .getTranslation("preferences.general.mode.expert"));
+            .get("preferences.general.mode.expert"));
         boolean expertModeActive = PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
         boolean miniamlModeActive = PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
 
@@ -528,9 +528,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 } catch (UnsupportedOperationException uoe) {
                     logWarning(uoe.getMessage());
                     DialogFactory.genericDialog(getController(), Translation
-                        .getTranslation("exception.startup_item.title"), uoe
+                        .get("exception.startup_item.title"), uoe
                         .getMessage(), new String[]{Translation
-                        .getTranslation("general.ok")}, 0,
+                        .get("general.ok")}, 0,
                         GenericDialogType.INFO);
                 }
             }
@@ -669,9 +669,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                             .genericDialog(
                                 getController(),
                                 Translation
-                                    .getTranslation("exp.preferences.expert.duplicate_local_base_title"),
+                                    .get("exp.preferences.expert.duplicate_local_base_title"),
                                 Translation
-                                    .getTranslation(
+                                    .get(
                                         "exp.preferences.expert.duplicate_local_base_message",
                                         folder.getName()),
                                 GenericDialogType.ERROR);
@@ -690,10 +690,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      */
     private JComboBox<String> createXBehaviorChooser() {
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-        model.addElement(Translation.getTranslation(
+        model.addElement(Translation.get(
                 "preferences.general.exit_behavior_exit"));
         if (OSUtil.isSystraySupported()) {
-            model.addElement(Translation.getTranslation(
+            model.addElement(Translation.get(
                     "preferences.general.exit_behavior_minimize"));
         }
 

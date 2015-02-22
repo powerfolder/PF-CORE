@@ -91,7 +91,7 @@ public class SingleFileTransferDialog extends BaseDialog {
      * @return
      */
     public String getTitle() {
-        return Translation.getTranslation("dialog.single_file_transfer.title");
+        return Translation.get("dialog.single_file_transfer.title");
     }
 
     protected Component getButtonBar() {
@@ -125,7 +125,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
         // Profile name
         builder.add(new JLabel(Translation
-            .getTranslation("dialog.single_file_transfer.file_name")), cc.xy(1,
+            .get("dialog.single_file_transfer.file_name")), cc.xy(1,
             1));
         JTextField fileNameTextField = new JTextField(file.toAbsolutePath().toString());
         fileNameTextField.setEnabled(false);
@@ -136,7 +136,7 @@ public class SingleFileTransferDialog extends BaseDialog {
         builder.add(panel2, cc.xy(3, 1));
 
         builder.add(new JLabel(Translation
-            .getTranslation("dialog.single_file_transfer.computer")), cc.xy(1,
+            .get("dialog.single_file_transfer.computer")), cc.xy(1,
             3));
         if (computersMembers.isEmpty()) {
             FormLayout layout4 = new FormLayout("122dlu, 3dlu, pref", "pref");
@@ -160,7 +160,7 @@ public class SingleFileTransferDialog extends BaseDialog {
             .add(
                 new JLabel(
                     Translation
-                        .getTranslation("dialog.single_file_transfer.friend_message.text")),
+                        .get("dialog.single_file_transfer.friend_message.text")),
                 cc.xyw(1, 5, 3));
 
         JScrollPane scrollPane = new JScrollPane(messageTextArea);
@@ -186,7 +186,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
         computersTextModel = new ValueHolder();
         computersTextModel.setValue(Translation
-            .getTranslation("dialog.node_select.no_computers"));
+            .get("dialog.node_select.no_computers"));
         computersTextModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 updateTransferButton();
@@ -197,7 +197,7 @@ public class SingleFileTransferDialog extends BaseDialog {
         computersText.setEnabled(false);
         computersSelectButton = new JButtonMini(Icons
             .getIconById(Icons.NODE_CONNECTED), Translation
-            .getTranslation("dialog.single_file_transfer.select_computer.tip"));
+            .get("dialog.single_file_transfer.select_computer.tip"));
         computersSelectButton.addActionListener(new MyActionListener());
 
         updateTransferButton();

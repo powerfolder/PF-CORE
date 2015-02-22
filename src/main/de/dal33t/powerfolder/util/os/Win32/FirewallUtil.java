@@ -71,7 +71,7 @@ public class FirewallUtil {
         netsh = Runtime.getRuntime().exec("netsh");
         try {
             String appname = Translation
-                .getTranslation("general.application.name");
+                .get("general.application.name");
             nout = new PrintWriter(netsh.getOutputStream(), true);
 
             // Source: http://support.microsoft.com/kb/947709/en-us

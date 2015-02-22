@@ -41,7 +41,7 @@ public class FolderOwnerPermission extends FolderPermission {
     }
 
     public String getName() {
-        return Translation.getTranslation("permissions.folder.owner");
+        return Translation.get("permissions.folder.owner");
     }
 
     @Override

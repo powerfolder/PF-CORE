@@ -92,14 +92,14 @@ public class NewFolderAction extends BaseAction {
 
                     TextPanelPanel successPanel = new TextPanelPanel(
                         getController(),
-                        Translation.getTranslation("wizard.setup_success"),
+                        Translation.get("wizard.setup_success"),
                         Translation
-                            .getTranslation("wizard.what_to_do.folder_backup_success")
+                            .get("wizard.what_to_do.folder_backup_success")
                             + Translation
-                                .getTranslation("wizard.what_to_do.pcs_join"));
+                                .get("wizard.what_to_do.pcs_join"));
 
                     PFWizard wizard = new PFWizard(getController(), Translation
-                        .getTranslation("wizard.pfwizard.folder_title"));
+                        .get("wizard.pfwizard.folder_title"));
 
                     wizard.getWizardContext().setAttribute(
                         PFWizard.SUCCESS_PANEL, successPanel);
@@ -177,8 +177,8 @@ public class NewFolderAction extends BaseAction {
                     getController().getFolderRepository().getFoldersBasedir()))
                 {
                     String title = Translation
-                        .getTranslation("general.directory");
-                    String message = Translation.getTranslation(
+                        .get("general.directory");
+                    String message = Translation.get(
                         "general.outside_basedir_error.text", getController()
                             .getFolderRepository().getFoldersBasedirString());
                     DialogFactory.genericDialog(getController(), title,
@@ -201,8 +201,8 @@ public class NewFolderAction extends BaseAction {
         Path baseDir = getController().getFolderRepository().getFoldersBasedir();
         for (Path file : files) {
             if (file.equals(baseDir)) {
-                String title = Translation.getTranslation("general.directory");
-                String message =  Translation.getTranslation("general.basedir_error.text");
+                String title = Translation.get("general.directory");
+                String message =  Translation.get("general.basedir_error.text");
                 DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
                 return true;
             }

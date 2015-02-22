@@ -186,7 +186,7 @@ public class Notification implements Serializable {
     public String getSubjectI15D() {
         String i15d = null;
         if (StringUtils.isNotBlank(subjectTranslationID)) {
-            i15d = Translation.getTranslation(subjectTranslationID);
+            i15d = Translation.get(subjectTranslationID);
         }
         // Unknown, empty translation or non i15d
         if (StringUtils.isBlank(i15d) || i15d.startsWith(" -")) {
@@ -219,7 +219,7 @@ public class Notification implements Serializable {
     public String getTextI15D() {
         String i15d = null;
         if (StringUtils.isNotBlank(textTranslationID)) {
-            i15d = Translation.getTranslation(textTranslationID);
+            i15d = Translation.get(textTranslationID);
         }
         // Unknown, empty translation or non i15d
         if (StringUtils.isBlank(i15d) || i15d.startsWith(" -")) {

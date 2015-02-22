@@ -34,7 +34,7 @@ public class EndIllegalCharsFilenameProblem extends ResolvableProblem {
 
     public EndIllegalCharsFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.getTranslation("filename_problem.ends_with_illegal_char",
+        description = Translation.get("filename_problem.ends_with_illegal_char",
                 fileInfo.getFilenameOnly());
     }
 
@@ -62,7 +62,7 @@ public class EndIllegalCharsFilenameProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-        return Translation.getTranslation("filename_problem.ends_with_illegal_char.soln_desc");
+        return Translation.get("filename_problem.ends_with_illegal_char.soln_desc");
     }
 
 }

@@ -17,7 +17,7 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
 
     @Override
     public String getDescription() {
-        return Translation.getTranslation("folder_problem.device_disconnected");
+        return Translation.get("folder_problem.device_disconnected");
     }
 
     @Override
@@ -46,7 +46,7 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
     @Override
     public String getResolutionDescription() {
         return Translation
-            .getTranslation("folder_problem.device_disconnected.remove_folder");
+            .get("folder_problem.device_disconnected.remove_folder");
     }
 
 }

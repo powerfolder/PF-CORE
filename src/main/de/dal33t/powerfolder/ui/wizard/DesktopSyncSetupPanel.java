@@ -145,7 +145,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("wizard.desktop_sync.title");
+        return Translation.get("wizard.desktop_sync.title");
     }
 
     @Override
@@ -172,7 +172,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
     @Override
     protected void initComponents() {
         infoLabel = new JTextArea(
-            Translation.getTranslation("wizard.desktop_sync.info_text"));
+            Translation.get("wizard.desktop_sync.info_text"));
         infoLabel.setEditable(false);
         infoLabel.setCursor(null);
         infoLabel.setOpaque(false);
@@ -188,7 +188,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         agreeLabel.convertToBigLabel();
 
         wallpaperBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("wizard.desktop_sync.wallpaper"));
+            .get("wizard.desktop_sync.wallpaper"));
         wallpaperBox.setSelected(setWallpaperAvailable());
         wallpaperBox.setVisible(setWallpaperAvailable());
 

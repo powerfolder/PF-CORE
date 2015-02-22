@@ -74,7 +74,7 @@ public class TellFriendPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.tell_friend.title");
+        return Translation.get("wizard.tell_friend.title");
     }
 
     @SuppressWarnings("serial")
@@ -104,7 +104,7 @@ public class TellFriendPanel extends PFWizardPanel {
         emailLabel.setIcon(Icons.getIconById(Icons.EMAIL_BUTTON));
 
         infoLabel = new LinkLabel(getController(), Translation
-            .getTranslation("wizard.activation.learn_more"), Help
+            .get("wizard.activation.learn_more"), Help
             .getWikiArticleURL(getController(),
                 WikiLinks.REFERRAL_REWARD_SYSTEM));
         infoLabel.convertToBigLabel();

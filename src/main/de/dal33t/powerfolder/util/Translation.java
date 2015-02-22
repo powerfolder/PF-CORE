@@ -207,7 +207,7 @@ public class Translation {
      *            the id for the translation entry
      * @return the localized string
      */
-    public static String getTranslation(String id) {
+    public static String get(String id) {
         ResourceBundle rb = getResourceBundle();
         if (rb == null) {
             return "- " + id + " -";
@@ -250,8 +250,8 @@ public class Translation {
      *            the parameters to be included.
      * @return a paramterized translation for this id.
      */
-    public static String getTranslation(String id, String... params) {
-        String translation = getTranslation(id);
+    public static String get(String id, String... params) {
+        String translation = get(id);
         int paramCount = 0;
         for (String param : params) {
             int i;

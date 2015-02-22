@@ -84,7 +84,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("exp.preferences.plugin.title");
+        return Translation.get("exp.preferences.plugin.title");
     }
 
     public void undoChanges() {
@@ -173,16 +173,16 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
             switch (column) {
                 case PLUGIN_NAME_COL :
                     return Translation
-                        .getTranslation("exp.preferences.plugin.name");
+                        .get("exp.preferences.plugin.name");
                 case PLUGIN_DESCR_COL :
                     return Translation
-                        .getTranslation("exp.preferences.plugin.description");
+                        .get("exp.preferences.plugin.description");
                 case PLUGIN_CLASS_COL :
                     return Translation
-                        .getTranslation("exp.preferences.plugin.class_name");
+                        .get("exp.preferences.plugin.class_name");
                 case PLUGIN_STATUS_COL :
                     return Translation
-                        .getTranslation("exp.preferences.plugin.status");
+                        .get("exp.preferences.plugin.status");
                 default :
                     return null;
             }
@@ -243,10 +243,10 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
                 case PLUGIN_STATUS_COL :
                     if (enabled) {
                         newValue = Translation
-                            .getTranslation("exp.preferences.plugin.status_enabled");
+                            .get("exp.preferences.plugin.status_enabled");
                     } else {
                         newValue = Translation
-                            .getTranslation("exp.preferences.plugin.status_disabled");
+                            .get("exp.preferences.plugin.status_disabled");
                     }
                     setToolTipText(newValue);
                     setHorizontalAlignment(SwingConstants.RIGHT);
@@ -305,18 +305,18 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
                 setEnabled(true);
                 if (getController().getPluginManager().isEnabled(plugin)) {
                     putValue(NAME, Translation
-                        .getTranslation("exp.preferences.plugin.disable.name"));
+                        .get("exp.preferences.plugin.disable.name"));
                     putValue(SHORT_DESCRIPTION, Translation
-                        .getTranslation("exp.preferences.plugin.disable.description"));
+                        .get("exp.preferences.plugin.disable.description"));
                     putValue(ACCELERATOR_KEY, Translation
-                        .getTranslation("exp.preferences.plugin.disable.key"));
+                        .get("exp.preferences.plugin.disable.key"));
                 } else {
                     putValue(NAME, Translation
-                        .getTranslation("exp.preferences.plugin.enable.name"));
+                        .get("exp.preferences.plugin.enable.name"));
                     putValue(SHORT_DESCRIPTION, Translation
-                        .getTranslation("exp.preferences.plugin.enable.description"));
+                        .get("exp.preferences.plugin.enable.description"));
                     putValue(ACCELERATOR_KEY, Translation
-                        .getTranslation("exp.preferences.plugin.enable.key"));
+                        .get("exp.preferences.plugin.enable.key"));
                 }
             }
         }

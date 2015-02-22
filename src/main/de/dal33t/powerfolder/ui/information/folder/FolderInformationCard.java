@@ -238,13 +238,13 @@ public class FolderInformationCard extends InformationCard {
      */
     private void addProblemsTab() {
         tabbedPane.addTab(Translation
-            .getTranslation("folder_information_card.problems.title"),
+            .get("folder_information_card.problems.title"),
             problemsTab.getUIComponent());
         // tabbedPane.setIconAt(getProblemsTabIndex(), Icons
         // .getIconById(Icons.PROBLEMS));
         tabbedPane
             .setToolTipTextAt(getProblemsTabIndex(), Translation
-                .getTranslation("folder_information_card.problems.tips"));
+                .get("folder_information_card.problems.tips"));
     }
 
     /**
@@ -296,18 +296,18 @@ public class FolderInformationCard extends InformationCard {
     private void buildUIComponent() {
         if (filesTab != null) {
             tabbedPane.addTab(Translation
-                .getTranslation("folder_information_card.files.title"),
+                .get("folder_information_card.files.title"),
                 filesTab.getUIComponent());
             tabbedPane.setToolTipTextAt(getFilesTabIndex(), Translation
-                .getTranslation("folder_information_card.files.tips"));
+                .get("folder_information_card.files.tips"));
         }
 
         if (membersTab != null) {
             tabbedPane.addTab(Translation
-                .getTranslation("folder_information_card.members.title"),
+                .get("folder_information_card.members.title"),
                 membersTab.getUIComponent());
             tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
-                .getTranslation("folder_information_card.members.tips"));
+                .get("folder_information_card.members.tips"));
         }
 
         if (settingsTab != null) {
@@ -317,10 +317,10 @@ public class FolderInformationCard extends InformationCard {
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             UIUtil.removeBorder(scrollPane);
             tabbedPane.addTab(Translation
-                .getTranslation("folder_information_card.settings.title"),
+                .get("folder_information_card.settings.title"),
                 scrollPane);
             tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
-                .getTranslation("folder_information_card.settings.tips"));
+                .get("folder_information_card.settings.tips"));
         }
     }
 

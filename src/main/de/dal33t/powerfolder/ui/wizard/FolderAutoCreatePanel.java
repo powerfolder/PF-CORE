@@ -107,8 +107,8 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"),
-                Translation.getTranslation("wizard.success_configure"));
+            Translation.get("wizard.setup_success"),
+                Translation.get("wizard.success_configure"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         return new FolderAutoConfigPanel(getController());
@@ -128,7 +128,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         int row = 1;
 
         // Name
-        builder.addLabel(Translation.getTranslation("general.folder"),
+        builder.addLabel(Translation.get("general.folder"),
             cc.xy(1, row));
         builder.add(folderNameLabel, cc.xy(3, row));
         row += 2;
@@ -136,7 +136,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         // Sync
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.addLabel(
-                Translation.getTranslation("general.synchonisation"),
+                Translation.get("general.synchonisation"),
                 cc.xy(1, row));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
             builder.add(p, cc.xyw(3, row, 2));
@@ -180,13 +180,13 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
 
         // Cloud space
         useCloudCB = new JCheckBox(
-            Translation.getTranslation("wizard.folder_auto_create.cloud_space"));
+            Translation.get("wizard.folder_auto_create.cloud_space"));
         useCloudCB.setOpaque(false);
         useCloudCB.setSelected(getController().getOSClient()
             .isBackupByDefault());
 
         // Cloud space
-        inviteCB = new JCheckBox(Translation.getTranslation(
+        inviteCB = new JCheckBox(Translation.get(
                 "exp.wizard.choose_disk_location.send_invitation"));
         inviteCB.setOpaque(false);
 
@@ -197,16 +197,16 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("wizard.folder_auto_create.title");
+        return Translation.get("wizard.folder_auto_create.title");
     }
 
     private void undoAutocreate() {
         int i = DialogFactory.genericDialog(getController(),
-                Translation.getTranslation("wizard.folder_auto_create.undo.title"),
-                Translation.getTranslation("wizard.folder_auto_create.undo.text"),
+                Translation.get("wizard.folder_auto_create.undo.title"),
+                Translation.get("wizard.folder_auto_create.undo.text"),
                 new String[]{
-                        Translation.getTranslation("wizard.folder_auto_create.undo.button"),
-                        Translation.getTranslation("general.cancel")}, 0,
+                        Translation.get("wizard.folder_auto_create.undo.button"),
+                        Translation.get("general.cancel")}, 0,
                 GenericDialogType.QUESTION);
         if (i == 0) {
             SwingUtilities.invokeLater(new Runnable() {

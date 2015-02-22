@@ -56,9 +56,9 @@ public class SystemNotificationHandler extends NotificationHandlerBase {
                 }
             });
             setAcceptOptionLabel(Translation
-                .getTranslation("notification_handler.display.text"));
+                .get("notification_handler.display.text"));
             setCancelOptionLabel(Translation
-                .getTranslation("notification_handler.ignore.text"));
+                .get("notification_handler.ignore.text"));
             setCancelAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     sliderClose();
@@ -67,7 +67,7 @@ public class SystemNotificationHandler extends NotificationHandlerBase {
                 }
             });
         } else {
-            setAcceptOptionLabel(Translation.getTranslation("general.ok"));
+            setAcceptOptionLabel(Translation.get("general.ok"));
             setAcceptAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     sliderClose();

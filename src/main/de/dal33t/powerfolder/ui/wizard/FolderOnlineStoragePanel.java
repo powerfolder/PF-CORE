@@ -80,13 +80,13 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                 .genericDialog(
                     getController(),
                     Translation
-                        .getTranslation("exp.wizard.folder_online_storage.warning_title"),
+                        .get("exp.wizard.folder_online_storage.warning_title"),
                     Translation
-                        .getTranslation("exp.wizard.folder_online_storage.warning_message"),
+                        .get("exp.wizard.folder_online_storage.warning_message"),
                     new String[]{
                         Translation
-                            .getTranslation("exp.wizard.folder_online_storage.warning_stop_backing"),
-                        Translation.getTranslation("general.cancel")}, 0,
+                            .get("exp.wizard.folder_online_storage.warning_stop_backing"),
+                        Translation.get("general.cancel")}, 0,
                     GenericDialogType.WARN);
             return result == 0; // Stop backing up
         } else {
@@ -111,8 +111,8 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             next = new TextPanelPanel(
                 getController(),
                 Translation
-                    .getTranslation("exp.wizard.folder_online_storage.remove_success_title"),
-                Translation.getTranslation(
+                    .get("exp.wizard.folder_online_storage.remove_success_title"),
+                Translation.get(
                     "exp.wizard.folder_online_storage.remove_success_message",
                     foInfo.getLocalizedName()), true);
         } else {
@@ -126,15 +126,15 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             next = new TextPanelPanel(
                 getController(),
                 Translation
-                    .getTranslation("exp.wizard.folder_online_storage.backup_success_title"),
-                Translation.getTranslation(
+                    .get("exp.wizard.folder_online_storage.backup_success_title"),
+                Translation.get(
                     "exp.wizard.folder_online_storage.backup_success_message",
                     foInfo.getLocalizedName()));
         }
         return new SwingWorkerPanel(getController(), task,
-            Translation.getTranslation("exp.wizard.folder_online_storage.working"),
+            Translation.get("exp.wizard.folder_online_storage.working"),
             Translation
-                .getTranslation("exp.wizard.folder_online_storage.working.text"),
+                .get("exp.wizard.folder_online_storage.working.text"),
             next);
     }
 
@@ -148,20 +148,20 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         if (removeFolder) {
             builder
                 .addLabel(Translation
-                    .getTranslation("exp.wizard.webservice.unmirror_folder"), cc
+                    .get("exp.wizard.webservice.unmirror_folder"), cc
                     .xyw(1, 1, 4));
         } else {
             builder.addLabel(
-                Translation.getTranslation("exp.wizard.webservice.mirror_folder"),
+                Translation.get("exp.wizard.webservice.mirror_folder"),
                 cc.xyw(1, 1, 4));
         }
 
-        builder.addLabel(Translation.getTranslation("general.folder"),
+        builder.addLabel(Translation.get("general.folder"),
             cc.xy(1, 3));
         builder.add(folderLabel, cc.xy(3, 3));
 
         LinkLabel link = new LinkLabel(getController(),
-            Translation.getTranslation("exp.wizard.webservice.learn_more"),
+            Translation.get("exp.wizard.webservice.learn_more"),
             ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
         builder.add(link.getUIComponent(), cc.xyw(1, 5, 3));
         return builder.getPanel();
@@ -182,9 +182,9 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     protected String getTitle() {
         if (removeFolder) {
             return Translation
-                .getTranslation("exp.wizard.webservice.unmirror_setup");
+                .get("exp.wizard.webservice.unmirror_setup");
         } else {
-            return Translation.getTranslation("exp.wizard.webservice.mirror_setup");
+            return Translation.get("exp.wizard.webservice.mirror_setup");
         }
     }
 }

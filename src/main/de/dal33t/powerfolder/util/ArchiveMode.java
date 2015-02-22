@@ -43,7 +43,7 @@ public enum ArchiveMode {
      */
     @Override
     public String toString() {
-        return Translation.getTranslation(key);
+        return Translation.get(key);
     }
 
     public abstract FileArchiver getInstance(Folder f);

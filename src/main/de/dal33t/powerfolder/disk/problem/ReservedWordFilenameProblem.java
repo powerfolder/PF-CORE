@@ -34,7 +34,7 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
 
     public ReservedWordFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.getTranslation("filename_problem.reserved_filename",
+        description = Translation.get("filename_problem.reserved_filename",
                 fileInfo.getFilenameOnly());
     }
 
@@ -62,7 +62,7 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-        return Translation.getTranslation("filename_problem.reserved_filename.soln_desc");
+        return Translation.get("filename_problem.reserved_filename.soln_desc");
     }
 
 }

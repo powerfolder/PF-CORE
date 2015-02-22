@@ -39,10 +39,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class MultiFileRestoreTableModel extends PFComponent implements TableModel, SortedTableModel {
 
     private static final String[] COLUMNS = {
-            Translation.getTranslation("multi_file_restore_table_model.file_name"),
-        Translation.getTranslation("multi_file_restore_table_model.modified_date"),
-        Translation.getTranslation("multi_file_restore_table_model.version"),
-        Translation.getTranslation("multi_file_restore_table_model.size")};
+            Translation.get("multi_file_restore_table_model.file_name"),
+        Translation.get("multi_file_restore_table_model.modified_date"),
+        Translation.get("multi_file_restore_table_model.version"),
+        Translation.get("multi_file_restore_table_model.size")};
 
     static final int COL_FILE_NAME = 0;
     static final int COL_MODIFIED_DATE = 1;

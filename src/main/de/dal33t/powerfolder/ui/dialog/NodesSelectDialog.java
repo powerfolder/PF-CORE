@@ -68,7 +68,7 @@ public class NodesSelectDialog extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("dialog.node_select.title");
+        return Translation.get("dialog.node_select.title");
     }
 
     protected Icon getIcon() {
@@ -84,11 +84,11 @@ public class NodesSelectDialog extends BaseDialog {
         CellConstraints cc = new CellConstraints();
 
         // Add components
-        builder.addLabel(Translation.getTranslation("dialog.node_select.text"),
+        builder.addLabel(Translation.get("dialog.node_select.text"),
                 cc.xy(1, 1));
 
         hideOffline = new JCheckBox(Translation
-            .getTranslation("dialog.node_select.hide_offline.name"));
+            .get("dialog.node_select.hide_offline.name"));
         builder.add(hideOffline, cc.xy(1, 3));
         hideOffline.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -132,7 +132,7 @@ public class NodesSelectDialog extends BaseDialog {
         });
 
         JButton findFriendsButton = new JButton(Translation
-                .getTranslation("general.search"));
+                .get("general.search"));
         findFriendsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 FindComputersDialog dialog = new FindComputersDialog(getController());
@@ -149,12 +149,12 @@ public class NodesSelectDialog extends BaseDialog {
         viaPowerFolderMembers.addAll(selectedMembers);
         if (selectedMembers.isEmpty()) {
             viaPowerFolderModel.setValue(Translation
-                    .getTranslation("dialog.node_select.no_computers"));
+                    .get("dialog.node_select.no_computers"));
         } else if (selectedMembers.size() == 1) {
             viaPowerFolderModel.setValue(selectedMembers.iterator().next().getNick());
         } else {
             viaPowerFolderModel.setValue(Translation
-                    .getTranslation("dialog.node_select.multi_computers"));
+                    .get("dialog.node_select.multi_computers"));
         }
     }
 

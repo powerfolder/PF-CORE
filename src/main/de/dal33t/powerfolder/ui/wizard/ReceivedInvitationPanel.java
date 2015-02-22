@@ -139,12 +139,12 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             .setAttribute(
                 PROMPT_TEXT_ATTRIBUTE,
                 Translation
-                    .getTranslation("wizard.what_to_do.invite.select_local"));
+                    .get("wizard.what_to_do.invite.select_local"));
 
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"),
-            Translation.getTranslation("wizard.success_join"));
+            Translation.get("wizard.setup_success"),
+            Translation.get("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         WizardPanel next = null;
@@ -166,7 +166,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             .getValueBoolean(getController()))
         {
             return new SwingWorkerPanel(getController(), new AcceptInviteTask(),
-                Translation.getTranslation(""), Translation.getTranslation(""),
+                Translation.get(""), Translation.get(""),
                 next);
         } else {
             return next;
@@ -186,7 +186,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Invite info
 
-        builder.addLabel(Translation.getTranslation(
+        builder.addLabel(Translation.get(
             "wizard.folder_invitation.intro", invitation.getInvitorUsername(),
             invitation.folder.getLocalizedName()), cc.xyw(1, 1, 4));
 
@@ -228,39 +228,39 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     protected void initComponents() {
         // Folder name label
         folderHintLabel = new JLabel(
-            Translation.getTranslation("general.folder"));
+            Translation.get("general.folder"));
         folderHintLabel.setEnabled(false);
         folderNameLabel = SimpleComponentFactory.createLabel();
 
         // Invitor label
         invitorHintLabel = new JLabel(
-            Translation.getTranslation("general.inviter"));
+            Translation.get("general.inviter"));
         invitorHintLabel.setEnabled(false);
         invitorLabel = SimpleComponentFactory.createLabel();
 
         // Invitation messages
         invitationMessageHintLabel = new JLabel(
-            Translation.getTranslation("general.message"));
+            Translation.get("general.message"));
         invitationMessageHintLabel.setEnabled(false);
         invitationMessageLabel = new JTextField();
         invitationMessageLabel.setEditable(false);
 
         // Estimated size
         estimatedSizeHintLabel = new JLabel(
-            Translation.getTranslation("general.estimated_size"));
+            Translation.get("general.estimated_size"));
         estimatedSizeHintLabel.setEnabled(false);
         estimatedSize = SimpleComponentFactory.createLabel();
 
         // Sync profile
         syncProfileHintLabel = new JLabel(
-            Translation.getTranslation("general.synchonisation"));
+            Translation.get("general.synchonisation"));
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
 
         // Preview
         previewOnlyCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("general.preview_folder"));
+            .get("general.preview_folder"));
         previewOnlyCB.setOpaque(false);
         previewOnlyCB.setEnabled(false);
         previewOnlyCB.setVisible(PreferencesEntry.EXPERT_MODE
@@ -279,7 +279,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("wizard.folder_invitation.title");
+        return Translation.get("wizard.folder_invitation.title");
     }
 
     private void loadInvitation() {
@@ -300,7 +300,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             estimatedSizeHintLabel.setEnabled(true);
             estimatedSize.setText(Format.formatBytes(invitation.getSize())
                 + " (" + invitation.getFilesCount() + ' '
-                + Translation.getTranslation("general.files") + ')');
+                + Translation.get("general.files") + ')');
 
             syncProfileHintLabel.setEnabled(true);
             syncProfileSelectorPanel.setEnabled(true);

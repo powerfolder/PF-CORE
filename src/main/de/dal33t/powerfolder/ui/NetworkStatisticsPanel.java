@@ -90,7 +90,7 @@ public class NetworkStatisticsPanel extends PFUIComponent {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("exp.network.statistics.title");
+        return Translation.get("exp.network.statistics.title");
     }
 
     private void initComponents() {
@@ -108,7 +108,7 @@ public class NetworkStatisticsPanel extends PFUIComponent {
         numberOfLocalFiles = new JLabel();
         numberOfPublicFiles = new JLabel();
         reconnectionQueueSize = new JLabel();
-        updateButton = new JButton(Translation.getTranslation("general.update"));
+        updateButton = new JButton(Translation.get("general.update"));
         updateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 update();
@@ -123,19 +123,19 @@ public class NetworkStatisticsPanel extends PFUIComponent {
 
         int row = 1;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.connected_computers")),
+            .get("exp.network_statistics_panel.connected_computers")),
             cc.xy(1, row));
         builder.add(connectedUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.online_computers")), cc
+            .get("exp.network_statistics_panel.online_computers")), cc
             .xy(1, row));
         builder.add(onlineUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.known_computers")), cc
+            .get("exp.network_statistics_panel.known_computers")), cc
             .xy(1, row));
         builder.add(knownUsers, cc.xy(3, row));
 
@@ -144,31 +144,31 @@ public class NetworkStatisticsPanel extends PFUIComponent {
             .add(
                 new JLabel(
                     Translation
-                        .getTranslation("exp.network_statistics_panel.reconnection_queue_size")),
+                        .get("exp.network_statistics_panel.reconnection_queue_size")),
                 cc.xy(1, row));
         builder.add(reconnectionQueueSize, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.local_folder_count")), cc
+            .get("exp.network_statistics_panel.local_folder_count")), cc
             .xy(1, row));
         builder.add(localFolderCount, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.number_of_local_files")),
+            .get("exp.network_statistics_panel.number_of_local_files")),
             cc.xy(1, row));
         builder.add(numberOfLocalFiles, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.local_folders_size")), cc
+            .get("exp.network_statistics_panel.local_folders_size")), cc
             .xy(1, row));
         builder.add(localFoldersSize, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.public_folder_count")),
+            .get("exp.network_statistics_panel.public_folder_count")),
             cc.xy(1, row));
         builder.add(publicFolderCount, cc.xy(3, row));
 
@@ -177,13 +177,13 @@ public class NetworkStatisticsPanel extends PFUIComponent {
             .add(
                 new JLabel(
                     Translation
-                        .getTranslation("exp.network_statistics_panel.number_of_public_files")),
+                        .get("exp.network_statistics_panel.number_of_public_files")),
                 cc.xy(1, row));
         builder.add(numberOfPublicFiles, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("exp.network_statistics_panel.public_folders_size")),
+            .get("exp.network_statistics_panel.public_folders_size")),
             cc.xy(1, row));
         builder.add(publicFoldersSize, cc.xy(3, row));
 

@@ -95,7 +95,7 @@ public class FindComputersPanel extends PFUIComponent {
         addFriendAction = new AddFriendAction();
         connectAction = new MyConnectAction(controller);
         noResultsLabel = new JLabel(Translation
-            .getTranslation("exp.friend_search.no_computers_found"),
+            .get("exp.friend_search.no_computers_found"),
             SwingConstants.CENTER);
         noResultsLabel.setEnabled(false);
     }
@@ -133,9 +133,9 @@ public class FindComputersPanel extends PFUIComponent {
         searchInput = new FilterTextField(
             15,
             Translation
-                .getTranslation("exp.find_computers_panel.search_for_computer.hint"),
+                .get("exp.find_computers_panel.search_for_computer.hint"),
             Translation
-                .getTranslation("exp.find_computers_panel.search_for_computer.tooltip"));
+                .get("exp.find_computers_panel.search_for_computer.tooltip"));
         searchInputVM = searchInput.getValueModel();
         searchInputVM.addValueChangeListener(new MySearchInputVMListener());
 

@@ -122,7 +122,7 @@ public class FilterTextField {
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         clearTextJButton.setVisible(false);
         clearTextJButton.setToolTipText(Translation
-            .getTranslation("filter_text_field.clear.hint"));
+            .get("filter_text_field.clear.hint"));
         // make sure the background is never drawn
         clearTextJButton.setContentAreaFilled(false);
         clearTextJButton.addActionListener(new ActionListener() {

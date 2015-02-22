@@ -88,7 +88,7 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
     }
 
     public String getTabName() {
-        return Translation.getTranslation("exp.preferences.warnings_notifications.title");
+        return Translation.get("exp.preferences.warnings_notifications.title");
     }
 
     public boolean needsRestart() {
@@ -108,12 +108,12 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
 
         // Show system notifications when minimized
         showSystemNotificationBox = new JCheckBox(
-                Translation.getTranslation("exp.preferences.warnings_notifications.show_system_notifications"));
+                Translation.get("exp.preferences.warnings_notifications.show_system_notifications"));
         showSystemNotificationBox.setSelected(
                 (Boolean) applicationModel.getSystemNotificationsValueModel().getValue());
 
         showPauseOptionsCB = new JCheckBox(Translation
-            .getTranslation("exp.preferences.warnings_notifications.show_pause_options"));
+            .get("exp.preferences.warnings_notifications.show_pause_options"));
         showPauseOptionsCB.setSelected(
                 PreferencesEntry.SHOW_ASK_FOR_PAUSE.getValueBoolean(getController()));
 
@@ -133,7 +133,7 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
         folderSyncDictionary.put(20, new JLabel("20"));
         folderSyncDictionary.put(30, new JLabel("30"));
         folderSyncSlider.setLabelTable(folderSyncDictionary);
-        folderSyncLabel = new JLabel(Translation.getTranslation("exp.preferences.warnings_notifications.folder_sync_text"));
+        folderSyncLabel = new JLabel(Translation.get("exp.preferences.warnings_notifications.folder_sync_text"));
 
         notificationDisplaySlider = new JSlider();
         notificationDisplaySlider.setMinimum(0);
@@ -163,7 +163,7 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
         notificationTranslucentSlider.setPaintTicks(true);
         notificationTranslucentSlider.setPaintLabels(true);
 
-        folderSyncCB = new JCheckBox(Translation.getTranslation("exp.preferences.warnings_notifications.folder_sync_warn_use"),
+        folderSyncCB = new JCheckBox(Translation.get("exp.preferences.warnings_notifications.folder_sync_warn_use"),
                 ConfigurationEntry.FOLDER_SYNC_USE.getValueBoolean(getController()));
         folderSyncCB.addChangeListener(new FolderChangeListener());
 
@@ -182,18 +182,18 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
             .getValueBoolean(getController());
         warnOnCloseIfNotInSyncCB = new JCheckBox(
             Translation
-                .getTranslation("exp.preferences.warnings_notifications.warn_on_close_if_not_in_sync"),
+                .get("exp.preferences.warnings_notifications.warn_on_close_if_not_in_sync"),
             warnOnClose);
         warnOnNoDirectConnectivityCB = new JCheckBox(
-            Translation.getTranslation("exp.preferences.warnings_notifications.warn_on_no_direct_connectivity"),
+            Translation.get("exp.preferences.warnings_notifications.warn_on_no_direct_connectivity"),
             warnOnNoDirectConnectivity);
         warnOnPossibleFilenameProblemsCB = new JCheckBox(
             Translation
-                .getTranslation("exp.preferences.warnings_notifications.warn_on_possible_file_name_problems"),
+                .get("exp.preferences.warnings_notifications.warn_on_possible_file_name_problems"),
             fileNameCheck);
         warnIfCloudSpaceFullCB = new JCheckBox(
             Translation
-                .getTranslation("exp.preferences.warnings_notifications.warn_if_cloud_space_full"),
+                .get("exp.preferences.warnings_notifications.warn_if_cloud_space_full"),
             cloudFull);
 
         doFolderChangeEvent();
@@ -244,7 +244,7 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
             // /////////////////////////////////////
 
             row += 2;
-            builder.addSeparator(Translation.getTranslation("exp.preferences.warnings_notifications.notifications"),
+            builder.addSeparator(Translation.get("exp.preferences.warnings_notifications.notifications"),
                     cc.xyw(1, row, 3));
 
             row += 2;
@@ -253,13 +253,13 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
             if (Constants.OPACITY_SUPPORTED) {
                 row += 2;
                 builder.addLabel(
-                        Translation.getTranslation("exp.preferences.warnings_notifications.notification_translucency"),
+                        Translation.get("exp.preferences.warnings_notifications.notification_translucency"),
                         cc.xy(1, row));
                 builder.add(createNotificationTranslucentSpinnerPanel(), cc.xyw(3, row, 2));
             }
 
             row += 2;
-            builder.addLabel(Translation.getTranslation("exp.preferences.warnings_notifications.notification_delay"),
+            builder.addLabel(Translation.get("exp.preferences.warnings_notifications.notification_delay"),
                     cc.xy(1, row));
             builder.add(createNotificationDisplaySpinnerPanel(), cc.xyw(3, row, 2));
 
@@ -355,9 +355,9 @@ public class WarningsNotificationsSettingsTab extends PFComponent implements Pre
                 .getUIController()
                 .previewMessage(
                     Translation
-                        .getTranslation("exp.preferences.warnings_notifications.notification_preview_title"),
+                        .get("exp.preferences.warnings_notifications.notification_preview_title"),
                     Translation
-                        .getTranslation("exp.preferences.warnings_notifications.notification_preview_text"));
+                        .get("exp.preferences.warnings_notifications.notification_preview_text"));
 
             // Reset
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),

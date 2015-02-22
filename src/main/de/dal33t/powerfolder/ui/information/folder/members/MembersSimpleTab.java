@@ -202,7 +202,7 @@ public class MembersSimpleTab extends PFUIComponent implements MembersTab {
                         setText(((FolderPermission) value).getName());
                     } else {
                         setText(Translation
-                            .getTranslation("permissions.folder.no_access"));
+                            .get("permissions.folder.no_access"));
                     }
                     return comp;
                 }

@@ -107,19 +107,19 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         filterSelectionComboBox = new JComboBox<>();
         filterSelectionComboBox.setToolTipText(Translation
-            .getTranslation("files_tab.combo.tool_tip"));
+            .get("files_tab.combo.tool_tip"));
         filterSelectionComboBox.addItem(Translation
-            .getTranslation("files_tab.combo.local_and_incoming"));
+            .get("files_tab.combo.local_and_incoming"));
         filterSelectionComboBox.addItem(Translation
-            .getTranslation("files_tab.combo.local_files_only"));
+            .get("files_tab.combo.local_files_only"));
         // filterSelectionComboBox.addItem(Translation
         // .getTranslation("files_tab.combo.incoming_files_only"));
         filterSelectionComboBox.addItem(Translation
-            .getTranslation("files_tab.combo.new_files_only"));
+            .get("files_tab.combo.new_files_only"));
         filterSelectionComboBox.addItem(Translation
-            .getTranslation("files_tab.combo.deleted_and_previous_files"));
+            .get("files_tab.combo.deleted_and_previous_files"));
         filterSelectionComboBox.addItem(Translation
-            .getTranslation("files_tab.combo.unsynchronized_files"));
+            .get("files_tab.combo.unsynchronized_files"));
         filterSelectionComboBox.addActionListener(new MyActionListener());
 
     }
@@ -282,9 +282,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         fileArchiveButton.setIcon(null);
 
         flatViewCB = new JCheckBox(
-            Translation.getTranslation("files_tab.flat_view.text"));
+            Translation.get("files_tab.flat_view.text"));
         flatViewCB.setToolTipText(Translation
-            .getTranslation("files_tab.flat_view.tip"));
+            .get("files_tab.flat_view.tip"));
         flatViewCB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 flatMode.setValue(flatViewCB.isSelected());

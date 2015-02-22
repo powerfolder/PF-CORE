@@ -57,17 +57,17 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
     private static final Set<NameValuePair> PAIRS = new TreeSet<NameValuePair>();
     static {
         PAIRS.add(new NameValuePair(0, Translation
-            .getTranslation("archive_mode_selector_panel.none"), 0));
-        PAIRS.add(new NameValuePair(1, Translation.getTranslation(
+            .get("archive_mode_selector_panel.none"), 0));
+        PAIRS.add(new NameValuePair(1, Translation.get(
             "archive_mode_selector_panel.version", "1"), 1));
-        PAIRS.add(new NameValuePair(5, Translation.getTranslation(
+        PAIRS.add(new NameValuePair(5, Translation.get(
             "archive_mode_selector_panel.versions", "5"), 5));
-        PAIRS.add(new NameValuePair(9, Translation.getTranslation(
+        PAIRS.add(new NameValuePair(9, Translation.get(
             "archive_mode_selector_panel.versions", "25"), 25));
-        PAIRS.add(new NameValuePair(10, Translation.getTranslation(
+        PAIRS.add(new NameValuePair(10, Translation.get(
             "archive_mode_selector_panel.versions", "100"), 100));
         PAIRS.add(new NameValuePair(11, Translation
-            .getTranslation("archive_mode_selector_panel.unlimited"), -1));
+            .get("archive_mode_selector_panel.unlimited"), -1));
     }
 
     private JComboBox<String> archiveCombo;
@@ -212,7 +212,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
         if (purgeListener != null) {
             JButtonMini purgeButton = new JButtonMini(Icons
                 .getIconById(Icons.DELETE), Translation
-                .getTranslation("archive_mode_selector_panel.purge.tip"));
+                .get("archive_mode_selector_panel.purge.tip"));
             purgeButton.addActionListener(purgeListener);
             panel.add(purgeButton, cc.xy(3, 1));
         }

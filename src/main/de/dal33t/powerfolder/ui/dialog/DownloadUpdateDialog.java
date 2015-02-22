@@ -74,7 +74,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
         // General dialog initalization
         uiComponent = new JDialog(getUIController().getMainFrame()
             .getUIComponent(), Translation
-            .getTranslation("dialog.update.updating"), false);
+            .get("dialog.update.updating"), false);
 
         uiComponent.setResizable(false);
         uiComponent.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -86,8 +86,8 @@ public class DownloadUpdateDialog extends PFUIComponent {
 
         // Cancel buttons
         JButton cancelButton = new JButton(Translation
-            .getTranslation("general.cancel"));
-        cancelButton.setMnemonic(Translation.getTranslation("general.cancel")
+            .get("general.cancel"));
+        cancelButton.setMnemonic(Translation.get("general.cancel")
             .charAt(0));
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -109,7 +109,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         // Add components
-        builder.addLabel(Translation.getTranslation(
+        builder.addLabel(Translation.get(
                 "dialog.update.updating.text", version), cc.xywh(1, 1, 4, 1));
         builder.add(processBar, cc.xywh(2, 3, 2, 1));
         builder.add(buttonBar, cc.xywh(2, 5, 2, 1));

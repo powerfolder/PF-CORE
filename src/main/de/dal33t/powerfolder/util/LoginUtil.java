@@ -306,7 +306,7 @@ public class LoginUtil {
      */
     public static String getInviteUsernameLabel(Controller controller) {
         if (isUsernameShibboleth(controller)) {
-            return Translation.getTranslation("general.email") + ':';
+            return Translation.get("general.email") + ':';
         }
         return getUsernameLabel(controller);
     }
@@ -332,13 +332,13 @@ public class LoginUtil {
     public static String getUsernameText(Controller controller) {
         Reject.ifNull(controller, "Controller");
         if (isUsernameEmailOnly(controller)) {
-            return Translation.getTranslation("general.email");
+            return Translation.get("general.email");
         } else if (isUsernameAny(controller)) {
-            return Translation.getTranslation("general.username") + '/'
-                + Translation.getTranslation("general.email");
+            return Translation.get("general.username") + '/'
+                + Translation.get("general.email");
         } else {
             if (isBoolConfValue(controller)) {
-                return Translation.getTranslation("general.username");
+                return Translation.get("general.username");
             }
             // Otherwise return text of config entry.
             return ConfigurationEntry.SERVER_USERNAME_IS_EMAIL

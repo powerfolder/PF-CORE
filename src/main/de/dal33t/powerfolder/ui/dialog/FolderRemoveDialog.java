@@ -121,31 +121,31 @@ public class FolderRemoveDialog extends BaseDialog {
                 : "folder_remove.dialog.text";
         }
         if (syncFlag) {
-            folderLeaveText = Translation.getTranslation(removeKey,
+            folderLeaveText = Translation.get(removeKey,
                 foInfo.getLocalizedName())
                 + '\n'
                 + Translation
-                    .getTranslation("folder_remove.dialog.sync_warning");
+                    .get("folder_remove.dialog.sync_warning");
         } else {
             folderLeaveText = Translation
-                .getTranslation(removeKey, foInfo.getLocalizedName());
+                .get(removeKey, foInfo.getLocalizedName());
         }
         messageLabel = new JLabel(folderLeaveText);
 
         removeFromLocalBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("folder_remove.dialog.remove_from_local"));
+            .get("folder_remove.dialog.remove_from_local"));
         removeFromLocalBox.setSelected(true);
         removeFromLocalBox.setEnabled(allowRemove);
         removeFromLocalBox.addActionListener(new ConvertActionListener());
 
         deleteSystemSubFolderBox = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("folder_remove.dialog.delete"));
+                .get("folder_remove.dialog.delete"));
         deleteSystemSubFolderBox.setEnabled(allowRemove);
         deleteSystemSubFolderBox.setVisible(allowRemove);
 
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("folder_remove.dialog.remove_from_os"));
+            .get("folder_remove.dialog.remove_from_os"));
         removeFromServerBox.addActionListener(new ConvertActionListener());
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -180,17 +180,17 @@ public class FolderRemoveDialog extends BaseDialog {
             : "folder_remove_online.dialog.button.name.admin";
         if (!localFolder) {
             removeButton = new JButton(
-                Translation.getTranslation(removeButtonText));
+                Translation.get(removeButtonText));
             removeButton
             .setMnemonic(Translation
-                .getTranslation("folder_remove_online.dialog.button.key").trim()
+                .get("folder_remove_online.dialog.button.key").trim()
                 .charAt(0));
         }else {
             removeButton = new JButton(
-                Translation.getTranslation("folder_remove.dialog.button.name"));
+                Translation.get("folder_remove.dialog.button.name"));
             removeButton
             .setMnemonic(Translation
-                .getTranslation("folder_remove.dialog.button.key").trim()
+                .get("folder_remove.dialog.button.key").trim()
                 .charAt(0));
         }
         removeButton.addActionListener(listener);
@@ -203,9 +203,9 @@ public class FolderRemoveDialog extends BaseDialog {
             ? "folder_remove_online.dialog.title"
             : "folder_remove_online.dialog.title.admin";
         if (!localFolder) {
-            return Translation.getTranslation(removeOnline);
+            return Translation.get(removeOnline);
         }else {
-            return Translation.getTranslation("folder_remove.dialog.title");
+            return Translation.get("folder_remove.dialog.title");
         }
     }
 
@@ -263,9 +263,9 @@ public class FolderRemoveDialog extends BaseDialog {
         if(ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.getValueBoolean(getController()) && !localFolder){
             String noteLabel;
             if(admin){
-                noteLabel = Translation.getTranslation("folder_remove_online.strict.note.admin");
+                noteLabel = Translation.get("folder_remove_online.strict.note.admin");
             }else {
-                noteLabel = Translation.getTranslation("folder_remove_online.strict.note");
+                noteLabel = Translation.get("folder_remove_online.strict.note");
             }
             builder.add(new JLabel(noteLabel), cc.xyw(1, row, 3));
             row += 2;

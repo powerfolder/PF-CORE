@@ -59,16 +59,16 @@ public class ComputersTab extends PFUIComponent {
     public ComputersTab(Controller controller) {
         super(controller);
         emptyLabel = new JLabel(
-            Translation.getTranslation("exp.computers_tab.no_computers_available"),
+            Translation.get("exp.computers_tab.no_computers_available"),
             SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
         computersList = new ComputersList(getController(), this);
 
         showOfflineCB = new JCheckBox(
-            Translation.getTranslation("exp.computers_tab.show_offline"));
+            Translation.get("exp.computers_tab.show_offline"));
         showOfflineCB.setToolTipText(Translation
-            .getTranslation("exp.computers_tab.show_offline.tip"));
+            .get("exp.computers_tab.show_offline.tip"));
         showOfflineCB.addActionListener(new MyActionListener());
         showOfflineCB.setSelected(PreferencesEntry.SHOW_OFFLINE
             .getValueBoolean(getController()));

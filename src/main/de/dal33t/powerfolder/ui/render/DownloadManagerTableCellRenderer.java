@@ -100,14 +100,14 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
 
             switch (state.getState()) {
                 case VERIFYING :
-                    bar.setString(Translation.getTranslation(state.getState()
+                    bar.setString(Translation.get(state.getState()
                         .getTranslationId()));
                     bar.setValue(100);
                     break;
                 case MATCHING :
                 case FILERECORD_REQUEST :
                 case COPYING :
-                    bar.setString(Translation.getTranslation(state.getState()
+                    bar.setString(Translation.get(state.getState()
                         .getTranslationId()));
                     break;
                 case DOWNLOADING :
@@ -115,7 +115,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                         .getCounter().calculateEstimatedMillisToCompletion(),
                         downloadManager.isCompleted()
                             && downloadManager.isStarted());
-                    String kbs = Translation.getTranslation("transfers.kbs",
+                    String kbs = Translation.get("transfers.kbs",
                         Format.formatDecimal(counter.calculateCurrentKBS()));
                     String text = (et.isActive() ? et.toString() + " - " : "")
                         + kbs;
@@ -128,14 +128,14 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                         String dateStr = completedDate != null ? Format
                             .formatDateShort(completedDate, true) : "";
                         bar.setValue(100);
-                        bar.setString(Translation.getTranslation(
+                        bar.setString(Translation.get(
                             "transfers.completed", dateStr));
                     } else if (downloadManager.isStarted()) {
                         bar.setString(Translation
-                            .getTranslation("transfers.started"));
+                            .get("transfers.started"));
                     } else {
                         bar.setString(Translation
-                            .getTranslation("transfers.requested"));
+                            .get("transfers.requested"));
                     }
             }
             return bar;
@@ -170,7 +170,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                     String nickText = primaryDownload.getPartner().getNick();
                     setText(nickText);
                 } else {
-                    setText(Translation.getTranslation("transfers.swarm",
+                    setText(Translation.get("transfers.swarm",
                         String.valueOf(sources.size())));
                 }
                 setHorizontalAlignment(LEFT);
@@ -186,7 +186,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             setIcon(null);
             setHorizontalAlignment(CENTER);
         } else {
-            setText(Translation.getTranslation("transfers.searching"));
+            setText(Translation.get("transfers.searching"));
             setIcon(null);
             setHorizontalAlignment(LEFT);
         }

@@ -27,11 +27,11 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
     @Override
     public String getDescription() {
         if (revertedOnly) {
-            return Translation.getTranslation(
+            return Translation.get(
                 "folder_problem.read_only_folder_reverted", path.getFileName()
                     .toString());
         } else {
-            return Translation.getTranslation(
+            return Translation.get(
                 "folder_problem.read_only_folder", path.getFileName()
                     .toString());
         }
@@ -56,6 +56,6 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
 
     @Override
     public String getResolutionDescription() {
-        return Translation.getTranslation("folder_problem.read_only_folder_reverted.resolution_description");
+        return Translation.get("folder_problem.read_only_folder_reverted.resolution_description");
     }
 }

@@ -279,7 +279,7 @@ public class MembersExpertTab extends PFUIComponent implements MembersTab {
                     try {
                         if (member.reconnect().isFailure()) {
                             throw new ConnectionException(
-                                Translation.getTranslation(
+                                Translation.get(
                                     "dialog.unable_to_connect_to_member",
                                     member.getNick()));
                         }

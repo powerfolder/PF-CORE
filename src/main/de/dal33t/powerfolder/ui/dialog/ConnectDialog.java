@@ -65,7 +65,7 @@ public class ConnectDialog extends PFUIComponent {
     private void initComponents() {
         // General dialog initalization
         uiComponent = new JDialog(owner, Translation
-            .getTranslation("dialog.connect.connecting"),
+            .get("dialog.connect.connecting"),
             Dialog.ModalityType.MODELESS);
 
         // Cancel connect
@@ -81,12 +81,12 @@ public class ConnectDialog extends PFUIComponent {
         JProgressBar bar = new JProgressBar();
         bar.setIndeterminate(true);
         infoText = new JLabel(Translation
-            .getTranslation("dialog.connect.connecting"));
+            .get("dialog.connect.connecting"));
 
         // Cancel buttons
         JButton cancelButton = new JButton(Translation
-            .getTranslation("general.cancel"));
-        cancelButton.setMnemonic(Translation.getTranslation(
+            .get("general.cancel"));
+        cancelButton.setMnemonic(Translation.get(
             "general.cancel.key").charAt(0));
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -148,7 +148,7 @@ public class ConnectDialog extends PFUIComponent {
     public void open(String connectStr) {
         canceled = false;
         getUIComponent().setVisible(true);
-        infoText.setText(Translation.getTranslation(
+        infoText.setText(Translation.get(
             "dialog.connect.connecting_to", connectStr));
     }
 

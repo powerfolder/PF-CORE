@@ -149,9 +149,9 @@ public class LoginPanel extends PFWizardPanel {
 
         return new SwingWorkerPanel(getController(), new LoginTask(),
             Translation
-                .getTranslation("wizard.login_online_storage.logging_in"),
+                .get("wizard.login_online_storage.logging_in"),
             Translation
-                .getTranslation("wizard.login_online_storage.logging_in.text"),
+                .get("wizard.login_online_storage.logging_in.text"),
             nextPanel);
     }
 
@@ -199,7 +199,7 @@ public class LoginPanel extends PFWizardPanel {
         if (client.supportsWebRegistration()) {
             LinkLabel signupLabel = new LinkLabel(getController(),
                 Translation
-                    .getTranslation("wizard.activation.register_now"),
+                    .get("wizard.activation.register_now"),
                 client.getRegisterURL());
             signupLabel.convertToBigLabel();
             builder.add(signupLabel.getUIComponent(), cc.xy(5, row));
@@ -225,7 +225,7 @@ public class LoginPanel extends PFWizardPanel {
             builder.add(useOSBox, cc.xyw(1, row, 4));
             row += 2;
             LinkLabel link = new LinkLabel(getController(),
-                Translation.getTranslation("wizard.webservice.learn_more"),
+                Translation.get("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link.getUIComponent(), cc.xyw(1, row, 5));
             row += 2;
@@ -244,7 +244,7 @@ public class LoginPanel extends PFWizardPanel {
             .getValueBoolean(getController());
         boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
             .getValueBoolean(getController());
-        serverLabel = new JLabel(Translation.getTranslation("general.server"));
+        serverLabel = new JLabel(Translation.get("general.server"));
         serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
         {
             public void actionPerformed(ActionEvent e) {
@@ -258,7 +258,7 @@ public class LoginPanel extends PFWizardPanel {
             .getValue(getController())))
         {
             serverURLLabel = new JLabel(
-                Translation.getTranslation("general.server"));
+                Translation.get("general.server"));
 
             String webURL = client.getWebURL();
             int selection = 0;
@@ -292,8 +292,8 @@ public class LoginPanel extends PFWizardPanel {
         if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
             .getValue(getController())))
         {
-            idPLabel = new JLabel(Translation.getTranslation("general.idp"));
-            idPSelectBox = new StyledComboBox<>(new String[]{Translation.getTranslation("general.loading")});
+            idPLabel = new JLabel(Translation.get("general.idp"));
+            idPSelectBox = new StyledComboBox<>(new String[]{Translation.get("general.loading")});
             idPSelectBox.setEnabled(false);
 
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>()
@@ -371,7 +371,7 @@ public class LoginPanel extends PFWizardPanel {
         usernameField.addKeyListener(new MyKeyListener());
         usernameField.setEditable(changeLoginAllowed);
         passwordLabel = new JLabel(
-            Translation.getTranslation("general.password") + ':');
+            Translation.get("general.password") + ':');
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
         passwordField.addKeyListener(new MyKeyListener());
@@ -407,19 +407,19 @@ public class LoginPanel extends PFWizardPanel {
                 PreferencesEntry.SERVER_REMEMBER_PASSWORD
                     .getModel(getController()),
                 Translation
-                    .getTranslation("wizard.login_online_storage.remember_password"));
+                    .get("wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
         rememberPasswordBox.setVisible(changeLoginAllowed
             && rememberPasswordAllowed);
 
         recoverPasswordLabel = new LinkLabel(getController(),
             Translation
-                .getTranslation("exp.wizard.webservice.recover_password"),
+                .get("exp.wizard.webservice.recover_password"),
             client.getRecoverPasswordURL());
         recoverPasswordLabel.setVisible(client.supportsRecoverPassword());
 
         useOSBox = new JCheckBox(
-            Translation.getTranslation("wizard.login_online_storage.no_os")); // @todo
+            Translation.get("wizard.login_online_storage.no_os")); // @todo
                                                                               // "Use online storage"?
         useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE
             .getValueBoolean(getController()));
@@ -431,7 +431,7 @@ public class LoginPanel extends PFWizardPanel {
         });
         useOSBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
-            .getTranslation("wizard.login_online_storage.connecting"));
+            .get("wizard.login_online_storage.connecting"));
         workingBar = new JProgressBar();
         workingBar.setIndeterminate(true);
         updateOnlineStatus();
@@ -448,7 +448,7 @@ public class LoginPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("exp.wizard.webservice.login");
+        return Translation.get("exp.wizard.webservice.login");
     }
 
     private void updateOnlineStatus() {
@@ -505,7 +505,7 @@ public class LoginPanel extends PFWizardPanel {
                     LOG.log(Level.WARNING, "Unable to connect");
                     throw new SecurityException(
                         Translation
-                            .getTranslation("wizard.webservice.connect_failed"));
+                            .get("wizard.webservice.connect_failed"));
                 }
 
                 boolean loginOk = false;
@@ -515,7 +515,7 @@ public class LoginPanel extends PFWizardPanel {
                 if (!loginOk) {
                     throw new SecurityException(
                         Translation
-                            .getTranslation("online_storage.account_data"));
+                            .get("online_storage.account_data"));
                 }
                 
                 // PFC-2517: if the main frame is minimized after activation, show

@@ -17,7 +17,7 @@ public class AccessDeniedProblem extends ResolvableProblem {
 
     @Override
     public String getDescription() {
-        return Translation.getTranslation("folder_problem.access_denied");
+        return Translation.get("folder_problem.access_denied");
     }
 
     @Override
@@ -46,7 +46,7 @@ public class AccessDeniedProblem extends ResolvableProblem {
     @Override
     public String getResolutionDescription() {
         return Translation
-            .getTranslation("folder_problem.access_denied.remove_folder");
+            .get("folder_problem.access_denied.remove_folder");
     }
 
     @Override

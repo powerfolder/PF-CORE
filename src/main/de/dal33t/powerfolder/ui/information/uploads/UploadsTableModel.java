@@ -314,15 +314,15 @@ public class UploadsTableModel extends PFComponent implements TableModel,
             case COLTYPE :
                 return "";
             case COLFILE :
-                return Translation.getTranslation("general.file");
+                return Translation.get("general.file");
             case COLPROGRESS :
-                return Translation.getTranslation("transfers.progress");
+                return Translation.get("transfers.progress");
             case COLSIZE :
-                return Translation.getTranslation("general.size");
+                return Translation.get("general.size");
             case COLFOLDER :
-                return Translation.getTranslation("general.folder");
+                return Translation.get("general.folder");
             case COLTO :
-                return Translation.getTranslation("transfers.to");
+                return Translation.get("transfers.to");
         }
         return null;
     }

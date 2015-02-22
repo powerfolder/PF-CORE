@@ -95,7 +95,7 @@ public class OnlineStorageComponent extends PFUIComponent {
         boolean joined)
     {
         if (joined) {
-            syncActionLabel.setText(Translation.getTranslation(
+            syncActionLabel.setText(Translation.get(
                 "online_storage_component.online_storage_text",
                 Format.formatPercent(serverSync)).replace("%%", "%"));
             syncActionLabel.setForeground(warned ? Color.red : ColorUtil
@@ -103,21 +103,21 @@ public class OnlineStorageComponent extends PFUIComponent {
             syncActionLabel
                 .setToolTipText(warned
                     ? Translation
-                        .getTranslation("online_storage_component.online_storage_warning")
+                        .get("online_storage_component.online_storage_warning")
                     : Translation
-                        .getTranslation("online_storage_component.online_storage_tip"));
+                        .get("online_storage_component.online_storage_tip"));
             webButton.setToolTipText(Translation
-                .getTranslation("online_storage_component.online_storage_remove"));
+                .get("online_storage_component.online_storage_remove"));
         } else {
             syncActionLabel
                 .setText(Translation
-                    .getTranslation("online_storage_component.online_storage_unjoined_text"));
+                    .get("online_storage_component.online_storage_unjoined_text"));
             syncActionLabel
                 .setToolTipText(Translation
-                    .getTranslation("online_storage_component.online_storage_unjoined_tip"));
+                    .get("online_storage_component.online_storage_unjoined_tip"));
             webButton
                 .setToolTipText(Translation
-                    .getTranslation("online_storage_component.online_storage_unjoined_tip"));
+                    .get("online_storage_component.online_storage_unjoined_tip"));
         }
         syncAction.setJoined(joined);
     }

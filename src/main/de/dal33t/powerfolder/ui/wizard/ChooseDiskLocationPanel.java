@@ -167,7 +167,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         String infoText = (String) getWizardContext().getAttribute(PROMPT_TEXT_ATTRIBUTE);
         if (infoText == null) {
-            infoText = Translation.getTranslation("exp.wizard.choose_disk_location.select");
+            infoText = Translation.get("exp.wizard.choose_disk_location.select");
         }
         int row = 2;
         builder.addLabel(infoText, cc.xy(1, row));
@@ -239,7 +239,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         // Online Storage integration
         boolean backupByOS = getController().getOSClient().isBackupByDefault()
             && Boolean.TRUE.equals(getWizardContext().getAttribute(WizardContextAttributes.BACKUP_ONLINE_STOARGE));
-        backupByOnlineStorageBox = new JCheckBox(Translation.getTranslation(
+        backupByOnlineStorageBox = new JCheckBox(Translation.get(
                 "exp.wizard.choose_disk_location.backup_by_online_storage"));
 
         // Is backup suggested?
@@ -258,7 +258,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.setOpaque(false);
 
         // Create manual sync cb
-        manualSyncCheckBox = new JCheckBox(Translation.getTranslation(
+        manualSyncCheckBox = new JCheckBox(Translation.get(
                 "exp.wizard.choose_disk_location.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
@@ -267,7 +267,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
             .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.wizard.choose_disk_location.send_invitation"));
+            .get("exp.wizard.choose_disk_location.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -279,7 +279,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("exp.wizard.choose_disk_location.title");
+        return Translation.get("exp.wizard.choose_disk_location.title");
     }
 
     /**
@@ -359,7 +359,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         builder.add(locationTF, cc.xy(1, 1));
 
         JButtonMini locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation("exp.wizard.choose_disk_location.select_directory"));
+                Translation.get("exp.wizard.choose_disk_location.select_directory"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         JPanel panel = builder.getPanel();
@@ -384,8 +384,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private boolean validDirectory(Path location) {
         // Do not allow user to select folder base dir.
         if (location.equals(getController().getFolderRepository().getFoldersBasedir())) {
-            String title = Translation.getTranslation("general.directory");
-            String message = Translation.getTranslation("general.basedir_error.text");
+            String title = Translation.get("general.directory");
+            String message = Translation.get("general.basedir_error.text");
             DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
             return false;
         }
@@ -397,8 +397,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             if (!location.getParent().equals(
                 getController().getFolderRepository().getFoldersBasedir()))
             {
-                String title = Translation.getTranslation("general.directory");
-                String message = Translation.getTranslation(
+                String title = Translation.get("general.directory");
+                String message = Translation.get(
                     "general.outside_basedir_error.text", getController()
                         .getFolderRepository().getFoldersBasedirString());
                 DialogFactory.genericDialog(getController(), title, message,
@@ -438,7 +438,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         protected Object doInBackground() throws Exception {
 
             // Show something while working.
-            folderSizeLabel.setText(Translation.getTranslation("exp.wizard.choose_disk_location.calculating_directory_size"));
+            folderSizeLabel.setText(Translation.get("exp.wizard.choose_disk_location.calculating_directory_size"));
             folderSizeLabel.setForeground(SystemColor.textText);
 
             try {
@@ -463,15 +463,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 // In that case, another worker is going to update the value later.
                 if (initial.equals(locationModel.getValue())) {
                     if (nonExistent) {
-                        folderSizeLabel.setText(Translation.getTranslation(
+                        folderSizeLabel.setText(Translation.get(
                                 "exp.wizard.choose_disk_location.directory_non_existent"));
                         folderSizeLabel.setForeground(Color.red);
                     } else if (noWrite) {
-                        folderSizeLabel.setText(Translation.getTranslation(
+                        folderSizeLabel.setText(Translation.get(
                                 "exp.wizard.choose_disk_location.directory_no_write"));
                         folderSizeLabel.setForeground(Color.red);
                     } else {
-                        folderSizeLabel.setText(Translation.getTranslation(
+                        folderSizeLabel.setText(Translation.get(
                             "exp.wizard.choose_disk_location.directory_size",
                             Format.formatBytes(directorySize)));
                         folderSizeLabel.setForeground(SystemColor.textText);

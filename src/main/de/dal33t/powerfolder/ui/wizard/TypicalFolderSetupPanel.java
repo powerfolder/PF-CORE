@@ -99,7 +99,7 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation.getTranslation("general.folder"),
+        builder.addLabel(Translation.get("general.folder"),
             cc.xy(1, 1));
         builder.add(folderTextField, cc.xy(3, 1));
 
@@ -107,7 +107,7 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
             .add(
                 new JLabel(
                     Translation
-                        .getTranslation("wizard.multi_online_storage_setup.local_folder_location")),
+                        .get("wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
 
@@ -115,7 +115,7 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
             builder
                 .add(
                     new JLabel(Translation
-                        .getTranslation("general.transfer_mode")), cc.xy(1, 5));
+                        .get("general.transfer_mode")), cc.xy(1, 5));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
             p.setOpaque(false);
             builder.add(p, cc.xyw(3, 5, 4));
@@ -172,6 +172,6 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("exp.wizard.typical_folder_setup.title");
+        return Translation.get("exp.wizard.typical_folder_setup.title");
     }
 }

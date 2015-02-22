@@ -50,8 +50,8 @@ class ShareFolderNotificationHandler extends NotificationHandlerBase {
         super(controller);
 
         setTitle(Translation
-            .getTranslation("context_menu.share_folder.notification.title"));
-        setMessageText(Translation.getTranslation(
+            .get("context_menu.share_folder.notification.title"));
+        setMessageText(Translation.get(
             "context_menu.share_folder.notification.message",
             foInfo.getLocalizedName(), foInfo.getFolder(controller)
                 .getLocalBase().toString()));
@@ -59,7 +59,7 @@ class ShareFolderNotificationHandler extends NotificationHandlerBase {
         // Show in Web
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED.getValueBoolean(controller)) {
             setAcceptOptionLabel(Translation
-                .getTranslation("context_menu.share_folder.notification.accept_label"));
+                .get("context_menu.share_folder.notification.accept_label"));
             setAcceptAction(new AbstractAction() {
                 private static final long serialVersionUID = 100L;
 
@@ -80,7 +80,7 @@ class ShareFolderNotificationHandler extends NotificationHandlerBase {
 
         // Invite
         setCancelOptionLabel(Translation
-            .getTranslation("context_menu.share_folder.notification.cancel_label"));
+            .get("context_menu.share_folder.notification.cancel_label"));
         setCancelAction(new AbstractAction() {
             private static final long serialVersionUID = 100L;
 

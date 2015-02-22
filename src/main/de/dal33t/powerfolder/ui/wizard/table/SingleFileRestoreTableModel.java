@@ -42,10 +42,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SingleFileRestoreTableModel  extends PFComponent implements TableModel, SortedTableModel {
 
     private static final String[] COLUMNS = {
-            Translation.getTranslation("single_file_restore_table_model.modified_date"),
-            Translation.getTranslation("single_file_restore_table_model.version"),
-            Translation.getTranslation("single_file_restore_table_model.size"),
-            Translation.getTranslation("single_file_restore_table_model.local")
+            Translation.get("single_file_restore_table_model.modified_date"),
+            Translation.get("single_file_restore_table_model.version"),
+            Translation.get("single_file_restore_table_model.size"),
+            Translation.get("single_file_restore_table_model.local")
     };
 
     static final int COL_MODIFIED_DATE = 0;

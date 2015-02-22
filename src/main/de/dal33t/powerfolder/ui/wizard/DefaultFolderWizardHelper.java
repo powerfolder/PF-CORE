@@ -89,7 +89,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
                 .getValueBoolean(getController()), true);
         setupDefaultCB = BasicComponentFactory.createCheckBox(
             setupDefaultModel, Translation
-                .getTranslation("wizard.login_online_storage.setup_default"));
+                .get("wizard.login_online_storage.setup_default"));
         setupDefaultCB.setOpaque(false);
 
         defaultSynchronizedFolder = getController()
@@ -97,7 +97,7 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
             .getFoldersBasedir()
             .resolve(
                 Translation
-                    .getTranslation("exp.wizard.basic_setup.default_folder_name"));
+                    .get("exp.wizard.basic_setup.default_folder_name"));
 
         if (Files.exists(defaultSynchronizedFolder)) {
             // Hmmm. User has already created this???

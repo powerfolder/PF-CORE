@@ -43,8 +43,8 @@ public class ManuallyInvokedUpdateHandler extends UIUpdateHandler {
         UIUtil.invokeLaterInEDT(new Runnable() {
             public void run() {
                 DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("general.application.name"), Translation
-                    .getTranslation("dialog.update_check.noUpdateAvailable"),
+                    .get("general.application.name"), Translation
+                    .get("dialog.update_check.noUpdateAvailable"),
                     GenericDialogType.INFO);
             }
         });

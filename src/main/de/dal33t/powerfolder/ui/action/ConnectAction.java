@@ -58,8 +58,8 @@ public class ConnectAction extends BaseAction {
             parent = getUIController().getMainFrame().getUIComponent();
         }
         Object input = JOptionPane.showInputDialog(parent, Translation
-            .getTranslation("exp.connect.dialog.text"), Translation
-            .getTranslation("exp.connect.dialog.title"),
+            .get("exp.connect.dialog.text"), Translation
+            .get("exp.connect.dialog.title"),
             JOptionPane.QUESTION_MESSAGE, null, null, getController()
                 .getPreferences().get("input.lastconnect", ""));
         if (StringUtils.isBlank((String) input)) {

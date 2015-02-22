@@ -69,7 +69,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
     }
 
     public String getTabName() {
-        return Translation.getTranslation("exp.preferences.advanced.title");
+        return Translation.get("exp.preferences.advanced.title");
     }
 
     public boolean needsRestart() {
@@ -90,30 +90,30 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
         severSelector = new ServerSelectorPanel(getController());
 
-        useOnlineStorageCB = new JCheckBox(Translation.getTranslation("exp.preferences.advanced.online_storage_text"));
-        useOnlineStorageCB.setToolTipText(Translation.getTranslation("exp.preferences.advanced.online_storage_tip"));
+        useOnlineStorageCB = new JCheckBox(Translation.get("exp.preferences.advanced.online_storage_text"));
+        useOnlineStorageCB.setToolTipText(Translation.get("exp.preferences.advanced.online_storage_tip"));
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController()));
 
         originalVerbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
-        verboseCB = SimpleComponentFactory.createCheckBox(Translation.getTranslation("exp.preferences.advanced.verbose"));
+        verboseCB = SimpleComponentFactory.createCheckBox(Translation.get("exp.preferences.advanced.verbose"));
         verboseCB.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
 
-        lockUICB = SimpleComponentFactory.createCheckBox(Translation.getTranslation("exp.preferences.advanced.ui_locked"));
+        lockUICB = SimpleComponentFactory.createCheckBox(Translation.get("exp.preferences.advanced.ui_locked"));
         lockUICB.setSelected(ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(getController()));
 
         underlineLinkCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("exp.preferences.advanced.underline_link"));
+                Translation.get("exp.preferences.advanced.underline_link"));
         underlineLinkCB.setVisible(false);
         underlineLinkCB.setSelected(PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController()));
 
         autoExpandCB = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("exp.preferences.advanced.auto_expand"));
+                Translation.get("exp.preferences.advanced.auto_expand"));
         autoExpandCB.setVisible(false);
         autoExpandCB.setSelected(PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController()));
 
         showHiddenFilesCB = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("exp.preferences.warnings_notifications.show_hidden_files"));
+                .get("exp.preferences.warnings_notifications.show_hidden_files"));
         showHiddenFilesCB.setSelected(PreferencesEntry.SHOW_HIDDEN_FILES
             .getValueBoolean(getController()));
 
@@ -142,7 +142,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
         if (getUIController().getSkins().length > 1) {
             skinLabel = new JLabel(
-                Translation.getTranslation("exp.preferences.advanced.skin_text"));
+                Translation.get("exp.preferences.advanced.skin_text"));
             DefaultComboBoxModel<String> skinComboModel = new DefaultComboBoxModel<>();
             String skinName = PreferencesEntry.SKIN_NAME
                 .getValueString(getController());
@@ -183,7 +183,7 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             CellConstraints cc = new CellConstraints();
             int row = 1;
             builder.addLabel(
-                Translation.getTranslation("exp.preferences.advanced.server"),
+                Translation.get("exp.preferences.advanced.server"),
                 cc.xy(1, row));
             builder.add(severSelector.getUIComponent(), cc.xy(3, row));
 

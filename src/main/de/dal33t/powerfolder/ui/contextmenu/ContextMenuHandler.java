@@ -65,50 +65,50 @@ public class ContextMenuHandler extends PFComponent implements
         super(controller);
 
         openColabItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.open_and_colaborate"));
+            Translation.get("context_menu.open_and_colaborate"));
         openColabItem.setContextMenuAction(new OpenColaborateAction(
             getController()));
 
         pfMainItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.main_item"));
+            Translation.get("context_menu.main_item"));
 
         shareLinkItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.share_link"));
+            Translation.get("context_menu.share_link"));
         shareLinkItem
             .setContextMenuAction(new ShareLinkAction(getController()));
 
         shareFolderItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.share_folder"));
+            Translation.get("context_menu.share_folder"));
         shareFolderItem.setContextMenuAction(new ShareFolderAction(
             getController()));
 
         moveFolderItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.move_folder"));
+            Translation.get("context_menu.move_folder"));
         moveFolderItem.setContextMenuAction(new MoveExistingFolderAction(
             getController()));
 
         openWebItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.open_web"));
+            Translation.get("context_menu.open_web"));
         openWebItem.setContextMenuAction(new OpenWebAction(getController()));
 
         stopSyncItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.stop_sync"));
+            Translation.get("context_menu.stop_sync"));
         stopSyncItem.setContextMenuAction(new StopSyncAction(getController()));
 
         lockInfoItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.lock_information"));
+            Translation.get("context_menu.lock_information"));
         lockInfoItem.setContextMenuAction(new LockInfoAction(getController()));
 
         lockItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.lock"));
+            Translation.get("context_menu.lock"));
         lockItem.setContextMenuAction(new LockAction(getController()));
 
         unlockItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.unlock"));
+            Translation.get("context_menu.unlock"));
         unlockItem.setContextMenuAction(new UnlockAction(getController()));
 
         versionHistoryItem = new ContextMenuItem(
-            Translation.getTranslation("context_menu.version_history"));
+            Translation.get("context_menu.version_history"));
         versionHistoryItem.setContextMenuAction(new VersionHistoryAction(
             getController()));
     }

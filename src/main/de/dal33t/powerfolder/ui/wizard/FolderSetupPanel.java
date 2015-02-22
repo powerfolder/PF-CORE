@@ -93,13 +93,13 @@ public class FolderSetupPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation(
+                Translation.get(
                         "wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setup_success"),
-                Translation.getTranslation("wizard.success_join"));
+                Translation.get("wizard.setup_success"),
+                Translation.get("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         return new FolderCreatePanel(getController());
@@ -114,7 +114,7 @@ public class FolderSetupPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         // Folder Name
-        builder.add(new JLabel(Translation.getTranslation("file_info.name")),
+        builder.add(new JLabel(Translation.get("file_info.name")),
             cc.xy(1, 1));
         builder.add(folderNameTextField, cc.xy(3, 1));
 
@@ -123,7 +123,7 @@ public class FolderSetupPanel extends PFWizardPanel {
             builder
                 .add(
                     new JLabel(Translation
-                        .getTranslation("general.transfer_mode")), cc.xy(1, 3));
+                        .get("general.transfer_mode")), cc.xy(1, 3));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
             p.setOpaque(false);
             builder.add(p, cc.xyw(3, 3, 2));
@@ -157,7 +157,7 @@ public class FolderSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.folder_setup.title");
+        return Translation.get("wizard.folder_setup.title");
     }
 
     private class MyKeyListener implements KeyListener {

@@ -136,14 +136,14 @@ public class FileFilterTextField extends PFComponent {
         // else the ui will "jump"
         textField.setPreferredSize(new Dimension(17, 17));
         textField.setToolTipText(Translation
-            .getTranslation("filter_text_field.tip"));
+            .get("filter_text_field.tip"));
         clearTextJButton = new JButton3Icons(Icons
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL), Icons
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER), Icons
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         clearTextJButton.setVisible(false);
         clearTextJButton.setToolTipText(Translation
-            .getTranslation("filter_text_field.clear.hint"));
+            .get("filter_text_field.clear.hint"));
         // Make sure the background is never drawn
         clearTextJButton.setContentAreaFilled(false);
         clearTextJButton.addActionListener(new ActionListener() {
@@ -156,7 +156,7 @@ public class FileFilterTextField extends PFComponent {
         glassIcon = SimpleComponentFactory.createLabel(Icons
             .getIconById(Icons.FILTER_TEXT_FIELD_GLASS_ARROW));
         glassIcon.setToolTipText(Translation
-            .getTranslation("filter_text_field.glass.hint"));
+            .get("filter_text_field.glass.hint"));
         glassIcon.addMouseListener(new MyMouseListener());
 
         localValueModel.addValueChangeListener(new MyPropertyChangeListener());
@@ -179,16 +179,16 @@ public class FileFilterTextField extends PFComponent {
                 if (mode == DirectoryFilter.SEARCH_MODE_FILE_NAME_ONLY) {
                     textField
                         .setText(Translation
-                            .getTranslation("filter_text_field.menu.file_name_only.text"));
+                            .get("filter_text_field.menu.file_name_only.text"));
                 } else if (mode == DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME)
                 {
                     textField
                         .setText(Translation
-                            .getTranslation("filter_text_field.menu.file_name_directory_name.text"));
+                            .get("filter_text_field.menu.file_name_directory_name.text"));
                 } else if (mode == DirectoryFilter.SEARCH_MODE_MODIFIER) {
                     textField
                         .setText(Translation
-                            .getTranslation("filter_text_field.menu.modifier.text"));
+                            .get("filter_text_field.menu.modifier.text"));
                 }
             }
         }
@@ -214,17 +214,17 @@ public class FileFilterTextField extends PFComponent {
                 .getValueInt(getController());
             fileNameDirectoryNameRBMI = new JRadioButtonMenuItem(
                 Translation
-                    .getTranslation("filter_text_field.menu.file_name_directory_name.text"));
+                    .get("filter_text_field.menu.file_name_directory_name.text"));
             fileNameDirectoryNameRBMI.addActionListener(popupMenuListener);
             fileNameDirectoryNameRBMI
                 .setSelected(current == DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
             fileNameOnlyRBMI = new JRadioButtonMenuItem(Translation
-                .getTranslation("filter_text_field.menu.file_name_only.text"));
+                .get("filter_text_field.menu.file_name_only.text"));
             fileNameOnlyRBMI.addActionListener(popupMenuListener);
             fileNameOnlyRBMI
                 .setSelected(current == DirectoryFilter.SEARCH_MODE_FILE_NAME_ONLY);
             modifierRBMI = new JRadioButtonMenuItem(Translation
-                .getTranslation("filter_text_field.menu.modifier.text"));
+                .get("filter_text_field.menu.modifier.text"));
             modifierRBMI.addActionListener(popupMenuListener);
             modifierRBMI
                 .setSelected(current == DirectoryFilter.SEARCH_MODE_MODIFIER);
@@ -287,7 +287,7 @@ public class FileFilterTextField extends PFComponent {
             for (Member member : members) {
                 if (!computerButtons.keySet().contains(member)) {
                     JRadioButtonMenuItem button = new JRadioButtonMenuItem(
-                        Translation.getTranslation(
+                        Translation.get(
                             "filter_text_field.menu.computer.text", member
                                 .getNick()));
                     computerButtons.put(member, button);
@@ -366,7 +366,7 @@ public class FileFilterTextField extends PFComponent {
                         externalSearchTextValueModel.setValue(entry.getKey()
                             .getId());
                         textField.setEnabled(false);
-                        textField.setText(Translation.getTranslation(
+                        textField.setText(Translation.get(
                             "filter_text_field.menu.computer.text", entry
                                 .getKey().getNick()));
                     }

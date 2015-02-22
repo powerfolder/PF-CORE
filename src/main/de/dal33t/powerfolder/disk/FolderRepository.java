@@ -1579,11 +1579,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 if (getController().isUIEnabled()) {
                     WarningNotice notice = new WarningNotice(
-                        Translation.getTranslation("warning_notice.title"),
+                        Translation.get("warning_notice.title"),
                         Translation
-                            .getTranslation("warning_notice.no_folder_create_summary"),
+                            .get("warning_notice.no_folder_create_summary"),
                         Translation
-                            .getTranslation("warning_notice.no_folder_create_message"));
+                            .get("warning_notice.no_folder_create_message"));
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
                 }
@@ -1694,9 +1694,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 baseDir, filter)) {
                 for (Path file : files) {
                     WarningNotice notice = new FileInBasePathWarning(Translation
-                        .getTranslation("notice.file_in_base_path.title"), Translation
-                        .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()), Translation
-                        .getTranslation("notice.file_in_base_path.summary", file.getFileName().toString()));
+                        .get("notice.file_in_base_path.title"), Translation
+                        .get("notice.file_in_base_path.summary", file.getFileName().toString()), Translation
+                        .get("notice.file_in_base_path.summary", file.getFileName().toString()));
 
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
@@ -1884,9 +1884,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 DialogFactory.genericDialog(
                                     getController(),
                                     Translation
-                                        .getTranslation("notice.rename_folder_failed.title"),
+                                        .get("notice.rename_folder_failed.title"),
                                     Translation
-                                        .getTranslation(
+                                        .get(
                                             "notice.rename_folder_failed.summary",
                                             copyNewName,
                                             copyOldName),

@@ -111,14 +111,14 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         tableModel = new SingleFileRestoreTableModel(getController());
         table = new SingleFileRestoreTable(tableModel);
 
-        originalRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.original.text"));
+        originalRadio = new JRadioButton(Translation.get("wizard.single_file_restore.original.text"));
         originalLabel = new JLabel();
 
-        alternateLocationRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.alternate_location.text"));
+        alternateLocationRadio = new JRadioButton(Translation.get("wizard.single_file_restore.alternate_location.text"));
         alternateLocationTF = new JTextField();
-        alternateLocationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY), Translation.getTranslation("wizard.single_file_restore.select_directory.tip"));
+        alternateLocationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY), Translation.get("wizard.single_file_restore.select_directory.tip"));
 
-        alternateNameRadio = new JRadioButton(Translation.getTranslation("wizard.single_file_restore.alternate_name.text"));
+        alternateNameRadio = new JRadioButton(Translation.get("wizard.single_file_restore.alternate_name.text"));
         alternateNameTF = new JTextField();
     }
 
@@ -158,7 +158,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.single_file_restore.title");
+        return Translation.get("wizard.single_file_restore.title");
     }
 
     protected void initComponents() {
@@ -302,7 +302,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
     }
 
     private void loadVersions() {
-        infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieving.text"));
+        infoLabel.setText(Translation.get("wizard.multi_file_restore.retrieving.text"));
         hasNext = false;
         updateButtons();
         if (worker != null) {
@@ -399,10 +399,10 @@ public class SingleFileRestorePanel extends PFWizardPanel {
         protected void done() {
             try {
                 if (get().isEmpty()) {
-                    infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved_none.text",
+                    infoLabel.setText(Translation.get("wizard.single_file_restore.retrieved_none.text",
                             fileInfoToRestore.getFilenameOnly()));
                 } else {
-                    infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieved.text",
+                    infoLabel.setText(Translation.get("wizard.single_file_restore.retrieved.text",
                             String.valueOf(get().size()), fileInfoToRestore.getFilenameOnly()));
                 }
                 List<SingleFileRestoreItem> restoreItems = get();
@@ -418,9 +418,9 @@ public class SingleFileRestorePanel extends PFWizardPanel {
                     }
                 });
             } catch (CancellationException e) {
-                infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieve_cancelled.text"));
+                infoLabel.setText(Translation.get("wizard.single_file_restore.retrieve_cancelled.text"));
             } catch (Exception e) {
-                infoLabel.setText(Translation.getTranslation("wizard.single_file_restore.retrieve_exception.text",
+                infoLabel.setText(Translation.get("wizard.single_file_restore.retrieve_exception.text",
                         e.getMessage()));
             }
             bar.setVisible(false);

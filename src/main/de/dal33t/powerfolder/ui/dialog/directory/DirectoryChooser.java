@@ -153,7 +153,7 @@ public class DirectoryChooser extends BaseDialog {
         });
 
         JButton useClassicButton = new JButton(Translation
-            .getTranslation("dialog.directorychooser.use_classic"));
+            .get("dialog.directorychooser.use_classic"));
         useClassicButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 useClassicBrowser();
@@ -213,7 +213,7 @@ public class DirectoryChooser extends BaseDialog {
         } catch (Exception e) {
             logSevere("Unable to render directory chooser. " + e, e);
             return new JLabel(Translation
-                .getTranslation("dialog.directorychooser.error"));
+                .get("dialog.directorychooser.error"));
         }
     }
 
@@ -260,13 +260,13 @@ public class DirectoryChooser extends BaseDialog {
         builder.add(scrollPane, cc.xyw(1, row, 5));
         row += 2;
         if (multiSelect) {
-            builder.add(new JLabel(Translation.getTranslation(
+            builder.add(new JLabel(Translation.get(
                     "dialog.directorychooser.hold_control")),
                     cc.xyw(1, row, 5));
             row +=2;
         }
         builder.add(
-            new JLabel(Translation.getTranslation("general.directory")),
+            new JLabel(Translation.get("general.directory")),
                 cc.xy(1, row));
         builder.add(pathField, cc.xy(3, row));
         builder.add(ButtonBarFactory.buildRightAlignedBar(newDirButton), cc.xy(
@@ -295,7 +295,7 @@ public class DirectoryChooser extends BaseDialog {
      * @return
      */
     public String getTitle() {
-        return Translation.getTranslation("dialog.directory-chooser.title");
+        return Translation.get("dialog.directory-chooser.title");
     }
 
     private void newDirectoryAction() {
@@ -326,8 +326,8 @@ public class DirectoryChooser extends BaseDialog {
                             .genericDialog(
                                 getController(),
                                 Translation
-                                    .getTranslation("dialog.directorychooser.new.description"),
-                                Translation.getTranslation(
+                                    .get("dialog.directorychooser.new.description"),
+                                Translation.get(
                                     "dialog.directorychooser.new.exists", f
                                         .toAbsolutePath().toString()),
                                 GenericDialogType.WARN);
@@ -387,8 +387,8 @@ public class DirectoryChooser extends BaseDialog {
                                 .genericDialog(
                                     getController(),
                                     Translation
-                                        .getTranslation("dialog.directorychooser.new.description"),
-                                    Translation.getTranslation(
+                                        .get("dialog.directorychooser.new.description"),
+                                    Translation.get(
                                         "dialog.directorychooser.new.problem",
                                         f.toAbsolutePath().toString()),
                                     GenericDialogType.WARN);

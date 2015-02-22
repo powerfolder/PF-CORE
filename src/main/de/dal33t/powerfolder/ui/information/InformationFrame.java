@@ -214,7 +214,7 @@ public class InformationFrame extends PFUIComponent {
         buildUploadsInformationCard();
         getUIComponent().getContentPane().removeAll();
         getUIComponent().setTitle(
-                Translation.getTranslation("exp.information_frame.transfers.text"));
+                Translation.get("exp.information_frame.transfers.text"));
         getUIComponent().setIconImage(Icons.getImageById(Icons.TRANSFERS));
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(downloadsInformationCard.getCardTitle(),

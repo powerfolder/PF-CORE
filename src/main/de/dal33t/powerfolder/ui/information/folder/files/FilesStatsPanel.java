@@ -46,9 +46,9 @@ public class FilesStatsPanel extends PFUIComponent {
     public FilesStatsPanel(Controller controller) {
         super(controller);
         pathLabel = new JLabel("");
-        localLabel = new JLabel(Translation.getTranslation(
+        localLabel = new JLabel(Translation.get(
             "files_stats_panel.local_label", ""));
-        deletedLabel = new JLabel(Translation.getTranslation(
+        deletedLabel = new JLabel(Translation.get(
             "files_stats_panel.deleted_label", ""));
     }
 
@@ -60,9 +60,9 @@ public class FilesStatsPanel extends PFUIComponent {
     }
 
     public void setStats(long local, long deleted) {
-        localLabel.setText(Translation.getTranslation(
+        localLabel.setText(Translation.get(
             "files_stats_panel.local_label", String.valueOf(local)));
-        deletedLabel.setText(Translation.getTranslation(
+        deletedLabel.setText(Translation.get(
             "files_stats_panel.deleted_label", String.valueOf(deleted)));
     }
 

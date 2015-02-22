@@ -282,13 +282,13 @@ public class FilesTable extends JTable {
                                 }
                                 setIcon(Icons
                                     .getIconById(Icons.DOWNLOAD_ACTIVE));
-                                statusForTooltip = Translation.getTranslation(
+                                statusForTooltip = Translation.get(
                                     "file_info.downloading_from_member",
                                     b.toString());
                             } else {
                                 setIcon(Icons.getIconById(Icons.DOWNLOAD));
                                 statusForTooltip = Translation
-                                    .getTranslation("transfers.queued");
+                                    .get("transfers.queued");
                             }
                             // preference goes to deleted, then ignored then
                             // available icon
@@ -296,14 +296,14 @@ public class FilesTable extends JTable {
                             setForeground(DELETED);
                             setIcon(null);
                             statusForTooltip = Translation
-                                .getTranslation("file_info.deleted");
+                                .get("file_info.deleted");
 
                         } else if (folder != null
                             && folder.getDiskItemFilter().isExcluded(fileInfo))
                         {
                             // File filtered out by blacklist.
                             statusForTooltip = replaceSpacesWithNBSP(Translation
-                                .getTranslation("file_info.ignore"));
+                                .get("file_info.ignore"));
                             strikethrough = true;
                         } else if (fileInfo.isExpected(controller
                             .getFolderRepository()))
@@ -311,7 +311,7 @@ public class FilesTable extends JTable {
                             setForeground(AVAILABLE);
                             setIcon(Icons.getIconById(Icons.EXPECTED));
                             statusForTooltip = Translation
-                                .getTranslation("file_info.expected");
+                                .get("file_info.expected");
 
                         } else if (newestVersion != null
                             && newestVersion.isNewerThan(fileInfo))
@@ -333,18 +333,18 @@ public class FilesTable extends JTable {
                                         // work sync
                                         setIcon(Icons.getIconById(Icons.DELETE));
                                         statusForTooltip = Translation
-                                            .getTranslation("file_info.remote_deleted");
+                                            .get("file_info.remote_deleted");
                                     }
                                 }
                             } else {
                                 setIcon(Icons.getIconById(Icons.EXPECTED));
                                 statusForTooltip = Translation
-                                    .getTranslation("file_info.new_version_available");
+                                    .get("file_info.new_version_available");
                             }
                         } else {
                             if (recentlyDownloaded(fileInfo)) {
                                 statusForTooltip = Translation
-                                    .getTranslation("file_info.recently_downloaded");
+                                    .get("file_info.recently_downloaded");
                             }
                         }
 
@@ -442,11 +442,11 @@ public class FilesTable extends JTable {
             if (!StringUtils.isBlank(statusForTooltip)) {
                 String style;
                 if (statusForTooltip.equals(Translation
-                    .getTranslation("file_info.deleted")))
+                    .get("file_info.deleted")))
                 {
                     style = "deleted";
                 } else if (statusForTooltip.equals(Translation
-                    .getTranslation("file_info.new_version_available")))
+                    .get("file_info.new_version_available")))
                 {
                     style = "new_avail";
                 } else {

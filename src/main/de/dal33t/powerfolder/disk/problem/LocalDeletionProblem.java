@@ -26,15 +26,15 @@ public class LocalDeletionProblem extends ResolvableProblem {
                 int response = DialogFactory
                     .genericDialog(
                         controller,
-                        Translation.getTranslation("local_delete_notice.title",
+                        Translation.get("local_delete_notice.title",
                             fileInfo.getFilenameOnly()),
                         Translation
-                            .getTranslation("local_delete_notice.message"),
+                            .get("local_delete_notice.message"),
                         new String[]{
                             Translation
-                                .getTranslation("local_delete_notice.broadcast_deletions"),
+                                .get("local_delete_notice.broadcast_deletions"),
                             Translation
-                                .getTranslation("local_delete_notice.discard_deletions")},
+                                .get("local_delete_notice.discard_deletions")},
                         0, GenericDialogType.WARN);
                 Folder folder = folderInfo.getFolder(controller);
                 if (folder == null) {
@@ -60,13 +60,13 @@ public class LocalDeletionProblem extends ResolvableProblem {
     @Override
     public String getResolutionDescription() {
         return Translation
-            .getTranslation("local_delete_notice.resolution_description");
+            .get("local_delete_notice.resolution_description");
     }
 
     @Override
     public String getDescription() {
         return Translation
-            .getTranslation("warning_notice.mass_deletion",
+            .get("warning_notice.mass_deletion",
                 fileInfo.getFilenameOnly());
     }
 

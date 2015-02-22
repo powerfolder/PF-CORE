@@ -115,7 +115,7 @@ public class UploadsInformationCard extends InformationCard implements
      * @return
      */
     public String getCardTitle() {
-        return Translation.getTranslation("exp.uploads_information_card.title");
+        return Translation.get("exp.uploads_information_card.title");
     }
 
     /**
@@ -138,7 +138,7 @@ public class UploadsInformationCard extends InformationCard implements
         cleanupLabel = new JLabel();
         cleanupLabel
             .setToolTipText(Translation
-                .getTranslation("exp.uploads_information_card.auto_cleanup.frequency_tip"));
+                .get("exp.uploads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(),
             clearCompletedUploadsAction, addIgnoreAction);
@@ -188,14 +188,14 @@ public class UploadsInformationCard extends InformationCard implements
         builder.add(tabbedPane, cc.xy(1, 3));
 
         tabbedPane.add(fileDetailsPanel.getPanel(), Translation
-            .getTranslation("files_table_panel.file_details_tab.text"));
+            .get("files_table_panel.file_details_tab.text"));
         tabbedPane.setToolTipTextAt(0, Translation
-            .getTranslation("files_table_panel.file_details_tab.tip"));
+            .get("files_table_panel.file_details_tab.tip"));
 
         tabbedPane.add(fileVersionsPanel.getPanel(), Translation
-            .getTranslation("files_table_panel.file_versions_tab.text"));
+            .get("files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation
-            .getTranslation("files_table_panel.file_versions_tab.tip"));
+            .get("files_table_panel.file_versions_tab.tip"));
 
         return builder.getPanel();
     }
@@ -228,7 +228,7 @@ public class UploadsInformationCard extends InformationCard implements
         cleanupSlider.addChangeListener(new MyChangeListener());
         cleanupSlider
             .setToolTipText(Translation
-                .getTranslation("exp.uploads_information_card.auto_cleanup.frequency_tip"));
+                .get("exp.uploads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
@@ -309,14 +309,14 @@ public class UploadsInformationCard extends InformationCard implements
         if (cleanupSlider.getValue() == 0) {
             cleanupLabel
                 .setText(Translation
-                    .getTranslation("exp.uploads_information_card.auto_cleanup.immediate"));
+                    .get("exp.uploads_information_card.auto_cleanup.immediate"));
         } else if (cleanupSlider.getValue() >= 4) {
             cleanupLabel.setText(Translation
-                .getTranslation("exp.uploads_information_card.auto_cleanup.never"));
+                .get("exp.uploads_information_card.auto_cleanup.never"));
         } else {
             int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider
                 .getValue()];
-            cleanupLabel.setText(Translation.getTranslation(
+            cleanupLabel.setText(Translation.get(
                 "exp.uploads_information_card.auto_cleanup.days",
                 String.valueOf(trueCleanupDays)));
         }
@@ -325,17 +325,17 @@ public class UploadsInformationCard extends InformationCard implements
     private void displayStats() {
 
         int activeUploadCount = tablePanel.countActiveUploadCount();
-        activeUploadCountLabel.setText(Translation.getTranslation(
+        activeUploadCountLabel.setText(Translation.get(
             "status.active_upload_count", String.valueOf(activeUploadCount)));
 
         int completedUploadCount = tablePanel.countCompletedUploadCount();
-        completedUploadCountLabel.setText(Translation.getTranslation(
+        completedUploadCountLabel.setText(Translation.get(
             "status.completed_upload_count",
             String.valueOf(completedUploadCount)));
 
         double kbs = getController().getTransferManager().getUploadCounter()
             .calculateCurrentKBS();
-        uploadCounterLabel.setText(Translation.getTranslation("status.upload",
+        uploadCounterLabel.setText(Translation.get("status.upload",
             Format.formatDecimal(kbs)));
     }
 

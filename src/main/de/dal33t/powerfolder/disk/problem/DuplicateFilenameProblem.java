@@ -34,7 +34,7 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
 
     public DuplicateFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.getTranslation("filename_problem.duplicate", fileInfo.getFilenameOnly());
+        description = Translation.get("filename_problem.duplicate", fileInfo.getFilenameOnly());
     }
 
     public FileInfo getFileInfo() {
@@ -61,6 +61,6 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-       return Translation.getTranslation("filename_problem.duplicate.soln_desc");
+       return Translation.get("filename_problem.duplicate.soln_desc");
     }
 }

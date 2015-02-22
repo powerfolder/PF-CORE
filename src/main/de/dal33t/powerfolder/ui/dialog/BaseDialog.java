@@ -188,8 +188,8 @@ public abstract class BaseDialog extends PFUIComponent {
      * @return
      */
     protected static JButton createOKButton(ActionListener listener) {
-        JButton okButton = new JButton(Translation.getTranslation("general.ok"));
-        okButton.setMnemonic(Translation.getTranslation("general.ok.key")
+        JButton okButton = new JButton(Translation.get("general.ok"));
+        okButton.setMnemonic(Translation.get("general.ok.key")
             .trim().charAt(0));
         okButton.addActionListener(listener);
         return okButton;
@@ -204,8 +204,8 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected static JButton createCancelButton(ActionListener listener) {
         JButton cancelButton = new JButton(Translation
-            .getTranslation("general.cancel"));
-        cancelButton.setMnemonic(Translation.getTranslation(
+            .get("general.cancel"));
+        cancelButton.setMnemonic(Translation.get(
             "general.cancel.key").trim().charAt(0));
         cancelButton.addActionListener(listener);
         return cancelButton;
@@ -220,8 +220,8 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected static JButton createCloseButton(ActionListener listener) {
         JButton closeButton = new JButton(Translation
-            .getTranslation("general.close"));
-        closeButton.setMnemonic(Translation.getTranslation("general.close.key")
+            .get("general.close"));
+        closeButton.setMnemonic(Translation.get("general.close.key")
             .trim().charAt(0));
         closeButton.addActionListener(listener);
         return closeButton;

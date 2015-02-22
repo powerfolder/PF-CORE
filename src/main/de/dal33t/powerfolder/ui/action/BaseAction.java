@@ -83,10 +83,10 @@ public abstract class BaseAction extends AbstractAction {
         if (StringUtils.isBlank(actionId)) {
             return;
         }
-        putValue(NAME, Translation.getTranslation(actionId + ".name"));
-        setMnemonicKey(Translation.getTranslation(actionId + ".key"));
+        putValue(NAME, Translation.get(actionId + ".name"));
+        setMnemonicKey(Translation.get(actionId + ".key"));
         putValue(SHORT_DESCRIPTION,
-            Translation.getTranslation(actionId + ".description"));
+            Translation.get(actionId + ".description"));
         Icon icon = Icons.getIconById(actionId + ".icon");
         if (icon != null && icon.getIconHeight() != -1) { // check if valid
             putValue(SMALL_ICON, icon);

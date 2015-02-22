@@ -46,7 +46,7 @@ public class NodesSelectTableModel implements TableModel {
     private final List<TableModelListener> listeners = new LinkedList<TableModelListener>();
 
     private static final String[] COLUMN_NAMES = new String[]{Translation
-        .getTranslation("friend_search.node_table.name")};
+        .get("friend_search.node_table.name")};
 
     public NodesSelectTableModel(Controller controller) {
         this.controller = controller;
@@ -117,7 +117,7 @@ public class NodesSelectTableModel implements TableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (nodes.isEmpty()) {
             return Translation
-                .getTranslation("exp.friend_search.no_computers_found");
+                .get("exp.friend_search.no_computers_found");
         }
         int i = 0;
         for (Member node : nodes) {

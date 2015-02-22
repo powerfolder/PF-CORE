@@ -104,9 +104,9 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                         .getProblemInformation();
                     if (problemInformation == null) {
                         bar.setString(Translation
-                            .getTranslation(transferProblem.getTranslationId()));
+                            .get(transferProblem.getTranslationId()));
                     } else {
-                        bar.setString(Translation.getTranslation(
+                        bar.setString(Translation.get(
                             transferProblem.getTranslationId(),
                             problemInformation));
                     }
@@ -121,7 +121,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                         case VERIFYING :
                         case FILERECORD_REQUEST :
                         case COPYING :
-                            bar.setString(Translation.getTranslation(state
+                            bar.setString(Translation.get(state
                                 .getTranslationId()));
                             break;
                         case DOWNLOADING :
@@ -133,7 +133,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                             // .getCounter()
                             // .calculateEstimatedMillisToCompletion(),
                             // !download.isCompleted() && download.isStarted());
-                            String kbs = Translation.getTranslation(
+                            String kbs = Translation.get(
                                 "transfers.kbs", Format.formatDecimal(counter
                                     .calculateCurrentKBS()));
                             String text = (et.isActive() ? et.toString()
@@ -148,17 +148,17 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                                     .getCompletedDate();
                                 String dateStr = completedDate != null ? Format
                                     .formatDateShort(completedDate, true) : "";
-                                bar.setString(Translation.getTranslation(
+                                bar.setString(Translation.get(
                                     "transfers.completed", dateStr));
                             } else if (download.isQueued()) {
                                 bar.setString(Translation
-                                    .getTranslation("transfers.queued"));
+                                    .get("transfers.queued"));
                             } else if (download.isPending()) {
                                 bar.setString(Translation
-                                    .getTranslation("transfers.pending"));
+                                    .get("transfers.pending"));
                             } else {
                                 bar.setString(Translation
-                                    .getTranslation("transfers.requested"));
+                                    .get("transfers.requested"));
                             }
                     }
                 }
@@ -167,7 +167,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                 switch (upload.getTransferState()) {
                     case FILEHASHING :
                     case REMOTEMATCHING :
-                        bar.setString(Translation.getTranslation(upload
+                        bar.setString(Translation.get(upload
                             .getTransferState().getTranslationId()));
                         break;
                     default :
@@ -175,15 +175,15 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
                             Date completedDate = transfer.getCompletedDate();
                             String dateStr = completedDate != null ? Format
                                 .formatDateShort(completedDate, true) : "";
-                            bar.setString(Translation.getTranslation(
+                            bar.setString(Translation.get(
                                 "transfers.completed", dateStr));
                         } else if (upload.isStarted()) {
-                            bar.setString(Translation.getTranslation(
+                            bar.setString(Translation.get(
                                 "transfers.kbs", Format.formatDecimal(counter
                                     .calculateCurrentKBS())));
                         } else {
                             bar.setString(Translation
-                                .getTranslation("transfers.queued"));
+                                .get("transfers.queued"));
                         }
                 }
             }
@@ -213,7 +213,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
             String nickText = node.getNick();
             if (node.isOnLAN()) {
                 nickText += " ("
-                    + Translation.getTranslation("transfers.local") + ')';
+                    + Translation.get("transfers.local") + ')';
             }
             setText(nickText);
             setHorizontalAlignment(LEFT);
@@ -234,7 +234,7 @@ public class UploadTableCellRenderer extends DefaultTableCellRenderer {
             setIcon(null);
             setHorizontalAlignment(CENTER);
         } else {
-            setText(Translation.getTranslation("transfers.searching"));
+            setText(Translation.get("transfers.searching"));
             setIcon(null);
             setHorizontalAlignment(LEFT);
         }

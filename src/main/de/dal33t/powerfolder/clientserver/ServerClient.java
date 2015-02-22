@@ -230,7 +230,7 @@ public class ServerClient extends PFComponent {
 
         // Custom server
         String theName = StringUtils.isBlank(name) ? Translation
-            .getTranslation("online_storage.connecting") : name;
+            .get("online_storage.connecting") : name;
 
         boolean temporaryNode = StringUtils.isBlank(nodeId);
         String theNodeId = temporaryNode ? MEMBER_ID_TEMP_PREFIX + '|'

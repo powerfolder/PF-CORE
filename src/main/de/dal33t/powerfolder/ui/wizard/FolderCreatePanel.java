@@ -86,15 +86,15 @@ public class FolderCreatePanel extends SwingWorkerPanel {
 
     public FolderCreatePanel(Controller controller) {
         super(controller, null, Translation
-            .getTranslation("wizard.create_folder.title"), Translation
-            .getTranslation("wizard.create_folder.working"), null);
+            .get("wizard.create_folder.title"), Translation
+            .get("wizard.create_folder.working"), null);
         setTask(new MyFolderCreateWorker());
         folders = new ArrayList<Folder>();
     }
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("wizard.create_folder.title");
+        return Translation.get("wizard.create_folder.title");
     }
 
     @Override

@@ -155,7 +155,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         tableScroller = new JScrollPane(table);
         emptyLabel = new JLabel(
-            Translation.getTranslation("files_table_panel.no_files_available"));
+            Translation.get("files_table_panel.no_files_available"));
         emptyLabel.setEnabled(false);
 
         emptyResetLink = new ActionLabel(getController(),
@@ -266,12 +266,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             case DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING :
                 emptyLabel
                     .setText(Translation
-                        .getTranslation("files_table_panel.no_files_available.local_and_incoming"));
+                        .get("files_table_panel.no_files_available.local_and_incoming"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_LOCAL_ONLY :
                 emptyLabel
                     .setText(Translation
-                        .getTranslation("files_table_panel.no_files_available.local_only"));
+                        .get("files_table_panel.no_files_available.local_only"));
                 break;
 //            case DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY :
 //                emptyLabel
@@ -281,22 +281,22 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             case DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY :
                 emptyLabel
                     .setText(Translation
-                        .getTranslation("files_table_panel.no_files_available.new_only"));
+                        .get("files_table_panel.no_files_available.new_only"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS :
                 emptyLabel
                     .setText(Translation
-                        .getTranslation("files_table_panel.no_files_available.deleted_previous"));
+                        .get("files_table_panel.no_files_available.deleted_previous"));
                 break;
             case DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED :
                 emptyLabel
                     .setText(Translation
-                        .getTranslation("files_table_panel.no_files_available.unsynchronized"));
+                        .get("files_table_panel.no_files_available.unsynchronized"));
                 break;
             default :
                 // Generic message.
                 emptyLabel.setText(Translation
-                    .getTranslation("files_table_panel.no_files_available"));
+                    .get("files_table_panel.no_files_available"));
                 break;
         }
         emptyResetLink.setVisible(!event.isDefaultFilter());
@@ -304,7 +304,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     public void adviseOfFilteringBegin() {
         emptyLabel.setText(Translation
-            .getTranslation("files_table_panel.finding_files"));
+            .get("files_table_panel.finding_files"));
         emptyResetLink.setVisible(false);
     }
 
@@ -312,7 +312,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         tableModel.setFilteredDirectoryModel(new FilteredDirectoryModel("", "",
             null));
         emptyLabel.setText(Translation
-            .getTranslation("files_table_panel.finding_files"));
+            .get("files_table_panel.finding_files"));
         emptyResetLink.setVisible(false);
     }
 
@@ -393,11 +393,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             }
 
             protected String getTitle() {
-                return Translation.getTranslation("delete.busy.title");
+                return Translation.get("delete.busy.title");
             }
 
             protected String getWorkingText() {
-                return Translation.getTranslation("delete.busy.description");
+                return Translation.get("delete.busy.description");
             }
         };
         worker.start();
@@ -465,14 +465,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         builder.add(tabbedPane, cc.xy(1, 3));
 
         tabbedPane.add(fileDetailsPanel.getPanel(), Translation
-            .getTranslation("files_table_panel.file_details_tab.text"));
+            .get("files_table_panel.file_details_tab.text"));
         tabbedPane.setToolTipTextAt(0, Translation
-            .getTranslation("files_table_panel.file_details_tab.tip"));
+            .get("files_table_panel.file_details_tab.tip"));
 
         tabbedPane.add(fileVersionsPanel.getPanel(), Translation
-            .getTranslation("files_table_panel.file_versions_tab.text"));
+            .get("files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation
-            .getTranslation("files_table_panel.file_versions_tab.tip"));
+            .get("files_table_panel.file_versions_tab.tip"));
 
         tabbedPane.setSelectedIndex(1);
 
@@ -542,13 +542,13 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                 @Override
                 protected String getTitle() {
-                    return Translation.getTranslation("download.busy.title");
+                    return Translation.get("download.busy.title");
                 }
 
                 @Override
                 protected String getWorkingText() {
                     return Translation
-                        .getTranslation("download.busy.description");
+                        .get("download.busy.description");
                 }
 
             };

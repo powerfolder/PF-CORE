@@ -231,11 +231,11 @@ public class ApplicationModel extends PFUIComponent {
                 {
                     // More than 90% used. Notify.
                     WarningNotice notice = new WarningNotice(
-                        Translation.getTranslation("warning_notice.title"),
+                        Translation.get("warning_notice.title"),
                         Translation
-                            .getTranslation("warning_notice.cloud_full_summary"),
+                            .get("warning_notice.cloud_full_summary"),
                         Translation
-                            .getTranslation("warning_notice.cloud_full_message"));
+                            .get("warning_notice.cloud_full_message"));
                     noticesModel.handleNotice(notice);
                 }
             }
@@ -265,8 +265,8 @@ public class ApplicationModel extends PFUIComponent {
                         PathUtils.isSubdirectory(originalDirectory, newDirectory)) {
                     // Can't move a folder to one of its subdirectories.
                     DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation("general.directory"),
-                            Translation.getTranslation("general.subdirectory_error.text"),
+                            Translation.get("general.directory"),
+                            Translation.get("general.subdirectory_error.text"),
                             GenericDialogType.ERROR);
                     return;
                 }
@@ -275,8 +275,8 @@ public class ApplicationModel extends PFUIComponent {
                 if (newDirectory.equals(foldersBaseDir)) {
                     // Can't move a folder to the base directory.
                     DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation("general.directory"),
-                            Translation.getTranslation("general.basedir_error.text"),
+                            Translation.get("general.directory"),
+                            Translation.get("general.basedir_error.text"),
                             GenericDialogType.ERROR);
                     return;
                 }
@@ -290,8 +290,8 @@ public class ApplicationModel extends PFUIComponent {
                     {
                         // Can't move a folder outside the base directory.
                         DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation("general.directory"),
-                            Translation.getTranslation(
+                            Translation.get("general.directory"),
+                            Translation.get(
                                 "general.outside_basedir_error.text",
                                 getController().getFolderRepository()
                                     .getFoldersBasedirString()),
@@ -332,12 +332,12 @@ public class ApplicationModel extends PFUIComponent {
     private int shouldMoveContent() {
         return DialogFactory.genericDialog(
             getController(),
-            Translation.getTranslation("settings_tab.move_content.title"),
-            Translation.getTranslation("settings_tab.move_content"),
+            Translation.get("settings_tab.move_content.title"),
+            Translation.get("settings_tab.move_content"),
             new String[]{
-                Translation.getTranslation("settings_tab.move_content.move"),
-                Translation.getTranslation("settings_tab.move_content.dont"),
-                Translation.getTranslation("general.cancel"),}, 0,
+                Translation.get("settings_tab.move_content.move"),
+                Translation.get("settings_tab.move_content.dont"),
+                Translation.get("general.cancel"),}, 0,
             GenericDialogType.INFO);
     }
 
@@ -365,9 +365,9 @@ public class ApplicationModel extends PFUIComponent {
                             .genericDialog(
                                 getController(),
                                 Translation
-                                    .getTranslation("settings_tab.move_error.title"),
+                                    .get("settings_tab.move_error.title"),
                                 Translation
-                                    .getTranslation("settings_tab.move_error.temp"),
+                                    .get("settings_tab.move_error.temp"),
                                 getController().isVerbose(), e);
                     }
                 }
@@ -383,15 +383,15 @@ public class ApplicationModel extends PFUIComponent {
      */
     private boolean shouldMoveLocal(Path newDirectory, Folder folder) {
         String title = Translation
-            .getTranslation("settings_tab.confirm_local_folder_move.title");
-        String message = Translation.getTranslation(
+            .get("settings_tab.confirm_local_folder_move.title");
+        String message = Translation.get(
             "settings_tab.confirm_local_folder_move.text", folder
                 .getCommitOrLocalDir().toAbsolutePath().toString(), newDirectory
                 .toAbsolutePath().toString());
 
         return DialogFactory.genericDialog(getController(), title, message,
-            new String[]{Translation.getTranslation("general.continue"),
-                Translation.getTranslation("general.cancel")}, 0,
+            new String[]{Translation.get("general.continue"),
+                Translation.get("general.cancel")}, 0,
             GenericDialogType.INFO) == 0;
     }
 
@@ -410,11 +410,11 @@ public class ApplicationModel extends PFUIComponent {
         {
             int result = DialogFactory.genericDialog(getController(),
                 Translation
-                    .getTranslation("exp.settings_tab.folder_not_empty.title"),
-                Translation.getTranslation("exp.settings_tab.folder_not_empty",
+                    .get("exp.settings_tab.folder_not_empty.title"),
+                Translation.get("exp.settings_tab.folder_not_empty",
                     newDirectory.toAbsolutePath().toString()),
-                new String[]{Translation.getTranslation("general.continue"),
-                    Translation.getTranslation("general.cancel")}, 1,
+                new String[]{Translation.get("general.continue"),
+                    Translation.get("general.cancel")}, 1,
                 GenericDialogType.WARN); // Default is cancel.
             if (result != 0) {
                 // User does not want to move to new folder.
@@ -435,8 +435,8 @@ public class ApplicationModel extends PFUIComponent {
     private void displayError(Exception e) {
         DialogFactory.genericDialog(
             getController(),
-            Translation.getTranslation("settings_tab.move_error.title"),
-            Translation.getTranslation("settings_tab.move_error.other",
+            Translation.get("settings_tab.move_error.title"),
+            Translation.get("settings_tab.move_error.other",
                 e.getMessage()), GenericDialogType.WARN);
     }
 
@@ -552,11 +552,11 @@ public class ApplicationModel extends PFUIComponent {
                 .hasPermission(AdminPermission.INSTANCE))
             {
                 WarningNotice notice = new WarningNotice(
-                    Translation.getTranslation("warning_notice.title"),
+                    Translation.get("warning_notice.title"),
                     Translation
-                        .getTranslation("warning_notice.admin_login.summary"),
+                        .get("warning_notice.admin_login.summary"),
                     Translation
-                        .getTranslation("warning_notice.admin_login.message"));
+                        .get("warning_notice.admin_login.message"));
                 noticesModel.handleNotice(notice);
             }
         }
@@ -740,7 +740,7 @@ public class ApplicationModel extends PFUIComponent {
                 .format(lock.getCreated());
 
             String memberTemp = Translation
-                .getTranslation("context_menu.unlock.message.web");
+                .get("context_menu.unlock.message.web");
             if (lock.getMemberInfo() != null) {
                 memberTemp = lock.getMemberInfo().getNick();
             }
@@ -758,12 +758,12 @@ public class ApplicationModel extends PFUIComponent {
         {
             super(controller);
 
-            setTitle(Translation.getTranslation("context_menu.unlock.title"));
-            setMessageText(Translation.getTranslation(
+            setTitle(Translation.get("context_menu.unlock.title"));
+            setMessageText(Translation.get(
                 "context_menu.unlock.notice", name, displayName, date,
                 memberName));
 
-            setCancelOptionLabel(Translation.getTranslation("general.ok"));
+            setCancelOptionLabel(Translation.get("general.ok"));
             setCancelAction(new AbstractAction() {
                 private static final long serialVersionUID = 100L;
 
@@ -802,13 +802,13 @@ public class ApplicationModel extends PFUIComponent {
 
         @Override
         protected String getTitle() {
-            return Translation.getTranslation("settings_tab.working.title");
+            return Translation.get("settings_tab.working.title");
         }
 
         @Override
         protected String getWorkingText() {
             return Translation
-                .getTranslation("settings_tab.working.description");
+                .get("settings_tab.working.description");
         }
 
         @Override

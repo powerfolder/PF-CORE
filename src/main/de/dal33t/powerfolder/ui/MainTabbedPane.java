@@ -77,13 +77,13 @@ public class MainTabbedPane extends PFUIComponent {
 
             if (showDeviceTab) {
 
-                tabbedPane.add(Translation.getTranslation(
+                tabbedPane.add(Translation.get(
                         "main_tabbed_pane.folders.name"),
                         foldersTab.getUIComponent());
 
                 if (showComputersTab) {
                     tabbedPane.add(Translation
-                        .getTranslation("exp.main_tabbed_pane.computers.name"),
+                        .get("exp.main_tabbed_pane.computers.name"),
                         computersTab.getUIComponent());
                 } else {
                     // Do not display computers tab in backup only mode, BUT
@@ -92,19 +92,19 @@ public class MainTabbedPane extends PFUIComponent {
                 }
 
                 String key = Translation
-                    .getTranslation("main_tabbed_pane.folders.key");
+                    .get("main_tabbed_pane.folders.key");
                 tabbedPane.setMnemonicAt(FOLDERS_INDEX,
                     (int) Character.toUpperCase(key.charAt(0)));
                 tabbedPane.setToolTipTextAt(FOLDERS_INDEX, Translation
-                    .getTranslation("main_tabbed_pane.folders.description"));
+                    .get("main_tabbed_pane.folders.description"));
 
                 if (showComputersTab) {
                     key = Translation
-                        .getTranslation("exp.main_tabbed_pane.computers.key");
+                        .get("exp.main_tabbed_pane.computers.key");
                     tabbedPane.setMnemonicAt(COMPUTERS_INDEX,
                         (int) Character.toUpperCase(key.charAt(0)));
                     tabbedPane.setToolTipTextAt(COMPUTERS_INDEX,
-                        Translation.getTranslation(""
+                        Translation.get(""
                             + "exp.main_tabbed_pane.computers.description"));
                 }
 

@@ -68,7 +68,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation.getTranslation("exp.preferences.expert_title");
+        return Translation.get("exp.preferences.expert_title");
     }
 
     public boolean needsRestart() {
@@ -87,12 +87,12 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         if (OSUtil.isWindowsSystem()) {
             usePowerFolderIconCB = new JCheckBox(
-                Translation.getTranslation("exp.preferences.expert.use_pf_icon"),
+                Translation.get("exp.preferences.expert.use_pf_icon"),
                 ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
 
         massDeleteCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.preferences.expert.use_mass_delete"));
+            .get("exp.preferences.expert.use_mass_delete"));
         massDeleteCB.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION
             .getValueBoolean(getController()));
         massDeleteCB.addItemListener(new MassDeleteItemListener());
@@ -112,70 +112,70 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
         conflictDetectionCB = new JCheckBox(
             Translation
-                .getTranslation("exp.preferences.expert.use_conflict_handling"));
+                .get("exp.preferences.expert.use_conflict_handling"));
         conflictDetectionCB.setSelected(ConfigurationEntry.CONFLICT_DETECTION
             .getValueBoolean(getController()));
 
         useZipOnLanCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.preferences.expert.use_zip_on_lan"));
+            .get("exp.preferences.expert.use_zip_on_lan"));
         useZipOnLanCB.setToolTipText(Translation
-            .getTranslation("exp.preferences.expert.use_zip_on_lan_tooltip"));
+            .get("exp.preferences.expert.use_zip_on_lan_tooltip"));
         useZipOnLanCB.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
             .getValueBoolean(getController()));
 
         // Always uses compression on internet
         useZipOnInternetCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.preferences.expert.use_zip_on_internet"));
+            .get("exp.preferences.expert.use_zip_on_internet"));
         useZipOnInternetCB.setSelected(true);
         useZipOnInternetCB.setEnabled(false);
 
         useDeltaSyncOnLanCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.preferences.expert.use_delta_on_lan"));
+            .get("exp.preferences.expert.use_delta_on_lan"));
         useDeltaSyncOnLanCB.setToolTipText(Translation
-            .getTranslation("exp.preferences.expert.use_delta_on_lan_tooltip"));
+            .get("exp.preferences.expert.use_delta_on_lan_tooltip"));
         useDeltaSyncOnLanCB.setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
             .getValueBoolean(getController()));
 
         useDeltaSyncOnInternetCB = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("exp.preferences.expert.use_delta_on_internet"));
+                .get("exp.preferences.expert.use_delta_on_internet"));
         useDeltaSyncOnInternetCB
             .setToolTipText(Translation
-                .getTranslation("exp.preferences.expert.use_delta_on_internet_tooltip"));
+                .get("exp.preferences.expert.use_delta_on_internet_tooltip"));
         useDeltaSyncOnInternetCB
             .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
                 .getValueBoolean(getController()));
 
         useSwarmingOnLanCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.preferences.expert.swarming_lan"));
+            .get("exp.preferences.expert.swarming_lan"));
         useSwarmingOnLanCB.setToolTipText(Translation
-            .getTranslation("exp.preferences.expert.swarming_lan_tooltip"));
+            .get("exp.preferences.expert.swarming_lan_tooltip"));
         useSwarmingOnLanCB.setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN
             .getValueBoolean(getController()));
 
         useSwarmingOnInternetCB = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("exp.preferences.expert.swarming_internet"));
+                .get("exp.preferences.expert.swarming_internet"));
         useSwarmingOnInternetCB.setToolTipText(Translation
-            .getTranslation("exp.preferences.expert.swarming_internet_tooltip"));
+            .get("exp.preferences.expert.swarming_internet_tooltip"));
         useSwarmingOnInternetCB
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
                 .getValueBoolean(getController()));
         folderAutoSetupCB = new JCheckBox(
-            Translation.getTranslation("exp.preferences.expert.auto_setup_folders"),
+            Translation.get("exp.preferences.expert.auto_setup_folders"),
             ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
                 .getValueBoolean(getController()));
 
         autoDetectFoldersCB = new JCheckBox(
             Translation
-                .getTranslation("exp.preferences.expert.auto_detect_folders"),
+                .get("exp.preferences.expert.auto_detect_folders"),
             ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
                 .getValueBoolean(getController()));
 
         // Logical inverse of the config entry.
         allowFoldersOutsideDefaultCB = new JCheckBox(
             Translation
-                .getTranslation("exp.dialog.expert.allow_folders_outside_default"),
+                .get("exp.dialog.expert.allow_folders_outside_default"),
             !ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
                 .getValueBoolean(getController()));
     }
@@ -225,7 +225,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 .add(
                     new JLabel(
                         Translation
-                            .getTranslation("exp.preferences.expert.mass_delete_threshold")),
+                            .get("exp.preferences.expert.mass_delete_threshold")),
                     cc.xy(1, row));
             builder.add(massDeleteSlider, cc.xy(3, row));
 
@@ -234,7 +234,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("exp.preferences.expert.zip_compression"), cc.xy(1,
+                .get("exp.preferences.expert.zip_compression"), cc.xy(1,
                 row));
             ButtonBarBuilder zipBar = ButtonBarBuilder
                 .createLeftToRightBuilder();
@@ -245,7 +245,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(
-                Translation.getTranslation("exp.preferences.expert.delta_sync"),
+                Translation.get("exp.preferences.expert.delta_sync"),
                 cc.xy(1, row));
             ButtonBarBuilder deltaBar = ButtonBarBuilder
                 .createLeftToRightBuilder();
@@ -256,7 +256,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(
-                Translation.getTranslation("exp.preferences.expert.swarming"),
+                Translation.get("exp.preferences.expert.swarming"),
                 cc.xy(1, row));
             ButtonBarBuilder swarmingBar = ButtonBarBuilder
                 .createLeftToRightBuilder();

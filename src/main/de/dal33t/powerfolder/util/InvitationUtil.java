@@ -189,7 +189,7 @@ public class InvitationUtil {
 
             public String getDescription() {
                 return Translation
-                    .getTranslation("exp.invitation_files.description");
+                    .get("exp.invitation_files.description");
             }
         };
     }

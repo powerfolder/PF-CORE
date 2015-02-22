@@ -87,7 +87,7 @@ public class DebugInformationCard extends InformationCard {
 
     @Override
     public String getCardTitle() {
-        return Translation.getTranslation("debug_information_card.title");
+        return Translation.get("debug_information_card.title");
     }
 
     @Override

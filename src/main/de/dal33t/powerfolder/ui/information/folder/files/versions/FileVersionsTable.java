@@ -139,9 +139,9 @@ public class FileVersionsTable extends JTable {
                 case 0:  // version type
                     setIcon(null);
                     myValue = "";
-                    toolTip = info.isOnline() ? Translation.getTranslation(
+                    toolTip = info.isOnline() ? Translation.get(
                             "file_versions_table_model.online") : Translation
-                            .getTranslation("file_versions_table_model.local");
+                            .get("file_versions_table_model.local");
                     break;
                 case 1:  // date
                     myValue = Format.formatDateShort(info.getFileInfo().getModifiedDate());

@@ -440,21 +440,21 @@ public class UIController extends PFComponent {
                         CellConstraints cc = new CellConstraints();
                         builder.add(
                             new JLabel(Translation
-                                .getTranslation("shutdown.message")), cc.xyw(2,
+                                .get("shutdown.message")), cc.xyw(2,
                                 2, 3));
                         builder.add(
                             new JLabel(Translation
-                                .getTranslation("shutdown.prompt")), cc
+                                .get("shutdown.prompt")), cc
                                 .xy(2, 4));
                         JPasswordField textField = new JPasswordField(20);
                         builder.add(textField, cc.xy(4, 4));
                         int i = DialogFactory.genericDialog(
                             getController(),
-                            Translation.getTranslation("shutdown.title"),
+                            Translation.get("shutdown.title"),
                             builder.getPanel(),
                             new String[]{
-                                Translation.getTranslation("general.ok"),
-                                Translation.getTranslation("general.cancel")},
+                                Translation.get("general.ok"),
+                                Translation.get("general.cancel")},
                             0, GenericDialogType.QUESTION);
                         if (i == 0) {
                             String password = Util.toString(textField
@@ -521,7 +521,7 @@ public class UIController extends PFComponent {
         // Open / close menu item //
         // /////////////////////////
         final MenuItem openUI = new MenuItem(
-            Translation.getTranslation("systray.show"));
+            Translation.get("systray.show"));
         menu.add(openUI);
         openUI.setActionCommand(COMMAND_OPEN_UI);
         openUI.addActionListener(systrayActionHandler);
@@ -534,7 +534,7 @@ public class UIController extends PFComponent {
             .getValueBoolean(getController()))
         {
             item = menu.add(new MenuItem(Translation
-                .getTranslation("action_open_web_interface.name")));
+                .get("action_open_web_interface.name")));
             item.setActionCommand(COMMAND_WEB);
             item.addActionListener(systrayActionHandler);
         }
@@ -543,7 +543,7 @@ public class UIController extends PFComponent {
         // Folders //
         // //////////
         sysTrayFoldersMenu = new Menu(
-            Translation.getTranslation("general.folder"));
+            Translation.get("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
         if (Feature.SYSTRAY_ALL_FOLDERS.isEnabled()) {
             menu.add(sysTrayFoldersMenu);
@@ -554,7 +554,7 @@ public class UIController extends PFComponent {
         // /////////
         if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
             item = menu.add(new MenuItem(Translation
-                .getTranslation("action_open_folders_base.name")));
+                .get("action_open_folders_base.name")));
             item.setActionCommand(COMMAND_BROWSE);
             item.addActionListener(systrayActionHandler);
         }
@@ -563,7 +563,7 @@ public class UIController extends PFComponent {
         // Pause / Resume //
         // /////////////////
         pauseResumeMenu = new MenuItem(
-            Translation.getTranslation("action_resume_sync.name"));
+            Translation.get("action_resume_sync.name"));
         menu.add(pauseResumeMenu);
         pauseResumeMenu.addActionListener(systrayActionHandler);
         getController().addPausedModeListener(new MyPausedModeListener());
@@ -573,7 +573,7 @@ public class UIController extends PFComponent {
         // Recent //
         // /////////
         recentlyChangedMenu = new Menu(
-            Translation.getTranslation("uicontroller.recently_changed"));
+            Translation.get("uicontroller.recently_changed"));
         recentlyChangedMenu.setEnabled(false);
         menu.add(recentlyChangedMenu);
         for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
@@ -586,7 +586,7 @@ public class UIController extends PFComponent {
         // Preferences //
         // //////////////
         final MenuItem prefItem = menu.add(new MenuItem(Translation
-            .getTranslation("action_open_preferences.name")));
+            .get("action_open_preferences.name")));
         prefItem.setActionCommand(COMMAND_PREFERENCES);
         prefItem.addActionListener(systrayActionHandler);
         changePrefsPermission = new BoundPermission(getController(),
@@ -607,7 +607,7 @@ public class UIController extends PFComponent {
             && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             item = menu.add(new MenuItem(Translation
-                .getTranslation("systray.sync_shutdown")));
+                .get("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
         }
@@ -617,7 +617,7 @@ public class UIController extends PFComponent {
         // ////////////
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             item = menu.add(new MenuItem(Translation
-                .getTranslation("systray.sync_exit")));
+                .get("systray.sync_exit")));
             item.setActionCommand(COMMAND_SYNC_EXIT);
             item.addActionListener(systrayActionHandler);
         }
@@ -626,7 +626,7 @@ public class UIController extends PFComponent {
         // Exit //
         // ///////
         item = menu
-            .add(new MenuItem(Translation.getTranslation("systray.exit")));
+            .add(new MenuItem(Translation.get("systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
@@ -651,13 +651,13 @@ public class UIController extends PFComponent {
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent arg0) {
-                openUI.setLabel(Translation.getTranslation("systray.hide"));
+                openUI.setLabel(Translation.get("systray.hide"));
                 openUI.setActionCommand(COMMAND_HIDE_UI);
             }
 
             @Override
             public void componentHidden(ComponentEvent arg0) {
-                openUI.setLabel(Translation.getTranslation("systray.show"));
+                openUI.setLabel(Translation.get("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
             }
         });
@@ -665,7 +665,7 @@ public class UIController extends PFComponent {
         mainFrame.getUIComponent().addWindowListener(new WindowAdapter() {
             @Override
             public void windowIconified(WindowEvent e) {
-                openUI.setLabel(Translation.getTranslation("systray.show"));
+                openUI.setLabel(Translation.get("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
             }
         });
@@ -1152,11 +1152,11 @@ public class UIController extends PFComponent {
         int changedSize = scanResult.getChangedFiles().size();
         int deletedSize = scanResult.getDeletedFiles().size();
         StringBuilder sb = new StringBuilder();
-        sb.append(Translation.getTranslation("uicontroller.sync_info.start")
+        sb.append(Translation.get("uicontroller.sync_info.start")
             + "\n\n" + '(');
         boolean addComma = false;
         if (newSize > 0) {
-            sb.append(Translation.getTranslation("uicontroller.sync_info.new",
+            sb.append(Translation.get("uicontroller.sync_info.new",
                 String.valueOf(newSize)));
             addComma = true;
         }
@@ -1164,7 +1164,7 @@ public class UIController extends PFComponent {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(Translation.getTranslation(
+            sb.append(Translation.get(
                 "uicontroller.sync_info.changed", String.valueOf(changedSize)));
             addComma = true;
         }
@@ -1172,22 +1172,22 @@ public class UIController extends PFComponent {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(Translation.getTranslation(
+            sb.append(Translation.get(
                 "uicontroller.sync_info.deleted", String.valueOf(deletedSize)));
         }
         if (newSize == 0 && changedSize == 0 && deletedSize == 0) {
             sb.append(Translation
-                .getTranslation("uicontroller.sync_info.no_changes_detected"));
+                .get("uicontroller.sync_info.no_changes_detected"));
         }
         sb.append(')');
         if (newSize > 0 || changedSize > 0) {
             sb.append("\n\n");
-            sb.append(Translation.getTranslation(
+            sb.append(Translation.get(
                 "uicontroller.sync_info.transfer",
                 String.valueOf(newSize + changedSize)));
         }
         DialogFactory.genericDialog(getController(),
-            Translation.getTranslation("uicontroller.sync_info.title"),
+            Translation.get("uicontroller.sync_info.title"),
             sb.toString(), GenericDialogType.INFO);
     }
 
@@ -1211,11 +1211,11 @@ public class UIController extends PFComponent {
     private void configurePauseResumeLink() {
         if (getController().isPaused()) {
             pauseResumeMenu.setLabel(Translation
-                .getTranslation("action_resume_sync.name"));
+                .get("action_resume_sync.name"));
             pauseResumeMenu.setActionCommand(COMMAND_RESUME);
         } else {
             pauseResumeMenu.setLabel(Translation
-                .getTranslation("action_pause_sync.name"));
+                .get("action_pause_sync.name"));
             pauseResumeMenu.setActionCommand(COMMAND_PAUSE);
         }
     }
@@ -1254,7 +1254,7 @@ public class UIController extends PFComponent {
         boolean changed = false;
         synchronized (synchronizing) {
             if (synchronizingFolders == 0) {
-                text1 = Translation.getTranslation("check_status.in_sync_all");
+                text1 = Translation.get("check_status.in_sync_all");
                 if (synchronizing.get()) {
                     changed = true;
                     synchronizing.set(false);
@@ -1262,7 +1262,7 @@ public class UIController extends PFComponent {
             }
 
             else {
-                text1 = Translation.getTranslation("check_status.syncing",
+                text1 = Translation.get("check_status.syncing",
                     String.valueOf(synchronizingFolders));
                 if (!synchronizing.get()) {
                     changed = true;
@@ -1273,13 +1273,13 @@ public class UIController extends PFComponent {
 
         // Disabled popup of sync start.
         if (changed) {
-            String text2 = Translation.getTranslation(
+            String text2 = Translation.get(
                 "check_status.powerfolders", Format.formatBytes(nTotalBytes),
                 String.valueOf(folders.size()));
 
             applicationModel.getNoticesModel().handleNotice(
                 new SimpleNotificationNotice(Translation
-                    .getTranslation("check_status.title"), text1 + "\n\n"
+                    .get("check_status.title"), text1 + "\n\n"
                     + text2));
         }
     }
@@ -1513,14 +1513,14 @@ public class UIController extends PFComponent {
         public void remoteMassDeletion(RemoteMassDeletionEvent event) {
             String message;
             if (event.isPercentage()) {
-                message = Translation.getTranslation(
+                message = Translation.get(
                     "uicontroller.remote_mass_delete.warning_message", event
                         .getMemberInfo().nick, String.valueOf(event
                         .getDeleteFigure()), event.getFolderInfo()
                         .getLocalizedName(), event.getOldProfile().getName(),
                     event.getNewProfile().getName());
             } else {
-                message = Translation.getTranslation(
+                message = Translation.get(
                     "uicontroller.remote_mass_delete.warning_absolute_message",
                     event.getMemberInfo().nick, String.valueOf(event
                         .getDeleteFigure()), event.getFolderInfo()
@@ -1529,8 +1529,8 @@ public class UIController extends PFComponent {
             }
 
             WarningNotice notice = new WarningNotice(
-                Translation.getTranslation("warning_notice.title"),
-                Translation.getTranslation("warning_notice.mass_deletion",
+                Translation.get("warning_notice.title"),
+                Translation.get("warning_notice.mass_deletion",
                     event.getFolderInfo().getLocalizedName()), message);
             applicationModel.getNoticesModel().handleNotice(notice);
         }
@@ -1552,16 +1552,16 @@ public class UIController extends PFComponent {
             if (autoAccepted) {
                 // Just tell the user what happened
                 Notice notice = new SimpleNotificationNotice(
-                    Translation.getTranslation("notice.invitation.title"),
-                    Translation.getTranslation("notice.invitation.summary",
+                    Translation.get("notice.invitation.title"),
+                    Translation.get("notice.invitation.summary",
                         invitation.getInvitorUsername(),
                         invitation.folder.getLocalizedName()));
                 applicationModel.getNoticesModel().handleNotice(notice);
             } else {
                 // Let user decide what to do with the invitation.
                 Notice notice = new InvitationNotice(
-                    Translation.getTranslation("notice.invitation.title"),
-                    Translation.getTranslation("notice.invitation.summary",
+                    Translation.get("notice.invitation.title"),
+                    Translation.get("notice.invitation.summary",
                         invitation.getInvitorUsername(),
                         invitation.folder.getLocalizedName()), invitation);
                 applicationModel.getNoticesModel().handleNotice(notice);
@@ -1611,30 +1611,30 @@ public class UIController extends PFComponent {
                         + folder.getInfo().getLocalizedName());
                 }
                 String title = Translation
-                    .getTranslation("uicontroller.warn_on_close.title");
+                    .get("uicontroller.warn_on_close.title");
                 String text;
                 if (applicationModel.getFolderRepositoryModel().isSyncing()) {
                     Date syncDate = applicationModel.getFolderRepositoryModel()
                         .getEstimatedSyncDate();
-                    text = Translation.getTranslation(
+                    text = Translation.get(
                         "uicontroller.warn_on_close_eta.text",
                         folderslist.toString(),
                         Format.formatDateShort(syncDate));
                 } else {
-                    text = Translation.getTranslation(
+                    text = Translation.get(
                         "uicontroller.warn_on_close.text",
                         folderslist.toString());
                 }
                 String question = Translation
-                    .getTranslation("general.neverAskAgain");
+                    .get("general.neverAskAgain");
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                     getController(),
                     title,
                     text,
                     new String[]{
                         Translation
-                            .getTranslation("uicontroller.continue_exit"),
-                        Translation.getTranslation("general.cancel")}, 0,
+                            .get("uicontroller.continue_exit"),
+                        Translation.get("general.cancel")}, 0,
                     GenericDialogType.QUESTION, question);
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.WARN_ON_CLOSE.setValue(getController(),

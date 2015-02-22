@@ -1467,15 +1467,15 @@ public class Controller extends PFComponent {
         int response = JOptionPane
             .showOptionDialog(
                 null,
-                Translation.getTranslation("dialog.bind_error.option.text"),
-                Translation.getTranslation("dialog.bind_error.option.title"),
+                Translation.get("dialog.bind_error.option.text"),
+                Translation.get("dialog.bind_error.option.title"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE,
                 null,
                 new String[]{
                     Translation
-                        .getTranslation("dialog.bind_error.option.ignore"),
-                    Translation.getTranslation("dialog.bind_error.option.exit")},
+                        .get("dialog.bind_error.option.ignore"),
+                    Translation.get("dialog.bind_error.option.exit")},
                 0);
         switch (response) {
             case 1 :
@@ -1498,7 +1498,7 @@ public class Controller extends PFComponent {
                 .setConnectAddress(connectionListener.getAddress());
         } else {
             logSevere("failed to open random port!!!");
-            fatalStartError(Translation.getTranslation("dialog.bind_error"));
+            fatalStartError(Translation.get("dialog.bind_error"));
         }
     }
 
@@ -2743,19 +2743,19 @@ public class Controller extends PFComponent {
         if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
         {
             Object[] options = {Translation
-                .getTranslation("dialog.already_running.show_button")};
+                .get("dialog.already_running.show_button")};
             int exitOption = 0;
             if (verbose) {
                 options = new Object[]{
                     Translation
-                        .getTranslation("dialog.already_running.start_button"),
+                        .get("dialog.already_running.start_button"),
                     Translation
-                        .getTranslation("dialog.already_running.exit_button")};
+                        .get("dialog.already_running.exit_button")};
                 exitOption = 1;
             }
             if (JOptionPane.showOptionDialog(parent,
-                Translation.getTranslation("dialog.already_running.warning"),
-                Translation.getTranslation("dialog.already_running.title"),
+                Translation.get("dialog.already_running.warning"),
+                Translation.get("dialog.already_running.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
                 null, options, options[0]) == exitOption)
             { // exit pressed
@@ -2778,9 +2778,9 @@ public class Controller extends PFComponent {
         }
         if (isUIEnabled()) {
             Object[] options = {Translation
-                .getTranslation("dialog.already_running.exit_button")};
+                .get("dialog.already_running.exit_button")};
             JOptionPane.showOptionDialog(parent, message,
-                Translation.getTranslation("dialog.fatal_error.title"),
+                Translation.get("dialog.fatal_error.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
                 options, options[0]);
         } else {

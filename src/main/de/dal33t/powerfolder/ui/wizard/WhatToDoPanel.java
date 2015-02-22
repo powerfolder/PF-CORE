@@ -144,9 +144,9 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("exp.wizard.project_name.folder_project_success")
-                + Translation.getTranslation("wizard.what_to_do.pcs_join"));
+            Translation.get("wizard.setup_success"), Translation
+                .get("exp.wizard.project_name.folder_project_success")
+                + Translation.get("wizard.what_to_do.pcs_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         MultiFolderSetupPanel setupPanel = new MultiFolderSetupPanel(
@@ -166,7 +166,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
-            .getTranslation("wizard.what_to_do.host_pcs.select"));
+            .get("wizard.what_to_do.host_pcs.select"));
 
         // Prompt for send invitation afterwards
         wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, true);
@@ -176,9 +176,9 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.what_to_do.folder_host_success")
-                + Translation.getTranslation("wizard.what_to_do.host_pcs_join"));
+            Translation.get("wizard.setup_success"), Translation
+                .get("wizard.what_to_do.folder_host_success")
+                + Translation.get("wizard.what_to_do.host_pcs_join"));
         wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         FolderCreatePanel createPanel = new FolderCreatePanel(controller);
@@ -198,7 +198,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
-            .getTranslation("wizard.what_to_do.download.select"));
+            .get("wizard.what_to_do.download.select"));
 
         // Prompt for send invitation afterwards
         wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
@@ -208,8 +208,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.what_to_do.folder_download_sucess"));
+            Translation.get("wizard.setup_success"), Translation
+                .get("wizard.what_to_do.folder_download_sucess"));
         wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         FolderCreatePanel createPanel = new FolderCreatePanel(controller);
@@ -229,7 +229,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
-            .getTranslation("wizard.what_to_do.backp.select"));
+            .get("wizard.what_to_do.backp.select"));
 
         // Don't prompt for send invitation afterwards
         wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
@@ -239,9 +239,9 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.what_to_do.folder_backup_success")
-                + Translation.getTranslation("wizard.what_to_do.pcs_join"));
+            Translation.get("wizard.setup_success"), Translation
+                .get("wizard.what_to_do.folder_backup_success")
+                + Translation.get("wizard.what_to_do.pcs_join"));
         wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         // #1991: Let the user choose if Backup source or target
@@ -272,14 +272,14 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.what_to_do.sync_pcs.select"));
+            Translation.get("wizard.what_to_do.sync_pcs.select"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.what_to_do.sync_pcs.success")
+            Translation.get("wizard.setup_success"), Translation
+                .get("wizard.what_to_do.sync_pcs.success")
                 + Translation
-                    .getTranslation("wizard.what_to_do.sync_pcs.pcs_join"));
+                    .get("wizard.what_to_do.sync_pcs.pcs_join"));
         wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         FolderCreatePanel createPanel = new FolderCreatePanel(controller);
@@ -303,35 +303,35 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         synchronizedLink = new ActionLabel(getController(),
             new WhatToDoAction(Translation
-                .getTranslation("wizard.what_to_do.synchronized_folder"),
+                .get("wizard.what_to_do.synchronized_folder"),
                 synchronizedOption, decision));
         synchronizedLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.synchronized_folder.tip"));
+            .get("wizard.what_to_do.synchronized_folder.tip"));
         synchronizedLink.convertToBigLabel();
 
         backupLink = new ActionLabel(getController(), new WhatToDoAction(
-            Translation.getTranslation("wizard.what_to_do.backup_folder"),
+            Translation.get("wizard.what_to_do.backup_folder"),
             backupOption, decision));
         backupLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.backup_folder.tip"));
+            .get("wizard.what_to_do.backup_folder.tip"));
         backupLink.convertToBigLabel();
 
         hostLink = new ActionLabel(getController(), new WhatToDoAction(
-            Translation.getTranslation("wizard.what_to_do.host_work"),
+            Translation.get("wizard.what_to_do.host_work"),
             hostOption, decision));
         hostLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.host_work.tip"));
+            .get("wizard.what_to_do.host_work.tip"));
         hostLink.convertToBigLabel();
 
         downloadLink = new ActionLabel(getController(), new WhatToDoAction(
-            Translation.getTranslation("wizard.what_to_do.download"),
+            Translation.get("wizard.what_to_do.download"),
             downloadOption, decision));
         downloadLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.download.tip"));
+            .get("wizard.what_to_do.download.tip"));
         downloadLink.convertToBigLabel();
 
         moreLink = new ActionLabel(getController(), new AbstractAction(
-            Translation.getTranslation("wizard.what_to_do.more"))
+            Translation.get("wizard.what_to_do.more"))
         {
             public void actionPerformed(ActionEvent e) {
                 moreLink.setVisible(false);
@@ -340,28 +340,28 @@ public class WhatToDoPanel extends PFWizardPanel {
             }
         });
         moreLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.more.tip"));
+            .get("wizard.what_to_do.more.tip"));
         moreLink.convertToBigLabel();
 
         customLink = new ActionLabel(getController(), new WhatToDoAction(
-            Translation.getTranslation("wizard.what_to_do.custom_sync"),
+            Translation.get("wizard.what_to_do.custom_sync"),
             customOption, decision));
         customLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.custom_sync.tip"));
+            .get("wizard.what_to_do.custom_sync.tip"));
         customLink.convertToBigLabel();
         customLink.setVisible(false);
 
         documentationLink = Help.createQuickstartGuideLabel(getController(),
             Translation
-                .getTranslation("wizard.what_to_do.open_online_documentation"));
+                .get("wizard.what_to_do.open_online_documentation"));
         documentationLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
+            .get("wizard.what_to_do.open_online_documentation.tip"));
         documentationLink.convertToBigLabel();
         documentationLink.setVisible(false);
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.what_to_do.title");
+        return Translation.get("wizard.what_to_do.title");
     }
 
     private class WhatToDoAction extends AbstractAction {

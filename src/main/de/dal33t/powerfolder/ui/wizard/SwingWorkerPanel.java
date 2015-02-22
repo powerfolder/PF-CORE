@@ -129,7 +129,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
     @Override
     protected String getTitle() {
         return !isProblem() ? title : Translation
-            .getTranslation("wizard.worker.problem");
+            .get("wizard.worker.problem");
     }
 
     @Override

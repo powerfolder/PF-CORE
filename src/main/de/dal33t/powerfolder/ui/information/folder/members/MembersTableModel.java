@@ -88,12 +88,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     static final int COL_PERMISSION = 5;
 
     private static final String[] columnHeaders = {
-        Translation.getTranslation("folder_member_table_model.icon"), // 0
-        Translation.getTranslation("folder_member_table_model.name"), // 1
-        Translation.getTranslation("folder_member_table_model.account"), // 2
-        Translation.getTranslation("folder_member_table_model.sync_status"), // 3
-        Translation.getTranslation("folder_member_table_model.local_size"), // 4
-        Translation.getTranslation("folder_member_table_model.permission")}; // 5
+        Translation.get("folder_member_table_model.icon"), // 0
+        Translation.get("folder_member_table_model.name"), // 1
+        Translation.get("folder_member_table_model.account"), // 2
+        Translation.get("folder_member_table_model.sync_status"), // 3
+        Translation.get("folder_member_table_model.local_size"), // 4
+        Translation.get("folder_member_table_model.permission")}; // 5
 
     private static final FolderMemberComparator[] columnComparators = {
         FolderMemberComparator.BY_TYPE,// 0
@@ -337,7 +337,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             int filesRcvd = stats.getFilesCountInSync(member);
             long bytesRcvd = stats.getSizeInSync(member);
             return filesRcvd + " "
-                + Translation.getTranslation("general.files") + " ("
+                + Translation.get("general.files") + " ("
                 + Format.formatBytes(bytesRcvd) + ')';
         } else {
             return 0;
@@ -384,19 +384,19 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 AccountInfo oldOwner = findFolderOwner();
                 String oldOwnerStr = oldOwner != null
                     ? oldOwner.getUsername()
-                    : Translation.getTranslation("folder_member.nobody");
+                    : Translation.get("folder_member.nobody");
                 AccountInfo newOwner = folderMember.getAccountInfo();
                 String newOwnerStr = newOwner != null
                     ? newOwner.getUsername()
-                    : Translation.getTranslation("folder_member.nobody");
+                    : Translation.get("folder_member.nobody");
                 int result = DialogFactory.genericDialog(getController(),
                     Translation
-                        .getTranslation("folder_member.change_owner.title"),
-                    Translation.getTranslation(
+                        .get("folder_member.change_owner.title"),
+                    Translation.get(
                         "folder_member.change_owner.message", oldOwnerStr,
                         newOwnerStr), new String[]{
-                        Translation.getTranslation("general.continue"),
-                        Translation.getTranslation("general.cancel")}, 0,
+                        Translation.get("general.continue"),
+                        Translation.get("general.cancel")}, 0,
                     GenericDialogType.WARN); // Default is
                 // continue
                 if (result != 0) { // Abort

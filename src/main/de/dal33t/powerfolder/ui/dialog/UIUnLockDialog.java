@@ -125,7 +125,7 @@ public class UIUnLockDialog extends PFUIComponent {
             CellConstraints cc = new CellConstraints();
             int row = 1;
 
-            builder.addLabel(Translation.getTranslation("exp.uilock.dialog.info"),
+            builder.addLabel(Translation.get("exp.uilock.dialog.info"),
                 cc.xyw(1, row, 3));
             row += 2;
 
@@ -142,7 +142,7 @@ public class UIUnLockDialog extends PFUIComponent {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("general.password") + ":", cc.xy(1, row));
+                .get("general.password") + ":", cc.xy(1, row));
             builder.add(passwordField, cc.xy(3, row));
 
             row += 2;
@@ -185,7 +185,7 @@ public class UIUnLockDialog extends PFUIComponent {
 
     @SuppressWarnings("serial")
     private void initComponents() {
-        serverLabel = new JLabel(Translation.getTranslation("general.server"));
+        serverLabel = new JLabel(Translation.get("general.server"));
 
         serverReloadTrigger = new Trigger();
         serverReloadTrigger.addValueChangeListener(new PropertyChangeListener()
@@ -209,7 +209,7 @@ public class UIUnLockDialog extends PFUIComponent {
         passwordField = SimpleComponentFactory.createPasswordField();
         proxySettingsLabel = new ActionLabel(getController(),
             new AbstractAction(Translation
-                .getTranslation("general.proxy_settings"))
+                .get("general.proxy_settings"))
             {
                 public void actionPerformed(ActionEvent e) {
                     new HTTPProxySettingsDialog(getController(), frame).open();
@@ -222,7 +222,7 @@ public class UIUnLockDialog extends PFUIComponent {
     }
 
     private String getTitle() {
-        return Translation.getTranslation("exp.uilock.dialog.title");
+        return Translation.get("exp.uilock.dialog.title");
     }
 
     private Component buildButtonBar() {
@@ -235,7 +235,7 @@ public class UIUnLockDialog extends PFUIComponent {
         });
 
         JButton helpButton = new JButton(
-            Translation.getTranslation("exp.uilock.dialog.help"));
+            Translation.get("exp.uilock.dialog.help"));
         helpButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 BrowserLauncher.openURL(getController(),
@@ -243,7 +243,7 @@ public class UIUnLockDialog extends PFUIComponent {
             }
         });
         JButton exitButton = new JButton(
-            Translation.getTranslation("exp.uilock.dialog.exit"));
+            Translation.get("exp.uilock.dialog.exit"));
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 exit();
@@ -274,8 +274,8 @@ public class UIUnLockDialog extends PFUIComponent {
      * @return
      */
     private static JButton createOKButton(ActionListener listener) {
-        JButton okButton = new JButton(Translation.getTranslation("general.ok"));
-        okButton.setMnemonic(Translation.getTranslation("general.ok.key")
+        JButton okButton = new JButton(Translation.get("general.ok"));
+        okButton.setMnemonic(Translation.get("general.ok.key")
             .trim().charAt(0));
         okButton.addActionListener(listener);
         return okButton;
@@ -361,7 +361,7 @@ public class UIUnLockDialog extends PFUIComponent {
                     return;
                 } else {
                     showInfo(Translation
-                        .getTranslation("exp.uilock.dialog.error.wronglogin"));
+                        .get("exp.uilock.dialog.error.wronglogin"));
                 }
             } catch (InterruptedException e) {
                 logWarning(e);

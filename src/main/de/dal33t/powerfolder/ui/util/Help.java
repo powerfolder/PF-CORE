@@ -135,7 +135,7 @@ public class Help {
     public static LinkJButton createWikiLinkButton(Controller controller,
         String article)
     {
-        String toolTips = Translation.getTranslation("general.what_is_this");
+        String toolTips = Translation.get("general.what_is_this");
         String link = getWikiArticleURL(controller, article);
         LinkJButton b = new LinkJButton(Icons.getIconById(Icons.QUESTION),
             toolTips, link);

@@ -180,12 +180,12 @@ public class DownloadsTablePanel extends PFUIComponent {
 
             protected String getTitle() {
                 return Translation
-                    .getTranslation("downloads_panel.cleanup_activity.title");
+                    .get("downloads_panel.cleanup_activity.title");
             }
 
             protected String getWorkingText() {
                 return Translation
-                    .getTranslation("downloads_panel.cleanup_activity.description");
+                    .get("downloads_panel.cleanup_activity.description");
             }
 
             public Object construct() {

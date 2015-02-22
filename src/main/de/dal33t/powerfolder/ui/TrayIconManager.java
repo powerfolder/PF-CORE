@@ -157,16 +157,16 @@ public class TrayIconManager extends PFComponent {
             // State changed, notify ui.
             String notificationText;
             String title = Translation
-                .getTranslation("exp.tray_icon_manager.status_change.title");
+                .get("exp.tray_icon_manager.status_change.title");
             if (connected && loggedIn) {
                 notificationText = Translation
-                    .getTranslation("exp.tray_icon_manager.status_change.connected");
+                    .get("exp.tray_icon_manager.status_change.connected");
             } else if (!getController().getNodeManager().isStarted()) {
                 notificationText = Translation
-                    .getTranslation("exp.tray_icon_manager.status_change.disabled");
+                    .get("exp.tray_icon_manager.status_change.disabled");
             } else {
                 notificationText = Translation
-                    .getTranslation("exp.tray_icon_manager.status_change.connecting");
+                    .get("exp.tray_icon_manager.status_change.connecting");
             }
             uiController
                 .getApplicationModel()
@@ -184,7 +184,7 @@ public class TrayIconManager extends PFComponent {
         }
         StringBuilder tooltip = new StringBuilder();
 
-        tooltip.append(Translation.getTranslation("general.application.name")
+        tooltip.append(Translation.get("general.application.name")
             + ' ' + Controller.PROGRAM_VERSION);
         tooltip.append(" \n");
 
@@ -194,15 +194,15 @@ public class TrayIconManager extends PFComponent {
         if (event.equals(SyncStatusEvent.PAUSED)) {
             image = Icons.getImageById(Icons.SYSTRAY_PAUSE);
             tooltip
-                .append(Translation.getTranslation("systray.tooltip.paused"));
+                .append(Translation.get("systray.tooltip.paused"));
         } else if (event.equals(SyncStatusEvent.NOT_STARTED)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.not_started"));
+                .get("systray.tooltip.not_started"));
         } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.no_folders"));
+                .get("systray.tooltip.no_folders"));
         } else if (event.equals(SyncStatusEvent.SYNCING)) {
             syncing = true;
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_ANIMATION[atomicAngle
@@ -211,7 +211,7 @@ public class TrayIconManager extends PFComponent {
                 trayIcon.setImage(image);
             }
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.syncing"));
+                .get("systray.tooltip.syncing"));
             double overallSyncPercentage = getController().getUIController()
                 .getApplicationModel().getFolderRepositoryModel()
                 .getOverallSyncPercentage();
@@ -223,27 +223,27 @@ public class TrayIconManager extends PFComponent {
         } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.in_sync"));
+                .get("systray.tooltip.in_sync"));
         } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.sync_incomplete"));
+                .get("systray.tooltip.sync_incomplete"));
         } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.not_connected"));
+                .get("systray.tooltip.not_connected"));
         } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN) || event.equals(SyncStatusEvent.LOGGING_IN)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.not_logged_in"));
+                .get("systray.tooltip.not_logged_in"));
         } else if(event.equals(SyncStatusEvent.WARNING)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.warning_notice"));
+                .get("systray.tooltip.warning_notice"));
         } else if(event.equals(SyncStatusEvent.INFORMATION)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
-                .getTranslation("systray.tooltip.info_notice"));
+                .get("systray.tooltip.info_notice"));
         } else {
             logSevere("Not handling all sync states: " + event);
             image = Icons.getImageById(Icons.QUESTION);
@@ -265,7 +265,7 @@ public class TrayIconManager extends PFComponent {
                 // Update tool tip every time we pass zero.
                 StringBuilder tooltip = new StringBuilder();
                 tooltip.append(Translation
-                    .getTranslation("systray.tooltip.syncing"));
+                    .get("systray.tooltip.syncing"));
                 double overallSyncPercentage = getController()
                     .getUIController().getApplicationModel()
                     .getFolderRepositoryModel().getOverallSyncPercentage();

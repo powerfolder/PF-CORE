@@ -42,13 +42,13 @@ class ShareFileNotificationHandler extends NotificationHandlerBase {
         super(controller);
 
         setTitle(Translation
-            .getTranslation("context_menu.share_link.notification.title"));
-        setMessageText(Translation.getTranslation(
+            .get("context_menu.share_link.notification.title"));
+        setMessageText(Translation.get(
             "context_menu.share_link.notification.message",
             fInfo.getFilenameOnly()));
 
         setCancelOptionLabel(Translation
-            .getTranslation("context_menu.share_link.notification.cancel_label"));
+            .get("context_menu.share_link.notification.cancel_label"));
         setCancelAction(new AbstractAction() {
             private static final long serialVersionUID = 100L;
 

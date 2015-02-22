@@ -161,7 +161,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation.getTranslation("general.folder"),
+        builder.addLabel(Translation.get("general.folder"),
             cc.xy(1, 1));
 
         // folderInfoCombo & folderInfoField share the same slot.
@@ -172,7 +172,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             .add(
                 new JLabel(
                     Translation
-                        .getTranslation("wizard.multi_online_storage_setup.local_folder_location")),
+                        .get("wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
         if (!ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
@@ -186,7 +186,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             builder
                 .add(
                     new JLabel(Translation
-                        .getTranslation("general.transfer_mode")), cc.xy(1, 5));
+                        .get("general.transfer_mode")), cc.xy(1, 5));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
             p.setOpaque(false);
             builder.add(p, cc.xyw(3, 5, 4));
@@ -214,7 +214,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             localFolderButton = new JButtonMini(
                 Icons.getIconById(Icons.DIRECTORY),
                 Translation
-                    .getTranslation("wizard.multi_online_storage_setup.select_directory"));
+                    .get("wizard.multi_online_storage_setup.select_directory"));
             MyActionListener myActionListener = new MyActionListener();
             localFolderButton.addActionListener(myActionListener);
         } else {
@@ -224,7 +224,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         // For non-experts - just choose between auto sync and manual.
         manualSyncCB = new JCheckBox(
             Translation
-                .getTranslation("transfer_mode.manual_synchronization.name"));
+                .get("transfer_mode.manual_synchronization.name"));
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel
@@ -301,7 +301,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     protected String getTitle() {
         return Translation
-            .getTranslation("wizard.multi_online_storage_setup.title");
+            .get("wizard.multi_online_storage_setup.title");
     }
 
     /**
@@ -324,11 +324,11 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 .toAbsolutePath()
                 .toString()
                 .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
-                    Translation.getTranslation("general.group"))
+                    Translation.get("general.group"))
                 .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-                    Translation.getTranslation("general.department"))
+                    Translation.get("general.department"))
                 .replace(Constants.ZYNCRO_COMPANY_TOKEN,
-                    Translation.getTranslation("general.company")));
+                    Translation.get("general.company")));
             syncProfileSelectorPanel.setSyncProfile(
                 folderProfileMap.get(selectedFolderInfo), false);
         }
@@ -445,12 +445,12 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         {
             protected String getTitle() {
                 return Translation
-                    .getTranslation("exp_folder_view.webdav_title");
+                    .get("exp_folder_view.webdav_title");
             }
 
             protected String getWorkingText() {
                 return Translation
-                    .getTranslation("exp_folder_view.webdav_working_text");
+                    .get("exp_folder_view.webdav_working_text");
             }
 
             public Object construct() throws Throwable {
@@ -489,18 +489,18 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                         String[] ops;
                         if (Help.hasWiki(getController())) {
                             ops = new String[]{
-                                Translation.getTranslation("general.ok"),
-                                Translation.getTranslation("general.help")};
+                                Translation.get("general.ok"),
+                                Translation.get("general.help")};
                         } else {
                             ops = new String[]{Translation
-                                .getTranslation("general.ok")};
+                                .get("general.ok")};
                         }
                         int op = DialogFactory
                             .genericDialog(
                                 getController(),
                                 Translation
-                                    .getTranslation("exp_folder_view.webdav_failure_title"),
-                                Translation.getTranslation(
+                                    .get("exp_folder_view.webdav_failure_title"),
+                                Translation.get(
                                     "exp_folder_view.webdav_failure_text",
                                     result.substring(1)), ops, 0,
                                 GenericDialogType.ERROR);

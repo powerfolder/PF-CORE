@@ -100,7 +100,7 @@ public class DownloadsInformationCard extends InformationCard implements
      * @return
      */
     public String getCardTitle() {
-        return Translation.getTranslation("exp.downloads_information_card.title");
+        return Translation.get("exp.downloads_information_card.title");
     }
 
     /**
@@ -121,7 +121,7 @@ public class DownloadsInformationCard extends InformationCard implements
      */
     private void initialize() {
         cleanupLabel = new JLabel();
-        cleanupLabel.setToolTipText(Translation.getTranslation(
+        cleanupLabel.setToolTipText(Translation.get(
                 "exp.downloads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController(),
@@ -188,7 +188,7 @@ public class DownloadsInformationCard extends InformationCard implements
         cleanupSlider.setPaintTicks(true);
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
-        cleanupSlider.setToolTipText(Translation.getTranslation(
+        cleanupSlider.setToolTipText(Translation.get(
                 "exp.downloads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
@@ -276,14 +276,14 @@ public class DownloadsInformationCard extends InformationCard implements
             getController(), String.valueOf(cleanupSlider.getValue()));
         getController().saveConfig();
         if (cleanupSlider.getValue() == 0) {
-            cleanupLabel.setText(Translation.getTranslation(
+            cleanupLabel.setText(Translation.get(
                     "exp.downloads_information_card.auto_cleanup.immediate"));
         } else if (cleanupSlider.getValue() >= 4) {
-            cleanupLabel.setText(Translation.getTranslation(
+            cleanupLabel.setText(Translation.get(
                     "exp.downloads_information_card.auto_cleanup.never"));
         } else {
             int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider.getValue()];
-            cleanupLabel.setText(Translation.getTranslation(
+            cleanupLabel.setText(Translation.get(
                 "exp.downloads_information_card.auto_cleanup.days",
                     String.valueOf(trueCleanupDays)));
         }
@@ -293,17 +293,17 @@ public class DownloadsInformationCard extends InformationCard implements
 
         int activeDownloadCount = tablePanel.countActiveDownloadCount();
         activeDownloadCountLabel.setText(Translation
-            .getTranslation("status.active_download_count", String
+            .get("status.active_download_count", String
                 .valueOf(activeDownloadCount)));
 
         int completedDownloadCount = tablePanel.countCompletedDownloadCount();
-        completedDownloadCountLabel.setText(Translation.getTranslation(
+        completedDownloadCountLabel.setText(Translation.get(
             "status.completed_download_count", String
                 .valueOf(completedDownloadCount)));
 
         double kbs = getController().getTransferManager().getDownloadCounter()
             .calculateCurrentKBS();
-        downloadCounterLabel.setText(Translation.getTranslation(
+        downloadCounterLabel.setText(Translation.get(
             "status.download", Format.formatDecimal(kbs)));
     }
 
@@ -367,14 +367,14 @@ public class DownloadsInformationCard extends InformationCard implements
         builder.add(tabbedPane, cc.xy(1, 3));
 
         tabbedPane.add(fileDetailsPanel.getPanel(), Translation
-            .getTranslation("files_table_panel.file_details_tab.text"));
+            .get("files_table_panel.file_details_tab.text"));
         tabbedPane.setToolTipTextAt(0, Translation
-            .getTranslation("files_table_panel.file_details_tab.tip"));
+            .get("files_table_panel.file_details_tab.tip"));
 
         tabbedPane.add(fileVersionsPanel.getPanel(), Translation
-            .getTranslation("files_table_panel.file_versions_tab.text"));
+            .get("files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation
-            .getTranslation("files_table_panel.file_versions_tab.tip"));
+            .get("files_table_panel.file_versions_tab.tip"));
 
         return builder.getPanel();
     }

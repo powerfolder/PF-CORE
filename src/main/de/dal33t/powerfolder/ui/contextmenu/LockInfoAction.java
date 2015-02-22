@@ -70,7 +70,7 @@ class LockInfoAction extends PFContextMenuAction {
                         String displayName = fileLock.getAccountInfo()
                             .getDisplayName();
                         String memberName = Translation
-                            .getTranslation("context_menu.lock_information.message.web");
+                            .get("context_menu.lock_information.message.web");
 
                         MemberInfo member = fileLock.getMemberInfo();
                         if (member != null) {
@@ -80,12 +80,12 @@ class LockInfoAction extends PFContextMenuAction {
                         DialogFactory.genericDialog(
                             getController(),
                             Translation
-                                .getTranslation("context_menu.lock_information.title"),
-                            Translation.getTranslation(
+                                .get("context_menu.lock_information.title"),
+                            Translation.get(
                                 "context_menu.lock_information.message", name,
                                 displayName, date, memberName),
                             new String[]{Translation
-                                .getTranslation("general.ok")}, 0,
+                                .get("general.ok")}, 0,
                             GenericDialogType.INFO);
                     } catch (RuntimeException re) {
                         log.log(Level.WARNING,

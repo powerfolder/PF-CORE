@@ -80,9 +80,9 @@ public class MembersSimpleTableModel extends PFUIComponent implements
     static final int COL_PERMISSION = 2;
 
     private static final String[] columnHeaders = {
-        Translation.getTranslation("folder_member_table_model.icon"), // 0
-        Translation.getTranslation("folder_member_table_model.account"), // 1
-        Translation.getTranslation("folder_member_table_model.permission")}; // 2
+        Translation.get("folder_member_table_model.icon"), // 0
+        Translation.get("folder_member_table_model.account"), // 1
+        Translation.get("folder_member_table_model.permission")}; // 2
 
     private static final FolderMemberComparator[] columnComparators = {
         FolderMemberComparator.BY_TYPE,// 0
@@ -342,20 +342,20 @@ public class MembersSimpleTableModel extends PFUIComponent implements
                 AccountInfo oldOwner = findFolderOwner();
                 String oldOwnerStr = oldOwner != null
                     ? oldOwner.getDisplayName()
-                    : Translation.getTranslation("folder_member.nobody");
+                    : Translation.get("folder_member.nobody");
                 AccountInfo newOwner = folderMember.getAccountInfo();
                 String newOwnerStr = newOwner != null
                     ? newOwner.getDisplayName()
-                    : Translation.getTranslation("folder_member.nobody");
+                    : Translation.get("folder_member.nobody");
                 int result = DialogFactory.genericDialog(getController(),
                     Translation
-                        .getTranslation("folder_member.change_owner.title"),
-                    Translation.getTranslation(
+                        .get("folder_member.change_owner.title"),
+                    Translation.get(
                         "folder_member.change_owner.message", oldOwnerStr,
                         newOwnerStr),
                     new String[]{
-                        Translation.getTranslation("general.continue"),
-                        Translation.getTranslation("general.cancel")}, 0,
+                        Translation.get("general.continue"),
+                        Translation.get("general.cancel")}, 0,
                     GenericDialogType.WARN); // Default is
                 // continue
                 if (result != 0) { // Abort

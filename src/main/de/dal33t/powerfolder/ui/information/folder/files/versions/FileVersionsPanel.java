@@ -140,7 +140,7 @@ public class FileVersionsPanel extends PFUIComponent {
         // SingleSelect model, so no Select All key listener
 
         emptyLabel = new JLabel(Translation
-            .getTranslation("file_version_tab.no_versions_available"),
+            .get("file_version_tab.no_versions_available"),
             SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
@@ -208,13 +208,13 @@ public class FileVersionsPanel extends PFUIComponent {
             mode));
         // PFS-1336: End
 
-        currentVersionLabel.setText(Translation.getTranslation(
+        currentVersionLabel.setText(Translation.get(
             "file_version_tab.current_version",
             String.valueOf(fileInfo.getVersion())));
-        currentSizeLabel.setText(Translation.getTranslation(
+        currentSizeLabel.setText(Translation.get(
             "file_version_tab.size", Format
                 .formatBytesShort(fileInfo.getSize())));
-        currentDateLabel.setText(Translation.getTranslation(
+        currentDateLabel.setText(Translation.get(
             "file_version_tab.date", Format.formatDateShort(fileInfo
                 .getModifiedDate())));
         currentVersionPanel.setVisible(true);
@@ -317,7 +317,7 @@ public class FileVersionsPanel extends PFUIComponent {
                 } else if (state == STATE_EMPTY) {
                     emptyLabel
                         .setText(Translation
-                            .getTranslation("file_version_tab.no_versions_available"));
+                            .get("file_version_tab.no_versions_available"));
                 }
 
                 enableRestoreAction();

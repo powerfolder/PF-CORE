@@ -184,7 +184,7 @@ class ShareFolderAction extends ContextMenuAction {
             @Override
             public void run() {
                 PFWizard wizard = new PFWizard(controller, Translation
-                    .getTranslation("wizard.pfwizard.folder_title"));
+                    .get("wizard.pfwizard.folder_title"));
                 wizard.getWizardContext().setAttribute(
                     WizardContextAttributes.INITIAL_FOLDER_NAME,
                     foInfo.getName());
@@ -201,8 +201,8 @@ class ShareFolderAction extends ContextMenuAction {
                 WizardPanel nextPanel = new FolderCreatePanel(controller);
                 // Setup success panel of this wizard path
                 TextPanelPanel successPanel = new TextPanelPanel(controller,
-                    Translation.getTranslation("wizard.setup_success"),
-                    Translation.getTranslation("wizard.success_join"));
+                    Translation.get("wizard.setup_success"),
+                    Translation.get("wizard.success_join"));
                 wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                     successPanel);
                 ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(

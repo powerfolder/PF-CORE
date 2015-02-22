@@ -112,7 +112,7 @@ public class DialogFactory {
         if (initialDirectory != null) {
             chooser.setCurrentDirectory(initialDirectory.toFile());
         }
-        int i = chooser.showDialog(uiController.getActiveFrame(), Translation.getTranslation("general.select"));
+        int i = chooser.showDialog(uiController.getActiveFrame(), Translation.get("general.select"));
         List<Path> selectedDirs = new ArrayList<Path>();
         if (i == JFileChooser.APPROVE_OPTION) {
             File[] selectedFiles = chooser.getSelectedFiles();
@@ -154,7 +154,7 @@ public class DialogFactory {
     {
 
         genericDialog(controller, title, message, new String[]{Translation
-            .getTranslation("general.ok")}, 0, type);
+            .get("general.ok")}, 0, type);
     }
 
     /**
@@ -184,7 +184,7 @@ public class DialogFactory {
         }
 
         genericDialog(controller, title, innerText, new String[]{Translation
-            .getTranslation("general.ok")}, 0, GenericDialogType.ERROR);
+            .get("general.ok")}, 0, GenericDialogType.ERROR);
     }
 
     /**

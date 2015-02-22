@@ -276,7 +276,7 @@ public class MacUtils extends Loggable {
             | IllegalArgumentException | InvocationTargetException e)
         {
             String message = Translation
-                .getTranslation("exception.startup_item.unsupported_system.text",
+                .get("exception.startup_item.unsupported_system.text",
                     System.getProperty("os.name"),
                     System.getProperty("os.version"));
             logWarning(message);
@@ -308,7 +308,7 @@ public class MacUtils extends Loggable {
                 controller.getDistribution().getBinaryName() + ".app")
                 .toAbsolutePath();
             if (Files.notExists(pfile)) {
-                String message = Translation.getTranslation(
+                String message = Translation.get(
                     "exception.startup_item.executable_not_found.text", controller
                         .getDistribution().getBinaryName(), pfile.getFileName()
                         .toString());
@@ -344,7 +344,7 @@ public class MacUtils extends Loggable {
                 controller.getDistribution().getBinaryName() + ".app")
                 .toAbsolutePath();
             if (Files.notExists(pfile)) {
-                String message = Translation.getTranslation(
+                String message = Translation.get(
                     "exception.startup_item.executable_not_found.text", controller
                         .getDistribution().getBinaryName(), pfile.getFileName()
                         .toString());

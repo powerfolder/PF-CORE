@@ -51,8 +51,8 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     private int sortColumn;
 
     private static final String[] COLUMN_NAMES = {"",
-        Translation.getTranslation("notices_table.date"),
-        Translation.getTranslation("notices_table.summary")};
+        Translation.get("notices_table.date"),
+        Translation.get("notices_table.summary")};
 
     public NoticesTableModel(Controller controller) {
         this.controller = controller;

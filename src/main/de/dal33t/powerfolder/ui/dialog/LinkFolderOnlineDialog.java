@@ -96,7 +96,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
 
         folderListModel = new DefaultComboBoxModel<>();
         folderList = new JComboBox<>(folderListModel);
-        folderListModel.addElement("-- " + Translation.getTranslation(
+        folderListModel.addElement("-- " + Translation.get(
                 "dialog.link_folder_online.select_text") + " --");
         folderList.addItemListener(new MyItemListener());
 
@@ -118,7 +118,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("link_folder.dialog.title");
+        return Translation.get("link_folder.dialog.title");
     }
 
     protected Icon getIcon() {
@@ -134,10 +134,10 @@ public class LinkFolderOnlineDialog extends BaseDialog {
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation.getTranslation("link_folder.dialog.description"),
+        builder.addLabel(Translation.get("link_folder.dialog.description"),
                 cc.xyw(1, row, 3));
         row += 2;
-        builder.addLabel(Translation.getTranslation("link_folder.dialog.link_text"),
+        builder.addLabel(Translation.get("link_folder.dialog.link_text"),
             cc.xy(1, row));
         builder.add(folderList, cc.xy(3, row));
         return builder.getPanel();
@@ -182,7 +182,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
             if (client != null && client.isConnected() && client.isLoggedIn()) {
                 if (!popped) {
                     folderListModel.removeAllElements();
-                    folderListModel.addElement("-- " + Translation.getTranslation(
+                    folderListModel.addElement("-- " + Translation.get(
                             "dialog.link_folder_online.select_text") + " --");
                     Collection<FolderInfo> localFolders =
                             getController().getFolderRepository().getJoinedFolderInfos();
@@ -207,7 +207,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
             } else {
                 if (popped) {
                     folderListModel.removeAllElements();
-                    folderListModel.addElement("-- " + Translation.getTranslation(
+                    folderListModel.addElement("-- " + Translation.get(
                             "dialog.link_folder_online.select_text") + " --");
                     populated.set(false);
                 }

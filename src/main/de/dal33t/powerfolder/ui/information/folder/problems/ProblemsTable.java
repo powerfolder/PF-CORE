@@ -105,7 +105,7 @@ public class ProblemsTable extends JTable {
                         setText(solvableProblem.getResolutionDescription());
                     } else {
                         setText(Translation
-                            .getTranslation(
+                            .get(
                             "folder_problem.table_model.not_available"));
                     }
                 } else if (column ==  ProblemsTableModel.COL_DATE) {

@@ -182,16 +182,16 @@ public class MembersExpertTable extends JTable {
                     setText(folderMember.getMember().getNick());
                 } else {
                     setText(Translation
-                        .getTranslation("folder_member.not_syncing"));
+                        .get("folder_member.not_syncing"));
                     setForeground(Color.GRAY);
                 }
             } else if (actualColumn == MembersExpertTableModel.COL_USERNAME) {
                 if (!model.getController().getOSClient().isConnected()) {
                     setText(Translation
-                        .getTranslation("folder_member.not_connected_to_server"));
+                        .get("folder_member.not_connected_to_server"));
                     setForeground(Color.GRAY);
                 } else if (isServer) {
-                    setText(Translation.getTranslation("folder_member.server"));
+                    setText(Translation.get("folder_member.server"));
                     setForeground(Color.GRAY);
                 } else if (folderMember.getAccountInfo() != null) {
                     setText(folderMember.getAccountInfo().getDisplayName());
@@ -199,7 +199,7 @@ public class MembersExpertTable extends JTable {
                     setText(folderMember.getGroupInfo().getDisplayName());
                 } else {
                     setText(Translation
-                        .getTranslation("folder_member.not_logged_in"));
+                        .get("folder_member.not_logged_in"));
                     setForeground(Color.GRAY);
                 }
             } else if (actualColumn == MembersExpertTableModel.COL_PERMISSION) {
@@ -212,7 +212,7 @@ public class MembersExpertTable extends JTable {
                 } else if (isServer) {
                     // Server has read/write by default
                     setText(Translation
-                        .getTranslation("permissions.folder.read_write"));
+                        .get("permissions.folder.read_write"));
                 } else {
                     String name;
                     FolderPermission defPerm = model.getDefaultPermission();
@@ -222,11 +222,11 @@ public class MembersExpertTable extends JTable {
                         name = defPerm.getName();
                         name += " (";
                         name += Translation
-                            .getTranslation("permissions.folder.default");
+                            .get("permissions.folder.default");
                         name += ")";
                     } else {
                         name = Translation
-                            .getTranslation("permissions.folder.no_access");
+                            .get("permissions.folder.no_access");
                     }
                     setText(name);
                 }
@@ -263,21 +263,21 @@ public class MembersExpertTable extends JTable {
                         && selectedMember.getMember() == null)
                     {
                         setText(Translation
-                            .getTranslation("permissions.folder.no_access"));
+                            .get("permissions.folder.no_access"));
                     } else {
                         FolderPermission defPerm = model.getDefaultPermission();
                         if (defPerm != null) {
                             setText(defPerm.getName()
                                 + " ("
                                 + Translation
-                                    .getTranslation("permissions.folder.default")
+                                    .get("permissions.folder.default")
                                 + ')');
                         } else {
                             setText(Translation
-                                .getTranslation("permissions.folder.no_access")
+                                .get("permissions.folder.no_access")
                                 + " ("
                                 + Translation
-                                    .getTranslation("permissions.folder.default")
+                                    .get("permissions.folder.default")
                                 + ')');
                         }
                     }

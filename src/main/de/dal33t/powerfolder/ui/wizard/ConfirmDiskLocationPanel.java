@@ -93,13 +93,13 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                    Translation.getTranslation(
+                    Translation.get(
                             "wizard.what_to_do.invite.select_local"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                    Translation.getTranslation("wizard.setup_success"),
-                    Translation.getTranslation("wizard.success_join"));
+                    Translation.get("wizard.setup_success"),
+                    Translation.get("wizard.success_join"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
             return new FolderCreatePanel(getController());
@@ -128,7 +128,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         JComponent locationField = new JLabel(Translation
-            .getTranslation("general.directory"));
+            .get("general.directory"));
 
         int row = 1;
 
@@ -170,7 +170,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
                 BACKUP_ONLINE_STOARGE));
         backupByOnlineStorageBox = new JCheckBox(
             Translation
-                .getTranslation("exp.wizard.choose_disk_location.backup_by_online_storage"));
+                .get("exp.wizard.choose_disk_location.backup_by_online_storage"));
         // Is backup suggested?
         if (backupByOS) {
             backupByOnlineStorageBox.setSelected(true);
@@ -189,7 +189,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
             .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("exp.wizard.choose_disk_location.send_invitation"));
+            .get("exp.wizard.choose_disk_location.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
@@ -197,6 +197,6 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
     protected String getTitle() {
         return Translation
-            .getTranslation("exp.wizard.choose_disk_location.options");
+            .get("exp.wizard.choose_disk_location.options");
     }
 }

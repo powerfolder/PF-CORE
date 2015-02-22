@@ -932,7 +932,7 @@ public class PathUtils {
                 pw.println("IconFile=" + iconFile.toAbsolutePath());
                 pw.println("IconIndex=0");
                 pw.println("InfoTip="
-                    + Translation.getTranslation("folder.info_tip"));
+                    + Translation.get("folder.info_tip"));
                 // Required on Win7
                 pw.println("IconResource=" + iconFile.toAbsolutePath() + ",0");
                 pw.println("[ViewState]");

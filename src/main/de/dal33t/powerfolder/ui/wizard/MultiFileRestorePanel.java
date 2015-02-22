@@ -93,7 +93,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     private void loadVersions() {
-        infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieving.text"));
+        infoLabel.setText(Translation.get("wizard.multi_file_restore.retrieving.text"));
         hasNext = false;
         updateButtons();
         if (worker != null) {
@@ -108,7 +108,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.multi_file_restore.title");
+        return Translation.get("wizard.multi_file_restore.title");
     }
 
     protected void initComponents() {
@@ -223,7 +223,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             } else {
                 bar.setIndeterminate(false);
                 bar.setValue(100 * fileInfosProcessed / fileInfosToRestore.size());
-                infoLabel.setText(Translation.getTranslation("general.processed", String.valueOf(fileInfosProcessed),
+                infoLabel.setText(Translation.get("general.processed", String.valueOf(fileInfosProcessed),
                         String.valueOf(fileInfosToRestore.size())));
             }
         }
@@ -235,18 +235,18 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             try {
                 tableModel.setFileInfos(get());
                 if (get().isEmpty()) {
-                    infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieved_none.text"));
+                    infoLabel.setText(Translation.get("wizard.multi_file_restore.retrieved_none.text"));
                 } else {
-                    infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieved.text"));
+                    infoLabel.setText(Translation.get("wizard.multi_file_restore.retrieved.text"));
                     hasNext = true;
                     if (fileInfosProcessed < fileInfosToRestore.size()) {
-                        warningLabel.setText(Translation.getTranslation("wizard.multi_file_restore.some.text"));
+                        warningLabel.setText(Translation.get("wizard.multi_file_restore.some.text"));
                     }
                 }
             } catch (CancellationException e) {
-                infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieve_cancelled.text"));
+                infoLabel.setText(Translation.get("wizard.multi_file_restore.retrieve_cancelled.text"));
             } catch (Exception e) {
-                infoLabel.setText(Translation.getTranslation("wizard.multi_file_restore.retrieve_exception.text",
+                infoLabel.setText(Translation.get("wizard.multi_file_restore.retrieve_exception.text",
                         e.getMessage()));
             }
 

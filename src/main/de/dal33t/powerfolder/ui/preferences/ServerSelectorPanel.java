@@ -77,7 +77,7 @@ public class ServerSelectorPanel extends PFUIComponent {
             }
         });
         searchButton = new JButtonMini(Icons.getIconById(Icons.EDIT),
-            Translation.getTranslation("general.search"));
+            Translation.get("general.search"));
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new ConfigurationLoaderDialog(getController()).openAndWait();

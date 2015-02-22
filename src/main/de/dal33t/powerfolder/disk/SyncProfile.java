@@ -320,7 +320,7 @@ public class SyncProfile implements Serializable {
      * @return
      */
     private static String translateId(String id) {
-        return Translation.getTranslation("transfer_mode." + id + ".name");
+        return Translation.get("transfer_mode." + id + ".name");
     }
 
     /**

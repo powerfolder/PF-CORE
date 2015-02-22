@@ -34,7 +34,7 @@ public class TooLongFilenameProblem extends ResolvableProblem {
 
     public TooLongFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.getTranslation("filename_problem.too_long",
+        description = Translation.get("filename_problem.too_long",
                 fileInfo.getFilenameOnly());
     }
 
@@ -62,6 +62,6 @@ public class TooLongFilenameProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-        return Translation.getTranslation("filename_problem.too_long.soln_desc");
+        return Translation.get("filename_problem.too_long.soln_desc");
     }
 }

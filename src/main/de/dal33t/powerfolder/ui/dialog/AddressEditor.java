@@ -132,7 +132,7 @@ public class AddressEditor extends BaseDialog {
     @Override
     public String getTitle()
     {
-        return Translation.getTranslation("addressEditor.title");
+        return Translation.get("addressEditor.title");
     }
 
     private class OKAction implements ActionListener {
@@ -170,7 +170,7 @@ public class AddressEditor extends BaseDialog {
             if (!isValidRange()) {
                 result
                     .add(new SimpleValidationMessage(Translation
-                        .getTranslation("addressEditor.parse_error"),
+                        .get("addressEditor.parse_error"),
                         Severity.WARNING));
             }
 

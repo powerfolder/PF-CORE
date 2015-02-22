@@ -95,15 +95,15 @@ public class FilesTableModel extends PFComponent implements TableModel,
         columns = new String[colLength];
 
         columns[0] = "";
-        columns[1] = Translation.getTranslation("files_table_model.name");
-        columns[2] = Translation.getTranslation("files_table_model.size");
+        columns[1] = Translation.get("files_table_model.name");
+        columns[2] = Translation.get("files_table_model.size");
 
         if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(controller)) {
             columns[3] = Translation
-                .getTranslation("files_table_model.modified_by");
-            columns[4] = Translation.getTranslation("files_table_model.date");
+                .get("files_table_model.modified_by");
+            columns[4] = Translation.get("files_table_model.date");
         } else {
-            columns[3] = Translation.getTranslation("files_table_model.date");
+            columns[3] = Translation.get("files_table_model.date");
         }
     }
 

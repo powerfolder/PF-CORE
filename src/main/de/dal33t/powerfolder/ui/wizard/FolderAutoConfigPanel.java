@@ -41,14 +41,14 @@ public class FolderAutoConfigPanel extends SwingWorkerPanel {
 
     public FolderAutoConfigPanel(Controller controller) {
         super(controller, null, Translation
-                .getTranslation("wizard.create_folder.title"), Translation
-                .getTranslation("wizard.create_folder.working"), null);
+                .get("wizard.create_folder.title"), Translation
+                .get("wizard.create_folder.working"), null);
         setTask(new MyFolderCreateWorker());
     }
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("wizard.create_folder.title");
+        return Translation.get("wizard.create_folder.title");
     }
 
     @Override

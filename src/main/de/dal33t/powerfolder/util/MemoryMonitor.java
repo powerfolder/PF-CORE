@@ -78,23 +78,23 @@ public class MemoryMonitor implements Runnable {
      */
     private void addWarning() {
         RunnableNotice notice = new RunnableNotice(Translation
-            .getTranslation("warning_notice.title"), Translation
-            .getTranslation("warning_notice.low_memory"), new Runnable() {
+            .get("warning_notice.title"), Translation
+            .get("warning_notice.low_memory"), new Runnable() {
             public void run() {
                 if ((OSUtil.isWindowsSystem() || OSUtil.isMacOS())
                     && !OSUtil.isWebStart())
                 {
                     int response = DialogFactory
                         .genericDialog(controller, Translation
-                            .getTranslation("low_memory.title"), Translation
-                            .getTranslation("low_memory.text", Help
+                            .get("low_memory.title"), Translation
+                            .get("low_memory.text", Help
                                 .getWikiArticleURL(controller,
                                     WikiLinks.MEMORY_CONFIGURATION)),
                             new String[]{
                                 Translation
-                                    .getTranslation("low_memory.increase"),
+                                    .get("low_memory.increase"),
                                 Translation
-                                    .getTranslation("low_memory.do_nothing")},
+                                    .get("low_memory.do_nothing")},
                             0, GenericDialogType.WARN);
                     if (response == 0) { // Increase memory
                         increaseAvailableMemory();
@@ -102,9 +102,9 @@ public class MemoryMonitor implements Runnable {
                 } else {
                     // No ini - Can only warn user.
                     DialogFactory.genericDialog(controller, Translation
-                        .getTranslation("low_memory.title"), Translation
-                        .getTranslation("low_memory.warn"),
-                        new String[]{Translation.getTranslation("general.ok")},
+                        .get("low_memory.title"), Translation
+                        .get("low_memory.warn"),
+                        new String[]{Translation.get("general.ok")},
                         0, GenericDialogType.WARN);
                 }
             }
@@ -179,13 +179,13 @@ public class MemoryMonitor implements Runnable {
         // Show a response
         if (wroteNewIni) {
             DialogFactory.genericDialog(controller, Translation
-                .getTranslation("low_memory.title"), Translation
-                .getTranslation("low_memory.configure_success"),
+                .get("low_memory.title"), Translation
+                .get("low_memory.configure_success"),
                 GenericDialogType.INFO);
         } else {
             DialogFactory.genericDialog(controller, Translation
-                .getTranslation("low_memory.title"), Translation
-                .getTranslation("low_memory.configure_failure"),
+                .get("low_memory.title"), Translation
+                .get("low_memory.configure_failure"),
                 GenericDialogType.WARN);
         }
     }
@@ -245,13 +245,13 @@ public class MemoryMonitor implements Runnable {
         // Show a response
         if (success) {
             DialogFactory.genericDialog(controller, Translation
-                .getTranslation("low_memory.title"), Translation
-                .getTranslation("low_memory.configure_success"),
+                .get("low_memory.title"), Translation
+                .get("low_memory.configure_success"),
                 GenericDialogType.INFO);
         } else {
             DialogFactory.genericDialog(controller, Translation
-                .getTranslation("low_memory.title"), Translation
-                .getTranslation("low_memory.configure_failure"),
+                .get("low_memory.title"), Translation
+                .get("low_memory.configure_failure"),
                 GenericDialogType.WARN);
         }
     }

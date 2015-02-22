@@ -57,7 +57,7 @@ public class EstimatedTime {
 	public String toString() {
 		if (isActive()) {
 			if (deltaTimeMillis < 0) {
-				return Translation.getTranslation("estimation.unknown");
+				return Translation.get("estimation.unknown");
 			} else {
 				return Format.formatDeltaTime(deltaTimeMillis);
 			}

@@ -103,7 +103,7 @@ public class ErrorDialog extends PFUIComponent {
      * create OK button
      */
     protected JButton createOKButton(ActionListener listener) {
-        JButton okButton = new JButton(Translation.getTranslation("general.ok"));
+        JButton okButton = new JButton(Translation.get("general.ok"));
         okButton.addActionListener(listener);
         return okButton;
     }
@@ -114,7 +114,7 @@ public class ErrorDialog extends PFUIComponent {
 
     protected JButton createDetailsButton(ActionListener listener) {
         JButton detailsButton = new JButton(Translation
-            .getTranslation("exp.preferences.dyn_dns.error_expand_button"));
+            .get("exp.preferences.dyn_dns.error_expand_button"));
         detailsButton.addActionListener(listener);
         return detailsButton;
     }
@@ -186,7 +186,7 @@ public class ErrorDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         if (kindOfError == ErrorManager.WARN) {
             builder.add(new JLabel(Translation
-                .getTranslation("exp.preferences.dyn_dns_update_warning")
+                .get("exp.preferences.dyn_dns_update_warning")
                 + "  "
                 + getController().getDynDnsManager().activeDynDns
                     .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
@@ -194,7 +194,7 @@ public class ErrorDialog extends PFUIComponent {
         }
         if (kindOfError == ErrorManager.ERROR) {
             builder.add(new JLabel(Translation
-                .getTranslation("exp.preferences.dyn_dns.update_error")
+                .get("exp.preferences.dyn_dns.update_error")
                 + "  "
                 + getController().getDynDnsManager().activeDynDns
                     .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
@@ -216,7 +216,7 @@ public class ErrorDialog extends PFUIComponent {
      */
     private String getTitle() {
         return Translation
-            .getTranslation("preferences.dyn_dns.update_title");
+            .get("preferences.dyn_dns.update_title");
     }
 
     protected Component getButtonBar() {
@@ -244,11 +244,11 @@ public class ErrorDialog extends PFUIComponent {
         if (downPanel.isVisible()) {
             expand();
             detailsButton.setText(Translation
-                .getTranslation("exp.preferences.dyn_dns.error_shrink_button"));
+                .get("exp.preferences.dyn_dns.error_shrink_button"));
         } else {
             shrink();
             detailsButton.setText(Translation
-                .getTranslation("exp.preferences.dyn_dns.error_expand_button"));
+                .get("exp.preferences.dyn_dns.error_expand_button"));
         }
     }
 

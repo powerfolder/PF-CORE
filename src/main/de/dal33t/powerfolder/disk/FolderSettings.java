@@ -74,15 +74,15 @@ public class FolderSettings {
     private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
     private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST = "true,true,true,true,1,false,12,0,m,"
         + Translation
-            .getTranslation("transfer_mode.automatic_synchronization.name");
+            .get("transfer_mode.automatic_synchronization.name");
     private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST = "true,true,true,true,10,false,12,0,m,"
         + Translation
-            .getTranslation("transfer_mode.automatic_synchronization_10min.name");
+            .get("transfer_mode.automatic_synchronization_10min.name");
     private static final String PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST = "false,false,false,false,5,false,12,0,m,"
-        + Translation.getTranslation("transfer_mode.backup_source_5min.name")
+        + Translation.get("transfer_mode.backup_source_5min.name")
         + ",false";
     private static final String PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST = "false,false,false,false,60,false,12,0,m,"
-        + Translation.getTranslation("transfer_mode.backup_source_hour.name")
+        + Translation.get("transfer_mode.backup_source_hour.name")
         + ",false";
 
     /**
@@ -487,9 +487,9 @@ public class FolderSettings {
         }
         if (res != null) {
             res = res.replace(Constants.FOLDER_PERSONAL_FILES.trim(),
-                Translation.getTranslation("general.personal_files"));
+                Translation.get("general.personal_files"));
             res = res.replace(Constants.FOLDER_PUBLIC_SHARED_FILES.trim(),
-                Translation.getTranslation("general.public_shared_files"));
+                Translation.get("general.public_shared_files"));
         }
         if (verify) {
             if (res.contains("$user.dir.") || res.contains("$apps.dir.")) {

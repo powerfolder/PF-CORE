@@ -33,8 +33,8 @@ public class FolderAutoCreateNotice extends NoticeBase {
 
     public FolderAutoCreateNotice(FolderInfo folderInfo) {
 
-        super(Translation.getTranslation("folder_auto_create_notice.title"),
-                Translation.getTranslation("folder_auto_create_notice.text",
+        super(Translation.get("folder_auto_create_notice.title"),
+                Translation.get("folder_auto_create_notice.text",
                         folderInfo.getName()));
 
         this.folderInfo = folderInfo;

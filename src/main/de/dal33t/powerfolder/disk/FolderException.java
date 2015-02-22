@@ -106,9 +106,9 @@ public class FolderException extends Exception implements Serializable {
                         String addText = additonalText != null ? '\n'
                                 + additonalText : "";
                         DialogFactory.genericDialog(controller,
-                                Translation.getTranslation("folder_exception.dialog.title",
+                                Translation.get("folder_exception.dialog.title",
                                         fInfo == null ? "null" : fInfo.getLocalizedName()),
-                                Translation.getTranslation("folder_exception.dialog.text",
+                                Translation.get("folder_exception.dialog.text",
                                         fInfo == null ? "null" : fInfo.getLocalizedName(),
                                         FolderException.super.getMessage()) + addText,
                                 controller.isVerbose(), FolderException.this);

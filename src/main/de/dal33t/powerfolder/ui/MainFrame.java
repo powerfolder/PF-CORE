@@ -371,11 +371,11 @@ public class MainFrame extends PFUIComponent {
             noticesActionLabel.setVisible(false);
         } else if (unreadCount == 1) {
             noticesActionLabel.setVisible(true);
-            noticesActionLabel.setText(Translation.getTranslation(
+            noticesActionLabel.setText(Translation.get(
                     "main_frame.unread_notices.single.text"));
         } else {
             noticesActionLabel.setVisible(true);
-            noticesActionLabel.setText(Translation.getTranslation(
+            noticesActionLabel.setText(Translation.get(
                 "main_frame.unread_notices.plural.text",
                 String.valueOf(unreadCount)));
         }
@@ -392,16 +392,16 @@ public class MainFrame extends PFUIComponent {
             // Prompt for personal message.
             String[] options = {
                 Translation
-                    .getTranslation("dialog.ask_for_quit_on_x.Minimize_button"),
+                    .get("dialog.ask_for_quit_on_x.Minimize_button"),
                 Translation
-                    .getTranslation("dialog.ask_for_quit_on_x.Exit_button")};
+                    .get("dialog.ask_for_quit_on_x.Exit_button")};
 
             NeverAskAgainResponse response = DialogFactory.genericDialog(
                 getController(),
-                Translation.getTranslation("dialog.ask_for_quit_on_x.title"),
-                Translation.getTranslation("dialog.ask_for_quit_on_x.text"),
+                Translation.get("dialog.ask_for_quit_on_x.title"),
+                Translation.get("dialog.ask_for_quit_on_x.text"),
                 options, 0, GenericDialogType.QUESTION,
-                Translation.getTranslation("general.neverAskAgain"));
+                Translation.get("general.neverAskAgain"));
 
             if (response.getButtonIndex() == 1) { // == Exit
                 PreferencesEntry.QUIT_ON_X.setValue(getController(), true);
@@ -580,7 +580,7 @@ public class MainFrame extends PFUIComponent {
             Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
             Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         closeButton.setToolTipText(Translation
-            .getTranslation("main_frame.close.tips"));
+            .get("main_frame.close.tips"));
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doCloseOperation();
@@ -617,7 +617,7 @@ public class MainFrame extends PFUIComponent {
             Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
             Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         inlineInfoCloseButton.setToolTipText(Translation
-            .getTranslation("main_frame.inline_info_close.tip"));
+            .get("main_frame.inline_info_close.tip"));
         inlineInfoCloseButton
             .addActionListener(new MyInlineCloseInfoActionListener());
         inlineInfoCloseButton.setContentAreaFilled(false);
@@ -736,53 +736,53 @@ public class MainFrame extends PFUIComponent {
             String pausedTemp = overallSyncPercentage >= 0
                 && overallSyncPercentage < 99.5d ? Format
                 .formatDecimal(overallSyncPercentage) + '%' : "";
-            upperText = Translation.getTranslation("main_frame.paused",
+            upperText = Translation.get("main_frame.paused",
                 pausedTemp);
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NOT_STARTED)) {
-            upperText = Translation.getTranslation("main_frame.not_running");
-            setupText = Translation.getTranslation("main_frame.activate_now");
+            upperText = Translation.get("main_frame.not_running");
+            setupText = Translation.get("main_frame.activate_now");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NO_FOLDERS)) {
             if(getController().getOSClient().getAccount().getFolders().isEmpty()){
-                upperText = Translation.getTranslation("folders_tab.no_folders_found");
+                upperText = Translation.get("folders_tab.no_folders_found");
             } else {
-                upperText = Translation.getTranslation("main_frame.no_folders");
+                upperText = Translation.get("main_frame.no_folders");
             }
             setupText = getApplicationModel().getActionModel()
                 .getNewFolderAction().getName();
             zyncroLabel
-                .setText(Translation.getTranslation("main_frame.choose_folders"));
+                .setText(Translation.get("main_frame.choose_folders"));
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCING)) {
             syncDate = folderRepositoryModel.getEstimatedSyncDate();
             String syncingTemp = overallSyncPercentage >= 0
                 && overallSyncPercentage < 99.5d ? Format
                 .formatDecimal(overallSyncPercentage) + '%' : "...";
-            upperText = Translation.getTranslation("main_frame.syncing",
+            upperText = Translation.get("main_frame.syncing",
                 syncingTemp);
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
-            upperText = Translation.getTranslation("main_frame.in_sync");
+            upperText = Translation.get("main_frame.in_sync");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
             upperText = Translation
-                .getTranslation("main_frame.sync_incomplete");
+                .get("main_frame.sync_incomplete");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
-            upperText = Translation.getTranslation("main_frame.connecting.text");
+            upperText = Translation.get("main_frame.connecting.text");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.LOGGING_IN) || !client.isLoginExecuted()) {
-            upperText = Translation.getTranslation("main_frame.logging_in.text");
+            upperText = Translation.get("main_frame.logging_in.text");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
-            upperText = Translation.getTranslation("main_frame.log_in_failed.text");
+            upperText = Translation.get("main_frame.log_in_failed.text");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.WARNING)) {
-            upperText = Translation.getTranslation("main_frame.warning_notice.text");
+            upperText = Translation.get("main_frame.warning_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
         } else if (event.equals(SyncStatusEvent.INFORMATION)) {
-            upperText = Translation.getTranslation("main_frame.info_notice.text");
+            upperText = Translation.get("main_frame.info_notice.text");
             upperMainTextActionLabel.setNeverUnderline(false);
         } else {
             logSevere("Not handling all sync states: " + event);
@@ -813,10 +813,10 @@ public class MainFrame extends PFUIComponent {
                     if (DateUtil.isDateMoreThanNHoursInFuture(syncDate, 20)) {
                         int days = DateUtil.getDaysInFuture(syncDate);
                         if (days <= 1) {
-                        lowerText = Translation.getTranslation(
+                        lowerText = Translation.get(
                                 "main_frame.sync_eta_one_day");
                         } else {
-                            lowerText = Translation.getTranslation(
+                            lowerText = Translation.get(
                                     "main_frame.sync_eta_days", String.valueOf(
                                             days));
                         }
@@ -824,26 +824,26 @@ public class MainFrame extends PFUIComponent {
                             45)) {
                         int hours = DateUtil.getHoursInFuture(syncDate);
                         if (hours <= 1) {
-                        lowerText = Translation.getTranslation(
+                        lowerText = Translation.get(
                                 "main_frame.sync_eta_one_hour");
                         } else {
-                            lowerText = Translation.getTranslation(
+                            lowerText = Translation.get(
                                     "main_frame.sync_eta_hours", String.valueOf(
                                             hours));
                         }
                     } else {
                         int minutes = DateUtil.getMinutesInFuture(syncDate);
                         if (minutes <= 1) {
-                        lowerText = Translation.getTranslation(
+                        lowerText = Translation.get(
                                 "main_frame.sync_eta_one_minute");
                         } else {
-                            lowerText = Translation.getTranslation(
+                            lowerText = Translation.get(
                                 "main_frame.sync_eta_minutes",
                                 String.valueOf(minutes));
                         }
                     }
                 } else {
-                    lowerText = Translation.getTranslation(
+                    lowerText = Translation.get(
                         "main_frame.last_synced", date);
                 }
             }
@@ -857,7 +857,7 @@ public class MainFrame extends PFUIComponent {
     public void updateTitle() {
         StringBuilder title = new StringBuilder();
 
-        String appName = Translation.getTranslation("general.application.name");
+        String appName = Translation.get("general.application.name");
         // @todo Unclear, please comment what this is about.
         if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
             appName = "PowerFolder";
@@ -1171,14 +1171,14 @@ public class MainFrame extends PFUIComponent {
     private void configurePauseResumeLink() {
         if (getController().isPaused()) {
             pauseResumeActionLabel.setText(Translation
-                .getTranslation("action_resume_sync.name"));
+                .get("action_resume_sync.name"));
             pauseResumeActionLabel.setToolTipText(Translation
-                .getTranslation("action_resume_sync.description"));
+                .get("action_resume_sync.description"));
         } else {
             pauseResumeActionLabel.setText(Translation
-                .getTranslation("action_pause_sync.name"));
+                .get("action_pause_sync.name"));
             pauseResumeActionLabel.setToolTipText(Translation
-                .getTranslation("action_pause_sync.description"));
+                .get("action_pause_sync.description"));
         }
     }
 
@@ -1196,13 +1196,13 @@ public class MainFrame extends PFUIComponent {
         long spaceUsed = 0;
         if (StringUtils.isBlank(client.getUsername())) {
             loginActionLabel.setText(Translation
-                .getTranslation("main_frame.account_not_set.text"));
+                .get("main_frame.account_not_set.text"));
         } else if (client.isPasswordEmpty()
             && !ConfigurationEntry.KERBEROS_SSO_ENABLED
                 .getValueBoolean(getController()))
         {
             loginActionLabel.setText(Translation
-                .getTranslation("main_frame.password_required.text"));
+                .get("main_frame.password_required.text"));
         } else if (client.isConnected()) {
             if (client.isLoggedIn()) {
                 OnlineStorageSubscription storageSubscription = client
@@ -1210,7 +1210,7 @@ public class MainFrame extends PFUIComponent {
                 AccountDetails ad = client.getAccountDetails();
                 if (storageSubscription.isDisabled()) {
                     loginActionLabel.setText(Translation
-                            .getTranslation("main_frame.storage_subscription_disabled.text"));
+                            .get("main_frame.storage_subscription_disabled.text"));
                 } else {
                     totalStorage = storageSubscription.getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
@@ -1219,7 +1219,7 @@ public class MainFrame extends PFUIComponent {
                             / (double) totalStorage;
                     } else {
                         loginActionLabel.setText(Translation
-                                .getTranslation("main_frame.storage_subscription_disabled.text"));
+                                .get("main_frame.storage_subscription_disabled.text"));
                         percentageUsed = 100.0d;
                     }
                     percentageUsed = Math.max(0.0d, percentageUsed);
@@ -1236,7 +1236,7 @@ public class MainFrame extends PFUIComponent {
             } else {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
-                    .getTranslation("main_frame.log_in_failed.text_click"));
+                    .get("main_frame.log_in_failed.text_click"));
                 if (!PFWizard.isWizardOpen() && client.isPasswordRequired()) {
                     PFWizard.openLoginWizard(getController(), client);
                 }
@@ -1274,13 +1274,13 @@ public class MainFrame extends PFUIComponent {
                 }
                 uiComponent.setExtendedState(Frame.MAXIMIZED_BOTH);
                 plusButton.setToolTipText(Translation
-                    .getTranslation("main_frame.compact.tips"));
+                    .get("main_frame.compact.tips"));
                 plusButton.setIcons(
                     Icons.getIconById(Icons.WINDOW_PLUS_NORMAL),
                     Icons.getIconById(Icons.WINDOW_PLUS_HOVER),
                     Icons.getIconById(Icons.WINDOW_PLUS_PUSH));
                 minusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.minimize.tips"));
+                        Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
                 minusButton.setVisible(!OSUtil.isSystraySupported() ||
@@ -1292,13 +1292,13 @@ public class MainFrame extends PFUIComponent {
                 uiComponent.setResizable(true);
 
                 plusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.maximize.tips"));
+                        Translation.get("main_frame.maximize.tips"));
                 plusButton.setIcons(Icons.getIconById(
                         Icons.WINDOW_MAXIMIZE_NORMAL),
                         Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
                         Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
                 minusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.minimize.tips"));
+                        Translation.get("main_frame.minimize.tips"));
 
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
@@ -1321,14 +1321,14 @@ public class MainFrame extends PFUIComponent {
                 uiComponent.setResizable(false);
                 
                 plusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.maximize.tips"));
+                        Translation.get("main_frame.maximize.tips"));
                 plusButton.setIcons(Icons.getIconById(
                     Icons.WINDOW_MAXIMIZE_NORMAL),
                     
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_HOVER),
                     Icons.getIconById(Icons.WINDOW_MAXIMIZE_PUSH));
                 minusButton.setToolTipText(
-                        Translation.getTranslation("main_frame.minimize.tips"));
+                        Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
                 minusButton.setVisible(!OSUtil.isSystraySupported() ||
@@ -1403,27 +1403,27 @@ public class MainFrame extends PFUIComponent {
         }
         if (getController().isPaused()) {
             upperMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("action_resume_sync.description"));
+                .get("action_resume_sync.description"));
             lowerMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("action_resume_sync.description"));
+                .get("action_resume_sync.description"));
         } else if (frameMode == FrameMode.COMPACT) {
             upperMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("action_expand_interface.name"));
+                .get("action_expand_interface.name"));
             lowerMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("action_expand_interface.name"));
+                .get("action_expand_interface.name"));
         } else if (PreferencesEntry.BEGINNER_MODE
             .getValueBoolean(getController())
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             upperMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("main_frame.minimal.change_loging.tip"));
+                .get("main_frame.minimal.change_loging.tip"));
             lowerMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("main_frame.minimal.change_loging.tip"));
+                .get("main_frame.minimal.change_loging.tip"));
         } else {
             upperMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("action_collapse_interface.name"));
+                .get("action_collapse_interface.name"));
             lowerMainTextActionLabel.setToolTipText(Translation
-                .getTranslation("action_collapse_interface.name"));
+                .get("action_collapse_interface.name"));
         }
     }
 

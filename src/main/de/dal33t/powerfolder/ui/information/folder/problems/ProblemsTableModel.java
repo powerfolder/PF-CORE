@@ -52,9 +52,9 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
 
     private String[] columnHeaders = {
         "", // 0 Icon
-        Translation.getTranslation("folder_problem.table_model.description"), // 1
-        Translation.getTranslation("folder_problem.table_model.solution"), // 3
-        Translation.getTranslation("folder_problem.table_model.date") // 2
+        Translation.get("folder_problem.table_model.description"), // 1
+        Translation.get("folder_problem.table_model.solution"), // 3
+        Translation.get("folder_problem.table_model.date") // 2
         };
 
     private final List<Problem> problems;

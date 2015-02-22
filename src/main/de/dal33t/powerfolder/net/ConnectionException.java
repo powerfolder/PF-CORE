@@ -111,7 +111,7 @@ public class ConnectionException extends Exception {
                 public void run() {
                     DialogFactory.genericDialog(
                             controller,
-                            Translation.getTranslation("dialog.connection_problem"),
+                            Translation.get("dialog.connection_problem"),
                             message,
                             controller.isVerbose(), ConnectionException.this);
                 }

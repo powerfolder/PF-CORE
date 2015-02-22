@@ -71,25 +71,25 @@ public class FoldersTab extends PFUIComponent {
     public FoldersTab(Controller controller) {
         super(controller);
         connectingLabel = new JLabel(
-            Translation.getTranslation("folders_tab.connecting"));
+            Translation.get("folders_tab.connecting"));
         couldNotConnect = new JLabel(
-            Translation.getTranslation("folders_tab.could_not_connect"));
+            Translation.get("folders_tab.could_not_connect"));
         notLoggedInLabel = new JLabel(
-            Translation.getTranslation("folders_tab.not_logged_in"));
+            Translation.get("folders_tab.not_logged_in"));
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction());
         loginActionLabel.setText(Translation
-            .getTranslation("folders_tab.login"));
+            .get("folders_tab.login"));
         noFoldersFoundLabel = new JLabel(
-            Translation.getTranslation("folders_tab.no_folders_found"));
+            Translation.get("folders_tab.no_folders_found"));
         foldersList = new FoldersList(getController(), this);
         folderWizardActionLabel = new ActionLabel(getController(),
             getApplicationModel().getActionModel().getFolderWizardAction());
         folderWizardActionLabel.setText(Translation
-            .getTranslation("folders_tab.folder_wizard"));
+            .get("folders_tab.folder_wizard"));
         newFolderActionLabel = new ActionLabel(getController(),
             getApplicationModel().getActionModel().getNewFolderAction());
         newFolderActionLabel.setText(Translation
-            .getTranslation("folders_tab.new_folder"));
+            .get("folders_tab.new_folder"));
         client = getApplicationModel().getServerClientModel().getClient();
 
         controller.getThreadPool().scheduleAtFixedRate(new Runnable() {

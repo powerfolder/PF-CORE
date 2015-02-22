@@ -356,14 +356,14 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
     private int showDuplicates(List<Folder> folders, String messageKey) {
 
         String title = Translation
-            .getTranslation("dialog.synchronization.duplicate.title");
+            .get("dialog.synchronization.duplicate.title");
         StringBuilder sb = new StringBuilder();
         int local = 0;
         for (Folder folder : folders) {
             sb.append("    ");
             if (local++ >= 10) {
                 // Too many folders - enough!!!
-                sb.append(Translation.getTranslation("general.more.lower_case")
+                sb.append(Translation.get("general.more.lower_case")
                     + "...\n");
                 break;
             }
@@ -371,11 +371,11 @@ public class SyncProfileSelectorPanel extends PFUIComponent {
         }
 
         String message = Translation
-            .getTranslation("dialog.synchronization.duplicate.use")
+            .get("dialog.synchronization.duplicate.use")
             + "\n\n"
             + sb.toString()
             + '\n'
-            + Translation.getTranslation(messageKey);
+            + Translation.get(messageKey);
         return DialogFactory.genericDialog(
                 getController(), title, message, new String[]{"OK", "Cancel"}, 0,
                 GenericDialogType.WARN);

@@ -96,7 +96,7 @@ public class FileSelectorFactory {
 
         // The button
         final JButton button = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation("folder_create.dialog.select_directory.text"));
+                Translation.get("folder_create.dialog.select_directory.text"));
 
         // Button logic
         button.addActionListener(new ActionListener() {

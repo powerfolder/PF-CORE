@@ -128,7 +128,7 @@ public class NotificationForm extends JPanel {
             // Separator
             panel.add(new JSeparator(), cc.xyw(2, 6, internalWidth));
 
-            neverShowSystemNotificationCB = new JCheckBox(Translation.getTranslation(
+            neverShowSystemNotificationCB = new JCheckBox(Translation.get(
                     "notification_form.never_show_system_notifications"));
             neverShowSystemNotificationCB.addActionListener(new MyActionListener());
             panel.add(neverShowSystemNotificationCB, cc.xyw(2, 8, internalWidth));
@@ -177,7 +177,7 @@ public class NotificationForm extends JPanel {
         panel.setLayout(formlayout1);
 
         JLabel label = new JLabel();
-        label.setText(Translation.getTranslation("notification_form.title",
+        label.setText(Translation.get("notification_form.title",
             title));
         label.setHorizontalAlignment(SwingConstants.LEFT);
         panel.add(label, cc.xy(3, 1));

@@ -65,7 +65,7 @@ public class SystemMonitorFrame extends PFUIComponent {
      * Builds the ui component.
      */
     private void buildUI() {
-        uiComponent = new JFrame(Translation.getTranslation("exp.system_monitor.title"));
+        uiComponent = new JFrame(Translation.get("exp.system_monitor.title"));
         uiComponent.setIconImage(Icons.getImageById(Icons.SYSTEM_MONITOR));
         uiComponent.getContentPane().setLayout(new BorderLayout());
         uiComponent.getContentPane().add(systemMonitor, BorderLayout.CENTER);
@@ -142,13 +142,13 @@ public class SystemMonitorFrame extends PFUIComponent {
                 .createCollector(CollectorFactory.CollectorID.HEAP_MEMORY_USAGE.id));
 
         systemMonitor.addCaption(CollectorFactory.CollectorID.CPU_USAGE.id,
-                Translation.getTranslation("exp.system_monitor.cpu_usage"),
+                Translation.get("exp.system_monitor.cpu_usage"),
                 "%{percentValue}.0f%%", false);
         systemMonitor.addCaption(CollectorFactory.CollectorID.THREADS.id,
-                Translation.getTranslation("exp.system_monitor.threads"),
+                Translation.get("exp.system_monitor.threads"),
                 "%{value},.0f / %{maxValue},.0f (peak)", false);
         systemMonitor.addCaption(CollectorFactory.CollectorID.HEAP_MEMORY_USAGE.id,
-                Translation.getTranslation("exp.system_monitor.heap_usage"),
+                Translation.get("exp.system_monitor.heap_usage"),
                 "%{value},.2fMB / %{maxValue},.2fMB / %{percentValue}.0f%%", false);
     }
 }

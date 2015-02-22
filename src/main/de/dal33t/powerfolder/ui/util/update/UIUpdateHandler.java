@@ -33,19 +33,19 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
         // Wait for ui to open
         getController().waitForUIOpen();
 
-        final String text = Translation.getTranslation(
+        final String text = Translation.get(
             "dialog.update_check.text", Controller.PROGRAM_VERSION, event
                 .getNewReleaseVersion());
 
         final List<String> options = new ArrayList<String>(4);
         String downloadAndUpdateSilent = Translation
-            .getTranslation("dialog.update_check.downloadAndUpdateSilent");
+            .get("dialog.update_check.downloadAndUpdateSilent");
         String downloadAndUpdate = Translation
-            .getTranslation("dialog.update_check.downloadAndUpdate");
+            .get("dialog.update_check.downloadAndUpdate");
         String gotoHomepage = Translation
-            .getTranslation("dialog.update_check.gotoHomepage");
+            .get("dialog.update_check.gotoHomepage");
         String nothingNeverAsk = Translation
-            .getTranslation("dialog.update_check.nothingNeverAsk");
+            .get("dialog.update_check.nothingNeverAsk");
 
         boolean allowSilent = ConfigurationEntry.UPDATE_SILENT_ALLOWED
             .getValueBoolean(getController());
@@ -79,7 +79,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                                 getParentFrame(),
                                 text,
                                 Translation
-                                    .getTranslation("dialog.update_check.title"),
+                                    .get("dialog.update_check.title"),
                                 JOptionPane.PLAIN_MESSAGE,
                                 JOptionPane.QUESTION_MESSAGE, null, options,
                                 options[0]);
@@ -91,7 +91,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                         public void run() {
                             option = JOptionPane.showInputDialog(getParentFrame(),
                                     text, Translation
-                                    .getTranslation("dialog.update_check.title"),
+                                    .get("dialog.update_check.title"),
                                     JOptionPane.OK_CANCEL_OPTION, null, options
                                     .toArray(), options.get(0));
                         }
@@ -126,9 +126,9 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                                 .genericDialog(
                                     getController(),
                                     Translation
-                                        .getTranslation("dialog.update_check.failed.title"),
+                                        .get("dialog.update_check.failed.title"),
                                     Translation
-                                        .getTranslation("dialog.update_check.failed.text"),
+                                        .get("dialog.update_check.failed.text"),
                                     GenericDialogType.WARN);
                         }
                     });

@@ -82,9 +82,9 @@ class NewDirectoryCreator extends BaseDialog {
         // Set the components.
         CellConstraints cc = new CellConstraints();
         builder.add(LinkedTextBuilder.build(getController(),
-                Translation.getTranslation("dialog.new-directory-creator.text",
+                Translation.get("dialog.new-directory-creator.text",
                 baseDirectory)).getPanel(), cc.xyw(1, 1, 3));
-        builder.add(new JLabel(Translation.getTranslation("general.directory")), cc.xy(1, 3));
+        builder.add(new JLabel(Translation.get("general.directory")), cc.xy(1, 3));
         builder.add(subdirField, cc.xy(3, 3));
 
         return builder.getPanel();
@@ -95,6 +95,6 @@ class NewDirectoryCreator extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("dialog.new-directory-creator.title");
+        return Translation.get("dialog.new-directory-creator.title");
     }
 }

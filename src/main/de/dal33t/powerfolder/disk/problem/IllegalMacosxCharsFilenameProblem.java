@@ -34,7 +34,7 @@ public class IllegalMacosxCharsFilenameProblem extends ResolvableProblem {
 
     public IllegalMacosxCharsFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.getTranslation("filename_problem.not_recommended_chars",
+        description = Translation.get("filename_problem.not_recommended_chars",
                 fileInfo.getFilenameOnly());
     }
 
@@ -63,7 +63,7 @@ public class IllegalMacosxCharsFilenameProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-        return Translation.getTranslation("filename_problem.not_recommended_chars.soln_desc");
+        return Translation.get("filename_problem.not_recommended_chars.soln_desc");
     }
 
 }

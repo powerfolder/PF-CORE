@@ -512,8 +512,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         if (getController().isUIEnabled()) {
             getController().getUIController().getMainFrame().toFront();
             DialogFactory.genericDialog(getController(),
-                    Translation.getTranslation("remote_command_manager.copy_link.error_title"),
-                    Translation.getTranslation("remote_command_manager.copy_link.error_message", filename),
+                    Translation.get("remote_command_manager.copy_link.error_title"),
+                    Translation.get("remote_command_manager.copy_link.error_message", filename),
                     GenericDialogType.ERROR);
         }
 
@@ -627,8 +627,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     .genericDialog(
                         getController(),
                         Translation
-                            .getTranslation("remote_command_manager.make_folder.error_title"),
-                        Translation.getTranslation(
+                            .get("remote_command_manager.make_folder.error_title"),
+                        Translation.get(
                             "remote_command_manager.make_folder.error_message",
                             name), GenericDialogType.ERROR);
             }
@@ -677,7 +677,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         if (!silent && getController().isUIEnabled()) {
             PFWizard wizard = new PFWizard(getController(),
-                Translation.getTranslation("wizard.pfwizard.folder_title"));
+                Translation.get("wizard.pfwizard.folder_title"));
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.INITIAL_FOLDER_NAME, name);
             if (syncProfile != null) {
@@ -697,8 +697,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             WizardPanel nextPanel = new FolderCreatePanel(getController());
             // Setup success panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setup_success"),
-                Translation.getTranslation("wizard.success_join"));
+                Translation.get("wizard.setup_success"),
+                Translation.get("wizard.success_join"));
             wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
             ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
                 getController(), dir.toAbsolutePath().toString(), nextPanel);

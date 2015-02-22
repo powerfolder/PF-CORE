@@ -241,7 +241,7 @@ public class WinUtils extends Loggable {
             pfile = Paths.get(controller.getDistribution().getBinaryName()
                 + ".exe").toAbsolutePath();
             if (Files.notExists(pfile)) {
-                String message = Translation.getTranslation(
+                String message = Translation.get(
                     "exception.startup_item.executable_not_found.text", controller
                         .getDistribution().getBinaryName(), pfile.getFileName()
                         .toString());
@@ -259,7 +259,7 @@ public class WinUtils extends Loggable {
             false), shortCutname);
         if (setup) {
             ShellLink sl = new ShellLink("--minimized",
-                Translation.getTranslation("winutils.shortcut.description"),
+                Translation.get("winutils.shortcut.description"),
                 pfile.toAbsolutePath().toString(), pfile.getParent().toString());
             logInfo("Creating startup link: " + pflnk.toAbsolutePath());
             createLink(sl, pflnk.toAbsolutePath().toString());

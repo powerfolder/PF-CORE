@@ -32,8 +32,8 @@ public class OutOfMemoryNotice extends NoticeBase {
     private OutOfMemoryError error;
 
     public OutOfMemoryNotice(OutOfMemoryError error) {
-        super(Translation.getTranslation("out_of_memory_notice.title"),
-            Translation.getTranslation("out_of_memory_notice.summary"));
+        super(Translation.get("out_of_memory_notice.title"),
+            Translation.get("out_of_memory_notice.summary"));
         this.error = error;
     }
 

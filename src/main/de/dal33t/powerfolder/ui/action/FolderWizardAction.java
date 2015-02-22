@@ -37,7 +37,7 @@ public class FolderWizardAction extends BaseAction {
             .getServerClientModel().checkAndSetupAccount();
         if (getController().isBackupOnly()) {
             PFWizard wizard = new PFWizard(getController(),
-                Translation.getTranslation("wizard.pfwizard.folder_title"));
+                Translation.get("wizard.pfwizard.folder_title"));
             wizard.open(WhatToDoPanel.doBackupOption(getController(),
                 wizard.getWizardContext()));
         } else {

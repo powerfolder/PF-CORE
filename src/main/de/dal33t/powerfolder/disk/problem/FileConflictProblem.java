@@ -23,7 +23,7 @@ public class FileConflictProblem extends ResolvableProblem {
 
     @Override
     public String getDescription() {
-        return Translation.getTranslation("file_conflict_problem.description",
+        return Translation.get("file_conflict_problem.description",
             fInfo.getRelativeName());
     }
 
@@ -69,6 +69,6 @@ public class FileConflictProblem extends ResolvableProblem {
 
     @Override
     public String getResolutionDescription() {
-        return Translation.getTranslation("file_conflict_problem.soln_desc");
+        return Translation.get("file_conflict_problem.soln_desc");
     }
 }

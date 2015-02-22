@@ -77,7 +77,7 @@ public class NoticesInformationCard extends InformationCard {
     }
 
     public String getCardTitle() {
-        return Translation.getTranslation("dialog.notices.title");
+        return Translation.get("dialog.notices.title");
     }
 
     /**

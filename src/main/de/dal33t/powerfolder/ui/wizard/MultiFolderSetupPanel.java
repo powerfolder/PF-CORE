@@ -102,8 +102,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                 || folderCreateItem.getFolderInfo().getName().length() == 0)
             {
                 DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("wizard.multi_folder_setup.no_name.title"),
-                    Translation.getTranslation(
+                    .get("wizard.multi_folder_setup.no_name.title"),
+                    Translation.get(
                         "wizard.multi_folder_setup.no_name.text",
                         folderCreateItem.getLocalBase().toAbsolutePath().toString()),
                     GenericDialogType.ERROR);
@@ -117,8 +117,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.success_join"));
+            Translation.get("wizard.setup_success"), Translation
+                .get("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         return new FolderCreatePanel(getController());
@@ -132,11 +132,11 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation.getTranslation("general.directory"), cc
+        builder.addLabel(Translation.get("general.directory"), cc
             .xy(1, 1));
         builder.add(localBaseCombo, cc.xy(3, 1));
 
-        builder.addLabel(Translation.getTranslation("general.folder_name"),
+        builder.addLabel(Translation.get("general.folder_name"),
             cc.xy(1, 3));
         builder.add(nameField, cc.xy(3, 3));
 
@@ -144,14 +144,14 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
             builder
                 .add(
                     new JLabel(Translation
-                        .getTranslation("general.transfer_mode")), cc.xy(1, 5));
+                        .get("general.transfer_mode")), cc.xy(1, 5));
             JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
             p.setOpaque(false);
             builder.add(p, cc.xyw(3, 5, 2));
         }
 
         builder.add(new JLabel(Translation
-            .getTranslation("general.local_archive_mode")), cc.xy(1, 7));
+            .get("general.local_archive_mode")), cc.xy(1, 7));
         builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3, 7, 2));
 
         return builder.getPanel();
@@ -213,7 +213,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.multi_folder_setup.title");
+        return Translation.get("wizard.multi_folder_setup.title");
     }
 
     /**

@@ -81,7 +81,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("preferences.dialog.title");
+        return Translation.get("preferences.dialog.title");
     }
 
     protected Icon getIcon() {
@@ -264,8 +264,8 @@ public class PreferencesDialog extends BaseDialog {
                             }
                         } catch (Exception e1) {
                             logSevere(e1);
-                            DialogFactory.genericDialog(getController(), Translation.getTranslation("preferences.dialog.save_error.title"),
-                                    Translation.getTranslation("preferences.dialog.save_error.message"), GenericDialogType.ERROR);
+                            DialogFactory.genericDialog(getController(), Translation.get("preferences.dialog.save_error.title"),
+                                    Translation.get("preferences.dialog.save_error.message"), GenericDialogType.ERROR);
                         } finally {
                             okButton.setEnabled(true);
                         }
@@ -291,9 +291,9 @@ public class PreferencesDialog extends BaseDialog {
      */
     private void handleRestartRequest() {
         int result = DialogFactory.genericDialog(getController(), Translation
-            .getTranslation("preferences.dialog.restart.title"), Translation
-            .getTranslation("preferences.dialog.restart.text"), new String[]{
-            Translation.getTranslation("preferences.dialog.restart.restart")}, 0,
+            .get("preferences.dialog.restart.title"), Translation
+            .get("preferences.dialog.restart.text"), new String[]{
+            Translation.get("preferences.dialog.restart.restart")}, 0,
             GenericDialogType.INFO); // Default is restart
 
         if (result == 0) { // Restart

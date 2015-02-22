@@ -65,14 +65,14 @@ public class LANList extends PFComponent {
         networklist
             .setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         addButton = new JButtonMini(Icons.getIconById(Icons.ADD), Translation
-            .getTranslation("folder_panel.settings_tab.addbutton.name"));
+            .get("folder_panel.settings_tab.addbutton.name"));
         // addButton.setText();
         removeButton = new JButtonMini(Icons.getIconById(Icons.DELETE),
             Translation
-                .getTranslation("folder_panel.settings_tab.removebutton.name"));
+                .get("folder_panel.settings_tab.removebutton.name"));
         // removeButton.setText();
         editButton = new JButtonMini(Icons.getIconById(Icons.EDIT), Translation
-            .getTranslation("folder_panel.settings_tab.editbutton.name"));
+            .get("folder_panel.settings_tab.editbutton.name"));
         // editButton.setText();
 
         addButton.addActionListener(new ActionListener() {

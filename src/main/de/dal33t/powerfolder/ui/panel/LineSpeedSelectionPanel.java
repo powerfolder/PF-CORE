@@ -118,9 +118,9 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
         customDownloadSpeedSpinner =
                 new JSpinner(customDownloadSpeedSpinnerModel);
 
-        customUploadKbPerSLabel = new JLabel(Translation.getTranslation(
+        customUploadKbPerSLabel = new JLabel(Translation.get(
                 "general.kbPerS"));
-        customDownloadKbPerSLabel = new JLabel(Translation.getTranslation(
+        customDownloadKbPerSLabel = new JLabel(Translation.get(
                 "general.kbPerS"));
 
         customUploadSpeedSpinnerModel.addChangeListener(new
@@ -212,19 +212,19 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
                     .getUploadCPSForWAN()
                     / 1024
                     + " "
-                    + Translation.getTranslation("general.kbPerS"));
+                    + Translation.get("general.kbPerS"));
             } else {
                 customUploadSpeedText.setText(Translation
-                    .getTranslation("line_speed.unlimited"));
+                    .get("line_speed.unlimited"));
             }
 
             if (transferManager.getDownloadCPSForWAN() > 0) {
                 customDownloadSpeedText.setText(
                     transferManager.getDownloadCPSForWAN() / 1024 + " " +
-                    Translation.getTranslation("general.kbPerS"));
+                    Translation.get("general.kbPerS"));
             } else {
                 customDownloadSpeedText.setText(Translation
-                    .getTranslation("line_speed.unlimited"));
+                    .get("line_speed.unlimited"));
             }
 
         }
@@ -255,12 +255,12 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(Translation.getTranslation("line_speed.download_speed")), cc.xy(1, 1));
+        builder.add(new JLabel(Translation.get("line_speed.download_speed")), cc.xy(1, 1));
         builder.add(customDownloadSpeedSpinner, cc.xy(3, 1));
         builder.add(customDownloadKbPerSLabel, cc.xy(5, 1));
         builder.add(customDownloadSpeedText, cc.xyw(3, 1, 3));
 
-        builder.add(new JLabel(Translation.getTranslation("line_speed.upload_speed")), cc.xy(7, 1));
+        builder.add(new JLabel(Translation.get("line_speed.upload_speed")), cc.xy(7, 1));
         builder.add(customUploadSpeedSpinner, cc.xy(9, 1));
         builder.add(customUploadKbPerSLabel, cc.xy(11, 1));
         builder.add(customUploadSpeedText, cc.xyw(9, 1, 3));
@@ -330,7 +330,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
      */
     private LineSpeed addLineSpeed(String descr, long uploadSpeed,
                                    long downloadSpeed, boolean editable) {
-        LineSpeed ls = new LineSpeed(Translation.getTranslation(descr),
+        LineSpeed ls = new LineSpeed(Translation.get(descr),
                 uploadSpeed, downloadSpeed, editable);
         addLineSpeed(ls);
         return ls;
@@ -426,10 +426,10 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
 
     private static void updateLabel(JLabel label, long kbPerS) {
         if (kbPerS == 0) {
-            label.setText(Translation.getTranslation("line_speed.unlimited"));
+            label.setText(Translation.get("line_speed.unlimited"));
         } else {
             label.setText(kbPerS + " " +
-                    Translation.getTranslation("general.kbPerS"));
+                    Translation.get("general.kbPerS"));
         }
     }
 

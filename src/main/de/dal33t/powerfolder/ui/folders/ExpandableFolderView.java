@@ -274,10 +274,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getValueBoolean(getController()))
             {
                 upperPanel.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.remove"));
+                    .get("exp_folder_view.remove"));
             } else {
                 upperPanel.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.collapse"));
+                    .get("exp_folder_view.collapse"));
             }
             updateNameLabel();
             lowerOuterPanel.setVisible(true);
@@ -295,10 +295,10 @@ public class ExpandableFolderView extends PFUIComponent implements
             && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             upperPanel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.create"));
+                .get("exp_folder_view.create"));
         } else {
             upperPanel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.expand"));
+                .get("exp_folder_view.expand"));
         }
         updateNameLabel();
         lowerOuterPanel.setVisible(false);
@@ -419,7 +419,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperPanel.setOpaque(false);
         if (type == Type.Local) {
             upperPanel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.expand"));
+                .get("exp_folder_view.expand"));
         }
         CursorUtils.setHandCursor(upperPanel);
         upperPanel.addMouseListener(moa);
@@ -842,10 +842,10 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             if (lastSyncDate == null) {
                 syncDateText = Translation
-                    .getTranslation("exp_folder_view.never_synchronized");
+                    .get("exp_folder_view.never_synchronized");
             } else {
                 String formattedDate = Format.formatDateShort(lastSyncDate);
-                syncDateText = Translation.getTranslation(
+                syncDateText = Translation.get(
                     "exp_folder_view.last_synchronized", formattedDate);
             }
 
@@ -875,16 +875,16 @@ public class ExpandableFolderView extends PFUIComponent implements
                         // "Estimated sync: in X minutes"
                         if (DateUtil.isDateMoreThanNDaysInFuture(date, 2)) {
                             syncDateText = Translation
-                                .getTranslation("main_frame.sync_eta_unknown");
+                                .get("main_frame.sync_eta_unknown");
                         } else if (DateUtil.isDateMoreThanNHoursInFuture(date,
                             20))
                         {
                             int days = DateUtil.getDaysInFuture(date);
                             if (days <= 1) {
                                 syncDateText = Translation
-                                    .getTranslation("exp_folder_view.sync_eta_one_day");
+                                    .get("exp_folder_view.sync_eta_one_day");
                             } else {
-                                syncDateText = Translation.getTranslation(
+                                syncDateText = Translation.get(
                                     "exp_folder_view.sync_eta_days",
                                     String.valueOf(days));
                             }
@@ -894,9 +894,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                             int hours = DateUtil.getDaysInFuture(date);
                             if (hours <= 1) {
                                 syncDateText = Translation
-                                    .getTranslation("exp_folder_view.sync_eta_one_hour");
+                                    .get("exp_folder_view.sync_eta_one_hour");
                             } else {
-                                syncDateText = Translation.getTranslation(
+                                syncDateText = Translation.get(
                                     "exp_folder_view.sync_eta_hours",
                                     String.valueOf(hours));
                             }
@@ -904,9 +904,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                             int minutes = DateUtil.getHoursInFuture(date);
                             if (minutes <= 1) {
                                 syncDateText = Translation
-                                    .getTranslation("exp_folder_view.sync_eta_one_minute");
+                                    .get("exp_folder_view.sync_eta_one_minute");
                             } else {
-                                syncDateText = Translation.getTranslation(
+                                syncDateText = Translation.get(
                                     "exp_folder_view.sync_eta_minutes",
                                     String.valueOf(minutes));
 
@@ -921,22 +921,22 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     // Never synced with others.
                     syncPercentText = Translation
-                        .getTranslation("exp_folder_view.unsynchronized");
+                        .get("exp_folder_view.unsynchronized");
                     showing100Sync.set(false);
                 } else {
                     showing100Sync.set(Double.compare(sync, 100) == 0);
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
                         if (folder.getConnectedMembersCount() >= 1) {
                             syncPercentText = Translation
-                                .getTranslation("exp_folder_view.unsynchronized");
+                                .get("exp_folder_view.unsynchronized");
                             syncPercentTip = Translation
-                                .getTranslation("exp_folder_view.unsynchronized.tip");
+                                .get("exp_folder_view.unsynchronized.tip");
                         } else {
                             syncPercentText = "";
                             syncPercentTip = "";
                         }
                     } else {
-                        syncPercentText = Translation.getTranslation(
+                        syncPercentText = Translation.get(
                             "exp_folder_view.synchronized",
                             Format.formatPercent(sync));
                         // Workaround: Prevent double %%
@@ -965,15 +965,15 @@ public class ExpandableFolderView extends PFUIComponent implements
                 upperSyncPercentageLabel.setText("");
                 showing100Sync.set(false);
                 syncPercentText = Translation
-                    .getTranslation("exp_folder_view.not_yet_scanned");
+                    .get("exp_folder_view.not_yet_scanned");
                 localSizeString = "?";
                 totalSizeString = "?";
             }
         } else {
             upperSyncPercentageLabel.setText("");
-            syncPercentText = Translation.getTranslation(
+            syncPercentText = Translation.get(
                 "exp_folder_view.synchronized", "?");
-            syncDateText = Translation.getTranslation(
+            syncDateText = Translation.get(
                 "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
             totalSizeString = "?";
@@ -982,9 +982,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         syncPercentLabel.setText(syncPercentText);
         syncPercentLabel.setToolTipText(syncPercentTip);
         syncDateLabel.setText(syncDateText);
-        localSizeLabel.setText(Translation.getTranslation(
+        localSizeLabel.setText(Translation.get(
             "exp_folder_view.local", localSizeString));
-        totalSizeLabel.setText(Translation.getTranslation(
+        totalSizeLabel.setText(Translation.get(
             "exp_folder_view.total", totalSizeString));
         // Maybe change visibility of upperSyncLink.
         retrieveAdditionalInfosFromServer();
@@ -997,11 +997,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         String filesText;
         if (type == Type.Local) {
             // FIXME: Returns # of files + # of directories
-            filesText = Translation.getTranslation("exp_folder_view.files",
+            filesText = Translation.get("exp_folder_view.files",
                 String.valueOf(folder.getStatistic().getLocalFilesCount()));
         } else {
             filesText = Translation
-                .getTranslation("exp_folder_view.files", "?");
+                .get("exp_folder_view.files", "?");
         }
         filesLabel.setText(filesText);
     }
@@ -1017,10 +1017,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                     deletedCount++;
                 }
             }
-            deletedFileText = Translation.getTranslation(
+            deletedFileText = Translation.get(
                 "exp_folder_view.deleted_files", String.valueOf(deletedCount));
         } else {
-            deletedFileText = Translation.getTranslation(
+            deletedFileText = Translation.get(
                 "exp_folder_view.deleted_files", "?");
         }
         deletedFilesLabel.setText(deletedFileText);
@@ -1032,7 +1032,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateTransferMode() {
         String transferMode;
         if (type == Type.Local) {
-            transferMode = Translation.getTranslation(
+            transferMode = Translation.get(
                 "exp_folder_view.transfer_mode", folder.getSyncProfile()
                     .getName());
             String path = folder.getCommitOrLocalDir().toAbsolutePath()
@@ -1044,7 +1044,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             localDirectoryLabel.setVisible(true);
             localDirectoryLabel.setText(path);
         } else {
-            transferMode = Translation.getTranslation(
+            transferMode = Translation.get(
                 "exp_folder_view.transfer_mode", "?");
             localDirectoryLabel.setVisible(false);
         }
@@ -1077,7 +1077,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             countText = "?";
             connectedCountText = "?";
         }
-        membersLabel.setText(Translation.getTranslation(
+        membersLabel.setText(Translation.get(
             "exp_folder_view.members", countText, connectedCountText));
     }
 
@@ -1094,12 +1094,12 @@ public class ExpandableFolderView extends PFUIComponent implements
                 // Got a problem.
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
                 primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_problem_text"));
+                    .get("exp_folder_view.folder_problem_text"));
             } else if (folder != null && folder.isPreviewOnly()) {
                 // It's a preview.
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_preview_text"));
+                    .get("exp_folder_view.folder_preview_text"));
             } else if (getController().isPaused()
                 && Double.compare(sync, 100.0d) < 0
                 && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
@@ -1107,12 +1107,12 @@ public class ExpandableFolderView extends PFUIComponent implements
                 // Sync is in pause
                 primaryButton.setIcon(Icons.getIconById(Icons.PAUSE));
                 primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_sync_paused"));
+                    .get("exp_folder_view.folder_sync_paused"));
             } else if (Double.compare(sync, 100.0d) < 0) {
                 // Not synced and not syncing.
                 primaryButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
                 primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_sync_incomplete"));
+                    .get("exp_folder_view.folder_sync_incomplete"));
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
@@ -1122,22 +1122,22 @@ public class ExpandableFolderView extends PFUIComponent implements
                         .getValueBoolean(getController()))
                 {
                     primaryButton.setToolTipText(Translation
-                        .getTranslation("exp_folder_view.explore"));
+                        .get("exp_folder_view.explore"));
                 } else {
                     primaryButton
                         .setToolTipText(Translation
-                            .getTranslation("exp_folder_view.folder_sync_complete"));
+                            .get("exp_folder_view.folder_sync_complete"));
                 }
             }
         } else if (type == Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.TYPICAL_FOLDER));
             primaryButton.setToolTipText(Translation
-                .getTranslation("exp_folder_view.folder_typical_text"));
+                .get("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
         } else { // CloudOnly
             primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
             primaryButton.setToolTipText(Translation
-                .getTranslation("exp_folder_view.folder_online_text"));
+                .get("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(osComponentVisible);
         }
 
@@ -1272,7 +1272,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
             if (newFiles) {
                 newCountString = " (" + newCount + ')';
-                nameLabel.setToolTipText(Translation.getTranslation(
+                nameLabel.setToolTipText(Translation.get(
                     "exp_folder_view.new_files_tip_text",
                     String.valueOf(newCount)));
             }
@@ -1281,7 +1281,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (!newFiles && folder != null) {
             if (expanded.get()) {
                 nameLabel.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.collapse"));
+                    .get("exp_folder_view.collapse"));
             } else {
                 if (PreferencesEntry.BEGINNER_MODE
                     .getValueBoolean(getController())
@@ -1289,17 +1289,17 @@ public class ExpandableFolderView extends PFUIComponent implements
                         .getValueBoolean(getController()))
                 {
                     nameLabel.setToolTipText(Translation
-                        .getTranslation("exp_folder_view.remove"));
+                        .get("exp_folder_view.remove"));
                 } else {
                     nameLabel.setToolTipText(Translation
-                        .getTranslation("exp_folder_view.expand"));
+                        .get("exp_folder_view.expand"));
                 }
             }
         }
 
         if (folder == null) {
             nameLabel.setToolTipText(Translation
-                .getTranslation("exp_folder_view.folder_online_text"));
+                .get("exp_folder_view.folder_online_text"));
         }
 
         String folderName = folderInfo.getLocalizedName();
@@ -1326,12 +1326,12 @@ public class ExpandableFolderView extends PFUIComponent implements
         {
             protected String getTitle() {
                 return Translation
-                    .getTranslation("exp_folder_view.webdav_title");
+                    .get("exp_folder_view.webdav_title");
             }
 
             protected String getWorkingText() {
                 return Translation
-                    .getTranslation("exp_folder_view.webdav_working_text");
+                    .get("exp_folder_view.webdav_working_text");
             }
 
             public Object construct() throws Throwable {
@@ -1369,18 +1369,18 @@ public class ExpandableFolderView extends PFUIComponent implements
                         String[] ops;
                         if (Help.hasWiki(getController())) {
                             ops = new String[]{
-                                Translation.getTranslation("general.ok"),
-                                Translation.getTranslation("general.help")};
+                                Translation.get("general.ok"),
+                                Translation.get("general.help")};
                         } else {
                             ops = new String[]{Translation
-                                .getTranslation("general.ok")};
+                                .get("general.ok")};
                         }
                         int op = DialogFactory
                             .genericDialog(
                                 getController(),
                                 Translation
-                                    .getTranslation("exp_folder_view.webdav_failure_title"),
-                                Translation.getTranslation(
+                                    .get("exp_folder_view.webdav_failure_title"),
+                                Translation.get(
                                     "exp_folder_view.webdav_failure_text",
                                     result.substring(1)), ops, 0,
                                 GenericDialogType.ERROR);

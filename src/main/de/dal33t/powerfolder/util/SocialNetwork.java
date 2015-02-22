@@ -84,7 +84,7 @@ public enum SocialNetwork {
                 link = link.replace(" ", "%20");
             }
 
-            String appname = Translation.getTranslation("general.application.name");
+            String appname = Translation.get("general.application.name");
             if (StringUtils.isNotBlank(appname)) {
                 link = link.replace("$APPNAME$",
                     URLEncoder.encode(appname, "UTF-8"));

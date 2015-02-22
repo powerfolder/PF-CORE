@@ -125,7 +125,7 @@ class UnlockAction extends PFContextMenuAction {
             String date = new SimpleDateFormat("dd MMM yyyy HH:mm").format(lock
                 .getCreated());
             String memberName = Translation
-                .getTranslation("context_menu.unlock.message.web");
+                .get("context_menu.unlock.message.web");
             MemberInfo member = lock.getMemberInfo();
             if (member != null) {
                 memberName = member.getNick();
@@ -134,14 +134,14 @@ class UnlockAction extends PFContextMenuAction {
             int res = DialogFactory
                 .genericDialog(
                     controller,
-                    Translation.getTranslation("context_menu.unlock.title"),
-                    Translation.getTranslation("context_menu.unlock.message",
+                    Translation.get("context_menu.unlock.title"),
+                    Translation.get("context_menu.unlock.message",
                         name, displayName, date, memberName),
                     new String[]{
                         Translation
-                            .getTranslation("context_menu.unlock.unlock"),
+                            .get("context_menu.unlock.unlock"),
                         Translation
-                            .getTranslation("context_menu.unlock.keep_lock")},
+                            .get("context_menu.unlock.keep_lock")},
                     1, GenericDialogType.QUESTION);
 
             if (res == 0) {

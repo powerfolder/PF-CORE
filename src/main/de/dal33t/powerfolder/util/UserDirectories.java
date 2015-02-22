@@ -162,7 +162,7 @@ public class UserDirectories {
      */
     public static UserDirectory getDesktopDirectory() {
         return UserDirectories.getUserDirectories().get(
-            Translation.getTranslation("user.dir.desktop"));
+            Translation.get("user.dir.desktop"));
     }
 
     /**
@@ -394,7 +394,7 @@ public class UserDirectories {
             if (Files.exists(directory) && Files.isDirectory(directory)
                 && (allowHidden || !Files.isHidden(directory)))
             {
-                String translation = Translation.getTranslation(translationId);
+                String translation = Translation.get(translationId);
                 UserDirectory userDir = new UserDirectory(translation,
                     '$' + placeholder, directory);
                 userDirectories.put(translation, userDir);

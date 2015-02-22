@@ -52,15 +52,15 @@ public class PauseDialog extends BaseDialog {
     static {
         PAUSE_RESUME_VALUES = new TreeMap<Integer, String>();
         PAUSE_RESUME_VALUES.put(0,
-            Translation.getTranslation("pause_dialog.pause.user_inactive"));
+            Translation.get("pause_dialog.pause.user_inactive"));
         PAUSE_RESUME_VALUES.put(5 * 60,
-            Translation.getTranslation("pause_dialog.pause.5minutes"));
+            Translation.get("pause_dialog.pause.5minutes"));
         PAUSE_RESUME_VALUES.put(3600,
-            Translation.getTranslation("pause_dialog.pause.1hour"));
+            Translation.get("pause_dialog.pause.1hour"));
         PAUSE_RESUME_VALUES.put(8 * 3660,
-            Translation.getTranslation("pause_dialog.pause.8hours"));
+            Translation.get("pause_dialog.pause.8hours"));
         PAUSE_RESUME_VALUES.put(Integer.MAX_VALUE,
-            Translation.getTranslation("pause_dialog.pause.permanent"));
+            Translation.get("pause_dialog.pause.permanent"));
     }
 
     private JButton pauseButton;
@@ -72,7 +72,7 @@ public class PauseDialog extends BaseDialog {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("pause_dialog.title");
+        return Translation.get("pause_dialog.title");
     }
 
     protected Icon getIcon() {
@@ -81,9 +81,9 @@ public class PauseDialog extends BaseDialog {
 
     protected JComponent getContent() {
         pauseButton = new JButton(
-            Translation.getTranslation("pause_dialog.button.text"));
+            Translation.get("pause_dialog.button.text"));
         pauseButton.setMnemonic(Translation
-            .getTranslation("pause_dialog.button.text").trim().charAt(0));
+            .get("pause_dialog.button.text").trim().charAt(0));
         pauseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 pause();
@@ -91,8 +91,8 @@ public class PauseDialog extends BaseDialog {
         });
 
         neverAskAgainCB = new JCheckBox(
-            Translation.getTranslation("general.neverAskAgain"));
-        neverAskAgainCB.setMnemonic(Translation.getTranslation(
+            Translation.get("general.neverAskAgain"));
+        neverAskAgainCB.setMnemonic(Translation.get(
             "general.neverAskAgain").charAt(0));
 
         int pauseResumeSeconds = ConfigurationEntry.PAUSE_RESUME_SECONDS
@@ -115,7 +115,7 @@ public class PauseDialog extends BaseDialog {
 
         builder.add(
             new JLabel(Translation
-                .getTranslation("pause_dialog.pause_label.text")), cc.xy(1, 1));
+                .get("pause_dialog.pause_label.text")), cc.xy(1, 1));
         builder.add(pauseValuesCombo, cc.xy(3, 1));
 
         builder.add(neverAskAgainCB, cc.xyw(1, 3, 3));

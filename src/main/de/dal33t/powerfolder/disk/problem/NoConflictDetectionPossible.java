@@ -35,7 +35,7 @@ public class NoConflictDetectionPossible extends ResolvableProblem {
         Reject.notNull(fileInfo, "fileInfo");
         Reject.notNull(oldSource, "oldSource");
         this.fileInfo = fileInfo;
-        desc = Translation.getTranslation("folder_problem.noconflictdetection",
+        desc = Translation.get("folder_problem.noconflictdetection",
             fileInfo.getRelativeName(), oldSource.nick);
     }
 

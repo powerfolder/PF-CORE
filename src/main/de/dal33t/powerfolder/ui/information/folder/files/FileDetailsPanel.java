@@ -117,7 +117,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
         if (fileInfo.isUploading(getController())) {
             status = new StringBuilder(Translation
-                .getTranslation("file_details_panel.uploading"));
+                .get("file_details_panel.uploading"));
             // FIXME: Hack, this overwrites the default status icons, since we
             // don't want upload icons in our table view
             // Maybe we need to split up Icons.getIconFor to know its context
@@ -126,7 +126,7 @@ public class FileDetailsPanel extends PFUIComponent {
             DownloadManager dl = getController().getTransferManager()
                 .getActiveDownload(fileInfo);
             status = new StringBuilder(Translation
-                .getTranslation("file_details_panel.downloading"));
+                .get("file_details_panel.downloading"));
             if (dl != null && dl.isStarted()) {
                 status.append(" ("
                     + Format.formatDecimal(dl.getCounter()
@@ -134,10 +134,10 @@ public class FileDetailsPanel extends PFUIComponent {
             }
         } else if (fileInfo.isDeleted()) {
             status = new StringBuilder(Translation
-                .getTranslation("file_details_panel.deleted"));
+                .get("file_details_panel.deleted"));
         } else if (fileInfo.isExpected(getController().getFolderRepository())) {
             status = new StringBuilder(Translation
-                .getTranslation("file_details_panel.expected"));
+                .get("file_details_panel.expected"));
         } else if (hasJoinedFolder(fileInfo)) {
             if (fileInfo
                 .isNewerAvailable(getController().getFolderRepository()))
@@ -147,18 +147,18 @@ public class FileDetailsPanel extends PFUIComponent {
                 String verStr = newestVersion != null ? newestVersion
                     .getVersion()
                     + "" : "?";
-                status = new StringBuilder(Translation.getTranslation(
+                status = new StringBuilder(Translation.get(
                     "file_details_panel.newer_available", verStr));
             } else {
                 status = new StringBuilder(Translation
-                    .getTranslation("file_details_panel.normal"));
+                    .get("file_details_panel.normal"));
             }
         } else if (nSources > 0) {
             status = new StringBuilder(Translation
-                .getTranslation("file_details_panel.available"));
+                .get("file_details_panel.available"));
         } else {
             status = new StringBuilder(Translation
-                .getTranslation("file_details_panel.not_available"));
+                .get("file_details_panel.not_available"));
         }
 
         // Prepare diskfile
@@ -192,7 +192,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
         localCopyAtField
             .setText(diskFile != null ? diskFile.toAbsolutePath().toString() : "- "
-                + Translation.getTranslation("general.not_available") + " -");
+                + Translation.get("general.not_available") + " -");
         localCopyAtField.setCaretPosition(0);
     }
 
@@ -248,56 +248,56 @@ public class FileDetailsPanel extends PFUIComponent {
             }
 
             builder.addLabel(Translation
-                .getTranslation("file_details_panel.name"), cc.xy(1, row));
+                .get("file_details_panel.name"), cc.xy(1, row));
             builder.add(nameField, cc.xywh(3, row, 5, 1));
 
             row += 2;
 
             builder.addLabel(Translation
-                .getTranslation("file_details_panel.location"), cc.xy(1, row));
+                .get("file_details_panel.location"), cc.xy(1, row));
             builder.add(locationField, cc.xy(3, row));
 
-            builder.addLabel(Translation.getTranslation("general.folder"), cc
+            builder.addLabel(Translation.get("general.folder"), cc
                 .xy(5, row));
             builder.add(folderField, cc.xy(7, row));
 
             row += 2;
 
-            builder.addLabel(Translation.getTranslation("general.size"), cc.xy(
+            builder.addLabel(Translation.get("general.size"), cc.xy(
                 1, row));
             builder.add(sizeField, cc.xy(3, row));
 
             builder.addLabel(Translation
-                .getTranslation("file_details_panel.modified_by"), cc
+                .get("file_details_panel.modified_by"), cc
                 .xy(5, row));
             builder.add(modifiedByField, cc.xy(7, row));
 
             row += 2;
 
             builder.addLabel(Translation
-                .getTranslation("file_details_panel.status"), cc.xy(1, row));
+                .get("file_details_panel.status"), cc.xy(1, row));
             builder.add(statusField, cc.xy(3, row));
 
             builder.addLabel(Translation
-                .getTranslation("file_details_panel.modified_date"), cc.xy(5,
+                .get("file_details_panel.modified_date"), cc.xy(5,
                 row));
             builder.add(modifiedDateField, cc.xy(7, row));
 
             row += 2;
 
             builder.addLabel(Translation
-                .getTranslation("file_details_panel.version"), cc.xy(5, row));
+                .get("file_details_panel.version"), cc.xy(5, row));
             builder.add(versionField, cc.xy(7, row));
 
             builder.addLabel(Translation
-                .getTranslation("file_details_panel.availability"), cc.xy(1,
+                .get("file_details_panel.availability"), cc.xy(1,
                 row));
             builder.add(sourcesField, cc.xy(3, row));
 
             row += 2;
 
             builder.addLabel(Translation
-                .getTranslation("general.local_copy_at"), cc.xy(1, row));
+                .get("general.local_copy_at"), cc.xy(1, row));
             builder.add(localCopyAtField, cc.xywh(3, row, 5, 1));
 
             panel = builder.getPanel();

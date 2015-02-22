@@ -214,16 +214,16 @@ public class NoticesModel extends PFUIComponent {
         // http\://www.powerfolder.com/wiki/Memory_configuration
         String memoryConfigHelp = Help.getWikiArticleURL(getController(),
             WikiLinks.MEMORY_CONFIGURATION);
-        String infoText = Translation.getTranslation(
+        String infoText = Translation.get(
             "low_memory.error.text", memoryConfigHelp);
         int response = DialogFactory.genericDialog(
             getController(),
-            Translation.getTranslation("low_memory.error.title"),
+            Translation.get("low_memory.error.title"),
             infoText,
             new String[]{
-                Translation.getTranslation("general.ok"),
+                Translation.get("general.ok"),
                 Translation
-                    .getTranslation("dialog.already_running.exit_button")},
+                    .get("dialog.already_running.exit_button")},
             0, GenericDialogType.ERROR);
         if (response == 1) { // Exit
             getController().exit(0);

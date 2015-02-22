@@ -41,7 +41,7 @@ public class FolderReadPermission extends FolderPermission {
     }
 
     public String getName() {
-        return Translation.getTranslation("permissions.folder.read");
+        return Translation.get("permissions.folder.read");
     }
 
     @Override

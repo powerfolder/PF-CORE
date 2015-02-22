@@ -43,7 +43,7 @@ public class FolderDatabaseProblem extends ResolvableProblem {
     }
 
     public String getDescription() {
-        return Translation.getTranslation(
+        return Translation.get(
             "folder_problem.folderdb.description", folderInfo.getLocalizedName());
     }
 
@@ -52,7 +52,7 @@ public class FolderDatabaseProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-        return Translation.getTranslation("folder_problem.folderdb.soln_desc");
+        return Translation.get("folder_problem.folderdb.soln_desc");
     }
 
     /**

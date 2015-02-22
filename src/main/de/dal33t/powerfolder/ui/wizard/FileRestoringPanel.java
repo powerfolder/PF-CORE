@@ -108,7 +108,7 @@ public class FileRestoringPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.file_restoring.title");
+        return Translation.get("wizard.file_restoring.title");
     }
 
     protected void initComponents() {
@@ -125,14 +125,14 @@ public class FileRestoringPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        String message = Translation.getTranslation("wizard.file_restoring.processed_success.text",
+        String message = Translation.get("wizard.file_restoring.processed_success.text",
                 String.valueOf(filesProcessedSuccessfully));
         if (filesProcessedSuccessfully < fileInfosToRestore.size()) {
             // Some failures.
-            message += "\n\n" + Translation.getTranslation("wizard.file_restoring.processed_fail.text",
+            message += "\n\n" + Translation.get("wizard.file_restoring.processed_fail.text",
                     String.valueOf(fileInfosToRestore.size() - filesProcessedSuccessfully));
         }
-        return new TextPanelPanel(getController(), Translation.getTranslation("wizard.file_restoring.processed.title"),
+        return new TextPanelPanel(getController(), Translation.get("wizard.file_restoring.processed.title"),
                 message);
     }
 
@@ -243,7 +243,7 @@ public class FileRestoringPanel extends PFWizardPanel {
                 bar.setIndeterminate(true);
             } else {
                 bar.setIndeterminate(false);
-                statusLabel.setText(Translation.getTranslation("general.processed", String.valueOf(fileInfosProcessed),
+                statusLabel.setText(Translation.get("general.processed", String.valueOf(fileInfosProcessed),
                         String.valueOf(fileInfosToRestore.size())));
                 bar.setValue(100 * fileInfosProcessed / fileInfosToRestore.size());
             }

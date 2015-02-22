@@ -792,7 +792,7 @@ public class Folder extends PFComponent {
                 logSevere(" not able to create folder(" + getName()
                     + "), (sub) dir (" + localBase + ") is no dir");
             }
-            throw new FolderException(currentInfo, Translation.getTranslation(
+            throw new FolderException(currentInfo, Translation.get(
                 "foldercreate.error.unable_to_open",
                 localBase.toAbsolutePath().toString()));
         }
@@ -800,7 +800,7 @@ public class Folder extends PFComponent {
         // Complex checks
         FolderRepository repo = getController().getFolderRepository();
         if (repo.getFoldersBasedir().equals(localBase)) {
-            throw new FolderException(currentInfo, Translation.getTranslation(
+            throw new FolderException(currentInfo, Translation.get(
                 "foldercreate.error.it_is_base_dir",
                 localBase.toAbsolutePath().toString()));
         }

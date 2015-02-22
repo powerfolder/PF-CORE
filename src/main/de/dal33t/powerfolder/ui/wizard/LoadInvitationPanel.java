@@ -173,7 +173,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Please select invite...
         builder.addLabel(Translation
-            .getTranslation("exp.wizard.load_invitation.select_file"), cc.xy(3, 1));
+            .get("exp.wizard.load_invitation.select_file"), cc.xy(3, 1));
 
         // Invite selector
         builder.add(locationField, cc.xyw(3, 3, 2));
@@ -233,46 +233,46 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Invite selector
         locationField = FileSelectorFactory.createFileSelectionField(
-            Translation.getTranslation("exp.wizard.load_invitation.choose_file"),
+            Translation.get("exp.wizard.load_invitation.choose_file"),
             locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
                 .createInvitationsFilefilter(), true);
         locationField.setOpaque(false);
 
         // Folder name label
         folderHintLabel = new JLabel(Translation
-            .getTranslation("general.folder"));
+            .get("general.folder"));
         folderHintLabel.setEnabled(false);
         folderNameLabel = SimpleComponentFactory.createLabel();
 
         // Invitor label
         invitorHintLabel = new JLabel(Translation
-            .getTranslation("general.inviter"));
+            .get("general.inviter"));
         invitorHintLabel.setEnabled(false);
         invitorLabel = SimpleComponentFactory.createLabel();
 
         // Invitation messages
         invitationMessageHintLabel = new JLabel(Translation
-            .getTranslation("general.message"));
+            .get("general.message"));
         invitationMessageHintLabel.setEnabled(false);
         invitationMessageLabel = new JTextField();
         invitationMessageLabel.setEditable(false);
 
         // Estimated size
         estimatedSizeHintLabel = new JLabel(Translation
-            .getTranslation("general.estimated_size"));
+            .get("general.estimated_size"));
         estimatedSizeHintLabel.setEnabled(false);
         estimatedSize = SimpleComponentFactory.createLabel();
 
         // Sync profile
         syncProfileHintLabel = new JLabel(Translation
-            .getTranslation("general.transfer_mode"));
+            .get("general.transfer_mode"));
         syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
 
         // Preview
         previewOnlyCB = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("general.preview_folder"));
+            .get("general.preview_folder"));
         previewOnlyCB.setOpaque(false);
         previewOnlyCB.setEnabled(false);
 
@@ -287,7 +287,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("exp.wizard.load_invitation.select");
+        return Translation.get("exp.wizard.load_invitation.select");
     }
 
     private void loadInvitation(String file) {
@@ -312,7 +312,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             estimatedSizeHintLabel.setEnabled(true);
             estimatedSize.setText(Format.formatBytes(invitation.getSize())
                 + " (" + invitation.getFilesCount() + ' '
-                + Translation.getTranslation("general.files") + ')');
+                + Translation.get("general.files") + ')');
 
             syncProfileHintLabel.setEnabled(true);
             syncProfileSelectorPanel.setEnabled(true);

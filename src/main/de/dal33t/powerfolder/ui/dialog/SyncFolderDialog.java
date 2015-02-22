@@ -79,7 +79,7 @@ public class SyncFolderDialog extends BaseDialog {
     // Methods for BaseDialog *************************************************
 
     public String getTitle() {
-        return Translation.getTranslation("dialog.synchronization.title");
+        return Translation.get("dialog.synchronization.title");
     }
 
     protected Icon getIcon() {
@@ -97,7 +97,7 @@ public class SyncFolderDialog extends BaseDialog {
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(
-            Translation.getTranslation("dialog.synchronization.choose"),
+            Translation.get("dialog.synchronization.choose"),
             cc.xy(1, 1));
         // Add iconed label
         builder.addLabel(folder.getName(), cc.xy(1, 3));
@@ -146,18 +146,18 @@ public class SyncFolderDialog extends BaseDialog {
 
         sendChangesButton = BasicComponentFactory.createRadioButton(
             optionModel, SEND_OPTION, Translation
-                .getTranslation("dialog.synchronization.send_own_changes"));
+                .get("dialog.synchronization.send_own_changes"));
 
         receiveChangesButton = BasicComponentFactory.createRadioButton(
             optionModel, RECEIVE_OPTION, Translation
-                .getTranslation("dialog.synchronization.receive_changes"));
+                .get("dialog.synchronization.receive_changes"));
 
         sendAndReceiveChangesButton = BasicComponentFactory
             .createRadioButton(
                 optionModel,
                 SEND_RECEIVE_OPTION,
                 Translation
-                    .getTranslation("dialog.synchronization.send_and_receive_changes"));
+                    .get("dialog.synchronization.send_and_receive_changes"));
     }
 
     // Working classes ********************************************************
@@ -170,13 +170,13 @@ public class SyncFolderDialog extends BaseDialog {
         @Override
         protected String getTitle() {
             return Translation
-                .getTranslation("dialog.synchronization.sychronizing");
+                .get("dialog.synchronization.sychronizing");
         }
 
         @Override
         protected String getWorkingText() {
             return Translation
-                .getTranslation("dialog.synchronization.sychronizing");
+                .get("dialog.synchronization.sychronizing");
         }
 
         @Override

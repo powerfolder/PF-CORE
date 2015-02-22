@@ -14,6 +14,6 @@ public class TranslationWrapper {
 
     public String get(String id)
     {
-        return Translation.getTranslation(id);
+        return Translation.get(id);
     }
 }

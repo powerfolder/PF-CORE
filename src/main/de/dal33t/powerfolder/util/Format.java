@@ -192,13 +192,13 @@ public class Format {
                 int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
                     - calNow.get(Calendar.DAY_OF_YEAR);
                 if (dayDiffer == 0) {
-                    return Translation.getTranslation("general.today") + ' '
+                    return Translation.get("general.today") + ' '
                         + formatTimeShort(date);
                 } else if (dayDiffer == -1) {
-                    return Translation.getTranslation("general.yesterday")
+                    return Translation.get("general.yesterday")
                         + ' ' + formatTimeShort(date);
                 } else if (dayDiffer == 1) {
-                    return Translation.getTranslation("general.tomorrow") + ' '
+                    return Translation.get("general.tomorrow") + ' '
                         + formatTimeShort(date);
                 }
             }
@@ -252,7 +252,7 @@ public class Format {
      * @return
      */
     public static String formatBoolean(boolean n) {
-        return n ? Translation.getTranslation("general.yes") : Translation.getTranslation("general.no");
+        return n ? Translation.get("general.yes") : Translation.get("general.no");
     }
 
     /**
@@ -268,24 +268,24 @@ public class Format {
         try {
             long days = dt / 24 / 3600 / 1000;
             if (days >= 2) {
-                return f.format(Translation.getTranslation("format.n.days",
+                return f.format(Translation.get("format.n.days",
                         String.valueOf(days))).out().toString();
             }
             long hours = dt / 3600 / 1000;
             if (hours >= 2) {
-                return f.format(Translation.getTranslation("format.n.hours",
+                return f.format(Translation.get("format.n.hours",
                         String.valueOf(hours))).out().toString();
             }
             long minutes = dt / 60 / 1000;
             if (minutes >= 1) {
-                return f.format(Translation.getTranslation("format.n.minutes",
+                return f.format(Translation.get("format.n.minutes",
                         String.valueOf(minutes))).out().toString();
             } else if (minutes == 1) {
-                return f.format(Translation.getTranslation(
+                return f.format(Translation.get(
                         "format.one_minute")).out().toString();
             } else {
                 return f.format(
-                        Translation.getTranslation("format.less_than_one_minute"))
+                        Translation.get("format.less_than_one_minute"))
                         .out().toString();
             }
         } finally {
