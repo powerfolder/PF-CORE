@@ -154,16 +154,18 @@ public class IconOverlayUpdateListener extends PFComponent implements
                     + current + " threads running.");
             }
 
-            callCount.incrementAndGet();
-            getController().getIOProvider().startIO(new Runnable() {
-                @Override
-                public void run() {
-                    if (Files.exists(file)) {
-                        WindowsNativityUtil.updateExplorer(file.toString());
+            if (file != null) {
+                callCount.incrementAndGet();
+                getController().getIOProvider().startIO(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (Files.exists(file)) {
+                            WindowsNativityUtil.updateExplorer(file.toString());
+                        }
+                        callCount.decrementAndGet();
                     }
-                    callCount.decrementAndGet();
-                }
-            });
+                });
+            }
         }
     }
 
