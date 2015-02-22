@@ -19,16 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.information.notices;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.NoticeComparator;

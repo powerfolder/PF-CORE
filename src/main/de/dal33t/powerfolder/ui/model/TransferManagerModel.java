@@ -22,9 +22,6 @@ package de.dal33t.powerfolder.ui.model;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.util.DelayedUpdater;
-import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -32,8 +29,11 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadManagersTableModel;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 public class TransferManagerModel extends PFUIComponent {
     private TransferManager transferManager;

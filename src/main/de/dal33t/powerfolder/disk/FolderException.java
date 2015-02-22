@@ -19,17 +19,18 @@
 */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.EventQueue;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.SwingUtilities;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * General Exception for folder

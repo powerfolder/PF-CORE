@@ -19,14 +19,14 @@
  */
 package de.dal33t.powerfolder.message;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.Reject;
-
 import java.io.Externalizable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Contains information about nodes. This message is a answer message for

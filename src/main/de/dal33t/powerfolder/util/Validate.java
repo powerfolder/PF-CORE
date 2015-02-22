@@ -16,9 +16,9 @@ package de.dal33t.powerfolder.util;
  * limitations under the License.
  */
 
-import java.util.Collection  ;
-import java.util.Iterator  ;
-import java.util.Map  ;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * <p>Assists in validating arguments.</p>

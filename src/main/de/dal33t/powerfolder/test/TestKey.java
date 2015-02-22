@@ -19,8 +19,13 @@
 */
 package de.dal33t.powerfolder.test;
 
-import java.io.*;
-import java.security.*;
+import java.io.FileInputStream;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
 
 class TestKey {
 

@@ -19,10 +19,9 @@
 */
 package de.dal33t.powerfolder.test.util;
 
+import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
-
-import junit.framework.TestCase;
 
 public class PartitionTreeTest extends TestCase {
 	public void testTree() {

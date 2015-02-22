@@ -19,10 +19,9 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.model.ApplicationModel;
-import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
 
 /**
  * A element which is owned by a ui controller

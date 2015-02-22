@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import java.awt.Frame;
 
 public interface UIConstants {
 

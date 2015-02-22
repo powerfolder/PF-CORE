@@ -19,8 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
 
 /**

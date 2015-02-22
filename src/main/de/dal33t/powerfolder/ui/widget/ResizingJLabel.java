@@ -19,8 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+
+import javax.swing.JLabel;
 
 /**
  * Class that overrides 'get...Size()' so that text is truncated if the

@@ -17,11 +17,6 @@
 package org.jdesktop.swinghelper.debug;
 
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -37,6 +32,12 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 /**
  * Monitors the AWT event dispatch thread for events that take longer than a

@@ -19,12 +19,15 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.util.Enumeration;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import java.awt.*;
-import java.util.Enumeration;
 
 /**
  * Table header renderer for tables with models that are not sorted.

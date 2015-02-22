@@ -19,15 +19,18 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.friends.NodesSelectTableCellRenderer;
-
-import javax.swing.*;
-import javax.swing.table.TableModel;
-import java.awt.*;
+import java.awt.Container;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableModel;
+
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.friends.NodesSelectTableCellRenderer;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 /**
  * Table showing selected users in invitation wizard dialog

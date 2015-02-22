@@ -19,12 +19,11 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
+import javax.swing.Icon;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
 import de.dal33t.powerfolder.ui.event.SelectionModel;
-
-import javax.swing.*;
 
 /**
  * your inheriting class needs to implements those:<BR>

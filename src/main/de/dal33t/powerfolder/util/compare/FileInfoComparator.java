@@ -21,9 +21,9 @@ package de.dal33t.powerfolder.util.compare;
 
 import java.util.Comparator;
 
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**

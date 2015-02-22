@@ -21,8 +21,8 @@ package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileHistory.Conflict;
+import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Small utility class that packs some problem resolving code together.

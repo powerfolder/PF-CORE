@@ -19,10 +19,10 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 
 /**

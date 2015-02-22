@@ -19,19 +19,26 @@
 */
 package de.dal33t.powerfolder.ui.dialog.directory;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.util.LinkedTextBuilder;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
 
 /**
  * NOTE: This class is package-private, not public, because it should only

@@ -19,9 +19,9 @@
  */
 package de.dal33t.powerfolder.util.compare;
 
-import de.dal33t.powerfolder.transfer.Transfer;
-
 import java.util.Comparator;
+
+import de.dal33t.powerfolder.transfer.Transfer;
 
 /**
  * Comparator for FileInfo

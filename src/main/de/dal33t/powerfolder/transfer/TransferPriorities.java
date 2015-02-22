@@ -19,14 +19,14 @@
 */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Reject;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Assigns transfer priorities to files.

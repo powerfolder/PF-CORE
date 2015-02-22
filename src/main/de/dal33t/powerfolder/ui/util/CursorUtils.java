@@ -19,7 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.util;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Cursor;
 
 /**
  * Cursor utilities.

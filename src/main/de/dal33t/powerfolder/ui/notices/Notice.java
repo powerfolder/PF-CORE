@@ -19,11 +19,11 @@
  */
 package de.dal33t.powerfolder.ui.notices;
 
-import de.dal33t.powerfolder.Controller;
-
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
-import java.io.Serializable;
+
+import de.dal33t.powerfolder.Controller;
 
 /**
  * This interface is the generic ui Notice that is used to either show a

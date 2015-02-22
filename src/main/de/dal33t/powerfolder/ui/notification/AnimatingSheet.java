@@ -19,9 +19,15 @@
 */
 package de.dal33t.powerfolder.ui.notification;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 /**
  * Class to animate the notification window

@@ -19,16 +19,20 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.ui.util.UIUtil;
+import java.awt.Component;
+import java.awt.ComponentOrientation;
+import java.util.Enumeration;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import java.awt.*;
-import java.util.Enumeration;
+
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 
 /**
  * Table header renderer for tables with models that support SortedTableModel.

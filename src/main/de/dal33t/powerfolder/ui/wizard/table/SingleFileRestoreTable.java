@@ -19,21 +19,25 @@
  */
 package de.dal33t.powerfolder.ui.wizard.table;
 
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.ColorUtil;
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.wizard.data.SingleFileRestoreItem;
-import de.dal33t.powerfolder.util.Format;
-
-import javax.swing.*;
-import javax.swing.table.TableColumn;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.util.ColorUtil;
+import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.ui.wizard.data.SingleFileRestoreItem;
+import de.dal33t.powerfolder.util.Format;
 
 public class SingleFileRestoreTable extends JTable {
 

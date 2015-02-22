@@ -19,10 +19,10 @@
 */
 package de.dal33t.powerfolder.net;
 
-import de.dal33t.powerfolder.PFComponent;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import de.dal33t.powerfolder.PFComponent;
 
 /*
  * The ErrorManager manages the errors

@@ -1,7 +1,7 @@
 package de.dal33t.powerfolder.test.util;
 
-import de.dal33t.powerfolder.util.Translation;
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.Translation;
 
 public class TranslationTest extends TestCase {
 

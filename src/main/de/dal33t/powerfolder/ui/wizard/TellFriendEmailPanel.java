@@ -37,8 +37,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>

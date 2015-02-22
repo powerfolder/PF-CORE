@@ -26,7 +26,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
@@ -45,7 +48,6 @@ import com.jgoodies.validation.view.ValidationResultViewFactory;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.util.net.AddressRange;
 
 public class AddressEditor extends BaseDialog {

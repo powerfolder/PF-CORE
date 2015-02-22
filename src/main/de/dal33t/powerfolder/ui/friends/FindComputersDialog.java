@@ -19,16 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.friends;
 
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+
+import com.jgoodies.forms.factories.ButtonBarFactory;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.dialog.BaseDialog;
+import de.dal33t.powerfolder.util.Translation;
 
 public class FindComputersDialog extends BaseDialog {
 

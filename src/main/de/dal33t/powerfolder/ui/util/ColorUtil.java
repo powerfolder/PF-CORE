@@ -19,10 +19,12 @@
 */
 package de.dal33t.powerfolder.ui.util;
 
-import de.dal33t.powerfolder.util.MathUtil;
+import java.awt.Color;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JLabel;
+import javax.swing.UIManager;
+
+import de.dal33t.powerfolder.util.MathUtil;
 
 /**
  * Class for any reusable color functions.

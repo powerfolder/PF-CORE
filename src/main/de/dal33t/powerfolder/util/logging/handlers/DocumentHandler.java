@@ -19,14 +19,6 @@
 */
 package de.dal33t.powerfolder.util.logging.handlers;
 
-import de.dal33t.powerfolder.util.logging.LoggingFormatter;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.util.HashMap;
@@ -34,6 +26,15 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
+import de.dal33t.powerfolder.util.logging.LoggingFormatter;
 
 /**
  * Document handler class. This formats log records and appends them to

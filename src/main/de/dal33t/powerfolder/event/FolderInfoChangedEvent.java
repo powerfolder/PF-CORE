@@ -22,8 +22,8 @@ package de.dal33t.powerfolder.event;
 import java.util.EventObject;
 import java.util.List;
 
-import de.dal33t.powerfolder.ui.FilterModel;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.FilterModel;
 
 public class FolderInfoChangedEvent extends EventObject {
     private List<FolderInfo> filteredList;

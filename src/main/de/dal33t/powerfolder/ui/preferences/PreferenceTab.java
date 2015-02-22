@@ -19,7 +19,7 @@
 */
 package de.dal33t.powerfolder.ui.preferences;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 
 public interface PreferenceTab {
 

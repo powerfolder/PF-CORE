@@ -19,19 +19,21 @@
 */
 package de.dal33t.powerfolder.ui.friends;
 
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 public class FindComputersTable extends JTable {
 

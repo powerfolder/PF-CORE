@@ -44,9 +44,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 
 /**

@@ -20,10 +20,10 @@
 package de.dal33t.powerfolder.ui.util.update;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.update.UpdaterEvent;
 
 /**

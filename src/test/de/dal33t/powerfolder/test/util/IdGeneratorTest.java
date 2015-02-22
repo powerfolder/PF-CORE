@@ -19,8 +19,8 @@
 */
 package de.dal33t.powerfolder.test.util;
 
-import de.dal33t.powerfolder.util.IdGenerator;
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
  * Tests the id generator.

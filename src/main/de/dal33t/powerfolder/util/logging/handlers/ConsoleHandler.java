@@ -19,11 +19,11 @@
  */
 package de.dal33t.powerfolder.util.logging.handlers;
 
-import de.dal33t.powerfolder.util.logging.LoggingFormatter;
-
 import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
+import de.dal33t.powerfolder.util.logging.LoggingFormatter;
 
 /**
  * Handler for logging to the console.

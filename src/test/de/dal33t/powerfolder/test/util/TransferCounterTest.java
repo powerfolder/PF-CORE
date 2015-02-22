@@ -21,8 +21,8 @@ package de.dal33t.powerfolder.test.util;
 
 import java.lang.reflect.Field;
 
-import de.dal33t.powerfolder.util.TransferCounter;
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.TransferCounter;
 
 public class TransferCounterTest extends TestCase {
     public void testTransferCounter() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException {

@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.dal33t.powerfolder.test.ControllerTest;
+import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 
 public class DelayedUpdaterTest extends ControllerTest {
     private DelayedUpdater updater;

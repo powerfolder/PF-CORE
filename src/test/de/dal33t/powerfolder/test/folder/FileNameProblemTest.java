@@ -21,13 +21,13 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.lang.reflect.Method;
 
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import de.dal33t.powerfolder.PreferencesEntry;
 
 public class FileNameProblemTest extends ControllerTestCase {
 

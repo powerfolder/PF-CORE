@@ -38,7 +38,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -46,11 +52,11 @@ import javax.swing.tree.TreePath;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.ui.UIConstants;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.ui.UIConstants;
 
 /**
  * Offers helper/utility method for UI related stuff.

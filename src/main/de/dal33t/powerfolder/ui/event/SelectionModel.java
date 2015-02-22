@@ -19,9 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.event;
 
-import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
-import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
-
 import java.util.LinkedList;
 import java.util.List;
 

@@ -1,15 +1,19 @@
 package de.dal33t.powerfolder.ui.information.folder.files.breadcrumb;
 
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 
 public class FilesBreadcrumbPanel extends PFUIComponent {
 

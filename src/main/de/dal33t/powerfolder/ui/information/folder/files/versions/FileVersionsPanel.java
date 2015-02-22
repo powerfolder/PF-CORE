@@ -19,34 +19,43 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.light.FileInfo;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.List;
-import java.util.ArrayList;
-
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.DefaultFormBuilder;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * A Panel to display version history about a file

@@ -35,8 +35,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.ui.util.SwingWorker;
+import de.dal33t.powerfolder.util.ProgressListener;
 
 /**
  * Basically a SwingWorker, which shows some activity visualisation after some

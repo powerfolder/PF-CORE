@@ -22,8 +22,8 @@ package de.dal33t.powerfolder.security;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.SecurityService;

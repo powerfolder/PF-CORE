@@ -19,10 +19,10 @@
 */
 package de.dal33t.powerfolder.event;
 
+import java.util.EventObject;
+
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
-
-import java.util.EventObject;
 
 public class FolderMembershipEvent extends EventObject {
 

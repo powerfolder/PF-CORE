@@ -19,13 +19,16 @@
 */
 package de.dal33t.powerfolder.test.transfer;
 
-import de.dal33t.powerfolder.transfer.BandwidthStatsRecorder;
-import de.dal33t.powerfolder.transfer.BandwidthStat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
+
 import de.dal33t.powerfolder.transfer.BandwidthLimiterInfo;
+import de.dal33t.powerfolder.transfer.BandwidthStat;
+import de.dal33t.powerfolder.transfer.BandwidthStatsRecorder;
 import de.dal33t.powerfolder.transfer.CoalescedBandwidthStat;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
-
-import java.util.*;
 
 /**
  * Set of tests to validate the BandwidthStatRecorder functionality.

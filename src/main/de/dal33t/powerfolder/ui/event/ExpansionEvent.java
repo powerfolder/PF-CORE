@@ -19,9 +19,9 @@
 */
 package de.dal33t.powerfolder.ui.event;
 
-import de.dal33t.powerfolder.ui.ExpandableView;
-
 import java.util.EventObject;
+
+import de.dal33t.powerfolder.ui.ExpandableView;
 
 /**
  * Interface for ExpansionEvents.

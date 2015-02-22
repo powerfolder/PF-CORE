@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.util.os;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 public class SystemUtil {

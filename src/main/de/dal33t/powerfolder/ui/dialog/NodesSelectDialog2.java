@@ -19,24 +19,32 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.friends.FindComputersDialog;
-import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.Collection;
+
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ui.friends.FindComputersDialog;
+import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Dialog for selecting a number of users.

@@ -19,8 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.notices;
 
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.message.Invitation;
 
 /**
  * Notice of a received invitation. Show in notification and add to app model.

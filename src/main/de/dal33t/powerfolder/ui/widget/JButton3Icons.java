@@ -19,10 +19,12 @@
 */
 package de.dal33t.powerfolder.ui.widget;
 
-import com.jgoodies.forms.factories.Borders;
+import java.awt.Insets;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+
+import com.jgoodies.forms.factories.Borders;
 
 
 public class JButton3Icons extends JButton {

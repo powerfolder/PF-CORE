@@ -38,12 +38,12 @@ import de.dal33t.powerfolder.util.RingBuffer;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
+import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 import de.dal33t.powerfolder.util.delta.MatchInfo;
 import de.dal33t.powerfolder.util.delta.PartInfo;
 import de.dal33t.powerfolder.util.delta.PartInfoMatcher;
 import de.dal33t.powerfolder.util.delta.RollingAdler32;
 import de.dal33t.powerfolder.util.delta.RollingChecksum;
-import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
  * Testcase for "delta encoding".

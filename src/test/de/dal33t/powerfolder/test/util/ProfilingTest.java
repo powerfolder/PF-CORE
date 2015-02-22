@@ -19,9 +19,9 @@
  */
 package de.dal33t.powerfolder.test.util;
 
+import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
-import junit.framework.TestCase;
 
 public class ProfilingTest extends TestCase {
 

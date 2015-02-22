@@ -19,10 +19,10 @@
  */
 package de.dal33t.powerfolder.util.compare;
 
-import de.dal33t.powerfolder.ui.notices.Notice;
-
 import java.util.Comparator;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.ui.notices.Notice;
 
 /**
  * Comparator for members

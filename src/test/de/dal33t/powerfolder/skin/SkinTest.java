@@ -11,9 +11,8 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import de.dal33t.powerfolder.ui.util.Icons;
-
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.ui.util.Icons;
 
 public class SkinTest extends TestCase {
     private Set<String> availableIconKeys = new HashSet<String>();

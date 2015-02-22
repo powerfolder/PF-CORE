@@ -43,10 +43,9 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.dialog.BaseDialog;
-import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 
 /**
  * Panel displayed when wanting to remove a folder

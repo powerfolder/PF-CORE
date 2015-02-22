@@ -25,10 +25,9 @@ import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.UUID;
 
+import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Format;
-
-import junit.framework.TestCase;
 
 public class SerializationCompareTest extends TestCase {
 

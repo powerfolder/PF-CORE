@@ -19,33 +19,41 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
-import de.dal33t.powerfolder.ui.event.SelectionModel;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.plugin.Plugin;
-import de.dal33t.powerfolder.plugin.PluginEvent;
-import de.dal33t.powerfolder.plugin.PluginManager;
-import de.dal33t.powerfolder.plugin.PluginManagerListener;
-import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.plugin.Plugin;
+import de.dal33t.powerfolder.plugin.PluginEvent;
+import de.dal33t.powerfolder.plugin.PluginManager;
+import de.dal33t.powerfolder.plugin.PluginManagerListener;
+import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
+import de.dal33t.powerfolder.ui.event.SelectionModel;
+import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
 
 public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
 

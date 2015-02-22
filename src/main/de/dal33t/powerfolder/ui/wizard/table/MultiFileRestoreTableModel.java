@@ -19,22 +19,23 @@
  */
 package de.dal33t.powerfolder.ui.wizard.table;
 
-import de.dal33t.powerfolder.PFComponent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.ui.util.UIUtil;
-
-import javax.swing.table.TableModel;
-import javax.swing.event.TableModelListener;
-import javax.swing.event.TableModelEvent;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MultiFileRestoreTableModel extends PFComponent implements TableModel, SortedTableModel {
 

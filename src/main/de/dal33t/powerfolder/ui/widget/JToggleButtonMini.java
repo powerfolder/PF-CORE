@@ -19,14 +19,18 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import com.jgoodies.forms.factories.Borders;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JToggleButton;
+
+import com.jgoodies.forms.factories.Borders;
+
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.util.CursorUtils;
 
 /**
  * Class showing image button with no border, except when hover or pressed. Uses

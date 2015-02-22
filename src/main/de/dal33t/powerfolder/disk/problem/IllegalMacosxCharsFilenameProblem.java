@@ -19,10 +19,10 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.Controller;
 
 /**
  * Chars : and / are illegal on Mac OSX

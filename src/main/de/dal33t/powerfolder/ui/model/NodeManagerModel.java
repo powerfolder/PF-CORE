@@ -39,7 +39,6 @@ import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -49,6 +48,7 @@ import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
+import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**

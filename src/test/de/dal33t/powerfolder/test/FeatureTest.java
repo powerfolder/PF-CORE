@@ -19,8 +19,8 @@
 */
 package de.dal33t.powerfolder.test;
 
-import de.dal33t.powerfolder.Feature;
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.Feature;
 
 public class FeatureTest extends TestCase {
 

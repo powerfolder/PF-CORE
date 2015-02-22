@@ -19,10 +19,10 @@
 */
 package de.dal33t.powerfolder.util.delta;
 
+import java.io.Serializable;
+
 import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
-
-import java.io.Serializable;
 
 
 /**

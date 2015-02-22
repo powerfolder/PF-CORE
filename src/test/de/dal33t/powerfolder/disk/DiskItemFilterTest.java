@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.disk;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;

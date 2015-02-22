@@ -19,8 +19,6 @@
 */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Container for time estimation information.

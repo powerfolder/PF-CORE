@@ -19,9 +19,9 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.util.Reject;
-
 import java.io.Serializable;
+
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Class representing the configuration of a SyncProfile. This determines how a

@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.light.AccountInfo;

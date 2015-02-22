@@ -19,10 +19,10 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
+import java.awt.event.ActionEvent;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.friends.FindComputersDialog;
-
-import java.awt.event.ActionEvent;
 
 /**
  * Action which opens search computer dialog.

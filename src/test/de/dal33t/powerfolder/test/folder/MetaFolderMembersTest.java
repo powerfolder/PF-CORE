@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;

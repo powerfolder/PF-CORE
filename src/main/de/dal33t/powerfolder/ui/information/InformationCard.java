@@ -19,11 +19,12 @@
 */
 package de.dal33t.powerfolder.ui.information;
 
+import java.awt.Image;
+
+import javax.swing.JComponent;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * Base class for all 'cards' that can be displayed in the InformationFrame.

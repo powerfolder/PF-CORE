@@ -17,14 +17,15 @@
 package org.jdesktop.swinghelper.debug;
 
 
+import java.lang.ref.WeakReference;
+import java.util.logging.Logger;
+
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
-import java.lang.ref.WeakReference;
-import java.util.logging.Logger;
 
 /**
  * <p>

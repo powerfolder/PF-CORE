@@ -19,13 +19,14 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.binding.value.ValueModel;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.TimerTask;
+
+import com.jgoodies.binding.value.ValueModel;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 
 /**
  * abstract class with commons for filtering, holds a searchField (ValueModel)

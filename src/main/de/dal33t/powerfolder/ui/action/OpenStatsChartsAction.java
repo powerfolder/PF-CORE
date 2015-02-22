@@ -19,9 +19,9 @@
 */
 package de.dal33t.powerfolder.ui.action;
 
-import de.dal33t.powerfolder.Controller;
-
 import java.awt.event.ActionEvent;
+
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Actions which is executed to open the stats charts

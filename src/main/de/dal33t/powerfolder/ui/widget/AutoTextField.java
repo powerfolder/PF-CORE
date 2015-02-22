@@ -21,8 +21,11 @@ package de.dal33t.powerfolder.ui.widget;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
 import javax.swing.JTextField;
-import javax.swing.text.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 
 /**
  * Text field class that tries to match entered text against a list of values.
