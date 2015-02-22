@@ -140,7 +140,7 @@ import de.dal33t.powerfolder.util.update.UpdateSetting;
  * Central class gives access to all core components in PowerFolder. Make sure
  * to extend PFComponent so you always have a reference to the main
  * {@link Controller}.
- * 
+ * @
  * @author Christian Sprajc
  * @version $Revision: 1.107 $
  */
@@ -150,7 +150,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 77;
+    private static final int REVISION_VERSION = 78;
 
     /**
      * Program version.
