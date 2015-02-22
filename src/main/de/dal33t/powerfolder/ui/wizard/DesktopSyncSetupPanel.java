@@ -23,7 +23,11 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONL
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -41,12 +45,19 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
+import de.dal33t.powerfolder.util.Util;
 
 @SuppressWarnings("serial")
 public class DesktopSyncSetupPanel extends PFWizardPanel {
+    private static final Logger LOG = Logger
+        .getLogger(DesktopSyncSetupPanel.class.getName());
+
+    private static final String WALLPAPER_CHANGER_EXE = "WallpaperChanger.exe";
+    private static final String WALLPAPERS_DIR = "wallpapers";
 
     private WizardPanel nextPanel;
     private JTextArea infoLabel;
@@ -73,10 +84,6 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             return nextPanel;
         }
         return new FolderCreatePanel(getController());
-        // return new SwingWorkerPanel(getController(), new SetupTask(),
-        // Translation.getTranslation("wizard.desktop_sync.setting_up"),
-        // Translation.getTranslation("wizard.desktop_sync.setting_up.text"),
-        // nextPanel);
     }
 
     @Override
@@ -134,6 +141,81 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
 
     }
 
+    private void setWallpaper() {
+        Path wpTempDir = Controller.getTempFilesLocation().resolve(
+            WALLPAPERS_DIR);
+        try {
+            wpTempDir = Files.createDirectories(wpTempDir);
+        } catch (IOException e) {
+            LOG.warning("Unable to create temporary directory for wallpapers at "
+                + wpTempDir + ". " + e);
+            return;
+        }
+
+        // Copy WallPaperChanger.exe
+        Path wallpaperChangerEXE = wpTempDir.resolve(WALLPAPER_CHANGER_EXE);
+        wallpaperChangerEXE.toFile().deleteOnExit();
+        Util.copyResourceTo(WALLPAPER_CHANGER_EXE, WALLPAPERS_DIR,
+            wallpaperChangerEXE, true, true);
+        if (wallpaperChangerEXE == null || Files.notExists(wallpaperChangerEXE))
+        {
+            LOG.warning("Unable to install helper at " + wallpaperChangerEXE);
+            return;
+        }
+        // Copy end
+
+        // Copy wallpaper pics
+        Util.copyResourceTo("7.png", WALLPAPERS_DIR,
+            wpTempDir.resolve("7.png"), true, true);
+        Util.copyResourceTo("9.png", WALLPAPERS_DIR,
+            wpTempDir.resolve("9.png"), true, true);
+        Util.copyResourceTo("10.png", WALLPAPERS_DIR,
+            wpTempDir.resolve("10.png"), true, true);
+        // Copy end
+
+        LOG.fine("Setting Desktop wallpaper to " + wpTempDir.toAbsolutePath());
+        String command = "\"" + wallpaperChangerEXE.toAbsolutePath().toString()
+            + "\"";
+        command += " \"";
+        command += wpTempDir.toAbsolutePath();
+        command += "\"";
+        command += " 2"; // Streched
+        command += " \"";
+        command += wpTempDir.toAbsolutePath();
+        command += "\"";
+
+        LOG.fine("Executing command " + command);
+        try {
+            final Process p = Runtime.getRuntime().exec(command);
+            // Auto-kill after 20 seconds
+            getController().schedule(new Runnable() {
+                public void run() {
+                    p.destroy();
+                }
+            }, 20000L);
+            byte[] out = StreamUtils.readIntoByteArray(p.getInputStream());
+            @SuppressWarnings("unused")
+            String output = new String(out);
+            byte[] err = StreamUtils.readIntoByteArray(p.getErrorStream());
+            String error = new String(err);
+
+            // Wait for process to stop
+            int res = p.waitFor();
+            // PFS-844: Get output after process has ended.
+            out = StreamUtils.readIntoByteArray(p.getInputStream());
+            output += new String(out);
+            err = StreamUtils.readIntoByteArray(p.getErrorStream());
+            error += new String(err);
+            if (res == 0) {
+                LOG.info("Desktop wallpaper successfully set");
+            } else {
+                LOG.warning("Failed to set Desktop wallpaper: " + error);
+            }
+        } catch (Exception e) {
+            LOG.info("Failed to set Desktop wallpaper " + e);
+        }
+    }
+
     private class AgreeAction extends BaseAction {
 
         protected AgreeAction(Controller controller) {
@@ -145,16 +227,25 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             agreed = true;
 
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, nextPanel);
-            
             getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
-            
-            UserDirectory desktopDir = UserDirectories.getUserDirectories()
-                .get(Translation.getTranslation("user.dir.desktop"));
+
+            UserDirectory desktopDir = UserDirectories.getDesktopDirectory();
             FolderCreateItem item = new FolderCreateItem(
                 desktopDir.getDirectory());
             getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
                 Collections.singletonList(item));
+
             getWizard().next();
+
+            if (wallpaperBox.isSelected()) {
+                Runnable setter = new Runnable() {
+                    @Override
+                    public void run() {
+                        setWallpaper();
+                    }
+                };
+                getController().getIOProvider().startIO(setter);
+            }
         }
     }
 
