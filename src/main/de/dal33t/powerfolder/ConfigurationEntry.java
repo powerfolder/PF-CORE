@@ -1094,6 +1094,11 @@ public enum ConfigurationEntry {
 
     SHOW_CREATE_FOLDER("show.create.folder", true),
     
+    /**
+     * PFC-2638: Desktop sync option
+     */
+    SHOW_DESKTOP_SYNC_OPTION("show.desktop_sync", true),
+    
     COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
 
     // Methods/Constructors ***************************************************
