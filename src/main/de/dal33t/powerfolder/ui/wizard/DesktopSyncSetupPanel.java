@@ -42,6 +42,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -51,6 +53,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 @SuppressWarnings("serial")
 public class DesktopSyncSetupPanel extends PFWizardPanel {
@@ -66,6 +69,8 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
     private ActionLabel skipLabel;
     private JCheckBox wallpaperBox;
     private boolean agreed;
+    private UserDirectory desktopDir;
+    private FolderRepositoryListener postProcessor;
 
     public DesktopSyncSetupPanel(Controller controller, WizardPanel nextPanel) {
         super(controller);
@@ -84,19 +89,44 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
     public static WizardPanel insertStepIfAvailable(Controller controller,
         WizardPanel nextPanel)
     {
-        // PFC-2638: Start: Desktop sync option
+        if (!isFirstTime(controller)) {
+            return nextPanel;
+        }
         boolean showDesktopSync = ConfigurationEntry.SHOW_DESKTOP_SYNC_OPTION
             .getValueBoolean(controller);
+        if (!showDesktopSync) {
+            return nextPanel;
+        }
         boolean folderCreateAllowed = controller.getOSClient()
             .isAllowedToCreateFolders();
-        if (showDesktopSync && folderCreateAllowed) {
-            boolean desktopDirAvailable = UserDirectories.getDesktopDirectory() != null;
-            if (desktopDirAvailable) {
-                nextPanel = new DesktopSyncSetupPanel(controller, nextPanel);
-            }
+        if (!folderCreateAllowed) {
+            return nextPanel;
         }
-        // PFC-2638: End
+        boolean desktopDirAvailable = UserDirectories.getDesktopDirectory() != null;
+        if (!desktopDirAvailable) {
+            return nextPanel;
+        }
+        nextPanel = new DesktopSyncSetupPanel(controller, nextPanel);
         return nextPanel;
+    }
+
+    /**
+     * @return true if this is the first time of the wizard on this device.
+     */
+    public static boolean isFirstTime(Controller controller) {
+        return true || controller.getPreferences().getBoolean(
+            "openwizard_desktop", true);
+    }
+
+    private void setFirstTime() {
+        getController().getPreferences()
+            .putBoolean("openwizard_desktop", false);
+    }
+
+    @Override
+    protected void afterDisplay() {
+        super.afterDisplay();
+        setFirstTime();
     }
 
     @Override
@@ -158,16 +188,20 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
 
         wallpaperBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("wizard.desktop_sync.wallpaper"));
-        wallpaperBox.setSelected(ConfigurationEntry.SHOW_WALLPAPER_OPTION
-            .getValueBoolean(getController()));
-        wallpaperBox.setVisible(ConfigurationEntry.SHOW_WALLPAPER_OPTION
-            .getValueBoolean(getController()));
+        wallpaperBox.setSelected(setWallpaperAvailable());
+        wallpaperBox.setVisible(setWallpaperAvailable());
 
         skipLabel = new ActionLabel(getController(), new SkipAction(
             getController()));
         skipLabel.convertToBigLabel();
         skipLabel.setIcon(null);
 
+    }
+
+    private boolean setWallpaperAvailable() {
+        return OSUtil.isWindowsSystem()
+            && ConfigurationEntry.SHOW_WALLPAPER_OPTION
+                .getValueBoolean(getController());
     }
 
     private void setWallpaper() {
@@ -196,22 +230,40 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         // Copy wallpaper pics
         Util.copyResourceTo("7.png", WALLPAPERS_DIR,
             wpTempDir.resolve("7.png"), true, true);
-        Util.copyResourceTo("9.png", WALLPAPERS_DIR,
+        Path wallpaper9Path = Util.copyResourceTo("9.png", WALLPAPERS_DIR,
             wpTempDir.resolve("9.png"), true, true);
         Util.copyResourceTo("10.png", WALLPAPERS_DIR,
             wpTempDir.resolve("10.png"), true, true);
         // Copy end
 
         LOG.fine("Setting Desktop wallpaper to " + wpTempDir.toAbsolutePath());
-        String command = "\"" + wallpaperChangerEXE.toAbsolutePath().toString()
-            + "\"";
-        command += " \"";
-        command += wpTempDir.toAbsolutePath();
-        command += "\"";
-        command += " 2"; // Streched
-        command += " \"";
-        command += wpTempDir.toAbsolutePath();
-        command += "\"";
+        String command;
+
+        if (OSUtil.isWindowsSystem()) {
+            command = "\"" + wallpaperChangerEXE.toAbsolutePath().toString()
+                + "\"";
+            command += " \"";
+            command += wpTempDir.toAbsolutePath();
+            command += "\"";
+            command += " 2"; // Streched
+            command += " \"";
+            command += wpTempDir.toAbsolutePath();
+            command += "\"";
+        } else if (OSUtil.isMacOS() && wallpaper9Path != null) {
+            // osascript -e 'tell application "Finder" to set desktop picture to
+            // POSIX file "/Library/Desktop Pictures/Earth Horizon.jpg"'
+            command = "osascript";
+            command += " -e";
+            command += " 'tell application \"Finder\" to set desktop picture to POSIX file";
+            command += " \"";
+            command += wallpaper9Path.toAbsolutePath();
+            command += "\"";
+            command += "'";
+        } else {
+            LOG.warning("Unable to set wallpaper. dir: " + wpTempDir
+                + " file: " + wallpaper9Path);
+            return;
+        }
 
         LOG.fine("Executing command " + command);
         try {
@@ -258,23 +310,18 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, nextPanel);
             getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
 
-            UserDirectory desktopDir = UserDirectories.getDesktopDirectory();
+            desktopDir = UserDirectories.getDesktopDirectory();
             FolderCreateItem item = new FolderCreateItem(
                 desktopDir.getDirectory());
             getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
                 Collections.singletonList(item));
 
+            postProcessor = new FolderCreatePostProcessor();
+            getController().getFolderRepository().addFolderRepositoryListener(
+                postProcessor);
+
             getWizard().next();
 
-            if (wallpaperBox.isSelected()) {
-                Runnable setter = new Runnable() {
-                    @Override
-                    public void run() {
-                        setWallpaper();
-                    }
-                };
-                getController().getIOProvider().startIO(setter);
-            }
         }
     }
 
@@ -286,6 +333,51 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         @Override
         public void actionPerformed(ActionEvent event) {
             getWizard().next();
+        }
+    }
+
+    private class FolderCreatePostProcessor implements FolderRepositoryListener
+    {
+        @Override
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        @Override
+        public void folderCreated(FolderRepositoryEvent e) {
+            if (!e.getFolder().getCommitOrLocalDir()
+                .equals(desktopDir.getDirectory()))
+            {
+                return;
+            }
+
+            // Don't sync link files.
+            e.getFolder().addPattern("*.lnk");
+
+            if (wallpaperBox.isSelected()) {
+                Runnable setter = new Runnable() {
+                    @Override
+                    public void run() {
+                        setWallpaper();
+                    }
+                };
+                getController().getIOProvider().startIO(setter);
+            }
+
+            getController().getFolderRepository()
+                .removeFolderRepositoryListener(postProcessor);
+        }
+
+        @Override
+        public void folderRemoved(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void maintenanceFinished(FolderRepositoryEvent e) {
         }
     }
 }
