@@ -230,8 +230,9 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         // Copy wallpaper pics
         Util.copyResourceTo("7.png", WALLPAPERS_DIR,
             wpTempDir.resolve("7.png"), true, true);
-        Path wallpaper9Path = Util.copyResourceTo("9.png", WALLPAPERS_DIR,
+        Util.copyResourceTo("9.png", WALLPAPERS_DIR,
             wpTempDir.resolve("9.png"), true, true);
+        Path wallpaper9Path = wpTempDir.resolve("9.png");
         Util.copyResourceTo("10.png", WALLPAPERS_DIR,
             wpTempDir.resolve("10.png"), true, true);
         // Copy end
@@ -249,7 +250,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             command += " \"";
             command += wpTempDir.toAbsolutePath();
             command += "\"";
-        } else if (OSUtil.isMacOS() && wallpaper9Path != null) {
+        } else if (OSUtil.isMacOS() && Files.exists(wallpaper9Path)) {
             // osascript -e 'tell application "Finder" to set desktop picture to
             // POSIX file "/Library/Desktop Pictures/Earth Horizon.jpg"'
             command = "osascript";
