@@ -115,8 +115,8 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
      * @return true if this is the first time of the wizard on this device.
      */
     public static boolean isFirstTime(Controller controller) {
-        return true || controller.getPreferences().getBoolean(
-            "openwizard_desktop", true);
+        return controller.getPreferences().getBoolean("openwizard_desktop",
+            true);
     }
 
     private void setFirstTime() {
