@@ -155,6 +155,17 @@ public class UserDirectories {
     }
 
     /**
+     * PFC-2638: Desktop sync option
+     * 
+     * @return the user directory pointing to the Desktop. null if not found /
+     *         not available.
+     */
+    public static UserDirectory getDesktopDirectory() {
+        return UserDirectories.getUserDirectories().get(
+            Translation.getTranslation("user.dir.desktop"));
+    }
+
+    /**
      * @return all user directories name -> target location on disk.
      */
     public static Map<String, UserDirectory> getUserDirectories() {
