@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
 
@@ -238,11 +239,10 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         // Copy end
 
         LOG.fine("Setting Desktop wallpaper to " + wpTempDir.toAbsolutePath());
-        String command;
-
+        String[] cmd;
         if (OSUtil.isWindowsSystem()) {
-            command = "\"" + wallpaperChangerEXE.toAbsolutePath().toString()
-                + "\"";
+            String command = "\""
+                + wallpaperChangerEXE.toAbsolutePath().toString() + "\"";
             command += " \"";
             command += wpTempDir.toAbsolutePath();
             command += "\"";
@@ -250,25 +250,25 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             command += " \"";
             command += wpTempDir.toAbsolutePath();
             command += "\"";
+            cmd = new String[]{command};
         } else if (OSUtil.isMacOS() && Files.exists(wallpaper9Path)) {
             // osascript -e 'tell application "Finder" to set desktop picture to
             // POSIX file "/Library/Desktop Pictures/Earth Horizon.jpg"'
-            command = "osascript";
-            command += " -e";
-            command += " \"tell application \\\"Finder\\\" to set desktop picture to POSIX file";
-            command += " \\\"";
-            command += wallpaper9Path.toAbsolutePath();
-            command += "\\\"";
+            String command = "tell application \"Finder\" to set desktop picture to POSIX file";
+            command += " \"";
+            command += wallpaper9Path.toAbsolutePath().toString();
             command += "\"";
+            command += "";
+            cmd = new String[]{"osascript", "-e", command};
         } else {
             LOG.warning("Unable to set wallpaper. dir: " + wpTempDir
                 + " file: " + wallpaper9Path);
             return;
         }
 
-        LOG.fine("Executing command " + command);
+        LOG.fine("Executing command " + Arrays.asList(cmd));
         try {
-            final Process p = Runtime.getRuntime().exec(command);
+            final Process p = Runtime.getRuntime().exec(cmd);
             // Auto-kill after 20 seconds
             getController().schedule(new Runnable() {
                 public void run() {
@@ -317,12 +317,25 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
                 Collections.singletonList(item));
 
-            postProcessor = new FolderCreatePostProcessor();
-            getController().getFolderRepository().addFolderRepositoryListener(
-                postProcessor);
+            boolean exists = getController().getFolderRepository()
+                .findExistingFolder(desktopDir.getDirectory()) != null;
+            if (!exists) {
+                postProcessor = new FolderCreatePostProcessor();
+                getController().getFolderRepository()
+                    .addFolderRepositoryListener(postProcessor);
+            }
+
+            if (wallpaperBox.isSelected()) {
+                Runnable setter = new Runnable() {
+                    @Override
+                    public void run() {
+                        setWallpaper();
+                    }
+                };
+                getController().getIOProvider().startIO(setter);
+            }
 
             getWizard().next();
-
         }
     }
 
@@ -354,16 +367,6 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
 
             // Don't sync link files.
             e.getFolder().addPattern("*.lnk");
-
-            if (wallpaperBox.isSelected()) {
-                Runnable setter = new Runnable() {
-                    @Override
-                    public void run() {
-                        setWallpaper();
-                    }
-                };
-                getController().getIOProvider().startIO(setter);
-            }
 
             getController().getFolderRepository()
                 .removeFolderRepositoryListener(postProcessor);
