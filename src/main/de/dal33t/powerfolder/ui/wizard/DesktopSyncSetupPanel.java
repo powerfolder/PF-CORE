@@ -204,7 +204,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
                 .getValueBoolean(getController());
     }
 
-    private void setWallpaper() {
+    private synchronized void setWallpaper() {
         Path wpTempDir = Controller.getTempFilesLocation().resolve(
             WALLPAPERS_DIR);
         try {
@@ -255,11 +255,11 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             // POSIX file "/Library/Desktop Pictures/Earth Horizon.jpg"'
             command = "osascript";
             command += " -e";
-            command += " 'tell application \"Finder\" to set desktop picture to POSIX file";
-            command += " \"";
+            command += " \"tell application \\\"Finder\\\" to set desktop picture to POSIX file";
+            command += " \\\"";
             command += wallpaper9Path.toAbsolutePath();
+            command += "\\\"";
             command += "\"";
-            command += "'";
         } else {
             LOG.warning("Unable to set wallpaper. dir: " + wpTempDir
                 + " file: " + wallpaper9Path);
