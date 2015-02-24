@@ -43,6 +43,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.security.Account;
@@ -57,6 +58,10 @@ import de.dal33t.powerfolder.util.UserDirectory;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
+/**
+ * PFC-2638: Desktop-Sync
+ * @author Sprajc
+ */
 @SuppressWarnings("serial")
 public class DesktopSyncSetupPanel extends PFWizardPanel {
     private static final Logger LOG = Logger
@@ -72,13 +77,18 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
     private JCheckBox wallpaperBox;
     private boolean agreed;
     private UserDirectory desktopDir;
+    private ServerClient client;
     private FolderRepositoryListener postProcessor;
 
-    public DesktopSyncSetupPanel(Controller controller, WizardPanel nextPanel) {
+    public DesktopSyncSetupPanel(Controller controller, WizardPanel nextPanel,
+        ServerClient client)
+    {
         super(controller);
         Reject.ifNull(nextPanel, "Nextpanel is null");
+        Reject.ifNull(client, "Client");
         this.nextPanel = nextPanel;
         this.agreed = false;
+        this.client = client;
     }
 
     /**
@@ -89,7 +99,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
      * @return
      */
     public static WizardPanel insertStepIfAvailable(Controller controller,
-        WizardPanel nextPanel)
+        WizardPanel nextPanel, ServerClient client)
     {
         if (!isFirstTime(controller)) {
             return nextPanel;
@@ -99,16 +109,15 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         if (!showDesktopSync) {
             return nextPanel;
         }
-        boolean folderCreateAllowed = controller.getOSClient()
-            .isAllowedToCreateFolders();
-        if (!folderCreateAllowed) {
+        Reject.ifNull(client, "Client");
+        if (!client.isAllowedToCreateFolders()) {
             return nextPanel;
         }
         boolean desktopDirAvailable = UserDirectories.getDesktopDirectory() != null;
         if (!desktopDirAvailable) {
             return nextPanel;
         }
-        nextPanel = new DesktopSyncSetupPanel(controller, nextPanel);
+        nextPanel = new DesktopSyncSetupPanel(controller, nextPanel, client);
         return nextPanel;
     }
 
@@ -188,7 +197,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             getController()));
         agreeLabel.convertToBigLabel();
 
-        Account account = getController().getOSClient().getAccount();
+        Account account = client.getAccount();
         boolean freeUser = account == null || !account.isProUser();
         wallpaperBox = SimpleComponentFactory.createCheckBox(Translation
             .get("wizard.desktop_sync.wallpaper"));

@@ -264,6 +264,24 @@ public class PFWizard extends PFUIComponent {
     }
 
     /**
+     * PFC-2638: Desktop-Sync
+     * @author Sprajc
+     */
+    public static void openDesktopSyncWizard(Controller controller,
+        ServerClient client)
+    {
+        boolean tiny = ConfigurationEntry.SHOW_TINY_WIZARDS
+            .getValueBoolean(controller);
+        PFWizard wizard = new PFWizard(controller,
+            Translation.get("wizard.desktop_sync.title"), tiny);
+        WizardPanel nextFinishPanel = new TextPanelPanel(controller,
+            Translation.get("wizard.desktop_sync.title"),
+            Translation.get("wizard.desktop_sync.success_text"), true);
+        wizard.open(new DesktopSyncSetupPanel(controller, nextFinishPanel,
+            client));
+    }
+
+    /**
      * Opens the wizard to setup a new webservice mirror.
      *
      * @param controller

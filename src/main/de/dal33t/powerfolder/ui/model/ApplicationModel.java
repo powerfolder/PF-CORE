@@ -74,6 +74,7 @@ import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.wizard.DesktopSyncSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -558,6 +559,11 @@ public class ApplicationModel extends PFUIComponent {
                     Translation
                         .get("warning_notice.admin_login.message"));
                 noticesModel.handleNotice(notice);
+            }
+
+            if (DesktopSyncSetupPanel.isFirstTime(getController())) {
+                PFWizard.openDesktopSyncWizard(getController(),
+                    serverClientModel.getClient());
             }
         }
 

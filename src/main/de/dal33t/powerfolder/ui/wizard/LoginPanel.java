@@ -145,7 +145,7 @@ public class LoginPanel extends PFWizardPanel {
     public WizardPanel next() {
         // PFC-2638: Desktop sync option
         nextPanel = DesktopSyncSetupPanel.insertStepIfAvailable(
-            getController(), nextPanel);
+            getController(), nextPanel, client);
 
         return new SwingWorkerPanel(getController(), new LoginTask(),
             Translation
