@@ -234,8 +234,6 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         Util.copyResourceTo("9.png", WALLPAPERS_DIR,
             wpTempDir.resolve("9.png"), true, true);
         Path wallpaper9Path = wpTempDir.resolve("9.png");
-        Util.copyResourceTo("10.png", WALLPAPERS_DIR,
-            wpTempDir.resolve("10.png"), true, true);
         // Copy end
 
         LOG.fine("Setting Desktop wallpaper to " + wpTempDir.toAbsolutePath());
