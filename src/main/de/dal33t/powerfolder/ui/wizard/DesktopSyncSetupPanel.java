@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -187,9 +188,11 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
             getController()));
         agreeLabel.convertToBigLabel();
 
+        Account account = getController().getOSClient().getAccount();
+        boolean freeUser = account == null || !account.isProUser();
         wallpaperBox = SimpleComponentFactory.createCheckBox(Translation
             .get("wizard.desktop_sync.wallpaper"));
-        wallpaperBox.setSelected(setWallpaperAvailable());
+        wallpaperBox.setSelected(freeUser && setWallpaperAvailable());
         wallpaperBox.setVisible(setWallpaperAvailable());
 
         skipLabel = new ActionLabel(getController(), new SkipAction(
