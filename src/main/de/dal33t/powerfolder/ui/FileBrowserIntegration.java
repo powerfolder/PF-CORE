@@ -19,7 +19,6 @@ package de.dal33t.powerfolder.ui;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.liferay.nativity.control.NativityControl;
 import com.liferay.nativity.control.NativityControlUtil;
@@ -37,7 +36,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.contextmenu.ContextMenuHandler;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayHandler;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayUpdateListener;
-import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -135,39 +134,19 @@ public class FileBrowserIntegration extends PFComponent {
                 Path ignoredIcon = configDir.resolve("ignored.icns");
                 Path lockedIcon = configDir.resolve("locked.icns");
                 if (Files.notExists(okIcon)) {
-                    PathUtils.copyFile(Paths
-                        .get("/Users/krickl/git/PF-CORE/src/etc/mac/ok.icns"),
-                        okIcon);
-//                    PathUtils.copyFromStreamToFile(FileBrowserIntegration.class
-//                        .getResourceAsStream("mac/ok.icns"), okIcon);
+                    Util.copyResourceTo("ok.icns", "mac", okIcon, true, true);
                 }
                 if (Files.notExists(syncingIcon)) {
-                    PathUtils.copyFile(Paths
-                        .get("/Users/krickl/git/PF-CORE/src/etc/mac/syncing.icns"),
-                        syncingIcon);
-//                    PathUtils.copyFromStreamToFile(FileBrowserIntegration.class
-//                        .getResourceAsStream("mac/ok.icns"), okIcon);
+                    Util.copyResourceTo("syncing.icns", "mac", syncingIcon, true, true);
                 }
                 if (Files.notExists(warningIcon)) {
-                    PathUtils.copyFile(Paths
-                        .get("/Users/krickl/git/PF-CORE/src/etc/mac/warning.icns"),
-                        warningIcon);
-//                    PathUtils.copyFromStreamToFile(FileBrowserIntegration.class
-//                        .getResourceAsStream("mac/ok.icns"), okIcon);
+                    Util.copyResourceTo("warning.icns", "mac", warningIcon, true, true);
                 }
                 if (Files.notExists(ignoredIcon)) {
-                    PathUtils.copyFile(Paths
-                        .get("/Users/krickl/git/PF-CORE/src/etc/mac/ignored.icns"),
-                        ignoredIcon);
-//                    PathUtils.copyFromStreamToFile(FileBrowserIntegration.class
-//                        .getResourceAsStream("mac/ok.icns"), okIcon);
+                    Util.copyResourceTo("ignored.icns", "mac", ignoredIcon, true, true);
                 }
                 if (Files.notExists(lockedIcon)) {
-                    PathUtils.copyFile(Paths
-                        .get("/Users/krickl/git/PF-CORE/src/etc/mac/locked.icns"),
-                        lockedIcon);
-//                    PathUtils.copyFromStreamToFile(FileBrowserIntegration.class
-//                        .getResourceAsStream("mac/ok.icns"), okIcon);
+                    Util.copyResourceTo("locked.icns", "mac", lockedIcon, true, true);
                 }
 
                 iconOverlayHandler = new IconOverlayHandler(getController());
@@ -176,39 +155,21 @@ public class FileBrowserIntegration extends PFComponent {
                 iconControl.enableFileIcons();
 
                 logFine("Registering icons");
-                logFine("Set "
-                    + okIcon.getFileName().toString()
-                    + " to "
-                    + iconControl.registerIcon(okIcon.toAbsolutePath()
-                        .toString()));
-                logFine("Set "
-                    + syncingIcon.getFileName().toString()
-                    + " to "
-                    + iconControl.registerIcon(syncingIcon.toAbsolutePath()
-                        .toString()));
-                logFine("Set "
-                    + warningIcon.getFileName().toString()
-                    + " to "
-                    + iconControl.registerIcon(warningIcon.toAbsolutePath()
-                        .toString()));
-                logFine("Set "
-                    + ignoredIcon.getFileName().toString()
-                    + " to "
-                    + iconControl.registerIcon(ignoredIcon.toAbsolutePath()
-                        .toString()));
-                logFine("Set "
-                    + lockedIcon.getFileName().toString()
-                    + " to "
-                    + iconControl.registerIcon(lockedIcon.toAbsolutePath()
-                        .toString()));
+                iconControl.registerIcon(okIcon.toAbsolutePath().toString());
+                iconControl.registerIcon(syncingIcon.toAbsolutePath()
+                    .toString());
+                iconControl.registerIcon(warningIcon.toAbsolutePath()
+                    .toString());
+                iconControl.registerIcon(ignoredIcon.toAbsolutePath()
+                    .toString());
+                iconControl
+                    .registerIcon(lockedIcon.toAbsolutePath().toString());
 
                 iconOverlayApplier = new IconOverlayApplier(getController(),
                     iconControl);
                 getController().getFolderRepository().getFolderScanner()
                     .addListener(iconOverlayApplier);
 
-                
-                
                 return true;
             }
         } catch (Exception re) {
