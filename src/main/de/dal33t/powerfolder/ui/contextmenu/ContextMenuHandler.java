@@ -182,18 +182,26 @@ public class ContextMenuHandler extends PFComponent implements
                 return new ArrayList<>(0);
             }
 
-            // Build the context menu - the order is from BOTTOM to TOP
-
-            if (containsFileInfoPath
-                && !(containsFolderPath || containsDirectoryInfoPath))
+            if (pathNames.length == 1
+                && (containsFileInfoPath || containsDirectoryInfoPath || containsFolderPath)
+                && ConfigurationEntry.WEB_LOGIN_ALLOWED
+                    .getValueBoolean(getController()))
             {
-                pfMainItem.addContextMenuItem(unlockItem);
-                pfMainItem.addContextMenuItem(lockItem);
-                if (containsFileInfoPath && pathNames.length == 1
-                    && found.isLocked(getController()))
-                {
-                    pfMainItem.addContextMenuItem(lockInfoItem);
-                }
+                pfMainItem.addContextMenuItem(openWebItem);
+            }
+
+            if ((containsFolderPath && pathNames.length == 1)
+                || (Files.isDirectory(Paths.get(pathNames[0]))
+                    && getController().getOSClient().isAllowedToCreateFolders() && !containsDirectoryInfoPath))
+            {
+                pfMainItem.addContextMenuItem(shareFolderItem);
+            }
+
+            if (containsFolderPath
+                && !(containsFileInfoPath || containsDirectoryInfoPath))
+            {
+                pfMainItem.addContextMenuItem(moveFolderItem);
+                pfMainItem.addContextMenuItem(stopSyncItem);
             }
 
             if (!containsFolderPath && containsFileInfoPath) {
@@ -206,26 +214,16 @@ public class ContextMenuHandler extends PFComponent implements
                 pfMainItem.addContextMenuItem(shareLinkItem);
             }
 
-            if (containsFolderPath
-                && !(containsFileInfoPath || containsDirectoryInfoPath))
+            if (containsFileInfoPath
+                && !(containsFolderPath || containsDirectoryInfoPath))
             {
-                pfMainItem.addContextMenuItem(stopSyncItem);
-                pfMainItem.addContextMenuItem(moveFolderItem);
-            }
-
-            if ((containsFolderPath && pathNames.length == 1)
-                || (Files.isDirectory(Paths.get(pathNames[0]))
-                    && getController().getOSClient().isAllowedToCreateFolders() && !containsDirectoryInfoPath))
-            {
-                pfMainItem.addContextMenuItem(shareFolderItem);
-            }
-
-            if (pathNames.length == 1
-                && (containsFileInfoPath || containsDirectoryInfoPath || containsFolderPath)
-                && ConfigurationEntry.WEB_LOGIN_ALLOWED
-                    .getValueBoolean(getController()))
-            {
-                pfMainItem.addContextMenuItem(openWebItem);
+                if (containsFileInfoPath && pathNames.length == 1
+                    && found.isLocked(getController()))
+                {
+                    pfMainItem.addContextMenuItem(lockInfoItem);
+                }
+                pfMainItem.addContextMenuItem(lockItem);
+                pfMainItem.addContextMenuItem(unlockItem);
             }
 
             List<ContextMenuItem> items = new ArrayList<>(2);
