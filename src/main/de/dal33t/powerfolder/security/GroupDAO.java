@@ -48,6 +48,17 @@ public interface GroupDAO extends GenericDAO<Group> {
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
 
     /**
+     * Return a list of groups, where the account specified by
+     * {@code accountOID} is admin of. Take a look at the permissions of the
+     * account. PFS-504
+     * 
+     * @param accountOID
+     *            The OID of the admin.
+     * @return A list of all Groups, the account is admin of.
+     */
+    Collection<Group> findWithGroupAdmin(String accountOID);
+
+    /**
      * Store several groups.
      * 
      * @param groups
