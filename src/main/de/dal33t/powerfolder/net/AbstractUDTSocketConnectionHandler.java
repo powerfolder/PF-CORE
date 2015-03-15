@@ -1022,7 +1022,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                         logWarning("Received unknown message from peer: " + obj);
                     }
                 } catch (SocketTimeoutException e) {
-                    logWarning("Socket timeout on read, not disconnecting");
+                    logFiner("Socket timeout on read, not disconnecting. " + e);
                 } catch (SocketException e) {
                     logConnectionClose(e);
                     // connection closed
