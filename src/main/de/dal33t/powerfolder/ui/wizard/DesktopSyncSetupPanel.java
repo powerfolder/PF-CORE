@@ -101,12 +101,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
     public static WizardPanel insertStepIfAvailable(Controller controller,
         WizardPanel nextPanel, ServerClient client)
     {
-        if (!isFirstTime(controller)) {
-            return nextPanel;
-        }
-        boolean showDesktopSync = ConfigurationEntry.SHOW_DESKTOP_SYNC_OPTION
-            .getValueBoolean(controller);
-        if (!showDesktopSync) {
+        if (!offerOption(controller)) {
             return nextPanel;
         }
         Reject.ifNull(client, "Client");
@@ -121,10 +116,16 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         return nextPanel;
     }
 
+    public static boolean offerOption(Controller controller) {
+        return isFirstTime(controller)
+            && ConfigurationEntry.SHOW_DESKTOP_SYNC_OPTION
+                .getValueBoolean(controller);
+    }
+
     /**
      * @return true if this is the first time of the wizard on this device.
      */
-    public static boolean isFirstTime(Controller controller) {
+    private static boolean isFirstTime(Controller controller) {
         return controller.getPreferences().getBoolean("openwizard_desktop",
             true);
     }

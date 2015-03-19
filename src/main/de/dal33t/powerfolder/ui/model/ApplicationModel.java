@@ -554,14 +554,14 @@ public class ApplicationModel extends PFUIComponent {
             {
                 WarningNotice notice = new WarningNotice(
                     Translation.get("warning_notice.title"),
-                    Translation
-                        .get("warning_notice.admin_login.summary"),
-                    Translation
-                        .get("warning_notice.admin_login.message"));
+                    Translation.get("warning_notice.admin_login.summary"),
+                    Translation.get("warning_notice.admin_login.message"));
                 noticesModel.handleNotice(notice);
             }
 
-            if (DesktopSyncSetupPanel.isFirstTime(getController())) {
+            if (DesktopSyncSetupPanel.offerOption(getController())
+                && serverClientModel.getClient().isAllowedToCreateFolders())
+            {
                 PFWizard.openDesktopSyncWizard(getController(),
                     serverClientModel.getClient());
             }
