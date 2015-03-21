@@ -271,9 +271,9 @@ public class Constants {
     // Transfer settings ******************************************************
 
     /**
-     * The maximum number of enqued download from a internet connected node
+     * The maximum number of queued download from an internet connected node
      */
-    public static final int MAX_DLS_FROM_INET_MEMBER = 10;
+    public static final int MAX_DLS_FROM_INET_MEMBER = 20;
 
     /**
      * Start uploads until 500kb is started in uploads
@@ -281,7 +281,7 @@ public class Constants {
     public static final long START_UPLOADS_TILL_PLANNED_SIZE_INET = 500 * 1024;
 
     /**
-     * The maximum number of enqued download from a lan connected node
+     * The maximum number of queued download from a lan connected node
      */
     public static final int MAX_DLS_FROM_LAN_MEMBER = 50;
 
