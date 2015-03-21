@@ -22,6 +22,7 @@ package de.dal33t.powerfolder;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
+import java.beans.ExceptionListener;
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -31,6 +32,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -395,6 +397,21 @@ public class Controller extends PFComponent {
         threadPool = new WrappedScheduledThreadPoolExecutor(
             Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
                 "Controller-Thread-"));
+
+        // PFI-312
+        PathUtils.setIOExceptionListener(new ExceptionListener() {
+            @Override
+            public void exceptionThrown(Exception e) {
+                if (e instanceof FileSystemException
+                    && e.toString().toLowerCase()
+                        .contains("too many open files"))
+                {
+                    logSevere("Detected I/O Exception: " + e.getMessage());
+                    logSevere("Please adjust limits for open file handles on this server");
+                    exit(1);
+                }
+            }
+        });
 
         // Initialize resource bundle eager
         // check forced language file from commandline
@@ -1928,6 +1945,7 @@ public class Controller extends PFComponent {
         if (shuttingDown || !started) {
             return;
         }
+        PathUtils.setIOExceptionListener(null);
         shuttingDown = true;
         logInfo("Shutting down...");
         setFirstStart(false);

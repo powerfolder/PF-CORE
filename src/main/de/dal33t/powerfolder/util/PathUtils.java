@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Desktop;
+import java.beans.ExceptionListener;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -45,9 +46,35 @@ public class PathUtils {
 
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
+    
+    private static ExceptionListener IO_EXCEPTION_LISTENER = new ExceptionListener() {
+        @Override
+        public void exceptionThrown(Exception e) {
+            // Do nothing by default.
+        }
+    };
 
     // no instances
     private PathUtils() {
+    }
+
+    /**
+     * PFI-312
+     * 
+     * @param listener
+     */
+    public static final void setIOExceptionListener(ExceptionListener listener)
+    {
+        if (listener == null) {
+            IO_EXCEPTION_LISTENER = new ExceptionListener() {
+                @Override
+                public void exceptionThrown(Exception e) {
+                    // Do nothing.
+                }
+            };
+        } else {
+            IO_EXCEPTION_LISTENER = listener;
+        }
     }
 
     /**
@@ -75,6 +102,7 @@ public class PathUtils {
         } catch (ZipException e) {
             return false;
         } catch (IOException e) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(e);
             return false;
         }
         return true;
@@ -193,6 +221,7 @@ public class PathUtils {
             log.fine("File already exists. " + faee);
         } catch (IOException ioe) {
             log.info("Could not create driectory. " + ioe);
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
         }
 
         return candidate;
@@ -228,6 +257,7 @@ public class PathUtils {
             }
         } catch (IOException ioe) {
             log.warning("Could not count number of siblings. " + ioe);
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             return 0;
         }
         return i;
@@ -262,6 +292,7 @@ public class PathUtils {
             return !it.hasNext();
         } catch (IOException ioe) {
             log.warning("Error checking for empty directory. " + ioe);
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
         }
 
         return false;
@@ -324,6 +355,7 @@ public class PathUtils {
         try {
             copyFromStreamToFile(Files.newInputStream(from), to);
         } catch (IOException e) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(e);
             throw new IOException(from + " -> " + to + ":" + e.getMessage(), e);
         }
     }
@@ -373,6 +405,7 @@ public class PathUtils {
         try {
             Files.deleteIfExists(to);
         } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw new IOException("Unable to delete old file "
                 + to.toAbsolutePath().toString(), ioe);
         }
@@ -383,6 +416,7 @@ public class PathUtils {
         try {
             Files.createFile(to);
         } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw new IOException("Unable to create file "
                 + to.toAbsolutePath().toString(), ioe);
         }
@@ -452,6 +486,7 @@ public class PathUtils {
                 ret = is.read(BUFFER);
             }
         } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw ioe;
         }
     }
@@ -473,6 +508,7 @@ public class PathUtils {
                 ret = is.read(BUFFER);
             }
         } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw ioe;
         }
     }
@@ -519,12 +555,14 @@ public class PathUtils {
                     recursiveDelete(path);
                 }
             } catch (IOException ioe) {
+                IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
                 throw ioe;
             }
         }
         try {
             Files.deleteIfExists(file);
         } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw new IOException("Could not delete file "
                 + file.toAbsolutePath(), ioe);
         }
@@ -729,6 +767,7 @@ public class PathUtils {
                             try {
                                 Files.delete(entry);
                             } catch (IOException ioe) {
+                                IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
                                 throw new IOException(
                                     "Unable to delete file in target directory: "
                                         + entry.toAbsolutePath() + ". " + ioe);
@@ -906,6 +945,7 @@ public class PathUtils {
             }
         } catch (IOException ioe) {
             log.info("Could not access last modification date. " + ioe);
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             return;
         }
         if (!iniExists && usePfIcon) {
@@ -950,6 +990,7 @@ public class PathUtils {
                 // makeSystemOnWindows(desktopIniFile);
             } catch (IOException e) {
                 log.warning("Problem writing Desktop.ini file(s). " + e);
+                IO_EXCEPTION_LISTENER.exceptionThrown(e);
             } finally {
                 if (pw != null) {
                     try {
@@ -966,6 +1007,7 @@ public class PathUtils {
                 setAttributesOnWindows(directory, null, false);
             } catch (IOException ioe) {
                 log.info("Could not delete ini file. " + ioe);
+                IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             }
         }
     }
@@ -1001,6 +1043,7 @@ public class PathUtils {
                 setAttributesOnWindows(directory, null, false);
             } catch (IOException ioe) {
                 log.info("Could not delete ini file. " + ioe);
+                IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             }
         }
     }
@@ -1039,6 +1082,7 @@ public class PathUtils {
                 }
             }
         } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             return new Long[]{0L, 0L};
         }
         return new Long[]{sum, count};
@@ -1240,6 +1284,7 @@ public class PathUtils {
                 return true;
             } catch (IOException e) {
                 log.warning("Unable to open file " + file + ". " + e);
+                IO_EXCEPTION_LISTENER.exceptionThrown(e);
                 return false;
             }
         } else if (OSUtil.isLinux()) {
@@ -1452,6 +1497,7 @@ public class PathUtils {
             return it.hasNext();
         } catch (IOException ioe) {
             log.info("Could not check for content. " + ioe);
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
         }
 
         return false;
@@ -1499,6 +1545,7 @@ public class PathUtils {
             return false;
         } catch (IOException ioe) {
             log.info(ioe.getMessage());
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             return false;
         }
     }
