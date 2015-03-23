@@ -106,6 +106,20 @@ public class Format {
         return str + ' ' + suffix;
     }
 
+    public static String formatTimeframe(long millis) {
+        if (millis < 2000) {
+            return String.valueOf(millis) + "ms";
+        } else if (millis < 1000L * 60 * 2) {
+            return String.valueOf(millis / 1000) + "s";
+        } else if (millis < 1000L * 60 * 60 * 2) {
+            return String.valueOf(millis / 1000 / 60) + "m";
+        } else if (millis < 1000L * 60 * 60 * 2 * 24) {
+            return String.valueOf(millis / 1000 / 60 / 60) + "h";
+        } else {
+            return String.valueOf(millis / 1000 / 60 / 60 / 24) + "d";
+        }
+    }
+
     /**
      * Long time format. Something like 15:45:46 PM
      *
@@ -195,8 +209,8 @@ public class Format {
                     return Translation.get("general.today") + ' '
                         + formatTimeShort(date);
                 } else if (dayDiffer == -1) {
-                    return Translation.get("general.yesterday")
-                        + ' ' + formatTimeShort(date);
+                    return Translation.get("general.yesterday") + ' '
+                        + formatTimeShort(date);
                 } else if (dayDiffer == 1) {
                     return Translation.get("general.tomorrow") + ' '
                         + formatTimeShort(date);
@@ -252,7 +266,8 @@ public class Format {
      * @return
      */
     public static String formatBoolean(boolean n) {
-        return n ? Translation.get("general.yes") : Translation.get("general.no");
+        return n ? Translation.get("general.yes") : Translation
+            .get("general.no");
     }
 
     /**
@@ -260,33 +275,38 @@ public class Format {
      *
      * @param dt
      *            The time in milliseconds
-     * @return the formatted string.
-     * Examples "10 days", "5 hours", "17 minutes", "Less than one minute"
+     * @return the formatted string. Examples "10 days", "5 hours",
+     *         "17 minutes", "Less than one minute"
      */
     public static String formatDeltaTime(long dt) {
         Formatter f = new Formatter();
         try {
             long days = dt / 24 / 3600 / 1000;
             if (days >= 2) {
-                return f.format(Translation.get("format.n.days",
-                        String.valueOf(days))).out().toString();
+                return f
+                    .format(
+                        Translation.get("format.n.days", String.valueOf(days)))
+                    .out().toString();
             }
             long hours = dt / 3600 / 1000;
             if (hours >= 2) {
-                return f.format(Translation.get("format.n.hours",
-                        String.valueOf(hours))).out().toString();
+                return f
+                    .format(
+                        Translation.get("format.n.hours", String.valueOf(hours)))
+                    .out().toString();
             }
             long minutes = dt / 60 / 1000;
             if (minutes >= 1) {
-                return f.format(Translation.get("format.n.minutes",
-                        String.valueOf(minutes))).out().toString();
+                return f
+                    .format(
+                        Translation.get("format.n.minutes",
+                            String.valueOf(minutes))).out().toString();
             } else if (minutes == 1) {
-                return f.format(Translation.get(
-                        "format.one_minute")).out().toString();
+                return f.format(Translation.get("format.one_minute")).out()
+                    .toString();
             } else {
-                return f.format(
-                        Translation.get("format.less_than_one_minute"))
-                        .out().toString();
+                return f.format(Translation.get("format.less_than_one_minute"))
+                    .out().toString();
             }
         } finally {
             f.close();

@@ -191,20 +191,26 @@ public class Profiling {
 
         sb.append("=== Profiling Statistics ===\n");
         sb.append("Total invocations: " + totalCount + '\n');
-        sb.append("Total elapsed time: " + totalTime + "ms\n");
+        sb.append("Total elapsed time: " + Format.formatTimeframe(totalTime)
+            + "\n");
         if (totalCount > 0) {
-            sb.append("Avg time: " + totalTime / totalCount + "ms\n");
+            sb.append("Avg time: "
+                + Format.formatTimeframe(totalTime / totalCount) + "\n");
         }
-        sb.append("Min elapsed time: " + minimumTime + "ms\n");
-        sb.append("Max elapsed time: " + maximumTime + "ms\n");
+        sb.append("Min elapsed time: " + Format.formatTimeframe(minimumTime)
+            + "\n");
+        sb.append("Max elapsed time: " + Format.formatTimeframe(maximumTime)
+            + "\n");
         sb.append("\n");
         List<String> keys = new ArrayList<String>(stats.keySet());
         Collections.sort(keys);
         for (String key : keys) {
             ProfilingStat stat = stats.get(key);
             sb.append("'" + stat.getOperationName() + "' invocations "
-                + stat.getCount() + " elapsed " + stat.getElapsed()
-                + "ms average " + stat.getElapsed() / stat.getCount() + "ms\n");
+                + stat.getCount() + " elapsed "
+                + Format.formatTimeframe(stat.getElapsed()) + " average "
+                + Format.formatTimeframe(stat.getElapsed() / stat.getCount())
+                + "\n");
         }
         sb.append("============================");
         return sb.toString();

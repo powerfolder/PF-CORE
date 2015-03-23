@@ -245,15 +245,13 @@ public class Debug {
             b.append("------------------------");
             // information about myself and local port binding
 
-            long uptimeMinutes = c.getUptime() / 1000 / 60;
-
             b.append("\nVersion: " + Controller.PROGRAM_VERSION + " ("
                 + c.getBuildTime() + ')');
             b.append("\nConfig: " + c.getConfigName());
             b.append("\nCurrent time: " + new Date());
             b.append("\nLocale: " + Locale.getDefault() + " ("
                 + Locale.getDefault().getDisplayCountry() + ')');
-            b.append("\nUptime: " + uptimeMinutes + " minutes");
+            b.append("\nUptime: " + Format.formatTimeframe(c.getUptime()));
             b.append("\nOS: " + System.getProperty("os.name"));
             b.append("\nJava: " + JavaVersion.systemVersion().toString() + " ("
                 + System.getProperty("java.vendor") + ')');
