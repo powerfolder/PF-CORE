@@ -15,6 +15,7 @@ import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -129,11 +130,32 @@ public class PathUtils {
     public static boolean isNetworkPath(Path path) {
         Reject.ifNull(path, "Path");
 
-        if (!OSUtil.isWindowsSystem()) {
-            // Unable to detect
+        if (OSUtil.isMacOS() || OSUtil.isLinux()) {
+            return isNetworkPathUnix(path);
+        } else if (OSUtil.isWindowsSystem()) {
+            return isNetworkPathWindows(path);
+        }
+        return false;
+    }
+
+    private static boolean isNetworkPathUnix(Path path) {
+        try {
+            FileStore fs = Files.getFileStore(path);
+            return "smbfs".equalsIgnoreCase(fs.type())
+                || "nfs".equalsIgnoreCase(fs.type());
+        } catch (IOException ioe) {
+            log.warning("Unable to check, if path " + path.toString()
+                + " is a network drive. " + ioe);
             return false;
         }
+    }
 
+    /**
+     * @param path
+     * @return true if the given input path is or is located on a networked
+     *         drive or is a UNC path share.
+     */
+    private static boolean isNetworkPathWindows(Path path) {
         // C:\normal\path\to
         // N:\
         // N:\path\on\network
