@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
  * access the configfile like this:
  * <code>Properties config = getController().getConfig();</code>
  *
+ * @author Christian Sprajc
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public interface Plugin {
