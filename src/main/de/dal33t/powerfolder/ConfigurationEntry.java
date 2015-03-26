@@ -1020,8 +1020,7 @@ public enum ConfigurationEntry {
             String value = getValue(controller);
 
             if (value == null) {
-                if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(controller)
-                    && !PreferencesEntry.EXPERT_MODE
+                if (!PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(controller))
                 {
                     return Boolean.TRUE;

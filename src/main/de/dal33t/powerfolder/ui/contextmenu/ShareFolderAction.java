@@ -101,7 +101,7 @@ class ShareFolderAction extends ContextMenuAction {
                     .isBackupByDefault();
 
                 if (controller.isUIEnabled()) {
-                    if (PreferencesEntry.BEGINNER_MODE
+                    if (!PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(controller))
                     {
                         if (folder != null) {

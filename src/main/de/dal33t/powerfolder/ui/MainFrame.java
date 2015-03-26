@@ -479,7 +479,7 @@ public class MainFrame extends PFUIComponent {
         lowerMainTextActionLabel = new ActionLabel(getController(),
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    if (!PreferencesEntry.BEGINNER_MODE
+                    if (!PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
                     {
                         handleSyncTextClick();
@@ -494,7 +494,7 @@ public class MainFrame extends PFUIComponent {
             lowerMainTextActionLabel.setToolTipText("");
         }
 
-        if (PreferencesEntry.BEGINNER_MODE
+        if (!PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController()))
         {
             lowerMainTextActionLabel.setNeverUnderline(true);
@@ -1411,19 +1411,17 @@ public class MainFrame extends PFUIComponent {
                 .get("action_expand_interface.name"));
             lowerMainTextActionLabel.setToolTipText(Translation
                 .get("action_expand_interface.name"));
-        } else if (PreferencesEntry.BEGINNER_MODE
-            .getValueBoolean(getController())
-            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        } else if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             upperMainTextActionLabel.setToolTipText(Translation
-                .get("main_frame.minimal.change_loging.tip"));
+                .get("action_collapse_interface.name"));
             lowerMainTextActionLabel.setToolTipText(Translation
-                .get("main_frame.minimal.change_loging.tip"));
+                .get("action_collapse_interface.name"));
         } else {
             upperMainTextActionLabel.setToolTipText(Translation
-                .get("action_collapse_interface.name"));
+                .get("main_frame.minimal.change_loging.tip"));
             lowerMainTextActionLabel.setToolTipText(Translation
-                .get("action_collapse_interface.name"));
+                .get("main_frame.minimal.change_loging.tip"));
         }
     }
 

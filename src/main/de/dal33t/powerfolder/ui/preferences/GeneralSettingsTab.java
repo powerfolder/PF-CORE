@@ -421,27 +421,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return chooser;
     }
 
-    private JComboBox<String> createModeChooser() {
-        JComboBox<String> box = new JComboBox<>();
-        box.addItem(Translation
-            .get("preferences.general.mode.beginner"));
-        box.addItem(Translation
-            .get("preferences.general.mode.advanced"));
-        box.addItem(Translation
-            .get("preferences.general.mode.expert"));
-        boolean expertModeActive = PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
-        boolean miniamlModeActive = PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
-
-        if (miniamlModeActive && !expertModeActive) {
-            box.setSelectedIndex(0);
-        } else if (!miniamlModeActive && !expertModeActive) {
-            box.setSelectedIndex(1);
-        } else if (expertModeActive) {
-            box.setSelectedIndex(2);
-        }
-
-        return box;
-    }
 
     private static Component threePanel(Component component1,
         Component component2, Component component3) {
@@ -552,18 +531,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Start: PFC-2385
         if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
             boolean expertModeActive = PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
-            boolean miniamlModeActive = PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
 
             if(modeChooser.isSelected()) {
-                PreferencesEntry.EXPERT_MODE.setValue(getController(), true);
-                PreferencesEntry.BEGINNER_MODE.setValue(getController(), false); 
-                if (expertModeActive || miniamlModeActive) {
+                PreferencesEntry.EXPERT_MODE.setValue(getController(), true); 
+                if (expertModeActive) {
                     needsRestart = true;
                 }
             } else {
                 PreferencesEntry.EXPERT_MODE.setValue(getController(), false);
-                PreferencesEntry.BEGINNER_MODE.setValue(getController(), true);
-                if (expertModeActive || !miniamlModeActive) {
+                if (!expertModeActive) {
                     needsRestart = true;
                 }
             }

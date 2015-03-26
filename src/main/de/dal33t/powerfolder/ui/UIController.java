@@ -284,21 +284,20 @@ public class UIController extends PFComponent {
         }
 
         // PFC-2423
-        if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
-            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
-            // Configure view for beginner mode:
-            ConfigurationEntry.FILES_ENABLED.setValue(getController(), false);
-            ConfigurationEntry.SETTINGS_ENABLED
-                .setValue(getController(), false);
-            ConfigurationEntry.MEMBERS_ENABLED.setValue(getController(), false);
-            // ConfigurationEntry.PROBLEMS_ENABLED.setValue(getController(),
-            // false);
-        } else {
             // Show it in Expert and Advanced mode
             ConfigurationEntry.FILES_ENABLED.setValue(getController(), true);
             ConfigurationEntry.SETTINGS_ENABLED.setValue(getController(), true);
             ConfigurationEntry.MEMBERS_ENABLED.setValue(getController(), true);
+            // ConfigurationEntry.PROBLEMS_ENABLED.setValue(getController(),
+            // false);
+        } else {
+            // Configure view for beginner mode:
+            ConfigurationEntry.FILES_ENABLED.setValue(getController(), false);
+            ConfigurationEntry.SETTINGS_ENABLED
+            .setValue(getController(), false);
+            ConfigurationEntry.MEMBERS_ENABLED.setValue(getController(), false);
             // ConfigurationEntry.PROBLEMS_ENABLED.setValue(getController(),
             // false);
         }
@@ -338,7 +337,7 @@ public class UIController extends PFComponent {
                 JFrame.EXIT_ON_CLOSE);
         }
 
-        if (getController().isStartMinimized() || PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
+        if (getController().isStartMinimized() || !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             logInfo("Starting minimized");
         }
 
@@ -349,8 +348,8 @@ public class UIController extends PFComponent {
                 public void run() {
                     mainFrame.getUIComponent().setVisible(
                         (!OSUtil.isSystraySupported()
-                            || !getController().isStartMinimized()) && !PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController()));
-                    if (!getController().isStartMinimized() && !PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
+                            || !getController().isStartMinimized()) && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
+                    if (!getController().isStartMinimized() && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
                         mainFrame.toFront();
                     }
                 }

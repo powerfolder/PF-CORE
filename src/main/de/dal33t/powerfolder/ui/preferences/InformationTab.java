@@ -113,13 +113,10 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     private JButton createActivateButton() {
-        boolean isAdvancedMode = !PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController())
-            && !PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
         boolean isActivated = getController().getNodeManager().isStarted();
 
         // PFC-2508
-        if (isAdvancedMode && isActivated) {
+        if (isActivated) {
             return null;
         }
 

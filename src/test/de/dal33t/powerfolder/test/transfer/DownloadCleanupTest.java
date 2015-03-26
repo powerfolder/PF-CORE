@@ -73,7 +73,6 @@ public class DownloadCleanupTest extends TwoControllerTestCase {
     public void testBeginnerModeAutoCleanupOfDownloads() throws IOException {
         ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.removeValue(getContollerLisa());
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), false);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerLisa(), true);
         transferFile();
 
         // Lisa's download should have been cleaned up.

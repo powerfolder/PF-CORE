@@ -269,15 +269,14 @@ public class ExpandableFolderView extends PFUIComponent implements
         {
             expanded.set(true);
             retrieveAdditionalInfosFromServer();
-            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
-                && !PreferencesEntry.EXPERT_MODE
+            if (PreferencesEntry.EXPERT_MODE
                     .getValueBoolean(getController()))
             {
                 upperPanel.setToolTipText(Translation
-                    .get("exp_folder_view.remove"));
+                    .get("exp_folder_view.collapse"));
             } else {
                 upperPanel.setToolTipText(Translation
-                    .get("exp_folder_view.collapse"));
+                    .get("exp_folder_view.remove"));
             }
             updateNameLabel();
             lowerOuterPanel.setVisible(true);
@@ -291,14 +290,13 @@ public class ExpandableFolderView extends PFUIComponent implements
     public void collapse() {
         expanded.set(false);
         retrieveAdditionalInfosFromServer();
-        if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
-            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
             upperPanel.setToolTipText(Translation
-                .get("exp_folder_view.create"));
+                .get("exp_folder_view.expand"));
         } else {
             upperPanel.setToolTipText(Translation
-                .get("exp_folder_view.expand"));
+                .get("exp_folder_view.create"));
         }
         updateNameLabel();
         lowerOuterPanel.setVisible(false);
@@ -506,8 +504,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
             }
 
-            if (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())
-                && !PreferencesEntry.EXPERT_MODE
+            if (!PreferencesEntry.EXPERT_MODE
                     .getValueBoolean(getController()))
             {
                 row += 2;
@@ -1116,17 +1113,15 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 // We are in sync.
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
-                if (PreferencesEntry.BEGINNER_MODE
-                    .getValueBoolean(getController())
-                    && !PreferencesEntry.EXPERT_MODE
+                if (PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
                 {
+                    primaryButton
+                    .setToolTipText(Translation
+                        .get("exp_folder_view.folder_sync_complete"));
+                } else {
                     primaryButton.setToolTipText(Translation
                         .get("exp_folder_view.explore"));
-                } else {
-                    primaryButton
-                        .setToolTipText(Translation
-                            .get("exp_folder_view.folder_sync_complete"));
                 }
             }
         } else if (type == Type.Typical) {
@@ -1265,7 +1260,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             int newCount = getController().getTransferManager()
                 .countCompletedDownloads(folder);
             // #PFC-2497 Do not show new Files in Beginnger mode
-            if (!PreferencesEntry.BEGINNER_MODE
+            if (PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController()))
             {
                 newFiles = newCount > 0;
@@ -1283,16 +1278,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                 nameLabel.setToolTipText(Translation
                     .get("exp_folder_view.collapse"));
             } else {
-                if (PreferencesEntry.BEGINNER_MODE
-                    .getValueBoolean(getController())
-                    && !PreferencesEntry.EXPERT_MODE
+                if (PreferencesEntry.EXPERT_MODE
                         .getValueBoolean(getController()))
                 {
                     nameLabel.setToolTipText(Translation
-                        .get("exp_folder_view.remove"));
+                        .get("exp_folder_view.expand"));
                 } else {
                     nameLabel.setToolTipText(Translation
-                        .get("exp_folder_view.expand"));
+                        .get("exp_folder_view.remove"));
                 }
             }
         }

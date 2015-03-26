@@ -122,7 +122,7 @@ public class ProblemsTab extends PFUIComponent {
     private Component createToolBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
-        if (!PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController())) {
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             JButton openBtn = new JButton(openProblemAction);
             openBtn.setIcon(null);
             bar.addGridded(openBtn);

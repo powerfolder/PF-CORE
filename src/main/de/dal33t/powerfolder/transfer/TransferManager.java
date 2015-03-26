@@ -814,7 +814,7 @@ public class TransferManager extends PFComponent {
         autoClean = autoClean
             || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController()) == 0
-            || (PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController()) && !ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+            || (!PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()) && !ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .hasValue(getController()));
         if (autoClean) {
             if (isFiner()) {

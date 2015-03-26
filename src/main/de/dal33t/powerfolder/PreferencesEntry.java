@@ -55,7 +55,7 @@ public enum PreferencesEntry {
 
     EXPERT_MODE("ExpertMode", false),
 
-    BEGINNER_MODE("BeginnerMode", true),
+    //BEGINNER_MODE("BeginnerMode", true),
     
     SHOW_DEVICES("show.devices", false),
 

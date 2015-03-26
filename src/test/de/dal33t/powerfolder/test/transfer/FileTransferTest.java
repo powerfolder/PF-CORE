@@ -63,8 +63,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         super.setUp();
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerLisa(), false);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerBart(), false);
         deleteTestFolderContents();
         connectBartAndLisa();
         // Join on testfolder

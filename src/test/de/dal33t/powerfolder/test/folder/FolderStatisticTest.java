@@ -60,11 +60,6 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerMaggie(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerHomer(), false);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerMarge(), false);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerLisa(), false);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerMaggie(), false);
-        PreferencesEntry.BEGINNER_MODE.setValue(getContollerBart(), false);
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);
     }
 
