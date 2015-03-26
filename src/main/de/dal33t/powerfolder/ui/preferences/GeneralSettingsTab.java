@@ -125,9 +125,21 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         xBehaviorChooser = createXBehaviorChooser();
 
         if (OSUtil.isStartupItemSupported()) {
-            runOnStartupBox = new JCheckBox(
-                Translation
-                    .get("preferences.general.start_with_windows"));
+            if(OSUtil.isMacOS()) {
+                runOnStartupBox = new JCheckBox(
+                    Translation
+                    .get("preferences.general.start_with_macos")); 
+            }
+            if(OSUtil.isWindowsSystem()) {
+                runOnStartupBox = new JCheckBox(
+                    Translation
+                    .get("preferences.general.start_with_windows"));                
+            }
+            if(OSUtil.isLinux()) {
+                runOnStartupBox = new JCheckBox(
+                    Translation
+                    .get("preferences.general.start_with_linux")); 
+            }
             try {
                 runOnStartupBox.setSelected(OSUtil.hasPFStartup(getController()));
             } catch (UnsupportedOperationException uoe) {
