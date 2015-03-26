@@ -362,8 +362,6 @@ public class Constants {
 
     public static final String SESSIONS_SUB_DIR = "database/sessions";
 
-    public static final String SHIBBOLETH_USERNAME_SEPARATOR = "!";
-
     // Web stuff **************************************************************
 
     public static final String UI_LOCK_UNLOCK_URI = "/unlock";

@@ -56,7 +56,6 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -678,10 +677,7 @@ public class Account implements Serializable {
     }
 
     public boolean authByShibboleth() {
-        // Remove last part after release of 9 SP1:
-        // username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
-        return StringUtils.isNotBlank(shibbolethPersistentID)
-            || username.contains(Constants.SHIBBOLETH_USERNAME_SEPARATOR);
+        return StringUtils.isNotBlank(shibbolethPersistentID);
     }
 
     public boolean authByLDAP() {
