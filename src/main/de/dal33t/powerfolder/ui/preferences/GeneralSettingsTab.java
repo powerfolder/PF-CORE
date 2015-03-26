@@ -87,7 +87,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox<String> archiveCleanupCombo;
     private Action cleanupAction;
     private JComboBox<Locale> languageChooser;
-    private JComboBox<String> modeChooser;
+    private JCheckBox modeChooser;
     
     private boolean needsRestart;
 
@@ -192,7 +192,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         cleanupAction = new MyCleanupAction(getController());
 
         // +++ PFC-2385
-        modeChooser = createModeChooser();
+        modeChooser = new JCheckBox();
+        modeChooser.setSelected(PreferencesEntry.MODE_SELECT.getValueBoolean(getController()));
+        modeChooser.setText(Translation.get("preferences_show_advaned_options"));
         // END PFC-2385
     }
 
@@ -552,30 +554,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             boolean expertModeActive = PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
             boolean miniamlModeActive = PreferencesEntry.BEGINNER_MODE.getValueBoolean(getController());
 
-            index = modeChooser.getSelectedIndex();
-            switch (index) {
-                case 1 :
-                    PreferencesEntry.EXPERT_MODE.setValue(getController(), false);
-                    PreferencesEntry.BEGINNER_MODE.setValue(getController(), false);
-                    if (expertModeActive || miniamlModeActive) {
-                        needsRestart = true;
-                    }
-                    break;
-                case 2 :
-                    PreferencesEntry.EXPERT_MODE.setValue(getController(), true);
-                    PreferencesEntry.BEGINNER_MODE.setValue(getController(), false);
-                    if (!expertModeActive || miniamlModeActive) {
-                        needsRestart = true;
-                    }
-                    break;
-                case 0 :
-                default :
-                    PreferencesEntry.EXPERT_MODE.setValue(getController(), false);
-                    PreferencesEntry.BEGINNER_MODE.setValue(getController(), true);
-                    if (expertModeActive || !miniamlModeActive) {
-                        needsRestart = true;
-                    }
-                    break;
+            if(modeChooser.isSelected()) {
+                PreferencesEntry.EXPERT_MODE.setValue(getController(), true);
+                PreferencesEntry.BEGINNER_MODE.setValue(getController(), false); 
+                if (expertModeActive || miniamlModeActive) {
+                    needsRestart = true;
+                }
+            } else {
+                PreferencesEntry.EXPERT_MODE.setValue(getController(), false);
+                PreferencesEntry.BEGINNER_MODE.setValue(getController(), true);
+                if (expertModeActive || !miniamlModeActive) {
+                    needsRestart = true;
+                }
             }
         }
         // End: PFC-2385

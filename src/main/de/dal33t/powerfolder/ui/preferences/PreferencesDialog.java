@@ -103,14 +103,12 @@ public class PreferencesDialog extends BaseDialog {
     public JComponent getContent() {
         initComponents();
 
-        if (PreferencesEntry.BEGINNER_MODE
-            .getValueBoolean(getController())
-            && !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
+        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()))
         {
+            return tabbedPane;
+        } else {
             generalSettingsTab.getUIPanel().setBorder(Borders.createEmptyBorder("14dlu, 14dlu, 14dlu, 14dlu"));
             return generalSettingsTab.getUIPanel();
-        } else {
-            return tabbedPane;
         }
     }
 
