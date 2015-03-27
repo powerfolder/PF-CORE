@@ -59,7 +59,6 @@ public class ProblemsTab extends PFUIComponent {
 
     private MyOpenProblemAction openProblemAction;
     private MyResolveProblemAction resolveProblemAction;
-    private MyClearAllProblemsAction clearAllProblemsAction;
 
     private FolderInfo folderInfo;
     private final ProblemsTable problemsTable;
@@ -94,7 +93,6 @@ public class ProblemsTab extends PFUIComponent {
     private void initialize() {
         openProblemAction = new MyOpenProblemAction(getController());
         resolveProblemAction = new MyResolveProblemAction(getController());
-        clearAllProblemsAction = new MyClearAllProblemsAction(getController());
 
         scrollPane = new JScrollPane(problemsTable);
 
@@ -127,7 +125,6 @@ public class ProblemsTab extends PFUIComponent {
             openBtn.setIcon(null);
             bar.addGridded(openBtn);
             bar.addRelatedGap();
-            bar.addGridded(new JButton(clearAllProblemsAction));
             bar.addRelatedGap();
         }
 
@@ -204,21 +201,6 @@ public class ProblemsTab extends PFUIComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             ProblemsTab.this.resolveProblem();
-        }
-    }
-
-    private class MyClearAllProblemsAction extends BaseAction {
-        MyClearAllProblemsAction(Controller controller) {
-            super("action_clear_all_problems", controller);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Folder folder = getController().getFolderRepository().getFolder(
-                folderInfo);
-            if (folder != null) {
-                folder.removeAllProblems();
-            }
         }
     }
 
