@@ -104,7 +104,7 @@ public class IconOverlayHandler extends PFComponent implements
                     return IconOverlayIndex.NO_OVERLAY.getIndex();
             }
         } catch (RuntimeException re) {
-            logSevere("An error occured while determening the icon overlay for file '"
+            logSevere("An error occured while determining the icon overlay for file '"
                 + pathName + "'. " + re);
             re.printStackTrace();
             return IconOverlayIndex.NO_OVERLAY.getIndex();
