@@ -416,6 +416,11 @@ public final class FileInfoFactory {
                     "Local file seems not to be in a subdir of the local powerfolder copy. Basedir: "
                         + baseDirectory + ", file: " + file);
             }
+            if (parent.getFileName() == null) {
+                throw new IllegalArgumentException(
+                    "Local file seems not to be in a subdir of the local powerfolder copy. Cannot access parent. Basedir: "
+                    +baseDirectory + ", file: " + file + ", parent: " + parent);
+            }
             fn = decodeIllegalChars(parent.getFileName().toString()) + '/' + fn;
             parent = parent.getParent();
         }
