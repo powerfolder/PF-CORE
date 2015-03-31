@@ -399,6 +399,8 @@ public final class FileInfoFactory {
     }
 
     protected static String buildFileName(Path baseDirectory, Path file) {
+        Reject.ifNull(baseDirectory, "Base directory is null");
+        Reject.ifNull(file, "File is null");
         if (file.equals(baseDirectory)) {
             return "";
         }
