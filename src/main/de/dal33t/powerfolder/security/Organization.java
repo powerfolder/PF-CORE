@@ -74,6 +74,10 @@ public class Organization implements Serializable {
     @Index(name = "IDX_ORGANIZATION_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
+    
+    // PFS-1446     
+    @Column(length = 512)
+    private String basePath;
 
     @Embedded
     @Fetch(FetchMode.JOIN)
@@ -137,6 +141,14 @@ public class Organization implements Serializable {
 
     public String getLdapDN() {
         return ldapDN;
+    }
+    
+    public String getBasePath() {
+        return basePath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
     }
 
     public OnlineStorageSubscription getOSSubscription() {
