@@ -105,6 +105,22 @@ public class PathUtilsTest extends TestCase {
         assertTrue("Process a file in directory", okay);
     }
 
+    public void testIsSameName() {
+        assertTrue(PathUtils.isSameName("abc123", "abc123"));
+        assertTrue(PathUtils.isSameName("abc123", "abc123 ()"));
+        assertTrue(PathUtils.isSameName("abc123 ()", "abc123"));
+        assertTrue(PathUtils.isSameName("abc123", "abc123 (2098324)"));
+        assertTrue(PathUtils.isSameName("abc123 (lksjdflknsef)", "abc123"));
+        assertTrue(PathUtils.isSameName("abc123", "abc123 ()"));
+        assertTrue(PathUtils.isSameName("abc123 ()", "abc123"));
+        assertTrue(PathUtils.isSameName("abc123 (123)", "abc123 (123)"));
+        assertFalse(PathUtils.isSameName("abc123", "abc123 ("));
+        assertFalse(PathUtils.isSameName("foo", "bar"));
+        assertFalse(PathUtils.isSameName("foo (123)", "bar (123)"));
+        assertFalse(PathUtils.isSameName("foo", "bar (123)"));
+        assertFalse(PathUtils.isSameName("foo (123)", "bar"));
+    }
+
     public void testGetValidEmptyDirectory() throws IOException {
         Path baseDir = Paths.get("build/test").toAbsolutePath();
         PathUtils.recursiveDelete(baseDir);

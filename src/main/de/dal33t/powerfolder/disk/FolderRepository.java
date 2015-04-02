@@ -1775,6 +1775,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             stillPresent = folderStillExists(fi);
 
             try {
+                // FIXME: Don't send rename request, if not Admin Permission
                 FolderInfo renamedFI = tryRenaming(client, file, fi, stillPresent);
 
                 if (renamedFI != null && fi != null && renamedFI.equals(fi)
@@ -1858,7 +1859,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         String newName = file.getFileName().toString();
         if (fi != null && knownFolderWithSameName == null
-            && !newName.equals(oldName) && !stillPresent)
+            && !PathUtils.isSameName(oldName, newName) && !stillPresent)
         {
             /*
              * Change the name locally before the server is called. The
@@ -1909,7 +1910,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 removeFolder(fi.getFolder(getController()), false, false);
                 removedFolderDirectories.remove(oldPath);
             } catch (RuntimeException e) {
-                logWarning("Unable to rename folder: " + oldName + ": " + e);
+                logSevere("Unable to rename folder: " + oldName + ": " + e, e);
                 throw new FolderRenameException(file, fi, e);
             }
         } else {

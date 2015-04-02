@@ -121,6 +121,59 @@ public class PathUtils {
     }
 
     /**
+     * The paths have the same name, if the condition of
+     * {@link #isSameName(String, String)} applies to only their file names.
+     * 
+     * @param path1
+     * @param path2
+     * @return {@code True} if the two parameters are the same (see
+     *         description), {@code false} otherwise.
+     */
+    public static boolean isSameName(Path path1, Path path2) {
+        Reject.ifNull(path1, "Path 1");
+        Reject.ifNull(path2, "Path 2");
+
+        Path fileName1 = path1.getFileName();
+        Path fileName2 = path2.getFileName();
+
+        if (fileName1 == null || fileName2 == null) {
+            return false;
+        }
+
+        String name1 = fileName1.toString();
+        String name2 = fileName2.toString();
+
+        return isSameName(name1, name2);
+    }
+
+    /**
+     * This method is meant to check if Folders have the same name. Folder names
+     * are equals if
+     * <ul>
+     * <li>The are lirerally equal</li>
+     * <li>One of them starts with the other, and ends with an opening and
+     * closing paranthesis containing at least one other character</li>
+     * <ul>
+     * 
+     * @param name1
+     * @param name2
+     * @return {@code True} if the two parameters are the same (see
+     *         description), {@code false} otherwise.
+     */
+    public static boolean isSameName(String name1, String name2) {
+        Reject.ifBlank(name1, "Name 1");
+        Reject.ifBlank(name2, "Name 2");
+
+        return name2.equals(name1)
+            || name2.matches(name1.replaceAll("\\(", "\\\\(").replaceAll("\\)",
+                "\\\\)")
+                + " \\(.+\\)")
+            || name1.matches(name2.replaceAll("\\(", "\\\\(").replaceAll("\\)",
+                "\\\\)")
+                + " \\(.+\\)");
+    }
+
+    /**
      * PFC-2572
      * 
      * @param path
