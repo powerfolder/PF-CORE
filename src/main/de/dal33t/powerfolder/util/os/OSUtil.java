@@ -247,8 +247,10 @@ public class OSUtil {
     {
         if (OSUtil.isWindowsSystem()) {
             WinUtils.getInstance().setPFStartup(setup, controller);
+            return;
         } else if (OSUtil.isMacOS()) {
             MacUtils.getInstance().setPFStartup(setup, controller);
+            return;
         }
 
         throw new UnsupportedOperationException(

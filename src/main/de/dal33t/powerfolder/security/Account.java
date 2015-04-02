@@ -152,6 +152,10 @@ public class Account implements Serializable {
 
     @Column(length = 1024)
     private String notes;
+    
+    // PFS-1446     
+    @Column(length = 512)
+    private String basePath;
 
     @Index(name = "IDX_ACC_ORG_ID")
     @Column(nullable = true, unique = false)
@@ -618,6 +622,14 @@ public class Account implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public String getBasePath() {
+        return basePath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
     }
 
     public String getOrganizationOID() {
