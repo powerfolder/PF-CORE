@@ -1212,7 +1212,7 @@ public class PathUtils {
         while (filename.endsWith(".")) {
             filename = filename.substring(0, filename.length() - 1);
         }
-        return filename;
+        return filename.trim();
     }
 
     public static Path removeInvalidFilenameChars(Path path) {
