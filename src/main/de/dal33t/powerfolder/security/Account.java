@@ -101,6 +101,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_PRO_USER = "proUser";
     public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_SERVER = "server";
+    public static final String PROPERTYNAME_BASE_PATH = "basePath";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
     public static final String PROPERTYNAME_OS_SUBSCRIPTION = "osSubscription";
     public static final String PROPERTYNAME_LICENSE_KEY_FILES = "licenseKeyFiles";
