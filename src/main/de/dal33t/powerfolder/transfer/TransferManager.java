@@ -1233,7 +1233,10 @@ public class TransferManager extends PFComponent {
             if (diskFile == null) {
                 return null;
             }
-
+            // PFC-2692: Check storage before doing instant scan.
+            if (folder.checkIfDeviceDisconnected()) {
+                return null;
+            }
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
                 folder.scanChangedFile(dl.file);
