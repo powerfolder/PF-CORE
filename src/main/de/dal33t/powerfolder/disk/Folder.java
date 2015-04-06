@@ -2618,7 +2618,8 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return true if auto scanning files on-the-fly is allowed now.
+     * @return true if auto scanning files on-the-fly is allowed now. Handle
+     *         with care. Check if device is actually connected when scanning.
      */
     public boolean scanAllowedNow() {
         return (!syncProfile.isManualSync() && !syncProfile.isDailySync() && !getController()
@@ -3225,6 +3226,10 @@ public class Folder extends PFComponent {
                     + localCopy.toAbsolutePath());
             }
 
+            // PFC-2692: Check if storage is still connected.
+            if (isDeviceDisconnected() || checkIfDeviceDisconnected()) {
+                return;
+            }
             if (scanAllowedNow() && scanChangedFile(localFile) != null
                 && nTried < 10)
             {

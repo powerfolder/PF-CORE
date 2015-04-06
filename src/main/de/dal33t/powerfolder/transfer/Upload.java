@@ -630,7 +630,7 @@ public class Upload extends Transfer {
             Folder folder = theFile.getFolder(getController()
                 .getFolderRepository());
             // PFC-2692: Check storage before doing instant scan.
-            if (folder.checkIfDeviceDisconnected()) {
+            if (folder.isDeviceDisconnected() || folder.checkIfDeviceDisconnected()) {
                 throw new TransferException(
                     "Storage/Device disconnected during upload");
             }
