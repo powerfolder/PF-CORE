@@ -133,7 +133,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             if(OSUtil.isWindowsSystem()) {
                 runOnStartupBox = new JCheckBox(
                     Translation
-                    .get("preferences.general.start_with_windows"));                
+                    .get("preferences.general.start_with_windows"));
             }
             if(OSUtil.isLinux()) {
                 runOnStartupBox = new JCheckBox(
@@ -165,7 +165,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
         locationField = createLocationField();
-        
+
         archiveCleanupCombo = new JComboBox<String>();
         archiveCleanupCombo.addItem(Translation
             .get("preferences.general.archive_cleanup_day")); // 1
@@ -205,8 +205,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // +++ PFC-2385
         modeChooser = new JCheckBox();
-        modeChooser.setSelected(PreferencesEntry.MODE_SELECT.getValueBoolean(getController()));
-        modeChooser.setText(Translation.get("preferences_show_advaned_options"));
+        modeChooser.setSelected(PreferencesEntry.EXPERT_MODE
+            .getValueBoolean(getController()));
+        modeChooser
+            .setText(Translation.get("preferences_show_advaned_options"));
         // END PFC-2385
     }
 
@@ -231,8 +233,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(
                     new JLabel(Translation
-                        .get("preferences.general.mode.title")), cc.xy(
-                        1, row));
+                        .get("preferences.general.mode.title")), cc.xy(1, row));
                 builder.add(modeChooser, cc.xy(3, row));
             }
             // End: PFC-2385
@@ -532,7 +533,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Set folder base
         FolderRepository repo = getController().getFolderRepository();
         String oldFolderBaseString = repo.getFoldersBasedirString();
-        String oldBaseDirName = repo.getFoldersBasedir().getFileName().toString();
+        Path oldBase = repo.getFoldersBasedir();
+        String oldBaseDirName;
+        if (oldBase.getFileName() != null) {
+            oldBaseDirName = oldBase.getFileName().toString();
+        } else {
+            oldBaseDirName = oldBase.toString();
+        }
         String newFolderBaseString = (String) locationModel.getValue();
         repo.setFoldersBasedir(newFolderBaseString);
         if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
@@ -546,12 +553,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             if(modeChooser.isSelected()) {
                 PreferencesEntry.EXPERT_MODE.setValue(getController(), true); 
-                if (expertModeActive) {
+                if (!expertModeActive) {
                     needsRestart = true;
                 }
             } else {
                 PreferencesEntry.EXPERT_MODE.setValue(getController(), false);
-                if (!expertModeActive) {
+                if (expertModeActive) {
                     needsRestart = true;
                 }
             }
