@@ -3112,10 +3112,26 @@ public class Folder extends PFComponent {
                         + " possible files");
                 }
 
+                int n = 0;
                 for (FileInfo remoteFile : fileList) {
                     handleFileDeletion(remoteFile, force, member, removedFiles,
                         0);
+                    
+                    // PFC-2695: Prevent long running threads
+                    n++;
+                    if (n % 100 == 0) {
+                        if (!member.isCompletelyConnected()) {
+                            logWarning("Device " + member.getNick() + " disconnected while syncing deletions.");
+                            break;
+                        }
+                    }
                 }
+            }
+            
+            // PFC-2695: Prevent long running threads
+            if (!member.isCompletelyConnected()) {
+                // disconnected go to next member
+                continue;
             }
 
             Collection<DirectoryInfo> dirList = getDirectoriesAsCollection(member);
@@ -3130,10 +3146,21 @@ public class Folder extends PFComponent {
                     list,
                     new ReverseComparator<FileInfo>(FileInfoComparator
                         .getComparator(FileInfoComparator.BY_RELATIVE_NAME)));
+                int n = 0;
                 synchronized (scanLock) {
                     for (FileInfo remoteDir : list) {
                         handleFileDeletion(remoteDir, force, member,
                             removedFiles, 0);
+
+                        // PFC-2695: Prevent long running threads
+                        n++;
+                        if (n % 100 == 0) {
+                            if (!member.isCompletelyConnected()) {
+                                logWarning("Device " + member.getNick()
+                                    + " disconnected while syncing deletions.");
+                                break;
+                            }
+                        }
                     }
                 }
             }
