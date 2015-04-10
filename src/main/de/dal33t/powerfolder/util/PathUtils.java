@@ -164,13 +164,15 @@ public class PathUtils {
         Reject.ifBlank(name1, "Name 1");
         Reject.ifBlank(name2, "Name 2");
 
-        return name2.equals(name1)
-            || name2.matches(name1.replaceAll("\\(", "\\\\(").replaceAll("\\)",
-                "\\\\)")
-                + " \\(.+\\)")
-            || name1.matches(name2.replaceAll("\\(", "\\\\(").replaceAll("\\)",
-                "\\\\)")
-                + " \\(.+\\)");
+        boolean reallySameName = name1.equals(name2);
+        boolean matchingWithOwner1 = name1.matches(name2.replaceAll("\\(",
+            "\\\\(").replaceAll("\\)", "\\\\)")
+            + " \\(.*\\)");
+        boolean matchingWithOwner2 = name2.matches(name1.replaceAll("\\(",
+            "\\\\(").replaceAll("\\)", "\\\\)")
+            + " \\(.*\\)");
+
+        return reallySameName || matchingWithOwner1 || matchingWithOwner2;
     }
 
     /**
