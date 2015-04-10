@@ -948,6 +948,12 @@ public enum ConfigurationEntry {
     HTTP_PROXY_PASSWORD("http.proxy.password"),
 
     /**
+     * PFC-1937
+     * Enable to use system proxy settings
+     */
+    HTTP_PROXY_SYSTEMPROXY("http.proxy.systemproxy", false),
+
+    /**
      * Days until auto cleanup of uploads. Zero = cleanup on completion. NOTE -
      * true cleanup days dereferenced through Constants.CLEANUP_VALUES
      */
