@@ -1853,19 +1853,26 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        String oldName = null;
-        if (fi != null) {
-            oldName = fi.getName();
+        if (fi == null) {
+            return knownFolderWithSameName;
         }
+
+        String oldName = fi.getName();
+        Folder folder = fi.getFolder(getController());
+        if (folder == null) {
+            throw new FolderRenameException(null, fi);
+        }
+        Path oldPath = folder.getLocalBase();
+
         String newName = file.getFileName().toString();
-        if (fi != null && knownFolderWithSameName == null
+        if (knownFolderWithSameName == null
             && !PathUtils.isSameName(oldName, newName) && !stillPresent)
         {
             /*
              * Change the name locally before the server is called. The
              * server will notify all clients to update their folder names.
              * Renaming the folder first prevents that the client which
-             * renamed the folder changes it via the servers update.
+             * renamed the folder changes it via the server's update.
              */
             logWarning("Renaming folder " + oldName + " to " + newName);
 
@@ -1903,19 +1910,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                     throw new FolderRenameException(file, fi);
                 }
 
-                Path oldPath = fi.getFolder(getController()).getLocalBase();
                 fi = new FolderInfo(newName, fi.getId());
                 fi.intern(true);
 
-                removeFolder(fi.getFolder(getController()), false, false);
+                removeFolder(folder, false, false);
                 removedFolderDirectories.remove(oldPath);
             } catch (RuntimeException e) {
                 logSevere("Unable to rename folder: " + oldName + ": " + e, e);
                 throw new FolderRenameException(file, fi, e);
-            }
-        } else {
-            if (fi == null) {
-                fi = knownFolderWithSameName;
             }
         }
 
@@ -2221,7 +2223,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (FolderInfo foInfo : a.getFolders()) {
             FolderInfo localFolder = foInfo.intern();
 
-            if (!localFolder.getName().equals(foInfo.getName())) {
+            if (!PathUtils.isSameName(localFolder.getName(), foInfo.getName())) {
                 logInfo("Renaming Folder " + localFolder.getName() + " to "
                     + foInfo.getName());
                 foInfo = foInfo.intern(true);
