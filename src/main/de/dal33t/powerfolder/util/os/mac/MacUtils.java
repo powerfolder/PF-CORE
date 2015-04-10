@@ -75,46 +75,6 @@ public class MacUtils extends Loggable {
     }
 
     /**
-     * Parse the system proxy configuration.
-     */
-    public void parseProxyConfig(Controller controller) {
-        try {
-            Process proxyEthernet = Runtime.getRuntime().exec(
-                new String[]{"networksetup", "-getwebproxy", "Ethernet"});
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(proxyEthernet.getInputStream()))) {
-                String line = br.readLine();
-                if (line != null && !line.startsWith("Enabled: Yes")) {
-                    throw new UnsupportedOperationException();
-                }
-
-                String proxyHost = null;
-                int proxyPort = 0;
-
-                while (line != null) {
-                    if (line.startsWith("Server: ")) {
-                        proxyHost = line.split(" ")[1];
-                    } else if (line.startsWith("Port: ")) {
-                        proxyPort = Integer.valueOf(line.split(" ")[1])
-                            .intValue();
-                    }
-
-                    line = br.readLine();
-                }
-
-                HTTPProxySettings.saveToConfig(controller, proxyHost,
-                    proxyPort, null, null);
-            } catch (IOException e) {
-                logWarning("Parsing of ethernet webproxy failed. " + e, e);
-            } catch (UnsupportedOperationException uoe) {
-                logFine("No proxy configuration found.");
-            }
-        } catch (IOException e) {
-            logWarning("Could not parse proxy settings. " + e, e);
-        }
-    }
-
-    /**
      * Create a 'PowerFolders' link in Links, pointing to the PowerFolder base
      * dir.
      *
