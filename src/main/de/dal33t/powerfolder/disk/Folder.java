@@ -3127,12 +3127,6 @@ public class Folder extends PFComponent {
                     }
                 }
             }
-            
-            // PFC-2695: Prevent long running threads
-            if (!member.isCompletelyConnected()) {
-                // disconnected go to next member
-                continue;
-            }
 
             Collection<DirectoryInfo> dirList = getDirectoriesAsCollection(member);
             if (dirList != null) {
