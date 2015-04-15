@@ -137,7 +137,6 @@ public class MainFrame extends PFUIComponent {
     private SyncIconButtonMini syncingButton;
     private JButtonMini setupButton;
     private JButtonMini pauseButton;
-    private JButtonMini syncIncompleteButton;
     private JLabel notConnectedLoggedInLabel;
     private JButtonMini noticeWarningButton;
     private JButtonMini noticeInfoButton;
@@ -224,7 +223,6 @@ public class MainFrame extends PFUIComponent {
         b.add(syncingButton, cc.xy(1, 1));
         b.add(setupButton, cc.xy(1, 1));
         b.add(pauseButton, cc.xy(1, 1));
-        b.add(syncIncompleteButton, cc.xy(1, 1));
         b.add(notConnectedLoggedInLabel, cc.xy(1, 1));
         b.add(noticeWarningButton, cc.xy(1, 1));
         b.add(noticeInfoButton, cc.xy(1, 1));
@@ -441,10 +439,6 @@ public class MainFrame extends PFUIComponent {
         allInSyncButton = new JButtonMini(myOpenFoldersBaseAction);
         allInSyncButton.setIcon(Icons.getIconById(Icons.SYNC_COMPLETE));
         allInSyncButton.setText(null);
-
-        syncIncompleteButton = new JButtonMini(myOpenFoldersBaseAction);
-        syncIncompleteButton.setIcon(Icons.getIconById(Icons.SYNC_INCOMPLETE));
-        syncIncompleteButton.setText(null);
 
         pauseButton = new JButtonMini(new MyPauseResumeAction(getController()));
         pauseButton.setIcon(Icons.getIconById(Icons.PAUSE));
@@ -712,9 +706,10 @@ public class MainFrame extends PFUIComponent {
         setupButton.setEnabled(getController().getOSClient()
             .isAllowedToCreateFolders());
         allInSyncButton.setVisible(event.equals(SyncStatusEvent.SYNCHRONIZED));
-        syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING));
-        syncingButton.spin(event.equals(SyncStatusEvent.SYNCING));
-        syncIncompleteButton.setVisible(event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
+        syncingButton.setVisible(event.equals(SyncStatusEvent.SYNCING)
+            || event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
+        syncingButton.spin(event.equals(SyncStatusEvent.SYNCING)
+            || event.equals(SyncStatusEvent.SYNC_INCOMPLETE));
         noticeWarningButton.setVisible(event.equals(SyncStatusEvent.WARNING));
         noticeInfoButton.setVisible(event.equals(SyncStatusEvent.INFORMATION));
         notConnectedLoggedInLabel.setVisible((event
@@ -754,7 +749,9 @@ public class MainFrame extends PFUIComponent {
             zyncroLabel
                 .setText(Translation.get("main_frame.choose_folders"));
             upperMainTextActionLabel.setNeverUnderline(true);
-        } else if (event.equals(SyncStatusEvent.SYNCING)) {
+        } else if (event.equals(SyncStatusEvent.SYNCING)
+            || event.equals(SyncStatusEvent.SYNC_INCOMPLETE))
+        {
             syncDate = folderRepositoryModel.getEstimatedSyncDate();
             String syncingTemp = overallSyncPercentage >= 0
                 && overallSyncPercentage < 99.5d ? Format
@@ -764,10 +761,6 @@ public class MainFrame extends PFUIComponent {
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCHRONIZED)) {
             upperText = Translation.get("main_frame.in_sync");
-            upperMainTextActionLabel.setNeverUnderline(true);
-        } else if (event.equals(SyncStatusEvent.SYNC_INCOMPLETE)) {
-            upperText = Translation
-                .get("main_frame.sync_incomplete");
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.NOT_CONNECTED)) {
             upperText = Translation.get("main_frame.connecting.text");
