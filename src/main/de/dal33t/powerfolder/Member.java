@@ -1706,10 +1706,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 final FolderFilesChanged changes = (FolderFilesChanged) message;
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
-                    logSevere("Received folder changes on "
-                        + changes.folder.getLocalizedName()
-                        + ", but not received the full filelist from "
-                        + getNick());
+                    logWarning("Received folder changes, but not received the full filelist from "
+                        + getNick() + ": " + changes);
                     return;
                 }
                 nExpected -= 1;
