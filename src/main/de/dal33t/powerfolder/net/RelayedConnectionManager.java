@@ -581,7 +581,9 @@ public class RelayedConnectionManager extends PFComponent {
             List<Member> candidates = new LinkedList<Member>();
             for (Member node : nodeManager.getNodesAsCollection()) {
                 if (node.isServer() || node.equals(defaultServer)) {
-                    if (node.isCompletelyConnected()) {
+                    if (node.isCompletelyConnected()
+                        && !(node.getPeer() instanceof AbstractRelayedConnectionHandler))
+                    {
                         candidates.add(node);
                     }
                 }
