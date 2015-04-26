@@ -100,7 +100,7 @@ public class Locking extends PFComponent {
                 lockFile);
             scanLockFile(fInfo.getFolderInfo(), lockFile);
             fireLocked(fInfo);
-            logInfo("File locked: " + fInfo);
+            logInfo("File locked: " + fInfo + " by " + by.getUsername());
             return true;
         } catch (IOException e) {
             logWarning("Unable to create lock file: " + lockFile + ". " + e);
