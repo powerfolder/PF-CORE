@@ -33,6 +33,7 @@ public enum DefaultExcludes {
     FSEVENTD("*.fseventd"),
     APDISK("*.apdisk"),
     PARTS("*.part"),
+    PARTIAL("*.partial"),
 
     /**
      * Apples iPod thumb files. http://dotwhat.net/ithmb/9058/
