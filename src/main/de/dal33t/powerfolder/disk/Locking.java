@@ -255,9 +255,6 @@ public class Locking extends PFComponent {
                 editFileName = editFileName.substring(slashIndex + 1);
             }
             for (FileInfo cFInfo : folder.getKnownFiles()) {
-                if (cFInfo.isDeleted()) {
-                    continue;
-                }
                 if (cFInfo.getRelativeName().endsWith(editFileName)) {
                     if (cFInfo.getRelativeName().contains(
                         Constants.MS_OFFICE_FILENAME_PREFIX))
