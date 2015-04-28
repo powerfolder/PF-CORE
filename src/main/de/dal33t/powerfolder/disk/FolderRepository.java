@@ -1729,7 +1729,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             return true;
         }
 
+        if (entry.getFileName() == null) {
+            return false;
+        }
+
         for (Path removed : removedFolderDirectories) {
+            if (removed.getFileName() == null) {
+                continue;
+            }
             if (removed.getFileName().equals(entry.getFileName())) {
                 isMarkedAsRemoved = true;
             }
@@ -1752,6 +1759,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderStatisticInfo info = FolderStatisticInfo.load(meta);
 
         if (info == null) {
+            return false;
+        }
+
+        if (entry.getFileName() == null) {
             return false;
         }
 
@@ -1865,6 +1876,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         Path oldPath = folder.getLocalBase();
 
         String newName = file.getFileName().toString();
+
         if (knownFolderWithSameName == null
             && !PathUtils.isSameName(oldName, newName) && !stillPresent)
         {
@@ -1874,7 +1886,7 @@ public class FolderRepository extends PFComponent implements Runnable {
              * Renaming the folder first prevents that the client which
              * renamed the folder changes it via the server's update.
              */
-            logWarning("Renaming folder " + oldName + " to " + newName);
+            logWarning("Renaming Folder '" + oldName + "' to '" + newName + "'");
 
             FolderService foServ = client.getFolderService();
             try {
@@ -2219,7 +2231,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         accountSyncLock.lock();
-
         for (FolderInfo foInfo : a.getFolders()) {
             FolderInfo localFolder = foInfo.intern();
 
