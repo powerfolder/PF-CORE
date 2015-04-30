@@ -108,7 +108,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         scanFolder(getFolderOf("0"));
         final FileInfo fInfo = getFolderOf("0").getKnownFiles().iterator()
             .next();
-        assertFileMatch(tmpFile, fInfo, getContoller("0"));
+        assertFileMatch(tmpFile, fInfo, getController("0"));
 
         for (int i = 0; i < 4; i++) {
             getFolderOf("" + i).setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
@@ -142,7 +142,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
                 for (Controller c : getControllers()) {
-                    if (c == getContoller("4")) {
+                    if (c == getController("4")) {
                         if (c.getTransferManager().countActiveDownloads() != 0)
                         {
                             return false;
@@ -167,13 +167,13 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                DownloadManager man = getContoller("4").getTransferManager()
+                DownloadManager man = getController("4").getTransferManager()
                     .getActiveDownload(fInfo);
                 if (man == null || man.getSources().size() != 4) {
                     return false;
                 }
                 for (Controller c : getControllers()) {
-                    if (c == getContoller("4")) {
+                    if (c == getController("4")) {
                         continue;
                     }
                     if (c.getTransferManager().getActiveUploads().size() != 1) {
@@ -185,14 +185,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
             public String message() {
                 return ""
-                    + getContoller("4").getTransferManager().getActiveDownload(
+                    + getController("4").getTransferManager().getActiveDownload(
                         fInfo);
             }
         });
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                DownloadManager man = getContoller("4").getTransferManager()
+                DownloadManager man = getController("4").getTransferManager()
                     .getActiveDownload(fInfo);
                 for (Download src : man.getSources()) {
                     if (src.getPendingRequests().isEmpty()) {
@@ -205,7 +205,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                DownloadManager man = getContoller("4").getTransferManager()
+                DownloadManager man = getController("4").getTransferManager()
                     .getActiveDownload(fInfo);
                 for (Download dl : man.getSources()) {
                     if (dl.getCounter().getBytesTransferred() <= 0) {
@@ -215,13 +215,13 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 return true;
             }
         });
-        assertEquals(1, getContoller("4").getTransferManager()
+        assertEquals(1, getController("4").getTransferManager()
             .countActiveDownloads());
 
         disconnectAll();
 
         // Was auto download
-        assertEquals(0, getContoller("4").getTransferManager()
+        assertEquals(0, getController("4").getTransferManager()
             .getPendingDownloads().size());
 
         connectAll();
@@ -230,13 +230,13 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                return getContoller("4").getTransferManager()
+                return getController("4").getTransferManager()
                     .countCompletedDownloads() == 1;
             }
 
             public String message() {
                 return ""
-                    + getContoller("4").getTransferManager()
+                    + getController("4").getTransferManager()
                         .countCompletedDownloads();
             }
         });
@@ -304,14 +304,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         disconnectAll();
         tmpFile = getFolderOf("1").getFile(fInfo).getDiskFile(
-            getContoller("1").getFolderRepository());
+            getController("1").getFolderRepository());
         Files.delete(tmpFile);
 
         tmpFile = TestHelper.createRandomFile(tmpFile.getParent(), tmpFile
             .getFileName().toString());
         scanFolder(getFolderOf("1"));
 
-        assertTrue(connectOrFail(getContoller("1"), getContoller("5")));
+        assertTrue(connectOrFail(getController("1"), getController("5")));
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
@@ -331,14 +331,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
         });
 
         tmpFile = getFolderOf("5").getFile(fInfo).getDiskFile(
-            getContoller("5").getFolderRepository());
+            getController("5").getFolderRepository());
         Files.delete(tmpFile);
 
         tmpFile = TestHelper.createRandomFile(tmpFile.getParent(), tmpFile
             .getFileName().toString());
         scanFolder(getFolderOf("5"));
 
-        assertTrue(connectOrFail(getContoller("4"), getContoller("5")));
+        assertTrue(connectOrFail(getController("4"), getController("5")));
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -396,9 +396,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     new FileInfo[0]);
                 if (fi.length > 0) {
                     FileInfo chosen = fi[prng.nextInt(fi.length)];
-                    if (chosen.diskFileExists(getContoller(cont))) {
+                    if (chosen.diskFileExists(getController(cont))) {
                         RandomAccessFile raf = new RandomAccessFile(chosen
-                            .getDiskFile(getContoller(cont)
+                            .getDiskFile(getController(cont)
                                 .getFolderRepository()).toFile(), "rw");
                         if (prng.nextDouble() > 0.3) {
                             raf.seek(prng.nextInt(1000000 - 1000));
@@ -425,7 +425,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 boolean test = true;
                 int ups = 0, downs = 0;
                 for (int i = 0; i < numC; i++) {
-                    TransferManager tm = getContoller("" + i)
+                    TransferManager tm = getController("" + i)
                         .getTransferManager();
                     if (tm.countActiveDownloads() != 0
                         || tm.countLiveUploads() != 0)
@@ -452,7 +452,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 StringBuilder b = new StringBuilder();
                 int ups = 0, downs = 0;
                 for (int i = 0; i < numC; i++) {
-                    TransferManager tm = getContoller("" + i)
+                    TransferManager tm = getController("" + i)
                         .getTransferManager();
                     // out.println("Controller " + i + ":");
                     // out.println("Downloads:");
@@ -517,17 +517,17 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     b.append(i).append(": ").append(
                         getFolderOf("" + i).getKnownItemCount());
                     b.append(", ").append(
-                        getContoller("" + i).getTransferManager()
+                        getController("" + i).getTransferManager()
                             .getActiveDownloads());
                     b.append(", ").append(
-                        (getContoller("" + i).getTransferManager()
+                        (getController("" + i).getTransferManager()
                             .getActiveUploads())).append('\n');
                 }
                 return b.toString() + " " + TestHelper.deadlockCheck();
             }
         });
 
-        assertEquals(0, getContoller("0").getTransferManager()
+        assertEquals(0, getController("0").getTransferManager()
             .countCompletedDownloads());
         TestHelper.assertIncompleteFilesGone(this);
         TestHelper.cleanTestDir();
@@ -568,9 +568,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
                 FileInfo[] fi = getFolderOf(cont).getKnownFiles().toArray(
                     new FileInfo[0]);
-                if (fi.length > 0 && fi[0].diskFileExists(getContoller(cont))) {
+                if (fi.length > 0 && fi[0].diskFileExists(getController(cont))) {
                     RandomAccessFile raf = new RandomAccessFile(fi[0]
-                        .getDiskFile(getContoller(cont).getFolderRepository()).toFile(),
+                        .getDiskFile(getController(cont).getFolderRepository()).toFile(),
                         "rw");
                     if (prng.nextDouble() > 0.3) {
                         raf.seek(prng.nextInt(1000000 - 1000));
@@ -610,10 +610,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
                             b.append(i).append(": ").append(
                                 getFolderOf("" + i).getKnownItemCount());
                             b.append(", ").append(
-                                getContoller("" + i).getTransferManager()
+                                getController("" + i).getTransferManager()
                                     .getActiveDownloads());
                             b.append(", ").append(
-                                getContoller("" + i).getTransferManager()
+                                getController("" + i).getTransferManager()
                                     .getActiveUploads());
                         }
                         return b.toString();
@@ -661,7 +661,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     {
                         Path fb = getFolderOf("" + i).getKnownFiles()
                             .iterator().next().getDiskFile(
-                                getContoller("" + i).getFolderRepository());
+                                getController("" + i).getFolderRepository());
                         b.append("Filecheck of " + i + ": ");
                         if (reference == null) {
                             reference = fb;
@@ -681,10 +681,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
                         getFolderOf("" + i).getKnownFiles().iterator().next()
                             .getVersion());
                     b.append(", uploads: ");
-                    b.append(getContoller("" + i).getTransferManager()
+                    b.append(getController("" + i).getTransferManager()
                         .getActiveUploads());
                     b.append(", downloads: ");
-                    b.append(getContoller("" + i).getTransferManager()
+                    b.append(getController("" + i).getTransferManager()
                         .getActiveDownloads());
                 }
                 return b.toString() + " " + TestHelper.deadlockCheck();
@@ -693,7 +693,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.waitForCondition(numC * 3 + 30, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {
-                    TransferManager tm = getContoller("" + i)
+                    TransferManager tm = getController("" + i)
                         .getTransferManager();
                     if (tm.countActiveDownloads() != 0
                         || tm.getActiveUploads().size() != 0)
@@ -710,7 +710,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     if (i > 0) {
                         b.append(", ");
                     }
-                    TransferManager tm = getContoller("" + i)
+                    TransferManager tm = getController("" + i)
                         .getTransferManager();
                     b.append(i).append(": ").append(
                         tm.countActiveDownloads() + "|"
@@ -720,11 +720,11 @@ public class SwarmingTest extends MultipleControllerTestCase {
             }
         });
         Path a = getFolderOf("0").getKnownFiles().iterator().next()
-            .getDiskFile(getContoller("0").getFolderRepository());
+            .getDiskFile(getController("0").getFolderRepository());
         for (int i = 1; i < numC; i++) {
             TestHelper.compareFiles(a, getFolderOf("" + i).getKnownFiles()
                 .iterator().next().getDiskFile(
-                    getContoller("" + i).getFolderRepository()));
+                    getController("" + i).getFolderRepository()));
         }
 
         TestHelper.assertIncompleteFilesGone(this);

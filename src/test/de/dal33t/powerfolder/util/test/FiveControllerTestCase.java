@@ -92,7 +92,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         testFolder = null;
     }
 
-    private void startController(String id) throws IOException {
+    protected void startController(String id) throws IOException {
         PathUtils.copyFile(Paths.get("src/test-resources/Controller" + id + ".config"),
             Paths.get("build/test/Controller" + id + "/PowerFolder.config"));
         Path miscDic = Controller.getMiscFilesLocation().resolve(
@@ -135,23 +135,23 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     }
 
     protected Controller getContollerBart() {
-        return getContoller(BART_ID);
+        return getController(BART_ID);
     }
 
     protected Controller getContollerHomer() {
-        return getContoller(HOMER_ID);
+        return getController(HOMER_ID);
     }
 
     protected Controller getContollerMarge() {
-        return getContoller(MARGE_ID);
+        return getController(MARGE_ID);
     }
 
     protected Controller getContollerLisa() {
-        return getContoller(LISA_ID);
+        return getController(LISA_ID);
     }
 
     protected Controller getContollerMaggie() {
-        return getContoller(MAGGIE_ID);
+        return getController(MAGGIE_ID);
     }
 
     protected Folder getFolderAtBart() {

@@ -159,7 +159,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             + "/PowerFolder");
     }
 
-    protected Controller getContoller(String id) {
+    protected Controller getController(String id) {
         return controllers.get(id);
     }
 
@@ -254,7 +254,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     }
 
     protected Folder getFolderOf(String id) {
-        return getContoller(id).getFolderRepository().getFolder(mctFolder);
+        return getController(id).getFolderRepository().getFolder(mctFolder);
     }
 
     protected Folder getFolderOf(Controller c) {
