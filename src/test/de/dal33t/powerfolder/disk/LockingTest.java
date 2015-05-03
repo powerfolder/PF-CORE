@@ -139,10 +139,11 @@ public class LockingTest extends TwoControllerTestCase {
 
             @Override
             public String message() {
-                return "File wasn't unlocked at bart: " + testFInfo;
+                return "File wasn't unlocked at bart: " + testFInfo
+                    + ". locked now? " + lockingBart.isLocked(testFInfo);
             }
         });
-
+        
         // Test
         assertFalse(lockingLisa.isLocked(testFInfo));
         assertNull(lockingLisa.getLock(testFInfo));

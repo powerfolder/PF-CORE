@@ -2623,7 +2623,7 @@ public class Folder extends PFComponent {
      */
     public boolean scanAllowedNow() {
         return (!syncProfile.isManualSync() && !syncProfile.isDailySync() && !getController()
-            .isPaused()) || schemaZyncro;
+            .isPaused()) || schemaZyncro || currentInfo.isMetaFolder();
     }
 
     /**
@@ -3251,9 +3251,19 @@ public class Folder extends PFComponent {
             if (isDeviceDisconnected() || checkIfDeviceDisconnected()) {
                 return;
             }
-            if (scanAllowedNow() && scanChangedFile(localFile) != null
+            if (scanAllowedNow()
+                && (localFile = scanChangedFile(localFile)) != null
                 && nTried < 10)
             {
+                // PFC-2706 / PFC-2705
+                if (remoteFile.getFolderInfo().isMetaFolder()
+                    && localFile != null && localFile.inSyncWithDisk(localCopy))
+                {
+                    MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                        getController());
+                    mfdh.handleMetaFolderFileInfo(remoteFile);
+                }
+
                 // Scan an trigger a sync of deletions later (again).
                 handleFileDeletion(remoteFile, force, member, removedFiles,
                     ++nTried);
@@ -3386,7 +3396,13 @@ public class Folder extends PFComponent {
                         logWarning("Unable to delete local file "
                             + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
-                        if (schemaZyncro) {
+                        if (!schemaZyncro) {
+                            if (nTried < 10) {
+                                // Re-try again, at least 10 times.
+                                handleFileDeletion(remoteFile, force, member,
+                                    removedFiles, ++nTried);
+                            }
+                        } else {
 
                             // SPECIAL HANDLING FOR ZYNCRO
 
@@ -4437,8 +4453,23 @@ public class Folder extends PFComponent {
                 try {
                     Files.deleteIfExists(file);
                 } catch (IOException ioe) {
-                    logSevere("Unable to delete file " + file + ". " + ioe);
-                    return false;
+                    // PFC-2706: Improved handling of exception.
+                    if (isFine()) {
+                        logFine("IOException while deleting file " + file
+                            + ". " + ioe);
+                    }
+                    if (checkIfDeviceDisconnected()) {
+                        logWarning("Storage disconnected: Unable to delete file "
+                            + file + ". " + ioe);
+                        return false;
+                    } else {
+                        boolean deletedOnDisk = Files.notExists(file);
+                        if (!deletedOnDisk) {
+                            logSevere("Unable to delete file " + file + ". "
+                                + ioe);
+                        }
+                        return deletedOnDisk;
+                    }
                 }
             }
             return true;
