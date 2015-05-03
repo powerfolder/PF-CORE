@@ -100,8 +100,10 @@ public class Locking extends PFComponent {
                 lockFile);
             scanLockFile(fInfo.getFolderInfo(), lockFile);
             fireLocked(fInfo);
-            logInfo("File locked: " + fInfo + " by "
-                + (by != null ? by.getUsername() : ""));
+            if (isInfo()) {
+                logInfo("File locked: " + fInfo + " by "
+                    + (by != null ? by.getUsername() : "?"));
+            }
             return true;
         } catch (IOException e) {
             logWarning("Unable to create lock file: " + lockFile + ". " + e);
@@ -256,6 +258,9 @@ public class Locking extends PFComponent {
                 editFileName = editFileName.substring(slashIndex + 1);
             }
             for (FileInfo cFInfo : folder.getKnownFiles()) {
+                if (cFInfo.isDeleted()) {
+                    continue;
+                }
                 if (cFInfo.getRelativeName().endsWith(editFileName)) {
                     if (cFInfo.getRelativeName().contains(
                         Constants.MS_OFFICE_FILENAME_PREFIX))
@@ -279,9 +284,9 @@ public class Locking extends PFComponent {
         }
 
         if (localFInfo.isDeleted()) {
-            editFInfo.unlock(getController());
+            unlock(editFInfo);
         } else {
-            editFInfo.lock(getController());
+            lock(editFInfo);
         }
     }
 
@@ -321,14 +326,15 @@ public class Locking extends PFComponent {
         }
 
         if (localFInfo.isDeleted()) {
-            editFInfo.unlock(getController());
+            unlock(editFInfo);
         } else {
-            editFInfo.lock(getController());
+            lock(editFInfo);
         }
     }
 
     /**
-     * Check if the file was locked by the logged in user on the same device.
+     * PFC-2614: Check if the file was locked by the logged in user on the same
+     * device.
      * 
      * @param editFInfo
      *            The file to check for a lock
@@ -337,23 +343,17 @@ public class Locking extends PFComponent {
      */
     private boolean isAutoLockingAllowed(FileInfo editFInfo) {
         Lock currentLock = editFInfo.getLock(getController());
-
         if (currentLock == null) {
             return true;
         }
 
-        boolean bySameDevice = currentLock.getMemberInfo().equals(
-            getController().getMySelf());
+        boolean bySameDevice = getController().getMySelf().getInfo()
+            .equals(currentLock.getMemberInfo());
         AccountInfo lockAccount = currentLock.getAccountInfo();
         ServerClient sc = getController().getOSClient();
         AccountInfo loggedInAccount = sc.getAccountInfo();
 
-        if (lockAccount == null || loggedInAccount == null) {
-            return false;
-        }
-
-        boolean bySameAccount = lockAccount.equals(loggedInAccount);
-
+        boolean bySameAccount = Util.equals(lockAccount, loggedInAccount);
         return bySameDevice && bySameAccount;
     }
 

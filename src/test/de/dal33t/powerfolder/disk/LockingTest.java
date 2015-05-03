@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.disk;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -154,6 +155,81 @@ public class LockingTest extends TwoControllerTestCase {
         assertTrue(lockingBart.unlock(testFInfo));
         assertEquals(1, lockingListenerBart.unlocked.size());
         assertEquals(1, lockingListenerBart.locked.size());
+    }
+    
+    public void testAutoLockMSOffice() throws IOException {
+        lockingListenerLisa.locked.clear();
+        lockingListenerLisa.unlocked.clear();
+        lockingListenerLisa.forbidden.clear();
+        lockingListenerBart.locked.clear();
+        lockingListenerBart.unlocked.clear();
+        lockingListenerBart.forbidden.clear();
+
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1);
+        final FileInfo testFInfo = FileInfoFactory.lookupInstance(
+            getFolderAtBart(), testFile);
+        TestHelper.scanFolder(getFolderAtBart());
+
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return 1 == getFolderAtLisa().getIncomingFiles().size();
+            }
+
+            @Override
+            public String message() {
+                return "There are "
+                    + getFolderAtLisa().getIncomingFiles().size()
+                    + " incoming files. Should be 1";
+            }
+        });
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return 0 == getFolderAtLisa().getIncomingFiles().size();
+            }
+
+            @Override
+            public String message() {
+                return "There are "
+                    + getFolderAtLisa().getIncomingFiles().size()
+                    + " incoming files. Should be 0";
+            }
+        });
+
+        assertTrue(Files.exists(getFolderAtLisa().getLocalBase().resolve(
+            testFile.getFileName())));
+        TestHelper.waitMilliSeconds(500);
+
+        Path officeLockFile = TestHelper.createRandomFile(getFolderAtLisa()
+            .getLocalBase(), Constants.MS_OFFICE_FILENAME_PREFIX
+            + testFile.getFileName().toString().substring(2));
+
+        TestHelper.scanFolder(getFolderAtLisa());
+        TestHelper.waitMilliSeconds(500);
+
+        assertEquals(0, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(0, lockingListenerBart.forbidden.size());
+        assertEquals(0, lockingListenerLisa.unlocked.size());
+        assertEquals(1, lockingListenerLisa.locked.size());
+        assertEquals(0, lockingListenerLisa.forbidden.size());
+
+        // PFC-2705: Now remove the lock file
+        Files.delete(officeLockFile);
+        TestHelper.scanFolder(getFolderAtLisa());
+        TestHelper.waitMilliSeconds(500);
+
+        assertEquals(0, lockingListenerLisa.forbidden.size());
+        assertEquals(1, lockingListenerLisa.unlocked.size());
+        assertEquals(1, lockingListenerLisa.locked.size());
+        assertEquals(0, lockingListenerBart.forbidden.size());
+        assertEquals(1, lockingListenerBart.unlocked.size());
+        assertEquals(1, lockingListenerBart.locked.size());
+
+        assertFalse(testFInfo.isLocked(getContollerLisa()));
+        assertFalse(testFInfo.isLocked(getContollerBart()));
     }
 
     public void testAutoLockForbiddenMSOffice() {
