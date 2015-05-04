@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
  *
@@ -169,7 +168,7 @@ public class LoginUtil {
         }
         if (StringUtils.isNotBlank(passwordObf)) {
             if (url.contains("?")) {
-                url += "&";                
+                url += "&";
             } else {
                 url += "?";
             }
@@ -438,5 +437,27 @@ public class LoginUtil {
      */
     private static MessageDigest getPreferredDigest() {
         return getDigest(SHA256_HASH_DIGEST);
+    }
+
+    /**
+     * PFS-1643: Password policy (unix). 1 digit, 1 lower case, 1 upper case, 1
+     * special char, at least 8 character
+     * 
+     * @param password
+     * @return
+     */
+    public static boolean satisfiesUnixPolicy(String password) {
+        String pattern = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S*?[^\\w\\*])(?=\\S+$).{5,10}";
+
+        // Explanations
+        // (?=.*[0-9]) a digit must occur at least once
+        // (?=.*[a-z]) a lower case letter must occur at least once
+        // (?=.*[A-Z]) an upper case letter must occur at least once
+        // (?=\S*?[^\w\*]) a special character must occur at least once (more)
+        // (?=.*[@#$%^&+=]) a special character must occur at least once
+        // (?=\\S+$) no whitespace allowed in the entire string
+        // .{8,} at least 8 characters
+
+        return password.matches(pattern);
     }
 }

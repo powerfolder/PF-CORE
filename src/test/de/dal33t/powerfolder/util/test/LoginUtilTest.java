@@ -68,4 +68,14 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil
             .isOTPValid("30957s0cuxpcfeärl43#r3ä2ö43täö4eäföedäfgsdägösdägösäfdglsd08g7sa0g7w098470387"));
     }
+
+    public void testPasswordPolicy() {
+        assertFalse(LoginUtil.satisfiesUnixPolicy("12"));
+        assertFalse(LoginUtil.satisfiesUnixPolicy("12345678"));
+        assertFalse(LoginUtil.satisfiesUnixPolicy("ksjfdfgdgkjsrägklöjwerägjrägö100%&sdfsjföklsdj"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("aaZZa44@"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("!2e4567B"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("@Powerfolderis1337"));
+        
+    }
 }
