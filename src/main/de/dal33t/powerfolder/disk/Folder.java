@@ -4457,13 +4457,9 @@ public class Folder extends PFComponent {
                         logWarning("Storage disconnected: Unable to delete file "
                             + file + ". " + ioe);
                         return false;
-                    } else {
-                        boolean deletedOnDisk = Files.notExists(file);
-                        if (!deletedOnDisk) {
-                            logSevere("Unable to delete file " + file + ". "
-                                + ioe);
-                        }
-                        return deletedOnDisk;
+                    } else if (Files.exists(file)) {
+                        logSevere("Unable to delete file " + file + ". " + ioe);
+                        return false;
                     }
                 }
             }
