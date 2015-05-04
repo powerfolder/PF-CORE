@@ -3090,7 +3090,6 @@ public class Folder extends PFComponent {
         }
 
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
-        // synchronized (scanLock) {
         for (Member member : collection) {
             if (!member.isCompletelyConnected()) {
                 // disconnected go to next member
@@ -3119,11 +3118,10 @@ public class Folder extends PFComponent {
                     
                     // PFC-2695: Prevent long running threads
                     n++;
-                    if (n % 100 == 0) {
-                        if (!member.isCompletelyConnected()) {
-                            logWarning("Device " + member.getNick() + " disconnected while syncing deletions.");
-                            break;
-                        }
+                    if (n % 100 == 0 && !member.isCompletelyConnected()) {
+                        logWarning("Device " + member.getNick()
+                            + " disconnected while syncing deletions.");
+                        break;
                     }
                 }
             }
@@ -3148,18 +3146,15 @@ public class Folder extends PFComponent {
 
                         // PFC-2695: Prevent long running threads
                         n++;
-                        if (n % 100 == 0) {
-                            if (!member.isCompletelyConnected()) {
-                                logWarning("Device " + member.getNick()
-                                    + " disconnected while syncing deletions.");
-                                break;
-                            }
+                        if (n % 100 == 0 && !member.isCompletelyConnected()) {
+                            logWarning("Device " + member.getNick()
+                                + " disconnected while syncing deletions.");
+                            break;
                         }
                     }
                 }
             }
         }
-        // }
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
