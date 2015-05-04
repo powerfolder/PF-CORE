@@ -175,27 +175,20 @@ public class LockingTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return 1 == getFolderAtLisa().getIncomingFiles().size();
+                return !getContollerBart().getTransferManager()
+                    .getCompletedUploadsCollection().isEmpty()
+                    && !getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection().isEmpty();
             }
 
             @Override
             public String message() {
-                return "There are "
-                    + getFolderAtLisa().getIncomingFiles().size()
-                    + " incoming files. Should be 1";
-            }
-        });
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return 0 == getFolderAtLisa().getIncomingFiles().size();
-            }
-
-            @Override
-            public String message() {
-                return "There are "
-                    + getFolderAtLisa().getIncomingFiles().size()
-                    + " incoming files. Should be 0";
+                return "Bart: Completed uploads: "
+                    + getContollerBart().getTransferManager()
+                        .getCompletedUploadsCollection()
+                    + ". Lisa: Completed downloads: "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection();
             }
         });
 
@@ -251,28 +244,20 @@ public class LockingTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return 1 == getFolderAtLisa().getIncomingFiles().size();
+                return !getContollerBart().getTransferManager()
+                    .getCompletedUploadsCollection().isEmpty()
+                    && !getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection().isEmpty();
             }
 
             @Override
             public String message() {
-                return "There are "
-                    + getFolderAtLisa().getIncomingFiles().size()
-                    + " incoming files. Should be 1";
-            }
-        });
-
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return 0 == getFolderAtLisa().getIncomingFiles().size();
-            }
-
-            @Override
-            public String message() {
-                return "There are "
-                    + getFolderAtLisa().getIncomingFiles().size()
-                    + " incoming files. Should be 0";
+                return "Bart: Completed uploads: "
+                    + getContollerBart().getTransferManager()
+                        .getCompletedUploadsCollection()
+                    + ". Lisa: Completed downloads: "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection();
             }
         });
 
