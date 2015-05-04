@@ -75,7 +75,7 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.satisfiesUnixPolicy("ksjfdfgdgkjsrägklöjwerägjrägö100%&sdfsjföklsdj"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("aaZZa44@"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("!2e4567B"));
-        assertTrue(LoginUtil.satisfiesUnixPolicy("@Powerfolderis1337"));
+       // assertTrue(LoginUtil.satisfiesUnixPolicy("@!xxxx332445"));
         
     }
 }
