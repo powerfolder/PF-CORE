@@ -1786,14 +1786,16 @@ public class FolderRepository extends PFComponent implements Runnable {
             stillPresent = folderStillExists(fi);
 
             try {
-                // FIXME: Don't send rename request, if not Admin Permission
-                FolderInfo renamedFI = tryRenaming(client, file, fi, stillPresent);
+                if (fi != null && fi.getFolder(controller) != null) {
+                    // FIXME: Don't send rename request, if not Admin Permission
+                    FolderInfo renamedFI = tryRenaming(client, file, fi, stillPresent);
 
-                if (renamedFI != null && fi != null && renamedFI.equals(fi)
-                    && !renamedFI.getName().equals(fi.getName()))
-                {
-                    fi = renamedFI;
-                    renamed = true;
+                    if (renamedFI != null && fi != null && renamedFI.equals(fi)
+                        && !renamedFI.getName().equals(fi.getName()))
+                    {
+                        fi = renamedFI;
+                        renamed = true;
+                    }
                 }
             } catch (FolderRenameException fre) {
                 logInfo("Could not rename Folder " + fre, fre);
@@ -1871,7 +1873,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String oldName = fi.getName();
         Folder folder = fi.getFolder(getController());
         if (folder == null) {
-            throw new FolderRenameException(null, fi);
+            throw new FolderRenameException(file, fi);
         }
         Path oldPath = folder.getLocalBase();
 
