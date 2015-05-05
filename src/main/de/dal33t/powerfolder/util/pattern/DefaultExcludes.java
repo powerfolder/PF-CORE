@@ -34,6 +34,7 @@ public enum DefaultExcludes {
     APDISK("*.apdisk"),
     PARTS("*.part"),
     PARTIAL("*.partial"),
+    CRDOWNLOAD("*.crdownload"),
 
     /**
      * Apples iPod thumb files. http://dotwhat.net/ithmb/9058/
