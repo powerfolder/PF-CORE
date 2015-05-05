@@ -1231,13 +1231,6 @@ public class Controller extends PFComponent {
                 if (!verbose) {
                     return;
                 }
-                // if (cpu == null || cpu.getMaxValue() == 0) {
-                // return;
-                // }
-                // double cpuUsage = cpu.getValue() * 100 / cpu.getMaxValue();
-                // logWarning("" + cpuUsage + "% " + cpu.getValue() + " / " +
-                // cpu.getMaxValue());
-                // if (cpuUsage > 1) {
                 if (isFine()) {
                     logFine("Dataitems: "
                         + Debug.countDataitems(Controller.this));
@@ -1252,7 +1245,6 @@ public class Controller extends PFComponent {
                 } else {
                     logFine("No active threads");
                 }
-                // }
             }
         }, 1, 5, TimeUnit.MINUTES);
     }
