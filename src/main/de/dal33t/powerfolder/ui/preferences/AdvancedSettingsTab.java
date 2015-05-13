@@ -52,8 +52,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
 
     private ServerSelectorPanel severSelector;
     private JCheckBox useOnlineStorageCB;
-    private JCheckBox verboseCB;
-    private boolean originalVerbose;
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkCB;
     private JCheckBox autoExpandCB;
@@ -93,10 +91,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
         useOnlineStorageCB = new JCheckBox(Translation.get("exp.preferences.advanced.online_storage_text"));
         useOnlineStorageCB.setToolTipText(Translation.get("exp.preferences.advanced.online_storage_tip"));
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController()));
-
-        originalVerbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
-        verboseCB = SimpleComponentFactory.createCheckBox(Translation.get("exp.preferences.advanced.verbose"));
-        verboseCB.setSelected(ConfigurationEntry.VERBOSE.getValueBoolean(getController()));
 
         lockUICB = SimpleComponentFactory.createCheckBox(Translation.get("exp.preferences.advanced.ui_locked"));
         lockUICB.setSelected(ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(getController()));
@@ -196,9 +190,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
             builder.add(showHiddenFilesCB, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(verboseCB, cc.xy(3, row));
-
-            row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
 
             if (skinLabel != null && skinCombo != null) {
@@ -222,13 +213,6 @@ public class AdvancedSettingsTab extends PFUIComponent implements PreferenceTab 
     public void save() {
 
         PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(), useOnlineStorageCB.isSelected());
-
-        // Verbose logging
-        if (originalVerbose ^ verboseCB.isSelected()) {
-            // Verbose setting changed.
-            needsRestart = true;
-        }
-        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean.toString(verboseCB.isSelected()));
 
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
