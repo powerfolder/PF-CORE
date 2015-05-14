@@ -108,7 +108,7 @@ public class Constants {
     /**
      * Threads in threadpool of {@link Controller}
      */
-    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 5;
+    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 10;
 
     /**
      * The number of pixels to stay away from the screen border by default.
