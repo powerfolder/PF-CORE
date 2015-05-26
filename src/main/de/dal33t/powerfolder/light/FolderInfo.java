@@ -278,6 +278,8 @@ public class FolderInfo implements Serializable, Cloneable {
             .replace(Constants.FOLDER_PUBLIC_SHARED_FILES,
                 Translation.get("general.public_shared_files"))
             .replace(Constants.FOLDER_PERSONAL_FILES,
-                Translation.get("general.personal_files"));
+                Translation.get("general.personal_files"))
+            .replace(Constants.MAIL_ATTACHMENT_FOLDER,
+                Translation.get("mail_attachment_folder_name"));            
     }
 }
