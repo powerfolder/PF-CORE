@@ -143,14 +143,14 @@ public class IconOverlayUpdateListener extends PFComponent implements
         update(event.getFileInfo());
     }
 
-    private void update(FileInfo fInfo) {
+    private void update(final FileInfo fInfo) {
         if (OSUtil.isWindowsSystem()) {
             final Path file = fInfo.getDiskFile(getController()
                 .getFolderRepository());
 
             int current = callCount.get();
             if (current >= 100) {
-                logSevere("Creating very many threads to update the Windows Explorer. At the moment there are "
+                logWarning("Creating very many threads to update the Windows Explorer. At the moment there are "
                     + current + " threads running.");
             }
 
@@ -159,10 +159,18 @@ public class IconOverlayUpdateListener extends PFComponent implements
                 getController().getIOProvider().startIO(new Runnable() {
                     @Override
                     public void run() {
-                        if (Files.exists(file)) {
-                            WindowsNativityUtil.updateExplorer(file.toString());
+                        try {
+                            if (Files.exists(file)) {
+                                WindowsNativityUtil.updateExplorer(file
+                                    .toString());
+                            }
+                        } catch (RuntimeException re) {
+                            logFine(
+                                "Caught exception while updating single file "
+                                    + fInfo + ". " + re, re);
+                        } finally {
+                            callCount.decrementAndGet();
                         }
-                        callCount.decrementAndGet();
                     }
                 });
             }
@@ -174,7 +182,7 @@ public class IconOverlayUpdateListener extends PFComponent implements
 
             int current = callCount.get();
             if (current >= 100) {
-                logSevere("Creating very many threads to update the Windows Explorer. At the moment there are "
+                logWarning("Creating very many threads to update the Windows Explorer. At the moment there are "
                     + current + " threads running.");
             }
 
@@ -182,9 +190,15 @@ public class IconOverlayUpdateListener extends PFComponent implements
             getController().getIOProvider().startIO(new Runnable() {
                 @Override
                 public void run() {
-                    WindowsNativityUtil.updateExplorer(folder.getLocalBase()
-                        .toString());
-                    callCount.decrementAndGet();
+                    try {
+                        WindowsNativityUtil.updateExplorer(folder
+                            .getLocalBase().toString());
+                    } catch (RuntimeException re) {
+                        logFine("Caught exception while updating folder "
+                            + folder + ". " + re, re);
+                    } finally {
+                        callCount.decrementAndGet();
+                    }
                 }
             });
         }
