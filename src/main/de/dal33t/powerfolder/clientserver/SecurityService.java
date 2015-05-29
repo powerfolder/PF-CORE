@@ -85,7 +85,9 @@ public interface SecurityService {
     /**
      *
      * @return
+     * @deprecated since v 10.3 - remove at v 13
      */
+    @Deprecated
     AccountDetails loginAndGetAccountDetails(String username, Serializable credentials);
 
     /**
