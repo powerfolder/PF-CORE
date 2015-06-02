@@ -107,6 +107,14 @@ public interface SecurityService {
      */
     String requestOTP();
 
+    /**
+     * PFC-2548
+     * 
+     * @return a generic device token to be used for further authentication. May
+     *         have an expiration date.
+     */
+    String requestToken();
+
     // Nodes information retrieval ********************************************
 
     /**
