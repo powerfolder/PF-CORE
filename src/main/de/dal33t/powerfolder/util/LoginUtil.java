@@ -26,12 +26,14 @@ import java.nio.charset.CharsetEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.security.Token;
 
 /**
  * Utility class for login helpers
@@ -249,52 +251,11 @@ public class LoginUtil {
     }
 
     public static String generateOTP(long validMS) {
-        long validTill = System.currentTimeMillis() + validMS;
-        ByteBuffer buffer = ByteBuffer.allocate(8);
-        buffer.putLong(validTill);
-        byte[] vArr = buffer.array();
-
-        byte[] b1 = IdGenerator.makeIdBytes();
-        byte[] b2 = IdGenerator.makeIdBytes();
-
-        byte[] otpArr = new byte[vArr.length + b1.length + b2.length];
-
-        System.arraycopy(vArr, 0, otpArr, 0, vArr.length);
-        System.arraycopy(b1, 0, otpArr, vArr.length, b1.length);
-        System.arraycopy(b2, 0, otpArr, vArr.length + b1.length, b2.length);
-
-        String otp = Base58.encode(otpArr);
-        return otp;
+        return Token.generate(new Date(System.currentTimeMillis() + validMS));
     }
 
     public static boolean isOTPValid(String otp) {
-        if (StringUtils.isBlank(otp)) {
-            return false;
-        }
-        byte[] otpArr;
-        try {
-            otpArr = Base58.decode(otp);
-        } catch (Exception e) {
-            // Illegal OTP
-            return false;
-        }
-        if (otpArr.length < 8) {
-            return false;
-        }
-
-        long validTill;
-        try {
-            ByteBuffer buffer = ByteBuffer.allocate(8);
-            buffer.put(otpArr, 0, 8);
-            buffer.flip();// need flip
-            validTill = buffer.getLong();
-        } catch (Exception e) {
-            return false;
-        }
-
-        // System.out.println("OTP: " + otp + " Valid till: "
-        // + new Date(validTill));
-        return System.currentTimeMillis() <= validTill;
+        return !Token.isExpired(otp);
     }
 
     /**
