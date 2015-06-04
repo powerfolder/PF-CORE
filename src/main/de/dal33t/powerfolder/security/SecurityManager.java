@@ -41,25 +41,21 @@ public interface SecurityManager {
      *            the username of the login
      * @param credentials
      *            the password of the login
-     * @return the account if acces is possible, null if user could not be
+     * @return the account if access is possible, null if user could not be
      *         logged in.
      */
     Account authenticate(String username, Object credentials);
 
     /**
-     * Authenticates the user.
-     *
-     * @param username
-     *            the username of the login
-     * @param passwordMD5
-     *            the password + salt of the login encoded with MD5
-     * @param salt
-     *            a random string used to randomize passwordMD5
-     * @return the account if acces is possible, null if user could not be
-     *         logged in.
-     * @deprecated Use {@link #authenticate(String, char[])}
+     * PFC-2548: Token based authentication.
+     * 
+     * @param tokenSecret
+     *            the token secret.
+     * @return the account if access is possible, null if no user could not be
+     *         logged in by the token.
+     * @see Token
      */
-    Account authenticate(String username, String passwordMD5, String salt);
+    Account authenticate(String tokenSecret);
 
     /**
      * Logs out and clears the current session.

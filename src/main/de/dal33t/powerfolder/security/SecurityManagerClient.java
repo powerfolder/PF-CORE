@@ -91,13 +91,16 @@ public class SecurityManagerClient extends PFComponent implements
         }
         return a;
     }
+    
 
-    public Account authenticate(String username, String passwordMD5, String salt)
-    {
-        // TRAC #1921
-        throw new UnsupportedOperationException(
-            "Authentication with md5 encoded password not supported at client for "
-                + username);
+    @Override
+    public Account authenticate(String tokenSecret) {
+        throw new UnsupportedOperationException("Token authentication not supported via client yet");
+//        Account a = client.login(username, (char[])password);
+//        if (!a.isValid()) {
+//            return null;
+//        }
+//        return a;
     }
 
     public void logout() {
