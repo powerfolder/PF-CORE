@@ -96,6 +96,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
@@ -556,8 +557,10 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return false;
         }
-        return ConfigurationEntry.WEB_DAV_ENABLED
-            .getValueBoolean(getController());
+        return !isTokenLogin()
+            && OSUtil.isWindowsSystem()
+            && ConfigurationEntry.WEB_DAV_ENABLED
+                .getValueBoolean(getController());
     }
 
     /**

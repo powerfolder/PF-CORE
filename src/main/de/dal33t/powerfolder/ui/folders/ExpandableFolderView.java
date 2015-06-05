@@ -1177,7 +1177,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Cloud-only folder popup
             createWebDAVURL();
             if (StringUtils.isNotBlank(webDAVURL)) {
-                if (serverClient.supportsWebDAV() && OSUtil.isWindowsSystem()) {
+                if (serverClient.supportsWebDAV()) {
                     contextMenu.add(webdavAction).setIcon(null);
                 }
                 if (serverClient.supportsWebLogin()) {

@@ -239,8 +239,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
         mountAsWebDavLabel = new ActionLabel(getController(),
             new MyMountAsWebDavAction(getController()));
-        mountAsWebDavLabel.setVisible(serverClient.supportsWebDAV()
-            && OSUtil.isWindowsSystem());
+        mountAsWebDavLabel.setVisible(serverClient.supportsWebDAV());
     }
 
     /**
