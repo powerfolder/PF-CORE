@@ -954,8 +954,12 @@ public class ServerClient extends PFComponent {
     private Account login0(String theUsername, String thePasswordObj,
         String theToken)
     {
-        logInfo("Login with: " + theUsername
-            + (theToken != null ? (". token: " + theToken) : ""));
+        if (StringUtils.isNotBlank(theUsername)) {
+            logInfo("Login with: " + theUsername
+                + (theToken != null ? (". token: " + theToken) : ""));
+        } else {
+            logFine("Login without username");
+        }
         synchronized (loginLock) {
             loggingIn.set(true);
             String prevUsername = username;
@@ -1506,13 +1510,11 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     *
-     * @return true if the password is empty and Single Sign-on via Kerberos is disabled.
+     * @return true if the password is empty and Single Sign-on via Kerberos is
+     *         disabled.
      */
     public boolean isPasswordRequired() {
-        return StringUtils.isBlank(passwordObf)
-            && !ConfigurationEntry.KERBEROS_SSO_ENABLED
-                .getValueBoolean(getController());
+        return !hasCredentials();
     }
 
     /**
