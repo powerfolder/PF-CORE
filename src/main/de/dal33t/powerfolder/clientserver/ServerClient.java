@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  *
@@ -83,6 +82,7 @@ import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.NotLoggedInException;
 import de.dal33t.powerfolder.security.SecurityException;
+import de.dal33t.powerfolder.security.Token;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -90,6 +90,7 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -123,6 +124,8 @@ public class ServerClient extends PFComponent {
     // Tries to re-login with these if re-connection happens
     private String username;
     private String passwordObf;
+    // The token to use for authentication
+    private String tokenSecret;
 
     private String shibUsername;
     private String shibToken;
@@ -282,7 +285,7 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private boolean isRememberPassword() {
+    private boolean isKeepLoggedIn() {
         return PreferencesEntry.SERVER_REMEMBER_PASSWORD
             .getValueBoolean(getController());
     }
@@ -452,7 +455,6 @@ public class ServerClient extends PFComponent {
                 servers.add(node);
             }
         }
-        // Every day I'm shuffleing
         Collections.shuffle(servers);
         return servers;
     }
@@ -467,10 +469,10 @@ public class ServerClient extends PFComponent {
         Reject.ifNull(serverNode, "Server node is null");
         setNewServerNode(serverNode);
         this.allowServerChange = allowServerChange;
-        if (StringUtils.isBlank(username) || StringUtils.isBlank(passwordObf)) {
-            loginWithLastKnown();
+        if (hasUsername() && hasCredentials()) {
+            login0(username, passwordObf, tokenSecret);
         } else {
-            login(username, passwordObf, true);
+            loginWithLastKnown();
         }
         if (!isConnected()) {
             server.markForImmediateConnect();
@@ -824,9 +826,9 @@ public class ServerClient extends PFComponent {
      *         login failed.
      */
     public Account loginWithLastKnown() {
-
         String un = null;
         char[] pw = null;
+        String token = null;
 
         if (ConfigurationEntry.SERVER_CONNECT_USERNAME
             .hasValue(getController()))
@@ -843,6 +845,15 @@ public class ServerClient extends PFComponent {
                 if (StringUtils.isNotBlank(pws)) {
                     pw = Util.toCharArray(pws);
                 }
+            }
+        }
+
+        if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasValue(getController())) {
+            token = ConfigurationEntry.SERVER_CONNECT_TOKEN
+                .getValue(getController());
+            if (Token.isExpired(tokenSecret)) {
+                // Don't use expired token
+                token = null;
             }
         }
 
@@ -887,7 +898,7 @@ public class ServerClient extends PFComponent {
                 logInfo("Logging into server " + getServerString()
                     + ". Username: " + un);
             }
-            return login(un, pw);
+            return login0(un, LoginUtil.obfuscate(pw), token);
         }
         // Failed!
         return null;
@@ -899,6 +910,7 @@ public class ServerClient extends PFComponent {
     public void logout() {
         username = null;
         passwordObf = null;
+        tokenSecret = null;
         try {
             securityService.logout();
         } catch (Exception e) {
@@ -921,7 +933,7 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     public Account login(String theUsername, char[] thePassword) {
-        return login(theUsername, LoginUtil.obfuscate(thePassword), true);
+        return login0(theUsername, LoginUtil.obfuscate(thePassword), null);
     }
 
     /**
@@ -933,15 +945,16 @@ public class ServerClient extends PFComponent {
      * @param theUsername
      * @param thePasswordObj
      *            the obfuscated password
-     * @param saveLastLogin
-     *            if the last login should be remembered.
+     * @param theToken
+     *            the token to use for login
      * @return the identity with this username or <code>InvalidAccount</code> if
      *         login failed. NEVER returns <code>null</code>
      */
-    public Account login(String theUsername, String thePasswordObj,
-        boolean saveLastLogin)
+    private Account login0(String theUsername, String thePasswordObj,
+        String theToken)
     {
-        logFine("Login with: " + theUsername);
+        logInfo("Login with: " + theUsername
+            + (theToken != null ? (". token: " + theToken) : ""));
         synchronized (loginLock) {
             loggingIn.set(true);
             String prevUsername = username;
@@ -949,13 +962,12 @@ public class ServerClient extends PFComponent {
             try {
                 username = theUsername;
                 passwordObf = thePasswordObj;
-                if (saveLastLogin) {
-                    saveLastKnowLogin(username, passwordObf);
-                }
+                tokenSecret = theToken;
+                saveLastKnowLogin(username, null);
+                // WAS: saveLastKnowLogin(username, passwordObf);
+
                 boolean disconnected = !server.isConnected();
-                boolean pwEmpty = StringUtils.isBlank(passwordObf);
-                boolean noKerberosLogin = !isKerberosLogin();
-                if (disconnected || (pwEmpty && noKerberosLogin)) {
+                if (disconnected || !hasCredentials()) {
                     setAnonAccount();
                     fireLogin(accountDetails);
                     return accountDetails.getAccount();
@@ -1014,6 +1026,8 @@ public class ServerClient extends PFComponent {
                         byte[] serviceTicket = prepareKerberosLogin();
                         loginOk = securityService
                             .login(username, serviceTicket);
+                    } else if (isTokenLogin()) {
+                        loginOk = securityService.login(tokenSecret);
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
@@ -1066,16 +1080,38 @@ public class ServerClient extends PFComponent {
                         }
                     }
 
+                    // PFC-2548
+                    if (isKeepLoggedIn()) {
+                        if (StringUtils.isBlank(tokenSecret)) {
+                            tokenSecret = requestAndSaveToken();
+                            if (StringUtils.isNotBlank(tokenSecret)
+                                && !Token.isExpired(tokenSecret))
+                            {
+                                passwordObf = null;
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN
+                                    .setValue(getController(), tokenSecret);
+                            } else {
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN
+                                    .removeValue(getController());
+                            }
+                        }
+
+                        saveLastKnowLogin(username, passwordObf);
+                    } else {
+                        saveLastKnowLogin(username, null);
+                    }
+
                     // Fire login success
                     loggingIn.set(false);
                     fireLogin(accountDetails);
-                    getController().schedule(new Runnable() {
+
+                    getController().getIOProvider().startIO(new Runnable() {
                         @Override
                         public void run() {
                             // Also switches server
                             updateLocalSettings(accountDetails.getAccount());
                         }
-                    }, 0);
+                    });
                 } else {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
@@ -1101,10 +1137,59 @@ public class ServerClient extends PFComponent {
         }
     }
 
+    /**
+     * ATTENTION: Does NOT save the config.
+     * 
+     * @return the token or null if not possible/supported
+     */
+    private String requestAndSaveToken() {
+        try {
+            String tokenSecret = securityService.requestToken();
+            if (StringUtils.isNotBlank(tokenSecret)) {
+                logInfo("Received token for client");
+                return tokenSecret;
+            } else {
+                logWarning("Token generation disabled by server");
+            }
+        } catch (RemoteCallException e) {
+            if (e.getCause() instanceof NoSuchMethodException) {
+                logWarning("Token generation not supported by server");
+            } else {
+                logWarning("Unable to retrieve token for this device: " + e);
+            }
+        } catch (Exception e) {
+            logWarning("Unable to retrieve token for this device: " + e);
+        }
+        return null;
+    }
+
+    private boolean hasUsername() {
+        return StringUtils.isNotBlank(username);
+    }
+
+    /**
+     * @return true if this server client contains sufficient credential
+     *         information to justify an login attempt.
+     */
+    private boolean hasCredentials() {
+        return StringUtils.isNotBlank(passwordObf) || isTokenLogin()
+            || isKerberosLogin();
+    }
+
+    private boolean isTokenLogin() {
+        return StringUtils.isNotBlank(tokenSecret)
+            && StringUtils.isBlank(passwordObf);
+    }
+
     private boolean isKerberosLogin() {
         return ConfigurationEntry.KERBEROS_SSO_ENABLED
             .getValueBoolean(getController())
-            && StringUtils.isBlank(passwordObf);
+            && StringUtils.isBlank(passwordObf) && !isTokenLogin();
+    }
+    
+    private boolean isShibbolethLogin() {
+        return ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+            .hasValue(getController());
     }
 
     private byte[] prepareKerberosLogin() {
@@ -1144,11 +1229,6 @@ public class ServerClient extends PFComponent {
         } finally {
             loggingIn.set(false);
         }
-    }
-
-    private boolean isShibbolethLogin() {
-        return ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-            .hasValue(getController());
     }
 
     public boolean isAllowedToRemoveFolders() {
@@ -1451,6 +1531,11 @@ public class ServerClient extends PFComponent {
      * @return the password used in CLEAR TEXT.
      */
     public String getPasswordClearText() {
+        if (isTokenLogin()) {
+            logWarning(
+                "Token based authentication doesn't allow clear text passwords",
+                new StackDump());
+        }
         char[] pw = LoginUtil.deobfuscate(passwordObf);
         String txt = Util.toString(pw);
         LoginUtil.clear(pw);
@@ -1874,7 +1959,7 @@ public class ServerClient extends PFComponent {
                 .removeValue(getController());
         }
 
-        if (isRememberPassword() && StringUtils.isNotBlank(passwordObf)) {
+        if (isKeepLoggedIn() && StringUtils.isNotBlank(passwordObf)) {
             ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
                 getController(), passwordObf);
         } else {
@@ -1940,7 +2025,7 @@ public class ServerClient extends PFComponent {
                 logFine("Connect success to " + server.getNick());
             }
         }
-        login(username, passwordObf, true);
+        login0(username, passwordObf, tokenSecret);
     }
 
     private void fireLogin(AccountDetails details) {
@@ -2051,9 +2136,9 @@ public class ServerClient extends PFComponent {
 
         listenerSupport.serverConnected(new ServerClientEvent(this, newNode));
 
-        if (username != null && StringUtils.isNotBlank(passwordObf)) {
+        if (hasUsername() && hasCredentials()) {
             try {
-                login(username, passwordObf, true);
+                login0(username, passwordObf, tokenSecret);
                 scheduleConnectHostingServers();
             } catch (Exception ex) {
                 logWarning("Unable to login. " + ex);
@@ -2230,13 +2315,9 @@ public class ServerClient extends PFComponent {
                         return;
                     }
                     try {
-                        if (username != null
-                            && (StringUtils.isNotBlank(passwordObf) || (StringUtils
-                                .isBlank(passwordObf) && ConfigurationEntry.KERBEROS_SSO_ENABLED
-                                .getValueBoolean(getController()))))
-                        {
+                        if (hasUsername() && hasCredentials()) {
                             logInfo("Auto-Login: Logging in " + username);
-                            login(username, passwordObf, true);
+                            login0(username, passwordObf, tokenSecret);
                         }
                     } catch (RemoteCallException e) {
                         logWarning("Unable to automatically login at: "
@@ -2275,7 +2356,7 @@ public class ServerClient extends PFComponent {
         }
 
         private void autoLogin(Throwable t) {
-            if (username != null && StringUtils.isNotBlank(passwordObf)) {
+            if (hasUsername() && hasCredentials()) {
                 loginProblems++;
                 if (loginProblems > 20) {
                     logSevere("Got "
@@ -2287,7 +2368,7 @@ public class ServerClient extends PFComponent {
                 logWarning("Auto-login for " + username
                     + " required. Caused by " + t);
                 try {
-                    login(username, passwordObf, true);
+                    login0(username, passwordObf, tokenSecret);
                 } catch (Exception e) {
                     logWarning("Unable to login with " + username + " at "
                         + getServerString() + ". " + e);
