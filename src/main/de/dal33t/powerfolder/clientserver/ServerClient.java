@@ -933,6 +933,7 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     public Account login(String theUsername, char[] thePassword) {
+        ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(getController());
         return login0(theUsername, LoginUtil.obfuscate(thePassword), null);
     }
 
