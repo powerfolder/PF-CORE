@@ -32,6 +32,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -65,6 +66,7 @@ public class Token {
     private String secrect;
 
     private boolean revoked;
+    @Index(name="IDX_TOKEN_VALID_TO")
     private Date validTo;
 
     @ManyToOne
