@@ -80,20 +80,6 @@ public interface AccountService {
         String referredBy) throws RegisterFailedException;
 
     /**
-     * Logs in from a remote location.
-     *
-     * @param username
-     * @param passwordMD5
-     *            the password mixed with the salt as MD5
-     * @param salt
-     *            the salt - a random string.
-     * @return the Account with this username or null if login failed.
-     * @deprecated use {@link SecurityService#login(String, char[])}
-     */
-    @Deprecated
-    boolean login(String username, String passwordMD5, String salt);
-
-    /**
      * @return Account details about the currently logged in user.
      * @deprecated use {@link SecurityService#getAccountDetails()}
      */

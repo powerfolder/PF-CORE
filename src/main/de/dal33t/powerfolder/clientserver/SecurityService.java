@@ -47,19 +47,6 @@ public interface SecurityService {
      * Logs in from a remote location.
      *
      * @param username
-     * @param passwordMD5
-     *            the password mixed with the salt as MD5
-     * @param salt
-     *            the salt - a random string.
-     * @return if login succeeded
-     * @deprecated Use {@link #login(String, char[])}
-     */
-    boolean login(String username, String passwordMD5, String salt);
-
-    /**
-     * Logs in from a remote location.
-     *
-     * @param username
      * @param password
      *            the password
      * @throws SecurityException
