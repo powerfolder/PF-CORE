@@ -483,6 +483,11 @@ public enum ConfigurationEntry {
     SERVER_CONNECT_PASSWORD("server.connect.passwordobf"),
 
     /**
+     * PFC-2548: The token to use for authentication.
+     */
+    SERVER_CONNECT_TOKEN("server.connect.token"),
+    
+    /**
      * Password for connection (clear text)
      */
     SERVER_CONNECT_PASSWORD_CLEAR("server.connect.password"),
