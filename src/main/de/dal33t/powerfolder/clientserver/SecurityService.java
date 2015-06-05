@@ -83,6 +83,15 @@ public interface SecurityService {
     boolean login(String username, Serializable credentials);
 
     /**
+     * PFC-2548: Logs in by a token secret (device specific token).
+     * 
+     * @param tokenSecret
+     * @return {@code True} if login succeeded, {@code false} if the token is
+     *         invalid or token based authentication is disabled.
+     */
+    boolean login(String tokenSecret);
+
+    /**
      *
      * @return
      * @deprecated since v 10.3 - remove at v 13

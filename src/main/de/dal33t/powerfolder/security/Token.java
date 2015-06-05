@@ -54,6 +54,7 @@ public class Token {
 
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_SECRET = "secrect";
+
     public static final String PROPERTYNAME_REVOKED = "revoked";
     public static final String PROPERTYNAME_VALID_TO = "validTo";
     public static final String PROPERTYNAME_NODE_INFO = "nodeInfo";
@@ -257,5 +258,12 @@ public class Token {
             return true;
         }
         return System.currentTimeMillis() > validTo;
+    }
+
+    @Override
+    public String toString() {
+        return "Token [id=" + id + ", secrect=" + secrect + ", revoked="
+            + revoked + ", validTo=" + validTo + ", nodeInfo=" + nodeInfo
+            + ", accountInfo=" + accountInfo + "]";
     }
 }
