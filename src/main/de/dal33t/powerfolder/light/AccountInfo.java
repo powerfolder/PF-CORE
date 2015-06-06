@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
  */
 @Embeddable
 public class AccountInfo implements Serializable {
+    public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
 
     private static final long serialVersionUID = 100L;
