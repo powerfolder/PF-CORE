@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 
+import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -50,6 +51,7 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -346,10 +348,13 @@ public class PFWizard extends PFUIComponent {
 
     private void buildUI() {
         // Build the wizard
-        dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
-            title, false); // Wizard
+        dialog = new JDialog((Dialog)null); // Wizard
         dialog.setResizable(false);
+        dialog.setTitle(title);
         dialog.setModal(true);
+        dialog.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
+
+        getUIController().getMainFrame().getUIComponent().setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
 
         // Add i18n
         Map<String, String> i18nMap = new HashMap<String, String>();
