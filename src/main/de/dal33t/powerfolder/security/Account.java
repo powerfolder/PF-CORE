@@ -113,6 +113,7 @@ public class Account implements Serializable {
     public static final String PROPERTYNAME_TELEPHONE = "telephone";
     public static final String PROPERTYNAME_EMAILS = "emails";
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
+    public static final String PROPERTYNAME_LASTEST_TOS_VERSION = "appliedToSVersion";
 
     @Id
     private String oid;
@@ -248,6 +249,8 @@ public class Account implements Serializable {
     @Embedded
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
+
+    private int appliedToSVersion;
 
     Account() {
         // Generate unique id
@@ -885,6 +888,14 @@ public class Account implements Serializable {
             return true;
         }
         return autoRenewTill.after(new Date());
+    }
+
+    public int getAppliedToSVersion() {
+        return appliedToSVersion;
+    }
+
+    public void setAppliedToSVersion(int appliedToSVersion) {
+        this.appliedToSVersion = appliedToSVersion;
     }
 
     /**
