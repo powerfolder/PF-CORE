@@ -402,13 +402,16 @@ public class LoginUtil {
 
     /**
      * PFS-1643: Password policy (unix). 1 digit, 1 lower case, 1 upper case, 1
-     * special char, at least 8 character
+     * special char, at least 8 character.
+     * <p>
+     * Needs to match pattern in password-rules.js
      * 
      * @param password
      * @return
      */
     public static boolean satisfiesUnixPolicy(String password) {
-        String pattern = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S*?[^\\w\\*])(?=\\S+$).{5,10}";
+        // /^(?=\S*?[A-Z])(?=\S*?[a-z])(?=\S*?[0-9])(?=\S*?[^\w\*])\S{8,}$/
+        String pattern = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S*?[^\\w\\*])(?=\\S+$).{8,}";
 
         // Explanations
         // (?=.*[0-9]) a digit must occur at least once

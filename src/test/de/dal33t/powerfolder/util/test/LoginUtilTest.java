@@ -92,9 +92,16 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.satisfiesUnixPolicy("12"));
         assertFalse(LoginUtil.satisfiesUnixPolicy("12345678"));
         assertFalse(LoginUtil.satisfiesUnixPolicy("ksjfdfgdgkjsrägklöjwerägjrägö100%&sdfsjföklsdj"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("aaa$56AAAA"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("aaa$56AA"));
+        
         assertTrue(LoginUtil.satisfiesUnixPolicy("aaZZa44@"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("!2e4567B"));
-       // assertTrue(LoginUtil.satisfiesUnixPolicy("@!xxxx332445"));
         
+        assertFalse(LoginUtil.satisfiesUnixPolicy("@!xxxx332445"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("@!xxXx332445"));
+        
+        assertFalse(LoginUtil.satisfiesUnixPolicy("abc123"));
+        assertTrue(LoginUtil.satisfiesUnixPolicy("ABC123abc!"));
     }
 }
