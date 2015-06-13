@@ -410,6 +410,9 @@ public class LoginUtil {
      * @return
      */
     public static boolean satisfiesUnixPolicy(String password) {
+        if (password == null) {
+            return false;
+        }
         // /^(?=\S*?[A-Z])(?=\S*?[a-z])(?=\S*?[0-9])(?=\S*?[^\w\*])\S{8,}$/
         String pattern = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S*?[^\\w\\*])(?=\\S+$).{8,}";
 
