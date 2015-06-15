@@ -41,7 +41,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         }
 
         try {
-            ServerClient client = getController().getOSClient();
+            ServerClient client = event.getClient();
 
             URL tosFileURL = new URL(client.getToSFileURL());
             HttpURLConnection tosFileCon = (HttpURLConnection) tosFileURL.openConnection();
