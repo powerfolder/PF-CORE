@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.security;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -37,6 +38,7 @@ import org.hibernate.annotations.Index;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Base58;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -74,8 +76,12 @@ public class Token {
     private MemberInfo nodeInfo;
 
     @Embedded
+  //  @Index(name = "IDX_ACCOUNT_OID", columnNames="accountInfo.oid")
     @Fetch(FetchMode.JOIN)
     private AccountInfo accountInfo;
+    
+    @Column(length = 1024)
+    private String notes;
 
     @SuppressWarnings("unused")
     private Token() {
@@ -188,8 +194,37 @@ public class Token {
     public AccountInfo getAccountInfo() {
         return accountInfo;
     }
+    
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+    
+    /**
+     * Adds a line of info with the current date to the notes.
+     *
+     * @param infoText
+     */
+    public void addNotesWithDate(String infoText) {
+        if (StringUtils.isBlank(infoText)) {
+            return;
+        }
+        String infoLine = Format.formatDateCanonical(new Date());
+        infoLine += ": ";
+        infoLine += infoText;
+        if (StringUtils.isBlank(notes)) {
+            setNotes(infoLine);
+        } else {
+            setNotes(notes + "\n" + infoLine);
+        }
+    }
 
     // Static helper **********************************************************
+
+
 
     public static String extractId(String secret) {
         if (StringUtils.isBlank(secret)) {
