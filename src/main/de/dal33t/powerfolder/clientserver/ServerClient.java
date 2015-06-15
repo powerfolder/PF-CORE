@@ -800,6 +800,18 @@ public class ServerClient extends PFComponent {
         return getWebURL(url.toString(), false);
     }
 
+    public String getToSURL() {
+        return getWebURL("tos", true);
+    }
+
+    public String getToSFileURL() {
+        return getWebURL("client_deployment/tos.html", false);
+    }
+
+    public String getToSVersionFileURL() {
+        return getWebURL("client_deployment/tos_version.txt", false);
+    }
+
     /**
      * @return if all new folders should be backed up by the server/cloud.
      */
