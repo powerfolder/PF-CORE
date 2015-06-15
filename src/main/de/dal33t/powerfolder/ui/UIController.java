@@ -72,6 +72,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.AgreeToSListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -174,6 +175,8 @@ public class UIController extends PFComponent {
 
     // The root of all models
     private ApplicationModel applicationModel;
+
+    private AgreeToSListener agreeToSListener;
 
     private boolean seenOome;
 
@@ -372,6 +375,9 @@ public class UIController extends PFComponent {
             }
         }
 
+        agreeToSListener = new AgreeToSListener(getController());
+        getController().getOSClient().addListener(agreeToSListener);
+
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
@@ -382,6 +388,10 @@ public class UIController extends PFComponent {
     }
 
     public void askToPauseResume() {
+        if (!agreeToSListener.hasAgreedOnToS()) {
+            logInfo("Not agreed to latest version of Terms of Service.");
+            return;
+        }
         final boolean silent = getController().isPaused();
         if (silent) {
             // Resuming - nothing to ask.
@@ -1043,6 +1053,8 @@ public class UIController extends PFComponent {
                 SystemTray.getSystemTray()
                     .remove(trayIconManager.getTrayIcon());
             }
+
+            getController().getOSClient().removeListener(agreeToSListener);
         }
 
         started = false;
