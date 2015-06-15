@@ -18,7 +18,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     private boolean wasPaused = false;
     private boolean agreedOnToS = true;
-    private int tosVersion = 0;
+    private int tosVersion = -1;
 
     public AgreeToSListener(Controller controller) {
         super(controller);
