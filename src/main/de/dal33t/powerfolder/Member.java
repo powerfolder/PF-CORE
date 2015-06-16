@@ -610,7 +610,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (!newPeer.isConnected()) {
-            logWarning("Peer disconnected while initializing connection: "
+            logFine("Peer disconnected while initializing connection: "
                 + newPeer);
             return ConnectResult
                 .failure("Peer disconnected while initializing connection");
