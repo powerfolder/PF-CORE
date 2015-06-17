@@ -35,6 +35,7 @@ public class AccountDetails implements Serializable {
 
     private Account user;
     private long spaceUsed;
+    private Boolean needsToAgreeToS;
 
     /**
      * Still named "recycleBinSize" for Serialization compatibility reasons.
@@ -43,11 +44,12 @@ public class AccountDetails implements Serializable {
      */
     private long recycleBinSize;
 
-    public AccountDetails(Account user, long spaceUsed, long archiveSize) {
+    public AccountDetails(Account user, long spaceUsed, long archiveSize, Boolean needsToAgreeToS) {
         super();
         this.user = user;
         this.spaceUsed = spaceUsed;
         this.recycleBinSize = archiveSize;
+        this.needsToAgreeToS = needsToAgreeToS;
     }
 
     public Account getAccount() {
@@ -67,6 +69,13 @@ public class AccountDetails implements Serializable {
 
     public boolean isUnknown() {
         return spaceUsed < 0;
+    }
+
+    public boolean needsToAgreeToS() {
+        if (needsToAgreeToS == null) {
+            return false;
+        }
+        return needsToAgreeToS.booleanValue();
     }
 
     public String toString() {

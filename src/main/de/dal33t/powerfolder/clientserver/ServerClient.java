@@ -1965,7 +1965,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void setAnonAccount() {
-        accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
+        accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0, null);
     }
 
     private void saveLastKnowLogin(String username, String passwordObf) {
