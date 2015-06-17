@@ -17,11 +17,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -38,7 +34,6 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     private boolean wasPaused = false;
     private boolean agreedOnToS = true;
-    private int tosVersion = -1;
 
     public AgreeToSListener(Controller controller) {
         super(controller);
@@ -62,43 +57,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         try {
             ServerClient client = event.getClient();
 
-            URL tosFileURL = new URL(client.getToSFileURL());
-            HttpURLConnection tosFileCon = (HttpURLConnection) tosFileURL.openConnection();
-            tosFileCon.setRequestMethod("GET");
-            tosFileCon.connect();
-
-            int tosFileStatus = tosFileCon.getResponseCode();
-
-            if (tosFileStatus != HttpURLConnection.HTTP_OK) {
-                return;
-            }
-
-            tosFileCon.disconnect();
-
-            URL tosVersionFileURL = new URL(client.getToSVersionFileURL());
-            HttpURLConnection tosVersionFileCon = (HttpURLConnection) tosVersionFileURL
-                .openConnection();
-            tosVersionFileCon.setRequestMethod("GET");
-            tosVersionFileCon.connect();
-
-            int tosVersionFileStatus = tosVersionFileCon.getResponseCode();
-
-            if (tosVersionFileStatus != HttpURLConnection.HTTP_OK) {
-                return;
-            }
-
-            tosVersion = 0;
-
-            try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(tosVersionFileCon.getInputStream())))
-            {
-                tosVersion = Integer.parseInt(br.readLine());
-            } catch (RuntimeException re) {
-                logWarning("Could not parse the version of the Terms of Service. " + re);
-                return;
-            }
-
-            if (account.getAppliedToSVersion() < tosVersion) {
+            if (event.getAccountDetails().needsToAgreeToS()) {
                 wasPaused = getController().isPaused();
                 agreedOnToS = false;
                 getController().setPaused(true);
@@ -120,8 +79,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     @Override
     public void accountUpdated(ServerClientEvent event) {
-        if (event.getAccountDetails().getAccount().getAppliedToSVersion() >= tosVersion)
-        {
+        if (!event.getAccountDetails().needsToAgreeToS()) {
             getController().setPaused(wasPaused);
             agreedOnToS = true;
         }
