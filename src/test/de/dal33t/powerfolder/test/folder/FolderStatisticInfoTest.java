@@ -22,7 +22,7 @@ public class FolderStatisticInfoTest extends TestCase {
     public void testCorruptFiles() {
         assertNull(testCorruptFile(Paths
             .get("src/test-resources/FolderStatisticInfo_OOM.txt")));
-        assertNull(testCorruptFile(Paths
+        assertNotNull(testCorruptFile(Paths
             .get("src/test-resources/FolderStatisticInfo_NPE.txt")));
         assertNotNull(testCorruptFile(Paths
             .get("src/test-resources/FolderStatisticInfo_OK.txt")));
