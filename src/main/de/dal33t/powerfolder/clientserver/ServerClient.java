@@ -866,7 +866,7 @@ public class ServerClient extends PFComponent {
         if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasValue(getController())) {
             token = ConfigurationEntry.SERVER_CONNECT_TOKEN
                 .getValue(getController());
-            if (Token.isExpired(tokenSecret)) {
+            if (Token.isExpired(token)) {
                 // Don't use expired token
                 token = null;
             }

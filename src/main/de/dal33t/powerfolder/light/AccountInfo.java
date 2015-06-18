@@ -28,8 +28,6 @@ import java.io.Serializable;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 
-import org.hibernate.annotations.Index;
-
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.intern.AccountInfoInternalizer;
@@ -48,7 +46,6 @@ public class AccountInfo implements Serializable {
     private static final long serialVersionUID = 100L;
     private static final Internalizer<AccountInfo> INTERNALIZER = new AccountInfoInternalizer();
     
-    @Index(name = "IDX_ACCOUNT_OID")
     private String oid;
     private String username;
     @Transient

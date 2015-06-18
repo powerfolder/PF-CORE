@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.util.StringUtils;
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  */
 @Entity
+@org.hibernate.annotations.Table(appliesTo = "Token", indexes = {@Index(name = "IDX_TOKEN_AOID", columnNames = {AccountInfo.PROPERTYNAME_OID})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Token {
     public static final int TOKEN_VERSION = 1;
@@ -76,10 +77,9 @@ public class Token {
     private MemberInfo nodeInfo;
 
     @Embedded
-  //  @Index(name = "IDX_ACCOUNT_OID", columnNames="accountInfo.oid")
     @Fetch(FetchMode.JOIN)
     private AccountInfo accountInfo;
-    
+
     @Column(length = 1024)
     private String notes;
 
