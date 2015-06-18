@@ -223,7 +223,8 @@ public class FoldersTab extends PFUIComponent {
                     }
                 } else if (username == null
                     || username.trim().length() == 0
-                    || client.isPasswordEmpty() || !client.isLoggedIn())
+                    || (client.isPasswordRequired() && client.isPasswordEmpty())
+                    || !client.isLoggedIn())
                 {
                     connectingLabel.setVisible(false);
                     couldNotConnect.setVisible(false);

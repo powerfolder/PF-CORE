@@ -1190,10 +1190,7 @@ public class MainFrame extends PFUIComponent {
         if (StringUtils.isBlank(client.getUsername())) {
             loginActionLabel.setText(Translation
                 .get("main_frame.account_not_set.text"));
-        } else if (client.isPasswordEmpty()
-            && !ConfigurationEntry.KERBEROS_SSO_ENABLED
-                .getValueBoolean(getController()))
-        {
+        } else if (client.isPasswordRequired() && client.isPasswordEmpty()) {
             loginActionLabel.setText(Translation
                 .get("main_frame.password_required.text"));
         } else if (client.isConnected()) {
